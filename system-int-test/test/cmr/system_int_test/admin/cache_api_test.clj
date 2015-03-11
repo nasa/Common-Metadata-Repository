@@ -8,6 +8,7 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.system :as s]
             [clj-http.client :as client]
             [cheshire.core :as json]))
 
@@ -20,7 +21,7 @@
   (let [response (client/request {:url url
                                   :method :get
                                   :query-params {:token token}
-                                  :connection-manager (url/conn-mgr)
+                                  :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
 
@@ -36,7 +37,7 @@
         response (client/request {:url full-url
                                   :method :get
                                   :query-params {:token token}
-                                  :connection-manager (url/conn-mgr)
+                                  :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
     ;; Make sure the status returned is success
@@ -51,7 +52,7 @@
         response (client/request {:url full-url
                                   :method :get
                                   :query-params {:token token}
-                                  :connection-manager (url/conn-mgr)
+                                  :connection-manager (s/conn-mgr)
                                   :throw-exceptions false})
         status (:status response)]
     ;; Make sure the status returned success
@@ -87,7 +88,7 @@
            (let [response (client/request {:url url
                                            :method :get
                                            :query-params {:token normal-user-token}
-                                           :connection-manager (url/conn-mgr)
+                                           :connection-manager (s/conn-mgr)
                                            :throw-exceptions false})
                  errors (:errors (json/decode (:body response) true))]
              (is (= 401 (:status response)))
@@ -102,7 +103,7 @@
       (let [response (client/request {:url (str (url/indexer-read-caches-url) "/INVALID-CACHE-ABC")
                                       :method :get
                                       :query-params {:token admin-read-token}
-                                      :connection-manager (url/conn-mgr)
+                                      :connection-manager (s/conn-mgr)
                                       :throw-exceptions false})]
         (is (= 404 (:status response)))
         (is (= "Not Found" (:body response)))))
@@ -112,7 +113,7 @@
            (let [response (client/request {:url url
                                            :method :get
                                            :query-params {:token normal-user-token}
-                                           :connection-manager (url/conn-mgr)
+                                           :connection-manager (s/conn-mgr)
                                            :throw-exceptions false})
                  errors (:errors (json/decode (:body response) true))]
              (is (= 401 (:status response)))
@@ -155,7 +156,7 @@
            (let [response (client/request {:url url
                                            :method :get
                                            :query-params {:token normal-user-token}
-                                           :connection-manager (url/conn-mgr)
+                                           :connection-manager (s/conn-mgr)
                                            :throw-exceptions false})
                  errors (:errors (json/decode (:body response) true))]
              (is (= 401 (:status response)))
@@ -171,7 +172,7 @@
                                                 "/acls/INVALID-CACHE-ABC")
                                       :method :get
                                       :query-params {:token admin-read-token}
-                                      :connection-manager (url/conn-mgr)
+                                      :connection-manager (s/conn-mgr)
                                       :throw-exceptions false})]
         (is (= 404 (:status response)))
         (is (= "Not Found" (:body response)))))

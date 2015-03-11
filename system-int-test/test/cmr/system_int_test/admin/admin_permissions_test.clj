@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as e]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.system :as s]
             [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false))
@@ -17,7 +18,7 @@
    (let [response (client/request {:url url
                                    :method method
                                    :query-params {:token token}
-                                   :connection-manager (url/conn-mgr)
+                                   :connection-manager (s/conn-mgr)
                                    :throw-exceptions false})
          status (:status response)]
 

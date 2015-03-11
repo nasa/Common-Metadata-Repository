@@ -4,7 +4,6 @@
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
-            [cmr.system-int-test.system :as s]
             [ring.util.codec :as codec]))
 
 (def search-public-protocol "http")
@@ -16,16 +15,15 @@
   "The port number for the dev system control api"
   2999)
 
-(defn conn-mgr
-  "Returns the HTTP connection manager to use. This allows system integration tests to use persistent
-  HTTP connections"
-  []
-  (:conn-mgr (s/system)))
-
-(defn wait-for-indexing-url
+(defn dev-system-wait-for-indexing-url
   "The wait-for-indexing url on the dev system control api."
   []
-  (format "http://localhost:%s/wait-for-indexing" dev-system-port))
+  (format "http://localhost:%s/message-queue/wait-for-indexing" dev-system-port))
+
+(defn dev-system-get-message-queue-history-url
+  "The get-message-queue-history url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/history" dev-system-port))
 
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
@@ -36,6 +34,11 @@
   "The reset url on the dev system control clear cache."
   []
   (format "http://localhost:%s/clear-cache" dev-system-port))
+
+(defn dev-system-get-component-types-url
+  "The url on the dev system control api to get a map of the component types."
+  []
+  (format "http://localhost:%s/component-types" dev-system-port))
 
 (defn elastic-root
   []

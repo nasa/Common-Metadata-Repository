@@ -9,6 +9,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.system :as s]
             [cheshire.core :as json]
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
@@ -179,7 +180,7 @@
         (testing "Location allows retrieval of native XML"
           (let [response (client/get location
                                      {:accept :application/echo10+xml
-                                      :connection-manager (url/conn-mgr)})]
+                                      :connection-manager (s/conn-mgr)})]
             (is (= (umm/umm->xml c1-echo :echo10) (:body response))))))
 
       (testing "as extension"

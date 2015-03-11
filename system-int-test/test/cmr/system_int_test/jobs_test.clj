@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cmr.transmit.config :as transmit-config]
-            [cmr.system-int-test.utils.url-helper :as url]))
+            [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.system :as s]))
 
 (defn- perform-action-on-jobs
   "Returns the status code from performing the given action on jobs api"
@@ -11,7 +12,7 @@
   (let [response (client/post (str app-jobs-url (name action))
                               {:accept :json
                                :throw-exceptions false
-                               :connection-manager (url/conn-mgr)
+                               :connection-manager (s/conn-mgr)
                                :headers {"echo-token" token}})]
     (:status response)))
 

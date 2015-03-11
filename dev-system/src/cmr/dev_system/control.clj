@@ -26,6 +26,16 @@
   [system app]
   {:system (get-in system [:apps app])})
 
+(defn exec-dev-system-function
+  "Executes a function from the cmr.dev-system.system namespace. Takes a string containing the name
+  of the function to run. Need to look up at run-time due to a circular dependency.
+
+  Example: (exec-dev-system-function \"stop\" system ) calls (cmr.dev-system.system/stop system)"
+  ([function-str]
+   ((var-get (find-var (symbol (str "cmr.dev-system.system/" function-str))))))
+  ([function-str & args]
+   (apply (var-get (find-var (symbol (str "cmr.dev-system.system/" function-str)))) args)))
+
 (defn get-acl-state
   [system]
   (let [indexer-cached-acls (deref (get-in system [:apps :indexer :caches :acls]))
@@ -81,13 +91,11 @@
       (debug "dev system /reset complete")
       {:status 200})
 
-    (POST "/wait-for-indexing" []
-      (debug "dev system /wait-for-indexing")
-      (when (iconfig/use-index-queue?)
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (wrapper/wait-for-indexing broker-wrapper)))
-      (debug "indexing complete")
-      {:status 200})
+    (GET "/component-types" []
+      (debug "Retrieving component types")
+      {:status 200
+       :body (json/generate-string (exec-dev-system-function "component-type-map"))
+       :headers {"Content-Type" "application/json"}})
 
     (POST "/clear-cache" []
       (debug "dev system /clear-cache")
@@ -98,8 +106,41 @@
 
     (POST "/stop" []
       (debug "dev system /stop")
-      ((var-get (find-var 'cmr.dev-system.system/stop)) system)
+      (exec-dev-system-function "stop" system)
       (System/exit 0))
+
+    (context "/message-queue" []
+      (POST "/wait-for-indexing" []
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          (debug "dev system /wait-for-indexing")
+          (when (iconfig/use-index-queue?)
+            (wrapper/wait-for-indexing broker-wrapper))
+          (debug "indexing complete")
+          {:status 200}))
+
+      (GET "/history" []
+        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+          {:status 200
+           :body (wrapper/get-message-queue-history broker-wrapper)
+           :headers {"Content-Type" "application/json"}}))
+
+      ;; TODO
+      ;; All messages return failures
+      #_(POST "/failure-mode" []
+          (debug "dev system setting message queue to failure mode.")
+          (when (iconfig/use-index-queue?)
+            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+              (wrapper/set-message-mode :failure)))
+          {:status 200})
+
+      ;; Messages are processed normally
+      #_(POST "/normal-mode" []
+          (debug "dev system returning message queue to normal mode.")
+          (when (iconfig/use-index-queue?)
+            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+              (wrapper/set-message-mode :normal)))
+          {:status 200}))
+
     (route/not-found "Not Found")))
 
 (defn make-api [system]

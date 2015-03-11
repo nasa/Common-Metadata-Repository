@@ -18,7 +18,6 @@
 
 (def system nil)
 
-
 (defn start
   "Starts the current development system."
   []

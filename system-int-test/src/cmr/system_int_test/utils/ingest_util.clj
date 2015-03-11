@@ -12,7 +12,8 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as echo-util]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.system-int-test.system :as s]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -20,7 +21,7 @@
   (client/post endpoint-url
                {:body (format "{\"provider-id\": \"%s\"}" provider-id)
                 :content-type :json
-                :connection-manager (url/conn-mgr)
+                :connection-manager (s/conn-mgr)
                 :headers {acl/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
@@ -35,7 +36,7 @@
 
 (defn get-providers-through-url
   [provider-url]
-  (-> (client/get provider-url {:connection-manager (url/conn-mgr)})
+  (-> (client/get provider-url {:connection-manager (s/conn-mgr)})
       :body
       (json/decode true)
       :providers))
@@ -53,7 +54,7 @@
   [provider-id]
   (let [response (client/delete (url/delete-provider-url provider-id)
                                 {:throw-exceptions false
-                                 :connection-manager (url/conn-mgr)
+                                 :connection-manager (s/conn-mgr)
                                  :headers {acl/token-header (transmit-config/echo-system-token)}})
         status (:status response)]
     (is (some #{200 404} [status]))))
@@ -63,7 +64,7 @@
   [provider-id]
   (let [response (client/delete (url/ingest-delete-provider-url provider-id)
                                 {:throw-exceptions false
-                                 :connection-manager (url/conn-mgr)
+                                 :connection-manager (s/conn-mgr)
                                  :headers {acl/token-header (transmit-config/echo-system-token)}})]
     (:status response)))
 
@@ -98,7 +99,7 @@
                      :headers headers
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (url/conn-mgr)})
+                     :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -118,7 +119,7 @@
                                   :multipart multipart-params
                                   :accept :json
                                   :throw-exceptions false
-                                  :connection-manager (url/conn-mgr)})
+                                  :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -134,7 +135,7 @@
                     :headers headers
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -165,7 +166,7 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -174,7 +175,7 @@
   []
   (let [url (url/mdb-provider-holdings-url)
         response (client/get url {:accept :json
-                                  :connection-manager (url/conn-mgr)})
+                                  :connection-manager (s/conn-mgr)})
         {:keys [status body headers]} response]
     (if (= status 200)
       {:status status
@@ -193,7 +194,7 @@
                     :content-type :json
                     :accept :json
                     :throw-exceptions false
-                    :connection-manager (url/conn-mgr)})
+                    :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
 
@@ -208,7 +209,7 @@
                      :headers (merge {} (when token {"Echo-Token" token}))
                      :accept :json
                      :throw-exceptions false
-                     :connection-manager (url/conn-mgr)})
+                     :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
@@ -235,7 +236,7 @@
    (let [response (client/get (url/mdb-concept-url concept-id revision-id)
                               {:accept :json
                                :throw-exceptions false
-                               :connection-manager (url/conn-mgr)})]
+                               :connection-manager (s/conn-mgr)})]
      (is (some #{200 404} [(:status response)]))
      (when (= (:status response) 200)
        (-> response
@@ -251,7 +252,7 @@
 (defn admin-connect-options
   "This returns the options to send when executing admin commands"
   []
-  {:connection-manager (url/conn-mgr)
+  {:connection-manager (s/conn-mgr)
    :query-params {:token "mock-echo-system-token"}})
 
 (defn reset
