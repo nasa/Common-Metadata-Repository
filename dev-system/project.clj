@@ -37,7 +37,7 @@
 
 ;; The version number here is for the sprint number. It will be incremented each sprint. The second
 ;; number is for which delivery of the version was given to ECHO for use.
-(defproject nasa-cmr/cmr-dev-system "1.15.18"
+(defproject nasa-cmr/cmr-dev-system "0.1.0-SNAPSHOT"
   :description "Dev System combines together the separate microservices of the CMR into a single
                application to make it simpler to develop."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/dev-system"
@@ -59,7 +59,9 @@
 
 
   :plugins [[lein-shell "0.4.0"]
-            [lein-modules "0.3.11"]]
+            [lein-modules "0.3.11"]
+            [lein-test-out "0.3.1"]]
+
   :repl-options {:init-ns user
                  :timeout 120000}
 
