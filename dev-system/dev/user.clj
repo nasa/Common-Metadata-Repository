@@ -18,6 +18,8 @@
 
 (def system nil)
 
+(comment comp)
+
 (defn start
   "Starts the current development system."
   []

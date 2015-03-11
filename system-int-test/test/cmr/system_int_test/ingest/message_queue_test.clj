@@ -4,6 +4,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index-util]
             [cmr.system-int-test.data2.collection :as dc]
+            [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]))
 
@@ -39,14 +40,25 @@
 
 ;; Setup provider
 ;; Test 1 - Initial index fails and retries once, completes successfully on retry
-;; Turn message failures on - implement new endpoint, call new endpoint
-;; Ingest collection and granule - normal way
-;; Verify the collection and granule are in Oracle - metadata-db find concepts
-;; Wait for at least one retry - TODO figure out how
-;; Verify the collection and granule are not indexed - search returns 0 results
-;; Turn on normal processing on messages - call new endpoint
-;; Wait until the indexing queue is empty - wait-for-indexed
-;; Verify the collection and granule are indexed - search returns correct results
+;; Turn message failures on - implement new endpoint, call new endpoint - TODO
+(deftest message-queue-retry-test
+  (s/only-with-real-message-queue
+    (testing "Initial index fails and retries once, completes successfully on retry"
+      ;; Test 1 - Initial index fails and retries once, completes successfully on retry
+      (index-util/set-message-queue-retry-behavior 1)
+      (let [collection (d/ingest "PROV1" (dc/collection {}))
+            granule (d/item->concept (dg/granule collection))
+            {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+        ;; Wait until the indexing queue is empty - wait-for-indexed
+        (index-util/wait-until-indexed)
+        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
+        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        ;; Verify the collection and granule are indexed - search returns correct results
+        ;; Wait for at least one retry - TODO figure out how
+        ;; Verify the collection and granule are indexed - search returns 0 results
+        ;; Verify retried exactly one time and at the correct retry interval
+        (index-util/set-message-queue-retry-behavior 0)
+        ))))
 
 ;; Test 2 - all retries fail
 ;; Turn message failures on

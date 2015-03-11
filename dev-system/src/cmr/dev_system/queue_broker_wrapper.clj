@@ -156,6 +156,11 @@
    ;; Each message queue state map contains an :action map indicating the action that caused the
    ;; message queue to change state and a :messages sequence of the messages in the queue."
    message-queue-history-atom
+
+   ;; Number of times every request should return an error response indicating retry prior to being
+   ;; processed normally. Useful for automated tests verifying specific behaviors on retry and
+   ;; failure.
+   num-retries-atom
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -225,27 +230,18 @@
   [broker-wrapper]
   (-> broker-wrapper :message-queue-history-atom deref))
 
-;; TODO
-#_(def valid-message-modes
-    "A list of the modes in which the message queue broker can operate.
-    :normal - message functions are called and processed as they normally would.
-    :retry - all messages return a retry when they are processed."
-    #{:normal
-      :retry})
-
-;; TODO
-#_(defn set-message-mode
-    "Used to toggle message queue between normal mode and failure mode. In normal mode messages are
-    processed normally. In failure mode all messages return failures. The failure mode is useful for
-    automated tests verifying specific behaviors on failure."
-    [mode]
-    (if (valid-message-modes mode)
-      ;; Use an atom to set state?
-      "TODO"
-      (throw (Exception. (str "Invalid message queue mode: " mode)))))
+(defn set-message-queue-retry-behavior
+  "Used to change the behavior of the message queue to indicate that each message should fail
+  with a retry response code a certain number of times prior to succeeding. If the num-retries
+  is set to 0 every message will be processed normally. If num-retries is set higher than the
+  maximum allowed retries the message will end up being marked as failed once the retries have
+  been exhausted."
+  [broker-wrapper num-retries]
+  ;; Use an atom to set state?
+  (swap! (:num-retries-atom broker-wrapper #(constantly num-retries))))
 
 
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"
   [broker]
-  (->BrokerWrapper broker (atom 0) (atom false) (atom [])))
+  (->BrokerWrapper broker (atom 0) (atom false) (atom []) (atom 0)))

@@ -124,22 +124,13 @@
            :body (wrapper/get-message-queue-history broker-wrapper)
            :headers {"Content-Type" "application/json"}}))
 
-      ;; TODO
-      ;; All messages return failures
-      #_(POST "/failure-mode" []
-          (debug "dev system setting message queue to failure mode.")
-          (when (iconfig/use-index-queue?)
-            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-              (wrapper/set-message-mode :failure)))
-          {:status 200})
-
-      ;; Messages are processed normally
-      #_(POST "/normal-mode" []
-          (debug "dev system returning message queue to normal mode.")
-          (when (iconfig/use-index-queue?)
-            (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-              (wrapper/set-message-mode :normal)))
-          {:status 200}))
+      (POST "/set-retry-behavior" {:keys [params]}
+        (let [num-retries (:num-retries [params])]
+          (debug (format "dev system setting message queue to retry messages %d times"
+                         num-retries))
+          (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+            (wrapper/set-message-queue-retry-behavior broker-wrapper num-retries))
+          {:status 200})))
 
     (route/not-found "Not Found")))
 

@@ -19,6 +19,14 @@
     (client/post (url/dev-system-wait-for-indexing-url) {:connection-manager (s/conn-mgr)}))
   (refresh-elastic-index))
 
+(defn set-message-queue-retry-behavior
+  "Set the message queue retry behavior"
+  [num-retries]
+  (client/post
+    (url/dev-system-set-message-queue-retry-behavior-url)
+    {:connection-manager (s/conn-mgr)
+     :params {:num-retries num-retries}}))
+
 (defn get-message-queue-history
   "Returns the message queue history."
   []
