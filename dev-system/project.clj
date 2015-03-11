@@ -59,7 +59,6 @@
 
 
   :plugins [[lein-shell "0.4.0"]
-            [lein-modules "0.3.11"]
             [lein-test-out "0.3.1"]]
 
   :repl-options {:init-ns user

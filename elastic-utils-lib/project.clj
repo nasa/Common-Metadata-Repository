@@ -11,8 +11,7 @@
                  [log4j/log4j "1.2.17"]
                  [clj-http "1.0.1"]]
 
-  :plugins [[lein-test-out "0.3.1"]
-            [lein-modules "0.3.11"]]
+  :plugins [[lein-test-out "0.3.1"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

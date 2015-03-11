@@ -13,8 +13,7 @@
                  [org.clojure/tools.reader "0.8.15"]
                  [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
-  :plugins [[lein-test-out "0.3.1"]
-            [lein-modules "0.3.11"]]
+  :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]

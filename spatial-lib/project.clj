@@ -36,8 +36,7 @@
                  [org.clojure/math.combinatorics "0.0.8"]]
 
 
-  :plugins [[lein-test-out "0.3.1"]
-            [lein-modules "0.3.11"]]
+  :plugins [[lein-test-out "0.3.1"]]
 
   :global-vars {*warn-on-reflection* true}
 

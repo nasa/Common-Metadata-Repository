@@ -18,8 +18,7 @@
                  [org.clojure/data.csv "0.1.2"]
                  [net.sf.saxon/Saxon-HE "9.6.0-4"]]
   :plugins [[lein-test-out "0.3.1"]
-            [lein-exec "0.3.4"]
-            [lein-modules "0.3.11"]]
+            [lein-exec "0.3.4"]]
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles
