@@ -138,10 +138,9 @@
            (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
                                                   ["ABC-1" "read"]
                                                   ["ABC-2" "read"]]
-           ;; Commented out due to changes from CMR-1240. Once we reenable Authorization in Ingest we can uncomment this.
-           ; (url/ingest-read-caches-url) "token-imp" [[nil "update"]
-           ;                                           ["ABC-1" "read"]
-           ;                                           ["ABC-2" "read"]]
+           (url/ingest-read-caches-url) "token-imp" [[nil "update"]
+                                                     ["ABC-1" "read"]
+                                                     ["ABC-2" "read"]]
            (url/search-read-caches-url) "acls" []
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
