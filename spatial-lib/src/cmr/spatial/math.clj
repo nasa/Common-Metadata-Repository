@@ -58,7 +58,7 @@
   (float->double (float 0.1)) => 0.1
   See http://programmingjungle.blogspot.com/2013/03/float-to-double-conversion-in-java.html"
   ^double [v]
-  (.doubleValue (sun.misc.FloatingDecimal. ^float v)))
+  (.doubleValue (Double. (str v))))
 
 (defn- shift-float
   "Shifts the mantissa of the float by 1 in the positive of negative direction to increase the float

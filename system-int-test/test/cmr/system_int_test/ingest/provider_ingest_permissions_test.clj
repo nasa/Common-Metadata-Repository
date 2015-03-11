@@ -54,19 +54,9 @@
            (ingest-succeeded? (ingest/ingest-concept granule {:token token}))
            provider-admin-update-token
            provider-admin-read-update-token
-           provider-admin-update-delete-token
+           provider-admin-update-delete-token)
 
-           ;;Any user can ingest due to CMR-1240
-           guest-token
-           user-token
-           super-admin-token
-           another-prov-admin-token
-           provider-admin-read-token
-           non-existant-token
-
-           )
-
-      #_(are [token]
+      (are [token]
            (not (ingest-succeeded? (ingest/ingest-concept granule {:token token})))
            guest-token
            user-token
@@ -79,17 +69,8 @@
            (ingest-succeeded? (ingest/delete-concept granule token))
            provider-admin-update-token
            provider-admin-read-update-token
-           provider-admin-update-delete-token
-
-           guest-token
-           user-token
-           super-admin-token
-           another-prov-admin-token
-           provider-admin-read-token
-           non-existant-token
-
-           )
-      #_(are [token]
+           provider-admin-update-delete-token)
+      (are [token]
            (not (ingest-succeeded? (ingest/delete-concept granule token)))
            guest-token
            user-token
@@ -102,18 +83,8 @@
            (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token))
            provider-admin-update-token
            provider-admin-read-update-token
-           provider-admin-update-delete-token
-
-           ;;Any user can ingest due to CMR-1240
-           guest-token
-           user-token
-           super-admin-token
-           another-prov-admin-token
-           provider-admin-read-token
-           non-existant-token
-
-           )
-      #_(are [token]
+           provider-admin-update-delete-token)
+      (are [token]
            (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token)))
            guest-token
            user-token
@@ -126,17 +97,8 @@
            (ingest-succeeded? (ingest/delete-concept ingested-concept token))
            provider-admin-update-token
            provider-admin-read-update-token
-           provider-admin-update-delete-token
-
-           ;;Any user can ingest due to CMR-1240
-           guest-token
-           user-token
-           super-admin-token
-           another-prov-admin-token
-           provider-admin-read-token
-           non-existant-token
-           )
-      #_(are [token]
+           provider-admin-update-delete-token)
+      (are [token]
            (not (ingest-succeeded? (ingest/delete-concept ingested-concept token)))
            guest-token
            user-token
