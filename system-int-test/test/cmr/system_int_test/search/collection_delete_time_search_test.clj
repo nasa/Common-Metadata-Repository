@@ -29,8 +29,9 @@
   (tk/clear-current-time!)
   )
 
-
-(deftest collection-delete-time-test
+;; Commenting out this test due to CMR-1295. It fails in CI when the tests are running in a
+;; separate process from the in-memory database because the timekeeper times are not obeyed.
+#_(deftest collection-delete-time-test
   (s/only-with-in-memory-database
     (let [time-now (tk/now)
           make-coll (fn [prov entry-title num-secs-to-live]
