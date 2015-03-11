@@ -13,7 +13,8 @@
                  [com.oracle/ucp "11.2.0.3"]
                  [sqlingvo "0.7.8"]]
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-modules "0.3.11"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

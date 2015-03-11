@@ -7,7 +7,8 @@
 
   :source-paths ["viz" "src"]
 
-  :plugins [[lein-exec "0.3.2"]]
+  :plugins [[lein-exec "0.3.2"]
+            [lein-modules "0.3.11"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

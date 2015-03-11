@@ -13,7 +13,8 @@
                 ;; Turn off the logging noise
                 [com.dadrox/quiet-slf4j "0.1"]]
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-modules "0.3.11"]]
 
 
   :profiles

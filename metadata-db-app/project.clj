@@ -19,7 +19,8 @@
 
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.2"]
-            [lein-exec "0.3.2"]]
+            [lein-exec "0.3.2"]
+            [lein-modules "0.3.11"]]
 
   :repl-options {:init-ns user}
 

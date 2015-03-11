@@ -19,7 +19,8 @@
 
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]]
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-modules "0.3.11"]]
 
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
 

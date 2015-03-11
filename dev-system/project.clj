@@ -58,7 +58,8 @@
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
 
-  :plugins [[lein-shell "0.4.0"]]
+  :plugins [[lein-shell "0.4.0"]
+            [lein-modules "0.3.11"]]
   :repl-options {:init-ns user
                  :timeout 120000}
 

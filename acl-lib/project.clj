@@ -4,7 +4,8 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]
 
-  :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-modules "0.3.11"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

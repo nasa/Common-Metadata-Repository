@@ -9,7 +9,8 @@
                  [com.novemberain/langohr "3.0.1"]]
 
   ;; Uncomment once we add unit tests
-  ; :plugins [[lein-test-out "0.3.1"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-modules "0.3.11"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

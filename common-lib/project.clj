@@ -21,8 +21,9 @@
                  ;; Needed for timeout a function execution
                  [clojail "1.0.6"]]
 
-   :plugins [[lein-test-out "0.3.1"]
-             [lein-exec "0.3.2"]]
+  :plugins [[lein-test-out "0.3.1"]
+            [lein-exec "0.3.2"]
+            [lein-modules "0.3.11"]]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
