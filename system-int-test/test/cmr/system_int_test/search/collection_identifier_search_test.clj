@@ -536,6 +536,10 @@
 
 (deftest search-with-invalid-escaped-param
   (testing "CMR-1192: Searching with invalid escaped character returns internal error"
+    ;; I am not able to find an easy way to submit a http request with an invalid url to bypass the
+    ;; client side checking. So we do it through curl on the command line.
+    ;; This depends on curl being installed on the test machine.
+    ;; Do not use this unless absolutely necessary.
     (let [{:keys [out]} (shell/sh "curl" "--silent" "-i"
                                   (str (url/search-url :collection) "?entry-title\\[\\]=%"))]
-      (is (re-find #"(?s)400 Bad Request.*URLDecoder: Incomplete trailing escape \(%\) pattern.*" out)))))
+      (is (re-find #"(?s)400 Bad Request.*Invalid URL encoding: Incomplete trailing escape \(%\) pattern.*" out)))))

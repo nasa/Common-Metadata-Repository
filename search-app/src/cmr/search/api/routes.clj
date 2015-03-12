@@ -356,21 +356,6 @@
                 :body-copy body
                 :body (java.io.ByteArrayInputStream. (.getBytes body)))))))
 
-(defn invalid-url-encoding-handler
-  "Detect invalid encoding in the url and throws a 400 error. Ring default handling simply converts
-  the invalid encoded parameter value to nil and causes 500 error later during search (see CMR-1192).
-  This middleware handler returns a 400 error early to avoid the 500 error."
-  [f]
-  (fn [request]
-    (try
-      (when-let [query-string (:query-string request)]
-        (java.net.URLDecoder/decode query-string))
-      (catch Exception e
-        (svc-errors/throw-service-error
-          :bad-request
-          (.getMessage e))))
-    (f request)))
-
 (defn find-query-str-mixed-arity-param
   "Return the first parameter that has mixed arity, i.e., appears with both single and multivalued in
   the query string. e.g. foo=1&foo[bar]=2 is mixed arity, so is foo[]=1&foo[bar]=2. foo=1&foo[]=2 is
@@ -410,7 +395,7 @@
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
-      invalid-url-encoding-handler
+      errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       copy-of-body-handler
       (errors/exception-handler default-format-fn)

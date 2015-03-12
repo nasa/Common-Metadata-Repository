@@ -121,3 +121,18 @@
        (catch Throwable e
          (error e)
          internal-error-ring-response)))))
+
+(defn invalid-url-encoding-handler
+  "Detect invalid encoding in the url and throws a 400 error. Ring default handling simply converts
+  the invalid encoded parameter value to nil and causes 500 error later during search (see CMR-1192).
+  This middleware handler returns a 400 error early to avoid the 500 error."
+  [f]
+  (fn [request]
+    (try
+      (when-let [query-string (:query-string request)]
+        (java.net.URLDecoder/decode query-string "UTF-8"))
+      (catch Exception e
+        (errors/throw-service-error
+          :bad-request
+          (str "Invalid URL encoding: " (str/replace (.getMessage e) #"URLDecoder: " "")))))
+    (f request)))

@@ -186,6 +186,7 @@
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
+      api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
