@@ -42,35 +42,27 @@
        [(format "%%s have [%s] which do not reference any projects in parent collection."
                 (str/join ", " missing-project-refs))]})))
 
-(defn- matches-collection-identifier-validation
+(defn matches-collection-identifier-validation
   "Validates the granule collection-ref field matches the corresponding field in the parent collection."
-  [granule field parent-field-path]
-  (let [value (get-in granule [:collection-ref field])
-        parent-value (get-in granule (concat [:parent] parent-field-path))
-        field-name (name field)]
-    (when (and value (not= value parent-value))
-      {[:collection-ref]
-       [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
-                field-name value field-name parent-value)]})))
+  [field parent-field-path]
+  (fn [_ granule]
+    (let [value (get-in granule [:collection-ref field])
+          parent-value (get-in granule (concat [:parent] parent-field-path))
+          field-name (name field)]
+      (when (and value (not= value parent-value))
+        {[:collection-ref]
+         [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
+                  field-name value field-name parent-value)]}))))
 
-(defn- collection-ref-required-fields-validation
-  "Validates the granules collection ref has the required fields."
-  [granule]
+(defn collection-ref-validation
+  "Validates the granules collection ref matches the parent collection."
+  [_ granule]
   (let [{:keys [collection-ref]} granule
         {:keys [short-name version-id entry-title]} collection-ref]
     (when-not (or entry-title (and short-name version-id))
       {[:collection-ref]
        [(format "%%s should have at least entry-title or short-name and version-id, but was %s"
                 (util/remove-nil-keys (into {} collection-ref)))]})))
-
-(defn- collection-ref-validation
-  "Validates the granules collection ref"
-  [_ granule]
-  (merge-with concat
-              (collection-ref-required-fields-validation granule)
-              (matches-collection-identifier-validation granule :entry-title [:entry-title])
-              (matches-collection-identifier-validation granule :short-name [:product :short-name])
-              (matches-collection-identifier-validation granule :version-id [:product :version-id])))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
@@ -139,6 +131,9 @@
 (def granule-validations
   "Defines validations for granules"
   [collection-ref-validation
+   (matches-collection-identifier-validation :entry-title [:entry-title])
+   (matches-collection-identifier-validation :short-name [:product :short-name])
+   (matches-collection-identifier-validation :version-id [:product :version-id])
    {:spatial-coverage spatial-coverage-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
