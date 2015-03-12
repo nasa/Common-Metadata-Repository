@@ -110,7 +110,7 @@
                                  (umm-g/map->CollectionRef {:entry-title "wrong"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference entry-title [wrong] does not match the entry-title of the parent collection [correct]"]}]
+                  :errors ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"]}]
                 (d/item->concept granule)
                 coll-concept)))
 
@@ -119,7 +119,7 @@
             (testing "shortname"
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference short-name [S2] does not match the short-name of the parent collection [S1]"]}]
+                  :errors ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]}]
                 (d/item->concept (assoc (dg/granule collection)
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S2"
@@ -128,7 +128,7 @@
             (testing "version id"
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference version-id [V2] does not match the version-id of the parent collection [V1]"]}]
+                  :errors ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]}]
                 (d/item->concept (assoc (dg/granule collection)
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S1"
@@ -153,23 +153,22 @@
                                           :collection-ref
                                           (umm-g/map->CollectionRef (merge collection-ref-attrs attrs)))]
                        (assert-validation-errors
-                         [{:path ["CollectionRef"],
-                           :errors errors}]
+                         [{:path ["CollectionRef"] :errors errors}]
                          (d/item->concept granule :iso-smap)
                          coll-concept))
 
                      {:entry-title "wrong"}
-                     ["Collection Reference entry-title [wrong] does not match the entry-title of the parent collection [correct]"]
+                     ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"]
 
                      {:short-name "S2"}
-                     ["Collection Reference short-name [S2] does not match the short-name of the parent collection [S1]"]
+                     ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]
 
                      {:version-id "V2"}
-                     ["Collection Reference version-id [V2] does not match the version-id of the parent collection [V1]"]
+                     ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]
 
                      {:entry-title "wrong" :version-id "V2"}
-                     ["Collection Reference entry-title [wrong] does not match the entry-title of the parent collection [correct]"
-                      "Collection Reference version-id [V2] does not match the version-id of the parent collection [V1]"]))))
+                     ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"
+                      "Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]))))
 
 
           (testing "granule collection-refs missing field"
@@ -184,7 +183,7 @@
                                                             :version-id "V1"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference should have at least entry-title or short-name and version-id, but was {:version-id \"V1\"}"]}]
+                  :errors ["Collection Reference should have at least entry-title or short-name and version-id."]}]
                 (d/item->concept granule :iso-smap)
                 coll-concept))))))
 

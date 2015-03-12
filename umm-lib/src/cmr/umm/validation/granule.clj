@@ -48,7 +48,7 @@
   (fn [_ collection-ref]
     (let [value (field collection-ref)
           parent-value (get-in collection-ref (concat [:parent] parent-field-path))
-          field-name (name field)]
+          field-name (v/humanize-field field)]
       (when (and value (not= value parent-value))
         {[:collection-ref]
          [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
@@ -60,10 +60,7 @@
   (let [{:keys [short-name version-id entry-title]} collection-ref]
     (when-not (or entry-title (and short-name version-id))
       {[:collection-ref]
-       [(format "%%s should have at least entry-title or short-name and version-id, but was %s"
-                (util/remove-nil-keys {:short-name short-name
-                                       :version-id version-id
-                                       :entry-title entry-title}))]})))
+       ["%s should have at least entry-title or short-name and version-id."]})))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
