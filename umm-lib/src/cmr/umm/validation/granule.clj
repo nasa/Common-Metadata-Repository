@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [cmr.common.validations.core :as v]
+            [cmr.common.util :as util]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.start-end-date :as sed]
             [cmr.spatial.validation :as sv]
@@ -41,28 +42,25 @@
        [(format "%%s have [%s] which do not reference any projects in parent collection."
                 (str/join ", " missing-project-refs))]})))
 
-(defn collection-ref-validation
-  "Validates the granules collection ref matches the parent collection."
-  [_ granule]
-  (let [{{:keys [short-name version-id entry-title]} :collection-ref} granule]
-    (cond
-      entry-title
-      (let [coll-entry-title (get-in granule [:parent :entry-title])]
-        (when-not (= coll-entry-title entry-title)
-          {[:collection-ref]
-           [(format "%%s Entry Title [%s] does not match the entry title of the parent collection [%s]"
-                    entry-title coll-entry-title)]}))
+(defn- matches-collection-identifier-validation
+  "Validates the granule collection-ref field matches the corresponding field in the parent collection."
+  [field parent-field-path]
+  (fn [_ collection-ref]
+    (let [value (field collection-ref)
+          parent-value (get-in collection-ref (concat [:parent] parent-field-path))
+          field-name (v/humanize-field field)]
+      (when (and value (not= value parent-value))
+        {[:collection-ref]
+         [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
+                  field-name value field-name parent-value)]}))))
 
-      (and short-name version-id)
-      (let [{coll-short-name :short-name
-             coll-version-id :version-id} (get-in granule [:parent :product])]
-        (when-not (and (= coll-short-name short-name) (= coll-version-id version-id))
-          {[:collection-ref]
-           [(format (str "%%s Short Name [%s] and Version ID [%s] do not match the Short Name [%s] "
-                         "and Version ID [%s] of the parent collection.")
-                    short-name version-id coll-short-name coll-version-id)]}))
-      :else
-      (errors/internal-error! (str "Unexpected collection ref in granule: " (pr-str granule))))))
+(defn- collection-ref-required-fields-validation
+  "Validates the granules collection ref has the required fields."
+  [_ collection-ref]
+  (let [{:keys [short-name version-id entry-title]} collection-ref]
+    (when-not (or entry-title (and short-name version-id))
+      {[:collection-ref]
+       ["%s should have at least entry-title or short-name and version-id."]})))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
@@ -130,8 +128,11 @@
 
 (def granule-validations
   "Defines validations for granules"
-  [collection-ref-validation
-   {:spatial-coverage spatial-coverage-validations
+  [{:collection-ref [collection-ref-required-fields-validation
+                     (matches-collection-identifier-validation :entry-title [:entry-title])
+                     (matches-collection-identifier-validation :short-name [:product :short-name])
+                     (matches-collection-identifier-validation :version-id [:product :version-id])]
+    :spatial-coverage spatial-coverage-validations
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
