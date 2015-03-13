@@ -33,7 +33,9 @@
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
-   :uberjar {:aot :all}}
+   :uberjar {:aot :all
+             :dependencies [[markdown-clj "0.9.63"]]
+             :prep-tasks ["generate-docs"]}}
   ;; Skip AOT to prevent double-compilation during uberjar phase,
   ;; avoiding errors when loading code that uses protocol functions at
   ;; load time.

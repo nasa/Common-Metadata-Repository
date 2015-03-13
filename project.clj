@@ -18,11 +18,13 @@
 
   :profiles
   {:uberjar
-   {:modules {:dirs ["ingest-app"
-                     "bootstrap-app"
+   {:modules {:dirs ["bootstrap-app"
                      "index-set-app"
+                     "indexer-app"
+                     "ingest-app"
+                     "metadata-db-app"
                      "mock-echo-app"
+                     "search-app"
                      "es-spatial-plugin"
-                     "system-int-test"
-                     "dev-system"]}}})
+                     "system-int-test"]}}})
 

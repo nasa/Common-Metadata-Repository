@@ -50,11 +50,14 @@
   ; :dependencies ~(concat '[[org.clojure/clojure "1.6.0"]]
   ;                        project-dependencies)
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
 
