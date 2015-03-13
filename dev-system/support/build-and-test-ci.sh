@@ -11,4 +11,4 @@ cd ../dev-system
 ./support/build-and-run.sh
 cd ..
 CMR_ELASTIC_PORT=9206 lein modules test-out
-curl -XPOST http://localhost:2999/stop
+curl -XPOST http://localhost:2999/stop; true
