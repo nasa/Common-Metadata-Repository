@@ -33,6 +33,7 @@
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
+   :docs {:dependencies [[markdown-clj "0.9.63"]]}
    :uberjar {:aot :all
              :dependencies [[markdown-clj "0.9.63"]]
              :prep-tasks ["generate-docs"]}}
