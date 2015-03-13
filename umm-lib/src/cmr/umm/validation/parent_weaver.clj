@@ -36,6 +36,7 @@
     [granule coll]
     (-> granule
         (assoc :parent coll)
+        (update-in [:collection-ref] set-parent coll)
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
         (update-in [:temporal] set-parent (:temporal coll))
         (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
