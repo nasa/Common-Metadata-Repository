@@ -5,6 +5,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [clojure.string :as string]
             [cmr.common.mime-types :as mt]
+            [cmr.umm.granule :as umm-g]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
@@ -148,7 +149,7 @@
         granule (d/item->concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
-    (is (= [400 ["Collection with EntryTitle [Coll1] referenced in granule does not exist."]]
+    (is (= [400 ["Collection with EntryTitle [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
            [status errors]))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
@@ -189,3 +190,42 @@
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
+(deftest ingest-smap-iso-granule-test
+  (let [collection (d/ingest "PROV1" (dc/collection {:entry-title "correct"
+                                                     :short-name "S1"
+                                                     :version-id "V1"}))]
+    (testing "Valid SMAP ISO granule with collection-ref attributes"
+      (are [attrs]
+           (let [granule (-> (dg/granule collection {:granule-ur "Gran1"})
+                             (assoc :collection-ref (umm-g/map->CollectionRef attrs))
+                             (d/item->concept :iso-smap))
+                 {:keys [status]} (ingest/ingest-concept granule)]
+             (= 200 status))
+
+           {:entry-title "correct"}
+           {:short-name "S1" :version-id "V1"}
+           {:entry-title "correct" :short-name "S1" :version-id "V1"}))
+
+    (testing "Invalid SMAP ISO granule with collection-ref attributes"
+      (are [attrs expected-errors]
+           (let [collection-ref (umm-g/map->CollectionRef attrs)
+                 granule (-> (dg/granule collection {:granule-ur "Gran1"})
+                             (assoc :collection-ref collection-ref)
+                             (d/item->concept :iso-smap))
+                 {:keys [status errors]} (ingest/ingest-concept granule)]
+             (= [400 expected-errors] [status errors]))
+
+           {:entry-title "wrong"}
+           ["Collection with EntryTitle [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
+
+           {:short-name "S2"}
+           ["Collection Reference should have at least entry-title or short-name and version-id."]
+
+           {:version-id "V2"}
+           ["Collection Reference should have at least entry-title or short-name and version-id."]
+
+           {:short-name "S2" :version-id "V1"}
+           ["Collection with ShortName [S2], VersionID [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
+
+           {:entry-title "correct" :short-name "S2" :version-id "V1"}
+           ["Collection with EntryTitle [correct], ShortName [S2], VersionID [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
