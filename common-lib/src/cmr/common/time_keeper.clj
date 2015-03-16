@@ -17,7 +17,7 @@
   "Sets the override time to the current real time. This 'freezes' the time so that it won't advance
   until the advance time is called or the time is 'unfrozen' by calling clear-current-time!."
   []
-  (set-current-time! (t/now)))
+  (set-time-override! (t/now)))
 
 (defn advance-time!
   "Increases the time override by a number of seconds"
