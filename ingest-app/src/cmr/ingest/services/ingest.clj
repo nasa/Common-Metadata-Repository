@@ -65,7 +65,7 @@
     (when-not (or entry-title (and short-name version-id))
       (errors/throw-service-error
         :bad-request
-        "Collection Reference should have at least entry-title or short-name and version-id."))))
+        "Collection Reference should have at least Entry Title or Short Name and Version Id."))))
 
 (defn- get-granule-parent-collection-and-concept
   "Returns the parent collection concept and parsed UMM record for a granule as a tuple. Finds the

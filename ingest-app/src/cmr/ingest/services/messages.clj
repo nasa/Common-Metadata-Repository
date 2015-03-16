@@ -1,21 +1,16 @@
 (ns cmr.ingest.services.messages
   (:require [cmr.common.util :as util]
+            [cmr.common.validations.core :as vc]
             [clojure.string :as str]))
 
 (defn parent-collection-does-not-exist
   [provider-id granule-ur collection-ref]
-  (let [{:keys [entry-title short-name version-id]} collection-ref
-        field-msg (fn [field value v]
-                    (if value
-                      (conj v (format "%s [%s]" field value))
-                      v))
-        error-msg (->> []
-                       (field-msg "EntryTitle" entry-title)
-                       (field-msg "ShortName" short-name)
-                       (field-msg "VersionID" version-id)
-                       (str/join ", "))]
+  (let [collection-ref-fields (util/remove-nil-keys (into {} collection-ref))
+        coll-ref-humanized-fields (for [[field value] collection-ref-fields]
+                                    (format "%s [%s]" (vc/humanize-field field) value))]
     (format "Collection with %s referenced in granule [%s] provider [%s] does not exist."
-            error-msg granule-ur provider-id)))
+            (str/join ", " coll-ref-humanized-fields)
+            granule-ur provider-id)))
 
 (defn invalid-multipart-params
   [expected-params actual-params]

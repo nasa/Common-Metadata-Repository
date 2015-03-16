@@ -183,7 +183,7 @@
                                                             :version-id "V1"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference should have at least entry-title or short-name and version-id."]}]
+                  :errors ["Collection Reference should have at least Entry Title or Short Name and Version Id."]}]
                 (d/item->concept granule :iso-smap)
                 coll-concept))))))
 

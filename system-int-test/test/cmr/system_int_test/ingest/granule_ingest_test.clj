@@ -149,7 +149,7 @@
         granule (d/item->concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
-    (is (= [400 ["Collection with EntryTitle [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+    (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
            [status errors]))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
@@ -215,17 +215,20 @@
                  {:keys [status errors]} (ingest/ingest-concept granule)]
              (= [400 expected-errors] [status errors]))
 
+           {}
+           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
+
            {:entry-title "wrong"}
-           ["Collection with EntryTitle [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
+           ["Collection with Entry Title [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
 
            {:short-name "S2"}
-           ["Collection Reference should have at least entry-title or short-name and version-id."]
+           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
 
            {:version-id "V2"}
-           ["Collection Reference should have at least entry-title or short-name and version-id."]
+           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
 
            {:short-name "S2" :version-id "V1"}
-           ["Collection with ShortName [S2], VersionID [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
+           ["Collection with Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]
 
            {:entry-title "correct" :short-name "S2" :version-id "V1"}
-           ["Collection with EntryTitle [correct], ShortName [S2], VersionID [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
+           ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
