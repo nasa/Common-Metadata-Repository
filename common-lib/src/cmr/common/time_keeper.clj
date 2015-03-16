@@ -8,13 +8,14 @@
   "Contains the current time to return if it is overriden."
   (atom nil))
 
-(defn set-current-time!
-  "Sets the current time. This should only be used for testing."
+(defn set-time-override!
+  "Sets the override time to the given time given. This should only be used for testing."
   [t]
   (reset! time-override t))
 
 (defn freeze-time!
-  "Sets the current time to whatever the real time is now."
+  "Sets the override time to the current real time. This 'freezes' the time so that it won't advance
+  until the advance time is called or the time is 'unfrozen' by calling clear-current-time!."
   []
   (set-current-time! (t/now)))
 
