@@ -27,7 +27,6 @@
   :plugins [[lein-shell "0.4.0"]
             [lein-test-out "0.3.1"]]
 
-
   ;; This is the minimum that must be AOT'd for running in an embeded elastic. AOT :all for installing
   ;; in an elastic vm.
   :aot [cmr.es-spatial-plugin.SpatialScript

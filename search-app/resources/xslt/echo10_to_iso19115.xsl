@@ -5,8 +5,8 @@
       <xd:p>
         <xd:b>Title:ECHO to ISO</xd:b>
       </xd:p>
-      <xd:p><xd:b>Version:</xd:b>1.22</xd:p>
-      <xd:p><xd:b>Created on:</xd:b>May 27, 2014</xd:p>
+      <xd:p><xd:b>Version:</xd:b>1.30</xd:p>
+      <xd:p><xd:b>Created on:</xd:b>October 18, 2014</xd:p>
       <xd:p><xd:b>Author:</xd:b>thabermann@hdfgroup.org</xd:p>
       <xd:p>This stylesheets transforms ECHO collections and granules to ISO</xd:p>
       <xd:p>
@@ -193,10 +193,47 @@
         <xd:b>Version 1.23 (June 6, 2014)</xd:b>
         <xd:p>Added CitationForExternalPublication > /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:otherCitationDetails/gco:CharacterString</xd:p>
       </xd:p>
+      <xd:p>
+        <xd:b>Version 1.24 (July 18, 2014)</xd:b>
+        <xd:p>Added test for LongName to instrument </xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.25 (July 25, 2014)</xd:b>
+        <xd:p>Adjusted comments for platformInformation additionalAttributes</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.26 (Aug 13, 2014)</xd:b>
+        <xd:p>Added ExclusiveZones to extent polygons</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.27 (Aug 27, 2014)</xd:b>
+        <xd:p>Added detail to spatial geometry descriptions and updated gml types</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.28 (Sept. 5, 2014)</xd:b>
+        <xd:p>Cleaned up the vertical extents</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.29 (Sept. 9, 2014)</xd:b>
+        <xd:p>Corrected ExclusiveZones</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.30 (Oct. 18, 2014)</xd:b>
+        <xd:p>Added citation.date additionalAttributes</xd:p>
+        <xd:p>Added citation.website additionalAttributes</xd:p>
+        <xd:p>Added citation.date additionalAttribute test case</xd:p>
+        <xd:p>Added citation.website additionalAttribute test case</xd:p>
+        <xd:p>Added precessingInformation additionalAttribute test case</xd:p>
+      </xd:p>
+      <xd:p>
+        <xd:b>Version 1.31 (Nov. 3, 2014)</xd:b>
+        <xd:p>Added distribution.url additionalAttribute to test data</xd:p>
+        <xd:p>Added transform for distribution.url</xd:p>
+      </xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:variable name="translationName" select="'ECHOToISO.xsl'"/>
-  <xsl:variable name="translationVersion" select="'1.23 (June 6, 2014)'"/>
+  <xsl:variable name="translationVersion" select="'1.31 (Nov. 3, 2014)'"/>
   <xsl:output method="xml" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:param name="recordType"/>
@@ -493,6 +530,34 @@
                   </gmd:dateType>
                 </gmd:CI_Date>
               </gmd:date>
+              <xsl:for-each select="/*/AdditionalAttributes/AdditionalAttribute">
+                <xsl:if test="key('additionalAttributeLookup',Name,doc('additionalAttributeType.xml'))/@type='citation.date'">
+                  <xsl:choose>
+                    <xsl:when test="Values/Value | Value">
+                      <xsl:for-each select="Values/Value | Value">
+                        <gmd:date>
+                          <gmd:CI_Date>
+                            <gmd:date>
+                              <gco:DateTime>
+                                <xsl:value-of select="."/>
+                              </gco:DateTime>
+                            </gmd:date>
+                            <gmd:dateType>
+                              <xsl:call-template name="writeCodelist">
+                                <xsl:with-param name="codeListName" select="'CI_DateTypeCode'"/>
+                                <xsl:with-param name="codeListValue" select="ancestor::AdditionalAttribute/Name"/>
+                              </xsl:call-template>
+                            </gmd:dateType>
+                          </gmd:CI_Date>
+                        </gmd:date>
+                      </xsl:for-each>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <!-- date attribute with no value -->
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:if>
+              </xsl:for-each>
               <gmd:edition>
                 <xsl:choose>
                   <xsl:when test="/*/Collection/VersionId">
@@ -671,12 +736,54 @@
                   <xsl:with-param name="roleCode" select="'principalInvestigator'"/>
                 </xsl:call-template>
               </xsl:for-each>
+              <xsl:for-each select="/*/AdditionalAttributes/AdditionalAttribute">
+                <xsl:if test="key('additionalAttributeLookup',Name,doc('additionalAttributeType.xml'))/@type='citation.website'">
+                  <xsl:choose>
+                    <xsl:when test="Values/Value | Value">
+                      <gmd:citedResponsibleParty>
+                        <gmd:CI_ResponsibleParty>
+                          <gmd:contactInfo>
+                            <gmd:CI_Contact>
+                              <xsl:for-each select="Values/Value | Value">
+                                <gmd:onlineResource>
+                                  <gmd:CI_OnlineResource>
+                                    <gmd:linkage>
+                                      <gmd:URL>
+                                        <xsl:value-of select="."/>
+                                      </gmd:URL>
+                                    </gmd:linkage>
+                                    <gmd:function>
+                                      <xsl:call-template name="writeCodelist">
+                                        <xsl:with-param name="codeListName" select="'CI_OnLineFunctionCode'"/>
+                                        <xsl:with-param name="codeListValue" select="'information'"/>
+                                      </xsl:call-template>
+                                    </gmd:function>
+                                  </gmd:CI_OnlineResource>
+                                </gmd:onlineResource>
+                              </xsl:for-each>
+                            </gmd:CI_Contact>
+                          </gmd:contactInfo>
+                          <gmd:role>
+                            <xsl:call-template name="writeCodelist">
+                              <xsl:with-param name="codeListName" select="'CI_RoleCode'"/>
+                              <xsl:with-param name="codeListValue" select="'pointOfContact'"/>
+                            </xsl:call-template>
+                          </gmd:role>
+                        </gmd:CI_ResponsibleParty>
+                      </gmd:citedResponsibleParty>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <!-- scienceTeamWebsite attribute with no value -->
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </xsl:if>
+              </xsl:for-each>
               <gmd:otherCitationDetails>
-              <xsl:call-template name="writeCharacterString">
-                <xsl:with-param name="stringToWrite">
-                  <xsl:value-of select="/*/CitationForExternalPublication"/>
-                </xsl:with-param>
-              </xsl:call-template>
+                <xsl:call-template name="writeCharacterString">
+                  <xsl:with-param name="stringToWrite">
+                    <xsl:value-of select="/*/CitationForExternalPublication"/>
+                  </xsl:with-param>
+                </xsl:call-template>
               </gmd:otherCitationDetails>
             </gmd:CI_Citation>
           </gmd:citation>
@@ -2115,6 +2222,33 @@
                       </gmd:CI_OnlineResource>
                     </gmd:onLine>
                   </xsl:for-each>
+                  <!-- This section writes AdditionalAttributes identified as having type = distribution.url -->
+                  <xsl:for-each select="/*/AdditionalAttributes/AdditionalAttribute">
+                    <xsl:if test="key('additionalAttributeLookup',Name,doc('additionalAttributeType.xml'))/@type='distribution.url'">
+                      <xsl:for-each select="Values/Value | Value">
+                        <gmd:onLine>
+                          <gmd:CI_OnlineResource>
+                            <gmd:linkage>
+                              <gmd:URL>
+                                <xsl:value-of select="."/>
+                              </gmd:URL>
+                            </gmd:linkage>
+                            <gmd:description>
+                              <xsl:call-template name="writeCharacterString">
+                                <xsl:with-param name="stringToWrite" select="ancestor::AdditionalAttribute/Name"/>
+                              </xsl:call-template>
+                            </gmd:description>
+                            <gmd:function>
+                              <xsl:call-template name="writeCodelist">
+                                <xsl:with-param name="codeListName" select="'CI_OnLineFunctionCode'"/>
+                                <xsl:with-param name="codeListValue" select="'download'"/>
+                              </xsl:call-template>
+                            </gmd:function>
+                          </gmd:CI_OnlineResource>
+                        </gmd:onLine>
+                      </xsl:for-each>
+                    </xsl:if>
+                  </xsl:for-each>
                 </gmd:MD_DigitalTransferOptions>
               </gmd:distributorTransferOptions>
             </gmd:MD_Distributor>
@@ -3063,7 +3197,6 @@
                 <xsl:call-template name="writeExtentDescription"/>
                 <xsl:call-template name="writeExtentBoundingBox"/>
                 <xsl:choose>
-                  <!--<xsl:when test="/*/Spatial/SpatialCoverageType = 'Vertical' and /*/Spatial/VerticalSpatialDomain[1]/Value = 'SFC'">-->
                   <xsl:when test="//VerticalSpatialDomain[number(Value) != number(Value)]">
                     <gmd:geographicElement>
                       <gmd:EX_GeographicDescription>
@@ -3111,16 +3244,19 @@
             <!-- Check for center points -->
             <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/*/CenterPoint">
               <gmd:geographicElement>
+                <xsl:comment select="'CenterPoint'"/>
                 <xsl:variable name="centerPointId" select="concat('centerPoint_',position())"/>
                 <gmd:EX_BoundingPolygon>
                   <xsl:attribute name="id" select="$centerPointId"/>
                   <gmd:polygon>
-                    <gml:LineString>
+                    <gml:Point>
                       <xsl:attribute name="gml:id" select="generate-id()"/>
-                      <gml:posList>
+                      <gml:pos>
+                        <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                        <xsl:attribute name="srsDimension" select="'2'"/>
                         <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
-                      </gml:posList>
-                    </gml:LineString>
+                      </gml:pos>
+                    </gml:Point>
                   </gmd:polygon>
                 </gmd:EX_BoundingPolygon>
               </gmd:geographicElement>
@@ -3128,7 +3264,8 @@
             <!-- Check for spatial information in AdditionalAttributes -->
             <xsl:call-template name="writeGeographicIdentifiers"/>
             <xsl:call-template name="writeExtentTemporalInformation"/>
-            <xsl:if test="count(//VerticalSpatialDomain[number(Value) = number(Value)]) > 0">
+            <xsl:if test="count(//VerticalSpatialDomain[number(Value) = number(Value)]) > 0 or
+              /*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName">
               <!-- If minimum and maximum altitudes are numeric, write verticalElement -->
               <gmd:verticalElement>
                 <gmd:EX_VerticalExtent>
@@ -3142,40 +3279,33 @@
                       <xsl:value-of select="//VerticalSpatialDomain[Type='Maximum Altitude']/Value"/>
                     </gco:Real>
                   </gmd:maximumValue>
-                  <gmd:verticalCRS gco:nilReason="missing"/>
-                </gmd:EX_VerticalExtent>
-              </gmd:verticalElement>
-            </xsl:if>
-            <xsl:if test="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName">
-              <gmd:verticalElement>
-                <gmd:EX_VerticalExtent>
-                  <gmd:minimumValue gco:nilReason="missing"/>
-                  <gmd:maximumValue gco:nilReason="missing"/>
-                  <xsl:choose>
-                    <xsl:when test="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName='Not Applicable'">
-                      <gmd:verticalCRS gco:nilReason="inapplicable"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <gmd:verticalCRS>
-                        <gml:ML_VerticalCRS>
-                          <xsl:attribute name="gml:id" select="generate-id()"/>
-                          <gml:identifier codeSpace="gov.nasa.esdis">missing</gml:identifier>
-                          <gml:scope/>
-                          <gml:verticalCS/>
-                          <gml:verticalDatum>
-                            <gml:VerticalDatum>
-                              <xsl:attribute name="gml:id" select="generate-id()"/>
-                              <gml:identifier codeSpace="gov.nasa.esdis">
-                                <xsl:value-of select="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName"/>
-                              </gml:identifier>
-                              <gml:scope/>
-                            </gml:VerticalDatum>
-                          </gml:verticalDatum>
-                          <gml:alternativeExpression/>
-                        </gml:ML_VerticalCRS>
-                      </gmd:verticalCRS>
-                    </xsl:otherwise>
-                  </xsl:choose>
+                  <xsl:if test="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName">
+                    <xsl:choose>
+                      <xsl:when test="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName='Not Applicable'">
+                        <gmd:verticalCRS gco:nilReason="inapplicable"/>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <gmd:verticalCRS>
+                          <gml:ML_VerticalCRS>
+                            <xsl:attribute name="gml:id" select="generate-id()"/>
+                            <gml:identifier codeSpace="gov.nasa.esdis">missing</gml:identifier>
+                            <gml:scope/>
+                            <gml:verticalCS/>
+                            <gml:verticalDatum>
+                              <gml:VerticalDatum>
+                                <xsl:attribute name="gml:id" select="generate-id()"/>
+                                <gml:identifier codeSpace="gov.nasa.esdis">
+                                  <xsl:value-of select="/*/SpatialInfo/VerticalCoordinateSystem/AltitudeSystemDefinition/DatumName"/>
+                                </gml:identifier>
+                                <gml:scope/>
+                              </gml:VerticalDatum>
+                            </gml:verticalDatum>
+                            <gml:alternativeExpression/>
+                          </gml:ML_VerticalCRS>
+                        </gmd:verticalCRS>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:if>
                 </gmd:EX_VerticalExtent>
               </gmd:verticalElement>
             </xsl:if>
@@ -3224,8 +3354,8 @@
   </xsl:template>
   <xsl:template name="writeExtentBoundingBox">
     <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/Point">
-      <xsl:comment>Point</xsl:comment>
       <gmd:geographicElement>
+        <xsl:comment select="'Point Bounds'"/>
         <gmd:EX_GeographicBoundingBox>
           <gmd:westBoundLongitude>
             <gco:Decimal>
@@ -3249,10 +3379,25 @@
           </gmd:northBoundLatitude>
         </gmd:EX_GeographicBoundingBox>
       </gmd:geographicElement>
+      <gmd:geographicElement>
+        <xsl:comment select="'Point'"/>
+        <gmd:EX_BoundingPolygon>
+          <gmd:polygon>
+            <gml:Point>
+              <xsl:attribute name="gml:id" select="generate-id()"/>
+              <gml:pos>
+                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                <xsl:attribute name="srsDimension" select="'2'"/>
+                <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
+              </gml:pos>
+            </gml:Point>
+          </gmd:polygon>
+        </gmd:EX_BoundingPolygon>
+      </gmd:geographicElement>
     </xsl:for-each>
     <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/Line">
-      <xsl:comment>Line</xsl:comment>
       <gmd:geographicElement>
+        <xsl:comment>Line Bounds</xsl:comment>
         <gmd:EX_GeographicBoundingBox>
           <gmd:westBoundLongitude>
             <gco:Decimal>
@@ -3276,16 +3421,16 @@
           </gmd:northBoundLatitude>
         </gmd:EX_GeographicBoundingBox>
       </gmd:geographicElement>
-    </xsl:for-each>
-    <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/GPolygon">
-      <xsl:comment>Polygon</xsl:comment>
       <gmd:geographicElement>
+        <xsl:comment>Line</xsl:comment>
         <gmd:EX_BoundingPolygon>
           <gmd:polygon>
             <gml:LineString>
               <xsl:attribute name="gml:id" select="generate-id()"/>
               <gml:posList>
-                <xsl:for-each select="Boundary/Point">
+                <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                <xsl:attribute name="srsDimension" select="'2'"/>
+                <xsl:for-each select="Point">
                   <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
                   <xsl:if test="position()!=last()">
                     <xsl:text> </xsl:text>
@@ -3297,9 +3442,80 @@
         </gmd:EX_BoundingPolygon>
       </gmd:geographicElement>
     </xsl:for-each>
-    <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/BoundingRectangle">
-      <xsl:comment>Bounding Rectangle</xsl:comment>
+    <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/GPolygon">
+      <xsl:for-each select="Boundary">
+        <gmd:geographicElement>
+          <xsl:comment select="'Polygon Bounds'"/>
+          <gmd:EX_GeographicBoundingBox>
+            <gmd:westBoundLongitude>
+              <gco:Decimal>
+                <xsl:value-of select="min(Point/PointLongitude)"/>
+              </gco:Decimal>
+            </gmd:westBoundLongitude>
+            <gmd:eastBoundLongitude>
+              <gco:Decimal>
+                <xsl:value-of select="max(Point/PointLongitude)"/>
+              </gco:Decimal>
+            </gmd:eastBoundLongitude>
+            <gmd:southBoundLatitude>
+              <gco:Decimal>
+                <xsl:value-of select="min(Point/PointLatitude)"/>
+              </gco:Decimal>
+            </gmd:southBoundLatitude>
+            <gmd:northBoundLatitude>
+              <gco:Decimal>
+                <xsl:value-of select="max(Point/PointLatitude)"/>
+              </gco:Decimal>
+            </gmd:northBoundLatitude>
+          </gmd:EX_GeographicBoundingBox>
+        </gmd:geographicElement>
+      </xsl:for-each>
       <gmd:geographicElement>
+        <xsl:comment select="'Polygon'"/>
+        <gmd:EX_BoundingPolygon>
+          <gmd:polygon>
+            <gml:Polygon>
+              <xsl:attribute name="gml:id" select="generate-id()"/>
+              <xsl:for-each select="Boundary">
+                <xsl:element name="gml:exterior">
+                  <gml:LinearRing>
+                    <gml:posList>
+                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                      <xsl:attribute name="srsDimension" select="'2'"/>
+                      <xsl:for-each select="Point | Boundary/Point">
+                        <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
+                        <xsl:if test="position()!=last()">
+                          <xsl:text> </xsl:text>
+                        </xsl:if>
+                      </xsl:for-each>
+                    </gml:posList>
+                  </gml:LinearRing>
+                </xsl:element>
+              </xsl:for-each>
+              <xsl:for-each select="ExclusiveZone">
+                <xsl:element name="gml:interior">
+                  <gml:LinearRing>
+                    <gml:posList>
+                      <xsl:attribute name="srsName" select="'http://www.opengis.net/def/crs/EPSG/4326'"/>
+                      <xsl:attribute name="srsDimension" select="'2'"/>
+                      <xsl:for-each select="Point | Boundary/Point">
+                        <xsl:value-of select="concat(PointLatitude,' ',PointLongitude)"/>
+                        <xsl:if test="position()!=last()">
+                          <xsl:text> </xsl:text>
+                        </xsl:if>
+                      </xsl:for-each>
+                    </gml:posList>
+                  </gml:LinearRing>
+                </xsl:element>
+              </xsl:for-each>
+            </gml:Polygon>
+          </gmd:polygon>
+        </gmd:EX_BoundingPolygon>
+      </gmd:geographicElement>
+    </xsl:for-each>
+    <xsl:for-each select="/*/Spatial/HorizontalSpatialDomain/Geometry/BoundingRectangle">
+      <gmd:geographicElement>
+        <xsl:comment select="'Bounding Rectangle'"/>
         <gmd:EX_GeographicBoundingBox>
           <gmd:westBoundLongitude>
             <gco:Decimal>
@@ -3333,6 +3549,7 @@
             <xsl:when test="Values/Value | Value">
               <xsl:for-each select="Values/Value | Value">
                 <gmd:geographicElement>
+                  <xsl:comment select="'Additional Attribute Identifier'"/>
                   <gmd:EX_GeographicDescription>
                     <gmd:geographicIdentifier>
                       <gmd:MD_Identifier>
@@ -3737,9 +3954,15 @@
           <gmi:citation>
             <gmd:CI_Citation>
               <gmd:title>
+                <!-- Concat Instrument and Short and Long Names -->
                 <xsl:call-template name="writeCharacterString">
-                  <!-- Concat Instrument and Short and Long Names -->
-                  <xsl:with-param name="stringToWrite" select="concat(ShortName,'>',LongName)"/>
+                  <xsl:with-param name="stringToWrite">
+                    <xsl:value-of select="ShortName"/>
+                    <xsl:if test="LongName">
+                      <xsl:value-of select="concat(' &gt; ',LongName)"/>
+                    </xsl:if>
+                  </xsl:with-param>
+                  <!--<xsl:with-param name="stringToWrite" select="concat(ShortName,'>',LongName)"/>-->
                 </xsl:call-template>
               </gmd:title>
               <gmd:date gco:nilReason="unknown"/>
@@ -3913,10 +4136,10 @@
               <xsl:with-param name="additionalAttributeType" select="'platformInformation'"/>
             </xsl:call-template>
           </xsl:for-each>
-          <!-- Write instrumentInformation AdditionalAttributes -->
+          <!-- Write platformInformation AdditionalAttributes -->
           <xsl:for-each select="//AdditionalAttributes/AdditionalAttribute">
             <xsl:if test="key('additionalAttributeLookup',Name,doc('additionalAttributeType.xml'))/@type='platformInformation'">
-              <xsl:comment select="'Instriment Additional Attribute'"/>
+              <xsl:comment select="'Platform Additional Attributes (platformInformation)'"/>
               <xsl:call-template name="writeEOS_PSA">
                 <xsl:with-param name="additionalAttributeType" select="'platformInformation'"/>
               </xsl:call-template>

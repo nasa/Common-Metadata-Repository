@@ -110,7 +110,7 @@
                                  (umm-g/map->CollectionRef {:entry-title "wrong"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference Entry Title [wrong] does not match the entry title of the parent collection [correct]"]}]
+                  :errors ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"]}]
                 (d/item->concept granule)
                 coll-concept)))
 
@@ -119,30 +119,82 @@
             (testing "shortname"
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference Short Name [S1] and Version ID [V2] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
-                (d/item->concept (assoc (dg/granule collection)
-                                        :collection-ref
-                                        (umm-g/map->CollectionRef {:short-name "S1"
-                                                                   :version-id "V2"})))
-                coll-concept))
-            (testing "version id"
-              (assert-validation-errors
-                [{:path ["CollectionRef"],
-                  :errors ["Collection Reference Short Name [S2] and Version ID [V1] do not match the Short Name [S1] and Version ID [V1] of the parent collection."]}]
+                  :errors ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]}]
                 (d/item->concept (assoc (dg/granule collection)
                                         :collection-ref
                                         (umm-g/map->CollectionRef {:short-name "S2"
                                                                    :version-id "V1"})))
+                coll-concept))
+            (testing "version id"
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]}]
+                (d/item->concept (assoc (dg/granule collection)
+                                        :collection-ref
+                                        (umm-g/map->CollectionRef {:short-name "S1"
+                                                                   :version-id "V2"})))
+                coll-concept)))
+
+          (testing "granule collection-refs with all entry-title, short-name and version-id"
+            (let [collection-ref-attrs {:entry-title "correct"
+                                        :short-name "S1"
+                                        :version-id "V1"}
+                  collection (dc/collection collection-ref-attrs)
+                  coll-concept (d/item->concept collection :iso-smap)]
+              (testing "valid SMAP ISO granule"
+                (let [granule (assoc (dg/granule collection)
+                                     :collection-ref
+                                     (umm-g/map->CollectionRef collection-ref-attrs))]
+                  (assert-validation-success (d/item->concept granule :iso-smap)
+                                             coll-concept)))
+              (testing "invalid SMAP ISO granule"
+                (are [attrs errors]
+                     (let [granule (assoc (dg/granule collection)
+                                          :collection-ref
+                                          (umm-g/map->CollectionRef (merge collection-ref-attrs attrs)))]
+                       (assert-validation-errors
+                         [{:path ["CollectionRef"] :errors errors}]
+                         (d/item->concept granule :iso-smap)
+                         coll-concept))
+
+                     {:entry-title "wrong"}
+                     ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"]
+
+                     {:short-name "S2"}
+                     ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]
+
+                     {:version-id "V2"}
+                     ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]
+
+                     {:entry-title "wrong" :version-id "V2"}
+                     ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"
+                      "Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]))))
+
+
+          (testing "granule collection-refs missing field"
+            (let [collection (dc/collection {:entry-title "correct"
+                                             :short-name "S1"
+                                             :version-id "V1"})
+                  coll-concept (d/item->concept collection)
+                  granule (assoc (dg/granule collection)
+                                 :collection-ref
+                                 (umm-g/map->CollectionRef {:entry-title nil
+                                                            :short-name nil
+                                                            :version-id "V1"}))]
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference should have at least Entry Title or Short Name and Version Id."]}]
+                (d/item->concept granule :iso-smap)
                 coll-concept))))))
 
     (testing "with ingested collection"
       (let [collection (d/ingest "PROV1" (dc/collection {}))]
         (testing "successful validation of granule"
           (let [granule-concept (d/item->concept (dg/granule collection))]
-          (assert-validation-success granule-concept)
+            (assert-validation-success granule-concept)
 
-          (testing "with ingested parent collection"
-            (assert-validation-success granule-concept (d/item->concept collection)))))
+            (testing "with ingested parent collection"
+              (assert-validation-success granule-concept (d/item->concept collection)))))
         (testing "invalid granule xml"
           (assert-validation-errors
             expected-errors

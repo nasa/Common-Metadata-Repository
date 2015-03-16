@@ -339,16 +339,16 @@
           {:status (if ok? 200 503)
            :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
            :body (json/generate-string dependencies {:pretty pretty?})}))
-      
+
       (GET "/tiles" {params :params context :request-context}
-           (find-tiles context params)))
+        (find-tiles context params)))
 
     (route/not-found "Not Found")))
 
-;; Copies the body into a new attribute called :body-copy so that after a post of form content type
-;; the original body can still be read. The default ring params reads the body and parses it and we
-;; don't have access to it.
 (defn copy-of-body-handler
+  "Copies the body into a new attribute called :body-copy so that after a post of form content type
+  the original body can still be read. The default ring params reads the body and parses it and we
+  don't have access to it."
   [f]
   (fn [request]
     (let [^String body (slurp (:body request))]
@@ -395,6 +395,7 @@
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
       handler/site
+      errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       copy-of-body-handler
       (errors/exception-handler default-format-fn)
