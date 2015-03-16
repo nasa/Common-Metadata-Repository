@@ -18,6 +18,7 @@
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.2"]
             [lein-exec "0.3.2"]]
+
   :repl-options {:init-ns user}
   :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
   :profiles

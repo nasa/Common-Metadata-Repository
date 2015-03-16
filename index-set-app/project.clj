@@ -11,7 +11,7 @@
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.15"]
                  [org.clojure/tools.cli "0.3.1"]]
-  :plugins []
+  :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
