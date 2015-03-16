@@ -75,6 +75,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
+      errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site
       ring-json/wrap-json-body
