@@ -13,7 +13,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.echo-util :as echo-util]
             [cmr.common.util :as util]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -249,22 +250,6 @@
   [concept-id revision-id]
   (not (nil? (get-concept concept-id revision-id))))
 
-(defn admin-connect-options
-  "This returns the options to send when executing admin commands"
-  []
-  {:connection-manager (s/conn-mgr)
-   :query-params {:token "mock-echo-system-token"}})
-
-(defn reset
-  "Resets the database, queues, and the elastic indexes"
-  []
-  (client/post (url/dev-system-reset-url) (admin-connect-options))
-  (index/wait-until-indexed))
-
-(defn clear-caches
-  []
-  (client/post (url/dev-system-clear-cache-url) (admin-connect-options)))
-
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -298,7 +283,7 @@
    (reset-fixture provider-guid-id-map grant-all-search? true))
   ([provider-guid-id-map grant-all-search? grant-all-ingest?]
    (fn [f]
-     (reset)
+     (dev-sys-util/reset)
      (doseq [[provider-guid provider-id] provider-guid-id-map]
        (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
      (f))))

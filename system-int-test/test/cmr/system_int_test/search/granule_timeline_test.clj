@@ -12,7 +12,8 @@
             [clj-time.coerce :as c]
             [cheshire.core :as json]
             [cmr.common.dev.util :as dev]
-            [cmr.common.concepts :as concepts]))
+            [cmr.common.concepts :as concepts]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -28,7 +29,7 @@
 
 (comment
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1"))
 
   )

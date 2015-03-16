@@ -8,7 +8,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (defn set-config-then-reset-fixture
   [f]
@@ -19,11 +20,11 @@
     ;; or cmr-indexer-app which are running in a separate process.
     ;; The CI script must set this environment variable to make those work.
     (config/set-config-value! :colls-with-separate-indexes ["C1-SEP_PROV1" "C2-SEP_PROV1"])
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "SEP_PROV1")
     (f)
     (finally
-      (ingest/reset))))
+      (dev-sys-util/reset))))
 
 (use-fixtures :each set-config-then-reset-fixture)
 

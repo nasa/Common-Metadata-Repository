@@ -20,14 +20,15 @@
             [clj-http.client :as client]
             [cmr.common.concepts :as cu]
             [cmr.umm.core :as umm]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (comment
 
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2"))
 
