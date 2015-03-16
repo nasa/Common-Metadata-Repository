@@ -24,7 +24,8 @@
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
-            [cmr.system-int-test.data2.opendata :as od]))
+            [cmr.system-int-test.data2.opendata :as od]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture
                       {"provguid1" "PROV1" "provguid2" "PROV2" "usgsguid" "USGS_EROS"}))
@@ -32,7 +33,7 @@
 (comment
 
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2")
     (d/ingest "PROV1" (dc/collection {:short-name "S1"

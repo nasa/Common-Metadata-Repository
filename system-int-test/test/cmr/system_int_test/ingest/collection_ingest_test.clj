@@ -13,7 +13,8 @@
             [clj-time.core :as t]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-int-test.utils.search-util :as search]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -158,7 +159,7 @@
 
 (comment
 
-  (ingest/reset)
+  (dev-sys-util/reset)
   (ingest/create-provider "provguid1" "PROV1")
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)

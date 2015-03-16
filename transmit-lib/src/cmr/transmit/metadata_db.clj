@@ -8,9 +8,11 @@
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [ring.util.codec :as codec]
-            [cmr.acl.core :as acl]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]))
+
+(def token-header
+  "echo-token")
 
 (defn get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -184,7 +186,7 @@
     (client/post request-url
                  {:body (format "{\"provider-id\": \"%s\"}" provider-id)
                   :content-type :json
-                  :headers {acl/token-header (config/echo-system-token)}
+                  :headers {token-header (config/echo-system-token)}
                   :throw-exceptions false})))
 
 (defn create-provider
@@ -203,7 +205,7 @@
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/providers/" provider-id)]
     (client/delete request-url {:throw-exceptions false
-                                :headers {acl/token-header (config/echo-system-token)}})))
+                                :headers {token-header (config/echo-system-token)}})))
 
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."

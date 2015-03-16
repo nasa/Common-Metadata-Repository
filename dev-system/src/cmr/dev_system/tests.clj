@@ -8,8 +8,8 @@
   "
   (:require [clojure.test :as t]
             [cmr.common.util :as u]
-            [cmr.system-int-test.utils.ingest-util :as ingest-util]
             [cmr.common.dev.util :as du]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [clojure.set :as set]))
 
 (defn system-integration-test?
@@ -137,7 +137,7 @@
         [took test-results] (u/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]
-    (ingest-util/reset)
+    (dev-sys-util/reset)
     (print-results (assoc (analyze-results test-results)
                           :took took)
                    options)))

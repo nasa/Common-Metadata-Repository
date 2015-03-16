@@ -11,14 +11,15 @@
             [cmr.spatial.codec :as codec]
             [cmr.spatial.point :as p]
             [cmr.common.util :as util]
-            [cmr.spatial.mbr :as m]))
+            [cmr.spatial.mbr :as m]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (comment
 
-  (ingest/reset)
+  (dev-sys-util/reset)
   (ingest/create-provider "provguid1" "PROV1")
 
 

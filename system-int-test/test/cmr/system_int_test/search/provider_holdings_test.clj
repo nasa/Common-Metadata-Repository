@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.echo-util :as e]))
+            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 ;; total number of collections in PROV1
 (def prov1-collection-count 5)
@@ -61,7 +62,7 @@
 
 (comment
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2"))
 

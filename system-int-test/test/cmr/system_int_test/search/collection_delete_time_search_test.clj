@@ -10,28 +10,24 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]
             [clj-time.core :as t]
-            [cmr.common.time-keeper :as tk]))
+            [cmr.common.time-keeper :as tk]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                       (tk/freeze-resume-time-fixture)]))
+                       (dev-sys-util/freeze-resume-time-fixture)]))
 
 (comment
 
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2"))
 
-  (tk/freeze-time!)
-  (str (tk/now))
-  (tk/clear-current-time!)
-  )
+)
 
-;; Commenting out this test due to CMR-1295. It fails in CI when the tests are running in a
-;; separate process from the in-memory database because the timekeeper times are not obeyed.
-#_(deftest collection-delete-time-test
+(deftest collection-delete-time-test
   (s/only-with-in-memory-database
     (let [time-now (tk/now)
           make-coll (fn [prov entry-title num-secs-to-live]
@@ -74,14 +70,14 @@
         (is (d/refs-match? all-grans (search/find-refs :granule {}))))
 
       (testing "Time can advance part way but the collections still won't be cleaned up"
-        (tk/advance-time! 99)
+        (dev-sys-util/advance-time! 99)
         (ingest/cleanup-expired-collections)
         (index/wait-until-indexed)
         (is (d/refs-match? all-colls (search/find-refs :collection {})))
         (is (d/refs-match? all-grans (search/find-refs :granule {}))))
 
       (testing "collections are removed after their expiration date"
-        (tk/advance-time! 2)
+        (dev-sys-util/advance-time! 2)
         (ingest/cleanup-expired-collections)
         (index/wait-until-indexed)
         (is (d/refs-match? [coll4 coll5 coll6] (search/find-refs :collection {})))

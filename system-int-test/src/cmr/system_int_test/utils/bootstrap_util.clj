@@ -11,7 +11,8 @@
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
             [clj-time.core :as t]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (defn bulk-index-provider
   "Call the bootstrap app to bulk index a provider."
@@ -105,7 +106,7 @@
   [& provider-ids]
   (s/only-with-real-database
     (let [system (system)]
-      (ingest/reset)
+      (dev-sys-util/reset)
       (doseq [provider-id provider-ids :let [guid (str provider-id "-guid")]]
         (ingest/create-provider guid provider-id true)
         (cat-rest/create-provider system provider-id)))))
@@ -114,7 +115,7 @@
   [& provider-ids]
   (s/only-with-real-database
     (let [system (system)]
-      (ingest/reset)
+      (dev-sys-util/reset)
       ;; Delete catalog rest providers
       (doseq [provider-id provider-ids]
         (cat-rest/delete-provider system provider-id)))))

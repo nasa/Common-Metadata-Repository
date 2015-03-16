@@ -7,12 +7,13 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.utils.echo-util :as e]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
 (comment
-  (ingest/reset)
+  (dev-sys-util/reset)
   (ingest/create-provider "provguid1" "PROV1")
   (ingest/create-provider "provguid2" "PROV2")
 

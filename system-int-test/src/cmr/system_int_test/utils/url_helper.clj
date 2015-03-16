@@ -11,6 +11,9 @@
 (def search-public-port 3003)
 (def search-relative-root-url "")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dev System URLs
+
 (def dev-system-port
   "The port number for the dev system control api"
   2999)
@@ -45,9 +48,31 @@
   []
   (format "http://localhost:%s/component-types" dev-system-port))
 
+(defn dev-system-freeze-time-url
+  []
+  (format "http://localhost:%s/time-keeper/freeze-time" dev-system-port))
+
+(defn dev-system-clear-current-time-url
+  []
+  (format "http://localhost:%s/time-keeper/clear-current-time" dev-system-port))
+
+(defn dev-system-advance-time-url
+  [num-secs]
+  (format "http://localhost:%s/time-keeper/advance-time/%d" dev-system-port num-secs))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Elasticsearch URLs
+
 (defn elastic-root
   []
   (format "http://localhost:%s" (es-config/elastic-port)))
+
+(defn elastic-refresh-url
+  []
+  (str (elastic-root) "/_refresh"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Metadata DB URLs
 
 (defn create-provider-url
   []
@@ -56,6 +81,48 @@
 (defn delete-provider-url
   [provider-id]
   (format "http://localhost:%s/providers/%s" (transmit-config/metadata-db-port) provider-id))
+
+(defn mdb-concept-url
+  "URL to concept in mdb."
+  ([concept-id]
+   (mdb-concept-url concept-id nil))
+  ([concept-id revision-id]
+   (if revision-id
+     (format "http://localhost:%s/concepts/%s/%s" (transmit-config/metadata-db-port) concept-id revision-id)
+     (format "http://localhost:%s/concepts/%s" (transmit-config/metadata-db-port) concept-id))))
+
+(defn mdb-concepts-url
+  "URL to concept operations in mdb."
+  []
+  (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
+
+(defn mdb-provider-holdings-url
+  "URL to retrieve provider holdings in mdb."
+  []
+  (format "http://localhost:%s/provider_holdings" (transmit-config/metadata-db-port)))
+
+(defn mdb-reset-url
+  "Force delete all concepts from mdb."
+  []
+  (format "http://localhost:%s/reset" (transmit-config/metadata-db-port)))
+
+(defn mdb-read-caches-url
+  "URL to read the mdb caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/metadata-db-port)))
+
+(defn mdb-health-url
+  "URL to check metadata db health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/metadata-db-port)))
+
+(defn mdb-jobs-url
+  "URL to metadata db jobs api"
+  []
+  (format "http://localhost:%s/jobs/" (transmit-config/metadata-db-port)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Ingest URLs
 
 (defn reindex-collection-permitted-groups-url
   []
@@ -111,6 +178,9 @@
   []
   (format "http://localhost:%s/caches/clear-cache" (transmit-config/ingest-port)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Search URLs
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
@@ -157,6 +227,22 @@
   [type concept-id]
   (format "http://localhost:%s/concepts/%s" (transmit-config/search-port) concept-id))
 
+(defn search-root
+  "Returns the search url root"
+  []
+  (let [port (if (empty? search-relative-root-url)
+               search-public-port
+               (format "%s%s" search-public-port search-relative-root-url))]
+    (format "%s://%s:%s/" search-public-protocol search-public-host port)))
+
+(defn location-root
+  "Returns the url root for reference location"
+  []
+  (str (search-root) "concepts/"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Bootstrap URLs
+
 (defn bulk-index-provider-url
   []
   (format "http://localhost:%s/bulk_index/providers" (transmit-config/bootstrap-port)))
@@ -178,48 +264,8 @@
   []
   (format "http://localhost:%s/health" (transmit-config/bootstrap-port)))
 
-(defn elastic-refresh-url
-  []
-  (str (elastic-root) "/_refresh"))
-
-(defn mdb-concept-url
-  "URL to concept in mdb."
-  ([concept-id]
-   (mdb-concept-url concept-id nil))
-  ([concept-id revision-id]
-   (if revision-id
-     (format "http://localhost:%s/concepts/%s/%s" (transmit-config/metadata-db-port) concept-id revision-id)
-     (format "http://localhost:%s/concepts/%s" (transmit-config/metadata-db-port) concept-id))))
-
-(defn mdb-concepts-url
-  "URL to concept operations in mdb."
-  []
-  (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
-
-(defn mdb-provider-holdings-url
-  "URL to retrieve provider holdings in mdb."
-  []
-  (format "http://localhost:%s/provider_holdings" (transmit-config/metadata-db-port)))
-
-(defn mdb-reset-url
-  "Force delete all concepts from mdb."
-  []
-  (format "http://localhost:%s/reset" (transmit-config/metadata-db-port)))
-
-(defn mdb-read-caches-url
-  "URL to read the mdb caches."
-  []
-  (format "http://localhost:%s/caches" (transmit-config/metadata-db-port)))
-
-(defn mdb-health-url
-  "URL to check metadata db health."
-  []
-  (format "http://localhost:%s/health" (transmit-config/metadata-db-port)))
-
-(defn mdb-jobs-url
-  "URL to metadata db jobs api"
-  []
-  (format "http://localhost:%s/jobs/" (transmit-config/metadata-db-port)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Index Set URLs
 
 (defn index-set-reset-url
   "Delete and re-create the index set in elastic. Only development team to use this functionality."
@@ -235,6 +281,9 @@
   "URL to check index-set health."
   []
   (format "http://localhost:%s/health" (transmit-config/index-set-port)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Indexer URLs
 
 (defn indexer-reset-url
   "Delete and re-create indexes in elastic. Only development team to use this functionality."
@@ -261,24 +310,3 @@
   []
   (format "http://localhost:%s/health" (transmit-config/indexer-port)))
 
-;; discard this once oracle impl is in place
-(defn mdb-concept-coll-id-url
-  "URL to access a collection concept in mdb with given prov and native id."
-  [provider-id native-id]
-  (format "http://localhost:%s/concept-id/collection/%s/%s"
-          (transmit-config/metadata-db-port)
-          provider-id
-          native-id))
-
-(defn search-root
-  "Returns the search url root"
-  []
-  (let [port (if (empty? search-relative-root-url)
-               search-public-port
-               (format "%s%s" search-public-port search-relative-root-url))]
-    (format "%s://%s:%s/" search-public-protocol search-public-host port)))
-
-(defn location-root
-  "Returns the url root for reference location"
-  []
-  (str (search-root) "concepts/"))
