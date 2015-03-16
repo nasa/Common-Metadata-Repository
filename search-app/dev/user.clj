@@ -20,7 +20,7 @@
 (defn create-system
   []
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
-  (jobs/set-default-job-start-delay! (*3 3600))
+  (jobs/set-default-job-start-delay! (* 3 3600))
 
   ; (tunnel-system)
   (let [web-server (web/create-web-server (transmit-config/search-port)
