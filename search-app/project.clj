@@ -36,8 +36,8 @@
    :docs {:dependencies [[markdown-clj "0.9.63"]]}
    :uberjar {:aot :all
              :dependencies [[markdown-clj "0.9.63"]]
-             :prep-tasks ["generate-docs"]}}
-  :main cmr.search.runner
+             :prep-tasks ["generate-docs"]
+             :main cmr.search.runner}}
 
   :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]
             ;; Prints out documentation on configuration environment variables.
