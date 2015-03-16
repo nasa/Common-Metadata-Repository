@@ -60,7 +60,7 @@
   (let [{:keys [short-name version-id entry-title]} collection-ref]
     (when-not (or entry-title (and short-name version-id))
       {[:collection-ref]
-       ["%s should have at least entry-title or short-name and version-id."]})))
+       ["%s should have at least Entry Title or Short Name and Version Id."]})))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."

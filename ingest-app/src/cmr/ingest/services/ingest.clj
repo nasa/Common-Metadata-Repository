@@ -58,23 +58,32 @@
     (v/validate-business-rules context coll-concept)
     coll-concept))
 
+(defn- validate-granule-collection-ref
+  "Throws bad request exception when collection-ref is missing required fields."
+  [collection-ref]
+  (let [{:keys [short-name version-id entry-title]} collection-ref]
+    (when-not (or entry-title (and short-name version-id))
+      (errors/throw-service-error
+        :bad-request
+        "Collection Reference should have at least Entry Title or Short Name and Version Id."))))
+
 (defn- get-granule-parent-collection-and-concept
   "Returns the parent collection concept and parsed UMM record for a granule as a tuple. Finds the
   parent collection using the provider id and collection ref. This will correctly
   handle situations where there might be multiple concept ids that used a short name and
   version id or entry title but were previously deleted."
   [context concept granule]
+  (validate-granule-collection-ref (:collection-ref granule))
   (let [provider-id (:provider-id concept)
-        collection-ref (:collection-ref granule)
+        {:keys [granule-ur collection-ref]} granule
         params (util/remove-nil-keys (merge {:provider-id provider-id}
                                             collection-ref))
         coll-concept (first (h/find-visible-collections context params))]
-    (if coll-concept
-      [coll-concept (umm/parse-concept coll-concept)]
+    (when-not coll-concept
       (cmsg/data-error :bad-request
-                       msg/parent-collection-does-not-exist
-                       (:granule-ur granule)
-                       (:collection-ref granule)))))
+                       msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
+
+    [coll-concept (umm/parse-concept coll-concept)]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
