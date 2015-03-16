@@ -11,7 +11,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.granule-counts :as gran-counts]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.echo-util :as e]))
+            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
@@ -47,7 +48,7 @@
 
 (comment
   (do
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1" false)
     (ingest/create-provider "provguid2" "PROV2" false)
     (ingest/create-provider "provguid3" "PROV3" false)
@@ -107,7 +108,7 @@
     (dotimes [n 5]
       (e/grant-all (e/coll-catalog-item-id (str "provguid" (inc n)))))
 
-    (ingest/clear-caches))
+    (dev-sys-util/clear-caches))
 
   (let [coll1 (make-coll 1 "PROV1")
         coll2 (make-coll 2 "PROV1")

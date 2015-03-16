@@ -12,6 +12,7 @@
             [cmr.search.data.elastic-search-index :as es]
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
+            [cmr.common.time-keeper :as tk]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -108,6 +109,18 @@
       (debug "dev system /stop")
       (exec-dev-system-function "stop" system)
       (System/exit 0))
+
+    ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR running in dev-system.
+    (context "/time-keeper" []
+      (POST "/clear-current-time" []
+        (tk/clear-current-time!)
+        {:status 200})
+      (POST "/freeze-time" []
+        (tk/freeze-time!)
+        {:status 200})
+      (POST "/advance-time/:num-secs" [num-secs]
+        (tk/advance-time! (Long. num-secs))
+        {:status 200}))
 
     (context "/message-queue" []
       (POST "/wait-for-indexing" []

@@ -20,6 +20,7 @@
             [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.spatial.lr-binary-search :as lbs])
   (:import cmr.spatial.point.Point
            cmr.spatial.geodetic_ring.GeodeticRing
@@ -92,7 +93,7 @@
   searches will be executed to find granules that match."
   [shapes search-area]
   (let [shapes (map derived/calculate-derived shapes)]
-    (ingest/reset)
+    (dev-sys-util/reset)
     (ingest/create-provider "PROV1")
 
     (let [coll-geodetic (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))

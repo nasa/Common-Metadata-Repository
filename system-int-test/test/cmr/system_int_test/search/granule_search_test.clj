@@ -10,12 +10,13 @@
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.common-messages :as smsg]
             [cmr.search.validators.messages :as vmsg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "CMR_T_PROV"}))
 
 (comment
-  (ingest/reset)
+  (dev-sys-util/reset)
   (doseq [p ["PROV1" "PROV2" "CMR_T_PROV"]]
     (ingest/create-provider (str "guid-" p) p))
 
