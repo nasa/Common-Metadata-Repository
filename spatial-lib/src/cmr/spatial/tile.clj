@@ -3,7 +3,7 @@
   system grids such as Modis Integerized Sinusoidal Grid.
   
   The tile geometry is computed as necessary. Currently only computation of MODIS Sinusoidal tiles
-  is implemneted. Computation of tile coordinates for a Modis tile follows the steps below. 
+  is implemented. Computation of tile coordinates for a Modis tile follows the steps below. 
   (Please See: https://wiki.earthdata.nasa.gov/display/CMR/Computation+of+MODIS+Tile+Geometry) 
   1) Map the tile to an equivalent tile in the upper-right quadrant(UR).
   2) Find if the mapped tile is a fictional tile or a real tile or a degenerate tile. Ignore 
@@ -65,7 +65,7 @@
 
 (defn- find-tile-quadrant
   "The quadrant in which a tile with the given tile coordinates falls."
-  [h v]
+  [^long h ^long v]
   (case [(< h (/ NUM_HORIZONTAL_TILES 2)) (< v (/ NUM_VERTICAL_TILES 2))]
     [false true] :ur
     [true true] :ul
@@ -76,7 +76,7 @@
   "Map the given tile to the 'equivalent' tile in the upper right quadrant. The symmetry 
   of the tiles along the equator and central meridian is used to reduce the number of 
   conditional checks during computation of coordinates along tile edges."
-  [h v]
+  [^long h ^long v]
   (case (find-tile-quadrant h v)
     :ur [h v]
     :ul [(- NUM_HORIZONTAL_TILES h 1) v]
@@ -85,7 +85,7 @@
 
 (defn- ur-quadrant-point->point
   "Maps a point in the upper-right quadrant back to its original quadrant."
-  [[x y] quadrant]
+  [[^double x ^double y] quadrant]
   (case quadrant
     :ur [x y]
     :ul [(- x) y]
@@ -98,12 +98,20 @@
   top left corner. The function returns a vector of tuples, each tuple being a 
   pair of coordinates for a vertex. The vertices are put in anti-clockwise order with 
   lower-right vertex of the tile as the first vertex."
-  [h v]
+  [^long h ^long v]
   (let [x-min (* (double (- h (/ NUM_HORIZONTAL_TILES 2))) TILE_SIZE)
         y-min (* (double (- (/ NUM_VERTICAL_TILES 2) (+ v 1))) TILE_SIZE)
         x-max (+ x-min TILE_SIZE)
         y-max (+ y-min TILE_SIZE)]
     [[x-max y-min] [x-max y-max] [x-min y-max] [x-min y-min]]))
+
+(defn- bound
+  "Return value if absolute value of value is less than max-value otherwise return max-value
+  if value is greater than 0 and -max-value if value is less than 0."
+  [^double value ^double max-value]
+  (if (< (abs value) max-value) 
+         value
+         (if (< value 0.) (- max-value) max-value)))
 
 (defn- max-x-for-y
   "Determine the largest x coordinate for a given y coordinate so that 
@@ -111,24 +119,16 @@
   [y]
   (* (/ TAU 2.) (cos y)))
 
-(defn- bound
-  "Return value if absolute value of value is less than max-value otherwise return max-value
-  if value is greater than 0 and -max-value if value is less than 0."
-  [value max-value]
-  (if (< (abs value) max-value) 
-         value
-         (if (< value 0.) (- max-value) max-value)))
-
 (defn- max-y-for-x
   "Determine the largest y coordinate for a given x 
   coordinate so that [x  max-y-for-x] is not a fictional point"
-  [x]
+  [^double x]
   (acos (bound (/ x (/ TAU 2.)) 1.)))
 
 (defn- fictional-point?
   "Determine if a point in the Sinusoidal grid maps to a real point on the earth"
-  [x y]
-  (or (> x (max-x-for-y y)) (> y (max-y-for-x x))))
+  [^double x ^double y]
+  (or (> x (double (max-x-for-y y))) (> y (double (max-y-for-x x)))))
 
 (defn- degenerate-tile?
   "Determine if a tile is an edge case, i.e. only one vertex of the tile is not a 
@@ -142,7 +142,7 @@
   anti-meridian and they divide fictional points from real points on a tile edge.
   The function arguments are coordinates of the two points and a vector of points holding the
   densified segement between the two points from which all fictional points are removed."
-  (fn [[x1 y1] [x2 y2] densified-segment] 
+  (fn [[^double x1 ^double y1] [^double x2 ^double y2] densified-segment] 
       (cond
          (= y1 y2) (if (< x1 x2) :left-right :right-left)
          (= x1 x2) (if (< y1 y2) :bottom-top :top-bottom)
@@ -176,17 +176,17 @@
   "Find (x or y) coordinate of a point at a distance i/num-points of dist from the coordinate 
   ord along the axis of ord. This is used to add (num-points - 1) new points along the line segment 
   between two points."
-  [ord i dist num-points]
-  (+ ord (* dist (/ (double i) (double num-points)))))
+  [^double ord ^double i ^double dist ^double num-points]
+  (+ ord (* dist (/ i num-points))))
 
 (defn- densify-segment
   "Densify a line segment joining two input points."
-  [[x1 y1] [x2 y2]]
+  [[^double x1 ^double y1] [^double x2 ^double y2]]
   (let [df-x (- x2 x1)
-        df-y (- y2 y1)
-        num-segments NUM_DENSIFICATION_SEGMENTS]
-    (map #(vector (coord x1 % df-x num-segments) (coord y1 % df-y num-segments)) 
-         (range (inc num-segments)))))
+        df-y (- y2 y1)]
+    (map #(vector (coord x1 % df-x NUM_DENSIFICATION_SEGMENTS) 
+                  (coord y1 % df-y NUM_DENSIFICATION_SEGMENTS)) 
+         (range (inc NUM_DENSIFICATION_SEGMENTS)))))
 
 (defn- densify-tile-edge
   "Densify a tile edge, remove fictional points and add edge point if necessary"
@@ -205,10 +205,10 @@
   
 (defn- planar->geodetic
   "Maps a point in the Sinusoidal projection to a corresponding geodetic coordinate"
-  [x y]
+  [^double x ^double y]
   (let [authalic-lat y
         cos-lat (cos y)
-        authalic-lon (if (= cos-lat 0) 0 (/ x cos-lat))]
+        authalic-lon (if (= cos-lat 0.) 0. (/ x cos-lat))]
     [(bound (degrees authalic-lon) 180.) (bound (degrees authalic-lat) 90.)]))
 
 (defn- tile->geometry
@@ -236,7 +236,7 @@
   ;; #'cmr.spatial.derived/DerivedCalculator found for class: cmr.spatial.geodetic_ring.GeodeticRing
   ;; (Please see: ***REMOVED*** for more details)
   ;; Investigation of the issue did not result in a fix for the issue till now. 
-  ;; TODO: Identify the root cause of the issue and get rid of delay.
+  ;; Filed an issue to identify what is causing the compilation error: CMR-1306
   (delay (vec (keep identity 
                     (for [h (range NUM_HORIZONTAL_TILES)
                           v (range NUM_VERTICAL_TILES)]
