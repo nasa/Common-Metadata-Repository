@@ -14,11 +14,9 @@
 
 (def ^:const ^:private valid-action-types
   "A set of the valid action types for a message queue:
-  :reset - Clear out all of the messages. TODO: This is currently not used and may be removed.
   :enqueue - Message has been added to the queue.
   :process - Message has been processed."
-  #{:reset
-    :enqueue
+  #{:enqueue
     :process})
 
 (defn- append-to-message-queue-history
@@ -36,19 +34,15 @@
   :message {:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}}
   :messages [{:id 1 :concept-id \"C1-PROV1\" :revision-id 1 :state :initial}]}"
   [message-queue-history-value action-type message resulting-state]
-  {:pre [(valid-action-types action-type)]}
-  (let [message-with-state (when (seq message) (assoc message :state resulting-state))
-        messages (case action-type
-                   :reset []
-                   (:enqueue :process)
-                   (when (seq message)
-                     (conj
-                       ;; Messages are unique based on id - if the action is to change the state
-                       ;; of a message we already know about, we replace the original message
-                       ;; with the new one in our list of messages.
-                       (remove #(= (:id message) (:id %))
-                               (:messages (last message-queue-history-value)))
-                       message-with-state)))
+  {:pre [(valid-action-types action-type) message]}
+  (let [message-with-state (assoc message :state resulting-state)
+        messages (conj
+                   ;; Messages are unique based on id - if the action is to change the state
+                   ;; of a message we already know about, we replace the original message
+                   ;; with the new one in our list of messages.
+                   (remove #(= (:id message) (:id %))
+                           (:messages (last message-queue-history-value)))
+                   message-with-state)
         new-action (util/remove-nil-keys {:action-type action-type
                                           :message message-with-state})]
     (conj message-queue-history-value {:action new-action :messages messages})))
