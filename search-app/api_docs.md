@@ -240,19 +240,24 @@ One entry id
 
     curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
 
-#### Find collections by dif entry id, this searches for matches on either entry id or associated difs
+#### Find collections by dif entry id
+
+This searches for matches on either entry id or associated difs
 
 One dif\_entry\_id
 
     curl "%CMR-ENDPOINT%/collections?dif_entry_id\[\]=SHORT_V5"
 
-#### Find collections by archive center, supports pattern and ignore_case
+#### Find collections by archive center
 
-  Find collections matching 'archive_center' param value
+This supports `pattern`, `ignore_case`.
+
+Find collections matching 'archive_center' param value
+
     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=LARC"
     curl "%CMR-ENDPOINT%/collections?archive_center=Sedac+AC"
 
-  Find collections matching any of the 'archive_center' param values
+Find collections matching any of the 'archive_center' param values
 
      curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
 
@@ -262,29 +267,31 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-### Find collections by campaign param, supports pattern, ignore_case and option :and. Note: 'campaign' maps to 'project' in UMM
+#### Find collections by campaign
 
-  Find collections matching 'campaign' param value
+This supports `pattern`, `ignore_case` and option `and`. 'campaign' maps to 'project' in UMM
+
+Find collections matching 'campaign' param value
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI"
 
-  Find collections matching any of the 'campaign' param values
+Find collections matching any of the 'campaign' param values
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI"
 
-  Find collections that match all of the 'campaign' param values
+Find collections that match all of the 'campaign' param values
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
 
-### Find collections by updated_since param
+#### Find collections by updated_since
 
   Find collections which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
-### Find collections by processing\_level\_id param, supports pattern and ignore_case
+#### Find collections by processing\_level\_id param, supports pattern and ignore_case
 
-Find collections matching 'processing_level_id' param value
+Find collections matching 'processing_level_id'
 
      curl "%CMR-ENDPOINT%/collections?processing_level_id\[\]=1B"
 
@@ -294,57 +301,69 @@ Find collections matching any of the 'processing\_level\_id' param values
 
 The alias 'processing_level' also works for searching by processing level id.
 
-### Find collections by platform param, supports pattern, ignore_case and option :and
+#### Find collections by platform
 
-  Find collections matching 'platform' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'platform' param value
 
      curl "%CMR-ENDPOINT%/collections?platform\[\]=1B"
 
-  Find collections matching any of the 'platform' param values
+Find collections matching any of the 'platform' param values
 
      curl "%CMR-ENDPOINT%/collections?platform\[\]=1B&platform\[\]=2B"
 
-### Find collections by instrument param, supports pattern, ignore_case and option :and
+#### Find collections by instrument
 
-  Find collections matching 'instrument' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'instrument' param value
 
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B"
 
-  Find collections matching any of the 'instrument' param values
+Find collections matching any of the 'instrument' param values
 
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B&instrument\[\]=2B"
 
-### Find collections by sensor param, supports pattern, ignore_case and option :and
+#### Find collections by sensor.
 
-  Find collections matching 'sensor' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'sensor' param value
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B"
 
-  Find collections matching any of the 'sensor' param values
+Find collections matching any of the 'sensor' param values
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B&sensor\[\]=2B"
 
-### Find collections by spatial_keyword param, supports pattern, ignore_case and option :and
+#### Find collections by spatial_keyword param
 
-  Find collections matching 'spatial_keyword' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'spatial_keyword' param value
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC"
 
-  Find collections matching any of the 'spatial_keyword' param values
+Find collections matching any of the 'spatial_keyword' param values
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
-### Find collections by science_keywords params, supports option :or
+#### Find collections by science_keywords params
 
-  Find collections matching 'science_keywords' param value
+This supports option _or_.
+
+Find collections matching 'science_keywords' param value
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1"
 
-  Find collections matching multiple 'science_keywords' param values, default is :and
+Find collections matching multiple 'science_keywords' param values, default is :and
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
-### Find collections by two\_d\_coordinate\_system\_name param, supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
+#### Find collections by two\_d\_coordinate\_system\_name param
+
+This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
 
   Find collections matching 'two\_d\_coordinate\_system\_name' param value
 
@@ -354,7 +373,7 @@ The alias 'processing_level' also works for searching by processing level id.
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
 
-### Find collections by collection\_data\_type param
+#### Find collections by collection\_data\_type param
 
 Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_real\_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".
 
@@ -462,21 +481,21 @@ Multiple attributes can be provided. The default is for granules to match all th
 
 For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `option[attribute][exclude_collection]=true`.
 
-### Find granules by Spatial
+#### Find granules by Spatial
 
-#### Polygon
+##### Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
 
     curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
 
-#### Bounding Box
+##### Bounding Box
 
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
 
     curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
 
-### Find granules by orbit number
+#### Find granules by orbit number
 
   Find granules with an orbit number of 10
 
@@ -486,7 +505,7 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "%CMR-ENDPOINT%/granules?orbit_number=0.5,1.5"
 
-### Find granules by orbit equator crossing longitude
+#### Find granules by orbit equator crossing longitude
 
   Find granules with an exact equator crossing longitude of 90
 
@@ -501,20 +520,20 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=170,-170
 
-### Find granules by orbit equator crossing date
+#### Find granules by orbit equator crossing date
 
   Find granules with an orbit equator crossing date in the range of
   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
-### Find granules by updated_since param
+#### Find granules by updated_since
 
   Find granules which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
 
-### Find granules by cloud_cover param
+#### Find granules by cloud_cover
 
   Find granules with just the min cloud cover value set to 0.2
 
@@ -528,19 +547,25 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
      curl "%CMR-ENDPOINT%/granules?cloud_cover=-70.0,120.0"
 
-### Find collections by platform param, supports pattern, ignore_case and option :and
+#### Find granules by platform
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?platform\[\]=1B"
 
-### Find collections by instrument param, supports pattern, ignore_case and option :and
+#### Find granules by instrument
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
 
-### Find collections by sensor param, supports pattern, ignore_case and option :and
+#### Find granules by sensor param
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
-### Find granules by echo granule id, echo collection id and concept ids.
+#### Find granules by echo granule id, echo collection id and concept ids.
 
 Note: more than one may be supplied
 
@@ -560,7 +585,7 @@ Note: more than one may be supplied
 
     curl "%CMR-ENDPOINT%/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
-### Find granules by day\_night\_flag param, supports pattern and ignore_case
+#### Find granules by day\_night\_flag param, supports pattern and ignore_case
 
 ```
 curl "%CMR-ENDPOINT%/granules?day_night_flag=night
@@ -570,7 +595,9 @@ curl "%CMR-ENDPOINT%/granules?day_night_flag=day
 curl "%CMR-ENDPOINT%/granules?day_night=unspecified
 ```
 
-### Find granules by grid param, this is an alias of catalog-rest two_d_coordinate_system.
+#### Find granules by grid param.
+
+This is an alias of catalog-rest two\_d\_coordinate_system.
 
 ':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.
 
@@ -578,7 +605,9 @@ curl "%CMR-ENDPOINT%/granules?day_night=unspecified
   curl "%CMR-ENDPOINT%/granules?grid\[\]=wrs-1:5,10:8-10,0-10
 ```
 
-### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
+#### Exclude granules from elastic results by echo granule id and concept ids.
+
+Note: more than one id may be supplied in exclude param
 
 Exclude granule by echo granule id
 
@@ -815,7 +844,8 @@ Facets in JSON search response formats will be formatted like the following exam
 ```
 
 ### Search for Tiles
-Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial"). 
+
+Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial").
 
 Here are some examples:
 Find the tiles which intersect a polygon.
@@ -834,4 +864,4 @@ Find all the tiles which a line intersects.
 
     curl -i "%CMR-ENDPOINT%/tiles?line=1,1,10,5,15,9"
 
-The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south. 
+The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
