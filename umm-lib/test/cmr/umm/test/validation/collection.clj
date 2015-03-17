@@ -163,7 +163,19 @@
            :boolean "bar" :value ["Value [bar] is not a valid value for type [:boolean]."]
            :date "bar" :value ["Value [bar] is not a valid value for type [:date]."]
            :time "bar" :value ["Value [bar] is not a valid value for type [:time]."]
-           :datetime "bar" :value ["Value [bar] is not a valid value for type [:datetime]."]))))
+           :datetime "bar" :value ["Value [bar] is not a valid value for type [:datetime]."]))
+
+    (testing "multiple invalid values"
+      (assert-multiple-invalid
+        (coll-with-psas [{:name "foo" :data-type :float :value "str"}
+                         {:name "bar" :data-type :float :value "1.0"}
+                         {:name "baz" :data-type :int :value "1.0"}])
+        [{:path [:product-specific-attributes 0]
+          :errors
+          ["Value [str] is not a valid value for type [:float]."]}
+         {:path [:product-specific-attributes 2]
+          :errors
+          ["Value [1.0] is not a valid value for type [:int]."]}]))))
 
 (deftest collection-projects-validation
   (let [c1 (c/map->Project {:short-name "C1"})
