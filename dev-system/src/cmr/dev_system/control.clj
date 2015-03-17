@@ -138,8 +138,8 @@
            :headers {"Content-Type" "application/json"}}))
 
       (POST "/set-retry-behavior" {:keys [params]}
-        (let [num-retries (:num-retries [params])]
-          (debug (format "dev system setting message queue to retry messages %d times"
+        (let [num-retries (:num-retries params)]
+          (debug (format "dev system setting message queue to retry messages %s times"
                          num-retries))
           (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
             (wrapper/set-message-queue-retry-behavior broker-wrapper num-retries))

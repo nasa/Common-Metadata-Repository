@@ -6,67 +6,141 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+
+(defn ingest-coll
+  "Ingests the collection"
+  [coll]
+  (d/ingest "PROV1" coll))
+
+(defn make-coll
+  "Creates and ingests a collection using the unique number given"
+  [n]
+  (ingest-coll (dc/collection {:entry-title (str "ET" n)})))
+
+(defn update-coll
+  "Updates the collection with the given attributes"
+  [coll attribs]
+  (ingest-coll (merge coll attribs)))
+
+(defn ingest-gran
+  "Validates and ingests the granle"
+  [coll granule]
+  (d/ingest "PROV1" granule))
+
+(defn make-gran
+  "Creates and ingests a granule using the unique number given"
+  [coll n]
+  (ingest-gran coll (dg/granule coll {:granule-ur (str "GR" n)})))
+
+(defn update-gran
+  "Updates the granule with the given attributes"
+  [coll gran attribs]
+  (ingest-gran coll (merge gran attribs)))
+
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue
-    (let [coll1 (dc/collection-concept {:native-id "C1" :concept-id "C1-PROV1" :revision-id 1})
-          coll2 (dc/collection-concept {:native-id "C2" :concept-id "C2-PROV1" :revision-id 1})
-          coll3 (dc/collection-concept {:native-id "C3" :concept-id "C3-PROV1" :revision-id 1})
-          _ (ingest/ingest-concepts [coll1 coll2 coll3
-                                     (assoc coll2 :revision-id 2)
-                                     (assoc coll2 :revision-id 3)])
-          _ (index-util/wait-until-indexed)
-          concept-history (index-util/get-concept-message-queue-history)]
+    (let [coll1 (make-coll 1)
+          coll2 (make-coll 2)
+          coll3 (make-coll 3)
+          coll4 (make-coll 2)
+          coll5 (make-coll 2)
+          gran1 (make-gran coll1 1)]
+      (index-util/wait-until-indexed)
       (testing "successfully processed concepts"
-        (is (= {["C2-PROV1" 3]
+        (is (= {[(:concept-id gran1) (:revision-id gran1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                ["C2-PROV1" 2]
+                [(:concept-id coll5) (:revision-id coll5)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                ["C3-PROV1" 1]
+                [(:concept-id coll4) (:revision-id coll4)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                ["C2-PROV1" 1]
+                [(:concept-id coll3) (:revision-id coll3)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                ["C1-PROV1" 1]
+                [(:concept-id coll2) (:revision-id coll2)]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "processed"}],
+                [(:concept-id coll1) (:revision-id coll1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}]}
-               concept-history))))))
+               (index-util/get-concept-message-queue-history)))))))
 
-;; Setup provider
-;; Test 1 - Initial index fails and retries once, completes successfully on retry
-;; Turn message failures on - implement new endpoint, call new endpoint - TODO
 (deftest message-queue-retry-test
   (s/only-with-real-message-queue
     (testing "Initial index fails and retries once, completes successfully on retry"
-      ;; Test 1 - Initial index fails and retries once, completes successfully on retry
       (index-util/set-message-queue-retry-behavior 1)
-      (let [collection (d/ingest "PROV1" (dc/collection {}))
-            granule (d/item->concept (dg/granule collection))
-            {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
-        ;; Wait until the indexing queue is empty - wait-for-indexed
-        (index-util/wait-until-indexed)
+      (let [collection (make-coll 1)
+            granule (make-gran collection 1)]
         ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
+        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (index-util/wait-until-indexed)
         ;; Verify the collection and granule are indexed - search returns correct results
-        ;; Wait for at least one retry - TODO figure out how
-        ;; Verify the collection and granule are indexed - search returns 0 results
-        ;; Verify retried exactly one time and at the correct retry interval
-        (index-util/set-message-queue-retry-behavior 0)
-        ))))
+        (are [search concept-type expected]
+             (d/refs-match? expected (search/find-refs concept-type search))
+             {:concept-id (:concept-id collection)} :collection [collection]
+             {:concept-id (:concept-id granule)} :granule [granule])
 
-;; Test 2 - all retries fail
-;; Turn message failures on
-;; Ingest one collection and one granule
-;; Verify the collection and granule are in Oracle
-;; Wait until the indexing queue is empty
-;; Verify the collection and granule are not indexed
+        ;; Verify retried exactly one time and at the correct retry interval
+        (is (= {[(:concept-id granule) (:revision-id granule)]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "processed"}],
+                [(:concept-id collection) (:revision-id collection)]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "processed"}]}
+               (index-util/get-concept-message-queue-history))))
+
+      (index-util/set-message-queue-retry-behavior 0))))
+
 ;; Manually verify retry intervals
 ;; Manually verify number of retries
 ;; Manually verify there is a message logged that we can create a Splunk alert against to
 ;; determine what data to index
+(deftest message-queue-failure-test
+  (s/only-with-real-message-queue
+    (testing "Indexing attempts fail with retryable error and eventually all retries are exhausted"
+      ;; TODO - change this to 6 once I can make retry interval short
+      (index-util/set-message-queue-retry-behavior 1)
+      (let [collection (make-coll 1)
+            granule (make-gran collection 1)]
+        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
+        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
+        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (index-util/wait-until-indexed)
+        ;; Verify the collection and granule are not indexed
+        (are [search concept-type expected]
+             (d/refs-match? expected (search/find-refs concept-type search))
+             {:concept-id (:concept-id collection)} :collection []
+             {:concept-id (:concept-id granule)} :granule [])
+
+        ;; Verify retried five times and then marked as a failure
+        (is (= {[(:concept-id granule) (:revision-id granule)]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "failed"}],
+                [(:concept-id collection) (:revision-id collection)]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "retry"}
+                 {:action "process", :result "failed"}]}
+               (index-util/get-concept-message-queue-history))))
+
+      (index-util/set-message-queue-retry-behavior 0))))
+
+

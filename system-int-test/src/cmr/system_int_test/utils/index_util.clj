@@ -25,7 +25,7 @@
   (client/post
     (url/dev-system-set-message-queue-retry-behavior-url)
     {:connection-manager (s/conn-mgr)
-     :params {:num-retries num-retries}}))
+     :query-params {:num-retries num-retries}}))
 
 (defn get-message-queue-history
   "Returns the message queue history."

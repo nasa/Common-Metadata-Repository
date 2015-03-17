@@ -12,7 +12,7 @@
             [clojure.set :as set]
             [cmr.common.util :as util]))
 
-(def valid-action-types
+(def ^:const ^:private valid-action-types
   "A set of the valid action types for a message queue:
   :reset - Clear out all of the messages. TODO: This is currently not used and may be removed.
   :enqueue - Message has been added to the queue.
@@ -21,7 +21,7 @@
     :enqueue
     :process})
 
-(defn append-to-message-queue-history
+(defn- append-to-message-queue-history
   "Create a message queue history map and append it to the current message queue history.
 
   Parameters:
@@ -53,7 +53,7 @@
                                           :message message-with-state})]
     (conj message-queue-history-value {:action new-action :messages messages})))
 
-(defn update-message-queue-history
+(defn- update-message-queue-history
   "Called when an event occurs on the message queue in order to add a new entry to the message
   queue history. See append-to-message-queue-history for a description of the parameters."
   [broker-wrapper action-type data resulting-state]
@@ -63,7 +63,7 @@
 (comment
   (update-message-queue-history (create-queue-broker-wrapper nil)
                                 :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial))
-(def valid-message-states
+(def ^:const ^:private valid-message-states
   "Set of valid message states:
   :initial - message first created
   :retry - the message failed processing and is currently retrying
@@ -74,33 +74,13 @@
     :failed
     :processed})
 
-(def terminal-states
+(def ^:const ^:private terminal-states
   "Subset of valid message states which are considered final. Used to determine when a message will
   no longer be processed."
   #{:failed
     :processed})
 
-(defn handler-wrapper
-  "Wraps handler function to count acks, retries, fails"
-  [broker-wrapper handler]
-  (fn [context msg]
-    (if (-> broker-wrapper :resetting?-atom deref)
-      (do
-        (update-message-queue-history broker-wrapper :process msg :failed)
-        {:status :fail :message "Forced failure on reset"})
-      (let [resp (handler context msg)
-            message-state (case (:status resp)
-                            :ok :processed
-                            :retry (if (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
-                                     :failed
-                                     :retry)
-                            :fail :failed
-                            ;;else
-                            (throw (Exception. (str "Invalid response: " (pr-str resp)))))]
-        (update-message-queue-history broker-wrapper :process msg message-state)
-        resp))))
-
-(defn current-message-states
+(defn- current-message-states
   "Return a sequence of message states for all messages currently held by the wrapper."
   [broker-wrapper]
   (->> broker-wrapper
@@ -238,7 +218,27 @@
   been exhausted."
   [broker-wrapper num-retries]
   ;; Use an atom to set state?
-  (swap! (:num-retries-atom broker-wrapper #(constantly num-retries))))
+  (swap! (:num-retries-atom broker-wrapper) (constantly num-retries)))
+
+(defn handler-wrapper
+  "Wraps handler function to count acks, retries, fails"
+  [broker-wrapper handler]
+  (fn [context msg]
+    (if (-> broker-wrapper :resetting?-atom deref)
+      (do
+        (update-message-queue-history broker-wrapper :process msg :failed)
+        {:status :fail :message "Forced failure on reset"})
+      (let [resp (handler context msg)
+            message-state (case (:status resp)
+                            :ok :processed
+                            :retry (if (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
+                                     :failed
+                                     :retry)
+                            :fail :failed
+                            ;;else
+                            (throw (Exception. (str "Invalid response: " (pr-str resp)))))]
+        (update-message-queue-history broker-wrapper :process msg message-state)
+        resp))))
 
 
 (defn create-queue-broker-wrapper
