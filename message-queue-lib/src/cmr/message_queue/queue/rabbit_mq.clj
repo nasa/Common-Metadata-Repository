@@ -80,7 +80,9 @@
                                 routing-key msg delivery-tag resp)
           :fail (do
                   ;; bad data - nack it
-                  (warn "Rejecting bad data:" (pr-str (:message resp)))
+                  (error (format "Message failed processing with error '%s', it has been removed from the message queue. Message details: %s"
+                          (:message resp)
+                           msg))
                   (lb/nack ch delivery-tag false false))))
       (catch Throwable e
         (error "Message processing failed for message" (pr-str msg) "with error:"

@@ -108,8 +108,7 @@
 (deftest message-queue-failure-test
   (s/only-with-real-message-queue
     (testing "Indexing attempts fail with retryable error and eventually all retries are exhausted"
-      ;; TODO - change this to 6 once I can make retry interval short
-      (index-util/set-message-queue-retry-behavior 1)
+      (index-util/set-message-queue-retry-behavior 6)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
         ;; Verify the collection and granule are in Oracle - metadata-db find concepts

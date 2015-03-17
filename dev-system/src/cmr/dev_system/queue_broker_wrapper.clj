@@ -107,7 +107,6 @@
          ;; If the current states are non-terminal states we will check again after sleeping. After
          ;; ms-to-wait have passed we give up.
          (when (seq in-work-states)
-           (debug "Still in work:" in-work-states)
            ;; If we've reached any terminal state that we did not expect
            (when (seq (set/intersection in-work-states failure-states))
              (throw (Exception. (str "Unexpected final message state(s): " in-work-states))))
@@ -201,9 +200,9 @@
         (reset! resetting?-atom false)))))
 
 (defn wait-for-indexing
-  "Wait for all messages to be marked as processed."
+  "Wait for all messages to be marked as processed or failed."
   [broker-wrapper]
-  (wait-for-states broker-wrapper [:processed]))
+  (wait-for-states broker-wrapper [:processed :failed]))
 
 (defn get-message-queue-history
   "Returns the message-queue-history."
@@ -220,25 +219,56 @@
   ;; Use an atom to set state?
   (swap! (:num-retries-atom broker-wrapper) (constantly num-retries)))
 
+
+(defn- queue-response->message-state
+  "Converts the response of a message queue action to the appropriate message state."
+  [response msg]
+  (case (:status response)
+    :ok :processed
+    :retry (if (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
+             :failed
+             :retry)
+    :fail :failed
+    ;;else
+    (throw (Exception. (str "Invalid response: " (pr-str response))))))
+
+(defn- fail-message-on-reset
+  "Mark message as failed due to reset being called on the queue"
+  [broker-wrapper msg]
+  (update-message-queue-history broker-wrapper :process msg :failed)
+  {:status :fail :message "Forced failure on reset"})
+
+(defn- retry-message
+  "Mark message as retrying. If retries are exhausted we mark the message as failed"
+  [broker-wrapper msg]
+  (let [message-state (queue-response->message-state {:status :retry} msg)
+        response-status (case message-state
+                          :retry :retry
+                          :failed :fail)]
+    (update-message-queue-history broker-wrapper :process msg message-state)
+    {:status response-status :message "Simulating retry on message queue"}))
+
 (defn handler-wrapper
-  "Wraps handler function to count acks, retries, fails"
+  "Wraps handler function to count acks, retries, fails. In addition this wrapper allows for
+  a message to be marked as retrying or failed based on the queue configuration for the
+  num-retries-atom and the number of times the message has already been retried."
   [broker-wrapper handler]
   (fn [context msg]
-    (if (-> broker-wrapper :resetting?-atom deref)
-      (do
-        (update-message-queue-history broker-wrapper :process msg :failed)
-        {:status :fail :message "Forced failure on reset"})
-      (let [resp (handler context msg)
-            message-state (case (:status resp)
-                            :ok :processed
-                            :retry (if (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
-                                     :failed
-                                     :retry)
-                            :fail :failed
-                            ;;else
-                            (throw (Exception. (str "Invalid response: " (pr-str resp)))))]
+    (cond
+      ;; Resetting
+      (-> broker-wrapper :resetting?-atom deref)
+      (fail-message-on-reset broker-wrapper msg)
+
+      ;; Queue set to retry actions N times and this message has not been retried N times
+      (< (if (:retry-count msg) (:retry-count msg) 0) (-> broker-wrapper :num-retries-atom deref))
+      (retry-message broker-wrapper msg)
+
+      :else
+      ;; Process the message as normal
+      (let [response (handler context msg)
+            message-state (queue-response->message-state response msg)]
         (update-message-queue-history broker-wrapper :process msg message-state)
-        resp))))
+        response))))
 
 
 (defn create-queue-broker-wrapper
