@@ -250,7 +250,7 @@ One dif\_entry\_id
 
 #### Find collections by archive center
 
-This supports `pattern`, `ignore_case`.
+This supports `pattern` and `ignore_case`.
 
 Find collections matching 'archive_center' param value
 
@@ -261,7 +261,7 @@ Find collections matching any of the 'archive_center' param values
 
      curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
 
-#### Find collections with multiple temporal
+#### Find collections with temporal
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
@@ -289,7 +289,9 @@ Find collections that match all of the 'campaign' param values
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
-#### Find collections by processing\_level\_id param, supports pattern and ignore_case
+#### Find collections by processing\_level\_id
+
+This supports `pattern` and `ignore_case`.
 
 Find collections matching 'processing_level_id'
 
@@ -337,7 +339,7 @@ Find collections matching any of the 'sensor' param values
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B&sensor\[\]=2B"
 
-#### Find collections by spatial_keyword param
+#### Find collections by spatial\_keyword
 
 This supports `pattern`, `ignore_case` and option `and`.
 
@@ -349,7 +351,7 @@ Find collections matching any of the 'spatial_keyword' param values
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
-#### Find collections by science_keywords params
+#### Find collections by science_keywords
 
 This supports option _or_.
 
@@ -361,7 +363,7 @@ Find collections matching multiple 'science_keywords' param values, default is :
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
-#### Find collections by two\_d\_coordinate\_system\_name param
+#### Find collections by two\_d\_coordinate\_system\_name
 
 This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
 
@@ -373,7 +375,7 @@ This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of t
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
 
-#### Find collections by collection\_data\_type param
+#### Find collections by collection\_data\_type
 
 Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_real\_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".
 
@@ -401,7 +403,9 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
     curl "%CMR-ENDPOINT%/collections?browsable=true"
 
-#### Find collections by keyword search, case insensitive and support wild cards ? and *
+#### Find collections by keyword search
+
+Keyword searches are case insensitive and support wild cards ? and *.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
@@ -693,7 +697,9 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 [{"concept-id":"C1200000000-PROV1","intervals":[[949363200,965088000,4],[967766400,970358400,1],[973036800,986083200,3],[991353600,1072915200,3]]}]
 ```
 
-### Retrieve provider holdings, support format :xml and :json in header and as extension.
+### Retrieve Provider Holdings
+
+Provider holdings can be retrieved as XML or JSON.
 
 All provider holdings
 
@@ -704,8 +710,9 @@ Provider holdings for a list of providers
     curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
 ### Search with AQL
+
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
-that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
+that is defined in `cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd`.
 
     curl -i -XPOST -H "Content-Type: application/xml" %CMR-ENDPOINT%/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
@@ -715,7 +722,7 @@ that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
 When a keyword search is requested, matched documents receive relevancy scores as follows:
 
-A series of filters are executed against each document. Each of these  has an associated boost
+A series of filters are executed against each document. Each of these has an associated boost
 value. The boost values of all the filters that match a given document are multiplied together
 to get the final document score. Documents that match none of the filters have a default
 score of 1.0.
