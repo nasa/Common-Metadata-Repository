@@ -82,111 +82,6 @@ Here is a list of supported extensions and their corresponding MimeTypes:
 
 iso is an alias for iso\_mends.
 
-
-## Administrative Tasks
-
-These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
-permission.
-
-### Clear the cache cache
-
-    curl -i -XPOST %CMR-ENDPOINT%/clear-cache
-
-### Reset the application to the initial state
-
-Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
-
-    curl -i -XPOST %CMR-ENDPOINT%/reset
-
-### Querying caches
-
-Endpoints are provided for querying the contents of the various caches used by the application.
-The following curl will return the list of caches:
-
-    curl -i %CMR-ENDPOINT%/caches
-
-The following curl will return the keys for a specific cache:
-
-    curl -i %CMR-ENDPOINT%/caches/cache-name
-
-This curl will return the value for a specific key in the named cache:
-
-    curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
-
-### Check application health
-
-This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
-
-    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
-
-Example healthy response body:
-
-```
-{
-  "echo" : {
-    "ok?" : true
-  },
-  "internal-metadata-db" : {
-    "ok?" : true,
-    "dependencies" : {
-      "oracle" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  },
-  "index-set" : {
-    "ok?" : true,
-    "dependencies" : {
-      "elastic_search" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  }
-}
-```
-
-Example un-healthy response body:
-
-```
-{
-  "echo" : {
-    "ok?" : true
-  },
-  "internal-metadata-db" : {
-    "ok?" : true,
-    "dependencies" : {
-      "oracle" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  },
-  "index-set" : {
-    "ok?" : false,
-    "problem" : {
-      "elastic_search" : {
-        "ok?" : false,
-        "problem" : {
-          "status" : "Inaccessible",
-          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
-        }
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  }
-}
-```
-
 ### Search for Collections
 
 #### Find all collections
@@ -872,3 +767,108 @@ Find all the tiles which a line intersects.
     curl -i "%CMR-ENDPOINT%/tiles?line=1,1,10,5,15,9"
 
 The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
+
+
+### Administrative Tasks
+
+These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update
+permission.
+
+#### Clear the cache cache
+
+    curl -i -XPOST %CMR-ENDPOINT%/clear-cache
+
+#### Reset the application to the initial state
+
+Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
+
+    curl -i -XPOST %CMR-ENDPOINT%/reset
+
+#### Querying caches
+
+Endpoints are provided for querying the contents of the various caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i %CMR-ENDPOINT%/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i %CMR-ENDPOINT%/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
+
+#### Check application health
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+
+Example healthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "index-set" : {
+    "ok?" : true,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
+```
+
+Example un-healthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "index-set" : {
+    "ok?" : false,
+    "problem" : {
+      "elastic_search" : {
+        "ok?" : false,
+        "problem" : {
+          "status" : "Inaccessible",
+          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+        }
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
+```
