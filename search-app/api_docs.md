@@ -47,12 +47,6 @@ These are query parameters specific to collections
 
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
-    * `curl -H "Accept: text/csv" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/atom+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/json" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/echo10+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/dif+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/opendata+json" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
@@ -79,6 +73,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `csv`       "text/csv"
   * `atom`      "application/atom+xml"
   * `opendata`  "application/opendata+json" (only supported for collections)
+  * `kml`       "application/vnd.google-earth.kml+xml"
 
 iso is an alias for iso\_mends.
 

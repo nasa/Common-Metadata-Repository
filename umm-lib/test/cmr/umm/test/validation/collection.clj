@@ -31,7 +31,7 @@
 
 (defn coll-with-psas
   [psas]
-  (c/map->UmmCollection {:product-specific-attributes psas}))
+  (c/map->UmmCollection {:product-specific-attributes (map c/map->ProductSpecificAttribute psas)}))
 
 (defn coll-with-geometries
   [geometries]
@@ -61,17 +61,54 @@
                                  expected-errors)))))
 
 (deftest collection-product-specific-attributes-validation
-  (testing "valid product specific attributes"
-    (assert-valid (coll-with-psas [{:name "foo"} {:name "bar"}])))
+  (testing "product specific attributes names"
+    (testing "valid product specific attributes names"
+      (assert-valid (coll-with-psas [{:name "foo" :data-type :string}
+                                     {:name "bar" :data-type :string}])))
+    (testing "invalid product specific attributes names"
+      (testing "duplicate names"
+        (let [coll (coll-with-psas [{:name "foo" :data-type :string}
+                                    {:name "foo" :data-type :string}
+                                    {:name "bar" :data-type :string}
+                                    {:name "bar" :data-type :string}
+                                    {:name "charlie" :data-type :string}])]
+          (assert-invalid
+            coll
+            [:product-specific-attributes]
+            ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
 
-  (testing "invalid product specific attributes"
-    (testing "duplicate names"
-      (let [coll (coll-with-psas [{:name "foo"} {:name "foo"} {:name "bar"} {:name "bar"}
-                                  {:name "charlie"}])]
-        (assert-invalid
+  (testing "product specific attributes data type"
+    (testing "valid data types"
+      (are [data-type]
+           (assert-valid (coll-with-psas [{:name "foo" :data-type data-type}]))
+           :string
+           :float
+           :int
+           :boolean
+           :date
+           :time
+           :datetime
+           :date-string
+           :time-string
+           :datetime-string))
+
+    (testing "invalid data type"
+      (are [data-type error]
+           (let [coll (coll-with-psas [{:name "foo" :data-type data-type}])]
+             (assert-invalid coll [:product-specific-attributes 0 :data-type] [error]))
+           nil "Data Type data-type [] is not a valid data type."
+           :intstring "Data Type data-type [INTSTRING] is not a valid data type."))
+
+    (testing "multiple invalid data types"
+      (let [coll (coll-with-psas [{:name "foo"} {:name "bar" :data-type :intstring}])]
+        (assert-multiple-invalid
           coll
-          [:product-specific-attributes]
-          ["Product Specific Attributes must be unique. This contains duplicates named [foo, bar]."])))))
+          [{:path [:product-specific-attributes 0 :data-type]
+            :errors
+            ["Data Type data-type [] is not a valid data type."]}
+           {:path [:product-specific-attributes 1 :data-type]
+            :errors
+            ["Data Type data-type [INTSTRING] is not a valid data type."]}])))))
 
 (deftest collection-projects-validation
   (let [c1 (c/map->Project {:short-name "C1"})
