@@ -80,6 +80,13 @@
     (let [value (str/replace value "Z" "")]
       (f/parse (f/formatters :date) value))))
 
+(defn safe-parse-value
+  "Returns the parsed value. It is different from parse-value function in that it will catch any
+  parsing exceptions and returns nil when the value is invalid to parse for the given data type."
+  [data-type value]
+  (try
+    (parse-value data-type value)
+    (catch Throwable e)))
 
 (defmulti gen-value
   "Converts the given value to a string for placement in XML."

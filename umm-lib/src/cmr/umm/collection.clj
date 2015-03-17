@@ -70,6 +70,9 @@
    parameter-range-begin
    parameter-range-end
    value
+   parsed-parameter-range-begin
+   parsed-parameter-range-end
+   parsed-value
    ])
 
 (defrecord Sensor
