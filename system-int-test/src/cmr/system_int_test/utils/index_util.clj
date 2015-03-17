@@ -55,3 +55,13 @@
   sequence of states for each one."
   []
   (concept-history (get-message-queue-history)))
+
+(defn reset-message-queue-retry-behavior-fixture
+  "This is a clojure.test fixture that will reset the message queue behavior to normal processing
+  after a test completes."
+  []
+  (fn [f]
+    (try
+      (f)
+      (finally
+        (set-message-queue-retry-behavior 0)))))

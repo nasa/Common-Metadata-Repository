@@ -77,9 +77,7 @@
 (defn- current-message-states
   "Return a sequence of message states for all messages currently held by the wrapper."
   [broker-wrapper]
-  (->> broker-wrapper
-       :message-queue-history-atom
-       deref
+  (->> @(:message-queue-history-atom broker-wrapper)
        last
        :messages
        (map :state)))
@@ -201,9 +199,9 @@
 (defn get-message-queue-history
   "Returns the message-queue-history."
   [broker-wrapper]
-  (-> broker-wrapper :message-queue-history-atom deref))
+  @(:message-queue-history-atom broker-wrapper))
 
-(defn set-message-queue-retry-behavior
+(defn set-message-queue-retry-behavior!
   "Used to change the behavior of the message queue to indicate that each message should fail
   with a retry response code a certain number of times prior to succeeding. If the num-retries
   is set to 0 every message will be processed normally. If num-retries is set higher than the
@@ -211,7 +209,7 @@
   been exhausted."
   [broker-wrapper num-retries]
   ;; Use an atom to set state?
-  (swap! (:num-retries-atom broker-wrapper) (constantly num-retries)))
+  (reset! (:num-retries-atom broker-wrapper) num-retries))
 
 
 (defn- queue-response->message-state
@@ -250,11 +248,11 @@
   (fn [context msg]
     (cond
       ;; Resetting
-      (-> broker-wrapper :resetting?-atom deref)
+      @(:resetting?-atom broker-wrapper)
       (fail-message-on-reset broker-wrapper msg)
 
       ;; Queue set to retry actions N times and this message has not been retried N times
-      (< (if (:retry-count msg) (:retry-count msg) 0) (-> broker-wrapper :num-retries-atom deref))
+      (< (get msg :retry-count 0) @(:num-retries-atom broker-wrapper))
       (retry-message broker-wrapper msg)
 
       :else
@@ -263,7 +261,6 @@
             message-state (queue-response->message-state response msg)]
         (update-message-queue-history broker-wrapper :process msg message-state)
         response))))
-
 
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"

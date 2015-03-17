@@ -9,65 +9,56 @@
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
-
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       (index-util/reset-message-queue-retry-behavior-fixture)]))
 
 (defn ingest-coll
-  "Ingests the collection"
+  "Ingests the collection."
   [coll]
   (d/ingest "PROV1" coll))
 
 (defn make-coll
-  "Creates and ingests a collection using the unique number given"
+  "Creates and ingests a collection using the unique number given."
   [n]
   (ingest-coll (dc/collection {:entry-title (str "ET" n)})))
 
-(defn update-coll
-  "Updates the collection with the given attributes"
-  [coll attribs]
-  (ingest-coll (merge coll attribs)))
-
 (defn ingest-gran
-  "Validates and ingests the granle"
-  [coll granule]
+  "Ingests the granule."
+  [granule]
   (d/ingest "PROV1" granule))
 
 (defn make-gran
-  "Creates and ingests a granule using the unique number given"
+  "Creates and ingests a granule using the unique number given."
   [coll n]
-  (ingest-gran coll (dg/granule coll {:granule-ur (str "GR" n)})))
-
-(defn update-gran
-  "Updates the granule with the given attributes"
-  [coll gran attribs]
-  (ingest-gran coll (merge gran attribs)))
+  (ingest-gran (dg/granule coll {:granule-ur (str "GR" n)})))
 
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue
-    (let [coll1 (make-coll 1)
-          coll2 (make-coll 2)
-          coll3 (make-coll 3)
-          coll4 (make-coll 2)
-          coll5 (make-coll 2)
-          gran1 (make-gran coll1 1)]
+    (let [coll1-1 (make-coll 1)
+          coll2-1 (make-coll 2)
+          coll3-1 (make-coll 3)
+          coll2-2 (make-coll 2)
+          coll2-3 (make-coll 2)
+          gran1-1 (make-gran coll1-1 1)]
       (index-util/wait-until-indexed)
       (testing "successfully processed concepts"
-        (is (= {[(:concept-id gran1) (:revision-id gran1)]
+        (is (= {[(:concept-id gran1-1) (:revision-id gran1-1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                [(:concept-id coll5) (:revision-id coll5)]
+                [(:concept-id coll2-3) (:revision-id coll2-3)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                [(:concept-id coll4) (:revision-id coll4)]
+                [(:concept-id coll2-2) (:revision-id coll2-2)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                [(:concept-id coll3) (:revision-id coll3)]
+                [(:concept-id coll3-1) (:revision-id coll3-1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                [(:concept-id coll2) (:revision-id coll2)]
+                [(:concept-id coll2-1) (:revision-id coll2-1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}],
-                [(:concept-id coll1) (:revision-id coll1)]
+                [(:concept-id coll1-1) (:revision-id coll1-1)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "processed"}]}
                (index-util/get-concept-message-queue-history)))))))
@@ -85,8 +76,8 @@
         ;; Verify the collection and granule are indexed - search returns correct results
         (are [search concept-type expected]
              (d/refs-match? expected (search/find-refs concept-type search))
-             {:concept-id (:concept-id collection)} :collection [collection]
-             {:concept-id (:concept-id granule)} :granule [granule])
+             (select-keys collection [:concept-id]) :collection [collection]
+             (select-keys granule [:concept-id]) :granule [granule])
 
         ;; Verify retried exactly one time and at the correct retry interval
         (is (= {[(:concept-id granule) (:revision-id granule)]
@@ -97,14 +88,8 @@
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "processed"}]}
-               (index-util/get-concept-message-queue-history))))
+               (index-util/get-concept-message-queue-history)))))))
 
-      (index-util/set-message-queue-retry-behavior 0))))
-
-;; Manually verify retry intervals
-;; Manually verify number of retries
-;; Manually verify there is a message logged that we can create a Splunk alert against to
-;; determine what data to index
 (deftest message-queue-failure-test
   (s/only-with-real-message-queue
     (testing "Indexing attempts fail with retryable error and eventually all retries are exhausted"
@@ -118,8 +103,8 @@
         ;; Verify the collection and granule are not indexed
         (are [search concept-type expected]
              (d/refs-match? expected (search/find-refs concept-type search))
-             {:concept-id (:concept-id collection)} :collection []
-             {:concept-id (:concept-id granule)} :granule [])
+             (select-keys collection [:concept-id]) :collection []
+             (select-keys granule [:concept-id]) :granule [])
 
         ;; Verify retried five times and then marked as a failure
         (is (= {[(:concept-id granule) (:revision-id granule)]
@@ -138,8 +123,6 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "failed"}]}
-               (index-util/get-concept-message-queue-history))))
-
-      (index-util/set-message-queue-retry-behavior 0))))
+               (index-util/get-concept-message-queue-history)))))))
 
 

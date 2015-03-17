@@ -142,9 +142,9 @@
           (debug (format "dev system setting message queue to retry messages %s times"
                          num-retries))
           (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-            (wrapper/set-message-queue-retry-behavior
+            (wrapper/set-message-queue-retry-behavior!
               broker-wrapper
-              (. Integer parseInt num-retries)))
+              (Integer/parseInt num-retries)))
           {:status 200})))
 
     (route/not-found "Not Found")))
