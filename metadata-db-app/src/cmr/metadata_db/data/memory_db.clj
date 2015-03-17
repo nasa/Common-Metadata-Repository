@@ -216,7 +216,6 @@
 
   (get-expired-concepts
     [db provider concept-type]
-    (println "CDD: I am in get-expired-concepts, time is " (str (tk/now)))
     (filter
       (fn [c]
         (let [delete-time (get-in c [:extra-fields :delete-time])
