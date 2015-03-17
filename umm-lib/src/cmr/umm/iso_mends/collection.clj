@@ -18,7 +18,8 @@
             [cmr.umm.iso-mends.collection.project :as proj]
             [cmr.umm.iso-mends.collection.associated-difs :as dif]
             [cmr.umm.iso-mends.collection.collection-association :as ca]
-            [cmr.umm.iso-mends.collection.helper :as h])
+            [cmr.umm.iso-mends.collection.helper :as h]
+            [cmr.umm.iso-mends.spatial :as sp])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -95,8 +96,7 @@
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
-       ;; TODO: Ted has updated the xsl today, will try to add spatial support next.
-       ; :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
+       :spatial-coverage (sp/iso-data-id->SpatialCoverage id-elem)
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)})))
 
@@ -288,7 +288,7 @@
                         (h/iso-string-element :gmd:language "eng")
                         (x/element :gmd:extent {}
                                    (x/element :gmd:EX_Extent {:id "boundingExtent"}
-                                              ; (spatial/generate-spatial spatial-coverage)
+                                              (sp/SpatialCoverage->xml spatial-coverage)
                                               (t/generate-temporal temporal)))
                         (iso-processing-level-id-element processing-level-id)))
                     (generate-distribution-info archive-center related-urls personnel)

@@ -73,8 +73,7 @@
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [short-name long-name version-id processing-level-id]} :product
-         :keys [entry-title spatial-coverage]} coll
+  (let [{{:keys [short-name long-name version-id processing-level-id]} :product} coll
         entry-id (str short-name "_" version-id)
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
@@ -105,8 +104,6 @@
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
         (update-in [:platforms] platforms->expected-parsed)
-        ;; ISO spatial mapping is incomplete right now
-        (dissoc :spatial-coverage)
         ;; ISO AdditionalAttributes mapping is incomplete right now
         (dissoc :product-specific-attributes)
         ;; ISO does not support size in RelatedURLs
