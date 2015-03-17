@@ -9,7 +9,6 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.5"]
-                 [compojure "1.3.2"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
                  [org.clojure/tools.reader "0.8.15"]
@@ -19,8 +18,9 @@
                  [net.sf.saxon/Saxon-HE "9.6.0-4"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
-  :repl-options {:init-ns user}
-  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m"]
+  :repl-options {:init-ns user
+                 :timeout 120000}
+  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=1024m"]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
