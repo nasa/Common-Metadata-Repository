@@ -116,19 +116,19 @@
 (defn- max-x-for-y
   "Determine the largest x coordinate for a given y coordinate so that 
   [max-x-for-y  y] is an edge-point"
-  [y]
+  ^double [^double y]
   (* (/ TAU 2.) (cos y)))
 
 (defn- max-y-for-x
   "Determine the largest y coordinate for a given x 
   coordinate so that [x  max-y-for-x] is not a fictional point"
-  [^double x]
+  ^double [^double x]
   (acos (bound (/ x (/ TAU 2.)) 1.)))
 
 (defn- fictional-point?
   "Determine if a point in the Sinusoidal grid maps to a real point on the earth"
   [^double x ^double y]
-  (or (> x (double (max-x-for-y y))) (> y (double (max-y-for-x x)))))
+  (or (> x (max-x-for-y y)) (> y (max-y-for-x x))))
 
 (defn- degenerate-tile?
   "Determine if a tile is an edge case, i.e. only one vertex of the tile is not a 
@@ -230,13 +230,15 @@
 
 (def modis-sin-tiles 
   "A vector consisting of all ModisSinTile records"
-  ;; We use delay here to postpone the compilation of code inside delay until runtime. This was 
-  ;; needed since we were seeing an unexpected compilation error during the CI build:
+  ;; FIXME: We use delay here to postpone the evaluation of code inside delay until runtime when it
+  ;; is dereffed. This was needed since without delay, we were seeing an unexpected error during 
+  ;; evaluation of the code during dynamic loading:
   ;; No implementation of method: :calculate-derived of protocol: 
   ;; #'cmr.spatial.derived/DerivedCalculator found for class: cmr.spatial.geodetic_ring.GeodeticRing
   ;; (Please see: ***REMOVED*** for more details)
+  ;; The problems seems to be the presence of multiple versions of the same record class(GeodeticRing)
   ;; Investigation of the issue did not result in a fix for the issue till now. 
-  ;; Filed an issue to identify what is causing the compilation error: CMR-1306
+  ;; Filed an issue to identify what is causing the compilation error: CMR-1306. (DU 03/17/2015)
   (delay (vec (keep identity 
                     (for [h (range NUM_HORIZONTAL_TILES)
                           v (range NUM_VERTICAL_TILES)]
