@@ -4,7 +4,8 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.collection :as c]
+            [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def names
   (ext-gen/string-alpha-numeric 1 10))
@@ -120,15 +121,20 @@
             attribs {:name name
                      :description description
                      :data-type data-type
-                     :value value}
+                     :parsed-value value
+                     :value (psa/gen-value data-type value)}
             include-begin? (and (data-type-allows-range? data-type) include-begin?)
             include-end? (and (data-type-allows-range? data-type) include-end?)
             attribs (if include-begin?
-                      (assoc attribs :parameter-range-begin begin)
+                      (assoc attribs
+                             :parsed-parameter-range-begin begin
+                             :parameter-range-begin (psa/gen-value data-type begin))
                       attribs)
             attribs (if include-end?
-                      (assoc attribs :parameter-range-end end)
+                      (assoc attribs
+                             :parsed-parameter-range-end end
+                             :parameter-range-end (psa/gen-value data-type end))
                       attribs)]
-      (c/map->ProductSpecificAttribute attribs)))
+        (c/map->ProductSpecificAttribute attribs)))
     (gen/tuple names descriptions data-type-with-values gen/boolean gen/boolean)))
 

@@ -21,9 +21,12 @@
                       {:name name
                        :data-type data-type
                        :description description
-                       :parameter-range-begin (psa/parse-value data-type begin)
-                       :parameter-range-end (psa/parse-value data-type end)
-                       :value (psa/parse-value data-type value)})))
+                       :parameter-range-begin begin
+                       :parameter-range-end end
+                       :value value
+                       :parsed-parameter-range-begin (psa/safe-parse-value data-type begin)
+                       :parsed-parameter-range-end (psa/safe-parse-value data-type end)
+                       :parsed-value (psa/safe-parse-value data-type value)})))
                 attribs)))))
 
 (defn generate-product-specific-attributes

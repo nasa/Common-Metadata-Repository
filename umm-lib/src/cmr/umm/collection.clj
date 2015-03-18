@@ -70,6 +70,13 @@
    parameter-range-begin
    parameter-range-end
    value
+   ;; We have both the original string format of parameter-range-begin, parameter-range-end and value
+   ;; as well as parsed values based on the data-type of the additional attribute. When the values
+   ;; are invalid for the data-type, the parsed values are nil. We save the original string format of
+   ;; the values here so that we can provide the correct error message during UMM validation.
+   parsed-parameter-range-begin
+   parsed-parameter-range-end
+   parsed-value
    ])
 
 (defrecord Sensor

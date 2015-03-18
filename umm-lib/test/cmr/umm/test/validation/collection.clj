@@ -96,8 +96,8 @@
       (are [data-type error]
            (let [coll (coll-with-psas [{:name "foo" :data-type data-type}])]
              (assert-invalid coll [:product-specific-attributes 0 :data-type] [error]))
-           nil "Data Type data-type [] is not a valid data type."
-           :intstring "Data Type data-type [INTSTRING] is not a valid data type."))
+           nil "Additional Attribute Data Type [] is not a valid data type."
+           :intstring "Additional Attribute Data Type [INTSTRING] is not a valid data type."))
 
     (testing "multiple invalid data types"
       (let [coll (coll-with-psas [{:name "foo"} {:name "bar" :data-type :intstring}])]
@@ -105,10 +105,77 @@
           coll
           [{:path [:product-specific-attributes 0 :data-type]
             :errors
-            ["Data Type data-type [] is not a valid data type."]}
+            ["Additional Attribute Data Type [] is not a valid data type."]}
            {:path [:product-specific-attributes 1 :data-type]
             :errors
-            ["Data Type data-type [INTSTRING] is not a valid data type."]}])))))
+            ["Additional Attribute Data Type [INTSTRING] is not a valid data type."]}]))))
+
+  (testing "product specific attributes values match data type"
+    (testing "valid values"
+      (are [data-type value]
+           (and
+             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-begin value}]))
+             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :parameter-range-end value}]))
+             (assert-valid (coll-with-psas [{:name "foo" :data-type data-type :value value}])))
+           :string "string value"
+           :float "1.0"
+           :int "1"
+           :boolean "true"
+           :date "1986-10-14"
+           :time "04:03:27.123Z"
+           :datetime "1986-10-14T04:03:27.0Z"
+           :date-string "1986-10-14"
+           :time-string "04:03:27.123"
+           :datetime-string "1986-10-14T04:03:27.0Z"
+           :string nil
+           :float nil
+           :int nil
+           :boolean nil
+           :date nil
+           :time nil
+           :datetime nil
+           :date-string nil
+           :time-string nil
+           :datetime-string nil))
+
+    (testing "invalid values"
+      (are [data-type value field errors]
+           (assert-invalid
+             (coll-with-psas [{:name "foo" :data-type data-type field value}])
+             [:product-specific-attributes 0] errors)
+
+           :float "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [DATE]."]
+           :time "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [DATETIME]."]
+
+           :float "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [DATE]."]
+           :time "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [DATETIME]."]
+
+           :float "bar" :value ["Value [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :value ["Value [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :value ["Value [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :value ["Value [bar] is not a valid value for type [DATE]."]
+           :time "bar" :value ["Value [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :value ["Value [bar] is not a valid value for type [DATETIME]."]))
+
+    (testing "multiple invalid values"
+      (assert-multiple-invalid
+        (coll-with-psas [{:name "foo" :data-type :float :value "str"}
+                         {:name "bar" :data-type :float :value "1.0"}
+                         {:name "baz" :data-type :int :value "1.0"}])
+        [{:path [:product-specific-attributes 0]
+          :errors
+          ["Value [str] is not a valid value for type [FLOAT]."]}
+         {:path [:product-specific-attributes 2]
+          :errors
+          ["Value [1.0] is not a valid value for type [INT]."]}]))))
 
 (deftest collection-projects-validation
   (let [c1 (c/map->Project {:short-name "C1"})

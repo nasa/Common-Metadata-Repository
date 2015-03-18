@@ -5,6 +5,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.collection.temporal :as ct]
+            [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.umm.spatial :as umm-s])
   (:import [cmr.umm.collection
             Product
@@ -33,7 +34,8 @@
      {:name name
       :description desc
       :data-type type
-      :value value})))
+      :parsed-value value
+      :value (psa/gen-value type value)})))
 
 (defn two-d
   "Creates two-d-coordinate-system specific attribute"
