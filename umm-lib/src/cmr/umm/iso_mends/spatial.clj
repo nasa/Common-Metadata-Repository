@@ -132,30 +132,24 @@
   [n]
   (x/element :gco:Decimal {} (util/double->string n)))
 
-(def gml-id-state (atom 0))
-
-(defn gen-id
-  []
-  (str "geo-" (swap! gml-id-state inc)))
-
 (defmulti geometry->iso-geom
   "Returns content of a ISO MENDS extent element for an individual UMM
   spatial coverage geometry record. Dispatches on type."
-  type)
+  (fn [obj gen-id] (type obj)))
 
 ;;; Rendering gmd:geographicElement content
 
 (defmethod geometry->iso-geom cmr.spatial.point.Point
-  [point]
+  [point gen-id]
   (gmd-poly (x/element :gml:Point {:gml:id (gen-id)} (gml-pos point))))
 
 (defmethod geometry->iso-geom cmr.spatial.line_string.LineString
-  [{:keys [points]}]
+  [{:keys [points]} gen-id]
   (gmd-poly (x/element :gml:LineString {:gml:id (gen-id)}
                        (gml-poslist points))))
 
 (defmethod geometry->iso-geom cmr.spatial.polygon.Polygon
-  [polygon]
+  [polygon gen-id]
   (let [exterior (poly/boundary polygon)
         interior (poly/holes polygon)]
     (gmd-poly
@@ -165,7 +159,7 @@
                   (map #(x/element :gml:interior {} (gml-linear-ring (:points %))) interior))))))
 
 (defmethod geometry->iso-geom cmr.spatial.mbr.Mbr
-  [mbr]
+  [mbr gen-id]
   (x/element :gmd:EX_GeographicBoundingBox {}
              (x/element :gmd:westBoundLongitude {} (gco-decimal (:west mbr)))
              (x/element :gmd:eastBoundLongitude {} (gco-decimal (:east mbr)))
@@ -175,12 +169,12 @@
 (defn geometry->iso-xml
   "Returns an individual ISO MENDS geographic extent element for a UMM
   spatial coverage geometry record."
-  [coordinate-system geom]
+  [coordinate-system geom gen-id]
   ;; set the coordinate system based on the spatial coverage for output
-  (let [geom (d/calculate-derived (umm-s/set-coordinate-system coordinate-system geom))]
+  (let [geom     (d/calculate-derived (umm-s/set-coordinate-system coordinate-system geom))]
     (list
-     (x/element :gmd:geographicElement {} (geometry->iso-geom (r/mbr geom)))
-     (x/element :gmd:geographicElement {} (geometry->iso-geom geom)))))
+     (x/element :gmd:geographicElement {} (geometry->iso-geom (r/mbr geom) gen-id))
+     (x/element :gmd:geographicElement {} (geometry->iso-geom geom gen-id)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Functions
@@ -208,4 +202,6 @@
 (defn spatial-coverage->extent-xml
   "Returns a sequence of ISO MENDS elements from the given SpatialCoverage."
   [{:keys [spatial-representation geometries]}]
-  (mapcat #(geometry->iso-xml spatial-representation %) geometries))
+  (let [id-state (atom 0)
+        gen-id   (fn [] (str "geo-" (swap! id-state inc)))]
+    (mapcat #(geometry->iso-xml spatial-representation % gen-id) geometries)))
