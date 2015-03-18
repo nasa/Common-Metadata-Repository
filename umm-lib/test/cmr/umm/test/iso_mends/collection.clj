@@ -18,6 +18,16 @@
             [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
 
+(defn- spatial-coverage->expected-parsed
+  "Returns the expected parsed spatial-coverage for the given spatial-coverage"
+  [spatial-coverage]
+  (let [{:keys [geometries]} spatial-coverage]
+    (when-not (empty? geometries)
+      (umm-c/map->SpatialCoverage
+        {:granule-spatial-representation :geodetic
+         :spatial-representation :geodetic
+         :geometries geometries}))))
+
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
   [related-urls]
@@ -69,11 +79,12 @@
               :roles ["distributor"]}))
          distrib-centers)))
 
-(defn- umm->expected-parsed-iso
+(defn umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [short-name long-name version-id processing-level-id]} :product} coll
+  (let [{{:keys [short-name long-name version-id processing-level-id]} :product
+         :keys [spatial-coverage]} coll
         entry-id (str short-name "_" version-id)
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
@@ -110,7 +121,7 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
-
+        (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
@@ -173,7 +184,7 @@
                        :single-date-times
                        [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
                        :periodic-date-times []})
-                    :spatial-coverage (umm-c/map->SpatialCoverage {:geometries ()})
+                    :spatial-coverage nil
                     :science-keywords
                     [(umm-c/map->ScienceKeyword
                        {:category "EARTH SCIENCE"

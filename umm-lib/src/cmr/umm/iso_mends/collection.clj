@@ -97,10 +97,11 @@
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
        :spatial-coverage (let [geometries (sp/parse-geometry id-elem)]
-                           (c/map->SpatialCoverage
-                            {:spatial-representation :geodetic
-                             :granule-spatial-representation :geodetic
-                             :geometries geometries}))
+                           (when-not (empty? geometries)
+                             (c/map->SpatialCoverage
+                              {:spatial-representation :geodetic
+                               :granule-spatial-representation :geodetic
+                               :geometries geometries})))
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)})))
 
