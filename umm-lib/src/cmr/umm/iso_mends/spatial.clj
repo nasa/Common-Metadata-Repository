@@ -49,8 +49,7 @@
 
 (defmethod parse-gml :Polygon
   [element]
-  (println "parsing polgyon element" element)
-  (let [exterior  (cx/element-at-path element [:exterior :LinearRing])
+  (let [exterior  (cx/element-at-path  element [:exterior :LinearRing])
         interiors (cx/elements-at-path element [:interior :LinearRing])
         rings     (cons (parse-points exterior) (map parse-points interiors))]
     (poly/polygon :geodetic rings)))
@@ -61,8 +60,8 @@
 
 (defmethod parse-geo-element :EX_GeographicBoundingBox
   [element]
-  (let [west (cx/double-at-path element [:westBoundLongitude :Decimal])
-        east (cx/double-at-path element [:eastBoundLongitude :Decimal])
+  (let [west  (cx/double-at-path element [:westBoundLongitude :Decimal])
+        east  (cx/double-at-path element [:eastBoundLongitude :Decimal])
         north (cx/double-at-path element [:northBoundLatitude :Decimal])
         south (cx/double-at-path element [:southBoundLatitude :Decimal])]
     (mbr/mbr west north east south)))
