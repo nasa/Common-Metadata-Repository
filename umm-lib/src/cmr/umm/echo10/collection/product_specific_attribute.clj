@@ -10,13 +10,19 @@
   (let [name (cx/string-at-path psa-elem [:Name])
         description (cx/string-at-path psa-elem [:Description])
         data-type (psa/parse-data-type (cx/string-at-path psa-elem [:DataType]))
-        begin (psa/parse-value data-type (cx/string-at-path psa-elem [:ParameterRangeBegin]))
-        end (psa/parse-value data-type (cx/string-at-path psa-elem [:ParameterRangeEnd]))
-        value (psa/parse-value data-type (cx/string-at-path psa-elem [:Value]))]
+        begin (cx/string-at-path psa-elem [:ParameterRangeBegin])
+        end (cx/string-at-path psa-elem [:ParameterRangeEnd])
+        value (cx/string-at-path psa-elem [:Value])]
     (c/map->ProductSpecificAttribute
-      {:name name :description description :data-type data-type
-       :parameter-range-begin begin :parameter-range-end end
-       :value value})))
+      {:name name
+       :description description
+       :data-type data-type
+       :parameter-range-begin begin
+       :parameter-range-end end
+       :value value
+       :parsed-parameter-range-begin (psa/safe-parse-value data-type begin)
+       :parsed-parameter-range-end (psa/safe-parse-value data-type end)
+       :parsed-value (psa/safe-parse-value data-type value)})))
 
 (defn xml-elem->ProductSpecificAttributes
   [collection-element]
@@ -35,7 +41,7 @@
                      (x/element :Name {} name)
                      (x/element :DataType {} (psa/gen-data-type data-type))
                      (x/element :Description {} description)
-                     (gu/optional-elem :ParameterRangeBegin (psa/gen-value data-type parameter-range-begin))
-                     (gu/optional-elem :ParameterRangeEnd (psa/gen-value data-type parameter-range-end))
-                     (gu/optional-elem :Value (psa/gen-value data-type value))))))))
+                     (gu/optional-elem :ParameterRangeBegin parameter-range-begin)
+                     (gu/optional-elem :ParameterRangeEnd parameter-range-end)
+                     (gu/optional-elem :Value value)))))))
 
