@@ -132,20 +132,25 @@
           {:status 200}))
 
       (GET "/history" []
-        (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+        (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
           {:status 200
            :body (wrapper/get-message-queue-history broker-wrapper)
-           :headers {"Content-Type" "application/json"}}))
+           :headers {"Content-Type" "application/json"}}
+          {:status 403
+           :body "Cannot get message queue history unless using the message queue wrapper."}))
 
       (POST "/set-retry-behavior" {:keys [params]}
         (let [num-retries (:num-retries params)]
           (debug (format "dev system setting message queue to retry messages %s times"
                          num-retries))
-          (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-            (wrapper/set-message-queue-retry-behavior!
-              broker-wrapper
-              (Integer/parseInt num-retries)))
-          {:status 200})))
+          (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+            (do
+              (wrapper/set-message-queue-retry-behavior!
+                broker-wrapper
+                (Integer/parseInt num-retries))
+              {:status 200})
+            {:status 403
+             :body "Cannot set message queue retry behvavior unless using the message queue wrapper."}))))
 
     (route/not-found "Not Found")))
 

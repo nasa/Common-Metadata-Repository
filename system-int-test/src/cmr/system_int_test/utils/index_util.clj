@@ -63,4 +63,5 @@
     (try
       (f)
       (finally
-        (set-message-queue-retry-behavior 0)))))
+        (s/only-with-real-message-queue
+          (set-message-queue-retry-behavior 0))))))
