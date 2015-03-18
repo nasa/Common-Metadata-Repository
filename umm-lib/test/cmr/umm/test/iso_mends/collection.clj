@@ -173,6 +173,7 @@
                        :single-date-times
                        [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
                        :periodic-date-times []})
+                    :spatial-coverage (umm-c/map->SpatialCoverage {:geometries ()})
                     :science-keywords
                     [(umm-c/map->ScienceKeyword
                        {:category "EARTH SCIENCE"
