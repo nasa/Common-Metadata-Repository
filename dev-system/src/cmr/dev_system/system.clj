@@ -163,6 +163,7 @@
 (defmethod create-queue-broker :external
   [type]
   (indexer-config/set-indexing-communication-method! "queue")
+  (rmq-conf/set-rabbit-mq-ttls! [1 1 1 1 1])
   (let [rmq-config {:port (rmq-conf/rabbit-mq-port)
                     :host (rmq-conf/rabbit-mq-host)
                     :username (rmq-conf/rabbit-mq-user)
