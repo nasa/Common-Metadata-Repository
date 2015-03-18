@@ -45,22 +45,22 @@
       (testing "successfully processed concepts"
         (is (= {[(:concept-id gran1-1) (:revision-id gran1-1)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id coll2-3) (:revision-id coll2-3)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id coll2-2) (:revision-id coll2-2)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id coll3-1) (:revision-id coll3-1)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id coll2-1) (:revision-id coll2-1)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id coll1-1) (:revision-id coll1-1)]
                 [{:action "enqueue", :result "initial"}
-                 {:action "process", :result "processed"}]}
+                 {:action "process", :result "success"}]}
                (index-util/get-concept-message-queue-history)))))))
 
 (deftest message-queue-retry-test
@@ -83,11 +83,11 @@
         (is (= {[(:concept-id granule) (:revision-id granule)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
-                 {:action "process", :result "processed"}],
+                 {:action "process", :result "success"}],
                 [(:concept-id collection) (:revision-id collection)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
-                 {:action "process", :result "processed"}]}
+                 {:action "process", :result "success"}]}
                (index-util/get-concept-message-queue-history)))))))
 
 (deftest message-queue-failure-test
@@ -114,7 +114,7 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
-                 {:action "process", :result "failed"}],
+                 {:action "process", :result "failure"}],
                 [(:concept-id collection) (:revision-id collection)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
@@ -122,7 +122,7 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
-                 {:action "process", :result "failed"}]}
+                 {:action "process", :result "failure"}]}
                (index-util/get-concept-message-queue-history)))))))
 
 

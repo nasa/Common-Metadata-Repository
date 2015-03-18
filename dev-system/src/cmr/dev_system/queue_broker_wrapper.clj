@@ -57,6 +57,7 @@
 (comment
   (update-message-queue-history (create-queue-broker-wrapper nil)
                                 :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial))
+
 (def ^:const ^:private valid-message-states
   "Set of valid message states:
   :initial - message first created
@@ -65,14 +66,14 @@
   :processed - the message has completed successfully"
   #{:initial
     :retry
-    :failed
-    :processed})
+    :failure
+    :success})
 
 (def ^:const ^:private terminal-states
   "Subset of valid message states which are considered final. Used to determine when a message will
   no longer be processed."
-  #{:failed
-    :processed})
+  #{:failure
+    :success})
 
 (defn- current-message-states
   "Return a sequence of message states for all messages currently held by the wrapper."
@@ -82,31 +83,20 @@
        :messages
        (map :state)))
 
-(defn- wait-for-states
-  "Wait until the messages that have been enqueued have all reached one of the given expected
-  terminal states. If it takes longer than 5 seconds, log a warning and stop waiting."
-  ([broker-wrapper expected-terminal-states]
-   (wait-for-states broker-wrapper expected-terminal-states 5000))
-  ([broker-wrapper expected-terminal-states ms-to-wait]
-   {:pre [(nil? (seq (set/difference (set expected-terminal-states) terminal-states)))]}
-   (let [expected-terminal-states-set (set expected-terminal-states)
-         failure-states (set/difference terminal-states (set expected-terminal-states))
-         start-time (System/currentTimeMillis)]
+(defn- wait-for-terminal-states
+  "Wait until the messages that have been enqueued have all reached a terminal states. If it takes
+  longer than ms-to-wait, log a warning and stop waiting."
+  ([broker-wrapper]
+   (wait-for-terminal-states broker-wrapper 5000))
+  ([broker-wrapper ms-to-wait]
+   (let [start-time (System/currentTimeMillis)]
      (loop [current-states (set (current-message-states broker-wrapper))]
-       (let [in-work-states (set/difference current-states expected-terminal-states-set)]
-         ;; The current states should consist of non-terminal (currently processing) states and
-         ;; expected terminal states. Any terminal state which is not expected will cause an error.
-         ;; If the current states are non-terminal states we will check again after sleeping. After
-         ;; ms-to-wait have passed we give up.
-         (when (seq in-work-states)
-           ;; If we've reached any terminal state that we did not expect
-           (when (seq (set/intersection in-work-states failure-states))
-             (throw (Exception. (str "Unexpected final message state(s): " in-work-states))))
-           (Thread/sleep 10)
-           (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
-             (recur (set (current-message-states broker-wrapper)))
-             (warn (format "Waited %d ms for messages to complete, but they did not complete."
-                           ms-to-wait)))))))))
+       (when (seq (set/difference current-states terminal-states))
+         (Thread/sleep 10)
+         (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
+           (recur (set (current-message-states broker-wrapper)))
+           (warn (format "Waited %d ms for messages to complete, but they did not complete."
+                         ms-to-wait))))))))
 
 (defrecord BrokerWrapper
   [
@@ -184,7 +174,7 @@
     [this]
     (reset! (:resetting?-atom this) true)
     (try
-      (wait-for-states this [:processed :failed])
+      (wait-for-terminal-states this)
       (queue/reset queue-broker)
       (reset! id-sequence-atom 0)
       (reset! message-queue-history-atom [])
@@ -194,7 +184,7 @@
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed or failed."
   [broker-wrapper]
-  (wait-for-states broker-wrapper [:processed :failed]))
+  (wait-for-terminal-states broker-wrapper))
 
 (defn get-message-queue-history
   "Returns the message-queue-history."
@@ -213,32 +203,28 @@
 
 
 (defn- queue-response->message-state
-  "Converts the response of a message queue action to the appropriate message state."
+  "Converts the response of a message queue action to the appropriate message state. If a message
+  has a retry status and has exceeded the max retries then return failure."
   [response msg]
-  (case (:status response)
-    :ok :processed
-    :retry (if (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls)))
-             :failed
-             :retry)
-    :fail :failed
-    ;;else
-    (throw (Exception. (str "Invalid response: " (pr-str response))))))
+  {:pre [(valid-message-states (:status response))]}
+  (let [{:keys [:status]} response]
+    (if (and (= :retry status)
+             (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
+      :failure
+      status)))
 
 (defn- fail-message-on-reset
   "Mark message as failed due to reset being called on the queue"
   [broker-wrapper msg]
-  (update-message-queue-history broker-wrapper :process msg :failed)
-  {:status :fail :message "Forced failure on reset"})
+  (update-message-queue-history broker-wrapper :process msg :failure)
+  {:status :failure :message "Forced failure on reset"})
 
-(defn- retry-message
+(defn- simulate-retry-message
   "Mark message as retrying. If retries are exhausted we mark the message as failed"
   [broker-wrapper msg]
-  (let [message-state (queue-response->message-state {:status :retry} msg)
-        response-status (case message-state
-                          :retry :retry
-                          :failed :fail)]
+  (let [message-state (queue-response->message-state {:status :retry} msg)]
     (update-message-queue-history broker-wrapper :process msg message-state)
-    {:status response-status :message "Simulating retry on message queue"}))
+    {:status message-state :message "Simulating retry on message queue"}))
 
 (defn handler-wrapper
   "Wraps handler function to count acks, retries, fails. In addition this wrapper allows for
@@ -253,7 +239,7 @@
 
       ;; Queue set to retry actions N times and this message has not been retried N times
       (< (get msg :retry-count 0) @(:num-retries-atom broker-wrapper))
-      (retry-message broker-wrapper msg)
+      (simulate-retry-message broker-wrapper msg)
 
       :else
       ;; Process the message as normal

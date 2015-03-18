@@ -75,10 +75,10 @@
     (try
       (let [resp (client-handler msg)]
         (case (:status resp)
-          :ok (lb/ack ch delivery-tag)
+          :success (lb/ack ch delivery-tag)
           :retry (attempt-retry queue-broker ch queue-name
                                 routing-key msg delivery-tag resp)
-          :fail (do
+          :failure (do
                   ;; bad data - nack it
                   (error (format "Message failed processing with error '%s', it has been removed from the message queue. Message details: %s"
                           (:message resp)
@@ -102,7 +102,7 @@
   'client-handler' is a function that takes a single parameter (the message) and attempts to
   process it. This function should respond with a map of the of the follwing form:
   {:status status :message message}
-  where status is one of (:ok, :retry, :fail) and message is optional.
+  where status is one of (:success, :retry, :failure) and message is optional.
 
   'params' is a map containing queue implementation specific settings, if necessary. Currently the
   only supported setting for RabbitMQ is :prefetch, which corresponds to the number of messages
@@ -270,9 +270,9 @@
       (info "Test handler")
       (let [val (rand)
             rval (cond
-                   (> 0.5 val) {:status :ok}
+                   (> 0.5 val) {:status :success}
                    (> 0.97 val) {:status :retry :message "service down"}
-                   :else {:status :fail :message "bad data"})]
+                   :else {:status :failure :message "bad data"})]
 
         rval))
 
