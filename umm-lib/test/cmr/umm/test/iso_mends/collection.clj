@@ -15,8 +15,7 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.iso-mends.core :as iso]
-            [cmr.umm.test.echo10.collection :as test-echo10])
-  (:import cmr.spatial.mbr.Mbr))
+            [cmr.umm.test.echo10.collection :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"

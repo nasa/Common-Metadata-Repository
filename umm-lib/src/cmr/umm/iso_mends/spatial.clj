@@ -10,7 +10,6 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.ring-relations :as r]
             [cmr.umm.collection :as c]
             [cmr.umm.spatial :as umm-s]))
 
@@ -35,10 +34,7 @@
   [element]
   (when-let [pos-str (or (cx/string-at-path element [:pos])
                          (cx/string-at-path element [:posList]))]
-    (->> (re-seq #"[\-\w\.]+" pos-str)
-         (map #(Double. %))
-         (partition 2)
-         (map #(apply p/point %)))))
+    (umm-s/lat-lon-point-str->points pos-str)))
 
 (defmethod parse-gml :Point
   [element]
@@ -46,15 +42,15 @@
 
 (defmethod parse-gml :LineString
   [element]
-  (ls/line-string :geodetic (parse-points element)))
+  (ls/line-string (parse-points element)))
 
 (defmethod parse-gml :Polygon
   [element]
   (let [exterior   (cx/element-at-path  element [:exterior :LinearRing])
         interiors  (cx/elements-at-path element [:interior :LinearRing])
-        parse-ring #(r/ring :geodetic (parse-points %))
+        parse-ring #(umm-s/ring (parse-points %))
         rings      (cons (parse-ring exterior) (map parse-ring interiors))]
-    (poly/polygon :geodetic rings)))
+    (poly/polygon rings)))
 
 (defmethod parse-geo-element :default
   [_]
@@ -169,6 +165,7 @@
   "Returns an individual ISO MENDS geographic extent element for a UMM
   spatial coverage geometry record."
   [geom]
+  ;; set the coordinate system to geodetic for output
   (let [geom (d/calculate-derived (umm-s/set-coordinate-system :geodetic geom))]
     (list
      (x/element :gmd:geographicElement {} (geometry->iso-geom (geometry->iso-mbr geom)))
