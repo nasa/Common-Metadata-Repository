@@ -67,19 +67,6 @@
         south (cx/double-at-path element [:southBoundLatitude :Decimal])]
     (mbr/mbr west north east south)))
 
-;;; ISO MENDS represents all points, lines, and closed shapes as
-;;; gmd:EX_BoundingPolygon elements containing a sequence of gml
-;;; shapes.
-
-(defn- parse-geometry
-  [xml]
-  (let [geo-elems (cx/elements-at-path xml [:extent :EX_Extent :geographicElement])
-        ;; ISO MENDS includes bounding boxes for each element (point,
-        ;; polygon, etc.) in the spatial extent metadata. We can
-        ;; discard the redundant bounding boxes.
-        shape-elems (map second (partition 2 geo-elems))]
-    (remove nil? (map (comp parse-geo-element first :content) shape-elems))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generating XML
 
@@ -189,11 +176,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Functions
 
-(defn iso-data-id->SpatialCoverage
-  "Returns a UMM spatial coverage record from an ISO MENDS MD_DataIdentification element."
-  [data-id]
-  (c/map->SpatialCoverage
-   {:geometries (parse-geometry data-id)}))
+(defn parse-geometry
+  [xml]
+  (let [geo-elems (cx/elements-at-path xml [:extent :EX_Extent :geographicElement])
+        ;; ISO MENDS includes bounding boxes for each element (point,
+        ;; polygon, etc.) in the spatial extent metadata. We can
+        ;; discard the redundant bounding boxes.
+        shape-elems (map second (partition 2 geo-elems))]
+    (remove nil? (map (comp parse-geo-element first :content) shape-elems))))
 
 (defn SpatialCoverage->xml
   "Returns a sequence of ISO MENDS elements for the given UMM spatial
