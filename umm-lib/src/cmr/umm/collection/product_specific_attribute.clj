@@ -86,7 +86,7 @@
   [data-type value]
   (try
     (parse-value data-type value)
-    (catch Throwable e)))
+    (catch Exception _ nil)))
 
 (defmulti gen-value
   "Converts the given value to a string for placement in XML."

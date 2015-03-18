@@ -19,7 +19,7 @@
   (try
     (psa/parse-value data-type value)
     nil
-    (catch Throwable e
+    (catch Exception _
       [(format "%s [%s] is not a valid value for type [%s]."
                (v/humanize-field field) value data-type)])))
 
@@ -27,8 +27,8 @@
   "Validates additional attribute values match the data type"
   [field-path aa]
   (let [{:keys [data-type]} aa
-        errors (->> (mapcat #(apply (partial field-value-validation data-type) %)
-                            (select-keys aa [:parameter-range-begin :parameter-range-end :value]))
+        errors (->> (select-keys aa [:parameter-range-begin :parameter-range-end :value])
+                    (mapcat #(apply field-value-validation data-type %))
                     (remove nil?))]
     (when (seq errors)
       {field-path errors})))
