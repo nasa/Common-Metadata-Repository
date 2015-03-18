@@ -16,9 +16,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing XML
 
-(defmulti ^:private parse-geo-element :tag)
+(defmulti ^:private parse-geo-element
+  "Returns a UMM geometry values from the child element of ISO extent
+  geographicElement elements. Dispatches on tag of element."
+  :tag)
 
-(defmulti ^:private parse-gml :tag)
+(defmulti ^:private parse-gml
+  "Returns a UMM geometry value for a gml:* child of a
+  EX_BoundingPolygon element. Dispatches on tag."
+  :tag)
 
 ;; EX_BoundingPolygon always contains a single gmd:polygon, which in
 ;; turn contains a single gml:Point, gml:LineString, or gml:Polygon
