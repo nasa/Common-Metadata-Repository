@@ -10,6 +10,7 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.relations :as r]
             [cmr.umm.collection :as c]
             [cmr.umm.iso-mends.core :as core]
             [cmr.umm.spatial :as umm-s]))
@@ -137,30 +138,10 @@
   []
   (str "geo-" (swap! gml-id-state inc)))
 
-;;; Rendering the ISO MENDS MBR element for each geometry type
-
-(defmulti geometry->iso-mbr type)
-
 (defmulti geometry->iso-geom
   "Returns content of a ISO MENDS extent element for an individual UMM
   spatial coverage geometry record. Dispatches on type."
   type)
-
-(defmethod geometry->iso-mbr cmr.spatial.point.Point
-  [point]
-  (mbr/point->mbr point))
-
-(defmethod geometry->iso-mbr cmr.spatial.line_string.LineString
-  [line]
-  (ls/line-string->mbr line))
-
-(defmethod geometry->iso-mbr cmr.spatial.polygon.Polygon
-  [polygon]
-  (:mbr polygon))
-
-(defmethod geometry->iso-mbr cmr.spatial.mbr.Mbr
-  [mbr]
-  mbr)
 
 ;;; Rendering gmd:geographicElement content
 
@@ -198,7 +179,7 @@
   ;; set the coordinate system based on the spatial coverage for output
   (let [geom (d/calculate-derived (umm-s/set-coordinate-system coordinate-system geom))]
     (list
-     (x/element :gmd:geographicElement {} (geometry->iso-geom (geometry->iso-mbr geom)))
+     (x/element :gmd:geographicElement {} (geometry->iso-geom (r/mbr geom)))
      (x/element :gmd:geographicElement {} (geometry->iso-geom geom)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
