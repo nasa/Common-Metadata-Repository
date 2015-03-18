@@ -144,26 +144,26 @@
              (coll-with-psas [{:name "foo" :data-type data-type field value}])
              [:product-specific-attributes 0] errors)
 
-           :float "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:float]."]
-           :int "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:int]."]
-           :boolean "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:boolean]."]
-           :date "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:date]."]
-           :time "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:time]."]
-           :datetime "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [:datetime]."]
+           :float "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [DATE]."]
+           :time "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :parameter-range-begin ["Parameter Range Begin [bar] is not a valid value for type [DATETIME]."]
 
-           :float "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:float]."]
-           :int "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:int]."]
-           :boolean "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:boolean]."]
-           :date "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:date]."]
-           :time "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:time]."]
-           :datetime "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [:datetime]."]
+           :float "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [DATE]."]
+           :time "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :parameter-range-end ["Parameter Range End [bar] is not a valid value for type [DATETIME]."]
 
-           :float "bar" :value ["Value [bar] is not a valid value for type [:float]."]
-           :int "bar" :value ["Value [bar] is not a valid value for type [:int]."]
-           :boolean "bar" :value ["Value [bar] is not a valid value for type [:boolean]."]
-           :date "bar" :value ["Value [bar] is not a valid value for type [:date]."]
-           :time "bar" :value ["Value [bar] is not a valid value for type [:time]."]
-           :datetime "bar" :value ["Value [bar] is not a valid value for type [:datetime]."]))
+           :float "bar" :value ["Value [bar] is not a valid value for type [FLOAT]."]
+           :int "bar" :value ["Value [bar] is not a valid value for type [INT]."]
+           :boolean "bar" :value ["Value [bar] is not a valid value for type [BOOLEAN]."]
+           :date "bar" :value ["Value [bar] is not a valid value for type [DATE]."]
+           :time "bar" :value ["Value [bar] is not a valid value for type [TIME]."]
+           :datetime "bar" :value ["Value [bar] is not a valid value for type [DATETIME]."]))
 
     (testing "multiple invalid values"
       (assert-multiple-invalid
@@ -172,10 +172,10 @@
                          {:name "baz" :data-type :int :value "1.0"}])
         [{:path [:product-specific-attributes 0]
           :errors
-          ["Value [str] is not a valid value for type [:float]."]}
+          ["Value [str] is not a valid value for type [FLOAT]."]}
          {:path [:product-specific-attributes 2]
           :errors
-          ["Value [1.0] is not a valid value for type [:int]."]}]))))
+          ["Value [1.0] is not a valid value for type [INT]."]}]))))
 
 (deftest collection-projects-validation
   (let [c1 (c/map->Project {:short-name "C1"})

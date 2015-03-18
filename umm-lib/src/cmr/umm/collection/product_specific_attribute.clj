@@ -7,7 +7,8 @@
 (defn parse-data-type
   "Parses the string data type from the XML into the keyword data type."
   [data-type]
-  (keyword (csk/->kebab-case data-type)))
+  (when data-type
+    (keyword (csk/->kebab-case data-type))))
 
 (defn gen-data-type
   "Generates the string data type for XML from the keyword data type."

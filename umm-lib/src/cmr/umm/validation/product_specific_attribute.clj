@@ -21,7 +21,7 @@
     nil
     (catch Exception _
       [(format "%s [%s] is not a valid value for type [%s]."
-               (v/humanize-field field) value data-type)])))
+               (v/humanize-field field) value (psa/gen-data-type data-type))])))
 
 (defn- values-match-data-type-validation
   "Validates additional attribute values match the data type"
