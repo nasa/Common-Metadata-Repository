@@ -161,7 +161,7 @@
     (gmd-poly
      (x/element :gml:Polygon {:gml:id (gen-id)}
                 (x/element :gml:exterior {} (gml-linear-ring (:points exterior)))
-                (when-not (empty? interior)
+                (when (seq interior)
                   (map #(x/element :gml:interior {} (gml-linear-ring (:points %))) interior))))))
 
 (defmethod geometry->iso-geom cmr.spatial.mbr.Mbr
