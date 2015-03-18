@@ -10,6 +10,7 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.ring-relations :as r]
             [cmr.umm.collection :as c]
             [cmr.umm.spatial :as umm-s]))
 
@@ -49,9 +50,10 @@
 
 (defmethod parse-gml :Polygon
   [element]
-  (let [exterior  (cx/element-at-path  element [:exterior :LinearRing])
-        interiors (cx/elements-at-path element [:interior :LinearRing])
-        rings     (cons (parse-points exterior) (map parse-points interiors))]
+  (let [exterior   (cx/element-at-path  element [:exterior :LinearRing])
+        interiors  (cx/elements-at-path element [:interior :LinearRing])
+        parse-ring #(r/ring :geodetic (parse-points %))
+        rings      (cons (parse-ring exterior) (map parse-ring interiors))]
     (poly/polygon :geodetic rings)))
 
 (defmethod parse-geo-element :default
