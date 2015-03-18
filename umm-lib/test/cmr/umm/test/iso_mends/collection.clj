@@ -15,7 +15,9 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.iso-mends.core :as iso]
-            [cmr.umm.test.echo10.collection :as test-echo10]))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.test.echo10.collection :as test-echo10]
+            [cmr.spatial.derived :as d]))
 
 (defn- spatial-coverage->expected-parsed
   [{:keys [geometries spatial-representation] :as sc}]
@@ -122,6 +124,15 @@
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
 
+(defn derive-geometries
+  [{:keys [spatial-representation] :as sc}]
+  (when sc
+    (update-in sc [:geometries] (fn [geoms]
+                                  (map #(d/calculate-derived
+                                         (umm-s/set-coordinate-system spatial-representation
+                                                                      %))
+                                       geoms)))))
+
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)]
@@ -140,6 +151,7 @@
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
+          parsed-iso (update-in parsed-iso [:spatial-coverage] derive-geometries)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
