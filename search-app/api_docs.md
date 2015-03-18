@@ -47,12 +47,6 @@ These are query parameters specific to collections
 
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
-    * `curl -H "Accept: text/csv" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/atom+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/json" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/echo10+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/dif+xml" -i "%CMR-ENDPOINT%/granules"`
-    * `curl -H "Accept: application/opendata+json" -i "%CMR-ENDPOINT%/collections"`
   * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
 
@@ -79,113 +73,9 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `csv`       "text/csv"
   * `atom`      "application/atom+xml"
   * `opendata`  "application/opendata+json" (only supported for collections)
+  * `kml`       "application/vnd.google-earth.kml+xml"
 
 iso is an alias for iso\_mends.
-
-
-## Administrative Tasks
-
-These tasks require an admin user token with the INGEST_MANAGEMENT_ACL with read or update
-permission.
-
-### Clear the cache cache
-
-    curl -i -XPOST %CMR-ENDPOINT%/clear-cache
-
-### Reset the application to the initial state
-
-Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
-
-    curl -i -XPOST %CMR-ENDPOINT%/reset
-
-### Querying caches
-
-Endpoints are provided for querying the contents of the various caches used by the application.
-The following curl will return the list of caches:
-
-    curl -i %CMR-ENDPOINT%/caches
-
-The following curl will return the keys for a specific cache:
-
-    curl -i %CMR-ENDPOINT%/caches/cache-name
-
-This curl will return the value for a specific key in the named cache:
-
-    curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
-
-### Check application health
-
-This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
-
-    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
-
-Example healthy response body:
-
-```
-{
-  "echo" : {
-    "ok?" : true
-  },
-  "internal-metadata-db" : {
-    "ok?" : true,
-    "dependencies" : {
-      "oracle" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  },
-  "index-set" : {
-    "ok?" : true,
-    "dependencies" : {
-      "elastic_search" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  }
-}
-```
-
-Example un-healthy response body:
-
-```
-{
-  "echo" : {
-    "ok?" : true
-  },
-  "internal-metadata-db" : {
-    "ok?" : true,
-    "dependencies" : {
-      "oracle" : {
-        "ok?" : true
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  },
-  "index-set" : {
-    "ok?" : false,
-    "problem" : {
-      "elastic_search" : {
-        "ok?" : false,
-        "problem" : {
-          "status" : "Inaccessible",
-          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
-        }
-      },
-      "echo" : {
-        "ok?" : true
-      }
-    }
-  }
-}
-```
 
 ### Search for Collections
 
@@ -240,51 +130,60 @@ One entry id
 
     curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
 
-#### Find collections by dif entry id, this searches for matches on either entry id or associated difs
+#### Find collections by dif entry id
+
+This searches for matches on either entry id or associated difs
 
 One dif\_entry\_id
 
     curl "%CMR-ENDPOINT%/collections?dif_entry_id\[\]=SHORT_V5"
 
-#### Find collections by archive center, supports pattern and ignore_case
+#### Find collections by archive center
 
-  Find collections matching 'archive_center' param value
+This supports `pattern` and `ignore_case`.
+
+Find collections matching 'archive_center' param value
+
     curl "%CMR-ENDPOINT%/collections?archive_center\[\]=LARC"
     curl "%CMR-ENDPOINT%/collections?archive_center=Sedac+AC"
 
-  Find collections matching any of the 'archive_center' param values
+Find collections matching any of the 'archive_center' param values
 
      curl "%CMR-ENDPOINT%/collections?archive_center\[\]=Larc&archive_center\[\]=SEDAC"
 
-#### Find collections with multiple temporal
+#### Find collections with temporal
 
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-### Find collections by campaign param, supports pattern, ignore_case and option :and. Note: 'campaign' maps to 'project' in UMM
+#### Find collections by campaign
 
-  Find collections matching 'campaign' param value
+This supports `pattern`, `ignore_case` and option `and`. 'campaign' maps to 'project' in UMM
+
+Find collections matching 'campaign' param value
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI"
 
-  Find collections matching any of the 'campaign' param values
+Find collections matching any of the 'campaign' param values
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI"
 
-  Find collections that match all of the 'campaign' param values
+Find collections that match all of the 'campaign' param values
 
      curl "%CMR-ENDPOINT%/collections?campaign\[\]=ESI&campaign\[\]=EVI&campaign\[\]=EPI&options\[campaign\]\[and\]=true"
 
-### Find collections by updated_since param
+#### Find collections by updated_since
 
   Find collections which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
-### Find collections by processing\_level\_id param, supports pattern and ignore_case
+#### Find collections by processing\_level\_id
 
-Find collections matching 'processing_level_id' param value
+This supports `pattern` and `ignore_case`.
+
+Find collections matching 'processing_level_id'
 
      curl "%CMR-ENDPOINT%/collections?processing_level_id\[\]=1B"
 
@@ -294,57 +193,69 @@ Find collections matching any of the 'processing\_level\_id' param values
 
 The alias 'processing_level' also works for searching by processing level id.
 
-### Find collections by platform param, supports pattern, ignore_case and option :and
+#### Find collections by platform
 
-  Find collections matching 'platform' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'platform' param value
 
      curl "%CMR-ENDPOINT%/collections?platform\[\]=1B"
 
-  Find collections matching any of the 'platform' param values
+Find collections matching any of the 'platform' param values
 
      curl "%CMR-ENDPOINT%/collections?platform\[\]=1B&platform\[\]=2B"
 
-### Find collections by instrument param, supports pattern, ignore_case and option :and
+#### Find collections by instrument
 
-  Find collections matching 'instrument' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'instrument' param value
 
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B"
 
-  Find collections matching any of the 'instrument' param values
+Find collections matching any of the 'instrument' param values
 
      curl "%CMR-ENDPOINT%/collections?instrument\[\]=1B&instrument\[\]=2B"
 
-### Find collections by sensor param, supports pattern, ignore_case and option :and
+#### Find collections by sensor.
 
-  Find collections matching 'sensor' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'sensor' param value
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B"
 
-  Find collections matching any of the 'sensor' param values
+Find collections matching any of the 'sensor' param values
 
      curl "%CMR-ENDPOINT%/collections?sensor\[\]=1B&sensor\[\]=2B"
 
-### Find collections by spatial_keyword param, supports pattern, ignore_case and option :and
+#### Find collections by spatial\_keyword
 
-  Find collections matching 'spatial_keyword' param value
+This supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'spatial_keyword' param value
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC"
 
-  Find collections matching any of the 'spatial_keyword' param values
+Find collections matching any of the 'spatial_keyword' param values
 
      curl "%CMR-ENDPOINT%/collections?spatial_keyword\[\]=DC&spatial_keyword\[\]=LA"
 
-### Find collections by science_keywords params, supports option :or
+#### Find collections by science_keywords
 
-  Find collections matching 'science_keywords' param value
+This supports option _or_.
+
+Find collections matching 'science_keywords' param value
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1"
 
-  Find collections matching multiple 'science_keywords' param values, default is :and
+Find collections matching multiple 'science_keywords' param values, default is :and
 
      curl "%CMR-ENDPOINT%/collections?science_keywords\[0\]\[category\]=Cat1&science_keywords\[0\]\[topic\]=Topic1&science_keywords\[1\]\[category\]=Cat2"
 
-### Find collections by two\_d\_coordinate\_system\_name param, supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
+#### Find collections by two\_d\_coordinate\_system\_name
+
+This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
 
   Find collections matching 'two\_d\_coordinate\_system\_name' param value
 
@@ -354,7 +265,7 @@ The alias 'processing_level' also works for searching by processing level id.
 
     curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
 
-### Find collections by collection\_data\_type param
+#### Find collections by collection\_data\_type
 
 Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_real\_time","nrt", "NRT", "near real time","near-real time","near-real-time","near real-time".
 
@@ -382,7 +293,9 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
     curl "%CMR-ENDPOINT%/collections?browsable=true"
 
-#### Find collections by keyword search, case insensitive and support wild cards ? and *
+#### Find collections by keyword search
+
+Keyword searches are case insensitive and support wild cards ? and *.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
@@ -462,21 +375,21 @@ Multiple attributes can be provided. The default is for granules to match all th
 
 For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `option[attribute][exclude_collection]=true`.
 
-### Find granules by Spatial
+#### Find granules by Spatial
 
-#### Polygon
+##### Polygon
 
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
 
     curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
 
-#### Bounding Box
+##### Bounding Box
 
 Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
 
     curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
 
-### Find granules by orbit number
+#### Find granules by orbit number
 
   Find granules with an orbit number of 10
 
@@ -486,7 +399,7 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "%CMR-ENDPOINT%/granules?orbit_number=0.5,1.5"
 
-### Find granules by orbit equator crossing longitude
+#### Find granules by orbit equator crossing longitude
 
   Find granules with an exact equator crossing longitude of 90
 
@@ -501,20 +414,20 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=170,-170
 
-### Find granules by orbit equator crossing date
+#### Find granules by orbit equator crossing date
 
   Find granules with an orbit equator crossing date in the range of
   2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
-### Find granules by updated_since param
+#### Find granules by updated_since
 
   Find granules which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
 
-### Find granules by cloud_cover param
+#### Find granules by cloud_cover
 
   Find granules with just the min cloud cover value set to 0.2
 
@@ -528,19 +441,25 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
      curl "%CMR-ENDPOINT%/granules?cloud_cover=-70.0,120.0"
 
-### Find collections by platform param, supports pattern, ignore_case and option :and
+#### Find granules by platform
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?platform\[\]=1B"
 
-### Find collections by instrument param, supports pattern, ignore_case and option :and
+#### Find granules by instrument
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?instrument\[\]=1B"
 
-### Find collections by sensor param, supports pattern, ignore_case and option :and
+#### Find granules by sensor param
+
+This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
-### Find granules by echo granule id, echo collection id and concept ids.
+#### Find granules by echo granule id, echo collection id and concept ids.
 
 Note: more than one may be supplied
 
@@ -560,7 +479,7 @@ Note: more than one may be supplied
 
     curl "%CMR-ENDPOINT%/granules?concept_id\[\]=C1000000001-CMR_PROV2"
 
-### Find granules by day\_night\_flag param, supports pattern and ignore_case
+#### Find granules by day\_night\_flag param, supports pattern and ignore_case
 
 ```
 curl "%CMR-ENDPOINT%/granules?day_night_flag=night
@@ -570,7 +489,9 @@ curl "%CMR-ENDPOINT%/granules?day_night_flag=day
 curl "%CMR-ENDPOINT%/granules?day_night=unspecified
 ```
 
-### Find granules by grid param, this is an alias of catalog-rest two_d_coordinate_system.
+#### Find granules by grid param.
+
+This is an alias of catalog-rest two\_d\_coordinate_system.
 
 ':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.
 
@@ -578,7 +499,9 @@ curl "%CMR-ENDPOINT%/granules?day_night=unspecified
   curl "%CMR-ENDPOINT%/granules?grid\[\]=wrs-1:5,10:8-10,0-10
 ```
 
-### Exclude granules from elastic results by echo granule id and concept ids. Note: more than one id may be supplied in exclude param
+#### Exclude granules from elastic results by echo granule id and concept ids.
+
+Note: more than one id may be supplied in exclude param
 
 Exclude granule by echo granule id
 
@@ -664,7 +587,9 @@ The response format is in JSON. Intervals are returned as tuples containing thre
 [{"concept-id":"C1200000000-PROV1","intervals":[[949363200,965088000,4],[967766400,970358400,1],[973036800,986083200,3],[991353600,1072915200,3]]}]
 ```
 
-### Retrieve provider holdings, support format :xml and :json in header and as extension.
+### Retrieve Provider Holdings
+
+Provider holdings can be retrieved as XML or JSON.
 
 All provider holdings
 
@@ -675,8 +600,9 @@ Provider holdings for a list of providers
     curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
 ### Search with AQL
+
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
-that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
+that is defined in `cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd`.
 
     curl -i -XPOST -H "Content-Type: application/xml" %CMR-ENDPOINT%/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>
@@ -686,7 +612,7 @@ that is defined in cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd
 
 When a keyword search is requested, matched documents receive relevancy scores as follows:
 
-A series of filters are executed against each document. Each of these  has an associated boost
+A series of filters are executed against each document. Each of these has an associated boost
 value. The boost values of all the filters that match a given document are multiplied together
 to get the final document score. Documents that match none of the filters have a default
 score of 1.0.
@@ -815,7 +741,8 @@ Facets in JSON search response formats will be formatted like the following exam
 ```
 
 ### Search for Tiles
-Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial"). 
+
+Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial").
 
 Here are some examples:
 Find the tiles which intersect a polygon.
@@ -834,4 +761,109 @@ Find all the tiles which a line intersects.
 
     curl -i "%CMR-ENDPOINT%/tiles?line=1,1,10,5,15,9"
 
-The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south. 
+The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
+
+
+### Administrative Tasks
+
+These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update
+permission.
+
+#### Clear the cache cache
+
+    curl -i -XPOST %CMR-ENDPOINT%/clear-cache
+
+#### Reset the application to the initial state
+
+Every CMR application has a reset function to reset it back to it's initial state. Currently this only clears the cache so it is effectively the the same as the clear-cache endpoint.
+
+    curl -i -XPOST %CMR-ENDPOINT%/reset
+
+#### Querying caches
+
+Endpoints are provided for querying the contents of the various caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i %CMR-ENDPOINT%/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i %CMR-ENDPOINT%/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i %CMR-ENDPOINT%/caches/cache-name/cache-key
+
+#### Check application health
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+
+Example healthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "index-set" : {
+    "ok?" : true,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
+```
+
+Example un-healthy response body:
+
+```
+{
+  "echo" : {
+    "ok?" : true
+  },
+  "internal-metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "index-set" : {
+    "ok?" : false,
+    "problem" : {
+      "elastic_search" : {
+        "ok?" : false,
+        "problem" : {
+          "status" : "Inaccessible",
+          "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+        }
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  }
+}
+```

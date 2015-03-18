@@ -18,7 +18,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/es-spatial-plugin"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [org.elasticsearch/elasticsearch "1.4.0"]
+                 [org.elasticsearch/elasticsearch "1.4.4"]
 
                  ;; Version set to match elastic search numbers. Look in elasticsearch pom.xml
                  [log4j/log4j "1.2.17"]

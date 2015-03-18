@@ -5,7 +5,8 @@
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.spatial :as umm-s]
             [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-helper :as h]))
+            [cmr.umm.validation.validation-helper :as h]
+            [cmr.umm.validation.product-specific-attribute :as psa]))
 
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
@@ -67,7 +68,8 @@
 
 (def collection-validations
   "Defines validations for collections"
-  {:product-specific-attributes (vu/unique-by-name-validator :name)
+  {:product-specific-attributes [(vu/unique-by-name-validator :name)
+                                 (v/every psa/psa-validations)]
    :projects (vu/unique-by-name-validator :short-name)
    :spatial-coverage spatial-coverage-validations
    :platforms [(v/every platform-validations)

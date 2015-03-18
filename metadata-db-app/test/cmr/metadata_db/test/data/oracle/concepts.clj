@@ -45,8 +45,8 @@
                  (= :a 5))
            (c/find-params->sql-clause {:a 5 :b "bravo"})))))
 
-
-(deftest db-result->concept-map-test
+;; This test is commented out until CMR-1303 is resolved
+#_(deftest db-result->concept-map-test
   (let [db (->> (mdb-config/db-spec "metadata-db-test")
                 oracle/create-db
                 (#(lifecycle/start % nil)))]
