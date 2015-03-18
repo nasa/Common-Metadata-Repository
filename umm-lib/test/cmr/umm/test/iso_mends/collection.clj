@@ -18,14 +18,12 @@
             [cmr.umm.test.echo10.collection :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
-  "Returns the expected parsed spatial-coverage for the given spatial-coverage"
-  [spatial-coverage]
-  (let [{:keys [geometries]} spatial-coverage]
-    (when-not (empty? geometries)
-      (umm-c/map->SpatialCoverage
-        {:granule-spatial-representation :geodetic
-         :spatial-representation :geodetic
-         :geometries geometries}))))
+  [{:keys [geometries spatial-representation] :as sc}]
+  (when geometries
+    (umm-c/map->SpatialCoverage
+     {:spatial-representation spatial-representation
+      :granule-spatial-representation spatial-representation
+      :geometries geometries})))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."

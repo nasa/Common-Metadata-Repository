@@ -11,6 +11,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
             [cmr.umm.collection :as c]
+            [cmr.umm.iso-mends.core :as core]
             [cmr.umm.spatial :as umm-s]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,6 +70,29 @@
         north (cx/double-at-path element [:northBoundLatitude :Decimal])
         south (cx/double-at-path element [:southBoundLatitude :Decimal])]
     (mbr/mbr west north east south)))
+
+(defn- parse-geometries
+  "Returns a seq of UMM geometry records from an ISO XML document."
+  [xml]
+  (let [id-elem   (core/id-elem xml)
+        geo-elems (cx/elements-at-path id-elem [:extent :EX_Extent :geographicElement])
+        ;; ISO MENDS includes bounding boxes for each element (point,
+        ;; polygon, etc.) in the spatial extent metadata. We can
+        ;; discard the redundant bounding boxes.
+        shape-elems (map second (partition 2 geo-elems))]
+    (seq (remove nil? (map #(parse-geo-element (first (:content %))) shape-elems)))))
+
+(def ref-sys-path-with-ns
+  "A namespaced element path sequence for the ISO MENDS coordinate system element."
+  [:gmd:referenceSystemInfo :gmd:MD_ReferenceSystem :gmd:referenceSystemIdentifier :gmd:RS_Identifier :gmd:code :gco:CharacterString])
+
+(def ref-sys-path
+  "The (non-namespaced) path to access the ISO MENDS coordinate system element."
+  (map #(keyword (second (.split (name %) ":"))) ref-sys-path-with-ns))
+
+(defn- parse-coordinate-system
+  [xml]
+  (umm-s/->coordinate-system (cx/string-at-path xml ref-sys-path)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generating XML
@@ -170,9 +194,9 @@
 (defn geometry->iso-xml
   "Returns an individual ISO MENDS geographic extent element for a UMM
   spatial coverage geometry record."
-  [geom]
-  ;; set the coordinate system to geodetic for output
-  (let [geom (d/calculate-derived (umm-s/set-coordinate-system :geodetic geom))]
+  [coordinate-system geom]
+  ;; set the coordinate system based on the spatial coverage for output
+  (let [geom (d/calculate-derived (umm-s/set-coordinate-system coordinate-system geom))]
     (list
      (x/element :gmd:geographicElement {} (geometry->iso-geom (geometry->iso-mbr geom)))
      (x/element :gmd:geographicElement {} (geometry->iso-geom geom)))))
@@ -180,17 +204,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Functions
 
-(defn parse-geometry
+(defn xml-elem->spatial-coverage
+  "Returns a UMM SpatialCoverage record from the given ISO MENDS XML
+  document root element."
   [xml]
-  (let [geo-elems (cx/elements-at-path xml [:extent :EX_Extent :geographicElement])
-        ;; ISO MENDS includes bounding boxes for each element (point,
-        ;; polygon, etc.) in the spatial extent metadata. We can
-        ;; discard the redundant bounding boxes.
-        shape-elems (map second (partition 2 geo-elems))]
-    (remove nil? (map (comp parse-geo-element first :content) shape-elems))))
+  (let [geometries (parse-geometries xml)
+        coord-sys  (parse-coordinate-system xml)]
+    (when geometries
+      (c/map->SpatialCoverage
+       {:spatial-representation coord-sys
+        :granule-spatial-representation coord-sys
+        :geometries geometries}))))
 
-(defn SpatialCoverage->xml
-  "Returns a sequence of ISO MENDS elements for the given UMM spatial
-  coverage record."
-  [spatial]
-  (mapcat geometry->iso-xml (:geometries spatial)))
+(defn spatial-coverage->coordinate-system-xml
+  "Returns ISO MENDS coordinate system XML element from the given SpatialCoverage."
+  [{:keys [spatial-representation]}]
+  (when spatial-representation
+    (reduce (fn [content tag] (x/element tag {} content))
+            (.toUpperCase (name spatial-representation))
+            (reverse ref-sys-path-with-ns))))
+
+(defn spatial-coverage->extent-xml
+  "Returns a sequence of ISO MENDS elements from the given SpatialCoverage."
+  [{:keys [spatial-representation geometries]}]
+  (mapcat #(geometry->iso-xml spatial-representation %) geometries))
