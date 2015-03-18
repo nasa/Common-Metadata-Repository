@@ -43,7 +43,6 @@
   "Returns a map of concept id revision id tuples to the sequence of states for each one."
   [message-states]
   (let [int-states (for [mq message-states
-                         :when (not= (get-in mq [:action :action-type]) :reset)
                          :let [{{:keys [action-type]
                                  {:keys [concept-id revision-id id]} :message} :action} mq
                                result-state (:state (messages+id->message (:messages mq) id))]]
