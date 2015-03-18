@@ -167,15 +167,15 @@
      (x/element :gml:Polygon {:gml:id (gen-id)}
                 (x/element :gml:exterior {} (gml-linear-ring (:points exterior)))
                 (when-not (empty? interior)
-                  (map #(x/element :gml/interior {} (gml-linear-ring (:points %))) interior))))))
+                  (map #(x/element :gml:interior {} (gml-linear-ring (:points %))) interior))))))
 
 (defmethod geometry->iso-geom cmr.spatial.mbr.Mbr
   [mbr]
   (x/element :gmd:EX_GeographicBoundingBox {}
-             (x/element :gmd:eastBoundingLongitude {} (gco-decimal (:east mbr)))
-             (x/element :gmd:westBoundingLongitude {} (gco-decimal (:west mbr)))
-             (x/element :gmd:northBoundingLatitude {} (gco-decimal (:north mbr)))
-             (x/element :gmd:southBoundingLatitude {} (gco-decimal (:south mbr)))))
+             (x/element :gmd:westBoundLongitude {} (gco-decimal (:west mbr)))
+             (x/element :gmd:eastBoundLongitude {} (gco-decimal (:east mbr)))
+             (x/element :gmd:southBoundLatitude {} (gco-decimal (:south mbr)))
+             (x/element :gmd:northBoundLatitude {} (gco-decimal (:north mbr)))))
 
 (defn geometry->iso-xml
   "Returns an individual ISO MENDS geographic extent element for a UMM
