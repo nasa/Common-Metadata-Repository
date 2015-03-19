@@ -208,6 +208,7 @@
            :string nil nil "string value"
            :float "1.0" "3.0" "2.0"
            :int "1" "3" "2"
+           :int "1" "1" "1"
            :boolean nil nil "true"
            :date "1986-10-14" "1986-10-16" "1986-10-15"
            :time "04:03:27.123Z" "04:03:29Z" "04:03:28Z"
