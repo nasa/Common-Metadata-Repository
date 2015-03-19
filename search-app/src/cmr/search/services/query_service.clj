@@ -71,7 +71,6 @@
             [cmr.common.cache :as cache]
             [cmr.acl.acl-cache :as acl-cache]
             [cmr.search.services.acls.collections-cache :as coll-cache]
-            [cmr.search.services.xslt :as xslt]
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as s]
