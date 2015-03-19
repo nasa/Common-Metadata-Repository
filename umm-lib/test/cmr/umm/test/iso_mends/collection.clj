@@ -125,6 +125,8 @@
         umm-c/map->UmmCollection)))
 
 (defn derive-geometries
+  "Returns SpatialCoverage with all geometries updated by calling
+  calculate-derived with the collection coordinate system."
   [{:keys [spatial-representation] :as sc}]
   (when sc
     (update-in sc [:geometries] (fn [geoms]

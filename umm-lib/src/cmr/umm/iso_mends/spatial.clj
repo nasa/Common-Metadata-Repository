@@ -134,7 +134,9 @@
 
 (defmulti geometry->iso-geom
   "Returns content of a ISO MENDS extent element for an individual UMM
-  spatial coverage geometry record. Dispatches on type."
+  spatial coverage geometry record obj. Dispatches on the geometry
+  record type. gen-id must be a function which returns a
+  document-level unique ID for a geographicElement."
   (fn [obj gen-id] (type obj)))
 
 ;;; Rendering gmd:geographicElement content
@@ -203,5 +205,7 @@
   "Returns a sequence of ISO MENDS elements from the given SpatialCoverage."
   [{:keys [spatial-representation geometries]}]
   (let [id-state (atom 0)
+        ;; a function to generate a unique (per-document) id for
+        ;; geographic elements
         gen-id   (fn [] (str "geo-" (swap! id-state inc)))]
     (mapcat #(geometry->iso-xml spatial-representation % gen-id) geometries)))
