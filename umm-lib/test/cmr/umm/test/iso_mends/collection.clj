@@ -127,13 +127,10 @@
 (defn derive-geometries
   "Returns SpatialCoverage with all geometries updated by calling
   calculate-derived with the collection coordinate system."
-  [{:keys [spatial-representation] :as sc}]
+  [{cs :spatial-representation :as sc}]
   (when sc
-    (update-in sc [:geometries] (fn [geoms]
-                                  (map #(d/calculate-derived
-                                         (umm-s/set-coordinate-system spatial-representation
-                                                                      %))
-                                       geoms)))))
+    (let [derive #(d/calculate-derived (umm-s/set-coordinate-system cs %))]
+      (update-in sc [:geometries] (partial map derive)))))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
