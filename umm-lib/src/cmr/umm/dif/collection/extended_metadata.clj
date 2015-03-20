@@ -77,11 +77,12 @@
                  (x/element :Name {} name)
                  (when description (x/element :Description {} description))
                  (x/element :Type {} (psa/gen-data-type data-type))
-                 (when-not (nil? parameter-range-begin) (x/element :Value {:type "ParamRangeBegin"}
-                                                        (psa/gen-value data-type parameter-range-begin)))
-                 (when-not (nil? parameter-range-end) (x/element :Value {:type "ParamRangeEnd"}
-                                                      (psa/gen-value data-type parameter-range-end)))
-                 (when-not (nil? value) (x/element :Value {:type "Value"} (psa/gen-value data-type value)))))))
+                 (when-not (nil? parameter-range-begin)
+                   (x/element :Value {:type "ParamRangeBegin"} parameter-range-begin))
+                 (when-not (nil? parameter-range-end)
+                   (x/element :Value {:type "ParamRangeEnd"} parameter-range-end))
+                 (when-not (nil? value)
+                   (x/element :Value {:type "Value"} value))))))
 
 (defn generate-extended-metadatas
   "Generate the Extended_Metadatas, is-psa indicates if the Extended_Metadata is for AdditionalAttribute."

@@ -19,7 +19,7 @@
   (let [{:keys [concept-id revision-id]} msg]
     (try
       (indexer/index-concept context concept-id revision-id true)
-      {:status :ok}
+      {:status :success}
       (catch Exception e
         (error e (.getMessage e))
         {:status :retry :message (.getMessage e)}))))
@@ -29,7 +29,7 @@
   (let [{:keys [concept-id revision-id]} msg]
     (try
       (indexer/delete-concept context concept-id revision-id true)
-      {:status :ok}
+      {:status :success}
       (catch Exception e
         (error e (.getMessage e))
         {:status :retry :message (.getMessage e)}))))

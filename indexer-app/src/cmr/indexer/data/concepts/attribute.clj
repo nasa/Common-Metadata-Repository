@@ -84,29 +84,29 @@
 (defn psa->elastic-doc
   "Converts a PSA into the portion going in an elastic document"
   [psa]
-  (let [{:keys [name data-type value]} psa
+  (let [{:keys [name data-type parsed-value]} psa
         field-name (type->field-name data-type)]
     (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])
       [{:name name
-        field-name (value->elastic-value data-type value)}
+        field-name (value->elastic-value data-type parsed-value)}
        {:name name
-        (str field-name ".lowercase") (str/lower-case (value->elastic-value data-type value))}]
+        (str field-name ".lowercase") (str/lower-case (value->elastic-value data-type parsed-value))}]
       {:name name
-       field-name (value->elastic-value data-type value)})))
+       field-name (value->elastic-value data-type parsed-value)})))
 
 (defn psas->elastic-docs
   "Converts the psa into a list of elastic documents"
   [collection]
   (map psa->elastic-doc
-       (filter :value ; only index those with a value
+       (filter :parsed-value ; only index those with a value
                (:product-specific-attributes collection))))
 
 (defn psa->keywords
   "Converts a PSA into a vector of terms to be used in keyword searches"
   [psa]
-  (let [{:keys [name data-type value description]} psa
-        value (when value (data-type value->elastic-value value))]
-    (filter identity [name value description])))
+  (let [{:keys [name data-type parsed-value description]} psa
+        parsed-value (when parsed-value (data-type value->elastic-value parsed-value))]
+    (filter identity [name parsed-value description])))
 
 (defn psas->keywords
   [collection]

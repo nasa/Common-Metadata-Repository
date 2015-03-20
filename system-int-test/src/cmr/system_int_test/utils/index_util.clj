@@ -19,6 +19,14 @@
     (client/post (url/dev-system-wait-for-indexing-url) {:connection-manager (s/conn-mgr)}))
   (refresh-elastic-index))
 
+(defn set-message-queue-retry-behavior
+  "Set the message queue retry behavior"
+  [num-retries]
+  (client/post
+    (url/dev-system-set-message-queue-retry-behavior-url)
+    {:connection-manager (s/conn-mgr)
+     :query-params {:num-retries num-retries}}))
+
 (defn get-message-queue-history
   "Returns the message queue history."
   []
@@ -35,7 +43,6 @@
   "Returns a map of concept id revision id tuples to the sequence of states for each one."
   [message-states]
   (let [int-states (for [mq message-states
-                         :when (not= (get-in mq [:action :action-type]) :reset)
                          :let [{{:keys [action-type]
                                  {:keys [concept-id revision-id id]} :message} :action} mq
                                result-state (:state (messages+id->message (:messages mq) id))]]
@@ -47,3 +54,14 @@
   sequence of states for each one."
   []
   (concept-history (get-message-queue-history)))
+
+(defn reset-message-queue-retry-behavior-fixture
+  "This is a clojure.test fixture that will reset the message queue behavior to normal processing
+  after a test completes."
+  []
+  (fn [f]
+    (try
+      (f)
+      (finally
+        (s/only-with-real-message-queue
+          (set-message-queue-retry-behavior 0))))))

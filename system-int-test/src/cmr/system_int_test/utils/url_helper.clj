@@ -28,6 +28,11 @@
   []
   (format "http://localhost:%s/message-queue/history" dev-system-port))
 
+(defn dev-system-set-message-queue-retry-behavior-url
+  "The message queue set-retry-behavior url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/set-retry-behavior" dev-system-port))
+
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []
