@@ -62,19 +62,19 @@
     (when (validate-range-data-types data-type)
       (cond
         (and parsed-parameter-range-begin parsed-parameter-range-end
-             (> (compare parsed-parameter-range-begin parsed-parameter-range-end) 0))
+             (pos? (compare parsed-parameter-range-begin parsed-parameter-range-end)))
         [(format "Parameter Range Begin [%s] cannot be greater than Parameter Range End [%s]."
                  (psa/gen-value data-type parsed-parameter-range-begin)
                  (psa/gen-value data-type parsed-parameter-range-end))]
 
         (and parsed-value parsed-parameter-range-begin
-             (< (compare parsed-value parsed-parameter-range-begin) 0))
+             (neg? (compare parsed-value parsed-parameter-range-begin)))
         [(format "Value [%s] cannot be less than Parameter Range Begin [%s]."
                  (psa/gen-value data-type parsed-value)
                  (psa/gen-value data-type parsed-parameter-range-begin))]
 
         (and parsed-value parsed-parameter-range-end
-             (> (compare parsed-value parsed-parameter-range-end) 0))
+             (pos? (compare parsed-value parsed-parameter-range-end)))
         [(format "Value [%s] cannot be greater than Parameter Range End [%s]."
                  (psa/gen-value data-type parsed-value)
                  (psa/gen-value data-type parsed-parameter-range-end))]))))
@@ -94,3 +94,31 @@
    values-match-data-type-validation
    parameter-range-validation])
 
+(defn- value-refs-match-data-type-validation
+  "Validates granule additional attribute ref values match the parent data type"
+  [field-path aa]
+  (let [data-type (get-in aa [:parent :data-type])
+        errors (->> (:values aa)
+                    (mapcat (partial field-value-validation data-type :value))
+                    (remove nil?))]
+    (when (seq errors)
+      {field-path errors})))
+
+(defn- value-refs-parameter-range-validation
+  "Validates granule satisfy parent collection's additional attribute parameter range rules"
+  [field-path aa]
+  (let [{:keys [name values parent]} aa
+        {:keys [data-type]} parent
+        errors (if (seq values)
+                 (when parent
+                   (->> (map (partial psa/safe-parse-value data-type) values)
+                        (mapcat (comp range-values-validation (partial assoc parent :parsed-value)))
+                        (remove nil?)))
+                 [(format "%%s [%s] values must not be empty." name)])]
+    (when (seq errors)
+      {field-path errors})))
+
+(def psa-ref-validations
+  "Defines the product specific attribute reference validations for granules"
+  [value-refs-match-data-type-validation
+   value-refs-parameter-range-validation])
