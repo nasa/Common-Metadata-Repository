@@ -71,6 +71,10 @@
     (when-not (sequential? value)
       (Integer. value))))
 
+(defn- single-value-validation-error
+  [param-name]
+  (format "Parameter [%s] must have a single value."(csk/->snake_case_string param-name)))
+
 (defn single-value-validation
   "Validates that parameters which, if present, must have a single value and cannot not be
   passed as a vector of values."
@@ -78,7 +82,7 @@
   (->> (select-keys params single-value-params)
        (filter #(sequential? (second %)))
        (map first)
-       (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))))
+       (map single-value-validation-error)))
 
 (defn multiple-value-validation
   "Validates that parameters which, if present, must have a single value or a vector of values."
@@ -436,29 +440,29 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
-(defn- geometry-validation
+(defn- spatial-validation
   "Validate a geometry of the given type in the params"
-  [params type]
-  (when-let [param (type params)]
-    (if (sequential? param) 
-      [(format "Parameter [%s] must have a single value."(csk/->snake_case_string type))] 
-      (:errors (spatial-codec/url-decode type param)))))
+  [params spatial-type]
+  (when-let [spatial-param (spatial-type params)]
+    (if (sequential? spatial-param) 
+      [(single-value-validation-error spatial-type)] 
+      (:errors (spatial-codec/url-decode spatial-type spatial-param)))))
 
 (defn polygon-validation
   [concept-type params]
-  (geometry-validation params :polygon))
+  (spatial-validation params :polygon))
 
 (defn bounding-box-validation
   [concept-type params]
-  (geometry-validation params :bounding-box))
+  (spatial-validation params :bounding-box))
 
 (defn point-validation
   [concept-type params]
-  (geometry-validation params :point))
+  (spatial-validation params :point))
 
 (defn line-validation
   [concept-type params]
-  (geometry-validation params :line))
+  (spatial-validation params :line))
 
 (defn unrecognized-aql-params-validation
   [concept-type params]

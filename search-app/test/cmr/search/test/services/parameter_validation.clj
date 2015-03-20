@@ -131,6 +131,7 @@
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
   
   ;; Point, Line, Polygon and bounding-box
+  ;; Added to test the fix for CMR-1312
   (testing "for a geometry parameter which requires a single value, validating a value vector returns an error"
     (is (= ["Parameter [bounding_box] must have a single value."]
            (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90"]}))))
