@@ -37,27 +37,33 @@
         gml-element (-> gmd-polygon :content first)]
     (parse-gml gml-element)))
 
-(defn- parse-points
-  "Returns a sequence of Points from an element with a gml:pos or gml:posList."
-  [element]
-  (when-let [pos-str (or (cx/string-at-path element [:pos])
-                         (cx/string-at-path element [:posList]))]
-    (umm-s/lat-lon-point-str->points pos-str)))
-
 (defmethod parse-gml :Point
   [element]
-  (first (parse-points element)))
+  (-> (cx/string-at-path element [:pos])
+      umm-s/lat-lon-point-str->points
+      first))
 
 (defmethod parse-gml :LineString
   [element]
-  (ls/line-string (parse-points element)))
+  (-> (cx/string-at-path element [:posList])
+      umm-s/lat-lon-point-str->points
+      ls/line-string))
 
 (defmethod parse-gml :Polygon
   [element]
-  (let [exterior   (cx/element-at-path  element [:exterior :LinearRing])
-        interiors  (cx/elements-at-path element [:interior :LinearRing])
-        parse-ring #(umm-s/ring (parse-points %))
-        rings      (cons (parse-ring exterior) (map parse-ring interiors))]
+  (let [close-ring (fn [points]
+                     (let [v (vec points)]
+                       (if (= (first v) (last v))
+                         v
+                         (conj v (first v)))))
+        exterior  (-> (cx/string-at-path element [:exterior :LinearRing :posList])
+                      umm-s/lat-lon-point-str->points
+                      close-ring)
+        interiors (->> (cx/strings-at-path element [:interior :LinearRing :posList])
+                       (map umm-s/lat-lon-point-str->points)
+                       (map close-ring))
+        rings     (cons (umm-s/ring exterior)
+                        (map umm-s/ring interiors))]
     (poly/polygon rings)))
 
 (defmethod parse-geo-element :default
@@ -152,13 +158,13 @@
 
 (defmethod geometry->iso-geom cmr.spatial.polygon.Polygon
   [polygon gen-id]
-  (let [exterior (poly/boundary polygon)
-        interior (poly/holes polygon)]
+  (let [exterior (:points (poly/boundary polygon))
+        interior (map :points (poly/holes polygon))]
     (gmd-poly
      (x/element :gml:Polygon {:gml:id (gen-id)}
-                (x/element :gml:exterior {} (gml-linear-ring (:points exterior)))
+                (x/element :gml:exterior {} (gml-linear-ring exterior))
                 (when (seq interior)
-                  (map #(x/element :gml:interior {} (gml-linear-ring (:points %))) interior))))))
+                  (map #(x/element :gml:interior {} (gml-linear-ring %)) interior))))))
 
 (defmethod geometry->iso-geom cmr.spatial.mbr.Mbr
   [mbr gen-id]
