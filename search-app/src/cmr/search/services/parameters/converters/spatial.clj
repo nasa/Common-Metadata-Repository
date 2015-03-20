@@ -6,7 +6,7 @@
             [cmr.common.services.errors :as errors]
             [clojure.string :as str]))
 
-(defn url-value->spatial-condition
+(defn url-value->single-spatial-condition
   [type value]
   (let [shape (spatial-codec/url-decode type value)]
     (when-let [errors (:errors shape)]
@@ -14,6 +14,10 @@
         (format "Shape format was invalid [%s]. Issues should have be handled in validation."
                 (str/join ", " errors))))
     (qm/->SpatialCondition shape)))
+
+(defn url-value->spatial-condition
+  [type value]
+    (map (partial url-value->single-spatial-condition type) (flatten [value])))
 
 (defmethod p/parameter->condition :polygon
   [concept-type param value options]

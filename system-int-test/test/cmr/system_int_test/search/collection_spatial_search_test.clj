@@ -428,8 +428,9 @@
             [-83.0, 40.01] [[11 4]])))
 
 ;; Added to test the fix for CMR-1312
-(deftest single-value-validation
-  (testing "search by a spatial parameter which is an array instead of a single value"
-    (let [{:keys [status errors]} (search/find-refs :collection {"line[]" "20,30,80,60"})]
+(deftest multi-value-parameter-validation
+  (testing "multi value parameter validation involving a line"
+    (let [{:keys [status errors]} (search/find-refs :collection {"line[]" ["20b,30,80,60","10a,10,20,20"]})]
       (is (= 400 status))
-      (is (re-find #"Parameter \[line\] must have a single value." (first errors))))))
+      (is (= ["[20b,30,80,60] is not a valid URL encoded line"
+              "[10a,10,20,20] is not a valid URL encoded line"] errors)))))

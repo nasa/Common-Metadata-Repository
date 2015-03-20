@@ -71,10 +71,6 @@
     (when-not (sequential? value)
       (Integer. value))))
 
-(defn- single-value-validation-error
-  [param-name]
-  (format "Parameter [%s] must have a single value."(csk/->snake_case_string param-name)))
-
 (defn single-value-validation
   "Validates that parameters which, if present, must have a single value and cannot not be
   passed as a vector of values."
@@ -82,7 +78,7 @@
   (->> (select-keys params single-value-params)
        (filter #(sequential? (second %)))
        (map first)
-       (map single-value-validation-error)))
+       (map #(format "Parameter [%s] must have a single value."(csk/->snake_case_string %)))))
 
 (defn multiple-value-validation
   "Validates that parameters which, if present, must have a single value or a vector of values."
@@ -444,9 +440,7 @@
   "Validate a geometry of the given type in the params"
   [params spatial-type]
   (when-let [spatial-param (spatial-type params)]
-    (if (sequential? spatial-param) 
-      [(single-value-validation-error spatial-type)] 
-      (:errors (spatial-codec/url-decode spatial-type spatial-param)))))
+    (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
 
 (defn polygon-validation
   [concept-type params]
