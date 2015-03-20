@@ -96,7 +96,7 @@
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
-       :spatial-coverage (sp/xml-elem->spatial-coverage xml-struct)
+       :spatial-coverage (sp/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)})))
 

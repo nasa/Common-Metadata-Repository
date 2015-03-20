@@ -187,7 +187,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public Functions
 
-(defn xml-elem->spatial-coverage
+(defn xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage record from the given ISO MENDS XML
   document root element."
   [xml]
