@@ -436,33 +436,29 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
+(defn- geometry-validation
+  "Validate a geometry of the given type in the params"
+  [params type]
+  (when-let [param (type params)]
+    (if (sequential? param) 
+      [(format "Parameter [%s] must have a single value."(csk/->snake_case_string type))] 
+      (:errors (spatial-codec/url-decode type param)))))
+
 (defn polygon-validation
   [concept-type params]
-  (some->> params
-           :polygon
-           (spatial-codec/url-decode :polygon)
-           :errors))
+  (geometry-validation params :polygon))
 
 (defn bounding-box-validation
   [concept-type params]
-  (some->> params
-           :bounding-box
-           (spatial-codec/url-decode :bounding-box)
-           :errors))
+  (geometry-validation params :bounding-box))
 
 (defn point-validation
   [concept-type params]
-  (some->> params
-           :point
-           (spatial-codec/url-decode :point)
-           :errors))
+  (geometry-validation params :point))
 
 (defn line-validation
   [concept-type params]
-  (some->> params
-           :line
-           (spatial-codec/url-decode :line)
-           :errors))
+  (geometry-validation params :line))
 
 (defn unrecognized-aql-params-validation
   [concept-type params]
@@ -588,7 +584,8 @@
    boolean-value-validation
    polygon-validation
    bounding-box-validation
-   point-validation])
+   point-validation
+   line-validation])
 
 (def aql-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL search.

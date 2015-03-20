@@ -433,11 +433,6 @@
         :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
 
-(comment
-   (cmr.common.dev.capture-reveal/reveal response)
-   (find-tiles {:bounding_box "-180,-90,180,90"})
-)
-
 (defn find-tiles
   "Returns the tiles that are found by searching with the input params"
   [params]

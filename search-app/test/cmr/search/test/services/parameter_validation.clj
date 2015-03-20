@@ -128,7 +128,15 @@
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
   (testing "Non-numeric equator-crossing-longitude"
     (is (= [(com-msg/invalid-msg java.lang.Double "A")]
-           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A"))))))
+           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
+  
+  ;; Point, Line, Polygon and bounding-box
+  (testing "for a geometry parameter which requires a single value, validating a value vector returns an error"
+    (is (= ["Parameter [bounding_box] must have a single value."]
+           (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90"]}))))
+  (testing "a geometry parameter which is invalid returns a parsing error"
+    (is (= ["[10.0,-.3] is not a valid URL encoded point"]
+           (pv/point-validation :granule {:point "10.0,-.3"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
