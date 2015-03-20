@@ -8,6 +8,8 @@
             [clojure.java.io :as io]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
+            ;; this is not needed until the ECHO to ISO XSLT is fixed
+            ;; [cmr.common.xml.xslt :as xslt]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.iso-mends.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
@@ -156,6 +158,24 @@
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
       (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+
+(comment
+  ;; This test is currently failing pending an update to the XSLT file
+  ;; to generate closed polygons per the GML spec
+
+(def echo-to-iso-xslt
+  (xslt/read-template
+   (io/resource "schema/iso_mends/resources/transforms/ECHOToISO.xsl")))
+
+  (defspec umm-to-echo-to-iso-mends-via-xslt-to-umm-test 100
+    (for-all [collection coll-gen/collections]
+      (let [echo10-xml (echo10/umm->echo10-xml collection)
+            iso-xml    (xslt/transform echo10-xml echo-to-iso-xslt)
+            parsed-iso (c/parse-collection iso-xml)]
+        ;; only comparing the parsed :spatial-coverage, since there are
+        ;; funky parts in the rest of the XSLT output
+        (= (:spatial-coverage (umm->expected-parsed-iso collection))
+           (:spatial-coverage (umm->expected-parsed-iso parsed-iso)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
