@@ -1,6 +1,7 @@
 (ns cmr.umm.spatial
   "Contains some code to assist in representing spatial areas in UMM"
-  (:require [clojure.string :as str]
+  (:require [camel-snake-kebab.core :as csk]
+            [clojure.string :as str]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon]
@@ -33,6 +34,14 @@
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
   [& ords]
   (ring (apply p/ords->points ords)))
+
+(def valid-coord-systems #{:geodetic :cartesian})
+
+(defn ->coordinate-system
+  "Returns a normalized coordinate system keyword from a string."
+  [s]
+  (when s
+    (get valid-coord-systems (csk/->kebab-case-keyword s))))
 
 (defmulti set-coordinate-system
   "Sets the coordinate system on the shape"
