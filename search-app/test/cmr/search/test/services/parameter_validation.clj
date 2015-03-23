@@ -22,6 +22,10 @@
                                                     :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
+    ;; Added to test the fix for CMR-1312: validation of parameters supplied to tile search end-point
+    (is (= ["Parameter [page_size] was not recognized."] 
+           (pv/unrecognized-tile-params-validation {:page-size 1
+                                                    :point "50, 50"})))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
@@ -134,7 +138,7 @@
   ;; Added to test the fix for CMR-1312
   (testing "a spatial parameter can be a multi-valued parameter"
     (is (empty?
-          (pv/multiple-value-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
+          (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
   (testing "a geometry parameter which is invalid returns a parsing error"
     (is (= ["[10.0,-.3] is not a valid URL encoded point"]
            (pv/point-validation :granule {:point "10.0,-.3"})))))

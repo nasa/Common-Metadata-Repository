@@ -382,14 +382,14 @@
    [11 16] [17 17] [14 0] [29 6] [26 5][15 2] [20 6] [31 12] [28 11] [17 7]])
 
 (defn assert-tiles-found
-  "Method to assert if the tiles returned by passing params map as the search parameter matches
+  "Check if the tiles returned by passing params map as the search parameter matches
   with the expected tiles"
   [params expected]
   (let [found (search/find-tiles params)]
     (is (= (set expected) (set (:results found))))))
 
 
-(deftest tile-search-test
+(deftest tile-search-single-shape-test
   (testing "bounding box search"
     (u/are2 [wnes tiles]
             (assert-tiles-found {:bounding-box (codec/url-encode (apply m/mbr wnes))} tiles)
@@ -398,14 +398,14 @@
             [-180 90 180 -90] all_tiles
 
             "Madagascar"
-            [42.35,-11.75, 51.5,-26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
+            [42.35 -11.75 51.5 -26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
 
   (testing "polygon search"
     (u/are2 [ords tiles]
             (assert-tiles-found {:polygon (apply search-poly ords)} tiles)
 
             "A large polygon"
-            [7,35, -3.5,22.5, -7,12, -5,1.5, 14.5,-9.0, 38,5, 37,22 7,35]
+            [7 35  -3.5 22.5  -7 12  -5 1.5  14.5 -9.0  38 5  37 22 7 35]
             [[17 6] [17 7] [17 8] [17 9] [18 5] [18 6] [18 7] [18 8] [18 9] [19 5] [19 6] [19 7]
              [19 8] [19 9] [20 6] [20 7] [20 8] [20 9] [21 6] [21 7] [21 8]]))
 
@@ -415,21 +415,57 @@
               {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))} tiles)
 
             "A simple line"
-            [-62.0, -27.0, -76.5, 5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
+            [-62.0  -27.0  -76.5  5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
 
             "A line which crosses over anti-meridian"
-            [168, 22.5, -158, -4.5] [[0 7] [0 8] [1 8] [1 9] [2 9] [33 6] [34 6] [34 7] [35 7]]))
+            [168  22.5  -158  -4.5] [[0 7] [0 8] [1 8] [1 9] [2 9] [33 6] [34 6] [34 7] [35 7]]))
 
   (testing "point search"
     (u/are2 [ords tiles]
             (assert-tiles-found {:point (codec/url-encode (apply p/point ords))} tiles)
 
             "A point"
-            [-83.0, 40.01] [[11 4]])))
+            [-83.0  40.01] [[11 4]])))
 
-;; Added to test the fix for CMR-1312
-(deftest multi-value-parameter-validation
-  (testing "multi value parameter validation involving a line"
+(defn- ords->url-encoded-str
+  "Returns a URL encoded string of the given spatial type with the given ordinates"
+  [shape-type ords]
+  (case shape-type
+    :point (codec/url-encode (apply p/point ords))
+    :line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+    :polygon (apply search-poly ords)
+    :bounding-box (codec/url-encode (apply m/mbr ords))))
+
+(defn- build_spatial_params
+  "Adds a spatial parameter with the given spatial type and ords into params map"
+  [params [spatial-type ords]]
+    (assoc params spatial-type (conj (or (spatial-type params) []) 
+                                     (ords->url-encoded-str spatial-type ords))))
+
+;; Added to test fix for CMR-1312
+(deftest tile-search-multi-shape-test
+  (testing "search involving multiple shapes"
+    (u/are2 [ords-vectors tiles]
+            (assert-tiles-found (reduce build_spatial_params {} ords-vectors) tiles)
+            
+            "Empty parameters"
+            [] all_tiles
+            
+            "Two bounding boxes"
+            [[:bounding-box [-5 5 5 -5]] 
+             [:bounding-box [0 20 20 0]]] 
+            [[18 9] [18 8] [17 9] [17 8]]
+            
+            "Two bounding boxes, a point & a line"
+            [[:bounding-box [-180 90 180 -90]] 
+             [:bounding-box [-20 20 20 -20]] 
+             [:point [0 0]] 
+             [:line [0 10 20 20]]]
+            [[18 8] [17 8]])))
+
+;; Added to test fix for CMR-1312
+(deftest multi-valued-spatial-parameter-validation
+  (testing "multi valued spatial parameter validation with invalid parameters"
     (let [{:keys [status errors]} (search/find-refs :collection {"line[]" ["20b,30,80,60","10a,10,20,20"]})]
       (is (= 400 status))
       (is (= ["[20b,30,80,60] is not a valid URL encoded line"

@@ -76,6 +76,7 @@
             [cheshire.core :as json]
             [clojure.string :as s]
             [cmr.spatial.tile :as tile]
+            [cmr.spatial.codec :as spatial-codec]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -235,15 +236,32 @@
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
 
+(defn- param-map->param-vector
+  "Converts a parameter map to a parameter vector each of whose elements is a vector of size two 
+  such that the first element of each vector is a key of the map and second element is the
+  corresponding value if it is a single value parameter or one of the elements of the value array
+  if it is a multi-value parameter"
+  [params]
+  (mapcat (fn[k] (map (partial vector k) (flatten [(k params)]))) 
+          (keys params)))
+
+(defn- shape->tile-set
+  "Converts a shape of given type to the set of tiles which the shape intersects"
+  [spatial-type shape]
+  (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
 
 (deftracefn find-tiles-by-geometry
-  "Gets all the tiles for a given geometry"
+  "Gets all the tile coordinates for the given input parameters. The function returns all the tile 
+  coordinates if the input parameters does not include any spatial parameters"
   [context params]
-  (let [query (->>  params
-                    sanitize-params
-                    (pv/validate-parameters :tile)
-                    (p/parameters->query :tile))]
-    ;;TODO: Handle the cases where a user might enter multiple shapes or no shape as input or passes
-    ;;a shape parameter as an array e.g. bounding_box[].
-    (tile/geometry->tiles (get-in query [:condition :shape]))))
-    
+  (let [query (->> params
+                   remove-empty-params
+                   u/map-keys->kebab-case
+                   (pv/validate-tile-parameters))
+        spatial-param-vec (some->> query
+                                   (#(select-keys % [:bounding-box :point :line :polygon]))
+                                   param-map->param-vector)]
+    (if (empty? spatial-param-vec)
+      (map :coordinates @tile/modis-sin-tiles)
+      (apply clojure.set/intersection 
+                  (map (partial apply shape->tile-set) spatial-param-vec)))))

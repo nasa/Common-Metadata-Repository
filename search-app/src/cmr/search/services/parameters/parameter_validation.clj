@@ -443,21 +443,21 @@
     (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
 
 (defn polygon-validation
-  [concept-type params]
-  (spatial-validation params :polygon))
+  ([concept-type params] (spatial-validation params :polygon))
+  ([params] (polygon-validation nil params)))
 
 (defn bounding-box-validation
-  [concept-type params]
-  (spatial-validation params :bounding-box))
+  ([concept-type params] (spatial-validation params :bounding-box))
+  ([params] (bounding-box-validation nil params)))
 
 (defn point-validation
-  [concept-type params]
-  (spatial-validation params :point))
+  ([concept-type params] (spatial-validation params :point))
+  ([params] (point-validation nil params)))
 
 (defn line-validation
-  [concept-type params]
-  (spatial-validation params :line))
-
+  ([concept-type params] (spatial-validation params :line))
+  ([params] (line-validation nil params)))
+  
 (defn unrecognized-aql-params-validation
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
@@ -657,6 +657,26 @@
         errors (concat type-errors
                        (mapcat #(% :granule regular-params) parameter-validations)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
+    (when (seq errors)
+      (err/throw-service-errors :bad-request errors)))
+  params)
+
+(defn unrecognized-tile-params-validation
+  "Validates that no invalid parameters were supplied to tile search"
+  [params]
+  (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
+         (set/difference (set (keys params)) #{:bounding-box :line :point :polygon})))
+
+(defn validate-tile-parameters
+  "Validates the query parameters passed in with a tile search. Throws exceptions to send 
+  to the user if a validation fails. Returns parameters if validation is successful."
+  [params]
+  (let [errors (mapcat #(% params) 
+                       [unrecognized-tile-params-validation
+                        polygon-validation 
+                        bounding-box-validation 
+                        point-validation 
+                        line-validation])]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
   params)
