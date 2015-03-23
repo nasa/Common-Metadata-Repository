@@ -236,16 +236,7 @@
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
 
-(defn- param-map->param-vector
-  "Converts a parameter map to a parameter vector each of whose elements is a vector of size two 
-  such that the first element of each vector is a key of the map and second element is the
-  corresponding value if it is a single value parameter or one of the elements of the value array
-  if it is a multi-value parameter"
-  [params]
-  (mapcat (fn[k] (map (partial vector k) (flatten [(k params)]))) 
-          (keys params)))
-
-(defn- shape->tile-set
+(defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"
   [spatial-type shape]
   (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
@@ -254,14 +245,14 @@
   "Gets all the tile coordinates for the given input parameters. The function returns all the tile 
   coordinates if the input parameters does not include any spatial parameters"
   [context params]
-  (let [query (->> params
-                   remove-empty-params
-                   u/map-keys->kebab-case
-                   (pv/validate-tile-parameters))
-        spatial-param-vec (some->> query
-                                   (#(select-keys % [:bounding-box :point :line :polygon]))
-                                   param-map->param-vector)]
-    (if (empty? spatial-param-vec)
-      (map :coordinates @tile/modis-sin-tiles)
-      (apply clojure.set/intersection 
-                  (map (partial apply shape->tile-set) spatial-param-vec)))))
+  (let [spatial-params (->> params
+                            remove-empty-params
+                            u/map-keys->kebab-case
+                            (pv/validate-tile-parameters)
+                            (#(select-keys % [:bounding-box :point :line :polygon])))]
+    (if (seq spatial-params)
+      (apply clojure.set/union
+              (for [[param-name values] spatial-params
+                    value (if (sequential? values) values [values])]
+                (shape-param->tile-set param-name value)))
+      (tile/all-tiles))))

@@ -389,6 +389,9 @@ Bounding boxes define an area on the earth aligned with longitude and latitude. 
 
     curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
 
+Spatial parameters are multi-valued parameters meaning multiple geometries of a given spatial type 
+can be used in a query, three polyongs for example. Also a query could consist of multiple spatial types at once, two bounding boxes and a polygon for example. All the parameters of a given spatial type are OR'd in a query. If the query contains two bounding boxes for example, it will return granules which intersect either of the bounding boxes. But parameters across different spatial types are AND'd. So if the query contains a polygon and a bounding_box it will return all the granules which intersect both the polygon and the bounding_box. This behavior may be changed in the future to OR across all the spatial parameters irrespective of their type.
+
 #### Find granules by orbit number
 
   Find granules with an orbit number of 10
@@ -743,6 +746,10 @@ Facets in JSON search response formats will be formatted like the following exam
 ### Search for Tiles
 
 Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial").
+
+ Spatial parameters are multi-valued parameters meaning multiple geometries of a given spatial type 
+ can be used in a query, three polyongs for example. Also a query could consist of multiple spatial 
+ types at once, two bounding boxes and a polygon for example. All the spatial parameters are OR'd in a query meaning a query will return all the tiles which intersect atleast one of the given geometries.
 
 Here are some examples:
 Find the tiles which intersect a polygon.

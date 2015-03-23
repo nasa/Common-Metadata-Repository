@@ -78,7 +78,7 @@
   (->> (select-keys params single-value-params)
        (filter #(sequential? (second %)))
        (map first)
-       (map #(format "Parameter [%s] must have a single value."(csk/->snake_case_string %)))))
+       (map #(format "Parameter [%s] must have a single value." (csk/->snake_case_string %)))))
 
 (defn multiple-value-validation
   "Validates that parameters which, if present, must have a single value or a vector of values."
@@ -443,20 +443,20 @@
     (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
 
 (defn polygon-validation
-  ([concept-type params] (spatial-validation params :polygon))
-  ([params] (polygon-validation nil params)))
+  ([params] (polygon-validation nil params))
+  ([_ params] (spatial-validation params :polygon)))
 
 (defn bounding-box-validation
-  ([concept-type params] (spatial-validation params :bounding-box))
-  ([params] (bounding-box-validation nil params)))
+  ([params] (bounding-box-validation nil params))
+  ([_ params] (spatial-validation params :bounding-box)))
 
 (defn point-validation
-  ([concept-type params] (spatial-validation params :point))
-  ([params] (point-validation nil params)))
+  ([params] (point-validation nil params))
+  ([_ params] (spatial-validation params :point)))
 
 (defn line-validation
-  ([concept-type params] (spatial-validation params :line))
-  ([params] (line-validation nil params)))
+  ([params] (line-validation nil params))
+  ([_ params] (spatial-validation params :line)))
   
 (defn unrecognized-aql-params-validation
   [concept-type params]
@@ -661,11 +661,15 @@
       (err/throw-service-errors :bad-request errors)))
   params)
 
+(def valid-tile-search-params
+  "Valid parameters for tile search"
+   #{:bounding-box :line :point :polygon})
+
 (defn unrecognized-tile-params-validation
   "Validates that no invalid parameters were supplied to tile search"
   [params]
   (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
-         (set/difference (set (keys params)) #{:bounding-box :line :point :polygon})))
+         (set/difference (set (keys params)) valid-tile-search-params)))
 
 (defn validate-tile-parameters
   "Validates the query parameters passed in with a tile search. Throws exceptions to send 

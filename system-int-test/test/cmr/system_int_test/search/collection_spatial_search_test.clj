@@ -317,6 +317,37 @@
            ;; completely covers the polygon with holes
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
            [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
+    
+    (testing "multiple bounding-box searches"
+      (are [wnes1 wnes2 items]
+           (let [found (search/find-refs :collection {:bounding-box 
+                                                      [(codec/url-encode (apply m/mbr wnes1))
+                                                       (codec/url-encode (apply m/mbr wnes2))]
+                                                      :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+           
+           [-23.43 5 25.54 -6.31]
+           [-1.74 47.05 5.27 44.04]
+           [whole-world polygon-with-holes normal-poly normal-brs wide-north]))
+    
+    (testing "multiple polygon searches"
+      (are [ords1 ords2 items]
+           (let [found (search/find-refs :collection {:polygon [(apply search-poly ords1)
+                                                                (apply search-poly ords2)]})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+           
+           [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
+           [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
+           [whole-world on-np touches-np north-pole very-tall-cart 
+            along-am-line on-sp wide-south touches-sp south-pole]))
 
     (testing "AQL spatial search"
       (are [type ords items]
@@ -343,7 +374,7 @@
            [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
             normal-poly-cart]))))
 
-(def all_tiles
+(def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]
    [7 12] [34 11] [26 13][27 9] [12 6] [15 4] [13 3] [28 5] [23 5] [10 5] [13 15] [15 11] [11 9]
    [11 2] [7 11] [17 5] [21 10] [19 6] [7 13] [22 7] [18 12] [19 16] [21 11] [21 7] [25 10] [3 9]
@@ -395,7 +426,7 @@
             (assert-tiles-found {:bounding-box (codec/url-encode (apply m/mbr wnes))} tiles)
 
             "whole world"
-            [-180 90 180 -90] all_tiles
+            [-180 90 180 -90] all-tiles
 
             "Madagascar"
             [42.35 -11.75 51.5 -26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
@@ -436,34 +467,33 @@
     :polygon (apply search-poly ords)
     :bounding-box (codec/url-encode (apply m/mbr ords))))
 
-(defn- build_spatial_params
+(defn- add-param
   "Adds a spatial parameter with the given spatial type and ords into params map"
   [params [spatial-type ords]]
-    (assoc params spatial-type (conj (or (spatial-type params) []) 
+    (assoc params spatial-type (conj (spatial-type params) 
                                      (ords->url-encoded-str spatial-type ords))))
 
-;; Added to test fix for CMR-1312
 (deftest tile-search-multi-shape-test
   (testing "search involving multiple shapes"
     (u/are2 [ords-vectors tiles]
-            (assert-tiles-found (reduce build_spatial_params {} ords-vectors) tiles)
+            (assert-tiles-found (reduce add-param {} ords-vectors) tiles)
             
             "Empty parameters"
-            [] all_tiles
+            [] all-tiles
             
             "Two bounding boxes"
             [[:bounding-box [-5 5 5 -5]] 
              [:bounding-box [0 20 20 0]]] 
-            [[18 9] [18 8] [17 9] [17 8]]
+            [[19 6] [19 9] [17 6] [18 7] [19 7] [18 9] [18 6] 
+             [18 8][20 8] [20 9] [19 8] [17 9] [17 8] [17 7]]
             
             "Two bounding boxes, a point & a line"
             [[:bounding-box [-180 90 180 -90]] 
              [:bounding-box [-20 20 20 -20]] 
              [:point [0 0]] 
              [:line [0 10 20 20]]]
-            [[18 8] [17 8]])))
+            all-tiles)))
 
-;; Added to test fix for CMR-1312
 (deftest multi-valued-spatial-parameter-validation
   (testing "multi valued spatial parameter validation with invalid parameters"
     (let [{:keys [status errors]} (search/find-refs :collection {"line[]" ["20b,30,80,60","10a,10,20,20"]})]

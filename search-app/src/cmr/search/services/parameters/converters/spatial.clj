@@ -2,11 +2,12 @@
   "Contains parameter converters for spatial parameters"
   (:require [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.services.errors :as errors]
             [clojure.string :as str]))
 
-(defn url-value->single-spatial-condition
+(defn url-value->spatial-condition
   [type value]
   (let [shape (spatial-codec/url-decode type value)]
     (when-let [errors (:errors shape)]
@@ -15,22 +16,24 @@
                 (str/join ", " errors))))
     (qm/->SpatialCondition shape)))
 
-(defn url-value->spatial-condition
+(defn url-value->spatial-conditions
   [type value]
-    (map (partial url-value->single-spatial-condition type) (flatten [value])))
+  ;; Note: value can be a single string or a vector of strings. (flatten [value]) 
+  ;; converts the value to a sequence of strings irrespective of the type 
+  (gc/or-conds (map (partial url-value->spatial-condition type) (flatten [value]))))
 
 (defmethod p/parameter->condition :polygon
   [concept-type param value options]
-  (url-value->spatial-condition :polygon value))
+  (url-value->spatial-conditions :polygon value))
 
 (defmethod p/parameter->condition :bounding-box
   [concept-type param value options]
-  (url-value->spatial-condition :bounding-box value))
+  (url-value->spatial-conditions :bounding-box value))
 
 (defmethod p/parameter->condition :point
   [concept-type param value options]
-  (url-value->spatial-condition :point value))
+  (url-value->spatial-conditions :point value))
 
 (defmethod p/parameter->condition :line
   [concept-type param value options]
-  (url-value->spatial-condition :line value))
+  (url-value->spatial-conditions :line value))

@@ -254,3 +254,8 @@
   [geometry]
   (let [geometry (d/calculate-derived geometry)]
     (keep  #(when (intersects? % geometry) (:coordinates %)) @modis-sin-tiles)))
+
+(defn all-tiles
+  "Get all MODIS Sinusoidal Tiles"
+  []
+  (map :coordinates @modis-sin-tiles))

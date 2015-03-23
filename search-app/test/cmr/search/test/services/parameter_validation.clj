@@ -22,7 +22,6 @@
                                                     :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
-    ;; Added to test the fix for CMR-1312: validation of parameters supplied to tile search end-point
     (is (= ["Parameter [page_size] was not recognized."] 
            (pv/unrecognized-tile-params-validation {:page-size 1
                                                     :point "50, 50"})))
@@ -135,7 +134,6 @@
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
   
   ;; Point, Line, Polygon and Bounding-Box
-  ;; Added to test the fix for CMR-1312
   (testing "a spatial parameter can be a multi-valued parameter"
     (is (empty?
           (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))

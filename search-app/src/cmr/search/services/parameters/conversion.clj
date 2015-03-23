@@ -316,12 +316,12 @@
       ;; matches everything
       (qm/query query-attribs)
       ;; Convert params into conditions
-      (let [conditions (flatten (map (fn [[param value]]
+      (let [conditions (map (fn [[param value]]
                               (parameter->condition concept-type param value options))
-                            params))]
+                            params)]
         (qm/query (assoc query-attribs
-                         :condition (gc/and-conds conditions)
-                         :keywords keywords))))))
+                    :condition (gc/and-conds conditions)
+                    :keywords keywords))))))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
