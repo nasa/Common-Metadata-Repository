@@ -18,6 +18,12 @@
             [clojure.math.combinatorics :as combo]
             [cmr.spatial.dev.viz-helper :as viz-helper]))
 
+(comment
+  ;; If you have trouble reloading this namespace, evaluate the
+  ;; following expression:
+  (primitive-math/unuse-primitive-operators)
+  )
+
 (primitive-math/use-primitive-operators)
 
 (def coordinate-system
@@ -112,9 +118,9 @@
                       (fn [coord-sys]
                         (gen/tuple (gen/return coord-sys) (gen/bind (gen/choose 2 6) non-antipodal-points))))))
 
-(def non-geodetic-lines
-  (gen/such-that #(not= :geodetic (:coordinate-system %))
-                 lines))
+(def cartesian-lines
+  (gen/fmap (partial l/line-string :cartesian)
+            (gen/bind (gen/choose 2 6) non-antipodal-points)))
 
 (defn rings-invalid
   "Generates rings that are not valid but could be used for testing where validity is not important"
@@ -329,31 +335,34 @@
       ;; before giving up.
       1000)))
 
+(defn polygons-with-holes'
+  [coord-sys]
+  (gen/fmap (fn [[outer-boundary potential-holes]]
+              ;; The holes can go in the polygon if they don't intersect any of the other holes
+              (let [[h1 h2 h3] potential-holes
+                  ;; h2 can be used if it doesn't intersect h1
+                  h2-valid? (not (rr/intersects-ring? h1 h2))
+                  ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
+                  h3-valid? (and (not (rr/intersects-ring? h1 h3))
+                                 (or (not h2-valid?)
+                                     (not (rr/intersects-ring? h2 h3))))
+                  holes (cond
+                          (and h2-valid? h3-valid?) [h1 h2 h3]
+                          h2-valid? [h1 h2]
+                          h3-valid? [h1 h3]
+                          :else [h1])]
+              (poly/polygon coord-sys (cons outer-boundary holes))))
+          ;; Generates tuples of outer boundaries along with holes that are in the boundary.
+          (gen/bind
+           (rings coord-sys)
+           (fn [outer-boundary]
+             (gen/tuple (gen/return outer-boundary)
+                        ;; potential holes
+                        (gen/vector (rings-in-ring outer-boundary) 3))))))
 
 (def polygons-with-holes
   "Generator for polygons with holes"
-  (gen/bind coordinate-system
-            (fn [coord-sys]
-              (gen/fmap (fn [[outer-boundary potential-holes]]
-                          ;; The holes can go in the polygon if they don't intersect any of the other holes
-                          (let [[h1 h2 h3] potential-holes
-                                ;; h2 can be used if it doesn't intersect h1
-                                h2-valid? (not (rr/intersects-ring? h1 h2))
-                                ;; h3 can be used if it doesn't intersect h1 or h2 (if h2 is valid)
-                                h3-valid? (and (not (rr/intersects-ring? h1 h3))
-                                               (or (not h2-valid?)
-                                                   (not (rr/intersects-ring? h2 h3))))
-                                holes (cond
-                                        (and h2-valid? h3-valid?) [h1 h2 h3]
-                                        h2-valid? [h1 h2]
-                                        h3-valid? [h1 h3]
-                                        :else [h1])]
-                            (poly/polygon coord-sys (cons outer-boundary holes))))
-                        ;; Generates tuples of outer boundaries along with holes that are in the boundary.
-                        (gen/bind
-                          (rings coord-sys)
-                          (fn [outer-boundary]
-                            (gen/tuple (gen/return outer-boundary)
-                                       ;; potential holes
-                                       (gen/vector (rings-in-ring outer-boundary) 3))))))))
+  (gen/bind coordinate-system polygons-with-holes'))
 
+(def cartesian-polygons-with-holes
+  (gen/bind (gen/return :cartesian) polygons-with-holes'))

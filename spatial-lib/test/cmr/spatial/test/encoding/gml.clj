@@ -11,6 +11,7 @@
             [cmr.spatial.line-string :as line]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
+            [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.test.generators :as spatial-gen]))
 
 ;; example XML document with valid GML elements
@@ -45,26 +46,40 @@
 (deftest test-parse-lat-lon-string
   (testing "one point"
     (is (= (parse-lat-lon-string "9 10")
-           [(p/point 10 9)])))
+           [(p/point 10 9 true)])))
   (testing "multiple points"
     (is (= (parse-lat-lon-string "2 1.03 -4 3")
-           [(p/point 1.03 2) (p/point 3 -4)]))))
+           [(p/point 1.03 2 true) (p/point 3 -4 true)]))))
 
-(deftest test-encode-decode-gml
+(deftest test-decode-point
   (testing "decoding points from GML"
     (is (= (p/point -110.45 45.256)
-           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Point])))))
-  (testing "decoding points from GML"
-    (is (= (line/ords->line-string nil -110.45 45.256 -109.48 46.46 -109.86 43.84 -109.2 45.8)
+           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Point]))))))
+
+(deftest test-decode-line-string
+  (testing "decoding GML line strings"
+    (is (= (line/ords->line-string :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -109.2 45.8)
            (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:LineString]))))))
 
-(defspec check-gml-point-round-trip 1000
+(deftest test-decode-polygon
+  (testing "decoding GML polygons"
+    (is (= (poly/polygon [(rr/ords->ring :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
+           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Polygon]))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Property-Based Tests
+
+(defspec check-gml-point-round-trip 100
   (for-all [p spatial-gen/points]
     (let [element (-> (core/encode :gml p) emit-gml-str x/parse-str)]
       (= p (core/decode :gml element)))))
 
-(defspec check-gml-line-string-round-trip 1000
-  (for-all [l spatial-gen/non-geodetic-lines]
-    (let [l (assoc l :coordinate-system nil)
-          element (-> (core/encode :gml l) emit-gml-str x/parse-str)]
+(defspec check-gml-line-string-round-trip 100
+  (for-all [l spatial-gen/cartesian-lines]
+    (let [element (-> (core/encode :gml l) emit-gml-str x/parse-str)]
       (= l (core/decode :gml element)))))
+
+(defspec check-gml-polygon-round-trip 100
+  (for-all [polygon spatial-gen/cartesian-polygons-with-holes]
+    (let [element (-> (core/encode :gml polygon) emit-gml-str x/parse-str)]
+      (= (:points polygon) (:points (core/decode :gml element))))))
