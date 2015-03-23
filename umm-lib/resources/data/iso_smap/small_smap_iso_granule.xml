@@ -31,6 +31,36 @@
               <gmd:citation>
                 <gmd:CI_Citation>
                   <gmd:title>
+                    <gco:CharacterString>SC:SPL1AA.001:12345</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
                     <gco:CharacterString>dataset-id</gco:CharacterString>
                   </gmd:title>
                   <gmd:date>
