@@ -2,6 +2,7 @@
   "Defines validations for UMM collection product specific attribute."
   (:require [clj-time.core :as t]
             [cmr.common.validations.core :as v]
+            [cmr.common.util :as util]
             [cmr.umm.collection :as c]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
@@ -62,19 +63,19 @@
     (when (validate-range-data-types data-type)
       (cond
         (and parsed-parameter-range-begin parsed-parameter-range-end
-             (pos? (compare parsed-parameter-range-begin parsed-parameter-range-end)))
+             (util/greater-than? parsed-parameter-range-begin parsed-parameter-range-end))
         [(format "Parameter Range Begin [%s] cannot be greater than Parameter Range End [%s]."
                  (psa/gen-value data-type parsed-parameter-range-begin)
                  (psa/gen-value data-type parsed-parameter-range-end))]
 
         (and parsed-value parsed-parameter-range-begin
-             (neg? (compare parsed-value parsed-parameter-range-begin)))
+             (util/less-than? parsed-value parsed-parameter-range-begin))
         [(format "Value [%s] cannot be less than Parameter Range Begin [%s]."
                  (psa/gen-value data-type parsed-value)
                  (psa/gen-value data-type parsed-parameter-range-begin))]
 
         (and parsed-value parsed-parameter-range-end
-             (pos? (compare parsed-value parsed-parameter-range-end)))
+             (util/greater-than? parsed-value parsed-parameter-range-end))
         [(format "Value [%s] cannot be greater than Parameter Range End [%s]."
                  (psa/gen-value data-type parsed-value)
                  (psa/gen-value data-type parsed-parameter-range-end))]))))
