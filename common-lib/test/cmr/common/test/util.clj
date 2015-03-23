@@ -184,24 +184,20 @@
           middle-fn #(int (/ (+ ^long %1 ^long %2) 2))]
       (is (= find-value (util/binary-search 0 range-size middle-fn matches-fn))))))
 
-(deftest greater-than?-test
-  (testing "greater-than?"
-    (is (and (util/greater-than? 3 2 1)
-             (util/greater-than? 3.0 2.0 1.0)
-             (util/greater-than? "c" "b" "a")
-             (util/greater-than? :c :b :a)
-             (util/greater-than? (t/date-time 2015 1 14 4 3 27)
-                                 (t/date-time 1986 10 14 4 3 28)
-                                 (t/date-time 1986 10 14 4 3 27 456))
-             (not (util/greater-than? "b" "c" "a"))))))
+(deftest greater-than?-less-than?-test
+  (testing "greater-than? and less-than?"
+    (are [items]
+         (and
+           (apply util/greater-than? items)
+           (apply util/less-than? (reverse items)))
+         []
+         [3]
+         [3 2]
+         [nil]
+         [-1 nil]
+         [3 2 1]
+         [3.0 2.0 1.0 0.0]
+         ["c" "b" "a"]
+         [:d :c :b :a]
+         [(t/date-time 2015 1 14 4 3 27) (t/date-time 1986 10 14 4 3 28)])))
 
-(deftest less-than?-test
-  (testing "less-than?"
-    (is (and (util/less-than? 1 2 3)
-             (util/less-than? 1.0 2.0 3.0)
-             (util/less-than? "a" "b" "c")
-             (util/less-than? :a :b :c)
-             (util/less-than? (t/date-time 1986 10 14 4 3 27 456)
-                              (t/date-time 1986 10 14 4 3 28)
-                              (t/date-time 2015 1 14 4 3 27))
-             (not (util/less-than? :b :b :c))))))
