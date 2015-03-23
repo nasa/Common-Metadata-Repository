@@ -11,7 +11,7 @@
             [cmr.spatial.line-string :as line]
             [cmr.spatial.point :as p]
             [cmr.spatial.polygon :as poly]
-            [cmr.spatial.test.generators :as gen]))
+            [cmr.spatial.test.generators :as spatial-gen]))
 
 ;; example XML document with valid GML elements
 
@@ -53,9 +53,18 @@
 (deftest test-encode-decode-gml
   (testing "decoding points from GML"
     (is (= (p/point -110.45 45.256)
-           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Point]))))))
+           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Point])))))
+  (testing "decoding points from GML"
+    (is (= (line/ords->line-string nil -110.45 45.256 -109.48 46.46 -109.86 43.84 -109.2 45.8)
+           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:LineString]))))))
 
 (defspec check-gml-point-round-trip 1000
-  (for-all [p gen/points]
+  (for-all [p spatial-gen/points]
     (let [element (-> (core/encode :gml p) emit-gml-str x/parse-str)]
       (= p (core/decode :gml element)))))
+
+(defspec check-gml-line-string-round-trip 1000
+  (for-all [l spatial-gen/non-geodetic-lines]
+    (let [l (assoc l :coordinate-system nil)
+          element (-> (core/encode :gml l) emit-gml-str x/parse-str)]
+      (= l (core/decode :gml element)))))

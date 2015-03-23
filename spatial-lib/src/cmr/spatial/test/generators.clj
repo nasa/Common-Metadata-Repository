@@ -112,6 +112,9 @@
                       (fn [coord-sys]
                         (gen/tuple (gen/return coord-sys) (gen/bind (gen/choose 2 6) non-antipodal-points))))))
 
+(def non-geodetic-lines
+  (gen/such-that #(not= :geodetic (:coordinate-system %))
+                 lines))
 
 (defn rings-invalid
   "Generates rings that are not valid but could be used for testing where validity is not important"
