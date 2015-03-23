@@ -6,7 +6,6 @@
             [clojure.test.check.clojure-test :refer :all]
             [clojure.test.check.properties :refer :all]
             [cmr.common.xml :as cx]
-            [cmr.spatial.encoding.core :as core]
             [cmr.spatial.encoding.gml :refer :all]
             [cmr.spatial.line-string :as line]
             [cmr.spatial.point :as p]
@@ -54,32 +53,32 @@
 (deftest test-decode-point
   (testing "decoding points from GML"
     (is (= (p/point -110.45 45.256)
-           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Point]))))))
+           (decode (cx/element-at-path (x/parse-str gml-xml) [:Point]))))))
 
 (deftest test-decode-line-string
   (testing "decoding GML line strings"
     (is (= (line/ords->line-string :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -109.2 45.8)
-           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:LineString]))))))
+           (decode (cx/element-at-path (x/parse-str gml-xml) [:LineString]))))))
 
 (deftest test-decode-polygon
   (testing "decoding GML polygons"
     (is (= (poly/polygon [(rr/ords->ring :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
-           (core/decode :gml (cx/element-at-path (x/parse-str gml-xml) [:Polygon]))))))
+           (decode (cx/element-at-path (x/parse-str gml-xml) [:Polygon]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Property-Based Tests
 
 (defspec check-gml-point-round-trip 100
   (for-all [p spatial-gen/points]
-    (let [element (-> (core/encode :gml p) emit-gml-str x/parse-str)]
-      (= p (core/decode :gml element)))))
+    (let [element (-> (encode p) emit-gml-str x/parse-str)]
+      (= p (decode element)))))
 
 (defspec check-gml-line-string-round-trip 100
   (for-all [l spatial-gen/cartesian-lines]
-    (let [element (-> (core/encode :gml l) emit-gml-str x/parse-str)]
-      (= l (core/decode :gml element)))))
+    (let [element (-> (encode l) emit-gml-str x/parse-str)]
+      (= l (decode element)))))
 
 (defspec check-gml-polygon-round-trip 100
   (for-all [polygon spatial-gen/cartesian-polygons-with-holes]
-    (let [element (-> (core/encode :gml polygon) emit-gml-str x/parse-str)]
-      (= (:points polygon) (:points (core/decode :gml element))))))
+    (let [element (-> (encode polygon) emit-gml-str x/parse-str)]
+      (= (:points polygon) (:points (decode element))))))
