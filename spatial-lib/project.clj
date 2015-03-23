@@ -32,6 +32,9 @@
                  ;; visualize spatial areas
                  [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
 
+                 ;; for encoding/decoding spatial formats
+                 [org.clojure/data.xml "0.0.8"]
+
                  ;; Added for combinations function
                  [org.clojure/math.combinatorics "0.0.8"]]
 
