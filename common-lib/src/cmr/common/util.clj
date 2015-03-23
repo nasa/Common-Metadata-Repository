@@ -257,13 +257,13 @@
        (every? matches-fn)))
 
 (defn greater-than?
-  "Returns true if the given values are in ascending order. This is similar to core/> except it uses
+  "Returns true if the given values are in descending order. This is similar to core/> except it uses
   compare function underneath and applies to other types other than just java.lang.Number."
   [& values]
   (compare-results-match? pos? values))
 
 (defn less-than?
-  "Returns true if the given values are in descending order. This is similar to core/< except it uses
+  "Returns true if the given values are in ascending order. This is similar to core/< except it uses
   compare function underneath and applies to other types other than just java.lang.Number."
   [& values]
   (compare-results-match? neg? values))
