@@ -25,10 +25,10 @@ The behavior of search with respect to each parameter can be modified using the 
 
   `options[parameter][option_key]=value`
 
-where paramter is the URL parameter whose behavior is to be affected, value is either `true` for `false`, and `option_key` is one of the following:
+where paramter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:
 
- * `ignore_case` - the search should be case insensitive. The default is case sensitive.
- * `pattern` - the search should treat the value provided for the parameter as a pattern with wildcards, in which '*' matches zero or
+ * `ignore_case` - if set to true, the search should be case insensitive. Defaults to true.
+ * `pattern` - if set to true, the search should treat the value provided for the parameter as a pattern with wildcards, in which '*' matches zero or
  more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
  * `and` - if set to true and if multiple values are listed for the param, the concpet must have ALL of these values in order to match. The default
  is `false` which means concpets with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
@@ -299,6 +299,70 @@ Keyword searches are case insensitive and support wild cards ? and *.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
+#### Find collections by provider
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'provider' param value
+
+    curl "%CMR-ENDPOINT%/collections?provider=ASF"
+
+Find collections matching any of the'provider' param values
+
+    curl "%CMR-ENDPOINT%/collections?provider=ASF&provider=SEDAC"
+
+#### Find collections by short name
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching any of the 'short_name' param values
+
+    curl "%CMR-ENDPOINT%/collections?short_name=DEM_100M&short_name=MINIMAL"
+
+Find collections matching 'short_name' param value with a pattern
+
+    curl "%CMR-ENDPOINT%/collections?short_name=D*&options[short_name][pattern]=true"
+
+#### Find collections by version
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find collections matching 'version' param value
+
+    curl "%CMR-ENDPOINT%/collections?version=1"
+
+Find collections matching any of the 'version' param values
+
+    curl "%CMR-ENDPOINT%/collections?version=1&version=2"
+
+#### Find collections by Spatial
+
+##### Polygon
+
+Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
+
+    curl "%CMR-ENDPOINT%/collections?polygon=10,10,30,10,30,20,10,20,10,10"
+
+##### Bounding Box
+
+Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
+
+    curl "%CMR-ENDPOINT%/collections?bounding_box=-10,-5,10,5
+
+##### Point
+
+Search using a point involves using a pair of values representing the point coordinates as parameters. The first value is the longitude and second value is the latitude (lon, lat)
+
+   curl "%CMR-ENDPOINT%/collections?point=100,20"
+
+##### Line
+
+Lines are provided as list of comma separated values representing coordinates of points along the line. The coordinates are listed in the format lon1,lat1,lon2,lat2,...
+
+   curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+A query could consist of multiple spatial types at once, two bounding boxes and a polygon for example. All the parameters of a given spatial type are OR'd in a query. If the query contains two bounding boxes for example, it will return collections which intersect either of the bounding boxes. But parameters across different spatial types are AND'd. So if the query contains a polygon and a bounding-box it will return all the collections which intersect both the polygon and the bounding-box. This behavior may be changed in the future to use OR across all the spatial parameters irrespective of their type.
+
 #### Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default. One or more sort keys can be specified using the `sort_key[]` parameter. The order used impacts searching. Fields can be prepended with a `-` to sort in descending order. Ascending order is the default but `+` can be used to explicitly request ascending.
@@ -376,20 +440,19 @@ Multiple attributes can be provided. The default is for granules to match all th
 For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `option[attribute][exclude_collection]=true`.
 
 #### Find granules by Spatial
+The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
 ##### Polygon
-
-Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1,lat1,lon2,lat2,...
-
     curl "%CMR-ENDPOINT%/granules?polygon=10,10,30,10,30,20,10,20,10,10"
 
 ##### Bounding Box
-
-Bounding boxes define an area on the earth aligned with longitude and latitude. The Bounding box parameters must be 4 comma-separated numbers: lower left longitude,lower left latitude,upper right longitude,upper right latitude.
-
     curl "%CMR-ENDPOINT%/granules?bounding_box=-10,-5,10,5
 
-A query could consist of multiple spatial types at once, two bounding boxes and a polygon for example. All the parameters of a given spatial type are OR'd in a query. If the query contains two bounding boxes for example, it will return granules which intersect either of the bounding boxes. But parameters across different spatial types are AND'd. So if the query contains a polygon and a bounding_box it will return all the granules which intersect both the polygon and the bounding_box. This behavior may be changed in the future to OR across all the spatial parameters irrespective of their type.
+##### Point
+   curl "%CMR-ENDPOINT%/granules?point=100,20"
+
+##### Line
+   curl "%CMR-ENDPOINT%/granules?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
 #### Find granules by orbit number
 
@@ -461,6 +524,25 @@ This supports `pattern`, `ignore_case` and option `and`.
 
      curl "%CMR-ENDPOINT%/granules?sensor\[\]=1B"
 
+#### Find granules by campaign
+
+This supports `pattern`, `ignore_case` and option `and`. 'campaign' maps to 'project' in UMM
+
+Find granules matching 'campaign' param value
+
+     curl "%CMR-ENDPOINT%/granules?campaign\[\]=2009_GR_NASA"
+
+Find granules matching any of the 'campaign' param values
+
+     curl "%CMR-ENDPOINT%/granules?campaign\[\]=2009_GR_NASA&campaign\[\]=2013_GR_NASA"
+
+Find granules matching the given pattern for the 'campaign' param value
+     curl "%CMR-ENDPOINT%/granules?campaign\[\]=20??_GR_NASA&options\[campaign\]\[pattern\]=true" 
+
+Find granules that match all of the 'campaign' param values
+
+     curl "%CMR-ENDPOINT%/granules?campaign\[\]=2009_GR_NASA&campaign\[\]=2013_GR_NASA&options\[campaign\]\[and\]=true"
+
 #### Find granules by echo granule id, echo collection id and concept ids.
 
 Note: more than one may be supplied
@@ -500,6 +582,56 @@ This is an alias of catalog-rest two\_d\_coordinate_system.
 ```
   curl "%CMR-ENDPOINT%/granules?grid\[\]=wrs-1:5,10:8-10,0-10
 ```
+
+#### Find granules by provider
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find granules matching 'provider' param value
+
+    curl "%CMR-ENDPOINT%/granules?provider=ASF"
+
+Find granules matching any of the 'provider' param values
+
+    curl "%CMR-ENDPOINT%/granules?provider=ASF&provider=SEDAC"
+
+#### Find granules by short name
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find granules with the corresponding collection matching any of the 'short_name' param values
+
+    curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&short_name=MINIMAL"
+
+Find granules with the corresponding collection matching 'short_name' param value with a pattern
+
+    curl "%CMR-ENDPOINT%/granules?short_name=D*&options[short_name][pattern]=true"
+
+#### Find granules by version
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find granules with the corresponding collection matching 'version' param value
+
+    curl "%CMR-ENDPOINT%/granules?version=1"
+
+Find granules with the corresponding collection matching any of the 'version' param values
+
+    curl "%CMR-ENDPOINT%/granules?version=1&version=2"
+
+#### Find granules by entry title
+
+This parameter supports `pattern`, `ignore_case` and option `and`.
+
+Find granules with the corresponding collection matching 'entry_title' param value
+
+    curl "%CMR-ENDPOINT%/granules?entry_title=DatasetId%204"
+
+#### Find granules with temporal
+
+The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
+
+    curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 #### Exclude granules from elastic results by echo granule id and concept ids.
 
@@ -744,7 +876,7 @@ Facets in JSON search response formats will be formatted like the following exam
 
 ### Search for Tiles
 
-Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same way as in granule and collection spatial searches (See under "Find granules by Spatial").
+Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same format as in granule and collection spatial searches (See under "Find granules by Spatial").
 
 A query could consist of multiple spatial parameters, two points and a bounding box for example. All the spatial parameters are OR'd in a query meaning a query will return all the tiles which intersect atleast one of the given geometries.
 

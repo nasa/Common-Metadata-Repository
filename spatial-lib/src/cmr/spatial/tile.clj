@@ -257,6 +257,6 @@
 
 (defn all-tiles
   "Gets all MODIS Sinusoidal Tiles as a vector of tuples, each tuple being in the format [h v] 
-  where h is the row and v is the column of the tile in the MODIS Sinusoidal grid."
+  where h is the column and v is the row of a tile in the MODIS Sinusoidal grid."
   []
   (map :coordinates @modis-sin-tiles))
