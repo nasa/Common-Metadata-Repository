@@ -247,3 +247,57 @@
                shapes)))))
 
 
+
+(comment
+
+  (do
+    (def search-area (m/mbr 2.8125 26.015625 27.5625 18.5625))
+
+    (require '[cmr.spatial.relations :as r])
+    (def intersects-fn (r/shape->intersects-fn search-area))
+
+    (def ords [105.430611,-81.285156 46.711628,-65.434303 34.878036,-45.048115 28.735548,-24.12281 23.99316,-3.005745 19.420183,18.155376 14.006246,39.221821 5.132201,59.967354 1.0E-4,66.7660068 1.0E-4,65.0446639 3.979038,59.776619 13.241453,39.078468 18.792515,18.024538 23.394991,-3.134466 28.082237,-24.256086 34.040928,-45.200386 45.345764,-65.661354 104.596161,-81.881721 180.0,-70.784953 180.0,-70.300547 105.430611,-81.285156])
+
+    (def stored-ords
+      (first (shape->stored-ords (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)]))))
+
+    (require '[criterium.core :refer [with-progress-reporting bench]]))
+
+  (with-progress-reporting
+    (bench
+      (let [{:keys [type ords]} stored-ords
+            shape (stored-ords->shape type ords)]
+        (intersects-fn shape))))
+
+  ;; ~ 500 initially
+  ;; 408 - after refactoring corner points to be cached in the mbr
+  ;; 458 - after creating a mapcatv in geodetic ring covers point. Reversed this
+  ;; 438 - with mapv in geodetic ring covers point. Reversed this.
+  ;; 435 - after reversed
+  ;; 432 - with odd rewrite
+  ;; 393 - with a rewrite of round function
+  ;; 303 - with faster mbr/intersects-br function
+  ;; 312 - with faster mbr/intersects-br function use of macros to define within-range and range-intersects (did not reverse this yet)
+  ;; 292 - with double-approx= replacing approx= in is-north-pole and is-south-pole
+  ;; 279 - with creating non-multimethod geodetic-covers-point? in mbr.
+  ;; 284 - reordered geodetic covers point to put regular point within check first (reversed this)
+  ;; 258 - slight change to math/rotation-direction
+  ;; 252 - round-point changed to use direct field access
+  ;; 238 - ring-relations/intersects-br refactored slightly to avoid use of apply and partials
+  ;; 235 - removed partial apply from points->arc
+  ;; 227 - Changed geodetic-ring/covers-point? to use transients
+  ;; 231 - slight rewrite of geodetic-ring/arcs-and-arc-intersections
+  ;; 218 - Changed arc intersection to compare arc mbrs before testing.
+  ;; 212 - removed some partials from ring-relations/intersects-br?
+  ;; Ideas for the next set
+  ;; replace math functions with macros
+
+  (* 31151 2.0 511)
+
+
+  (= 3.2E7 32000000.0)
+
+
+
+  )
+

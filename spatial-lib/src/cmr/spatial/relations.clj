@@ -157,7 +157,7 @@
 
   (intersects-br?
     [br1 br2]
-    (m/intersects-br? :geodetic br1 br2))
+    (m/intersects-br? br1 br2))
 
   (intersects-polygon?
     [br polygon]
@@ -315,4 +315,6 @@
       ;; Shape is the second argument so that the polymorphic protocol dispatch can be used
       ;; on the first argument.
       (f (d/calculate-derived other-shape) shape))))
+
+
 

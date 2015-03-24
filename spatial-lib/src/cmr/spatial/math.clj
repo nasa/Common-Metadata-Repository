@@ -6,16 +6,44 @@
 (primitive-math/use-primitive-operators)
 
 ;; Generate function wrappers around java math methods that take a single arg.
-(doseq [f '[cos sin tan atan sqrt acos asin]]
+#_(doseq [f '[cos sin tan atan sqrt acos asin]]
   (let [math-sym (symbol (str "StrictFastMath/" f))]
     (eval `(defn ~f ^double [^double v#]
              (~math-sym v#)))))
 
-(defn abs ^double [^double v]
+(defmacro cos [v]
+  `(StrictFastMath/cos ~v))
+
+(defmacro sin [v]
+  `(StrictFastMath/sin ~v))
+
+(defmacro tan [v]
+  `(StrictFastMath/tan ~v))
+
+(defmacro atan [v]
+  `(StrictFastMath/atan ~v))
+
+(defmacro sqrt [v]
+  `(StrictFastMath/sqrt ~v))
+
+(defmacro acos [v]
+  `(StrictFastMath/acos ~v))
+
+(defmacro asin [v]
+  `(StrictFastMath/asin ~v))
+
+
+#_(defn abs ^double [^double v]
   (Math/abs v))
 
-(defn atan2 ^double [^double y ^double x]
+#_(defn atan2 ^double [^double y ^double x]
   (StrictFastMath/atan2 y x))
+
+(defmacro abs [v]
+  `(Math/abs ~v))
+
+(defmacro atan2 [y x]
+  `(StrictFastMath/atan2 ~y ~x))
 
 (def ^:const ^double PI Math/PI)
 
@@ -50,6 +78,24 @@
       bigdec
       (.setScale precision BigDecimal/ROUND_HALF_UP)
       (.doubleValue)))
+
+;; TODO make sure this equivalent after we test to see if it has a major impact on performance.
+(defn round-fast
+  ^double [^long precision ^double v]
+  (let [rounding-multiplier (Math/pow 10 precision)]
+    (/ (Math/floor (+ (* v rounding-multiplier) 0.5)) rounding-multiplier)))
+
+(comment
+
+  (require '[criterium.core :refer [with-progress-reporting bench]])
+  (with-progress-reporting
+    (bench
+      ; (round 3 5.12345) ;; - 393 ns
+      (round-fast 3 5.12345) ;; - 94 ns
+      ))
+
+  )
+
 
 (defn float->double
   "Converts a float to a double in a way that will keep the double value closer to the original
@@ -94,11 +140,18 @@
   [v]
   (= Float (type v)))
 
-(defn within-range?
+(defmacro within-range?
   "Returns true if v is within min and max."
-  [^double v ^double min ^double max]
-  (and (>= v min)
-       (<= v max)))
+  [v min max]
+  `(and (>= ~v ~min) (<= ~v ~max)))
+
+;; TODO write test
+(defmacro range-intersects?
+  "Returns true if range2 intersects range 1"
+  [r1min r1max r2min r2max]
+  `(or (within-range? ~r2min ~r1min ~r1max)
+       (within-range? ~r2max ~r1min ~r1max)
+       (within-range? ~r1min ~r2min ~r2max)))
 
 (defn avg
   "Computes the average of the numbers"
@@ -115,9 +168,9 @@
   Written as a macro so it doesn't dictate the value types"
   [v min-v max-v]
   `(cond
-    (> ~v ~max-v) ~max-v
-    (< ~v ~min-v) ~min-v
-    :else ~v))
+     (> ~v ~max-v) ~max-v
+     (< ~v ~min-v) ~min-v
+     :else ~v))
 
 (defn mid-lon
   "Returns the middle longitude between two lons. Order matters"
@@ -200,7 +253,7 @@
   Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
   of rotation"
   [angles]
-  (let [angle-delta (fn [^double a1 ^double a2]
+  (let [angle-delta (fn [[^double a1 ^double a2]]
                       (let [a2 (if (< a2 a1)
                                  ;; Shift angle 2 so it is always greater than angle 1. This allows
                                  ;; us to get the real radial distance between angle 2 and angle 1
@@ -223,7 +276,7 @@
         ;; Calculates the amount of change between each angle.
         ;; Positive numbers are turns to the left (counter-clockwise).
         ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n (partial apply angle-delta) 2 1 angles)
+        deltas (util/map-n angle-delta 2 1 angles)
 
         ;; Summing the amounts of turn will give us a net turn. If it's positive then there
         ;; is a net turn to the right. If it's negative then there's a net turn to the left.

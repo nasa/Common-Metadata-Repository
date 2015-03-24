@@ -36,20 +36,21 @@
   :profiles
   {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.10"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [criterium "0.4.3"]]
 
          :global-vars {*warn-on-reflection* true
                        *assert* false}
 
          ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
          ;; See https://github.com/technomancy/leiningen/wiki/Faster
-         ; :jvm-opts ^:replace [;; important to allow logging to standard out
-         ;                      "-Des.foreground=true"
-         ;                      ;; Use the following to enable JMX profiling with visualvm
-         ;                      "-Dcom.sun.management.jmxremote"
-         ;                      "-Dcom.sun.management.jmxremote.ssl=false"
-         ;                      "-Dcom.sun.management.jmxremote.authenticate=false"
-         ;                      "-Dcom.sun.management.jmxremote.port=1098"]
+         :jvm-opts ^:replace [;; important to allow logging to standard out
+                              "-Des.foreground=true"
+                              ;; Use the following to enable JMX profiling with visualvm
+                              "-Dcom.sun.management.jmxremote"
+                              "-Dcom.sun.management.jmxremote.ssl=false"
+                              "-Dcom.sun.management.jmxremote.authenticate=false"
+                              "-Dcom.sun.management.jmxremote.port=1098"]
          :source-paths ["src" "dev"]}
    :uberjar {:aot :all}}
 

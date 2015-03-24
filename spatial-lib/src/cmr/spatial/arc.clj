@@ -181,7 +181,7 @@
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n (partial apply arc) 2 1 points))
+  (util/map-n (fn [[p1 p2]] (arc p1 p2)) 2 1 points))
 
 (defn ords->arc
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an arc."
@@ -399,10 +399,10 @@
         a1-br2 (.mbr2 a1)
         a2-br1 (.mbr1 a2)
         a2-br2 (.mbr2 a2)]
-    (filter (fn [p] (and (or (mbr/covers-point? :geodetic a1-br1 p)
-                             (and a1-br2 (mbr/covers-point? :geodetic a1-br2 p)))
-                         (or (mbr/covers-point? :geodetic a2-br1 p)
-                             (and a2-br2 (mbr/covers-point? :geodetic a2-br2 p)))))
+    (filter (fn [p] (and (or (mbr/geodetic-covers-point? a1-br1 p)
+                             (and a1-br2 (mbr/geodetic-covers-point? a1-br2 p)))
+                         (or (mbr/geodetic-covers-point? a2-br1 p)
+                             (and a2-br2 (mbr/geodetic-covers-point? a2-br2 p)))))
             points)))
 
 (defn lat-segment-intersections
@@ -438,22 +438,43 @@
     (points-within-arc-bounding-rectangles
       points a1 a2)))
 
-(defn default-arc-intersections [^Arc a1 ^Arc a2]
-  (let [pv1 (.plane_vector ^GreatCircle (.great_circle a1))
-        pv2 (.plane_vector ^GreatCircle (.great_circle a2))
-        ;; Compute the great circle intersection vector. This is the cross product of the vectors
-        ;; defining the great circle planes.
-        intersection-vector (v/cross-product pv1 pv2)
-        intersection-point1 (c/vector->point intersection-vector)
-        intersection-point2 (p/antipodal intersection-point1)]
-    ;; Return the intersection points that are covered by bounding rectangles from both arcs
-    (points-within-arc-bounding-rectangles
-      [intersection-point1 intersection-point2]
-      a1 a2)))
+(defn- arc-mbrs-intersect?
+  "Returns true if any of the arc mbrs intersect"
+   [^Arc a1 ^Arc a2]
+   (let [a1m1 (.mbr1 a1)
+         a1m2 (.mbr2 a1)
+         a2m1 (.mbr1 a2)
+         a2m2 (.mbr2 a2)]
+     (or (mbr/intersects-br? :geodetic a1m1 a2m1)
+         (and a2m2 (mbr/intersects-br? :geodetic a1m1 a2m2))
+         (and a1m2 (mbr/intersects-br? :geodetic a1m2 a2m1))
+         (and a1m2 a2m2 (mbr/intersects-br? :geodetic a1m2 a2m2)))))
 
-;; Performance enhancement: Add a bounding rectangle's intersects check first.
-;; Actually that might not help anything. When we're searching in elastic we'll only find those
-;; items where the rings bounding rectangles intersect. Still might be worth it to check with arcs though.
+(defn default-arc-intersections [^Arc a1 ^Arc a2]
+  (when (arc-mbrs-intersect? a1 a2)
+    (let [pv1 (.plane_vector ^GreatCircle (.great_circle a1))
+          pv2 (.plane_vector ^GreatCircle (.great_circle a2))
+          ;; Compute the great circle intersection vector. This is the cross product of the vectors
+          ;; defining the great circle planes.
+          intersection-vector (v/cross-product pv1 pv2)
+          intersection-point1 (c/vector->point intersection-vector)
+          intersection-point2 (p/antipodal intersection-point1)]
+      ;; Return the intersection points that are covered by bounding rectangles from both arcs
+      (points-within-arc-bounding-rectangles
+        [intersection-point1 intersection-point2]
+        a1 a2))))
+(comment
+  (def a1 (cmr.spatial.test.arc-intersections/example-arcs :crosses_np))
+  (def a2 (cmr.spatial.test.arc-intersections/example-arcs :endpoint_on_np))
+  (def a1m1 (.mbr1 a1))
+  (def a1m2 (.mbr2 a1))
+  (def a2m1 (.mbr1 a2))
+  (def a2m2 (.mbr2 a2))
+
+  (mbr/intersects-br? :geodetic a1m1 a2m1)
+
+)
+
 
 (defn intersections
   "Returns a list of the points where the two arcs intersect."

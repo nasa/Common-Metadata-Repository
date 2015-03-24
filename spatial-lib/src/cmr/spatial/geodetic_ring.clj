@@ -50,6 +50,51 @@
    ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
+(defn mapcatv
+  "A faster version of mapcat that's like mapv."
+  [f items]
+  (reduce into [] (mapv f items))
+  #_(loop [results (transient [])
+         [item & others] items]
+    (let [results (loop [inner-results results
+                         [result & other-results] (f item)]
+                    (let [inner-results (conj! inner-results result)]
+                      (if (empty? other-results)
+                        inner-results
+                        (recur inner-results other-results))))]
+      (if (empty? others)
+        (persistent! results)
+        (recur results others)))))
+
+(comment
+  (mapcatv identity [[0 1] [2 3] (range 4)])
+
+
+
+  )
+
+(defn even-long?
+  [^long l]
+  (= (mod l 2) 0))
+
+(defn odd-long?
+  [l]
+  (not (even-long? l)))
+
+(defn arcs-and-arc-intersections
+  [arcs other-arc]
+  (persistent!
+    (reduce (fn [s arc]
+              (let [[point1 point2] (a/intersections arc other-arc)]
+                (if point1
+                  (let [s (conj! s (p/round-point 5 point1))]
+                    (if point2
+                      (conj! s (p/round-point 5 point2))
+                      s))
+                  s)))
+            (transient #{})
+            arcs)))
+
 (defn covers-point?
   "Determines if a ring covers the given point. The algorithm works by counting the number of times
   an arc between the point and a known external point crosses the ring. An even count means the point
@@ -78,12 +123,14 @@
                 ;; Create the test arc
                 crossing-arc (a/arc point external-point)
                 ;; Find all the points the arc passes through
-                intersections (mapcat #(a/intersections % crossing-arc) (:arcs ring))
+                ;intersections (mapcat #(a/intersections % crossing-arc) (:arcs ring))
                 ;; Round the points. If the crossing arc passes through a point on the ring the
                 ;; intersection algorithm will result in two very, very close points. By rounding to
                 ;; within an acceptable range they'll be seen as the same point.
-                intersections (set (map (partial p/round-point 5) intersections))]
-            (or (odd? (count intersections))
+                ;intersections (set (map #(p/round-point 5 %) intersections))
+                intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)
+                ]
+            (or (odd-long? (count intersections))
                 ;; if the point itself is one of the intersections then the ring covers it
                 (intersections point)))))))
 

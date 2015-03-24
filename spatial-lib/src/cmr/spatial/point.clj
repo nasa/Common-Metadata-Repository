@@ -254,11 +254,10 @@
 
 (defn round-point
   "Rounds the point the given number of decimal places"
-  [num-places p]
-  (let [{:keys [lon lat geodetic-equality]} p
-        lon (round num-places lon)
-        lat (round num-places lat)]
-    (point lon lat geodetic-equality)))
+  [num-places ^Point p]
+  (let [lon (round-fast num-places (.lon p))
+        lat (round-fast num-places (.lat p))]
+    (point lon lat (.geodetic_equality p))))
 
 (defn ords->points
   "Takes pairs of numbers and returns a sequence of points.
@@ -292,10 +291,10 @@
       (= (antipodal-lon (.lon p1)) (.lon p2)))))
 
 (defn is-north-pole? [^Point p]
-  (approx= (.lat p) 90.0 0.0000001))
+  (double-approx= (.lat p) 90.0 0.0000001))
 
 (defn is-south-pole? [^Point p]
-  (approx= (.lat p) -90.0 0.0000001))
+  (double-approx= (.lat p) -90.0 0.0000001))
 
 (defn is-pole? [p]
   (or (is-north-pole? p)

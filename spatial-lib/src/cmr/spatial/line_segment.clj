@@ -239,10 +239,10 @@
   [^LineSegment ls1 ^LineSegment ls2]
   (let [mbr1 (.mbr ls1)
         mbr2 (.mbr ls2)
-        lon1 (get-in ls1 [:point1 :lon])
-        lon2 (get-in ls2 [:point1 :lon])
-        {ls1-north :north ls1-south :south} mbr1
-        {ls2-north :north ls2-south :south} mbr2]
+        ^double lon1 (get-in ls1 [:point1 :lon])
+        ^double lon2 (get-in ls2 [:point1 :lon])
+        {^double ls1-north :north ^double ls1-south :south} mbr1
+        {^double ls2-north :north ^double ls2-south :south} mbr2]
     (when (= lon1 lon2)
       (cond
         (within-range? ls2-north ls1-south ls1-north)
