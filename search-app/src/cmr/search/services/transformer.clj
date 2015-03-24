@@ -3,12 +3,13 @@
   (:require [cmr.system-trace.core :refer [deftracefn]]
             [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
+            [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [cmr.search.services.acl-service :as acl-service]
-            [cmr.search.services.xslt :as xslt]
+            [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
 
@@ -20,10 +21,24 @@
   "Defines the [metadata-format target-format] to xsl mapping"
   {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})
 
+(def xsl-transformer-cache-name
+  "This is the name of the cache to use for XSLT transformer templates. Templates are thread
+  safe but transformer instances are not.
+  http://www.onjava.com/pub/a/onjava/excerpt/java_xslt_ch5/?page=9"
+  :xsl-transformer-templates)
+
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
   (assoc context :system (get-in context [:system :metadata-db])))
+
+(defn- get-template
+  "Returns a XSLT template from the filename, using the context cache."
+  [context f]
+  (cache/cache-lookup
+   (cache/context->cache context xsl-transformer-cache-name)
+   f
+   #(xslt/read-template f)))
 
 (defn- transform-metadata
   "Transforms the metadata of the concept to the given format"
@@ -31,7 +46,7 @@
   (let [native-format (mt/mime-type->format (:format concept))]
     (if-let [xsl (types->xsl [native-format target-format])]
       ; xsl is defined for the transformation, so use xslt
-      (xslt/transform context (:metadata concept) xsl)
+      (xslt/transform (:metadata concept) (get-template context xsl))
       (-> concept
           ummc/parse-concept
           (ummc/umm->xml target-format)))))

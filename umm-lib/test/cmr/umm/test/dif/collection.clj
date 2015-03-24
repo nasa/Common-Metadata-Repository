@@ -427,14 +427,20 @@
                         :data-type :string
                         :parameter-range-begin "alpha"
                         :parameter-range-end "bravo"
-                        :value "alpha1"})
+                        :value "alpha1"
+                        :parsed-parameter-range-begin "alpha"
+                        :parsed-parameter-range-end "bravo"
+                        :parsed-value "alpha1"})
                      (umm-c/map->ProductSpecificAttribute
                        {:name "Float add attrib"
                         :description "something float"
                         :data-type :float
-                        :parameter-range-begin 0.1
-                        :parameter-range-end 100.43
-                        :value 12.3})]
+                        :parameter-range-begin "0.1"
+                        :parameter-range-end "100.43"
+                        :value "12.3"
+                        :parsed-parameter-range-begin 0.1
+                        :parsed-parameter-range-end 100.43
+                        :parsed-value 12.3})]
                     :spatial-coverage
                     (umm-c/map->SpatialCoverage
                       {:granule-spatial-representation :geodetic

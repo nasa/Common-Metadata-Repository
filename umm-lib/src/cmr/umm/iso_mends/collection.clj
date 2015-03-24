@@ -18,7 +18,8 @@
             [cmr.umm.iso-mends.collection.project :as proj]
             [cmr.umm.iso-mends.collection.associated-difs :as dif]
             [cmr.umm.iso-mends.collection.collection-association :as ca]
-            [cmr.umm.iso-mends.collection.helper :as h])
+            [cmr.umm.iso-mends.collection.helper :as h]
+            [cmr.umm.iso-mends.spatial :as sp])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -69,7 +70,7 @@
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
-  (let [id-elem (cx/element-at-path xml-struct [:identificationInfo :MD_DataIdentification])
+  (let [id-elem (core/id-elem xml-struct)
         product (xml-elem->Product id-elem)
         {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
@@ -95,8 +96,7 @@
        ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
-       ;; TODO: Ted has updated the xsl today, will try to add spatial support next.
-       ; :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
+       :spatial-coverage (sp/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
        :associated-difs (dif/xml-elem->associated-difs id-elem)})))
 
@@ -256,6 +256,7 @@
                     (x/element :gmd:metadataStandardVersion {}
                                (x/element :gco:CharacterString {}
                                           "ISO 19115-2:2009(E)"))
+                    (sp/spatial-coverage->coordinate-system-xml spatial-coverage)
                     (x/element
                       :gmd:identificationInfo {}
                       (x/element
@@ -288,7 +289,7 @@
                         (h/iso-string-element :gmd:language "eng")
                         (x/element :gmd:extent {}
                                    (x/element :gmd:EX_Extent {:id "boundingExtent"}
-                                              ; (spatial/generate-spatial spatial-coverage)
+                                              (sp/spatial-coverage->extent-xml spatial-coverage)
                                               (t/generate-temporal temporal)))
                         (iso-processing-level-id-element processing-level-id)))
                     (generate-distribution-info archive-center related-urls personnel)

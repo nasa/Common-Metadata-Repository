@@ -7,7 +7,8 @@
 (defn parse-data-type
   "Parses the string data type from the XML into the keyword data type."
   [data-type]
-  (keyword (csk/->kebab-case data-type)))
+  (when data-type
+    (keyword (csk/->kebab-case data-type))))
 
 (defn gen-data-type
   "Generates the string data type for XML from the keyword data type."
@@ -80,6 +81,13 @@
     (let [value (str/replace value "Z" "")]
       (f/parse (f/formatters :date) value))))
 
+(defn safe-parse-value
+  "Returns the parsed value. It is different from parse-value function in that it will catch any
+  parsing exceptions and returns nil when the value is invalid to parse for the given data type."
+  [data-type value]
+  (try
+    (parse-value data-type value)
+    (catch Exception _ nil)))
 
 (defmulti gen-value
   "Converts the given value to a string for placement in XML."

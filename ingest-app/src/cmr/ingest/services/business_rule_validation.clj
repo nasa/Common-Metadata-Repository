@@ -17,7 +17,6 @@
                   (t/before? (t/plus (tk/now) (t/minutes 1))))
       [(format "DeleteTime %s is before the current time." delete-time)])))
 
-;; TODO - This seems like it should be moved to be a post commit constraint
 (defn- concept-id-validation
   "Validates the concept-id if provided matches the metadata-db concept-id for the concept native-id"
   [context concept]

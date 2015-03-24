@@ -10,7 +10,8 @@
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.umm.validation.product-specific-attribute :as psa]))
 
 
 (defn set-geometries-spatial-representation
@@ -137,7 +138,8 @@
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]
-    :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
+    :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
+                                  (v/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
    projects-reference-collection])

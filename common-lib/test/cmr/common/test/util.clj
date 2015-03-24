@@ -6,6 +6,7 @@
 
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
+            [clj-time.core :as t]
             [cmr.common.util :as util]))
 
 (deftest test-sequence->fn
@@ -182,3 +183,21 @@
                            :else v)))
           middle-fn #(int (/ (+ ^long %1 ^long %2) 2))]
       (is (= find-value (util/binary-search 0 range-size middle-fn matches-fn))))))
+
+(deftest greater-than?-less-than?-test
+  (testing "greater-than? and less-than?"
+    (are [items]
+         (and
+           (apply util/greater-than? items)
+           (apply util/less-than? (reverse items)))
+         []
+         [3]
+         [3 2]
+         [nil]
+         [-1 nil]
+         [3 2 1]
+         [3.0 2.0 1.0 0.0]
+         ["c" "b" "a"]
+         [:d :c :b :a]
+         [(t/date-time 2015 1 14 4 3 27) (t/date-time 1986 10 14 4 3 28)])))
+

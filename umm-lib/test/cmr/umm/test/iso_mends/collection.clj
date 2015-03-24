@@ -8,6 +8,8 @@
             [clojure.java.io :as io]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
+            ;; this is not needed until the ECHO to ISO XSLT is fixed
+            ;; [cmr.common.xml.xslt :as xslt]
             [cmr.umm.test.generators.collection :as coll-gen]
             [cmr.umm.iso-mends.collection :as c]
             [cmr.umm.echo10.collection :as echo10-c]
@@ -15,8 +17,17 @@
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.iso-mends.core :as iso]
-            [cmr.umm.test.echo10.collection :as test-echo10])
-  (:import cmr.spatial.mbr.Mbr))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.umm.test.echo10.collection :as test-echo10]
+            [cmr.spatial.derived :as d]))
+
+(defn- spatial-coverage->expected-parsed
+  [{:keys [geometries spatial-representation] :as sc}]
+  (when geometries
+    (umm-c/map->SpatialCoverage
+     {:spatial-representation spatial-representation
+      :granule-spatial-representation spatial-representation
+      :geometries geometries})))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -69,12 +80,12 @@
               :roles ["distributor"]}))
          distrib-centers)))
 
-(defn- umm->expected-parsed-iso
+(defn umm->expected-parsed-iso
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [short-name long-name version-id processing-level-id]} :product
-         :keys [entry-title spatial-coverage]} coll
+         :keys [spatial-coverage]} coll
         entry-id (str short-name "_" version-id)
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
@@ -105,17 +116,23 @@
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
         (update-in [:platforms] platforms->expected-parsed)
-        ;; ISO spatial mapping is incomplete right now
-        (dissoc :spatial-coverage)
         ;; ISO AdditionalAttributes mapping is incomplete right now
         (dissoc :product-specific-attributes)
         ;; ISO does not support size in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
-
+        (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
+
+(defn derive-geometries
+  "Returns SpatialCoverage with all geometries updated by calling
+  calculate-derived with the collection coordinate system."
+  [{cs :spatial-representation :as sc}]
+  (when sc
+    (let [derive #(d/calculate-derived (umm-s/set-coordinate-system cs %))]
+      (update-in sc [:geometries] (partial map derive)))))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
@@ -135,11 +152,30 @@
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
+          parsed-iso (update-in parsed-iso [:spatial-coverage] derive-geometries)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
       (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
+
+(comment
+  ;; This test is currently failing pending an update to the XSLT file
+  ;; to generate closed polygons per the GML spec
+
+(def echo-to-iso-xslt
+  (xslt/read-template
+   (io/resource "schema/iso_mends/resources/transforms/ECHOToISO.xsl")))
+
+  (defspec umm-to-echo-to-iso-mends-via-xslt-to-umm-test 100
+    (for-all [collection coll-gen/collections]
+      (let [echo10-xml (echo10/umm->echo10-xml collection)
+            iso-xml    (xslt/transform echo10-xml echo-to-iso-xslt)
+            parsed-iso (c/parse-collection iso-xml)]
+        ;; only comparing the parsed :spatial-coverage, since there are
+        ;; funky parts in the rest of the XSLT output
+        (= (:spatial-coverage (umm->expected-parsed-iso collection))
+           (:spatial-coverage (umm->expected-parsed-iso parsed-iso)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
 (def all-fields-collection-xml
@@ -176,6 +212,7 @@
                        :single-date-times
                        [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
                        :periodic-date-times []})
+                    :spatial-coverage nil
                     :science-keywords
                     [(umm-c/map->ScienceKeyword
                        {:category "EARTH SCIENCE"

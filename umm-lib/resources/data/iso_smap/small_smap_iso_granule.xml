@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gmd:DS_Series xmlns="http://www.isotc211.org/2005/gmi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:eos="http://earthdata.nasa.gov/schema/eos" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:gsr="http://www.isotc211.org/2005/gsr" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gts="http://www.isotc211.org/2005/gts" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:srv="http://www.isotc211.org/2005/srv" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.isotc211.org/2005/gmd file:/home/jon/esdt/smap/NASASchemaFolder/schema.xsd">
+  <gmd:composedOf>
+    <gmd:DS_DataSet>
+      <gmd:has>
+        <gmi:MI_Metadata>
+          <gmd:fileIdentifier>
+            <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5</gmx:FileName>
+          </gmd:fileIdentifier>
+          <gmd:language>
+            <gco:CharacterString>eng</gco:CharacterString>
+          </gmd:language>
+          <gmd:characterSet>
+            <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+          </gmd:characterSet>
+          <gmd:hierarchyLevel>
+            <gmd:MD_ScopeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="dataset">dataset</gmd:MD_ScopeCode>
+          </gmd:hierarchyLevel>
+          <gmd:contact xlink:href="#alaskaSARContact"/>
+          <gmd:dateStamp>
+            <gco:DateTime>2014-12-25T10:36:10.000Z</gco:DateTime>
+          </gmd:dateStamp>
+          <gmd:metadataStandardName>
+            <gco:CharacterString>ISO 19115-2 Geographic information — Metadata — Part 2: Extensions for imagery and gridded data</gco:CharacterString>
+          </gmd:metadataStandardName>
+          <gmd:metadataStandardVersion>
+            <gco:CharacterString>ISO 19115-2:2009-02-15</gco:CharacterString>
+          </gmd:metadataStandardVersion>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>SC:SPL1AA.001:12345</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>dataset-id</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>GranuleUR</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5</gmx:FileName>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2014-12-25T10:36:10.000Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                  <gmd:edition>
+                    <gco:CharacterString>R03001</gco:CharacterString>
+                  </gmd:edition>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>short</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>
+                        <gco:CharacterString>http://smap.jpl.nasa.gov</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>The ECS Short Name</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>  <!-- This field provides the ECS Version ID.  This field identifies each major series in SMAP science data system operations.  -->
+                        <gco:CharacterString>v1</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>  <!-- This field is intended to provide a namespace identifier for SMAP mission. Team should devise an identifier. -->
+                        <gco:CharacterString>smap.jpl.nasa.gov</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>The ECS Version ID</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:identifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>Not determined for Release 3.</gco:CharacterString>
+                      </gmd:code>
+                      <gmd:codeSpace>
+                        <gco:CharacterString>urn:uuid</gco:CharacterString>
+                      </gmd:codeSpace>
+                      <gmd:description>
+                        <gco:CharacterString>A Universally Unique Identifier (UUID)</gco:CharacterString>
+                      </gmd:description>
+                    </gmd:MD_Identifier>
+                  </gmd:identifier>
+                  <gmd:citedResponsibleParty>
+                    <gmd:CI_ResponsibleParty>
+                      <gmd:organisationName>
+                        <gco:CharacterString>Jet Propulsion Laboratory</gco:CharacterString>
+                      </gmd:organisationName>
+                      <gmd:contactInfo>
+                        <gmd:CI_Contact>
+                          <gmd:address>
+                            <gmd:CI_Address>
+                              <gmd:deliveryPoint>
+                                <gco:CharacterString>4800 Oak Grove Drive</gco:CharacterString>
+                              </gmd:deliveryPoint>
+                              <gmd:city>
+                                <gco:CharacterString>Pasadena</gco:CharacterString>
+                              </gmd:city>
+                              <gmd:administrativeArea>
+                                <gco:CharacterString>California</gco:CharacterString>
+                              </gmd:administrativeArea>
+                              <gmd:postalCode>
+                                <gco:CharacterString>91109</gco:CharacterString>
+                              </gmd:postalCode>
+                              <gmd:country>
+                                <gco:CharacterString>United States</gco:CharacterString>
+                              </gmd:country>
+                            </gmd:CI_Address>
+                          </gmd:address>
+                        </gmd:CI_Contact>
+                      </gmd:contactInfo>
+                      <gmd:role>
+                        <gmd:CI_RoleCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="processor">processor</gmd:CI_RoleCode>
+                      </gmd:role>
+                    </gmd:CI_ResponsibleParty>
+                  </gmd:citedResponsibleParty>
+                  <gmd:presentationForm>
+                    <gmd:CI_PresentationFormCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode" codeListValue="documentDigital">documentDigital</gmd:CI_PresentationFormCode>
+                  </gmd:presentationForm>
+                  <gmd:series>
+                    <gmd:CI_Series>
+                      <gmd:name>
+                        <gco:CharacterString>L1C_S0_HiRes</gco:CharacterString>
+                      </gmd:name>
+                    </gmd:CI_Series>
+                  </gmd:series>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>The SMAP Level 1C_S0_HiRes product provides multilooked Synthetic Aperture Radar normalized cross sections in an instrument swath based array with 1 km resolution.</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:purpose>
+                <gco:CharacterString>The SMAP L1C radar data product delivers the basic radar backscatter measurements at sufficiently high resolution (1 km) to meet SMAP soil moisture retrieval requirements as well as support other scientific studies while keeping the file sizes manageable for most scientific data users.</gco:CharacterString>
+              </gmd:purpose>
+              <gmd:credit>
+                <gco:CharacterString>The software that generates the Level 1C S0 HiRes product and the data system that automates its production were designed and implemented at the Jet Propulsion Laboratory, California Institute of Technology in Pasadena, California.</gco:CharacterString>
+              </gmd:credit>
+              <gmd:status>
+                <gmd:MD_ProgressCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode" codeListValue="on-going">on-going</gmd:MD_ProgressCode>
+              </gmd:status>
+              <gmd:aggregationInfo xlink:type="simple">
+                <gmd:MD_AggregateInformation>
+                  <gmd:aggregateDataSetName xlink:type="simple">
+                    <gmd:CI_Citation>
+                      <gmd:title>
+                        <gmx:FileName>SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.qa</gmx:FileName>
+                      </gmd:title>
+                      <gmd:date xlink:type="simple">
+                        <gmd:CI_Date>
+                          <gmd:date>
+                            <gco:Date>2015-05-31</gco:Date>
+                          </gmd:date>
+                          <gmd:dateType>
+                            <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="creation">creation</gmd:CI_DateTypeCode>
+                          </gmd:dateType>
+                        </gmd:CI_Date>
+                      </gmd:date>
+                      <gmd:edition>
+                        <gco:CharacterString>QA Product Version</gco:CharacterString>
+                      </gmd:edition>
+                      <gmd:otherCitationDetails>
+                        <gco:CharacterString>An ASCII product that contains statistical information on data product results.  These statistics enable data producers and users to assess the quality of the data in the data product granule.</gco:CharacterString>
+                      </gmd:otherCitationDetails>
+                    </gmd:CI_Citation>
+                  </gmd:aggregateDataSetName>
+                  <gmd:associationType>
+                    <gmd:DS_AssociationTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode" codeListValue="crossReference">crossReference</gmd:DS_AssociationTypeCode>
+                  </gmd:associationType>
+                </gmd:MD_AggregateInformation>
+              </gmd:aggregationInfo>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+              <gmd:characterSet>
+                <gmd:MD_CharacterSetCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode" codeListValue="utf8">utf8</gmd:MD_CharacterSetCode>
+              </gmd:characterSet>
+              <gmd:topicCategory>
+                <gmd:MD_TopicCategoryCode>geoscientificInformation</gmd:MD_TopicCategoryCode>
+              </gmd:topicCategory>
+              <gmd:environmentDescription>
+                <gco:CharacterString>Data product generated by the SMAP mission in HDF5 format with ISO 19115 conformant metadata.</gco:CharacterString>
+              </gmd:environmentDescription>
+
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+          <gmd:identificationInfo>
+            <gmd:MD_DataIdentification>
+              <gmd:citation>
+                <gmd:CI_Citation>
+                  <gmd:title>
+                    <gco:CharacterString>DataSetId</gco:CharacterString>
+                  </gmd:title>
+                  <gmd:date>
+                    <gmd:CI_Date>
+                      <gmd:date>
+                        <gco:DateTime>2013-04-05T17:15:00Z</gco:DateTime>
+                      </gmd:date>
+                      <gmd:dateType>
+                        <gmd:CI_DateTypeCode codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision">revision</gmd:CI_DateTypeCode>
+                      </gmd:dateType>
+                    </gmd:CI_Date>
+                  </gmd:date>
+                </gmd:CI_Citation>
+              </gmd:citation>
+              <gmd:abstract>
+                <gco:CharacterString>DataSetId</gco:CharacterString>
+              </gmd:abstract>
+              <gmd:aggregationInfo>
+                <gmd:MD_AggregateInformation>
+                  <gmd:aggregateDataSetIdentifier>
+                    <gmd:MD_Identifier>
+                      <gmd:code>
+                        <gco:CharacterString>dataset-id</gco:CharacterString>
+                      </gmd:code>
+                    </gmd:MD_Identifier>
+                  </gmd:aggregateDataSetIdentifier>
+                  <gmd:associationType/>
+                </gmd:MD_AggregateInformation>
+              </gmd:aggregationInfo>
+              <gmd:language>
+                <gco:CharacterString>eng</gco:CharacterString>
+              </gmd:language>
+            </gmd:MD_DataIdentification>
+          </gmd:identificationInfo>
+        </gmi:MI_Metadata>
+      </gmd:has>
+    </gmd:DS_DataSet>
+  </gmd:composedOf>
+  <gmd:seriesMetadata gco:nilReason="inapplicable"/>
+</gmd:DS_Series>

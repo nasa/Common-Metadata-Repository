@@ -663,7 +663,10 @@
 
 (def valid-tile-search-params
   "Valid parameters for tile search"
-   #{:bounding-box :line :point :polygon})
+   #{:bounding-box 
+     :line 
+     :point 
+     :polygon})
 
 (defn unrecognized-tile-params-validation
   "Validates that no invalid parameters were supplied to tile search"
