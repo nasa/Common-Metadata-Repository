@@ -317,6 +317,37 @@
            ;; completely covers the polygon with holes
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
            [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
+    
+    (testing "multiple bounding-box searches"
+      (are [wnes1 wnes2 items]
+           (let [found (search/find-refs :collection {:bounding-box 
+                                                      [(codec/url-encode (apply m/mbr wnes1))
+                                                       (codec/url-encode (apply m/mbr wnes2))]
+                                                      :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+           
+           [-23.43 5 25.54 -6.31]
+           [-1.74 47.05 5.27 44.04]
+           [whole-world polygon-with-holes normal-poly normal-brs wide-north]))
+    
+    (testing "multiple polygon searches"
+      (are [ords1 ords2 items]
+           (let [found (search/find-refs :collection {:polygon [(apply search-poly ords1)
+                                                                (apply search-poly ords2)]})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+           
+           [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
+           [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
+           [whole-world on-np touches-np north-pole very-tall-cart 
+            along-am-line on-sp wide-south touches-sp south-pole]))
 
     (testing "AQL spatial search"
       (are [type ords items]
@@ -343,7 +374,7 @@
            [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
             normal-poly-cart]))))
 
-(def all_tiles
+(def all-tiles
   [[8 8] [35 7] [7 6] [28 8] [27 8] [8 7] [16 6] [8 11] [22 10] [9 8] [10 14] [12 12] [8 9]
    [7 12] [34 11] [26 13][27 9] [12 6] [15 4] [13 3] [28 5] [23 5] [10 5] [13 15] [15 11] [11 9]
    [11 2] [7 11] [17 5] [21 10] [19 6] [7 13] [22 7] [18 12] [19 16] [21 11] [21 7] [25 10] [3 9]
@@ -382,30 +413,30 @@
    [11 16] [17 17] [14 0] [29 6] [26 5][15 2] [20 6] [31 12] [28 11] [17 7]])
 
 (defn assert-tiles-found
-  "Method to assert if the tiles returned by passing params map as the search parameter matches
+  "Check if the tiles returned by passing params map as the search parameter matches
   with the expected tiles"
   [params expected]
   (let [found (search/find-tiles params)]
     (is (= (set expected) (set (:results found))))))
 
 
-(deftest tile-search-test
+(deftest tile-search-single-shape-test
   (testing "bounding box search"
     (u/are2 [wnes tiles]
             (assert-tiles-found {:bounding-box (codec/url-encode (apply m/mbr wnes))} tiles)
 
             "whole world"
-            [-180 90 180 -90] all_tiles
+            [-180 90 180 -90] all-tiles
 
             "Madagascar"
-            [42.35,-11.75, 51.5,-26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
+            [42.35 -11.75 51.5 -26.04] [[21 10][21 11] [22 10] [22 11] [23 10]]))
 
   (testing "polygon search"
     (u/are2 [ords tiles]
             (assert-tiles-found {:polygon (apply search-poly ords)} tiles)
 
             "A large polygon"
-            [7,35, -3.5,22.5, -7,12, -5,1.5, 14.5,-9.0, 38,5, 37,22 7,35]
+            [7 35  -3.5 22.5  -7 12  -5 1.5  14.5 -9.0  38 5  37 22 7 35]
             [[17 6] [17 7] [17 8] [17 9] [18 5] [18 6] [18 7] [18 8] [18 9] [19 5] [19 6] [19 7]
              [19 8] [19 9] [20 6] [20 7] [20 8] [20 9] [21 6] [21 7] [21 8]]))
 
@@ -415,15 +446,57 @@
               {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))} tiles)
 
             "A simple line"
-            [-62.0, -27.0, -76.5, 5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
+            [-62.0  -27.0  -76.5  5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
 
             "A line which crosses over anti-meridian"
-            [168, 22.5, -158, -4.5] [[0 7] [0 8] [1 8] [1 9] [2 9] [33 6] [34 6] [34 7] [35 7]]))
+            [168  22.5  -158  -4.5] [[0 7] [0 8] [1 8] [1 9] [2 9] [33 6] [34 6] [34 7] [35 7]]))
 
   (testing "point search"
     (u/are2 [ords tiles]
             (assert-tiles-found {:point (codec/url-encode (apply p/point ords))} tiles)
 
             "A point"
-            [-83.0, 40.01] [[11 4]])))
+            [-83.0  40.01] [[11 4]])))
 
+(defn- ords->url-encoded-str
+  "Returns a URL encoded string of the given spatial type with the given ordinates"
+  [shape-type ords]
+  (case shape-type
+    :point (codec/url-encode (apply p/point ords))
+    :line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+    :polygon (apply search-poly ords)
+    :bounding-box (codec/url-encode (apply m/mbr ords))))
+
+(defn- add-param
+  "Adds a spatial parameter with the given spatial type and ords into params map"
+  [params [spatial-type ords]]
+    (assoc params spatial-type (conj (spatial-type params) 
+                                     (ords->url-encoded-str spatial-type ords))))
+
+(deftest tile-search-multi-shape-test
+  (testing "search involving multiple shapes"
+    (u/are2 [ords-vectors tiles]
+            (assert-tiles-found (reduce add-param {} ords-vectors) tiles)
+            
+            "Empty parameters"
+            [] all-tiles
+            
+            "Two bounding boxes"
+            [[:bounding-box [-5 5 5 -5]] 
+             [:bounding-box [0 20 20 0]]] 
+            [[19 6] [19 9] [17 6] [18 7] [19 7] [18 9] [18 6] 
+             [18 8][20 8] [20 9] [19 8] [17 9] [17 8] [17 7]]
+            
+            "Two bounding boxes, a point & a line"
+            [[:bounding-box [-180 90 180 -90]] 
+             [:bounding-box [-20 20 20 -20]] 
+             [:point [0 0]] 
+             [:line [0 10 20 20]]]
+            all-tiles)))
+
+(deftest multi-valued-spatial-parameter-validation
+  (testing "multi valued spatial parameter validation with invalid parameters"
+    (let [{:keys [status errors]} (search/find-refs :collection {"line[]" ["20b,30,80,60","10a,10,20,20"]})]
+      (is (= 400 status))
+      (is (= ["[20b,30,80,60] is not a valid URL encoded line"
+              "[10a,10,20,20] is not a valid URL encoded line"] errors)))))
