@@ -12,7 +12,7 @@
   (:import cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
-(def APPROXIMATION_DELTA
+(def ^:const ^double APPROXIMATION_DELTA
   "The delta to use when needing to compare things approximately."
   0.0000001)
 
@@ -319,42 +319,6 @@
              (approx= point
                       (point-at-lon arc (:lon point))
                       APPROXIMATION_DELTA)))))
-
-(comment
-
-  (def a1 (ords->arc -45 30 0 0))
-  (def a2 (ords->arc -45 0 0 30))
-
-  (midpoint a1)
-  (midpoint a2)
-
-  (lat-segment-intersections
-    a1 16.175960878620344 -50 0)
-
-  (point-at-lon a1 -20.772845524037166)
-
-  (def ip (p/point -20.772845524037166,16.150056475830688))
-  (def aip (p/point -22.5,17.351921757240685))
-
-  (def ^double offset (p/angular-distance ip aip))
-  (def ^double total-dist (p/angular-distance (:west-point a1) (:east-point a1)))
-  (def ^double percent-of-total (*(/ ^double offset ^double total-dist)))
-
-  ;; An arc farther shorter than a2 but along the same cartesian line
-  (def a3 (ords->arc -30 10 -15 20))
-
-  (intersections a3 a1)
-  (def ip-a3 (p/point -20.945413480816008 16.271461041452543))
-
-  (def ^double offset-a3 (p/angular-distance ip-a3 aip))
-  (def ^double percent-of-total-a3 (* 100.0 (/ ^double offset-a3 ^double total-dist)))
-
-
-
-
-)
-
-
 (defn midpoint
   "Finds the midpoint of the arc."
   [^Arc arc]
@@ -463,18 +427,6 @@
       (points-within-arc-bounding-rectangles
         [intersection-point1 intersection-point2]
         a1 a2))))
-(comment
-  (def a1 (cmr.spatial.test.arc-intersections/example-arcs :crosses_np))
-  (def a2 (cmr.spatial.test.arc-intersections/example-arcs :endpoint_on_np))
-  (def a1m1 (.mbr1 a1))
-  (def a1m2 (.mbr2 a1))
-  (def a2m1 (.mbr1 a2))
-  (def a2m2 (.mbr2 a2))
-
-  (mbr/intersects-br? :geodetic a1m1 a2m1)
-
-)
-
 
 (defn intersections
   "Returns a list of the points where the two arcs intersect."

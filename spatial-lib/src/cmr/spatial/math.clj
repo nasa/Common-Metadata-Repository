@@ -5,12 +5,6 @@
 
 (primitive-math/use-primitive-operators)
 
-;; Generate function wrappers around java math methods that take a single arg.
-#_(doseq [f '[cos sin tan atan sqrt acos asin]]
-  (let [math-sym (symbol (str "StrictFastMath/" f))]
-    (eval `(defn ~f ^double [^double v#]
-             (~math-sym v#)))))
-
 (defmacro cos [v]
   `(StrictFastMath/cos ~v))
 
@@ -31,13 +25,6 @@
 
 (defmacro asin [v]
   `(StrictFastMath/asin ~v))
-
-
-#_(defn abs ^double [^double v]
-  (Math/abs v))
-
-#_(defn atan2 ^double [^double y ^double x]
-  (StrictFastMath/atan2 y x))
 
 (defmacro abs [v]
   `(Math/abs ~v))
@@ -65,10 +52,10 @@
   ^double [^double r]
   (* r (/ 180.0 PI)))
 
-(defn sq
+(defmacro sq
   "Returns the square of the given value."
-  ^double [^double v]
-  (* v v))
+  [v]
+  `(* ~v ~v))
 
 (defn round
   "Rounds the value with the given precision"
@@ -203,21 +190,20 @@
     [expected n delta]
     "Returns true if n is within a small delta of expected."))
 
-(defn double-approx=
+(defmacro double-approx=
   "Determines if two double values are approximately equal. Created to avoid reflection."
-  ([^double expected ^double n]
-   (double-approx= expected n DELTA))
-  ([^double expected ^double n ^double delta]
-   (<= (abs (- n expected)) delta)))
-
+  ([expected n]
+   `(double-approx= ~expected ~n ~DELTA))
+  ([expected n delta]
+   `(<= (abs (- ~n ~expected)) ~delta)))
 
 (extend-protocol ApproximateEquivalency
   Number
   (approx=
-    ([expected n]
-     (double-approx= expected n))
-    ([expected n delta]
-     (double-approx= expected n delta)))
+    ([expected ^double n]
+     (double-approx= (double expected) n))
+    ([expected ^double n ^double delta]
+     (double-approx= (double expected) n delta)))
 
   clojure.lang.IPersistentMap
   (approx=

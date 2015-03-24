@@ -11,6 +11,8 @@
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
+(def EXTERNAL_POINT_ROUND_PRECISION 4)
+
 (defrecord GeodeticRing
   [
    ;; The points that make up the ring. Points must be in counterclockwise order. The last point
@@ -43,57 +45,53 @@
    ;; the minimum bounding rectangle
    mbr
 
-   ;; Two points that are not within the ring. These are used to test if a point is inside or
+   ;; Three points that are not within the ring. These are used to test if a point is inside or
    ;; outside a ring. We generate multiple external points so that we have a backup if one external
    ;; point is antipodal to a point we're checking is inside a ring.
    external-points
    ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
-(defn mapcatv
-  "A faster version of mapcat that's like mapv."
-  [f items]
-  (reduce into [] (mapv f items))
-  #_(loop [results (transient [])
-         [item & others] items]
-    (let [results (loop [inner-results results
-                         [result & other-results] (f item)]
-                    (let [inner-results (conj! inner-results result)]
-                      (if (empty? other-results)
-                        inner-results
-                        (recur inner-results other-results))))]
-      (if (empty? others)
-        (persistent! results)
-        (recur results others)))))
-
-(comment
-  (mapcatv identity [[0 1] [2 3] (range 4)])
-
-
-
-  )
-
+;; TODO move these to math
 (defn even-long?
   [^long l]
-  (= (mod l 2) 0))
+  (= (rem l 2) 0))
 
 (defn odd-long?
   [l]
   (not (even-long? l)))
 
 (defn arcs-and-arc-intersections
+  "TODO"
   [arcs other-arc]
   (persistent!
+    ;; Find all the points the arc passes through
+    ;; Round the points. If the crossing arc passes through a point on the ring the
+    ;; intersection algorithm will result in two very, very close points. By rounding to
+    ;; within an acceptable range they'll be seen as the same point.
     (reduce (fn [s arc]
-              (let [[point1 point2] (a/intersections arc other-arc)]
-                (if point1
-                  (let [s (conj! s (p/round-point 5 point1))]
-                    (if point2
-                      (conj! s (p/round-point 5 point2))
-                      s))
-                  s)))
+              (if-let [[point1 point2] (seq (a/intersections arc other-arc))]
+                (let [s (conj! s (p/round-point 5 point1))]
+                  (if point2
+                    (conj! s (p/round-point 5 point2))
+                    s))
+                s))
             (transient #{})
             arcs)))
+
+(defn- choose-external-point-for-covers
+  "TODO"
+  [ring point]
+  (let [[ep1 ep2 ep3] (:external-points ring)
+        point (p/round-point EXTERNAL_POINT_ROUND_PRECISION point)
+        antipodal-point (p/antipodal point)]
+    (cond
+      (and (not= ep1 point) (not= ep1 antipodal-point)) ep1
+      (and (not= ep2 point) (not= ep2 antipodal-point)) ep2
+      (and (not= ep3 point) (not= ep3 antipodal-point)) ep3
+      :else
+      (throw (Exception. (str "Could not find external point to use to check if ring covers"
+                              " point. Ring: " (pr-str ring) " point: " (pr-str point)))))))
 
 (defn covers-point?
   "Determines if a ring covers the given point. The algorithm works by counting the number of times
@@ -107,29 +105,13 @@
       (and (:contains-south-pole ring) (p/is-south-pole? point))
       ;; Only do real intersection if the mbr covers the point.
       (when (mbr/covers-point? :geodetic (:mbr ring) point)
-        (if (some (:point-set ring) point)
+        (if ((:point-set ring) point)
           true ; The point is actually one of the rings points
           ;; otherwise we'll do the real intersection algorithm
-          (let [antipodal-point (p/antipodal point)
-                ;; Find an external point to use. We can't use an external point that is antipodal
-                ;; to the given point or equal to the point.
-                external-point (first (filter #(and (not= (p/round-point 4 %) (p/round-point 4 antipodal-point))
-                                                    (not= (p/round-point 4 %) (p/round-point 4 point)))
-                                              (:external-points ring)))
-                _ (when-not external-point
-                    (throw (Exception.
-                             (str "Could not find external point to use to check if ring covers"
-                                  " point. Ring: " (pr-str ring) " point: " (pr-str point)))))
+          (let [external-point (choose-external-point-for-covers ring point)
                 ;; Create the test arc
                 crossing-arc (a/arc point external-point)
-                ;; Find all the points the arc passes through
-                ;intersections (mapcat #(a/intersections % crossing-arc) (:arcs ring))
-                ;; Round the points. If the crossing arc passes through a point on the ring the
-                ;; intersection algorithm will result in two very, very close points. By rounding to
-                ;; within an acceptable range they'll be seen as the same point.
-                ;intersections (set (map #(p/round-point 5 %) intersections))
-                intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)
-                ]
+                intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)]
             (or (odd-long? (count intersections))
                 ;; if the point itself is one of the intersections then the ring covers it
                 (intersections point)))))))
@@ -235,7 +217,7 @@
       ;; Cannot determine external points of a ring which contains both north and south poles
       ;; This is an additional feature which could be added at a later time.
       []
-      (mbr/external-points br))))
+      (mapv #(p/round-point EXTERNAL_POINT_ROUND_PRECISION %) (mbr/external-points br)))))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.geodetic_ring.GeodeticRing

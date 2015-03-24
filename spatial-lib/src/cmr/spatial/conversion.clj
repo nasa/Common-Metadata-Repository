@@ -48,4 +48,3 @@
              (degrees lat-rad)
              lon-rad
              lat-rad)))
-

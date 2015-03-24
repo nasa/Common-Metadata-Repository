@@ -289,8 +289,14 @@
   ;; 231 - slight rewrite of geodetic-ring/arcs-and-arc-intersections
   ;; 218 - Changed arc intersection to compare arc mbrs before testing.
   ;; 212 - removed some partials from ring-relations/intersects-br?
+  ;; 191 - Replaced math helper functions with macros
+  ;; 183 - added optimized version of mbr/intersects-br assuming mostly non crossing antimeridian mbrs and made math/double-approx= a macro
+  ;; 192 - refactored point/angular-distance to avoid less double casting and use a macro for inner helper
+  ;; 179 - Fixed even-long? to use rem instead of mod
+  ;; 174 - removed some laziness from geodetic-ring external point selection
+  ;; 162 - changed geodetic ring covers point to directly call a set instead of using some
+  ;; 160 - refactoring geodetic-ring/arcs-and-arc-intersections to avoid unnecessary nth calls
   ;; Ideas for the next set
-  ;; replace math functions with macros
 
   (* 31151 2.0 511)
 

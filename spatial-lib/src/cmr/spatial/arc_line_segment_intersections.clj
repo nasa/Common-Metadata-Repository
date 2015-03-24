@@ -74,7 +74,7 @@
   [ls arc]
 
   (let [ls-mbr (:mbr ls)
-        intersecting-mbrs (seq (filter (partial m/intersects-br? :cartesian ls-mbr)
+        intersecting-mbrs (seq (filter #(m/intersects-br? :cartesian ls-mbr %)
                                        (a/mbrs arc)))
         arc-points (a/arc->points arc)
         ls-points [(:point1 ls) (:point2 ls)]]

@@ -29,7 +29,7 @@
   "Creates a new minimum bounding rectangle"
   [^double west ^double north ^double east ^double south]
   ;; Handle west or east being on the antimeridian.
-  (let [am? #(= (abs %) 180.0)
+  (let [am? #(= (abs ^double %) 180.0)
         [west east] (cond
                       (and (am? west) (am? east))
                       (if (= west east)
@@ -311,26 +311,20 @@
              (or (and m1-touches-north? m2-touches-north?)
                  (and m1-touches-south? m2-touches-south?))))))
 
-(comment
-
-(require 'cmr.common.dev.capture-reveal)
-
-  (cmr.common.dev.capture-reveal/defreveal-all)
-
-  )
-
-
 (defn intersects-br?
   "Returns true if the mbr intersects the other bounding rectangle"
   [coord-sys ^Mbr mbr ^Mbr other-br]
-  (let [[m1-east m1-west] (split-across-antimeridian mbr)
-        [m2-east m2-west] (split-across-antimeridian other-br)]
-    (or (non-crossing-intersects-br? coord-sys m1-east m2-east)
-        (and m2-west (non-crossing-intersects-br? coord-sys m1-east m2-west))
-        (and m1-west (non-crossing-intersects-br? coord-sys m1-west m2-east))
-        (and m1-west m2-west (non-crossing-intersects-br? coord-sys m1-west m2-west)))))
+  (if (and (not (crosses-antimeridian? mbr)) (not (crosses-antimeridian? other-br)))
+    ;; optimized case for mbrs that don't cross the antimeridian
+    (non-crossing-intersects-br? coord-sys mbr other-br)
+    (let [[m1-east m1-west] (split-across-antimeridian mbr)
+          [m2-east m2-west] (split-across-antimeridian other-br)]
+      (or (non-crossing-intersects-br? coord-sys m1-east m2-east)
+          (and m2-west (non-crossing-intersects-br? coord-sys m1-east m2-west))
+          (and m1-west (non-crossing-intersects-br? coord-sys m1-west m2-east))
+          (and m1-west m2-west (non-crossing-intersects-br? coord-sys m1-west m2-west))))))
 
-
+;; TODO remove this
 (defn intersects-br-slow-original?
   "Returns true if the mbr intersects the other bounding rectangle"
   [coord-sys ^Mbr mbr ^Mbr other-br]

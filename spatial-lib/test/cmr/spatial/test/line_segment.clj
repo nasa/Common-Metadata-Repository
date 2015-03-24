@@ -172,7 +172,7 @@
 (defn approx-equal-within-magnitude
   "Determines if two numbers are approximately equal within a certain percent of their magnitude.
   This is useful for comparing lines since the b and the m values can be enormous for close to vertical lines"
-  [n1 n2 ^double percent-diff]
+  [^double n1 ^double n2 ^double percent-diff]
   (let [avg-magnitude (avg [(abs n1) (abs n2)])
         delta (* avg-magnitude (/ percent-diff 100.0))]
     (or (approx= n1 n2 delta)
