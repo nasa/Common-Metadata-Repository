@@ -204,6 +204,8 @@
 
            {:entry-title "correct"}
            {:short-name "S1" :version-id "V1"}
+           {:entry-title "correct" :short-name "S1"}
+           {:entry-title "correct" :version-id "V1"}
            {:entry-title "correct" :short-name "S1" :version-id "V1"}))
 
     (testing "Invalid SMAP ISO granule with collection-ref attributes"

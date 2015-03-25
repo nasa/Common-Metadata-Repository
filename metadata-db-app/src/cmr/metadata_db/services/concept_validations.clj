@@ -102,10 +102,12 @@
     [(msg/find-not-supported concept-type (keys (dissoc params :concept-type)))]))
 
 (def supported-parameter-combinations
-  #{#{:short-name :provider-id :version-id}
-    #{:entry-id :provider-id}
-    #{:entry-title :provider-id}
-    #{:entry-title :short-name :provider-id :version-id}
+  #{#{:provider-id :entry-id}
+    #{:provider-id :entry-title}
+    #{:provider-id :short-name :version-id}
+    #{:provider-id :entry-title :short-name}
+    #{:provider-id :entry-title :version-id}
+    #{:provider-id :entry-title :short-name :version-id}
     ;; Metadata db needs to support retrieving all collections in a provider for reindexing.
     #{:provider-id}})
 

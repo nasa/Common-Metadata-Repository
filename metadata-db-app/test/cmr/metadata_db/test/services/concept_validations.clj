@@ -23,24 +23,26 @@
 
 (deftest find-params-validation-test
   (testing "valid params"
-    (is (= [] (v/find-params-validation {:concept-type :collection
-                                         :short-name "s"
-                                         :version-id "v"
-                                         :provider-id "p"})))
-    (is (= [] (v/find-params-validation {:concept-type :collection
-                                         :entry-title "e"
-                                         :provider-id "p"}))))
+    (are [params]
+         (= [] (v/find-params-validation (assoc params :concept-type :collection)))
+         {:provider-id "p"}
+         {:provider-id "p" :entry-id "i"}
+         {:provider-id "p" :entry-title "t"}
+         {:provider-id "p" :short-name "s" :version-id "v"}
+         {:provider-id "p" :entry-title "t" :short-name "s"}
+         {:provider-id "p" :entry-title "t" :version-id "v"}
+         {:provider-id "p" :entry-title "t" :short-name "s" :version-id "v"}))
   (testing "invalid concept-type"
     (is (= [(msg/find-not-supported :foo [:provider-id :entry-title])]
            (v/find-params-validation {:concept-type "foo"
                                       :entry-title "e"
                                       :provider-id "p"}))))
   (testing "extra parameters"
-    (is (= [(msg/find-not-supported :collection [:short-name :provider-id :entry-title])]
+    (is (= [(msg/find-not-supported :collection [:provider-id :entry-id :entry-title])]
            (v/find-params-validation {:concept-type :collection
-                                      :entry-title "e"
-                                      :short-name "s"
-                                      :provider-id "p"})))))
+                                      :provider-id "p"
+                                      :entry-id "s"
+                                      :entry-title "e"})))))
 
 (deftest collection-validation-test
   (testing "valid-concept"
