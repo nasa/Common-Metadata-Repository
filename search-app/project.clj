@@ -1,3 +1,7 @@
+;; Use the docs profile when generating the HTML documentation for the search application:
+;; lein with-profile docs generate-docs
+;;
+;; All other lein tasks can use the default profile.
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/search-app"
