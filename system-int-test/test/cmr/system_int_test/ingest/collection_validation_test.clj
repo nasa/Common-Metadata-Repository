@@ -11,7 +11,7 @@
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest validation-endpoint-test
   (testing "successful validation of collection"
@@ -45,7 +45,8 @@
 (defn assert-valid
   [coll-attributes]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection)]
+        provider-id (get coll-attributes :provider-id "PROV1")
+        response (d/ingest provider-id collection)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn assert-invalid-spatial
@@ -70,7 +71,7 @@
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection :echo10)]
+        response (d/ingest "PROV1" collection)]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
@@ -133,9 +134,12 @@
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest duplicate-id-test
-  (testing "entry-title validation"
+  (testing "same entry-title and native-id across providers is valid"
     (assert-valid
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
+    (assert-valid
+      {:entry-title "ET-1" :concept-id "C1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+  (testing "entry-title must be unique for a provider"
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
       ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."])))

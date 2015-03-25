@@ -179,9 +179,40 @@
     (is (= 400 (:status response)))
     (is (= "Malformed JSON in request body." (:body response)))))
 
+;; TODO refactor/improve this test
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"
     (let [existing-collection (assoc (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
+                                     :concept-id "C1-PROV1"
+                                     :revision-id 1)
+          test-collection (assoc (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
+                                 :concept-id "C2-PROV1"
+                                 :revision-id 1)
+          _ (util/save-concept existing-collection)
+          test-collection-response (util/save-concept test-collection)]
+
+      ;; The collection should be rejected due to another collection having the same entry-title
+      (is (= {:status 409,
+              :errors [(msg/duplicate-field-msg :entry-title [existing-collection])]}
+             (select-keys test-collection-response [:status :errors])))
+
+      ;; We need to verify that the collection which was inserted and failed the post commit
+      ;; constraint checks is cleaned up from the database. We do this by verifying that
+      ;; the db only contains the original collection.
+      (let [found-concepts (util/find-concepts :collection
+                                               {:entry-title "ET-1" :provider-id "PROV1"})]
+        (is (= [existing-collection]
+               (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+
+;; TODO write this test if needed
+#_(deftest save-granule-post-commit-constraint-violations
+  (testing "duplicate granule URs"
+    (let [collection (util/collection-concept "PROV1" 1)
+          parent-collection-id (:concept-id (util/save-concept collection))
+          existing-granule (util/granule-concept "PROV1" parent-collection-id 1)
+
+          ;; TODO I was here -
+          (assoc (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
                                      :concept-id "C1-PROV1"
                                      :revision-id 1)
           test-collection (assoc (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
