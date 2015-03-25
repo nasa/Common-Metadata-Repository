@@ -22,7 +22,7 @@
             [cmr.ingest.services.jobs :as jobs]
             [cmr.ingest.api.provider :as provider-api]
             [cmr.ingest.services.messages :as msg]
-            [cmr.acl.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- set-concept-id
   "Set concept-id in concept if it is passed in the header"

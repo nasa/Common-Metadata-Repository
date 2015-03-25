@@ -1,6 +1,5 @@
-(ns cmr.acl.routes
-  "Defines routes that are common across multiple applications. Note that the ACL library is not
-  the right location for these functions. Fix this as part of See CMR-1200."
+(ns cmr.common-app.api.routes
+  "Defines routes that are common across multiple applications."
   (:require [cmr.common.api :as api]
             [cmr.common.cache :as cache]
             [cmr.common.jobs :as jobs]

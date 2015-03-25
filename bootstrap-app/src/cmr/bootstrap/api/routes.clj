@@ -15,7 +15,7 @@
             [cmr.bootstrap.services.bootstrap-service :as bs]
             [cmr.bootstrap.services.health-service :as hs]
             [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.acl.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
