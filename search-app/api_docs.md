@@ -27,12 +27,10 @@ The behavior of search with respect to each parameter can be modified using the 
 
 where parameter is the URL parameter whose behavior is to be affected, value is either `true` or `false`, and `option_key` is one of the following:
 
- * `ignore_case` - if set to true, the search should be case insensitive. Defaults to true.
- * `pattern` - if set to true, the search should treat the value provided for the parameter as a pattern with wild-cards, in which '*' matches zero or
- more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
+ * `ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.
+ * `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false.
  * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
- * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match
- any of the attributes. The default is false.
+ * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, attribute searches will find granules that match any of the attributes. The default is false.
 
 ##### Collection Query Parameters
 
@@ -158,6 +156,8 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 #### Find collections by project
 
+Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
+
 This supports `pattern`, `ignore_case` and option `and`.
 
 Find collections matching 'project' param value
@@ -171,10 +171,6 @@ Find collections matching any of the 'project' param values
 Find collections that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/collections?project\[\]=ESI&project\[\]=EVI&project\[\]=EPI&options\[project\]\[and\]=true"
-
-#### Find collections by campaign
-
-The parameter 'campaign' is added as an alias to the parameter 'project' for backwards compatibility and so can be used in place of it. Please see under "Find collections by project" for details on how to use this parameter to find collections.
 
 #### Find collections by updated_since
 
@@ -535,6 +531,8 @@ This supports `pattern`, `ignore_case` and option `and`.
 
 #### Find granules by project
 
+Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
+
 This supports `pattern`, `ignore_case` and option `and`. 
 
 Find granules matching 'project' param value
@@ -551,10 +549,6 @@ Find granules matching the given pattern for the 'project' param value
 Find granules that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA&options\[project\]\[and\]=true"
-
-#### Find granules by campaign
-
-The parameter 'campaign' is added as an alias to the parameter 'project' for backwards compatibility and so can be used in place of it. Please see under "Find granules by project" for details on how to use this parameter to find granules.
 
 #### Find granules by echo granule id, echo collection id and concept ids.
 
