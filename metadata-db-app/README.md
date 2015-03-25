@@ -183,9 +183,11 @@ returns: list of the latest revisions of concepts matching the ids provided in t
 This returns all revisions of the concept that matches the search parameters by default. It also supports parameter 'latest'. When latest=true, only the latest revision of the concepts are returned.
 
 Supported combinations of concept type and parameters:
-  * collections, provider-id, short-name, version-id
   * collections, provider-id, entry-id
   * collections, provider-id, entry-title
+  * collections, provider-id, short-name, version-id
+  * collections, provider-id, entry-title, short-name
+  * collections, provider-id, entry-title, version-id
   * collections, provider-id, entry-title, short-name, version-id
   * collections, provider-id
 
