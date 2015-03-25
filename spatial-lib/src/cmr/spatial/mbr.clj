@@ -127,13 +127,17 @@
   (fn [coord-sys mbr p & delta]
     coord-sys))
 
-;; TODO make cartesian covers-point?
-;; TODO update references to covers point that know the coordinate system to call the direct one.
+(defn cartesian-covers-point?
+  ([mbr ^Point p]
+   (cartesian-covers-point? mbr p nil))
+  ([mbr ^Point p delta]
+   (let [delta (or delta COVERS_TOLERANCE)]
+     (and (covers-lat? mbr (.lat p) delta)
+          (covers-lon? :cartesian mbr (.lon p) delta)))))
+
 (defmethod covers-point? :cartesian
-  [_ mbr ^Point p & delta]
-  (let [delta (or (first delta) COVERS_TOLERANCE)]
-    (and (covers-lat? mbr (.lat p) delta)
-         (covers-lon? :cartesian mbr (.lon p) delta))))
+  [_ mbr p & delta]
+  (cartesian-covers-point? mbr p (first delta)))
 
 (defn geodetic-covers-point?
   ([mbr ^Point p]
@@ -323,28 +327,6 @@
           (and m2-west (non-crossing-intersects-br? coord-sys m1-east m2-west))
           (and m1-west (non-crossing-intersects-br? coord-sys m1-west m2-east))
           (and m1-west m2-west (non-crossing-intersects-br? coord-sys m1-west m2-west))))))
-
-;; TODO remove this
-(defn intersects-br-slow-original?
-  "Returns true if the mbr intersects the other bounding rectangle"
-  [coord-sys ^Mbr mbr ^Mbr other-br]
-  (some identity
-        (for [m1 (split-across-antimeridian mbr)
-              m2 (split-across-antimeridian other-br)]
-          (or (some (partial covers-point? coord-sys m1) (corner-points m2))
-              (some (partial covers-point? coord-sys m2) (corner-points m1))
-
-              ;; Do they form an overlapping t shape?
-              (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} m1
-                    {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} m2]
-                (or (and (< w1 w2)
-                         (> e1 e2)
-                         (> n2 n1)
-                         (< s2 s1))
-                    (and (< w2 w1)
-                         (> e2 e1)
-                         (> n1 n2)
-                         (< s1 s2))))))))
 
 (defn intersections
   "Returns the intersection of the two minimum bounding rectangles. This could return multiple mbrs

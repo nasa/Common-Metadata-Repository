@@ -42,6 +42,16 @@
 
 (def ^:const ^double EARTH_ANGULAR_VELOCITY_RAD_S (/ TAU SOLAR_DAY_S))
 
+(defn even-long?
+  "A copy of the clojure even? function but with long type annotations for primitive math performance."
+  [^long l]
+  (= (rem l 2) 0))
+
+(defn odd-long?
+  "A copy of the clojure odd? function but with long type annotations for primitive math performance."
+  [l]
+  (not (even-long? l)))
+
 (defn radians
   "Converts degrees to radians"
   ^double [^double d]
@@ -60,29 +70,13 @@
 (defn round
   "Rounds the value with the given precision"
   ^double [^long precision ^double v]
-  ;; See http://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
-  (-> v
-      bigdec
-      (.setScale precision BigDecimal/ROUND_HALF_UP)
-      (.doubleValue)))
-
-;; TODO make sure this equivalent after we test to see if it has a major impact on performance.
-(defn round-fast
-  ^double [^long precision ^double v]
   (let [rounding-multiplier (Math/pow 10 precision)]
-    (/ (Math/floor (+ (* v rounding-multiplier) 0.5)) rounding-multiplier)))
-
-(comment
-
-  (require '[criterium.core :refer [with-progress-reporting bench]])
-  (with-progress-reporting
-    (bench
-      ; (round 3 5.12345) ;; - 393 ns
-      (round-fast 3 5.12345) ;; - 94 ns
-      ))
-
-  )
-
+    (if (< v 0.0)
+      (* (round precision (abs v)) -1.0)
+      ;; Implements rounding in a way that avoids _most_ double precision problems.
+      ;; This will still fail for some values like 0.00499999999999 with 2 precision. It will round that up.
+      ;; This tradeoff is made for performance.
+      (/ (Math/floor (+ (* v rounding-multiplier) 0.500000000001)) rounding-multiplier))))
 
 (defn float->double
   "Converts a float to a double in a way that will keep the double value closer to the original
@@ -132,7 +126,6 @@
   [v min max]
   `(and (>= ~v ~min) (<= ~v ~max)))
 
-;; TODO write test
 (defmacro range-intersects?
   "Returns true if range2 intersects range 1"
   [r1min r1max r2min r2max]

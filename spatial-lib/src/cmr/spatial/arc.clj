@@ -301,7 +301,7 @@
                       (p/point (degrees lon3-2) lat lon3-2 lat3)]]
           (->> points
                (filterv (fn [p]
-                          (some #(mbr/covers-point? :geodetic % p)
+                          (some #(mbr/geodetic-covers-point? % p)
                                 (mbrs arc))))
                set))))))
 
@@ -309,7 +309,7 @@
   "Returns true if the point is on the arc"
   [arc point]
   (let [{:keys [west-point east-point]} arc]
-    (and (some #(mbr/covers-point? :geodetic % point) (mbrs arc))
+    (and (some #(mbr/geodetic-covers-point? % point) (mbrs arc))
          (or (= west-point point)
              (= east-point point)
              ;; If the arc is vertical and the point is in the mbr of the arc then it's on the arc
@@ -380,8 +380,8 @@
     (let [lat-seg-mbr (mbr/mbr lon-west lat lon-east lat)
           brs (mbrs arc)]
       (filter (fn [p]
-                (and (some #(mbr/covers-point? :geodetic % p) brs)
-                     (mbr/covers-point? :geodetic lat-seg-mbr p)))
+                (and (some #(mbr/geodetic-covers-point? % p) brs)
+                     (mbr/geodetic-covers-point? lat-seg-mbr p)))
               points))))
 
 (defn intersects-lat-segment?

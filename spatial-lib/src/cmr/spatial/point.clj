@@ -255,8 +255,8 @@
 (defn round-point
   "Rounds the point the given number of decimal places"
   [num-places ^Point p]
-  (let [lon (round-fast num-places (.lon p))
-        lat (round-fast num-places (.lat p))]
+  (let [lon (round num-places (.lon p))
+        lat (round num-places (.lat p))]
     (point lon lat (.geodetic_equality p))))
 
 (defn ords->points

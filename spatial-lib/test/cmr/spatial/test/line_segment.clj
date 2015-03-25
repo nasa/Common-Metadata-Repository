@@ -57,8 +57,8 @@
               (valid-double? m)))
 
         (not (m/crosses-antimeridian? mbr))
-        (m/covers-point? :cartesian mbr point1)
-        (m/covers-point? :cartesian mbr point2)))))
+        (m/cartesian-covers-point? mbr point1)
+        (m/cartesian-covers-point? mbr point2)))))
 
 (defspec segment+lon->lat-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls (gen/such-that (complement s/vertical?) sgen/line-segments)]
@@ -113,8 +113,8 @@
           mbr2 (:mbr ls2)
           point (s/intersection ls1 ls2)]
       (or (nil? point)
-          (and (m/covers-point? :cartesian mbr1 point)
-               (m/covers-point? :cartesian mbr2 point)
+          (and (m/cartesian-covers-point? mbr1 point)
+               (m/cartesian-covers-point? mbr2 point)
                (s/point-on-segment? ls1 point)
                (s/point-on-segment? ls2 point))))))
 
@@ -187,17 +187,17 @@
     (and (or (and (s/vertical? ls) (s/vertical? sub-ls))
              (and (approx-equal-within-magnitude (:m ls) (:m sub-ls) 0.01)
                   (approx-equal-within-magnitude (:b ls) (:b sub-ls) 0.01)))
-         (m/covers-point? :cartesian mbr point1 0.00001)
-         (m/covers-point? :cartesian mbr point2 0.00001)
-         (m/covers-point? :cartesian ls-mbr point1 0.00001)
-         (m/covers-point? :cartesian ls-mbr point2 0.00001))))
+         (m/cartesian-covers-point? mbr point1 0.00001)
+         (m/cartesian-covers-point? mbr point2 0.00001)
+         (m/cartesian-covers-point? ls-mbr point1 0.00001)
+         (m/cartesian-covers-point? ls-mbr point2 0.00001))))
 
 (defn valid-subselected-point?
   "Returns true if point is a valid point that was subselected from ls with mbr."
   [ls mbr point]
   (let [ls-mbr (:mbr ls)]
-    (and (m/covers-point? :cartesian mbr point 0.00001)
-         (m/covers-point? :cartesian ls-mbr point 0.00001)
+    (and (m/cartesian-covers-point? mbr point 0.00001)
+         (m/cartesian-covers-point? ls-mbr point 0.00001)
          (s/point-on-segment? ls point))))
 
 (defspec subselect-spec {:times 1000 :printer-fn print-subselect-failure}
@@ -212,8 +212,8 @@
       ;; No intersection
       (let [{:keys [point1 point2]} ls]
         (and ; The mbr shouldn't contain either line segment point
-             (not (m/covers-point? :cartesian mbr point1))
-             (not (m/covers-point? :cartesian mbr point2))
+             (not (m/cartesian-covers-point? mbr point1))
+             (not (m/cartesian-covers-point? mbr point2))
              ;; The line segment shouldn't intersect any of the mbr sides.
              (not (some #(s/intersection ls %)
                         (s/mbr->line-segments mbr))))))))

@@ -11,7 +11,18 @@
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 
-(def EXTERNAL_POINT_ROUND_PRECISION 4)
+(def ^:const ^:private EXTERNAL_POINT_PRECISION
+  "Defines the precision to use when generating external points to a ring and when comparing a point
+  for use with an external point."
+  4)
+
+(def ^:const ^:private INTERSECTION_POINT_PRECISION
+  "The precision to use when generating intersection points. We round the points because in some
+  cases the same point will be found multiple times with vary slight variations. Rounding it within
+  a set eliminates the duplication. This is important for determining if a point is inside a ring
+  which relies on knowing exactly how many times an arc between the test point and an external point
+  crosses over the arcs of the ring."
+  5)
 
 (defrecord GeodeticRing
   [
@@ -52,38 +63,29 @@
    ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticRing)
 
-;; TODO move these to math
-(defn even-long?
-  [^long l]
-  (= (rem l 2) 0))
-
-(defn odd-long?
-  [l]
-  (not (even-long? l)))
-
-(defn arcs-and-arc-intersections
-  "TODO"
+(defn-  arcs-and-arc-intersections
+  "Returns the set of intersection points between the arc and the list of arcs. "
   [arcs other-arc]
   (persistent!
-    ;; Find all the points the arc passes through
-    ;; Round the points. If the crossing arc passes through a point on the ring the
-    ;; intersection algorithm will result in two very, very close points. By rounding to
-    ;; within an acceptable range they'll be seen as the same point.
     (reduce (fn [s arc]
               (if-let [[point1 point2] (seq (a/intersections arc other-arc))]
-                (let [s (conj! s (p/round-point 5 point1))]
+                ;; Round the points. If the crossing arc passes through a point on the ring the
+                ;; intersection algorithm will result in two very, very close points. By rounding to
+                ;; within an acceptable range they'll be seen as the same point.
+                (let [s (conj! s (p/round-point INTERSECTION_POINT_PRECISION point1))]
                   (if point2
-                    (conj! s (p/round-point 5 point2))
+                    (conj! s (p/round-point INTERSECTION_POINT_PRECISION point2))
                     s))
                 s))
             (transient #{})
             arcs)))
 
-(defn- choose-external-point-for-covers
-  "TODO"
+(defn- choose-external-point
+  "Finds an external point to use with the ring when testing for coverage of the given point. An
+  external point cannot be the same as the point or antipodal to the given point."
   [ring point]
   (let [[ep1 ep2 ep3] (:external-points ring)
-        point (p/round-point EXTERNAL_POINT_ROUND_PRECISION point)
+        point (p/round-point EXTERNAL_POINT_PRECISION point)
         antipodal-point (p/antipodal point)]
     (cond
       (and (not= ep1 point) (not= ep1 antipodal-point)) ep1
@@ -104,11 +106,11 @@
   (or (and (:contains-north-pole ring) (p/is-north-pole? point))
       (and (:contains-south-pole ring) (p/is-south-pole? point))
       ;; Only do real intersection if the mbr covers the point.
-      (when (mbr/covers-point? :geodetic (:mbr ring) point)
+      (when (mbr/geodetic-covers-point? (:mbr ring) point)
         (if ((:point-set ring) point)
           true ; The point is actually one of the rings points
           ;; otherwise we'll do the real intersection algorithm
-          (let [external-point (choose-external-point-for-covers ring point)
+          (let [external-point (choose-external-point ring point)
                 ;; Create the test arc
                 crossing-arc (a/arc point external-point)
                 intersections (arcs-and-arc-intersections (:arcs ring) crossing-arc)]
@@ -217,7 +219,7 @@
       ;; Cannot determine external points of a ring which contains both north and south poles
       ;; This is an additional feature which could be added at a later time.
       []
-      (mapv #(p/round-point EXTERNAL_POINT_ROUND_PRECISION %) (mbr/external-points br)))))
+      (mapv #(p/round-point EXTERNAL_POINT_PRECISION %) (mbr/external-points br)))))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.geodetic_ring.GeodeticRing

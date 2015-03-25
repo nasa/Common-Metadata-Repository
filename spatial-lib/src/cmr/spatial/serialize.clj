@@ -247,7 +247,8 @@
                shapes)))))
 
 
-
+;; This comment left in to show how to test the performance of a spatial search intersection between
+;; a search area and one possible area.
 (comment
 
   (do
@@ -268,42 +269,6 @@
       (let [{:keys [type ords]} stored-ords
             shape (stored-ords->shape type ords)]
         (intersects-fn shape))))
-
-  ;; ~ 500 initially
-  ;; 408 - after refactoring corner points to be cached in the mbr
-  ;; 458 - after creating a mapcatv in geodetic ring covers point. Reversed this
-  ;; 438 - with mapv in geodetic ring covers point. Reversed this.
-  ;; 435 - after reversed
-  ;; 432 - with odd rewrite
-  ;; 393 - with a rewrite of round function
-  ;; 303 - with faster mbr/intersects-br function
-  ;; 312 - with faster mbr/intersects-br function use of macros to define within-range and range-intersects (did not reverse this yet)
-  ;; 292 - with double-approx= replacing approx= in is-north-pole and is-south-pole
-  ;; 279 - with creating non-multimethod geodetic-covers-point? in mbr.
-  ;; 284 - reordered geodetic covers point to put regular point within check first (reversed this)
-  ;; 258 - slight change to math/rotation-direction
-  ;; 252 - round-point changed to use direct field access
-  ;; 238 - ring-relations/intersects-br refactored slightly to avoid use of apply and partials
-  ;; 235 - removed partial apply from points->arc
-  ;; 227 - Changed geodetic-ring/covers-point? to use transients
-  ;; 231 - slight rewrite of geodetic-ring/arcs-and-arc-intersections
-  ;; 218 - Changed arc intersection to compare arc mbrs before testing.
-  ;; 212 - removed some partials from ring-relations/intersects-br?
-  ;; 191 - Replaced math helper functions with macros
-  ;; 183 - added optimized version of mbr/intersects-br assuming mostly non crossing antimeridian mbrs and made math/double-approx= a macro
-  ;; 192 - refactored point/angular-distance to avoid less double casting and use a macro for inner helper
-  ;; 179 - Fixed even-long? to use rem instead of mod
-  ;; 174 - removed some laziness from geodetic-ring external point selection
-  ;; 162 - changed geodetic ring covers point to directly call a set instead of using some
-  ;; 160 - refactoring geodetic-ring/arcs-and-arc-intersections to avoid unnecessary nth calls
-  ;; Ideas for the next set
-
-  (* 31151 2.0 511)
-
-
-  (= 3.2E7 32000000.0)
-
-
 
   )
 

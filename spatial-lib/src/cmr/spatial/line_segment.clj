@@ -136,7 +136,7 @@
   (or (= (:point1 ls) point)
       (= (:point2 ls) point)
       (let [mbr (:mbr ls)]
-        (when (m/covers-point? :cartesian mbr point)
+        (when (m/cartesian-covers-point? mbr point)
           (if (horizontal? ls)
             (approx= ^double (get-in ls [:point1 :lat])
                      ^double (:lat point) COVERS_TOLERANCE)
@@ -268,7 +268,7 @@
     (when-let [point (some->> (segment+lon->lat ls lon)
                               (p/point lon)
                               p/with-cartesian-equality)]
-      (when (and (m/covers-point? :cartesian mbr point) (m/covers-point? :cartesian vert-mbr point))
+      (when (and (m/cartesian-covers-point? mbr point) (m/cartesian-covers-point? vert-mbr point))
         point))))
 
 (defn- intersection-parallel
@@ -299,8 +299,8 @@
         lon (/ (- b2 b1) (- m1 m2))
         lat (+ (* m1 lon) b1)
         point (p/point lon lat false)]
-    (when (and (m/covers-point? :cartesian mbr1 point INTERSECTION_COVERS_TOLERANCE)
-               (m/covers-point? :cartesian mbr2 point INTERSECTION_COVERS_TOLERANCE))
+    (when (and (m/cartesian-covers-point? mbr1 point INTERSECTION_COVERS_TOLERANCE)
+               (m/cartesian-covers-point? mbr2 point INTERSECTION_COVERS_TOLERANCE))
       point)))
 
 (defn intersection
@@ -348,8 +348,8 @@
   "Helper for implementing subselect. Works on an mbr that does not cross the antimeridian"
   [ls mbr]
   (let [{:keys [point1 point2]} ls
-        point1-in-mbr (m/covers-point? :cartesian mbr point1)
-        point2-in-mbr (m/covers-point? :cartesian mbr point2)]
+        point1-in-mbr (m/cartesian-covers-point? mbr point1)
+        point2-in-mbr (m/cartesian-covers-point? mbr point2)]
     (if (and point1-in-mbr point2-in-mbr)
       ;; Both points are in the mbr so there's no need to subselect
       {:line-segments [ls]}
