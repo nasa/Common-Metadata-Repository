@@ -327,13 +327,13 @@ Find collections matching 'short_name' param value with a pattern
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find collections matching 'version' param value
+Find collections matching the given 'short_name' and 'version' param values
 
-    curl "%CMR-ENDPOINT%/collections?version=1"
+    curl "%CMR-ENDPOINT%/collections?short_name=DEM_100M&version=1"
 
-Find collections matching any of the 'version' param values
+Find collections matching the given 'short_name' and any of the 'version' param values
 
-    curl "%CMR-ENDPOINT%/collections?version=1&version=2"
+    curl "%CMR-ENDPOINT%/collections?short_name=dem_100m&version=1&version=2"
 
 #### Find collections by Spatial
 
@@ -398,6 +398,8 @@ Example of sorting by start_date in descending order: (Most recent data first)
     curl "%CMR-ENDPOINT%/granules?producer_granule_id\[\]=DummyID"
 
 #### Find granules matching either granule ur or producer granule id
+
+This condition is encapsulated in a single parameter called readable_granule_name 
 
     curl "%CMR-ENDPOINT%/granules?readable_granule_name\[\]=DummyID"
 
@@ -599,11 +601,11 @@ Find granules matching any of the 'provider' param values
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find granules with the corresponding collection matching any of the 'short_name' param values
+Find granules matching any of the 'short_name' param values. The 'short_name' here refers to the short name of the collections corresponding to the granules being searched for. 
 
     curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&short_name=MINIMAL"
 
-Find granules with the corresponding collection matching 'short_name' param value with a pattern
+Find granules matching 'short_name' param value with a pattern.
 
     curl "%CMR-ENDPOINT%/granules?short_name=D*&options[short_name][pattern]=true"
 
@@ -611,21 +613,23 @@ Find granules with the corresponding collection matching 'short_name' param valu
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find granules with the corresponding collection matching 'version' param value
+Find granules matching the 'short_name' and 'version' param values. The 'short_name' and 'version' here refers to the short name and version of the collections corresponding to the granules being searched for.
 
-    curl "%CMR-ENDPOINT%/granules?version=1"
+    curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&version=1"
 
-Find granules with the corresponding collection matching any of the 'version' param values
+Find granules matching the given 'short_name' and any of the 'version' param values
 
-    curl "%CMR-ENDPOINT%/granules?version=1&version=2"
+    curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&version=1&version=2"
 
 #### Find granules by entry title
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find granules with the corresponding collection matching 'entry_title' param value
+Find granules matching 'entry_title' param value. The 'entry_title' here refers to the entry title of the collections corresponding to the granules being searched for.
 
     curl "%CMR-ENDPOINT%/granules?entry_title=DatasetId%204"
+
+See under "Find collections by entry title" for more examples of how to use this parameter.
 
 #### Find granules with temporal
 
