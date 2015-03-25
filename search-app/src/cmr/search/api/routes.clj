@@ -333,12 +333,8 @@
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (GET "/health" {request-context :request-context :as request}
-        (let [pretty? (api/pretty-request? request)
-              {:keys [ok? dependencies]} (hs/health request-context)]
-          {:status (if ok? 200 503)
-           :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
-           :body (json/generate-string dependencies {:pretty pretty?})}))
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes hs/health)
 
       (GET "/tiles" {params :params context :request-context}
         (find-tiles context params)))

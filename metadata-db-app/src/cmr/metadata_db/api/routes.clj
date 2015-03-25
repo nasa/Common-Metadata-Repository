@@ -31,20 +31,6 @@
         {:status 204}))
 
     (context "/jobs" []
-      ;; pause all jobs
-      (POST "/pause" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (jobs/pause-jobs (get-in context [:system :scheduler]))
-          {:status 204}))
-
-      ;; resume all jobs
-      (POST "/resume" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (jobs/resume-jobs (get-in context [:system :scheduler]))
-          {:status 204}))
-
       ;; Trigger the old revision concept cleanup
       (POST "/old-revision-concept-cleanup" {:keys [request-context params headers]}
         (let [context (acl/add-authentication-to-context request-context params headers)]
@@ -56,16 +42,7 @@
         (let [context (acl/add-authentication-to-context request-context params headers)]
           (acl/verify-ingest-management-permission context :update)
           (mdb-jobs/expired-concept-cleanup context)
-          {:status 204})))
-
-    (GET "/health" {request-context :request-context :as request}
-      (let [pretty? (api/pretty-request? request)
-            {:keys [ok? dependencies]} (hs/health request-context)]
-        {:status (if ok? 200 503)
-         :headers {"Content-Type" "application/json; charset=utf-8"}
-         :body (json/generate-string dependencies {:pretty pretty?})}))))
-
-
+          {:status 204})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -75,6 +52,8 @@
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
       common-routes/cache-api-routes
+      common-routes/job-api-routes
+      (common-routes/health-api-routes hs/health)
       admin-api-routes)
 
     (route/not-found "Not Found")))
