@@ -398,7 +398,7 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 #### Find granules matching either granule ur or producer granule id
 
-This condition is encapsulated in a single parameter called readable_granule_name
+This condition is encapsulated in a single parameter called readable_granule_name 
 
     curl "%CMR-ENDPOINT%/granules?readable_granule_name\[\]=DummyID"
 
@@ -436,9 +436,9 @@ Find an additional attribute with name "X\Y\Z" with value 7.
 
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\Y\Z,7"
 
-Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
+Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `option[attribute][or]=true`.
 
-For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `options[attribute][exclude_collection]=true`.
+For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `option[attribute][exclude_collection]=true`.
 
 #### Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
@@ -533,7 +533,7 @@ This supports `pattern`, `ignore_case` and option `and`.
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
 
-This supports `pattern`, `ignore_case` and option `and`.
+This supports `pattern`, `ignore_case` and option `and`. 
 
 Find granules matching 'project' param value
 
@@ -544,7 +544,7 @@ Find granules matching any of the 'project' param values
      curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA"
 
 Find granules matching the given pattern for the 'project' param value
-     curl "%CMR-ENDPOINT%/granules?project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true"
+     curl "%CMR-ENDPOINT%/granules?project\[\]=20??_GR_NASA&options\[project\]\[pattern\]=true" 
 
 Find granules that match all of the 'project' param values
 
@@ -606,7 +606,7 @@ Find granules matching any of the 'provider' param values
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
-Find granules matching any of the 'short\_name' param values. The 'short\_name' here refers to the short name of the collections corresponding to the granules being searched for.
+Find granules matching any of the 'short\_name' param values. The 'short\_name' here refers to the short name of the collections corresponding to the granules being searched for. 
 
     curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&short_name=MINIMAL"
 

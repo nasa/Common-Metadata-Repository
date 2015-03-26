@@ -10,7 +10,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
-            AttributeNameCondition
             AttributeValueCondition
             AttributeRangeCondition]
            clojure.lang.ExceptionInfo))
@@ -24,16 +23,14 @@
 
 (defn value->condition
   "Parses an additional attribute value into it's constituent parts.
-  Values must be comma separated in one of the following formats
+  Values must be comma separated in one of the following two formats
 
-  * name
-  * type, name
   * type,name,value
-  * Example: \"string,fav_color,blue\"
+    * Example: \"string,fav_color,blue\"
   * type,name,min,max
-  * Example: \"float,cloud_cover_range,0,100\"
-  * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
-  * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
+    * Example: \"float,cloud_cover_range,0,100\"
+    * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
+    * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
   [value]
   (let [comma-escape "\\,"
         comma-replace "%COMMA%" ; used to replace escaped commas during splitting
@@ -41,45 +38,29 @@
                   (str/replace comma-escape comma-replace)
                   (str/split #"," 5))
         parts (map #(str/replace % comma-replace ",") parts)
-        parts (map empty->nil parts)
-        attr-name (if (= 1 (count parts))
-                    (first parts)
-                    (nth parts 1))]
+        parts (map empty->nil parts)]
 
-    (if attr-name
-      (case (count parts)
-        1
-        (qm/map->AttributeNameCondition
-          {:name attr-name})
-        2
-        (qm/map->AttributeValueCondition
-          {:type (first parts)
-           :name attr-name})
-        3
-        (let [[t _ v] parts]
+    (case (count parts)
+      3
+      (let [[t n v] parts]
+        (if n
           (qm/map->AttributeValueCondition
             {:type t
-             :name attr-name
-             :value v}))
-        4
-        (let [[t _ minv maxv] parts]
+             :name n
+             :value v})
+          {:errors [(msg/invalid-name-msg n)]}))
+      4
+      (let [[t n minv maxv] parts]
+        (if n
           (qm/map->AttributeRangeCondition
             {:type t
-             :name attr-name
+             :name n
              :min-value minv
-             :max-value maxv}))
-        ;; else
-        {:errors [(msg/invalid-num-parts-msg)]})
+             :max-value maxv})
+          {:errors [(msg/invalid-name-msg n)]}))
 
-      {:errors [(msg/invalid-name-msg attr-name)]})))
-
-(comment
-
-  (value->condition "alpha")
-
-
-
-  )
+      ;; else
+      {:errors [(msg/invalid-num-parts-msg)]})))
 
 (def attribute-type->parser-fn
   "A map of attribute types to functions that can parse a value"
@@ -89,23 +70,6 @@
    :datetime date-time-parser/parse-datetime
    :time date-time-parser/parse-time
    :date date-time-parser/parse-date})
-
-(defmulti has-value?
-  "Parses the component type into their expected values"
-  (fn [condition]
-    (type condition)))
-
-(defmethod has-value? AttributeNameCondition
-  [condition]
-  false)
-
-(defmethod has-value? AttributeRangeCondition
-  [condition]
-  (or (:min-value condition) (:max-value condition)))
-
-(defmethod has-value? AttributeValueCondition
-  [condition]
-  (:value condition))
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
@@ -142,7 +106,7 @@
 (defmethod parse-condition-values AttributeValueCondition
   [condition]
   (let [{:keys [type value]} condition]
-    (if value
+    (if (:value condition)
       (let [parser (attribute-type->parser-fn type)
             condition (parse-field condition :value parser type)]
         (if (:errors condition)
@@ -155,11 +119,7 @@
   [condition]
   (if-let [type (some (set qm/attribute-types) [(keyword (:type condition))])]
     (parse-condition-values (assoc condition :type type))
-    (if (or (:type condition)
-            (and (nil? (:type condition))
-                 (has-value? condition)))
-      {:errors [(msg/invalid-type-msg (:type condition))]}
-      condition)))
+    {:errors [(msg/invalid-type-msg (:type condition))]}))
 
 (defn parse-value
   "Parses an additional attribute value into it's constituent parts"
@@ -190,9 +150,4 @@
       ;; unless :exclude-collection option is set to true.
       (gc/or-conds [attrib-condition (qm/->CollectionQueryCondition attrib-condition)])
       attrib-condition)))
-
-(comment
-  (p/parameter->condition :granule :attribute ["alpha"] {})
-
-  )
 

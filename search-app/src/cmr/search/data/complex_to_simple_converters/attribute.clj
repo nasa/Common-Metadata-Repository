@@ -96,9 +96,7 @@
   cmr.search.models.query.AttributeValueCondition
   (c2s/reduce-query-condition
     [condition context]
-    (let [value-filter (if (:value condition)
-                         (value-condition->value-filter condition)
-                         qm/match-all)
+    (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
           name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
           and-cond (gc/and-conds [name-cond value-filter])]
