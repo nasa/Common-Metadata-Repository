@@ -21,6 +21,8 @@
     (testing "invalid number of parts"
       (are [s] (= (expected-error msg/invalid-num-parts-msg)
                   (a/parse-value s))
+           "string"
+           "string,alpha"
            "string,alpha,min,max,"
            "string,alpha,min,max,more"
            "string,alpha,min,max,more,"))
@@ -84,14 +86,6 @@
 
 
 (deftest parameter->condition-test
-  (testing "name condition"
-    (let [expected-cond (qm/->AttributeNameCondition "alpha" nil)]
-      (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
-             (p/parameter->condition :granule :attribute ["alpha"] {})))))
-  (testing "name and type condition"
-    (let [expected-cond (qm/->AttributeValueCondition :string "alpha" "a" nil)]
-      (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
-             (p/parameter->condition :granule :attribute ["string,alpha"] {})))))
   (testing "single value condition"
     (let [expected-cond (qm/->AttributeValueCondition :string "alpha" "a" nil)]
       (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
