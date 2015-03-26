@@ -315,6 +315,12 @@
    pattern?
    ])
 
+(defrecord AttributeNameTypeCondition
+  [
+   name
+   type
+   ])
+
 (defrecord AttributeValueCondition
   [
    type
