@@ -22,7 +22,7 @@
             [cmr.ingest.services.jobs :as jobs]
             [cmr.ingest.api.provider :as provider-api]
             [cmr.ingest.services.messages :as msg]
-            [cmr.acl.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- set-concept-id
   "Set concept-id in concept if it is passed in the header"
@@ -150,30 +150,14 @@
                 context :update "PROVIDER_OBJECT" provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
-      (context "/jobs" []
-        ;; pause all jobs
-        (POST "/pause" {:keys [request-context params headers]}
-          (let [context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :update)
-            (common-jobs/pause-jobs (get-in context [:system :scheduler]))
-            {:status 204}))
-
-        ;; resume all jobs
-        (POST "/resume" {:keys [request-context params headers]}
-          (let [context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :update)
-            (common-jobs/resume-jobs (get-in context [:system :scheduler]))
-            {:status 204})))
+      ;; add routes for managing jobs
+      common-routes/job-api-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (GET "/health" {request-context :request-context :as request}
-        (let [pretty? (api/pretty-request? request)
-              {:keys [ok? dependencies]} (ingest/health request-context)]
-          {:status (if ok? 200 503)
-           :headers {"Content-Type" "application/json; charset=utf-8"}
-           :body (cheshire/generate-string dependencies {:pretty pretty?})})))
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes ingest/health))
 
     (route/not-found "Not Found")))
 

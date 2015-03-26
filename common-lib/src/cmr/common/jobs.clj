@@ -230,7 +230,7 @@
   (resume-jobs
     [scheduler]
     (qs/resume-all! qz-scheduler)
-    (info "Paused all scheduled jobs.")))
+    (info "Resumed all scheduled jobs.")))
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler
