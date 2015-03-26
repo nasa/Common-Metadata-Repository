@@ -36,7 +36,7 @@
                         [west east]
                         [-180.0 180.0])
 
-                      ;; West should always be positive 180.0 if east isn't on AM.
+                      ;; West should always be -180.0 if east isn't on AM.
                       (am? west) [-180.0 east]
 
                       ;; East should always be positive 180.0 if west isnt' on AM.

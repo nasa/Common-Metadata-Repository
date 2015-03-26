@@ -13,7 +13,7 @@
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^double APPROXIMATION_DELTA
-  "The delta to use when needing to compare things approximately."
+  "The delta in degreese to use when needing to compare things approximately."
   0.0000001)
 
 (defrecord GreatCircle
@@ -380,8 +380,8 @@
     (let [lat-seg-mbr (mbr/mbr lon-west lat lon-east lat)
           brs (mbrs arc)]
       (filter (fn [p]
-                (and (some #(mbr/geodetic-covers-point? % p) brs)
-                     (mbr/geodetic-covers-point? lat-seg-mbr p)))
+                (and (mbr/geodetic-covers-point? lat-seg-mbr p)
+                     (some #(mbr/geodetic-covers-point? % p) brs)))
               points))))
 
 (defn intersects-lat-segment?

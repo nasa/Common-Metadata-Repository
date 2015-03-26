@@ -70,7 +70,16 @@
 (defn round
   "Rounds the value with the given precision"
   ^double [^long precision ^double v]
-  (let [rounding-multiplier (Math/pow 10 precision)]
+  ;; There is a slight performance improvement to avoid the use of pow if possible. These are all
+  ;; precision values that we use currently.
+  (let [rounding-multiplier (case precision
+                              4 10000.0
+                              5 100000.0
+                              7 10000000.0
+                              8 100000000.0
+                              11 100000000000.0
+                              ;; else
+                              (Math/pow 10 precision))]
     (if (< v 0.0)
       (* (round precision (abs v)) -1.0)
       ;; Implements rounding in a way that avoids _most_ double precision problems.

@@ -12,16 +12,16 @@
 (primitive-math/use-primitive-operators)
 
 (def ^:const ^:private EXTERNAL_POINT_PRECISION
-  "Defines the precision to use when generating external points to a ring and when comparing a point
-  for use with an external point."
+  "Defines the precision in degrees to use when generating external points to a ring and when
+  comparing a point for use with an external point."
   4)
 
 (def ^:const ^:private INTERSECTION_POINT_PRECISION
-  "The precision to use when generating intersection points. We round the points because in some
-  cases the same point will be found multiple times with vary slight variations. Rounding it within
-  a set eliminates the duplication. This is important for determining if a point is inside a ring
-  which relies on knowing exactly how many times an arc between the test point and an external point
-  crosses over the arcs of the ring."
+  "The precision in degrees to use when generating intersection points. We round the points because
+  in some cases the same point will be found multiple times with vary slight variations. Rounding it
+  within a set eliminates the duplication. This is important for determining if a point is inside a
+  ring which relies on knowing exactly how many times an arc between the test point and an external
+  point crosses over the arcs of the ring."
   5)
 
 (defrecord GeodeticRing
