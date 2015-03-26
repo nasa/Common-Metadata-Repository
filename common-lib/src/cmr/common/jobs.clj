@@ -118,7 +118,7 @@
 (defmethod create-trigger :default
   [job-key job]
   (errors/internal-error! (str "Job could not be scheduled. One of :interval or "
-                                 ":daily-at-hour-and-minute should be set.")))
+                               ":daily-at-hour-and-minute should be set.")))
 
 (defmethod create-trigger :interval
   [job-key {:keys [start-delay interval]}]
@@ -161,7 +161,10 @@
     "Pauses running of all jobs.")
   (resume-jobs
     [scheduler]
-    "Resumes running of all jobs"))
+    "Resumes running of all jobs.")
+  (paused?
+    [scheduler]
+    "Returns true if the jobs are paused and false otherwise."))
 
 (defrecord JobScheduler
   [
@@ -208,6 +211,9 @@
             ;; schedule all the jobs
             (doseq [job jobs] (schedule-job scheduler system-holder-var-name job))
 
+            (when (paused? (assoc this :qz-scheduler scheduler))
+              (warn "All jobs are currently paused"))
+
             (assoc this
                    :running? true
                    :qz-scheduler scheduler))))
@@ -230,7 +236,13 @@
   (resume-jobs
     [scheduler]
     (qs/resume-all! qz-scheduler)
-    (info "Resumed all scheduled jobs.")))
+    (info "Resumed all scheduled jobs."))
+
+  (paused?
+    [scheduler]
+    (if (seq (.getPausedTriggerGroups qz-scheduler))
+      true
+      false)))
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler
@@ -252,11 +264,16 @@
 
   (pause-jobs
     [scheduler]
-    (info "Ignoring request to pause jobs on non running scheduler"))
+    (info "Ignoring request to pause jobs on non running scheduler."))
 
   (resume-jobs
     [scheduler]
-    (info "Ignoring request to resume jobs on non running scheduler")))
+    (info "Ignoring request to resume jobs on non running scheduler."))
+
+  (paused?
+    [scheduler]
+    (info "Ignoring request to check if jobs are paused on non running scheduler.")
+    false))
 
 
 (defn create-scheduler
