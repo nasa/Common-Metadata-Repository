@@ -18,6 +18,8 @@
   (are [v error]
        (= {:status 400 :errors [error]}
           (search/find-refs :granule {"attribute[]" v}))
+       "int,alpha" (am/invalid-num-parts-msg)
+
        ",alpha,a" (am/invalid-type-msg "")
        "foo,alpha,a" (am/invalid-type-msg "foo")
        ",alpha,a,b" (am/invalid-type-msg "")
@@ -72,6 +74,28 @@
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
         gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
     (index/wait-until-indexed)
+
+    (testing "granule psa search by names"
+      (testing "single name"
+        (are [v items]
+             (d/refs-match? items (search/find-refs :granule {"attribute[]" v}))
+             "no_match" []
+             "bool" [gran1 gran2]
+             "dts" [gran3 gran4]
+             "ts" [gran5 gran6]
+             "ds" [gran7 gran8]))
+      (testing "multiple names"
+        (are [v items operation]
+             (d/refs-match?
+               items
+               (search/find-refs
+                 :granule
+                 (merge {"attribute[]" v}
+                        (when operation
+                          {"options[attribute][or]" (= operation :or)}))))
+             ["bool" "dts"] [] nil
+             ["bool" "dts"] [] :and
+             ["bool" "dts"] [gran1 gran2 gran3 gran4] :or)))
 
     (testing "granule psa search by string value"
       (are [v items]
