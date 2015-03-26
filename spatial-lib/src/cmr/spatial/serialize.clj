@@ -247,3 +247,28 @@
                shapes)))))
 
 
+;; This comment left in to show how to test the performance of a spatial search intersection between
+;; a search area and one possible area.
+(comment
+
+  (do
+    (def search-area (m/mbr 2.8125 26.015625 27.5625 18.5625))
+
+    (require '[cmr.spatial.relations :as r])
+    (def intersects-fn (r/shape->intersects-fn search-area))
+
+    (def ords [105.430611,-81.285156 46.711628,-65.434303 34.878036,-45.048115 28.735548,-24.12281 23.99316,-3.005745 19.420183,18.155376 14.006246,39.221821 5.132201,59.967354 1.0E-4,66.7660068 1.0E-4,65.0446639 3.979038,59.776619 13.241453,39.078468 18.792515,18.024538 23.394991,-3.134466 28.082237,-24.256086 34.040928,-45.200386 45.345764,-65.661354 104.596161,-81.881721 180.0,-70.784953 180.0,-70.300547 105.430611,-81.285156])
+
+    (def stored-ords
+      (first (shape->stored-ords (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)]))))
+
+    (require '[criterium.core :refer [with-progress-reporting bench]]))
+
+  (with-progress-reporting
+    (bench
+      (let [{:keys [type ords]} stored-ords
+            shape (stored-ords->shape type ords)]
+        (intersects-fn shape))))
+
+  )
+

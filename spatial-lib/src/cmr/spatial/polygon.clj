@@ -101,7 +101,7 @@
       polygon
 
       (as-> polygon p
-            (update-in p [:rings] (partial mapv d/calculate-derived))
+            (update-in p [:rings] #(mapv d/calculate-derived %))
             (assoc p :mbr (-> p :rings first :mbr))))))
 
 (defn- holes-inside-boundary-validation

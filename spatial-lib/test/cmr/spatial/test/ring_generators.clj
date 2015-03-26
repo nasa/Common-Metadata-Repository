@@ -49,11 +49,11 @@
 
 (defn external-points-are-not-in-mbr
   [{:keys [external-points mbr]}]
-  (nil? (some (partial mbr/covers-point? :geodetic mbr) external-points)))
+  (nil? (some (partial mbr/geodetic-covers-point? mbr) external-points)))
 
 (defn mbr-contains-all-points
   [{:keys [points mbr]}]
-  (every? (partial mbr/covers-point? :geodetic mbr) points))
+  (every? (partial mbr/geodetic-covers-point? mbr) points))
 
 (defn no-self-intersections
   [ring]

@@ -160,17 +160,21 @@
 
       (or
         ;; Does the br cover any points of the ring?
-        (some (partial m/covers-point? (coordinate-system ring) br) (:points ring))
+        (some #(m/covers-point? (coordinate-system ring) br %) (:points ring))
         ;; Does the ring contain any points of the br?
-        (some (partial covers-point? ring) (m/corner-points br))
+        (some #(covers-point? ring %) (m/corner-points br))
 
         ;; Do any of the sides intersect?
         (let [lines (segments ring)
-              mbr-lines (s/mbr->line-segments br)]
-          (seq (mapcat (partial apply asi/intersections)
-                       (for [ls1 lines
-                             ls2 mbr-lines]
-                         [ls1 ls2]))))))))
+              mbr-lines (s/mbr->line-segments br)
+              pairs (for [ls1 lines
+                          ls2 mbr-lines]
+                      [ls1 ls2])]
+          (loop [[[ls1 ls2] & pairs] pairs]
+            (cond
+              (nil? ls1) false
+              (seq (asi/intersections ls1 ls2)) true
+              :else (recur pairs))))))))
 
 (defn intersects-line-string?
   "Returns true if the ring intersects the line"

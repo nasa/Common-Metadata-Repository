@@ -11,7 +11,8 @@
             ;;my code
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]))
+            [cmr.spatial.math :refer :all]
+            [cmr.common.util :as u]))
 
 (primitive-math/use-primitive-operators)
 
@@ -105,7 +106,48 @@
 (defspec antipodal-lon-spec 100
   (for-all [lon sgen/lons]
     (let [lon 76.85714285714286
-          opposite-lon (antipodal-lon lon)]
-      (and (within-range? opposite-lon -180 180)
+          ^double opposite-lon (antipodal-lon lon)]
+      (and (within-range? opposite-lon -180.0 180.0)
            (approx= (+ (abs opposite-lon) (abs lon)) 180.0)))))
+
+(defspec range-intersects-commutative-spec 1000
+  (for-all [r1min doubles-gen
+            r1size (gen/fmap #(abs ^double %) doubles-gen)
+            r2min doubles-gen
+            r2size (gen/fmap #(abs ^double %) doubles-gen)]
+    (let [^double r1min r1min
+          ^double r1size r1size
+          ^double r2min r2min
+          ^double r2size r2size
+          r1max (+ r1min r1size)
+          r2max (+ r2min r2size)]
+      (= (range-intersects? r1min r1max r2min r2max)
+         (range-intersects? r2min r2max r1min r1max)))))
+
+(deftest range-intersects-test
+  (testing "intersect cases"
+    (u/are2 [r1min r1max r2min r2max]
+            (true? (range-intersects? r1min r1max r2min r2max))
+            "Completely contained"
+            1 10, 2 5
+            "intersects beginning"
+            1 10, 0 5
+            "intersects end"
+            1 10, 5 11
+            "starts at end"
+            1 10, 10 11
+            "ends at beginning"
+            1 10, 0 1
+            "contains it"
+            1 10, 0 11
+            "identical"
+            1 10, 1 10))
+  (testing "does not intersect cases"
+    (u/are2 [r1min r1max r2min r2max]
+            (not (range-intersects? r1min r1max r2min r2max))
+            "before"
+            1 10, -1 0
+            "after"
+            1 10, 11 12)))
+
 

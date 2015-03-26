@@ -51,9 +51,9 @@
 
         ;; They do intersect
         (and (every? (partial valid-intersection-point? arc ls) intersections)
-             (every? (partial m/covers-point? :geodetic ls-mbr) intersections)
+             (every? (partial m/geodetic-covers-point? ls-mbr) intersections)
              (every? (fn [point]
-                       (some #(m/covers-point? :geodetic % point) arc-mbrs))
+                       (some #(m/geodetic-covers-point? % point) arc-mbrs))
                      intersections))))))
 
 

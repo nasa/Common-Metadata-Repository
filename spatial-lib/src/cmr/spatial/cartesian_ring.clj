@@ -47,7 +47,7 @@
   [ring point]
 
   ;; Only do real intersection if the mbr covers the point.
-  (when (mbr/covers-point? :cartesian (:mbr ring) point)
+  (when (mbr/cartesian-covers-point? (:mbr ring) point)
     (if (some (:point-set ring) point)
       true ; The point is actually one of the rings points
       ;; otherwise we'll do the real intersection algorithm
