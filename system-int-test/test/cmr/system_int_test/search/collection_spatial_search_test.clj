@@ -332,7 +332,7 @@
            
            [-23.43 5 25.54 -6.31]
            [-1.74 47.05 5.27 44.04]
-           [whole-world polygon-with-holes normal-poly normal-brs wide-north]))
+           [whole-world]))
     
     (testing "multiple polygon searches"
       (are [ords1 ords2 items]
@@ -346,8 +346,7 @@
            
            [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
-           [whole-world on-np touches-np north-pole very-tall-cart 
-            along-am-line on-sp wide-south touches-sp south-pole]))
+           [whole-world very-tall-cart]))
 
     (testing "AQL spatial search"
       (are [type ords items]

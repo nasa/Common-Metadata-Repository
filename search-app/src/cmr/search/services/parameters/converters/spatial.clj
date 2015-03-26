@@ -20,7 +20,7 @@
   [type value]
   ;; Note: value can be a single string or a vector of strings. (flatten [value]) 
   ;; converts the value to a sequence of strings irrespective of the type 
-  (gc/or-conds (map (partial url-value->spatial-condition type) (flatten [value]))))
+  (gc/and-conds (map (partial url-value->spatial-condition type) (flatten [value]))))
 
 (defmethod p/parameter->condition :polygon
   [concept-type param value options]
