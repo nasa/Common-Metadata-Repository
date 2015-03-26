@@ -10,6 +10,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
+            AttributeNameCondition
             AttributeValueCondition
             AttributeRangeCondition]
            clojure.lang.ExceptionInfo))
@@ -20,11 +21,10 @@
   (when-not (empty? s)
     s))
 
-
 (defn value->condition
   "Parses an additional attribute value into it's constituent parts.
-  Values must be comma separated in one of the following two formats
-
+  Values must be comma separated in one of the following formats:
+  * name
   * type,name,value
     * Example: \"string,fav_color,blue\"
   * type,name,min,max
@@ -37,30 +37,30 @@
         parts (-> value
                   (str/replace comma-escape comma-replace)
                   (str/split #"," 5))
-        parts (map #(str/replace % comma-replace ",") parts)
-        parts (map empty->nil parts)]
+        parts (->> parts
+                   (map #(str/replace % comma-replace ","))
+                   (map empty->nil))
+        attr-name (if (= 1 (count parts))
+                    (first parts)
+                    (nth parts 1))
+        [attr-type _ minv maxv] parts]
 
-    (case (count parts)
-      3
-      (let [[t n v] parts]
-        (if n
-          (qm/map->AttributeValueCondition
-            {:type t
-             :name n
-             :value v})
-          {:errors [(msg/invalid-name-msg n)]}))
-      4
-      (let [[t n minv maxv] parts]
-        (if n
-          (qm/map->AttributeRangeCondition
-            {:type t
-             :name n
-             :min-value minv
-             :max-value maxv})
-          {:errors [(msg/invalid-name-msg n)]}))
-
-      ;; else
-      {:errors [(msg/invalid-num-parts-msg)]})))
+    (if attr-name
+      (case (count parts)
+        1
+        (qm/map->AttributeNameCondition {:name attr-name})
+        3
+        (qm/map->AttributeValueCondition {:type attr-type
+                                          :name attr-name
+                                          :value minv})
+        4
+        (qm/map->AttributeRangeCondition {:type attr-type
+                                          :name attr-name
+                                          :min-value minv
+                                          :max-value maxv})
+        ;; else
+        {:errors [(msg/invalid-num-parts-msg)]})
+      {:errors [(msg/invalid-name-msg attr-name)]})))
 
 (def attribute-type->parser-fn
   "A map of attribute types to functions that can parse a value"
@@ -114,8 +114,17 @@
           condition))
       {:errors [(msg/invalid-value-msg type value)]})))
 
-(defn parse-component-type
-  "Parses the type and it's values"
+(defmulti parse-component-type
+  "Parses the type and values of the given condition. Returns the condition with values updated with
+  the parsed value or error message added to its :errors field in case of validation failures."
+  (fn [condition]
+    (type condition)))
+
+(defmethod parse-component-type AttributeNameCondition
+  [condition]
+  condition)
+
+(defmethod parse-component-type :default
   [condition]
   (if-let [type (some (set qm/attribute-types) [(keyword (:type condition))])]
     (parse-condition-values (assoc condition :type type))
