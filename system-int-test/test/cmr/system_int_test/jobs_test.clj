@@ -30,15 +30,15 @@
     (is (= 204 (:status (perform-action-on-jobs :post url :pause token)))))
   (s/only-with-real-database
     (testing "jobs are marked as paused"
-      (is (= [200 true]
-             (let [response (perform-action-on-jobs :get url :status token)]
+      (let [response (perform-action-on-jobs :get url :status token)]
+        (is (= [200 true]
                [(:status response)
                 (paused? response)])))))
   (testing "resume returns 204"
     (is (= 204 (:status (perform-action-on-jobs :post url :resume token)))))
   (testing "jobs are not marked as paused"
-    (is (= [200 false]
-           (let [response (perform-action-on-jobs :get url :status token)]
+    (let [response (perform-action-on-jobs :get url :status token)]
+      (is (= [200 false]
              [(:status response)
               (paused? response)])))))
 
