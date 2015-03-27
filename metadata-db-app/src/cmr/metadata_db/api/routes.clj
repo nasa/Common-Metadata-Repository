@@ -52,7 +52,7 @@
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
       common-routes/cache-api-routes
-      common-routes/job-api-routes
+      (common-routes/job-api-routes)
       (common-routes/health-api-routes hs/health)
       admin-api-routes)
 

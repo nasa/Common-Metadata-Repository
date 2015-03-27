@@ -264,6 +264,11 @@
   []
   (format "http://localhost:%s/health" (transmit-config/bootstrap-port)))
 
+(defn bootstrap-jobs-url
+  "URL to bootstrap jobs api."
+  []
+  (format "http://localhost:%s/jobs/" (transmit-config/bootstrap-port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Index Set URLs
 
