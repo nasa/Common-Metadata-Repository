@@ -8,8 +8,11 @@ date && echo "Installing all apps" &&
 lein modules do clean, install &&
 date && echo "Generating search API documentation" &&
 (cd search-app && lein with-profile docs generate-docs) &&
-date && echo "Building uberjars" &&
-lein with-profile uberjar modules uberjar &&
+if [ "$1" != "skip-uberjars" ]
+  then
+  date && echo "Building uberjars" &&
+  lein with-profile uberjar modules uberjar
+fi
 date && echo "Building and starting dev-system" &&
 (cd dev-system && support/build-and-run.sh) &&
 date && echo "Running tests" &&
