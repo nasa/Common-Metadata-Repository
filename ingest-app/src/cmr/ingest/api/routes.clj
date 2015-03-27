@@ -151,7 +151,7 @@
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
-      common-routes/job-api-routes
+      (common-routes/job-api-routes)
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
@@ -160,22 +160,6 @@
       (common-routes/health-api-routes ingest/health))
 
     (route/not-found "Not Found")))
-
-(comment
-  ; [clojurewerkz.quartzite.scheduler :as qs]
-  ;           [clojurewerkz.quartzite.triggers :as qt]
-  ;           [clojurewerkz.quartzite.jobs :as qj]
-  ;           [clojurewerkz.quartzite.stateful :as qst]
-  ;           [clojurewerkz.quartzite.schedule.calendar-interval :as qcal]
-  ;           [clojurewerkz.quartzite.schedule.cron :as qcron]
-  ;           [clojurewerkz.quartzite.conversion :as qc]
-
-(def scheduler
-  (get-in user/system [:apps :ingest :scheduler]))
-
-(.getPausedTriggerGroups (:qz-scheduler scheduler))
-(.resumeAll (:qz-scheduler scheduler))
-(.pauseAll (:qz-scheduler scheduler)))
 
 (defn make-api [system]
   (-> (build-routes system)
