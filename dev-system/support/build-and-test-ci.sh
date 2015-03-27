@@ -4,11 +4,15 @@
 # server. Instead the CI server will simply call this script. The script should be run from the cmr
 # root directory, ie, ./dev-system/support/build-and-test-ci.sh
 
-lein modules do clean, install
-cd search-app
-lein with-profile docs generate-docs
-cd ../dev-system
-./support/build-and-run.sh
-cd ..
-CMR_ELASTIC_PORT=9206 lein modules test-out
+date && echo "Installing all apps" &&
+lein modules do clean, install &&
+date && echo "Generating search API documentation" &&
+(cd search-app && lein with-profile docs generate-docs) &&
+date && echo "Building uberjars" &&
+lein with-profile uberjar modules uberjar &&
+date && echo "Building and starting dev-system" &&
+(cd dev-system && support/build-and-run.sh) &&
+date && echo "Running tests" &&
+CMR_ELASTIC_PORT=9206 lein modules test-out &&
+date && echo "Stopping applications" &&
 curl -XPOST http://localhost:2999/stop; true
