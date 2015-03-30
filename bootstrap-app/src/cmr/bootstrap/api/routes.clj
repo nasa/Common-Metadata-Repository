@@ -130,6 +130,9 @@
       ;; Add routes for managing jobs.
       common-routes/job-api-routes
 
+      ;; Add routes for accessing caches
+      common-routes/cache-api-routes
+
       ;; Add routes for checking health of the application
       (common-routes/health-api-routes hs/health))))
 
