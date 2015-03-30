@@ -52,7 +52,7 @@
 (defn- vector-approx=
   ([^Vector v1 ^Vector v2]
    (vector-approx= v1 v2 VECTOR_EQUAL_DELTA))
-  ([^Vector v1 ^Vector v2 delta]
+  ([^Vector v1 ^Vector v2 ^double delta]
    (let [x1 (.x v1) y1 (.y v1) z1 (.z v1)
          x2 (.x v2) y2 (.y v2) z2 (.z v2)]
      (and

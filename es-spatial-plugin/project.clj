@@ -36,7 +36,8 @@
   :profiles
   {:dev {:dependencies [[nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                         [org.clojure/tools.namespace "0.2.10"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [criterium "0.4.3"]]
 
          :global-vars {*warn-on-reflection* true
                        *assert* false}

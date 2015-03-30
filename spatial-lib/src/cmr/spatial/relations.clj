@@ -75,7 +75,7 @@
 
   (intersects-br?
     [point br]
-    (m/covers-point? :geodetic br point))
+    (m/geodetic-covers-point? br point))
 
   (intersects-polygon?
     [point polygon]
@@ -145,7 +145,7 @@
 
   (covers-point?
     [br point]
-    (m/covers-point? :geodetic br point))
+    (m/geodetic-covers-point? br point))
 
   (covers-br?
     [br1 br2]
@@ -315,4 +315,6 @@
       ;; Shape is the second argument so that the polymorphic protocol dispatch can be used
       ;; on the first argument.
       (f (d/calculate-derived other-shape) shape))))
+
+
 

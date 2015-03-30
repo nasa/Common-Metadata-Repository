@@ -360,7 +360,7 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
-A query could consist of multiple spatial types at once, two bounding boxes and a polygon for example. All the parameters of a given spatial type are OR'd in a query. If the query contains two bounding boxes for example, it will return collections which intersect either of the bounding boxes. But parameters across different spatial types are AND'd. So if a query contains a polygon and a bounding-box it will return all the collections which intersect both the polygon and the bounding-box. This behavior may be changed in the future to use OR across all the spatial parameters irrespective of their type.
+Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon. 
 
 #### Sorting Collection Results
 

@@ -318,11 +318,11 @@
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
            [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
     
-    (testing "multiple bounding-box searches"
-      (are [wnes1 wnes2 items]
+    (testing "multiple bounding-box searches should returns collections which intersect all the 
+             supplied bounding boxes"
+      (are [wnes-vec items]
            (let [found (search/find-refs :collection {:bounding-box 
-                                                      [(codec/url-encode (apply m/mbr wnes1))
-                                                       (codec/url-encode (apply m/mbr wnes2))]
+                                                      (map #(codec/url-encode (apply m/mbr %)) wnes-vec)
                                                       :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -330,24 +330,36 @@
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
            
-           [-23.43 5 25.54 -6.31]
-           [-1.74 47.05 5.27 44.04]
-           [whole-world polygon-with-holes normal-poly normal-brs wide-north]))
+           [[-23.43 5 25.54 -6.31]]
+           [whole-world polygon-with-holes normal-poly normal-brs]
+           
+           [[-1.74 47.05 5.27 44.04]]
+           [whole-world wide-north]
+           
+           [[-23.43 5 25.54 -6.31]
+            [-1.74 47.05 5.27 44.04]]
+           [whole-world]))
     
-    (testing "multiple polygon searches"
-      (are [ords1 ords2 items]
-           (let [found (search/find-refs :collection {:polygon [(apply search-poly ords1)
-                                                                (apply search-poly ords2)]})
+    (testing "multiple polygon searches should return collections which intersect all the supplied
+             bounding boxes"
+      (are [ords-vec items]
+           (let [found (search/find-refs :collection {:polygon 
+                                                      (map (partial apply search-poly) ords-vec)})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
            
-           [58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
-           [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]
-           [whole-world on-np touches-np north-pole very-tall-cart 
-            along-am-line on-sp wide-south touches-sp south-pole]))
+           [[58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]]
+           [whole-world on-np touches-np north-pole very-tall-cart along-am-line]
+           
+           [[-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]]
+           [whole-world on-sp wide-south touches-sp south-pole very-tall-cart]
+           
+           [[58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
+            [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]]
+           [whole-world very-tall-cart]))
 
     (testing "AQL spatial search"
       (are [type ords items]

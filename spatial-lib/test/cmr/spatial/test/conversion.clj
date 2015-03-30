@@ -43,5 +43,3 @@
     (approx= (v/normalize v)
              (c/point->vector
                (c/vector->point v)))))
-
-

@@ -24,7 +24,7 @@
   (for-all [value (gen/choose -10 10)]
     (every?
       (fn [field]
-        (approx= (abs value)
+        (approx= (abs ^double value)
                  (v/length
                    (v/map->Vector
                      (assoc {:x 0.0 :y 0.0 :z 0.0} field (double value))))))
