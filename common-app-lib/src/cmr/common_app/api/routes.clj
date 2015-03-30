@@ -49,34 +49,31 @@
         (cache/reset-caches context))
       {:status 200})))
 
-(defn job-api-routes
-  "Creates common routes for managing jobs such as pausing and resuming. When apply-acls is true
-  the caller must have system ingest management update permission to call any of the jobs routes."
-  ([]
-   (job-api-routes true))
-  ([apply-acls?]
+(def job-api-routes
+  "Creates common routes for managing jobs such as pausing and resuming. The caller must have
+  system ingest management update permission to call any of the jobs routes."
   (context "/jobs" []
     ;; Pause all jobs
     (POST "/pause" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
-        (when apply-acls? (acl/verify-ingest-management-permission context :update))
+        (acl/verify-ingest-management-permission context :update)
         (jobs/pause-jobs (get-in context [:system :scheduler]))
         {:status 204}))
 
     ;; Resume all jobs
     (POST "/resume" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
-        (when apply-acls? (acl/verify-ingest-management-permission context :update))
+        (acl/verify-ingest-management-permission context :update)
         (jobs/resume-jobs (get-in context [:system :scheduler]))
         {:status 204}))
 
     ;; Retrieve status of jobs - whether they are paused or active
     (GET "/status" {:keys [request-context params headers]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
-        (when apply-acls? (acl/verify-ingest-management-permission context :update))
+        (acl/verify-ingest-management-permission context :update)
         (let [paused? (jobs/paused? (get-in context [:system :scheduler]))]
           {:status 200
-           :body (json/generate-string {:paused paused?})}))))))
+           :body (json/generate-string {:paused paused?})})))))
 
 (defn health-api-routes
   "Creates common routes for checking the health of a CMR application. Takes a health-fn which

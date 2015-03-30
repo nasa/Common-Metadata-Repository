@@ -62,5 +62,4 @@
     (assert-invalid-permissions (url/mdb-jobs-url) token)
     (assert-invalid-permissions (url/ingest-jobs-url) token)
     (s/only-with-real-database
-      ;; Bootstrap application does not enforce ACLs
-      (assert-successful-jobs-control (url/bootstrap-jobs-url) token))))
+      (assert-invalid-permissions (url/bootstrap-jobs-url) token))))

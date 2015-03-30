@@ -21,7 +21,8 @@
             [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.bootstrap.config :as bootstrap-config]))
+            [cmr.bootstrap.config :as bootstrap-config]
+            [cmr.acl.core :as acl]))
 
 (defconfig db-batch-size
   "Batch size to use when batching database operations."
@@ -76,8 +77,9 @@
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :scheduler (jobs/create-clustered-scheduler `system-holder :jobs-db bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
-             :relative-root-url (transmit-config/bootstrap-relative-root-url)}]
-    (transmit-config/system-with-connections sys [:metadata-db])))
+             :relative-root-url (transmit-config/bootstrap-relative-root-url)
+             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}}]
+    (transmit-config/system-with-connections sys [:metadata-db :echo-rest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

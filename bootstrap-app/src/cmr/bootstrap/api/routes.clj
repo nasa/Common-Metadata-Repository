@@ -127,9 +127,8 @@
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
 
-      ;; Add routes for managing jobs. Bootstrap does not currently enforce ACLs so make sure ACLs
-      ;; are not enforced
-      (common-routes/job-api-routes false)
+      ;; Add routes for managing jobs.
+      common-routes/job-api-routes
 
       ;; Add routes for checking health of the application
       (common-routes/health-api-routes hs/health))))
