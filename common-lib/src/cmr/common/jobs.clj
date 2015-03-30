@@ -240,9 +240,7 @@
 
   (paused?
     [scheduler]
-    (if (seq (.getPausedTriggerGroups qz-scheduler))
-      true
-      false)))
+    (some? (seq (.getPausedTriggerGroups qz-scheduler)))))
 
 ;; A scheduler that does not track or run jobs
 (defrecord NonRunningJobScheduler

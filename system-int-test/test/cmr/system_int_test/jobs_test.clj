@@ -8,39 +8,36 @@
             [cheshire.core :as json]))
 
 (defn- perform-action-on-jobs
-  "Call the specified endpoint on the jobs api and return the response."
+  "Call the specified endpoint on the jobs api. Parses the response body and returns the status
+  and parsed body."
   [method app-jobs-url action token]
-  (client/request
-    {:url (str app-jobs-url (name action))
-     :method method
-     :accept :json
-     :throw-exceptions false
-     :connection-manager (s/conn-mgr)
-     :headers {"echo-token" token}}))
-
-(defn- paused?
-  "Returns true if the response indicates jobs are paused. Otherwise returns false."
-  [response]
-  (:paused (json/decode (:body response) true)))
+  (let [response (client/request
+                   {:url (str app-jobs-url (name action))
+                    :method method
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)
+                    :headers {"echo-token" token}})]
+    {:status (:status response)
+     :body (json/decode (:body response) true)}))
 
 (defn- assert-successful-jobs-control
   "Pause, resume, and verify status for the given jobs URL using a token with permissions."
   [url token]
   (testing "pause returns 204"
     (is (= 204 (:status (perform-action-on-jobs :post url :pause token)))))
+  ;; Quartz jobs use the database, so we can only check if jobs are paused when we are using
+  ;; the real database
   (s/only-with-real-database
     (testing "jobs are marked as paused"
       (let [response (perform-action-on-jobs :get url :status token)]
-        (is (= [200 true]
-               [(:status response)
-                (paused? response)])))))
+        (is (= {:status 200 :body {:paused true}} response)))))
   (testing "resume returns 204"
     (is (= 204 (:status (perform-action-on-jobs :post url :resume token)))))
   (testing "jobs are not marked as paused"
     (let [response (perform-action-on-jobs :get url :status token)]
-      (is (= [200 false]
-             [(:status response)
-              (paused? response)])))))
+      (is (= {:status 200 :body {:paused false}} response)))))
+
 
 (defn- assert-invalid-permissions
   "Ensure the jobs endpoints require a token with ingest system management permission."
@@ -56,6 +53,7 @@
   (let [token (transmit-config/echo-system-token)]
     (assert-successful-jobs-control (url/mdb-jobs-url) token)
     (assert-successful-jobs-control (url/ingest-jobs-url) token)
+    ;; Bootstrap application is only started when using the real database
     (s/only-with-real-database
       (assert-successful-jobs-control (url/bootstrap-jobs-url) token))))
 
