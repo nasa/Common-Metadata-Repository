@@ -7,17 +7,36 @@
 # CMR applications when this parameter is passed.
 
 date && echo "Installing all apps" &&
-lein modules do clean, install &&
+lein modules do clean, install
+if [ $? -ne 0 ] ; then
+  echo "Failed to install apps" >&2
+  exit 1
+fi
 date && echo "Generating search API documentation" &&
-(cd search-app && lein with-profile docs generate-docs) &&
-if [ "$1" != "skip-uberjars" ]
-  then
+(cd search-app && lein with-profile docs generate-docs)
+if [ $? -ne 0 ] ; then
+  echo "Failed to generate docs" >&2
+  exit 1
+fi
+if [ "$1" != "skip-uberjars" ] ; then
   date && echo "Building uberjars" &&
   lein with-profile uberjar modules uberjar
+  if [ $? -ne 0 ] ; then
+    echo "Failed to generate uberjars" >&2
+    exit 1
+  fi
 fi
 date && echo "Building and starting dev-system" &&
-(cd dev-system && support/build-and-run.sh) &&
+(cd dev-system && support/build-and-run.sh)
+if [ $? -ne 0 ] ; then
+  echo "Failed to build and start up dev system" >&2
+  exit 1
+fi
 date && echo "Running tests" &&
-CMR_ELASTIC_PORT=9206 lein modules test-out &&
+CMR_ELASTIC_PORT=9206 lein modules test-out
+if [ $? -ne 0 ] ; then
+  echo "Failed Tests" >&2
+  exit 1
+fi
 date && echo "Stopping applications" &&
-curl -XPOST http://localhost:2999/stop; true
+(curl -XPOST http://localhost:2999/stop; true)
