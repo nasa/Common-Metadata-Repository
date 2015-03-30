@@ -151,7 +151,7 @@
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
-      (common-routes/job-api-routes)
+      common-routes/job-api-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
