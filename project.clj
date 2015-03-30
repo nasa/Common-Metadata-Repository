@@ -23,8 +23,6 @@
                      "indexer-app"
                      "ingest-app"
                      "metadata-db-app"
-                     "mock-echo-app"
                      "search-app"
-                     "es-spatial-plugin"
-                     "system-int-test"]}}})
+                     "es-spatial-plugin"]}}})
 

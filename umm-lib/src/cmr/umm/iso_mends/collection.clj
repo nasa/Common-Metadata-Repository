@@ -15,7 +15,7 @@
             [cmr.umm.iso-mends.collection.temporal :as t]
             [cmr.umm.iso-mends.collection.platform :as platform]
             [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.project :as proj]
+            [cmr.umm.iso-mends.collection.project-element :as proj]
             [cmr.umm.iso-mends.collection.associated-difs :as dif]
             [cmr.umm.iso-mends.collection.collection-association :as ca]
             [cmr.umm.iso-mends.collection.helper :as h]

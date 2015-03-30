@@ -1,4 +1,4 @@
-(ns cmr.umm.dif.collection.project
+(ns cmr.umm.dif.collection.project-element
   "Provide functions to parse and generate DIF Project elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
