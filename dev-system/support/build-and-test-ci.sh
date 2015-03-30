@@ -3,6 +3,8 @@
 # integration (CI) environment. The intent is to never need to modify the configuration of the CI
 # server. Instead the CI server will simply call this script. The script should be run from the cmr
 # root directory, ie, ./dev-system/support/build-and-test-ci.sh
+# There is one optional parameter 'skip-uberjars'. The script will not build the uberjars for the
+# CMR applications when this parameter is passed.
 
 date && echo "Installing all apps" &&
 lein modules do clean, install &&
