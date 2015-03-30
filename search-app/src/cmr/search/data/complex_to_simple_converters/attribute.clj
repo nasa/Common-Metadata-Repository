@@ -93,6 +93,13 @@
       (qm/nested-condition :attributes name-cond))))
 
 (extend-protocol c2s/ComplexQueryToSimple
+  cmr.search.models.query.GranuleAttributeNameCondition
+  (c2s/reduce-query-condition
+    [condition context]
+    (let [name-cond (qm/map->NumericValueCondition {:field :name :value (:name condition)})]
+      (qm/nested-condition :attributes name-cond))))
+
+(extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.AttributeValueCondition
   (c2s/reduce-query-condition
     [condition context]

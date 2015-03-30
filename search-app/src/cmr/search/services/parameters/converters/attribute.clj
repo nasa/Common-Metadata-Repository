@@ -10,7 +10,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
-            AttributeNameCondition
+            GranuleAttributeNameCondition
             AttributeValueCondition
             AttributeRangeCondition]
            clojure.lang.ExceptionInfo))
@@ -21,46 +21,60 @@
   (when-not (empty? s)
     s))
 
+(defmulti parts->condition
+  "Convert the parsed additional attribute parts into search condition"
+  (fn [parts]
+    (count parts)))
+
+(defmethod parts->condition 1
+  [parts]
+  (let [attr-name (first parts)]
+    (if attr-name
+      (qm/map->GranuleAttributeNameCondition {:name attr-name})
+      {:errors [(msg/invalid-name-msg attr-name)]})))
+
+(defmethod parts->condition 3
+  [parts]
+  (let [[attr-type attr-name value] parts]
+    (if attr-name
+      (qm/map->AttributeValueCondition {:type attr-type
+                                        :name attr-name
+                                        :value value})
+      {:errors [(msg/invalid-name-msg attr-name)]})))
+
+(defmethod parts->condition 4
+  [parts]
+  (let [[attr-type attr-name minv maxv] parts]
+    (if attr-name
+      (qm/map->AttributeRangeCondition {:type attr-type
+                                        :name attr-name
+                                        :min-value minv
+                                        :max-value maxv})
+      {:errors [(msg/invalid-name-msg attr-name)]})))
+
+(defmethod parts->condition :default
+  [parts]
+  {:errors [(msg/invalid-num-parts-msg)]})
+
 (defn value->condition
   "Parses an additional attribute value into it's constituent parts.
   Values must be comma separated in one of the following formats:
   * name
   * type,name,value
-    * Example: \"string,fav_color,blue\"
+  * Example: \"string,fav_color,blue\"
   * type,name,min,max
-    * Example: \"float,cloud_cover_range,0,100\"
-    * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
-    * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
+  * Example: \"float,cloud_cover_range,0,100\"
+  * Example: \"float,cloud_cover_range,,80\"  means must be less than 80 with no lower bounds
+  * Example: \"float,cloud_cover_range,10,\"  means must be greater than 10 with no upper bounds"
   [value]
   (let [comma-escape "\\,"
         comma-replace "%COMMA%" ; used to replace escaped commas during splitting
-        parts (-> value
-                  (str/replace comma-escape comma-replace)
-                  (str/split #"," 5))
-        parts (->> parts
+        parts (->> (-> value
+                       (str/replace comma-escape comma-replace)
+                       (str/split #"," 5))
                    (map #(str/replace % comma-replace ","))
-                   (map empty->nil))
-        attr-name (if (= 1 (count parts))
-                    (first parts)
-                    (nth parts 1))
-        [attr-type _ minv maxv] parts]
-
-    (if attr-name
-      (case (count parts)
-        1
-        (qm/map->AttributeNameCondition {:name attr-name})
-        3
-        (qm/map->AttributeValueCondition {:type attr-type
-                                          :name attr-name
-                                          :value minv})
-        4
-        (qm/map->AttributeRangeCondition {:type attr-type
-                                          :name attr-name
-                                          :min-value minv
-                                          :max-value maxv})
-        ;; else
-        {:errors [(msg/invalid-num-parts-msg)]})
-      {:errors [(msg/invalid-name-msg attr-name)]})))
+                   (map empty->nil))]
+    (parts->condition parts)))
 
 (def attribute-type->parser-fn
   "A map of attribute types to functions that can parse a value"
@@ -120,7 +134,7 @@
   (fn [condition]
     (type condition)))
 
-(defmethod parse-component-type AttributeNameCondition
+(defmethod parse-component-type GranuleAttributeNameCondition
   [condition]
   condition)
 
