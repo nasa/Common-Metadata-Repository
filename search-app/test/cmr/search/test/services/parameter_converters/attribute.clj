@@ -86,7 +86,7 @@
 
 (deftest parameter->condition-test
   (testing "name condition"
-    (let [expected-cond (qm/->AttributeNameCondition "alpha" nil)]
+    (let [expected-cond (qm/->GranuleAttributeNameCondition "alpha")]
       (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["alpha"] {})))))
   (testing "single value condition"
