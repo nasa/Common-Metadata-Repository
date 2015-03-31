@@ -127,10 +127,13 @@
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
 
-      ;; add routes for managing jobs
+      ;; Add routes for managing jobs.
       common-routes/job-api-routes
 
-      ;; add routes for checking health of the application
+      ;; Add routes for accessing caches
+      common-routes/cache-api-routes
+
+      ;; Add routes for checking health of the application
       (common-routes/health-api-routes hs/health))))
 
 (defn make-api [system]

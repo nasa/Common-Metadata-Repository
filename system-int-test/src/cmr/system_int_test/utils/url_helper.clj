@@ -264,6 +264,21 @@
   []
   (format "http://localhost:%s/health" (transmit-config/bootstrap-port)))
 
+(defn bootstrap-jobs-url
+  "URL to bootstrap jobs api."
+  []
+  (format "http://localhost:%s/jobs/" (transmit-config/bootstrap-port)))
+
+(defn bootstrap-read-caches-url
+  "URL to read the bootstrap caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/bootstrap-port)))
+
+(defn bootstrap-clear-cache-url
+  "Clear cache in bootstrap app."
+  []
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/bootstrap-port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Index Set URLs
 

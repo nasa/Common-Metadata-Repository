@@ -161,7 +161,6 @@
 
     (route/not-found "Not Found")))
 
-
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
