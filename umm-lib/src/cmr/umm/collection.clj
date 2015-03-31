@@ -248,6 +248,10 @@
    entry-title
 
    summary
+   
+   ;; This element contains the summary of intentions with which this
+   ;; collection was developed.
+   purpose
 
    product
 

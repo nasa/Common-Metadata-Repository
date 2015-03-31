@@ -109,6 +109,7 @@
       {:entry-id (str (:short-name product) "_" (:version-id product))
        :entry-title (cx/string-at-path xml-struct [:DataSetId])
        :summary (cx/string-at-path xml-struct [:Description])
+       :purpose (cx/string-at-path xml-struct [:SuggestedUsage])
        :product product
        :access-value (cx/double-at-path xml-struct [:RestrictionFlag])
        :data-provider-timestamps data-provider-timestamps
@@ -145,7 +146,7 @@
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
-                   two-d-coordinate-systems related-urls spatial-coverage summary associated-difs
+                   two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
                    personnel]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
@@ -164,6 +165,7 @@
                     (x/element :Orderable {} "true")
                     (x/element :Visible {} "true")
                     ;; archive center to follow processing center
+                    (x/element :SuggestedUsage {} purpose)
                     (org/generate-processing-center organizations)
                     (when processing-level-id
                       (x/element :ProcessingLevelId {} processing-level-id))

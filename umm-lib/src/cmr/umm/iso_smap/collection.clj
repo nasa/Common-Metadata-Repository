@@ -83,6 +83,7 @@
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
                        :MD_Identifier :code :CharacterString])
        :summary (cx/string-at-path product-elem [:abstract :CharacterString])
+       :purpose (cx/string-at-path product-elem [:purpose :CharacterString])
        :product product
        :data-provider-timestamps data-provider-timestamps
        :temporal (t/xml-elem->Temporal xml-struct)
@@ -180,7 +181,7 @@
      (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [organizations temporal platforms spatial-coverage summary
+            :keys [organizations temporal platforms spatial-coverage summary purpose
                    associated-difs science-keywords]} collection
            ;; UMM model has a nested relationship between instruments and platforms,
            ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
@@ -220,6 +221,7 @@
                        (h/generate-version-id-element version-id)
                        (org/generate-processing-center organizations)))
                    (h/iso-string-element :gmd:abstract summary)
+                   (h/iso-string-element :gmd:purpose purpose)
                    (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
                    iso-status-element
                    (org/generate-archive-center organizations)

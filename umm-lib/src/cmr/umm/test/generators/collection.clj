@@ -48,6 +48,9 @@
 (def summary
   (ext-gen/string-alpha-numeric 1 10))
 
+(def purpose
+  (ext-gen/string-alpha-numeric 1 10))
+
 (def characteristic-values
   (ext-gen/string-ascii 1 10))
 
@@ -236,6 +239,7 @@
                 :entry-id entry-ids
                 :entry-title entry-titles
                 :summary summary
+                :purpose purpose
                 :product products
                 :access-value (ext-gen/optional (ext-gen/choose-double -10 10))
                 :data-provider-timestamps data-provider-timestamps
