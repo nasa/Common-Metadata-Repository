@@ -12,7 +12,7 @@
 
 (defmethod value->elastic-value :default
   [type value]
-  (if value value ""))
+  (or value ""))
 
 (defmethod value->elastic-value :boolean
   [type value]
@@ -20,16 +20,16 @@
 
 (defmethod value->elastic-value :datetime
   [type value]
-  (if value (f/unparse (f/formatters :date-time) value) nil))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (defmethod value->elastic-value :time
   [type value]
   ;; This relies on the fact that times are parsed into times on day 1970-01-01
-  (if value (f/unparse (f/formatters :date-time) value) nil))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (defmethod value->elastic-value :date
   [type value]
-  (if value (f/unparse (f/formatters :date-time) value) nil))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (def type->field-name
   "Converts an attribute type into the indexed field name"
