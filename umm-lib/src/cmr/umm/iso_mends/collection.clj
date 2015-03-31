@@ -80,6 +80,7 @@
                    (str short-name "_" version-id))
        :entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
+       :purpose (cx/string-at-path id-elem [:purpose :CharacterString])
        :product product
        :access-value (xml-elem->access-value id-elem)
        :data-provider-timestamps data-provider-timestamps
@@ -234,7 +235,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
-                   two-d-coordinate-systems related-urls spatial-coverage summary associated-difs
+                   two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
                    personnel]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)
@@ -276,7 +277,9 @@
                             (dif/generate-associated-difs associated-difs)))
 
                         (h/iso-string-element :gmd:abstract summary)
-                        (x/element :gmd:purpose {:gco:nilReason "missing"})
+                        (if purpose
+                          (h/iso-string-element :gmd:purpose purpose)
+                          (x/element :gmd:purpose {:gco:nilReason "missing"}))
                         (k/generate-science-keywords science-keywords)
                         (k/generate-spatial-keywords spatial-keywords)
                         (k/generate-temporal-keywords temporal-keywords)

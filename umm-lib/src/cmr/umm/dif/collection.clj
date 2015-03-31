@@ -58,6 +58,7 @@
     {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
      :entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
+     :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
      ;; See CMR-588
@@ -94,7 +95,7 @@
     ([collection indent?]
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-id entry-title summary temporal organizations science-keywords platforms
+            :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
@@ -116,7 +117,9 @@
                       (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk)))
                     (pj/generate-projects projects)
                     (org/generate-data-center organizations)
-                    (x/element :Summary {} (x/element :Abstract {} summary))
+                    (x/element :Summary {}
+                               (x/element :Abstract {} summary)
+                               (x/element :Purpose {} purpose))
                     (ru/generate-related-urls related-urls)
                     (ca/generate-collection-associations collection-associations)
                     (x/element :Metadata_Name {} "CEOS IDN DIF")
