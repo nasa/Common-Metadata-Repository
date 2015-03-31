@@ -118,7 +118,7 @@
   "Creates a new ring with the given points. If the other fields of a ring are needed. The
   calculate-derived function should be used to populate it."
   [points]
-  (->GeodeticRing points nil nil nil nil nil nil nil))
+  (->GeodeticRing (mapv p/with-geodetic-equality points) nil nil nil nil nil nil nil))
 
 (defn contains-both-poles?
   "Returns true if a ring contains both the north pole and the south pole"
