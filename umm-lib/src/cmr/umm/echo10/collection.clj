@@ -165,7 +165,8 @@
                     (x/element :Orderable {} "true")
                     (x/element :Visible {} "true")
                     ;; archive center to follow processing center
-                    (x/element :SuggestedUsage {} purpose)
+                    (when purpose
+                      (x/element :SuggestedUsage {} purpose))
                     (org/generate-processing-center organizations)
                     (when processing-level-id
                       (x/element :ProcessingLevelId {} processing-level-id))
