@@ -69,11 +69,7 @@
              :point :point
              :line :line
              :browsable :boolean
-             :two-d-coordinate-system :two-d-coordinate-system}
-   :tile    {:polygon :polygon
-             :bounding-box :bounding-box
-             :point :point
-             :line :line}})
+             :two-d-coordinate-system :two-d-coordinate-system}})
 
 (def always-case-sensitive
   "A set of parameters that will always be case sensitive"
@@ -324,8 +320,8 @@
                               (parameter->condition concept-type param value options))
                             params)]
         (qm/query (assoc query-attribs
-                         :condition (gc/and-conds conditions)
-                         :keywords keywords))))))
+                    :condition (gc/and-conds conditions)
+                    :keywords keywords))))))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

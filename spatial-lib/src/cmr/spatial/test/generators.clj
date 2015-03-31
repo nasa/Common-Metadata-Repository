@@ -289,7 +289,7 @@
                                    (m/split-across-antimeridian mbr)))
                   (double-gen (:west mbr) (:east mbr)))
         lat-gen (double-gen (:south mbr) (:north mbr))]
-    (gen/such-that (partial m/covers-point? :geodetic mbr)
+    (gen/such-that (partial m/geodetic-covers-point? mbr)
                    (gen/fmap (partial apply p/point)
                              (gen/tuple lon-gen lat-gen))
                    50)))

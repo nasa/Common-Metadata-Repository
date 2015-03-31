@@ -3,12 +3,40 @@
 # integration (CI) environment. The intent is to never need to modify the configuration of the CI
 # server. Instead the CI server will simply call this script. The script should be run from the cmr
 # root directory, ie, ./dev-system/support/build-and-test-ci.sh
+# There is one optional parameter 'skip-uberjars'. The script will not build the uberjars for the
+# CMR applications when this parameter is passed.
 
+date && echo "Installing all apps" &&
 lein modules do clean, install
-cd search-app
-lein with-profile docs generate-docs
-cd ../dev-system
-./support/build-and-run.sh
-cd ..
+if [ $? -ne 0 ] ; then
+  echo "Failed to install apps" >&2
+  exit 1
+fi
+date && echo "Generating search API documentation" &&
+(cd search-app && lein with-profile docs generate-docs)
+if [ $? -ne 0 ] ; then
+  echo "Failed to generate docs" >&2
+  exit 1
+fi
+if [ "$1" != "skip-uberjars" ] ; then
+  date && echo "Building uberjars" &&
+  lein with-profile uberjar modules uberjar
+  if [ $? -ne 0 ] ; then
+    echo "Failed to generate uberjars" >&2
+    exit 1
+  fi
+fi
+date && echo "Building and starting dev-system" &&
+(cd dev-system && support/build-and-run.sh)
+if [ $? -ne 0 ] ; then
+  echo "Failed to build and start up dev system" >&2
+  exit 1
+fi
+date && echo "Running tests" &&
 CMR_ELASTIC_PORT=9206 lein modules test-out
-curl -XPOST http://localhost:2999/stop; true
+if [ $? -ne 0 ] ; then
+  echo "Failed Tests" >&2
+  exit 1
+fi
+date && echo "Stopping applications" &&
+(curl -XPOST http://localhost:2999/stop; true)

@@ -185,8 +185,8 @@
   (^Point [lon lat lon-rad lat-rad]
           (point lon lat (radians lon) (radians lat) true))
   (^Point [lon lat lon-rad lat-rad geodetic-equality]
-          (pj/assert (double-approx= (radians lon) lon-rad))
-          (pj/assert (double-approx= (radians lat) lat-rad))
+          (pj/assert (double-approx= (radians lon) ^double lon-rad))
+          (pj/assert (double-approx= (radians lat) ^double lat-rad))
 
           (Point. (double lon)
                   (double lat)
@@ -254,11 +254,10 @@
 
 (defn round-point
   "Rounds the point the given number of decimal places"
-  [num-places p]
-  (let [{:keys [lon lat geodetic-equality]} p
-        lon (round num-places lon)
-        lat (round num-places lat)]
-    (point lon lat geodetic-equality)))
+  [num-places ^Point p]
+  (let [lon (round num-places (.lon p))
+        lat (round num-places (.lat p))]
+    (point lon lat (.geodetic_equality p))))
 
 (defn ords->points
   "Takes pairs of numbers and returns a sequence of points.
@@ -292,19 +291,24 @@
       (= (antipodal-lon (.lon p1)) (.lon p2)))))
 
 (defn is-north-pole? [^Point p]
-  (approx= (.lat p) 90.0 0.0000001))
+  (double-approx= (.lat p) 90.0 0.0000001))
 
 (defn is-south-pole? [^Point p]
-  (approx= (.lat p) -90.0 0.0000001))
+  (double-approx= (.lat p) -90.0 0.0000001))
 
 (defn is-pole? [p]
   (or (is-north-pole? p)
       (is-south-pole? p)))
 
-(defn on-antimeridian? [p]
-  (or (= (abs (:lon p)) 180.0)
+(defn on-antimeridian? [^Point p]
+  (or (= (abs (.lon p)) 180.0)
       (is-north-pole? p)
       (is-south-pole? p)))
+
+(defmacro sin-sq
+  "Helper for computing angular distance"
+  [v1 v2]
+  `(sq (sin (/ (- ~v1 ~v2) 2.0))))
 
 (defn angular-distance
   "Returns the angular distance between the points in radians
@@ -315,12 +319,9 @@
         lat1 (.lat_rad p1)
         lon2 (.lon_rad p2)
         lat2 (.lat_rad p2)
-        sin-sq (fn [^double v1 ^double v2]
-                 (sq (sin (/ (- v1 v2) 2.0))))
-        ^double part1 (sin-sq lat1 lat2)
-        part2 (* (cos lat1) (cos lat2) (double (sin-sq lon1 lon2)))]
+        part1 (sin-sq lat1 lat2)
+        part2 (* (cos lat1) (cos lat2) (sin-sq lon1 lon2))]
     (* 2.0 (asin (sqrt (+ part1 part2))))))
-
 
 (defn course
   "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
@@ -385,7 +386,7 @@
            {lon2 :lon lat2 :lat} p2
            np? #(approx= % 90.0 delta)
            sp? #(approx= % -90.0 delta)
-           am? #(approx= (abs %) 180.0 delta)]
+           am? #(approx= (abs ^double %) 180.0 delta)]
        (and (approx= lat1 lat2 delta)
             (or (approx= lon1 lon2 delta)
                 (and (am? lon1) (am? lon2))

@@ -1,3 +1,7 @@
+;; Use the docs profile when generating the HTML documentation for the search application:
+;; lein with-profile docs generate-docs
+;;
+;; All other lein tasks can use the default profile.
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/search-app"
@@ -8,6 +12,7 @@
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.5"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]

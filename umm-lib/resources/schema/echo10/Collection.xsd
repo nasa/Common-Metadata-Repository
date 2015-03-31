@@ -367,7 +367,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />
-            <xs:maxLength value="2048" />
+            <xs:maxLength value="4000" />
           </xs:restriction>
         </xs:simpleType>
       </xs:element>

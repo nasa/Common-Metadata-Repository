@@ -16,6 +16,7 @@
            org.w3c.dom.ls.DOMImplementationLS
            org.w3c.dom.ls.LSSerializer
            org.xml.sax.InputSource
+           org.xml.sax.SAXParseException
            javax.xml.parsers.DocumentBuilderFactory))
 
 (defn remove-xml-processing-instructions
@@ -125,7 +126,7 @@
 
 (defn- sax-parse-exception->str
   "Converts a SaxParseException to a String"
-  [e]
+  [^SAXParseException e]
   (format "Line %d - %s" (.getLineNumber e) (.getMessage e)))
 
 (defn- create-error-handler
@@ -143,15 +144,15 @@
   "Validates the XML against the schema in the given resource. schema-resource should be a classpath
   resource as returned by clojure.java.io/resource.
   Returns a list of errors in the XML schema."
-  [schema-resource xml]
-  (let [factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
+  [^java.net.URL schema-resource xml]
+  (let [^SchemaFactory factory (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
         schema (.newSchema factory schema-resource)
         validator (.newValidator schema)
         errors-atom (atom [])]
     (.setErrorHandler validator (create-error-handler errors-atom))
     (try
       (.validate validator (StreamSource. (StringReader. xml)))
-      (catch org.xml.sax.SAXParseException e
+      (catch SAXParseException e
         ;; An exception can be thrown if it is completely invalid XML.
         (reset! errors-atom [(sax-parse-exception->str e)])))
     (seq @errors-atom)))

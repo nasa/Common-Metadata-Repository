@@ -112,7 +112,7 @@
   (for-all [mbr (gen/such-that (complement m/whole-world?) sgen/mbrs)]
     (let [external-points (m/external-points mbr)]
       (and (>= (count external-points) 3)
-           (every? (complement (partial m/covers-point? :geodetic mbr))
+           (every? (complement (partial m/geodetic-covers-point? mbr))
                    external-points)))))
 
 (defspec geodetic-covers-point-spec 100
@@ -127,8 +127,8 @@
                    (avg [w e]))
           midpoint (p/point midlon (avg [n s]))]
       (and
-        (every? #(m/covers-point? :geodetic mbr %) corner-points)
-        (m/covers-point? :geodetic mbr midpoint)))))
+        (every? #(m/geodetic-covers-point? mbr %) corner-points)
+        (m/geodetic-covers-point? mbr midpoint)))))
 
 (deftest covers-point-test
   (let [examples [;; Normal
@@ -181,9 +181,9 @@
             off-points (apply p/ords->points off-ords)]
 
         (doseq [p on-points]
-          (is (m/covers-point? :geodetic mbr p) (str (pr-str mbr) (pr-str p))))
+          (is (m/geodetic-covers-point? mbr p) (str (pr-str mbr) (pr-str p))))
         (doseq [p off-points]
-          (is (not (m/covers-point? :geodetic mbr p)) (str (pr-str mbr) (pr-str p))))))))
+          (is (not (m/geodetic-covers-point? mbr p)) (str (pr-str mbr) (pr-str p))))))))
 
 (deftest covers-br-test
   (testing "normal mbrs"

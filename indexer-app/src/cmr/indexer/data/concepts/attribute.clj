@@ -12,26 +12,24 @@
 
 (defmethod value->elastic-value :default
   [type value]
-  value)
+  (or value ""))
+
+(defmethod value->elastic-value :boolean
+  [type value]
+  (if (nil? value) "" value))
 
 (defmethod value->elastic-value :datetime
   [type value]
-  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
-  (when-not value (errors/internal-error! "Value is null"))
-  (f/unparse (f/formatters :date-time) value))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (defmethod value->elastic-value :time
   [type value]
-  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
-  (when-not value (errors/internal-error! "Value is null"))
   ;; This relies on the fact that times are parsed into times on day 1970-01-01
-  (f/unparse (f/formatters :date-time) value))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (defmethod value->elastic-value :date
   [type value]
-  ;; clj-time treats nil values as *now*. Adding explicit checks here to avoid weird errors.
-  (when-not value (errors/internal-error! "Value is null"))
-  (f/unparse (f/formatters :date-time) value))
+  (when value (f/unparse (f/formatters :date-time) value)))
 
 (def type->field-name
   "Converts an attribute type into the indexed field name"
@@ -97,9 +95,7 @@
 (defn psas->elastic-docs
   "Converts the psa into a list of elastic documents"
   [collection]
-  (map psa->elastic-doc
-       (filter :parsed-value ; only index those with a value
-               (:product-specific-attributes collection))))
+  (map psa->elastic-doc (:product-specific-attributes collection)))
 
 (defn psa->keywords
   "Converts a PSA into a vector of terms to be used in keyword searches"

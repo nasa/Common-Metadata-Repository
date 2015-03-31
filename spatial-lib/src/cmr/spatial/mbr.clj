@@ -19,6 +19,9 @@
    ^double north
    ^double east
    ^double south
+
+      ;; These are cached for performance improvement
+   corner-points
   ])
 (record-pretty-printer/enable-record-pretty-printing Mbr)
 
@@ -26,22 +29,31 @@
   "Creates a new minimum bounding rectangle"
   [^double west ^double north ^double east ^double south]
   ;; Handle west or east being on the antimeridian.
-  (let [am? #(= (abs %) 180.0)
+  (let [am? #(= (abs ^double %) 180.0)
         [west east] (cond
                       (and (am? west) (am? east))
                       (if (= west east)
                         [west east]
                         [-180.0 180.0])
 
-                      ;; West should always be positive 180.0 if east isn't on AM.
+                      ;; West should always be -180.0 if east isn't on AM.
                       (am? west) [-180.0 east]
 
                       ;; East should always be positive 180.0 if west isnt' on AM.
                       (am? east) [west 180.0]
 
-                      :else [west east])]
+                      :else [west east])
+        corner-points [(p/point west north)
+                       (p/point east north)
+                       (p/point east south)
+                       (p/point west south)]]
 
-    (->Mbr west north east south)))
+    (->Mbr west north east south corner-points)))
+
+(defn corner-points
+  "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
+  [br]
+  (:corner-points br))
 
 (defn crosses-antimeridian? [^Mbr mbr]
   (> (.west mbr) (.east mbr)))
@@ -115,28 +127,34 @@
   (fn [coord-sys mbr p & delta]
     coord-sys))
 
+(defn cartesian-covers-point?
+  ([mbr ^Point p]
+   (cartesian-covers-point? mbr p nil))
+  ([mbr ^Point p delta]
+   (let [delta (or delta COVERS_TOLERANCE)]
+     (and (covers-lat? mbr (.lat p) delta)
+          (covers-lon? :cartesian mbr (.lon p) delta)))))
+
 (defmethod covers-point? :cartesian
-  [coord-sys mbr ^Point p & delta]
-  (let [delta (or (first delta) COVERS_TOLERANCE)]
-    (and (covers-lat? mbr (.lat p) delta)
-         (covers-lon? coord-sys mbr (.lon p) delta))))
+  [_ mbr p & delta]
+  (cartesian-covers-point? mbr p (first delta)))
+
+(defn geodetic-covers-point?
+  ([mbr ^Point p]
+   (geodetic-covers-point? mbr p nil))
+  ([mbr ^Point p delta]
+   (let [delta (or delta COVERS_TOLERANCE)]
+     (or
+       (and (p/is-north-pole? p)
+            (covers-lat? mbr 90.0 delta))
+       (and (p/is-south-pole? p)
+            (covers-lat? mbr -90.0 delta))
+       (and (covers-lat? mbr (.lat p) delta)
+            (covers-lon? :geodetic mbr (.lon p) delta))))))
 
 (defmethod covers-point? :geodetic
-  [coord-sys mbr ^Point p & delta]
-  (let [delta (or (first delta) COVERS_TOLERANCE)]
-    (or
-      (and (p/is-north-pole? p)
-           (covers-lat? mbr 90.0 delta))
-      (and (p/is-south-pole? p)
-           (covers-lat? mbr -90.0 delta))
-      (and (covers-lat? mbr (.lat p) delta)
-           (covers-lon? coord-sys mbr (.lon p) delta)))))
-
-(defn corner-points
-  "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
-  [br]
-  (let [{^double n :north ^double s :south ^double e :east ^double w :west} br]
-    (p/ords->points w,n e,n e,s w,s)))
+  [_ mbr p & delta]
+  (geodetic-covers-point? mbr p (first delta)))
 
 (defn split-across-antimeridian
   "Splits MBRs across the antimeridian. Returns a sequence of the mbrs if it crosses the antimeridian
@@ -271,42 +289,44 @@
                 "should have crossed the antimeridian: "
                 (pr-str mbr))))))
 
-(defn intersects-br?
-  "Returns true if the mbr intersects the other bounding rectangle"
-  [coord-sys ^Mbr mbr ^Mbr other-br]
-  (some identity
-        (for [m1 (split-across-antimeridian mbr)
-              m2 (split-across-antimeridian other-br)]
-          (or (some (partial covers-point? coord-sys m1) (corner-points m2))
-              (some (partial covers-point? coord-sys m2) (corner-points m1))
 
-              ;; Do they form an overlapping t shape?
-              (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} m1
-                    {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} m2]
-                (or (and (< w1 w2)
-                         (> e1 e2)
-                         (> n2 n1)
-                         (< s2 s1))
-                    (and (< w2 w1)
-                         (> e2 e1)
-                         (> n1 n2)
-                         (< s1 s2))))))))
 
 (defn non-crossing-intersects-br?
   "Specialized version of intersects-br? for two mbrs that don't cross the antimeridian.
   Returns true if the mbr intersects the other bounding rectangle."
-  [^Mbr m1 ^Mbr m2]
+  [coord-sys ^Mbr m1 ^Mbr m2]
   (pj/assert (not (or (crosses-antimeridian? m1)
                       (crosses-antimeridian? m2))))
-  (let [{^double w1 :west ^double  n1 :north ^double e1 :east ^double s1 :south} m1
-        {^double w2 :west ^double  n2 :north ^double e2 :east ^double s2 :south} m2
-        range-intersects? (fn [s1 e1 s2 e2]
-                            (or (within-range? s2 s1 e1)
-                                (within-range? e2 s1 e1)
-                                (within-range? s1 s2 e2)))]
-    (and (range-intersects? w1 e1 w2 e2)
-         (range-intersects? s1 n1 s2 n2))))
+  (let [w1 (.west m1)
+        n1 (.north m1)
+        e1 (.east m1)
+        s1 (.south m1)
+        w2 (.west m2)
+        n2 (.north m2)
+        e2 (.east m2)
+        s2 (.south m2)
+        m1-touches-north? (double-approx= n1 90.0 0.0000001)
+        m1-touches-south? (double-approx= s1 -90.0 0.0000001)
+        m2-touches-north? (double-approx= n2 90.0 0.0000001)
+        m2-touches-south? (double-approx= s2 -90.0 0.0000001)]
+    (or (and (range-intersects? w1 e1 w2 e2)
+             (range-intersects? s1 n1 s2 n2))
+        (and (= coord-sys :geodetic)
+             (or (and m1-touches-north? m2-touches-north?)
+                 (and m1-touches-south? m2-touches-south?))))))
 
+(defn intersects-br?
+  "Returns true if the mbr intersects the other bounding rectangle"
+  [coord-sys ^Mbr mbr ^Mbr other-br]
+  (if (and (not (crosses-antimeridian? mbr)) (not (crosses-antimeridian? other-br)))
+    ;; optimized case for mbrs that don't cross the antimeridian
+    (non-crossing-intersects-br? coord-sys mbr other-br)
+    (let [[m1-east m1-west] (split-across-antimeridian mbr)
+          [m2-east m2-west] (split-across-antimeridian other-br)]
+      (or (non-crossing-intersects-br? coord-sys m1-east m2-east)
+          (and m2-west (non-crossing-intersects-br? coord-sys m1-east m2-west))
+          (and m1-west (non-crossing-intersects-br? coord-sys m1-west m2-east))
+          (and m1-west m2-west (non-crossing-intersects-br? coord-sys m1-west m2-west))))))
 
 (defn intersections
   "Returns the intersection of the two minimum bounding rectangles. This could return multiple mbrs
@@ -315,7 +335,7 @@
   (filter identity
           (for [m1-sub (split-across-antimeridian m1)
                 m2-sub (split-across-antimeridian m2)]
-            (when (non-crossing-intersects-br? m1-sub m2-sub)
+            (when (non-crossing-intersects-br? :cartesian m1-sub m2-sub)
               (let [{^double w1 :west ^double n1 :north ^double e1 :east ^double s1 :south} m1-sub
                     {^double w2 :west ^double n2 :north ^double e2 :east ^double s2 :south} m2-sub
                     new-west (max w1 w2)

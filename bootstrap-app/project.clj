@@ -7,6 +7,7 @@
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.3.2"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]

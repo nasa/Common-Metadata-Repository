@@ -14,7 +14,8 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.bootstrap-service :as bs]
             [cmr.bootstrap.services.health-service :as hs]
-            [cmr.common.date-time-parser :as date-time-parser]))
+            [cmr.common.date-time-parser :as date-time-parser]
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
@@ -119,17 +120,6 @@
         (POST "/" {:keys [request-context params]}
           (db-synchronize request-context params)))
 
-      (context "/jobs" []
-        ;; pause all jobs
-        (POST "/pause" {:keys [request-context params headers]}
-          (jobs/pause-jobs (get-in request-context [:system :scheduler]))
-          {:status 204})
-
-        ;; resume all jobs
-        (POST "/resume" {:keys [request-context params headers]}
-          (jobs/resume-jobs (get-in request-context [:system :scheduler]))
-          {:status 204}))
-
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}
           (bulk-index-provider request-context body params))
@@ -137,12 +127,14 @@
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
 
-      (GET "/health" {request-context :request-context :as request}
-        (let [pretty? (api/pretty-request? request)
-              {:keys [ok? dependencies]} (hs/health request-context)]
-          {:status (if ok? 200 503)
-           :headers {"Content-Type" "application/json; charset=utf-8"}
-           :body (json/generate-string dependencies {:pretty pretty?})})))))
+      ;; Add routes for managing jobs.
+      common-routes/job-api-routes
+
+      ;; Add routes for accessing caches
+      common-routes/cache-api-routes
+
+      ;; Add routes for checking health of the application
+      (common-routes/health-api-routes hs/health))))
 
 (defn make-api [system]
   (-> (build-routes system)

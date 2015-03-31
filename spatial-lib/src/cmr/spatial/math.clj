@@ -5,17 +5,32 @@
 
 (primitive-math/use-primitive-operators)
 
-;; Generate function wrappers around java math methods that take a single arg.
-(doseq [f '[cos sin tan atan sqrt acos asin]]
-  (let [math-sym (symbol (str "StrictFastMath/" f))]
-    (eval `(defn ~f ^double [^double v#]
-             (~math-sym v#)))))
+(defmacro cos [v]
+  `(StrictFastMath/cos ~v))
 
-(defn abs ^double [^double v]
-  (Math/abs v))
+(defmacro sin [v]
+  `(StrictFastMath/sin ~v))
 
-(defn atan2 ^double [^double y ^double x]
-  (StrictFastMath/atan2 y x))
+(defmacro tan [v]
+  `(StrictFastMath/tan ~v))
+
+(defmacro atan [v]
+  `(StrictFastMath/atan ~v))
+
+(defmacro sqrt [v]
+  `(StrictFastMath/sqrt ~v))
+
+(defmacro acos [v]
+  `(StrictFastMath/acos ~v))
+
+(defmacro asin [v]
+  `(StrictFastMath/asin ~v))
+
+(defmacro abs [v]
+  `(Math/abs ~v))
+
+(defmacro atan2 [y x]
+  `(StrictFastMath/atan2 ~y ~x))
 
 (def ^:const ^double PI Math/PI)
 
@@ -27,6 +42,16 @@
 
 (def ^:const ^double EARTH_ANGULAR_VELOCITY_RAD_S (/ TAU SOLAR_DAY_S))
 
+(defn even-long?
+  "A copy of the clojure even? function but with long type annotations for primitive math performance."
+  [^long l]
+  (= (rem l 2) 0))
+
+(defn odd-long?
+  "A copy of the clojure odd? function but with long type annotations for primitive math performance."
+  [l]
+  (not (even-long? l)))
+
 (defn radians
   "Converts degrees to radians"
   ^double [^double d]
@@ -37,19 +62,30 @@
   ^double [^double r]
   (* r (/ 180.0 PI)))
 
-(defn sq
+(defmacro sq
   "Returns the square of the given value."
-  ^double [^double v]
-  (* v v))
+  [v]
+  `(* ~v ~v))
 
 (defn round
   "Rounds the value with the given precision"
   ^double [^long precision ^double v]
-  ;; See http://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
-  (-> v
-      bigdec
-      (.setScale precision BigDecimal/ROUND_HALF_UP)
-      (.doubleValue)))
+  ;; There is a slight performance improvement to avoid the use of pow if possible. These are all
+  ;; precision values that we use currently.
+  (let [rounding-multiplier (case precision
+                              4 10000.0
+                              5 100000.0
+                              7 10000000.0
+                              8 100000000.0
+                              11 100000000000.0
+                              ;; else
+                              (Math/pow 10 precision))]
+    (if (< v 0.0)
+      (* (round precision (abs v)) -1.0)
+      ;; Implements rounding in a way that avoids _most_ double precision problems.
+      ;; This will still fail for some values like 0.00499999999999 with 2 precision. It will round that up.
+      ;; This tradeoff is made for performance.
+      (/ (Math/floor (+ (* v rounding-multiplier) 0.500000000001)) rounding-multiplier))))
 
 (defn float->double
   "Converts a float to a double in a way that will keep the double value closer to the original
@@ -94,11 +130,17 @@
   [v]
   (= Float (type v)))
 
-(defn within-range?
+(defmacro within-range?
   "Returns true if v is within min and max."
-  [^double v ^double min ^double max]
-  (and (>= v min)
-       (<= v max)))
+  [v min max]
+  `(and (>= ~v ~min) (<= ~v ~max)))
+
+(defmacro range-intersects?
+  "Returns true if range2 intersects range 1"
+  [r1min r1max r2min r2max]
+  `(or (within-range? ~r2min ~r1min ~r1max)
+       (within-range? ~r2max ~r1min ~r1max)
+       (within-range? ~r1min ~r2min ~r2max)))
 
 (defn avg
   "Computes the average of the numbers"
@@ -115,9 +157,9 @@
   Written as a macro so it doesn't dictate the value types"
   [v min-v max-v]
   `(cond
-    (> ~v ~max-v) ~max-v
-    (< ~v ~min-v) ~min-v
-    :else ~v))
+     (> ~v ~max-v) ~max-v
+     (< ~v ~min-v) ~min-v
+     :else ~v))
 
 (defn mid-lon
   "Returns the middle longitude between two lons. Order matters"
@@ -150,21 +192,20 @@
     [expected n delta]
     "Returns true if n is within a small delta of expected."))
 
-(defn double-approx=
+(defmacro double-approx=
   "Determines if two double values are approximately equal. Created to avoid reflection."
-  ([^double expected ^double n]
-   (double-approx= expected n DELTA))
-  ([^double expected ^double n ^double delta]
-   (<= (abs (- n expected)) delta)))
-
+  ([expected n]
+   `(double-approx= ~expected ~n ~DELTA))
+  ([expected n delta]
+   `(<= (abs (- ~n ~expected)) ~delta)))
 
 (extend-protocol ApproximateEquivalency
   Number
   (approx=
-    ([expected n]
-     (double-approx= expected n))
-    ([expected n delta]
-     (double-approx= expected n delta)))
+    ([expected ^double n]
+     (double-approx= (double expected) n))
+    ([expected ^double n ^double delta]
+     (double-approx= (double expected) n delta)))
 
   clojure.lang.IPersistentMap
   (approx=
@@ -200,7 +241,7 @@
   Returns one of three keywords, :none, :counter-clockwise, or :clockwise, to indicate net direction
   of rotation"
   [angles]
-  (let [angle-delta (fn [^double a1 ^double a2]
+  (let [angle-delta (fn [[^double a1 ^double a2]]
                       (let [a2 (if (< a2 a1)
                                  ;; Shift angle 2 so it is always greater than angle 1. This allows
                                  ;; us to get the real radial distance between angle 2 and angle 1
@@ -223,7 +264,7 @@
         ;; Calculates the amount of change between each angle.
         ;; Positive numbers are turns to the left (counter-clockwise).
         ;; Negative numbers are turns to the right (clockwise)
-        deltas (util/map-n (partial apply angle-delta) 2 1 angles)
+        deltas (util/map-n angle-delta 2 1 angles)
 
         ;; Summing the amounts of turn will give us a net turn. If it's positive then there
         ;; is a net turn to the right. If it's negative then there's a net turn to the left.

@@ -18,6 +18,9 @@
   (are [v error]
        (= {:status 400 :errors [error]}
           (search/find-refs :granule {"attribute[]" v}))
+       "" (am/invalid-name-msg "")
+       "int,alpha" (am/invalid-num-parts-msg)
+
        ",alpha,a" (am/invalid-type-msg "")
        "foo,alpha,a" (am/invalid-type-msg "foo")
        ",alpha,a,b" (am/invalid-type-msg "")
@@ -114,7 +117,7 @@
     (index/wait-until-indexed)
     (testing "search by value"
       (are [items v options]
-           (let [params (merge {"attribute[]" v} options)]
+           (let [params (assoc options "attribute[]" v)]
              (d/refs-match? items (search/find-refs :granule params)))
            [gran1] "string,alpha,ab" nil
            [gran1] "string,alpha,AB" nil
@@ -179,7 +182,7 @@
            "string,bravo,bc," [gran1 gran3]
 
            ;; only max range provided
-           "string,bravo,,bc" [gran2 gran3]
+           "string,bravo,,bc" [gran1 gran2 gran3 gran4]
 
            ;; Range value inheritance
            "string,charlie,foa,foz" [gran3 gran4]))
@@ -199,7 +202,7 @@
            "string,bravo,bc," [gran1 gran3]
 
            ;; only max range provided
-           "string,bravo,,bc" [gran2 gran3]
+           "string,bravo,,bc" [gran1 gran2 gran3 gran4]
 
            ;; Range value inheritance
            "string,charlie,foa,foz" [gran3 gran4]))
@@ -213,7 +216,7 @@
            [gran1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
            [gran1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
            [gran1 gran3] [{:type :range :name "bravo" :value ["bc" nil]}]
-           [gran2 gran3] [{:type :range :name "bravo" :value [nil "bc"]}]
+           [gran1 gran2 gran3 gran4] [{:type :range :name "bravo" :value [nil "bc"]}]
            [gran3 gran4] [{:type :range :name "charlie" :value ["foa" "foz"]}]))
 
     (testing "searching with multiple attribute conditions"
@@ -227,7 +230,7 @@
                  (when operation
                    {"options[attribute][or]" (= operation :or)}))))
 
-           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3 gran4] :or
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
            ; and is the default
@@ -245,7 +248,7 @@
                  query
                  {:snake-kebab? false})))
 
-           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3] :or
+           ["string,alpha,ab" "string,bravo,,bc"] [gran1 gran2 gran3 gran4] :or
            ["string,alpha,ab" "string,bravo,,bc"] [] :and
            ["string,alpha,ab" "string,bravo,bc,"] [gran1] :and
            ; and is the default
@@ -253,11 +256,11 @@
 
     (testing "search granules by additionalAttributes multiple string values with aql"
       (are [items additional-attribs options]
-           (let [condition (merge {:additionalAttributes additional-attribs} options)]
+           (let [condition (assoc options :additionalAttributes additional-attribs)]
              (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
 
-           [gran1 gran2 gran3] [{:type :string :name "alpha" :value "ab"}
-                                {:type :range :name "bravo" :value [nil "bc"]}] {:or true}
+           [gran1 gran2 gran3 gran4] [{:type :string :name "alpha" :value "ab"}
+                                      {:type :range :name "bravo" :value [nil "bc"]}] {:or true}
            [] [{:type :string :name "alpha" :value "ab"}
                {:type :range :name "bravo" :value [nil "bc"]}] {:and true}
            [] [{:type :string :name "alpha" :value "ab"}
@@ -788,3 +791,61 @@
            ;; range inheritance
            [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
+(deftest additional-attribute-search-by-name-test
+  (let [psa1 (dc/psa "alpha" :string)
+        psa2 (dc/psa "beta" :string)
+        psa3 (dc/psa "gamma" :time)
+        psa4 (dc/psa "delta" :string)
+        psa5 (dc/psa "alpha" :time)
+        psa6 (dc/psa "sigma" :string)
+        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4 psa5 psa6]}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["atlantic"])]}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "beta" ["wind"])]}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1
+                                            {:product-specific-attributes [(dg/psa "alpha" ["pacific"])
+                                                                           (dg/psa "gamma" ["01:02:03Z"])]}))
+        gran4 (d/ingest "PROV1" (dg/granule coll2
+                                            {:product-specific-attributes [(dg/psa "delta" ["rain"])]}))
+
+        gran5 (d/ingest "PROV1" (dg/granule coll2 {:product-specific-attributes [(dg/psa "alpha" ["01:02:03Z"])]}))
+        gran6 (d/ingest "PROV1" (dg/granule coll2
+                                            {:product-specific-attributes [(dg/psa "delta" ["cloud"])
+                                                                           (dg/psa "sigma" ["ocean"])]}))]
+    (index/wait-until-indexed)
+
+    (testing "granule psa search by names"
+      (testing "single name"
+        (are [v items options]
+             (let [params (assoc options "attribute[]" v)]
+               (d/refs-match? items (search/find-refs :granule params)))
+             "no_match" [] nil
+             "alpha" [gran1 gran2 gran3 gran4 gran5 gran6] nil
+             "alpha" [gran1 gran2 gran3 gran4 gran5 gran6] {"options[attribute][exclude-collection]" false}
+             "alpha" [gran1 gran3 gran5] {"options[attribute][exclude-collection]" true}
+             "beta" [gran1 gran2 gran3] nil
+             "beta" [gran1 gran2 gran3] {"options[attribute][exclude-collection]" false}
+             "beta" [gran2] {"options[attribute][exclude-collection]" true}
+             "gamma" [gran1 gran2 gran3] nil
+             "gamma" [gran1 gran2 gran3] {"options[attribute][exclude-collection]" false}
+             "gamma" [gran3] {"options[attribute][exclude-collection]" true}
+             "delta" [gran4 gran5 gran6] nil
+             "delta" [gran4 gran5 gran6] {"options[attribute][exclude-collection]" false}
+             "delta" [gran4 gran6] {"options[attribute][exclude-collection]" true}))
+      (testing "multiple names"
+        (are [v items options]
+             (let [params (assoc options "attribute[]" v)]
+               (d/refs-match? items (search/find-refs :granule params)))
+             ["alpha" "sigma"] [gran4 gran5 gran6] nil
+             ["alpha" "sigma"] [gran4 gran5 gran6] {"options[attribute][or]" false}
+             ["alpha" "sigma"] [gran1 gran2 gran3 gran4 gran5 gran6] {"options[attribute][or]" true}
+             ["alpha" "sigma"] [gran1 gran2 gran3 gran4 gran5 gran6] {"options[attribute][or]" true
+                                                                      "options[attribute][exclude-collection]" false}
+             ["alpha" "sigma"] [gran1 gran3 gran5 gran6] {"options[attribute][or]" true
+                                                          "options[attribute][exclude-collection]" true}
+             ["delta" "sigma"] [gran4 gran5 gran6] nil
+             ["delta" "sigma"] [gran4 gran5 gran6] {"options[attribute][or]" false}
+             ["delta" "sigma"] [gran4 gran5 gran6] {"options[attribute][or]" false
+                                                    "options[attribute][exclude-collection]" false}
+             ["delta" "sigma"] [gran6] {"options[attribute][or]" false
+                                        "options[attribute][exclude-collection]" true})))))

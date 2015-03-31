@@ -7,7 +7,7 @@
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
-            [cmr.umm.dif.collection.project :as pj]
+            [cmr.umm.dif.collection.project-element :as pj]
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]

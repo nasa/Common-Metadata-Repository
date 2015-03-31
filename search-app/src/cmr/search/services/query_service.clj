@@ -75,6 +75,7 @@
             [cheshire.core :as json]
             [clojure.string :as s]
             [cmr.spatial.tile :as tile]
+            [cmr.spatial.codec :as spatial-codec]
             [cmr.common.log :refer (debug info warn error)]))
 
 (deftracefn validate-query
@@ -234,15 +235,23 @@
        (:result-format params) provider-holdings {:pretty? (= "true" pretty)
                                                   :echo-compatible? (= "true" echo-compatible)})]))
 
+(defn- shape-param->tile-set
+  "Converts a shape of given type to the set of tiles which the shape intersects"
+  [spatial-type shape]
+  (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
 
 (deftracefn find-tiles-by-geometry
-  "Gets all the tiles for a given geometry"
+  "Gets all the tile coordinates for the given input parameters. The function returns all the tile 
+  coordinates if the input parameters does not include any spatial parameters"
   [context params]
-  (let [query (->>  params
-                    sanitize-params
-                    (pv/validate-parameters :tile)
-                    (p/parameters->query :tile))]
-    ;;TODO: Handle the cases where a user might enter multiple shapes or no shape as input or passes
-    ;;a shape parameter as an array e.g. bounding_box[].
-    (tile/geometry->tiles (get-in query [:condition :shape]))))
-    
+  (let [spatial-params (->> params
+                            remove-empty-params
+                            u/map-keys->kebab-case
+                            (pv/validate-tile-parameters)
+                            (#(select-keys % [:bounding-box :point :line :polygon])))]
+    (if (seq spatial-params)
+      (apply clojure.set/union
+              (for [[param-name values] spatial-params
+                    value (if (sequential? values) values [values])]
+                (shape-param->tile-set param-name value)))
+      (tile/all-tiles))))

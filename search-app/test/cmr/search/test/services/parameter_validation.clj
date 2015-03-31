@@ -22,6 +22,9 @@
                                                     :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
+    (is (= ["Parameter [page_size] was not recognized."] 
+           (pv/unrecognized-tile-params-validation {:page-size 1
+                                                    :point "50, 50"})))
   (testing "invalid options param names"
     (is (= [] (pv/unrecognized-params-in-options-validation :collection valid-params)))
     (is (= ["Parameter [foo] with option was not recognized."]
@@ -128,7 +131,15 @@
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "A,10")))))
   (testing "Non-numeric equator-crossing-longitude"
     (is (= [(com-msg/invalid-msg java.lang.Double "A")]
-           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A"))))))
+           (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
+  
+  ;; Point, Line, Polygon and Bounding-Box
+  (testing "a spatial parameter can be a multi-valued parameter"
+    (is (empty?
+          (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
+  (testing "a geometry parameter which is invalid returns a parsing error"
+    (is (= ["[10.0,-.3] is not a valid URL encoded point"]
+           (pv/point-validation :granule {:point "10.0,-.3"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"

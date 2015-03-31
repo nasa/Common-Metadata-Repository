@@ -10,26 +10,68 @@
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [camel-snake-kebab.core :as csk]
+            [cmr.umm.validation.product-specific-attribute :as psa]))
 
+
+(defn- spatial-field-not-allowed
+  "Create a function which takes in :orbit or :geometries as input and returns an error if the field exists"
+  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
+  (fn [field]
+    (when (field spatial-coverage-ref)
+      {(conj spatial-coverage-path field)
+       [(format
+          "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
+          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+
+(defn- spatial-field-is-required
+  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
+  "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
+  (fn [field]
+    (when-not (field spatial-coverage-ref)
+      {(conj spatial-coverage-path field) 
+       [(format 
+          "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
+          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+
+(defn spatial-matches-granule-spatial-representation
+  "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
+  [field-path spatial-coverage-ref]
+  (let [granule-spatial-representation 
+        (get-in spatial-coverage-ref [:parent :granule-spatial-representation] :no-spatial)
+        is-not-allowed (spatial-field-not-allowed field-path 
+                                                  spatial-coverage-ref 
+                                                  granule-spatial-representation)
+        is-required (spatial-field-is-required field-path 
+                                               spatial-coverage-ref 
+                                               granule-spatial-representation)
+        errors (case granule-spatial-representation 
+                 :no-spatial [(is-not-allowed :orbit) 
+                              (is-not-allowed :geometries)]
+                 (:geodetic :cartesian) [(is-required :geometries) 
+                                         (is-not-allowed :orbit)]
+                 :orbit [(is-not-allowed :geometries) 
+                         (is-required :orbit)])]
+    (apply merge (remove nil? errors))))
 
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
   [spatial-coverage]
   (let [{:keys [geometries]} spatial-coverage
         spatial-representation (get-in spatial-coverage [:parent :granule-spatial-representation])]
-
     (assoc spatial-coverage
            :geometries
            (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
-  (v/pre-validation
+  [spatial-matches-granule-spatial-representation
+   (v/pre-validation
     ;; The spatial representation has to be set on the geometries before the conversion because
-    ;;polygons etc do not know whether they are geodetic or not.
+    ;; polygons etc do not know whether they are geodetic or not.
     set-geometries-spatial-representation
-    {:geometries (v/every sv/spatial-validation)}))
+    {:geometries (v/every sv/spatial-validation)})])
 
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
@@ -137,7 +179,8 @@
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]
-    :product-specific-attributes (vu/has-parent-validator :name "Product Specific Attribute")
+    :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
+                                  (v/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
    projects-reference-collection])

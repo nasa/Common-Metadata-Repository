@@ -1,1 +1,3 @@
 */testreports.xml
+/target
+/.lein-*

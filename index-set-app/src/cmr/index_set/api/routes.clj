@@ -15,7 +15,7 @@
             [cmr.index-set.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]
             [cmr.acl.core :as acl]
-            [cmr.acl.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- build-routes [system]
   (routes
@@ -55,20 +55,16 @@
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
+      ;; add routes for checking health of the application
+      (common-routes/health-api-routes index-svc/health)
+
       ;; delete all of the indices associated with index-sets and index-set docs in elastic
       (POST "/reset" {request-context :request-context params :params headers :headers}
         (let [context (acl/add-authentication-to-context request-context params headers)]
           (acl/verify-ingest-management-permission context :update)
           (cache/reset-caches request-context)
           (index-svc/reset request-context)
-          {:status 204}))
-
-      (GET "/health" {request-context :request-context :as request}
-        (let [pretty? (api/pretty-request? request)
-              {:keys [ok? dependencies]} (index-svc/health request-context)]
-          {:status (if ok? 200 503)
-           :headers {"Content-Type" "application/json; charset=utf-8"}
-           :body (json/generate-string dependencies {:pretty pretty?})})))
+          {:status 204})))
 
     (route/not-found "Not Found")))
 

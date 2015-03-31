@@ -436,34 +436,28 @@
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
+(defn- spatial-validation
+  "Validate a geometry of the given type in the params"
+  [params spatial-type]
+  (when-let [spatial-param (spatial-type params)]
+    (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
+
 (defn polygon-validation
-  [concept-type params]
-  (some->> params
-           :polygon
-           (spatial-codec/url-decode :polygon)
-           :errors))
+  ([params] (polygon-validation nil params))
+  ([_ params] (spatial-validation params :polygon)))
 
 (defn bounding-box-validation
-  [concept-type params]
-  (some->> params
-           :bounding-box
-           (spatial-codec/url-decode :bounding-box)
-           :errors))
+  ([params] (bounding-box-validation nil params))
+  ([_ params] (spatial-validation params :bounding-box)))
 
 (defn point-validation
-  [concept-type params]
-  (some->> params
-           :point
-           (spatial-codec/url-decode :point)
-           :errors))
+  ([params] (point-validation nil params))
+  ([_ params] (spatial-validation params :point)))
 
 (defn line-validation
-  [concept-type params]
-  (some->> params
-           :line
-           (spatial-codec/url-decode :line)
-           :errors))
-
+  ([params] (line-validation nil params))
+  ([_ params] (spatial-validation params :line)))
+  
 (defn unrecognized-aql-params-validation
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
@@ -588,7 +582,8 @@
    boolean-value-validation
    polygon-validation
    bounding-box-validation
-   point-validation])
+   point-validation
+   line-validation])
 
 (def aql-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL search.
@@ -662,6 +657,33 @@
         errors (concat type-errors
                        (mapcat #(% :granule regular-params) parameter-validations)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
+    (when (seq errors)
+      (err/throw-service-errors :bad-request errors)))
+  params)
+
+(def valid-tile-search-params
+  "Valid parameters for tile search"
+   #{:bounding-box 
+     :line 
+     :point 
+     :polygon})
+
+(defn unrecognized-tile-params-validation
+  "Validates that no invalid parameters were supplied to tile search"
+  [params]
+  (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
+         (set/difference (set (keys params)) valid-tile-search-params)))
+
+(defn validate-tile-parameters
+  "Validates the query parameters passed in with a tile search. Throws exceptions to send 
+  to the user if a validation fails. Returns parameters if validation is successful."
+  [params]
+  (let [errors (mapcat #(% params) 
+                       [unrecognized-tile-params-validation
+                        polygon-validation 
+                        bounding-box-validation 
+                        point-validation 
+                        line-validation])]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
   params)

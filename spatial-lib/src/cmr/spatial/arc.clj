@@ -12,8 +12,8 @@
   (:import cmr.spatial.point.Point))
 (primitive-math/use-primitive-operators)
 
-(def APPROXIMATION_DELTA
-  "The delta to use when needing to compare things approximately."
+(def ^:const ^double APPROXIMATION_DELTA
+  "The delta in degreese to use when needing to compare things approximately."
   0.0000001)
 
 (defrecord GreatCircle
@@ -181,7 +181,7 @@
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n (partial apply arc) 2 1 points))
+  (util/map-n (fn [[p1 p2]] (arc p1 p2)) 2 1 points))
 
 (defn ords->arc
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an arc."
@@ -301,7 +301,7 @@
                       (p/point (degrees lon3-2) lat lon3-2 lat3)]]
           (->> points
                (filterv (fn [p]
-                          (some #(mbr/covers-point? :geodetic % p)
+                          (some #(mbr/geodetic-covers-point? % p)
                                 (mbrs arc))))
                set))))))
 
@@ -309,7 +309,7 @@
   "Returns true if the point is on the arc"
   [arc point]
   (let [{:keys [west-point east-point]} arc]
-    (and (some #(mbr/covers-point? :geodetic % point) (mbrs arc))
+    (and (some #(mbr/geodetic-covers-point? % point) (mbrs arc))
          (or (= west-point point)
              (= east-point point)
              ;; If the arc is vertical and the point is in the mbr of the arc then it's on the arc
@@ -319,42 +319,6 @@
              (approx= point
                       (point-at-lon arc (:lon point))
                       APPROXIMATION_DELTA)))))
-
-(comment
-
-  (def a1 (ords->arc -45 30 0 0))
-  (def a2 (ords->arc -45 0 0 30))
-
-  (midpoint a1)
-  (midpoint a2)
-
-  (lat-segment-intersections
-    a1 16.175960878620344 -50 0)
-
-  (point-at-lon a1 -20.772845524037166)
-
-  (def ip (p/point -20.772845524037166,16.150056475830688))
-  (def aip (p/point -22.5,17.351921757240685))
-
-  (def ^double offset (p/angular-distance ip aip))
-  (def ^double total-dist (p/angular-distance (:west-point a1) (:east-point a1)))
-  (def ^double percent-of-total (*(/ ^double offset ^double total-dist)))
-
-  ;; An arc farther shorter than a2 but along the same cartesian line
-  (def a3 (ords->arc -30 10 -15 20))
-
-  (intersections a3 a1)
-  (def ip-a3 (p/point -20.945413480816008 16.271461041452543))
-
-  (def ^double offset-a3 (p/angular-distance ip-a3 aip))
-  (def ^double percent-of-total-a3 (* 100.0 (/ ^double offset-a3 ^double total-dist)))
-
-
-
-
-)
-
-
 (defn midpoint
   "Finds the midpoint of the arc."
   [^Arc arc]
@@ -399,10 +363,10 @@
         a1-br2 (.mbr2 a1)
         a2-br1 (.mbr1 a2)
         a2-br2 (.mbr2 a2)]
-    (filter (fn [p] (and (or (mbr/covers-point? :geodetic a1-br1 p)
-                             (and a1-br2 (mbr/covers-point? :geodetic a1-br2 p)))
-                         (or (mbr/covers-point? :geodetic a2-br1 p)
-                             (and a2-br2 (mbr/covers-point? :geodetic a2-br2 p)))))
+    (filter (fn [p] (and (or (mbr/geodetic-covers-point? a1-br1 p)
+                             (and a1-br2 (mbr/geodetic-covers-point? a1-br2 p)))
+                         (or (mbr/geodetic-covers-point? a2-br1 p)
+                             (and a2-br2 (mbr/geodetic-covers-point? a2-br2 p)))))
             points)))
 
 (defn lat-segment-intersections
@@ -416,8 +380,8 @@
     (let [lat-seg-mbr (mbr/mbr lon-west lat lon-east lat)
           brs (mbrs arc)]
       (filter (fn [p]
-                (and (some #(mbr/covers-point? :geodetic % p) brs)
-                     (mbr/covers-point? :geodetic lat-seg-mbr p)))
+                (and (mbr/geodetic-covers-point? lat-seg-mbr p)
+                     (some #(mbr/geodetic-covers-point? % p) brs)))
               points))))
 
 (defn intersects-lat-segment?
@@ -438,22 +402,31 @@
     (points-within-arc-bounding-rectangles
       points a1 a2)))
 
-(defn default-arc-intersections [^Arc a1 ^Arc a2]
-  (let [pv1 (.plane_vector ^GreatCircle (.great_circle a1))
-        pv2 (.plane_vector ^GreatCircle (.great_circle a2))
-        ;; Compute the great circle intersection vector. This is the cross product of the vectors
-        ;; defining the great circle planes.
-        intersection-vector (v/cross-product pv1 pv2)
-        intersection-point1 (c/vector->point intersection-vector)
-        intersection-point2 (p/antipodal intersection-point1)]
-    ;; Return the intersection points that are covered by bounding rectangles from both arcs
-    (points-within-arc-bounding-rectangles
-      [intersection-point1 intersection-point2]
-      a1 a2)))
+(defn- arc-mbrs-intersect?
+  "Returns true if any of the arc mbrs intersect"
+   [^Arc a1 ^Arc a2]
+   (let [a1m1 (.mbr1 a1)
+         a1m2 (.mbr2 a1)
+         a2m1 (.mbr1 a2)
+         a2m2 (.mbr2 a2)]
+     (or (mbr/intersects-br? :geodetic a1m1 a2m1)
+         (and a2m2 (mbr/intersects-br? :geodetic a1m1 a2m2))
+         (and a1m2 (mbr/intersects-br? :geodetic a1m2 a2m1))
+         (and a1m2 a2m2 (mbr/intersects-br? :geodetic a1m2 a2m2)))))
 
-;; Performance enhancement: Add a bounding rectangle's intersects check first.
-;; Actually that might not help anything. When we're searching in elastic we'll only find those
-;; items where the rings bounding rectangles intersect. Still might be worth it to check with arcs though.
+(defn default-arc-intersections [^Arc a1 ^Arc a2]
+  (when (arc-mbrs-intersect? a1 a2)
+    (let [pv1 (.plane_vector ^GreatCircle (.great_circle a1))
+          pv2 (.plane_vector ^GreatCircle (.great_circle a2))
+          ;; Compute the great circle intersection vector. This is the cross product of the vectors
+          ;; defining the great circle planes.
+          intersection-vector (v/cross-product pv1 pv2)
+          intersection-point1 (c/vector->point intersection-vector)
+          intersection-point2 (p/antipodal intersection-point1)]
+      ;; Return the intersection points that are covered by bounding rectangles from both arcs
+      (points-within-arc-bounding-rectangles
+        [intersection-point1 intersection-point2]
+        a1 a2))))
 
 (defn intersections
   "Returns a list of the points where the two arcs intersect."

@@ -254,3 +254,9 @@
   [geometry]
   (let [geometry (d/calculate-derived geometry)]
     (keep  #(when (intersects? % geometry) (:coordinates %)) @modis-sin-tiles)))
+
+(defn all-tiles
+  "Gets all MODIS Sinusoidal Tiles as a vector of tuples, each tuple being in the format [h v] 
+  where h is the column and v is the row of a tile in the MODIS Sinusoidal grid."
+  []
+  (map :coordinates @modis-sin-tiles))
