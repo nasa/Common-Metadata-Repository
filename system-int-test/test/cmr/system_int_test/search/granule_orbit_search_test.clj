@@ -15,27 +15,104 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
-            [cmr.spatial.codec :as codec]))
+            [cmr.spatial.codec :as codec]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.system-int-test.search.ge-helper :as ge-helper]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn- make-gran
-  [coll ur asc-crossing start-lat start-dir end-lat end-dir]
-  (let [orbit (dg/orbit
-                asc-crossing
-                start-lat
-                start-dir
-                end-lat
-                end-dir)]
-    (d/ingest
-      "PROV1"
-      (dg/granule
-        coll
-        {:granule-ur ur
-         :spatial-coverage (apply
-                             dg/spatial
-                             orbit
-                             nil)}))))
+  ([coll ur asc-crossing start-lat start-dir end-lat end-dir]
+   (make-gran coll ur asc-crossing start-lat start-dir end-lat end-dir {}))
+  ([coll ur asc-crossing start-lat start-dir end-lat end-dir other-attribs]
+   (let [orbit (dg/orbit
+                 asc-crossing
+                 start-lat
+                 start-dir
+                 end-lat
+                 end-dir)]
+     (d/ingest
+       "PROV1"
+       (dg/granule
+         coll
+         (merge {:granule-ur ur
+                 :spatial-coverage (apply
+                                     dg/spatial
+                                     orbit
+                                     nil)}
+                other-attribs))))))
+
+(defn ingest-orbit-coll-and-granule
+  []
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:entry-title "orbit-params1"
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit {:swath-width 2
+                                                                 :period 96.7
+                                                                 :inclination-angle 94
+                                                                 :number-of-orbits 0.25
+                                                                 :start-circular-latitude
+                                                                 -50
+                                                                 ; 0
+                                                                 }})}))]
+
+    [coll (make-gran coll "gran1" 70.80471 -50 :asc 50 :asc)]))
+
+
+
+(defn mbr-finds-granule?
+  [mbr]
+  (let [resp (search/find-refs :granule {:bounding-box (codec/url-encode mbr) :page-size 0})]
+    (> (:hits resp) 0)))
+
+(defn create-mbrs
+  ([]
+   (create-mbrs -180.0 180.0 -90.0 90.0 10.0))
+  ([min-lon max-lon min-lat max-lat step]
+  (for [[west east] (partition 2 1 (range min-lon (inc max-lon) step))
+        [south north] (partition 2 1 (range min-lat (inc max-lat) step))]
+    (m/mbr west north east south))))
+
+(comment
+
+
+  ;; 1. Perform setup
+  ;; evaluate this block
+  ;; First modify the metadata in ingest-orbit-coll-and-granule if you want.
+  (do
+    (dev-sys-util/reset)
+    (taoensso.timbre/set-level! :warn) ; turn down log level
+    (ingest/create-provider "provguid1" "PROV1")
+    (ingest-orbit-coll-and-granule))
+
+  ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
+  (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
+  (count (create-mbrs))
+
+  ;; 2. Evaluate this block to find all the mbrs.
+  ;; It will print out "Elapsed time: XXXX msecs" when it's done
+  (def matching-mbrs
+    (future (time (doall (filter mbr-finds-granule? (create-mbrs 45.0 90.0 -55.0 55.0 3))))))
+
+  ;; How many were found? This will block on the future
+  (count @matching-mbrs)
+
+  ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
+  ;; Google Earth will open when you evaluate it. (as long as you've installed it)
+  ;; You can give different tests unique names. Otherwise it will overwrite the file.
+  (ge-helper/display-shapes "start_circ_neg_50.kml" @matching-mbrs)
+  (ge-helper/display-shapes "start_circ_0.kml" @matching-mbrs)
+
+
+
+
+
+  )
+
+
+
+
 
 (deftest orbit-search
   (let [;; orbit parameters
