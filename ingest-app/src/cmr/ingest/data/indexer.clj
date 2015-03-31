@@ -12,7 +12,8 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
             [cmr.message-queue.services.queue :as queue]
-            [cmr.acl.core :as acl]))
+            [cmr.acl.core :as acl]
+            [clojail.core :as timeout]))
 
 (defn- get-headers
   "Gets the headers to use for communicating with the indexer."
@@ -36,14 +37,27 @@
                 delete-url status response)))
     response))
 
+(def ^:const publish-timeout-ms
+  "Number of milliseconds to wait for a publish request to be confirmed before considering the
+  request timed out."
+  30000)
+
 (defn- put-message-on-queue
-  "Put an index operation on the message queue"
-  [context msg]
-  (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/index-queue-name)]
-    (when-not (queue/publish queue-broker queue-name msg)
-      (errors/internal-error!
-        (str "Index queue broker refused queue message " msg)))))
+  "Put an index operation on the message queue. Waits up to timeout-ms before considering the
+  request failed. Throws an internal error if the message fails to be put on the queue."
+  ([context msg]
+   (put-message-on-queue context msg publish-timeout-ms))
+  ([context msg timeout-ms]
+   (let [queue-broker (get-in context [:system :queue-broker])
+         queue-name (config/index-queue-name)]
+     (try
+       (timeout/thunk-timeout (partial queue/publish queue-broker queue-name msg) timeout-ms)
+       (when-not (queue/publish queue-broker queue-name msg)
+         (errors/internal-error!
+           (str "Index queue broker refused queue message " msg)))
+       (catch java.util.concurrent.TimeoutException e
+         (errors/internal-error!
+           (str "Request timed out when attempting to publish message: " msg)))))))
 
 (defmulti index-concept-with-method
   "Index the concept using an http request or the indexing queue"
@@ -63,7 +77,10 @@
                                            :connection-manager (transmit-conn/conn-mgr conn)})
         status (:status response)]
     (when-not (= 201 status)
-      (errors/internal-error! (str "Operation to index a concept failed. Indexer app response status code: "  status  " " response)))))
+      (errors/internal-error!
+        (format "Operation to index a concept failed. Indexer app response status code: %d %s"
+                status
+                response)))))
 
 (defmethod index-concept-with-method :queue
   [context concept-id revision-id]

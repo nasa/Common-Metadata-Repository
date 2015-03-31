@@ -42,8 +42,7 @@
   [n]
   (* 1000 (nth (config/rabbit-mq-ttls) (dec n))))
 
-(def ^{:const true}
-  default-exchange-name "")
+(def ^:const default-exchange-name "")
 
 (defn- attempt-retry
   "Retry a message if it has not already exceeded the allowable retries"
@@ -59,9 +58,9 @@
             ttl (wait-queue-ttl (inc retry-count))]
         (info "Message" (pr-str msg) "re-queued with response:" (pr-str (:message resp)))
         (info (format "Retrying with retry-count =%d on queue %s with ttl = %d"
-                       (inc retry-count)
-                       wait-q
-                       ttl))
+                      (inc retry-count)
+                      wait-q
+                      ttl))
         (queue/publish queue-broker wait-q msg)
         (lb/ack ch delivery-tag)))))
 
@@ -79,11 +78,11 @@
           :retry (attempt-retry queue-broker ch queue-name
                                 routing-key msg delivery-tag resp)
           :failure (do
-                  ;; bad data - nack it
-                  (error (format "Message failed processing with error '%s', it has been removed from the message queue. Message details: %s"
-                          (:message resp)
-                           msg))
-                  (lb/nack ch delivery-tag false false))))
+                     ;; bad data - nack it
+                     (error (format "Message failed processing with error '%s', it has been removed from the message queue. Message details: %s"
+                                    (:message resp)
+                                    msg))
+                     (lb/nack ch delivery-tag false false))))
       (catch Throwable e
         (error "Message processing failed for message" (pr-str msg) "with error:"
                (.getMessage e))
@@ -261,11 +260,11 @@
                                          :port (config/rabbit-mq-port)
                                          :username (config/rabbit-mq-user)
                                          :password (config/rabbit-mq-password)
-                                         ;:queues ["test.simple"]})]
-                                         })]
+                                         :queues ["test.simple"]
+                                         :ttls [1 1 1 1 1]})]
              (lifecycle/start q {})))
 
-    (defn test-message-handler
+    (defn random-message-handler
       [msg]
       (info "Test handler")
       (let [val (rand)
@@ -276,7 +275,15 @@
 
         rval))
 
-    (queue/subscribe q "test.simple" test-message-handler {})
+    (defn sleep-success-message-handler
+      [msg]
+      (let [sleep-secs 2]
+        (Thread/sleep (* 1000 sleep-secs))
+        ; (info "Test handler - finished sleeping")
+        {:status :success}))
+
+    (queue/subscribe q "test.simple" sleep-success-message-handler {})
+
 
     (doseq [n (range 0 1000)
             :let [concept-id (str "C" n "-PROV1")
@@ -285,11 +292,14 @@
                        :revision-id 1}]]
       (queue/publish q "test.simple" msg))
 
-    )
+    (info "Finished publishing messages for processing"))
+
 
   (queue/create-queue q "cmr_index.queue")
 
   (queue/message-count q "test.simple")
+
+  (delete-queue q "test.simple")
 
   (delete-queue q "cmr_index.queue")
 
@@ -298,5 +308,3 @@
   (lifecycle/stop q {})
 
   )
-
-

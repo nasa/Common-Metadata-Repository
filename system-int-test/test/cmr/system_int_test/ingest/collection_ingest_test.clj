@@ -291,3 +291,11 @@
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
+
+(comment
+    (ingest/create-provider "provguid1" "PROV1")
+    (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
+  (doseq [n (range 0 10000)]
+    (ingest/ingest-concept (dc/collection-concept {})))
+  )
+
