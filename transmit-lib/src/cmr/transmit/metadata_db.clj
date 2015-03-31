@@ -11,9 +11,6 @@
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]))
 
-(def token-header
-  "echo-token")
-
 (defn get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
@@ -186,7 +183,7 @@
     (client/post request-url
                  {:body (format "{\"provider-id\": \"%s\"}" provider-id)
                   :content-type :json
-                  :headers {token-header (config/echo-system-token)}
+                  :headers {config/token-header (config/echo-system-token)}
                   :throw-exceptions false})))
 
 (defn create-provider
@@ -205,7 +202,7 @@
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/providers/" provider-id)]
     (client/delete request-url {:throw-exceptions false
-                                :headers {token-header (config/echo-system-token)}})))
+                                :headers {config/token-header (config/echo-system-token)}})))
 
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."

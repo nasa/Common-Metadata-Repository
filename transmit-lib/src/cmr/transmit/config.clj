@@ -4,6 +4,8 @@
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
 
+(def token-header
+  "echo-token")
 
 (defmacro def-app-conn-config
   "Defines three configuration entries for an application for the host, port and relative root URL"

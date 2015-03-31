@@ -42,7 +42,7 @@
               :queue-broker (when (config/use-index-queue?)
                               (rmq/create-queue-broker (assoc (rmq-conf/default-config)
                                                               :queues [(config/index-queue-name)])))}]
-     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest]))))
+     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest :search]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

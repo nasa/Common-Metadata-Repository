@@ -55,7 +55,9 @@
   (let [collection (validate-and-parse-collection-concept context concept)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
-    (v/validate-business-rules context coll-concept)
+    (v/validate-business-rules
+      context
+      (assoc coll-concept :additional-attributes (:product-specific-attributes collection)))
     coll-concept))
 
 (defn- validate-granule-collection-ref

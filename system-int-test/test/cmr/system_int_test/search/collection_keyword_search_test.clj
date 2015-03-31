@@ -15,7 +15,7 @@
         psa2 (dc/psa "bravo" :string "bf")
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
-        psa5 (dc/psa "novalue" :string nil "description")
+        psa5 (assoc (dc/psa "novalue" :string) :description "description")
         p1 (dc/platform "platform_SnB" "platform_Ln B" nil
                         (dc/instrument "isnA" "ilnA" "itechniqueA"
                                        (dc/sensor "ssnA" "slnA")

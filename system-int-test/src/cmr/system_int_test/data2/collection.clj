@@ -28,14 +28,21 @@
   ([name type]
    (psa name type nil))
   ([name type value]
-   (psa name type value "Generated"))
-  ([name type value desc]
    (c/map->ProductSpecificAttribute
      {:name name
-      :description desc
+      :description "Generated"
       :data-type type
       :parsed-value value
-      :value (psa/gen-value type value)})))
+      :value (psa/gen-value type value)}))
+  ([name type minv maxv]
+   (c/map->ProductSpecificAttribute
+     {:name name
+      :description "Generated"
+      :data-type type
+      :parsed-parameter-range-begin minv
+      :parsed-parameter-range-end maxv
+      :parameter-range-begin (psa/gen-value type minv)
+      :parameter-range-end (psa/gen-value type maxv)})))
 
 (defn two-d
   "Creates two-d-coordinate-system specific attribute"
