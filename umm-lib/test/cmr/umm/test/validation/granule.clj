@@ -9,7 +9,6 @@
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.services.errors :as e]
-            [cmr.common.util :as u]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn assert-valid-gran
@@ -80,6 +79,8 @@
 (deftest granule-spatial-representation
   (let [collection-with-geodetic (make-collection {:spatial-coverage 
                                                    {:granule-spatial-representation :geodetic}})
+        collection-with-cartesian (make-collection {:spatial-coverage 
+                                                   {:granule-spatial-representation :cartesian}})
         collection-with-orbit (make-collection {:spatial-coverage 
                                                 {:granule-spatial-representation :orbit 
                                                  :orbit-parameters {:inclination-angle 98.2
@@ -98,59 +99,59 @@
                                                                    :end-direction :desc})})})
         granule-with-no-geometry (make-granule {:spatial-coverage (c/map->SpatialCoverage {})})]
     (testing "granule spatial does not match with granule spatial representation"
-      (u/are2 [collection granule expected-errors] 
-              (assert-multiple-invalid-gran collection granule expected-errors)
-              
-              "collection:geodetic, granule:no geometry"
-              collection-with-geodetic granule-with-no-geometry 
-              [{:path [:spatial-coverage :geometries] 
-                :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
-              
-              "collection:orbit, granule:no geometry"
-              collection-with-orbit granule-with-no-geometry 
-              [{:path [:spatial-coverage :orbit] 
-                :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-              
-              "collection:orbit, granule:geometry"
-              collection-with-orbit granule-with-geometry  
-              [{:path [:spatial-coverage :geometries]
-                :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
-               {:path [:spatial-coverage :orbit]
-                :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-              
-              "collection:no-spatial, granule: geometry"
-              collection-with-no-spatial granule-with-geometry 
-              [{:path [:spatial-coverage :geometries]
-                :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]
-              
-              "collection:geodetic, granule:orbit"
-              collection-with-geodetic granule-with-orbit 
-              [{:path [:spatial-coverage :orbit]
-                :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
-               {:path [:spatial-coverage :geometries]
-                :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
-               {:path nil
-                :errors ["The orbit parameters in the parent collection must be defined for granules with orbit to be ingested."]}] 
-              
-              "collection:no-spatial, granule:orbit"
-              collection-with-no-spatial granule-with-orbit 
-              [{:path [:spatial-coverage :orbit] 
-                :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}
-               {:path nil
-                :errors ["The orbit parameters in the parent collection must be defined for granules with orbit to be ingested."]}]))
+      (are [collection granule expected-errors] 
+           (= (set (map e/map->PathErrors expected-errors))
+              (set (v/validate-granule collection granule)))
+           
+           collection-with-geodetic granule-with-no-geometry 
+           [{:path [:spatial-coverage :geometries] 
+             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
+           
+           collection-with-orbit granule-with-no-geometry 
+           [{:path [:spatial-coverage :orbit] 
+             :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
+           
+           collection-with-cartesian granule-with-no-geometry 
+           [{:path [:spatial-coverage :geometries] 
+             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
+           
+           collection-with-orbit granule-with-geometry  
+           [{:path [:spatial-coverage :geometries]
+             :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
+            {:path [:spatial-coverage :orbit]
+             :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
+           
+           collection-with-no-spatial granule-with-geometry 
+           [{:path [:spatial-coverage :geometries]
+             :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]
+           
+           collection-with-geodetic granule-with-orbit 
+           [{:path [:spatial-coverage :orbit]
+             :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
+            {:path [:spatial-coverage :geometries]
+             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
+           
+           collection-with-cartesian granule-with-orbit 
+           [{:path [:spatial-coverage :orbit]
+             :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}
+            {:path [:spatial-coverage :geometries]
+             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}] 
+           
+           collection-with-no-spatial granule-with-orbit 
+           [{:path [:spatial-coverage :orbit] 
+             :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]))
     
     (testing "granule spatial matches with granule spatial representation"
-      (u/are2 [collection granule] 
-              (assert-valid-gran collection granule)
-              
-              "collection:geodetic, granule:geometry"
-              collection-with-geodetic granule-with-geometry
-              
-              "collection:orbit, granule:orbit"
-              collection-with-orbit granule-with-orbit
-              
-              "collection:no-spatial, granule: no-geometry"
-              collection-with-no-spatial granule-with-no-geometry))))
+      (are [collection granule]
+           (is (empty? (v/validate-granule collection granule)))
+           
+           collection-with-geodetic granule-with-geometry
+           
+           collection-with-cartesian granule-with-geometry
+           
+           collection-with-orbit granule-with-orbit
+           
+           collection-with-no-spatial granule-with-no-geometry))))
 
 (defn granule-with-temporal
   [a b]
