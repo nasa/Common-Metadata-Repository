@@ -331,11 +331,6 @@
    max-value
    ])
 
-(defrecord GranuleAttributeNameCondition
-  [
-   name
-   ])
-
 (def default-sort-keys
   {:granule [{:field :provider-id :order :asc}
              {:field :start-date :order :asc}]

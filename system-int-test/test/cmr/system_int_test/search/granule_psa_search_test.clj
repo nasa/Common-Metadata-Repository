@@ -18,6 +18,7 @@
   (are [v error]
        (= {:status 400 :errors [error]}
           (search/find-refs :granule {"attribute[]" v}))
+       "" (am/invalid-name-msg "")
        "int,alpha" (am/invalid-num-parts-msg)
 
        ",alpha,a" (am/invalid-type-msg "")
@@ -116,7 +117,7 @@
     (index/wait-until-indexed)
     (testing "search by value"
       (are [items v options]
-           (let [params (merge {"attribute[]" v} options)]
+           (let [params (assoc options "attribute[]" v)]
              (d/refs-match? items (search/find-refs :granule params)))
            [gran1] "string,alpha,ab" nil
            [gran1] "string,alpha,AB" nil
@@ -255,7 +256,7 @@
 
     (testing "search granules by additionalAttributes multiple string values with aql"
       (are [items additional-attribs options]
-           (let [condition (merge {:additionalAttributes additional-attribs} options)]
+           (let [condition (assoc options :additionalAttributes additional-attribs)]
              (d/refs-match? items (search/find-refs-with-aql :granule [condition])))
 
            [gran1 gran2 gran3 gran4] [{:type :string :name "alpha" :value "ab"}
@@ -816,7 +817,7 @@
     (testing "granule psa search by names"
       (testing "single name"
         (are [v items options]
-             (let [params (merge {"attribute[]" v} options)]
+             (let [params (assoc options "attribute[]" v)]
                (d/refs-match? items (search/find-refs :granule params)))
              "no_match" [] nil
              "alpha" [gran1 gran2 gran3 gran4 gran5 gran6] nil
@@ -833,7 +834,7 @@
              "delta" [gran4 gran6] {"options[attribute][exclude-collection]" true}))
       (testing "multiple names"
         (are [v items options]
-             (let [params (merge {"attribute[]" v} options)]
+             (let [params (assoc options "attribute[]" v)]
                (d/refs-match? items (search/find-refs :granule params)))
              ["alpha" "sigma"] [gran4 gran5 gran6] nil
              ["alpha" "sigma"] [gran4 gran5 gran6] {"options[attribute][or]" false}
