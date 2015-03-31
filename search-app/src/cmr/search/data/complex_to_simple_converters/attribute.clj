@@ -98,7 +98,7 @@
     [condition context]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
-          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          name-cond (qm/string-condition :name attrib-name true false)
           and-cond (gc/and-conds [name-cond value-filter])]
       (qm/nested-condition :attributes and-cond)))
 
@@ -107,6 +107,6 @@
     [condition context]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
-          name-cond (qm/map->NumericValueCondition {:field :name :value attrib-name})
+          name-cond (qm/string-condition :name attrib-name true false)
           and-cond (gc/and-conds [name-cond range-filter])]
       (qm/nested-condition :attributes and-cond))))
