@@ -106,6 +106,7 @@
   (update-in search-map [:params] assoc
              :collection-concept-id collection-concept-id
              "options[attribute][exclude_collection]" true
+             "options[attribute][exclude_boundary]" true
              :page-size 1
              :page-num 1))
 

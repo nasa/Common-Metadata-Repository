@@ -360,7 +360,7 @@ Lines are provided as a list of comma separated values representing coordinates 
 
     curl "%CMR-ENDPOINT%/collections?line=-0.37,-14.07,4.75,1.27,25.13,-15.51"
 
-Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon. 
+Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
 #### Sorting Collection Results
 
@@ -441,6 +441,8 @@ Find an additional attribute with name "X\Y\Z" with value 7.
     curl "%CMR-ENDPOINT%/granules?attribute\[\]=float,X\Y\Z,7"
 
 Multiple attributes can be provided. The default is for granules to match all the attribute parameters. This can be changed by specifying `or` option with `options[attribute][or]=true`.
+
+For additional attribute range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`.
 
 For granule additional attributes search, the default is searching for the attributes included in the collection this granule belongs to as well. This can be changed by specifying `exclude_collection` option with `options[attribute][exclude_collection]=true`.
 

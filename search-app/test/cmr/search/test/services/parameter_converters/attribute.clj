@@ -8,12 +8,10 @@
             [cmr.search.services.parameters.conversion :as p]
             [cmr.common.util :as u]))
 
-
 (defn expected-error
   "Creates an expected error response"
   [f & args]
   {:errors [(apply f args)]})
-
 
 (deftest parse-value-test
   (testing "failure cases"
@@ -76,13 +74,12 @@
            "string,X\\Y\\Z,a" :string "X\\Y\\Z" "a"))
     (testing "value range"
       (are [string type aname minv maxv]
-           (= (qm/->AttributeRangeCondition type aname minv maxv)
+           (= (qm/->AttributeRangeCondition type aname minv maxv false)
               (a/parse-value string))
 
            "string,alpha,a,b" :string "alpha" "a" "b"
            "string,alpha,a," :string "alpha" "a" nil
            "string,alpha,,a" :string "alpha" nil "a"))))
-
 
 (deftest parameter->condition-test
   (testing "name condition"
@@ -94,14 +91,19 @@
       (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["string,alpha,a"] {})))))
   (testing "single range condition"
-    (let [expected-cond (qm/->AttributeRangeCondition :string "alpha" "a" "b")]
-      (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
-             (p/parameter->condition :granule :attribute ["string,alpha,a,b"] {})))))
+    (are [attrs options exclusive?]
+         (let [expected-cond (qm/->AttributeRangeCondition :string "alpha" "a" "b" exclusive?)]
+           (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
+              (p/parameter->condition :granule :attribute attrs options)))
+         ["string,alpha,a,b"] {} false
+         ["string,alpha,a,b"] {:attribute {:exclude-boundary "false"}} false
+         ["string,alpha,a,b"] {:attribute {:exclude-boundary "true"}} true))
+
   (testing "multiple conditions"
     (testing "and conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
             expected-cond (gc/and-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
-                                         (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
+                                         (qm/->AttributeRangeCondition :string "alpha" "a" "b" false)])
             expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond
                (p/parameter->condition :granule :attribute strings {:attribute {:or "false"}})))
@@ -111,7 +113,7 @@
     (testing "or conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
             expected-cond (gc/or-conds [(qm/->AttributeValueCondition :string "alpha" "a" nil)
-                                        (qm/->AttributeRangeCondition :string "alpha" "a" "b")])
+                                        (qm/->AttributeRangeCondition :string "alpha" "a" "b" false)])
             expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond
                (p/parameter->condition :granule :attribute strings {:attribute {:or "true"}})))))))

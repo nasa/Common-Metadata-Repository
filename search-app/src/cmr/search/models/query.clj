@@ -174,6 +174,9 @@
 
    ;; The end-date value
    end-date
+
+   ;; If true, exclude the boundary values. Default to false.
+   exclusive?
    ])
 
 (defrecord NumericValueCondition
@@ -190,11 +193,14 @@
    ;; The field being searched.
    field
 
-   ;; The minimum value (inclusive)
+   ;; The minimum value
    min-value
 
-   ;; Them maximum value (inclusive)
+   ;; Them maximum value
    max-value
+
+   ;; If true, exclude the boundary values. Default to false.
+   exclusive?
    ])
 
 ;; This condition can be used for finding concepts having two fields representing a range of values
@@ -329,6 +335,7 @@
    name
    min-value
    max-value
+   exclusive? ;; if true, exclude the boundary values
    ])
 
 (def default-sort-keys
@@ -369,17 +376,20 @@
   (map->NumericValueCondition {:field field :value value}))
 
 (defn numeric-range-condition
-  [field min max]
-  (map->NumericRangeCondition {:field field
-                               :min-value min
-                               :max-value max}))
+  ([field min max]
+   (numeric-range-condition field min max false))
+  ([field min max exclusive?]
+   (map->NumericRangeCondition {:field field
+                                :min-value min
+                                :max-value max
+                                :exclusive? exclusive?})))
 
 (defn numeric-range-intersection-condition
   [min-field max-field min max]
   (map->NumericRangeIntersectionCondition {:min-field min-field
-                                 :max-field max-field
-                                 :min-value min
-                                 :max-value max}))
+                                           :max-field max-field
+                                           :min-value min
+                                           :max-value max}))
 
 (defn string-range-condition
   "Create a string range condition."
@@ -388,10 +398,13 @@
 
 (defn date-range-condition
   "Creates a DateRangeCondition."
-  [field start stop]
-  (map->DateRangeCondition {:field field
-                            :start-date start
-                            :end-date stop}))
+  ([field start stop]
+   (date-range-condition field start stop false))
+  ([field start stop exclusive?]
+   (map->DateRangeCondition {:field field
+                             :start-date start
+                             :end-date stop
+                             :exclusive? exclusive?})))
 (defn date-value-condition
   "Creates a DateValueCondtion."
   [field value]
@@ -445,7 +458,9 @@
   "Creates a numeric range condition."
   [field value]
   (let [{:keys [min-value max-value]} (pp/numeric-range-parameter->map value)]
-    (->NumericRangeCondition field min-value max-value)))
+    (map->NumericRangeCondition {:field field
+                                 :min-value min-value
+                                 :max-value max-value})))
 
 
 ;; Enable pretty printing of records

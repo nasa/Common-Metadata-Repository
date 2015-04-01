@@ -87,7 +87,7 @@
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
-  (fn [condition]
+  (fn [condition exclusive?]
     (type condition)))
 
 (defn parse-field
@@ -104,21 +104,22 @@
         (handle-exception)))))
 
 (defmethod parse-condition-values AttributeRangeCondition
-  [condition]
+  [condition exclusive?]
   (let [{:keys [type min-value max-value]} condition]
     (if (or min-value max-value)
       (let [parser (attribute-type->parser-fn type)
             parser #(when % (parser %))
             condition (-> condition
                           (parse-field :min-value parser type)
-                          (parse-field :max-value parser type))]
+                          (parse-field :max-value parser type)
+                          (assoc :exclusive? exclusive?))]
         (if (:errors condition)
           {:errors (:errors condition)}
           condition))
       {:errors [(msg/one-of-min-max-msg)]})))
 
 (defmethod parse-condition-values AttributeValueCondition
-  [condition]
+  [condition _]
   (let [{:keys [type value]} condition]
     (if (:value condition)
       (let [parser (attribute-type->parser-fn type)
@@ -131,31 +132,35 @@
 (defmulti parse-component-type
   "Parses the type and values of the given condition. Returns the condition with values updated with
   the parsed value or error message added to its :errors field in case of validation failures."
-  (fn [condition]
+  (fn [condition exclusive?]
     (type condition)))
 
 (defmethod parse-component-type AttributeNameCondition
-  [condition]
+  [condition _]
   condition)
 
 (defmethod parse-component-type :default
-  [condition]
+  [condition exclusive?]
   (if-let [type (some (set qm/attribute-types) [(keyword (:type condition))])]
-    (parse-condition-values (assoc condition :type type))
+    (parse-condition-values (assoc condition :type type) exclusive?)
     {:errors [(msg/invalid-type-msg (:type condition))]}))
 
 (defn parse-value
-  "Parses an additional attribute value into it's constituent parts"
-  [value]
-  (let [condition (value->condition value)]
-    (if (:errors condition)
-      condition
-      (parse-component-type condition))))
+  "Parses an additional attribute value into it's constituent parts.
+  If exclusive? is true, exclude the boundary values which only applies to range conditions."
+  ([value]
+   (parse-value value false))
+  ([value exclusive?]
+   (let [condition (value->condition value)]
+     (if (:errors condition)
+       condition
+       (parse-component-type condition exclusive?)))))
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :attribute
   [concept-type param values options]
-  (let [conditions (map parse-value values)
+  (let [exclusive? (= "true" (get-in options [:attribute :exclude-boundary]))
+        conditions (map #(parse-value % exclusive?) values)
         failed-conditions (seq (filter :errors conditions))
         _ (when failed-conditions
             (errors/internal-error!
