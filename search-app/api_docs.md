@@ -556,7 +556,7 @@ Find granules that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/granules?project\[\]=2009_GR_NASA&project\[\]=2013_GR_NASA&options\[project\]\[and\]=true"
 
-#### Find granules by concept ids, collection concept ids, echo granule ids and echo collection ids.
+#### Find granules by concept ids, echo granule ids, parent concept ids, and echo collection ids.
 
 Note: more than one may be supplied
 
@@ -564,13 +564,14 @@ Note: more than one may be supplied
 
     curl "%CMR-ENDPOINT%/granules?concept_id\[\]=G1000000002-CMR_PROV1"
 
-  Find granules by parent concept id
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id\[\]=C1000000001-CMR_PROV2"
-
   Find granule by echo granule id
 
     curl "%CMR-ENDPOINT%/granules?echo_granule_id\[\]=G1000000002-CMR_PROV1"
+
+  Find granules by parent concept id, can use concept\_id or collection\_concept\_id param
+
+    curl "%CMR-ENDPOINT%/granules?concept_id\[\]=C1000000001-CMR_PROV2"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id\[\]=C1000000001-CMR_PROV2"
 
   Find granules by echo collection id
 

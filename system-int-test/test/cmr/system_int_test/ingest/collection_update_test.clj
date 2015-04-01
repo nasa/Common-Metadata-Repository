@@ -84,16 +84,22 @@
 
         "Removing an additional attribute that is referenced by its granules is invalid."
         [a2 a3 a4 a5 a6 a7 a8 a9]
-        ["Collection additional attribute [string] is referenced by existing granules, cannot be removed."]
+        ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
-        "Removing an additional attribute that is referenced by its granules is invalid.
-        And the granule search is terminated on the first has granule search error."
-        []
-        ["Collection additional attribute [string] is referenced by existing granules, cannot be removed."]
+        "Multiple validation errors."
+        [(dc/psa "float" :float 5.0 10.0)]
+        ["Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."
+         "Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [datetime] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [date] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [time] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [dts] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
         [(dc/psa "string" :int) a2 a3 a4 a5 a6 a7 a8 a9]
-        ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]."]))
+        ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]. Found 1 granules."]))
 
     (testing "Delete the existing collection, then re-create it with any additional attributes is OK."
       (ingest/delete-concept (d/item->concept coll :echo10))
@@ -133,20 +139,22 @@
         [2 5]))
     (testing "failure cases"
       (are
-        [range]
-        (let [response (d/ingest "PROV1"
+        [range num-grans]
+        (let [expected-error (->> (format " Found %d granules." num-grans)
+                                  (str "Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."))
+              response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes [(apply dc/psa "int" :int range)]}))
               {:keys [status errors]} response]
-          (= [400 ["Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."]]
+          (= [400 [expected-error]]
              [status errors]))
 
-        [0 4]
-        [nil 4]
-        [3 6]
-        [3 nil]
-        [3 4]))))
+        [0 4] 1
+        [nil 4] 1
+        [3 6] 1
+        [3 nil] 1
+        [3 4] 2))))
 
 (deftest collection-update-additional-attributes-float-range-test
   (let [a1 (dc/psa "float" :float -10.0 10.0)
@@ -177,22 +185,24 @@
         [-2.0 5.0]))
     (testing "failure cases"
       (are
-        [range]
-        (let [response (d/ingest "PROV1"
+        [range num-grans]
+        (let [expected-error (->> (format " Found %d granules." num-grans)
+                                  (str "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."))
+              response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes [(apply dc/psa "float" :float range)]}))
               {:keys [status errors]} response]
-          (= [400 ["Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."]]
+          (= [400 [expected-error]]
              [status errors]))
 
-        [-3.0 4.99]
-        [nil 4.99]
-        [-1.99 6]
-        [-1.99 nil]
-        [-1.99 4.99]
-        [(Double/longBitsToDouble (dec (Double/doubleToLongBits -2.0))) nil]
-        [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))]))))
+        [-3.0 4.99] 1
+        [nil 4.99] 1
+        [-1.99 6] 1
+        [-1.99 nil] 1
+        [-1.99 4.99] 2
+        [(Double/longBitsToDouble (dec (Double/doubleToLongBits -2.0))) nil] 1
+        [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))] 1))))
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial psa/parse-value :datetime)
@@ -225,21 +235,23 @@
         ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
     (testing "failure cases"
       (are
-        [range]
-        (let [response (d/ingest "PROV1"
+        [range num-grans]
+        (let [expected-error (->> (format " Found %d granules." num-grans)
+                                  (str "Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."))
+              response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
                                     [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
               {:keys [status errors]} response]
-          (= [400 ["Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."]]
+          (= [400 [expected-error]]
              [status errors]))
 
-        ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"]
-        [nil "2012-08-01T01:02:02.999Z"]
-        ["2012-04-01T01:02:03.001Z" "2012-11-01T01:02:04Z"]
-        ["2012-04-01T01:02:03.001Z" nil]
-        ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"]))))
+        ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"] 1
+        [nil "2012-08-01T01:02:02.999Z"] 1
+        ["2012-04-01T01:02:03.001Z" "2012-11-01T01:02:04Z"] 1
+        ["2012-04-01T01:02:03.001Z" nil] 1
+        ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"] 2))))
 
 (deftest collection-update-additional-attributes-date-range-test
   (let [parse-fn (partial psa/parse-value :date)
@@ -272,21 +284,23 @@
         ["2012-04-02Z" "2012-08-02Z"]))
     (testing "failure cases"
       (are
-        [range]
-        (let [response (d/ingest "PROV1"
+        [range num-grans]
+        (let [expected-error (->> (format " Found %d granules." num-grans)
+                                  (str "Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."))
+              response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
                                     [(apply dc/psa "date" :date (map parse-fn range))]}))
               {:keys [status errors]} response]
-          (= [400 ["Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."]]
+          (= [400 [expected-error]]
              [status errors]))
 
-        ["2012-02-01Z" "2012-08-01Z"]
-        [nil "2012-08-01Z"]
-        ["2012-04-03Z" "2012-08-03Z"]
-        ["2012-04-03Z" nil]
-        ["2012-04-03Z" "2012-08-01Z"]))))
+        ["2012-02-01Z" "2012-08-01Z"] 1
+        [nil "2012-08-01Z"] 1
+        ["2012-04-03Z" "2012-08-03Z"] 1
+        ["2012-04-03Z" nil] 1
+        ["2012-04-03Z" "2012-08-01Z"] 2))))
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial psa/parse-value :time)
@@ -319,18 +333,20 @@
         ["04:02:03Z" "06:02:03Z"]))
     (testing "failure cases"
       (are
-        [range]
-        (let [response (d/ingest "PROV1"
+        [range num-grans]
+        (let [expected-error (->> (format " Found %d granules." num-grans)
+                                  (str "Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."))
+              response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
                                     [(apply dc/psa "time" :time (map parse-fn range))]}))
               {:keys [status errors]} response]
-          (= [400 ["Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."]]
+          (= [400 [expected-error]]
              [status errors]))
 
-        ["01:02:04Z" "06:02:02.999Z"]
-        [nil "06:02:02.999Z"]
-        ["04:02:03.001Z" "11:02:04Z"]
-        ["04:02:03.001Z" nil]
-        ["04:02:03.001Z" "06:02:02.999Z"]))))
+        ["01:02:04Z" "06:02:02.999Z"] 1
+        [nil "06:02:02.999Z"] 1
+        ["04:02:03.001Z" "11:02:04Z"] 1
+        ["04:02:03.001Z" nil] 1
+        ["04:02:03.001Z" "06:02:02.999Z"] 2))))
