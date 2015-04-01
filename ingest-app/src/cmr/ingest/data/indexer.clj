@@ -40,24 +40,45 @@
 (def ^:const publish-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
-  30000)
+  60000)
 
 (defn- put-message-on-queue
-  "Put an index operation on the message queue. Waits up to timeout-ms before considering the
-  request failed. Throws an internal error if the message fails to be put on the queue."
+  "Put an index operation on the message queue. Throws a service unavailable error if the message
+  fails to be put on the queue.
+
+  Requests to publish a message include a timeout value to handle error cases with the Rabbit MQ
+  server. Otherwise when the memory limit within RabbitMQ is reached it could block indefinitely.
+  Also when the server is down or unreachable, calls to publish will return a failure. Rather than
+  raise an error to the caller immediately, the publication will be retried until the timeout
+  period has expired. By retrying, routine maintenance such as restarting the RabbitMQ server
+  will not result in any ingest errors returned to the provider."
   ([context msg]
    (put-message-on-queue context msg publish-timeout-ms))
   ([context msg timeout-ms]
    (let [queue-broker (get-in context [:system :queue-broker])
-         queue-name (config/index-queue-name)]
-     (try
-       (timeout/thunk-timeout (partial queue/publish queue-broker queue-name msg) timeout-ms)
-       (when-not (queue/publish queue-broker queue-name msg)
-         (errors/internal-error!
-           (str "Index queue broker refused queue message " msg)))
-       (catch java.util.concurrent.TimeoutException e
-         (errors/internal-error!
-           (str "Request timed out when attempting to publish message: " msg)))))))
+         queue-name (config/index-queue-name)
+         start-time (System/currentTimeMillis)]
+     (loop []
+       (let [message-published? (try
+                                  (let [response (timeout/thunk-timeout
+                                                   #(queue/publish queue-broker queue-name msg)
+                                                   timeout-ms)]
+                                    (when-not response
+                                      (if (< (- (System/currentTimeMillis) start-time) timeout-ms)
+                                        (warn "Retrying publishing message: " msg)
+                                        (errors/throw-service-error
+                                          :service-unavailable
+                                          (str "All retries exhausted to queue message: " msg))))
+                                    response)
+                                  (catch java.util.concurrent.TimeoutException e
+                                    (errors/throw-service-error
+                                      :service-unavailable
+                                      (str "Request timed out when attempting to publish message: "
+                                           msg)
+                                      e)))]
+         (when-not message-published?
+           (Thread/sleep 2000)
+           (recur)))))))
 
 (defmulti index-concept-with-method
   "Index the concept using an http request or the indexing queue"

@@ -14,7 +14,8 @@
    :bad-request 400
    :unauthorized 401
    :invalid-data 422
-   :conflict 409})
+   :conflict 409
+   :service-unavailable 503})
 
 (def CONTENT_TYPE_HEADER "Content-Type")
 (def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
@@ -101,6 +102,9 @@
         status-code (type->http-status-code type)
         [content-type response-body] (response-type-body errors results-format
                                                          (api/pretty-request? request))]
+    ;; Log exceptions for server errors
+    (when (>= status-code 500)
+      (error e))
     {:status status-code
      :headers {CONTENT_TYPE_HEADER content-type
                CORS_ORIGIN_HEADER "*"}

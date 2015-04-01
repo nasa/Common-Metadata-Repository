@@ -293,9 +293,10 @@
 
 
 (comment
+  (do
     (ingest/create-provider "provguid1" "PROV1")
     (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
-  (doseq [n (range 0 10000)]
-    (ingest/ingest-concept (dc/collection-concept {})))
+    (doseq [_ (range 0 400)]
+      (ingest/ingest-concept (dc/collection-concept {}))))
   )
 
