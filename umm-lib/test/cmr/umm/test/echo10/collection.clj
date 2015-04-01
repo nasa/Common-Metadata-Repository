@@ -97,6 +97,7 @@
     <LongName>A minimal valid collection</LongName>
     <DataSetId>A minimal valid collection V 1</DataSetId>
     <Description>A minimal valid collection</Description>
+    <SuggestedUsage>A purpose</SuggestedUsage>
     <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
     <Orderable>true</Orderable>
     <Visible>true</Visible>
@@ -348,6 +349,7 @@
                    {:entry-id "MINIMAL_1"
                     :entry-title "A minimal valid collection V 1"
                     :summary "A minimal valid collection"
+                    :purpose "A purpose"
                     :product (umm-c/map->Product
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"

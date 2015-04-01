@@ -107,7 +107,9 @@
          <gmd:abstract>
             <gco:CharacterString>Dataset for testing spatial</gco:CharacterString>
          </gmd:abstract>
-         <gmd:purpose gco:nilReason="missing"/>
+         <gmd:purpose>
+            <gco:CharacterString>A grand purpose</gco:CharacterString>
+         </gmd:purpose>
          <gmd:pointOfContact>
             <gmd:CI_ResponsibleParty>
                <gmd:organisationName>

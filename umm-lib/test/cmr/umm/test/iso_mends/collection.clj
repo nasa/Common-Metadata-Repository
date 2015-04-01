@@ -189,6 +189,7 @@
                    {:entry-id "MINIMAL_1"
                     :entry-title "A minimal valid collection V 1"
                     :summary "A minimal valid collection"
+                    :purpose "A grand purpose"
                     :product (umm-c/map->Product
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
