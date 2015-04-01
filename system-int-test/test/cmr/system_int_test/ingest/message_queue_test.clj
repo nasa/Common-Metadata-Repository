@@ -129,9 +129,8 @@
 (deftest publish-messages-failure-test
   (s/only-with-real-message-queue
     (testing "Timeouts on putting messages on message queue return 503"
-      (index-util/set-message-queue-publish-timeout 1)
+      (index-util/set-message-queue-publish-timeout 0)
       (let [ingest-result (make-coll 1)]
-        (cmr.common.dev.capture-reveal/capture ingest-result)
         (is (= 503 (:status ingest-result)))
         (is (= [(str "Request timed out when attempting to publish message: {:action "
                      ":index-concept, :concept-id \"C1-PROV1\", :revision-id 1}")]

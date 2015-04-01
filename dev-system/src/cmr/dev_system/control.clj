@@ -154,10 +154,18 @@
              :body "Cannot set message queue retry behvavior unless using the message queue wrapper."})))
 
       (POST "/set-publish-timeout" {:keys [params]}
-        (let [timeout (:timeout params)]
-          (debug (format "dev system setting message queue publish timeout to %s ms" timeout))
-          (iconfig/set-publish-queue-timeout-ms! (Integer/parseInt timeout))
-          {:status 200})))
+        (let [timeout (Integer/parseInt (:timeout params))
+              expect-timeout? (= timeout 0)]
+          (debug (format "dev system setting message queue publish timeout to %d ms" timeout))
+          (iconfig/set-publish-queue-timeout-ms! timeout)
+          (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+            (do
+              (wrapper/set-message-queue-timeout-expected!
+                broker-wrapper
+                expect-timeout?)
+              {:status 200})
+            {:status 403
+             :body "Cannot set message queue timeout unless using the message queue wrapper."}))))
 
     (route/not-found "Not Found")))
 
