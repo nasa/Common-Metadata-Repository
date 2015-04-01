@@ -1,6 +1,6 @@
 (ns cmr.ingest.config
   "Contains functions to retrieve metadata db specific configuration"
-  (:require [cmr.common.config :as cfg]
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]))
 
@@ -32,3 +32,8 @@
 (def use-index-queue?
   "Boolean flag indicating whether or not to use the message queue for indexing"
   #(= "queue" (indexing-communication-method)))
+
+(defconfig publish-queue-timeout-ms
+  "Number of milliseconds to wait for a publish request to be confirmed before considering the
+  request timed out."
+  {:default 60000 :type Long})

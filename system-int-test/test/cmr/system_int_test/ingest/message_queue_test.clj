@@ -11,7 +11,7 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
-                       (index-util/reset-message-queue-retry-behavior-fixture)]))
+                       (index-util/reset-message-queue-behavior-fixture)]))
 
 (defn ingest-coll
   "Ingests the collection."
@@ -21,7 +21,8 @@
 (defn make-coll
   "Creates and ingests a collection using the unique number given."
   [n]
-  (ingest-coll (dc/collection {:entry-title (str "ET" n)})))
+  (ingest-coll (dc/collection {:concept-id (str "C" n "-PROV1")
+                               :entry-title (str "ET" n)})))
 
 (defn ingest-gran
   "Ingests the granule."
@@ -124,5 +125,18 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "failure"}]}
                (index-util/get-concept-message-queue-history)))))))
+
+(deftest publish-messages-failure-test
+  (s/only-with-real-message-queue
+    (testing "Timeouts on putting messages on message queue return 503"
+      (index-util/set-message-queue-publish-timeout 1)
+      (let [ingest-result (make-coll 1)]
+        (cmr.common.dev.capture-reveal/capture ingest-result)
+        (is (= 503 (:status ingest-result)))
+        (is (= [(str "Request timed out when attempting to publish message: {:action "
+                     ":index-concept, :concept-id \"C1-PROV1\", :revision-id 1}")]
+               (:errors ingest-result))))
+      ;; Verify the coolection is in Oracle
+      (is (ingest/concept-exists-in-mdb? "C1-PROV1" 1)))))
 
 
