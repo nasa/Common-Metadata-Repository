@@ -3,7 +3,7 @@
   (:require [clj-http.client :as client]
             [cheshire.core :as json]
             [cmr.ingest.config :as config]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
@@ -37,10 +37,10 @@
                 delete-url status response)))
     response))
 
-(def ^:const publish-timeout-ms
+(defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
-  60000)
+  {:default 60000 :type Long})
 
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message
@@ -53,7 +53,7 @@
   period has expired. By retrying, routine maintenance such as restarting the RabbitMQ server
   will not result in any ingest errors returned to the provider."
   ([context msg]
-   (put-message-on-queue context msg publish-timeout-ms))
+   (put-message-on-queue context msg (publish-queue-timeout-ms)))
   ([context msg timeout-ms]
    (let [queue-broker (get-in context [:system :queue-broker])
          queue-name (config/index-queue-name)
@@ -65,7 +65,7 @@
                                                    timeout-ms)]
                                     (when-not response
                                       (if (< (- (System/currentTimeMillis) start-time) timeout-ms)
-                                        (warn "Retrying publishing message: " msg)
+                                        (warn "Attempt to queue message failed. Retrying: " msg)
                                         (errors/throw-service-error
                                           :service-unavailable
                                           (str "All retries exhausted to queue message: " msg))))
