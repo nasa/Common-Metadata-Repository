@@ -6,7 +6,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.ingest-util :as ingest]))
+            [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -103,8 +104,7 @@
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))))))
 
-(deftest collection-update-additional-attributes-range-test
-  (testing "int range")
+(deftest collection-update-additional-attributes-int-range-test
   (let [a1 (dc/psa "int" :int 1 10)
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
@@ -121,7 +121,7 @@
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply (partial dc/psa "int" :int) range)]}))
+                                    :product-specific-attributes [(apply dc/psa "int" :int range)]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -130,9 +130,207 @@
         [nil 10]
         [1 nil]
         []
-        [2 5]
+        [2 5]))
+    (testing "failure cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes [(apply dc/psa "int" :int range)]}))
+              {:keys [status errors]} response]
+          (= [400 ["Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."]]
+             [status errors]))
 
+        [0 4]
+        [nil 4]
+        [3 6]
+        [3 nil]
+        [3 4]))))
 
-        ))
+(deftest collection-update-additional-attributes-float-range-test
+  (let [a1 (dc/psa "float" :float -10.0 10.0)
+        coll (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection"
+                                  :product-specific-attributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "float" ["-2.0"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "float" ["5.0"])]}))]
+    (index/wait-until-indexed)
 
-    ))
+    (testing "successful cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes [(apply dc/psa "float" :float range)]}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        [-11.0 11.0]
+        [-10.0 10.0]
+        [nil 10.0]
+        [-10.0 nil]
+        []
+        [-2.0 5.0]))
+    (testing "failure cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes [(apply dc/psa "float" :float range)]}))
+              {:keys [status errors]} response]
+          (= [400 ["Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."]]
+             [status errors]))
+
+        [-3.0 4.99]
+        [nil 4.99]
+        [-1.99 6]
+        [-1.99 nil]
+        [-1.99 4.99]
+        [(Double/longBitsToDouble (dec (Double/doubleToLongBits -2.0))) nil]
+        [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))]))))
+
+(deftest collection-update-additional-attributes-datetime-range-test
+  (let [parse-fn (partial psa/parse-value :datetime)
+        a1 (dc/psa "datetime" :datetime (parse-fn "2012-02-01T01:02:03Z") (parse-fn "2012-11-01T01:02:03Z"))
+        coll (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection"
+                                  :product-specific-attributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "datetime" ["2012-08-01T01:02:03Z"])]}))]
+    (index/wait-until-indexed)
+
+    (testing "successful cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        ["2012-02-01T01:02:02Z" "2012-11-01T01:02:04Z"]
+        ["2012-02-01T01:02:03Z" "2012-11-01T01:02:03Z"]
+        [nil "2012-08-01T01:02:03Z"]
+        ["2012-04-01T01:02:03Z" nil]
+        []
+        ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
+    (testing "failure cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [400 ["Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."]]
+             [status errors]))
+
+        ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"]
+        [nil "2012-08-01T01:02:02.999Z"]
+        ["2012-04-01T01:02:03.001Z" "2012-11-01T01:02:04Z"]
+        ["2012-04-01T01:02:03.001Z" nil]
+        ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"]))))
+
+(deftest collection-update-additional-attributes-date-range-test
+  (let [parse-fn (partial psa/parse-value :date)
+        a1 (dc/psa "date" :date (parse-fn "2012-02-02Z") (parse-fn "2012-11-02Z"))
+        coll (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection"
+                                  :product-specific-attributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "date" ["2012-04-02Z"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "date" ["2012-08-02Z"])]}))]
+    (index/wait-until-indexed)
+
+    (testing "successful cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "date" :date (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        ["2012-02-01Z" "2012-11-03Z"]
+        ["2012-02-02Z" "2012-11-02Z"]
+        [nil "2012-11-02Z"]
+        ["2012-02-02Z" nil]
+        []
+        ["2012-04-02Z" "2012-08-02Z"]))
+    (testing "failure cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "date" :date (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [400 ["Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."]]
+             [status errors]))
+
+        ["2012-02-01Z" "2012-08-01Z"]
+        [nil "2012-08-01Z"]
+        ["2012-04-03Z" "2012-08-03Z"]
+        ["2012-04-03Z" nil]
+        ["2012-04-03Z" "2012-08-01Z"]))))
+
+(deftest collection-update-additional-attributes-time-range-test
+  (let [parse-fn (partial psa/parse-value :time)
+        a1 (dc/psa "time" :time (parse-fn "01:02:03Z") (parse-fn "11:02:03Z"))
+        coll (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection"
+                                  :product-specific-attributes [a1]}))
+        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "time" ["04:02:03Z"])]}))
+        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+                                                 [(dg/psa "time" ["06:02:03Z"])]}))]
+    (index/wait-until-indexed)
+
+    (testing "successful cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "time" :time (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        ["01:02:02Z" "11:02:04Z"]
+        ["01:02:03Z" "11:02:03Z"]
+        [nil "11:02:03Z"]
+        ["01:02:03Z" nil]
+        []
+        ["04:02:03Z" "06:02:03Z"]))
+    (testing "failure cases"
+      (are
+        [range]
+        (let [response (d/ingest "PROV1"
+                                 (dc/collection
+                                   {:entry-title "parent-collection"
+                                    :product-specific-attributes
+                                    [(apply dc/psa "time" :time (map parse-fn range))]}))
+              {:keys [status errors]} response]
+          (= [400 ["Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."]]
+             [status errors]))
+
+        ["01:02:04Z" "06:02:02.999Z"]
+        [nil "06:02:02.999Z"]
+        ["04:02:03.001Z" "11:02:04Z"]
+        ["04:02:03.001Z" nil]
+        ["04:02:03.001Z" "06:02:02.999Z"]))))
