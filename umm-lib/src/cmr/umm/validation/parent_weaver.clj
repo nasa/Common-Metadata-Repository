@@ -29,9 +29,9 @@
        (set-parent child parent)))))
 
 (defn- set-parent-by-name
-  "This function does the same thing as set-parents-by-name, but for the case when the parent has
-  multiple items but there is only one child which has reference to one of the parents i.e. child
-  is not a list of value but a single value"
+  "This function does the same thing as set-parents-by-name, but for the case where the parent has
+  multiple objects but there is only one child object(in granule) i.e. child object is not a list of
+  values but a single value with a reference to its parent"
   [obj parent-objs name-field]
   (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
     (set-parent obj (parent-obj-by-name (name-field obj)))))
