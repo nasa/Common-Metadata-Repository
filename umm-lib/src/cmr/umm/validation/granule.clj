@@ -74,26 +74,37 @@
     {:geometries (v/every sv/spatial-validation)})])
 
 (defn- within-range?
-  "Checks if value falls within the bounds defined by min-value and max-value."
-  [[min-val max-val] value]
-  (cond (and min-val value (< value min-val)) false
-        (and max-val value (> value max-val)) false
-        :else true))
+  "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
+  min-value and max-value could be nil in which case the bound will not be checked i.e value will
+  be considered within range with respect to the bound."
+  [min-val max-val value]
+  (and (or (nil? min-val) (>= value min-val))
+       (or (nil? max-val) (<= value max-val))))
+
+(defn- validate-coordinate-within-range
+  "Function which takes the two-d-coordinate-system of a granule and its path and returns a
+  function which takes one of the four 2D coordinate keys defined for granule TwoDCoordinateSystem
+  and a range of values and validates that the value corresponding to the key falls within the
+  range. If the coordinate key is not present in two-d-coordinate-system, it will not be validated."
+  [field-path two-d-coordinate-system]
+  (fn [coordinate-key min-val max-val]
+    (when-let [value (coordinate-key two-d-coordinate-system)]
+      (when-not (within-range? min-val max-val value)
+        {(conj field-path coordinate-key)
+         [(format "The field [%%s] falls outside the bounds [%s %s] defined in the collection"
+                  (or min-val "-∞") (or max-val "∞"))]}))))
 
 (defn two-d-coordinates-range-validation
-  "Validate that the 2D coordinates in the granule fall within the bounds defined by the collection"
+  "Validate that the 2D coordinates in the granule fall within the bounds defined in the collection"
   [field-path two-d-coordinate-system]
   (let [{{min-1 :min-value max-1 :max-value} :coordinate-1
          {min-2 :min-value max-2 :max-value} :coordinate-2} (:parent two-d-coordinate-system)
-        check-range  (fn [coordinate-key [low high]]
-                       (if-not (within-range? [low high] (coordinate-key two-d-coordinate-system))
-                         {(conj field-path coordinate-key)
-                          [(format "The field [%%s] does not fall with-in the bounds [%s %s] defined in the collection" (or low "-∞") (or high "∞"))]}))]
-    (remove nil? (merge
-                   (check-range :start-coordinate-1  [min-1 max-1])
-                   (check-range :end-coordinate-1  [min-1 max-1])
-                   (check-range :start-coordinate-2  [min-2 max-2])
-                   (check-range :end-coordinate-2  [min-2 max-2])))))
+        check-range  (validate-coordinate-within-range field-path two-d-coordinate-system)]
+    (merge
+      (check-range :start-coordinate-1  min-1 max-1)
+      (check-range :end-coordinate-1  min-1 max-1)
+      (check-range :start-coordinate-2  min-2 max-2)
+      (check-range :end-coordinate-2  min-2 max-2))))
 
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"

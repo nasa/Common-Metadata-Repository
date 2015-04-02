@@ -29,8 +29,9 @@
        (set-parent child parent)))))
 
 (defn- set-parent-by-name
-  "This function does the same thing as set-parents-by-name, but for a single child object instead
-  of a list of child objects"
+  "This function does the same thing as set-parents-by-name, but for the case when the parent has
+  multiple items but there is only one child which has reference to one of the parents i.e. child
+  is not a list of value but a single value"
   [obj parent-objs name-field]
   (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
     (set-parent obj (parent-obj-by-name (name-field obj)))))
@@ -54,7 +55,7 @@
                    set-parents-by-name (:product-specific-attributes coll) :name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  clojure.lang.Associative
+  clojure.lang.IPersistentMap
   ;; Default implementation of set-parent for associative arrays
   (set-parent
     [obj parent]

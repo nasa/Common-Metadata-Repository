@@ -614,59 +614,59 @@
         collection-with-missing-bounds (make-collection {:two-d-coordinate-systems
                                                               [{:name "name"
                                                                 :coordinate-1 {:min-value 0}
-                                                                :coordinate-2 {:max-value 17}}]})]
-    (testing "valid granule with all coordinates present"
-      (assert-valid-gran collection (make-granule
-                                      {:two-d-coordinate-system {:name "name"
-                                                                 :start-coordinate-1 3
-                                                                 :end-coordinate-1 26
-                                                                 :start-coordinate-2 8
-                                                                 :end-coordinate-2 15}})))
-    (testing "valid granule with some granule coordinates missing"
-      (assert-valid-gran collection (make-granule {:two-d-coordinate-system
-                                                   {:name "name"
-                                                    :start-coordinate-1 3
-                                                    :end-coordinate-2 15}})))
-    (testing "valid granule with some coordinate bounds missing in the collection"
-      (assert-valid-gran collection-with-missing-bounds
-                         (make-granule {:two-d-coordinate-system {:name "name"
-                                                                  :start-coordinate-1 3
-                                                                  :end-coordinate-2 15}})))
-    (testing "invalid granule with non-existent coordinate system name"
-      (assert-invalid-gran
-        collection
-        (make-granule {:two-d-coordinate-system {:name "unsupported_name"}})
-        [:two-d-coordinate-system]
-        ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [unsupported_name]."]))
-    (testing "invalid granules with 2D coordinates out of range"
-      (u/are2 [collection granule expected-errors]
-           (= (set (map e/map->PathErrors expected-errors))
-              (set (v/validate-granule collection granule)))
+                                                                :coordinate-2 {:max-value 17}}]})
+        add-coordinate (fn[coordinate-key value] (when value {coordinate-key value}))]
+    (testing "granules with valid 2D coordinate system"
+      (u/are2 [collection start1 end1 start2 end2]
+              (empty? (v/validate-granule
+                        collection
+                        (make-granule (g/map->TwoDCoordinateSystem
+                                        {:two-d-coordinate-system
+                                         (merge {:name "name"}
+                                                (add-coordinate :start-coordinate-1 start1)
+                                                (add-coordinate :end-coordinate-1 end1)
+                                                (add-coordinate :start-coordinate-2 start2)
+                                                (add-coordinate :end-coordinate-2 end2))}))))
+              "valid granule with all coordinates present"
+              collection 3 26 8 15
 
-           "All granule coordinates out of range"
-           collection
-           (make-granule {:two-d-coordinate-system {:name "name"
-                                                    :start-coordinate-1 -1
-                                                    :end-coordinate-1 38
-                                                    :start-coordinate-2 19
-                                                    :end-coordinate-2 25}})
-           [{:path [:two-d-coordinate-system :start-coordinate-1]
-             :errors ["The field [Start Coordinate 1] does not fall with-in the bounds [0 35] defined in the collection"]}
-            {:path [:two-d-coordinate-system :end-coordinate-1]
-             :errors ["The field [End Coordinate 1] does not fall with-in the bounds [0 35] defined in the collection"]}
-            {:path [:two-d-coordinate-system :start-coordinate-2]
-             :errors ["The field [Start Coordinate 2] does not fall with-in the bounds [0 17] defined in the collection"]}
-            {:path [:two-d-coordinate-system :end-coordinate-2]
-             :errors ["The field [End Coordinate 2] does not fall with-in the bounds [0 17] defined in the collection"]}]
+              "valid granule with some granule coordinates missing"
+              collection 3 nil nil 15
 
-           "Some granule coordinates out of range with collection missing some bounds"
-           collection-with-missing-bounds
-           (make-granule {:two-d-coordinate-system {:name "name"
-                                                    :start-coordinate-1 -1
-                                                    :start-coordinate-2 8
-                                                    :end-coordinate-2 19}})
-           [{:path [:two-d-coordinate-system :end-coordinate-2]
-             :errors ["The field [End Coordinate 2] does not fall with-in the bounds [-∞ 17] defined in the collection"]}
-            {:path [:two-d-coordinate-system :start-coordinate-1]
-             :errors ["The field [Start Coordinate 1] does not fall with-in the bounds [0 ∞] defined in the collection"]}]))))
+              "valid granule with some coordinate bounds missing in the collection"
+              collection-with-missing-bounds 3 26 8 15))
+    (testing "granules with invalid 2D coordinate system"
+      (u/are2 [collection coord-system-name start1 end1 start2 end2 expected-errors]
+              (= (set (map e/map->PathErrors expected-errors))
+                 (set (v/validate-granule
+                        collection
+                        (make-granule (g/map->TwoDCoordinateSystem
+                                        {:two-d-coordinate-system
+                                         (merge {:name coord-system-name}
+                                                (add-coordinate :start-coordinate-1 start1)
+                                                (add-coordinate :end-coordinate-1 end1)
+                                                (add-coordinate :start-coordinate-2 start2)
+                                                (add-coordinate :end-coordinate-2 end2))})))))
 
+              "Invalid granule with non-existent coordinate system name"
+              collection "unsupported_name" nil nil nil nil
+              [{:path [:two-d-coordinate-system]
+                :errors ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [unsupported_name]."]}]
+
+              "All granule coordinates out of range"
+              collection "name" -1 38 19 25
+              [{:path [:two-d-coordinate-system :start-coordinate-1]
+                :errors ["The field [Start Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
+               {:path [:two-d-coordinate-system :end-coordinate-1]
+                :errors ["The field [End Coordinate 1] falls outside the bounds [0 35] defined in the collection"]}
+               {:path [:two-d-coordinate-system :start-coordinate-2]
+                :errors ["The field [Start Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}
+               {:path [:two-d-coordinate-system :end-coordinate-2]
+                :errors ["The field [End Coordinate 2] falls outside the bounds [0 17] defined in the collection"]}]
+
+              "Some granule coordinates out of range with collection missing some bounds"
+              collection-with-missing-bounds "name" -1 nil 8 19
+              [{:path [:two-d-coordinate-system :end-coordinate-2]
+                :errors ["The field [End Coordinate 2] falls outside the bounds [-∞ 17] defined in the collection"]}
+               {:path [:two-d-coordinate-system :start-coordinate-1]
+                :errors ["The field [Start Coordinate 1] falls outside the bounds [0 ∞] defined in the collection"]}]))))
