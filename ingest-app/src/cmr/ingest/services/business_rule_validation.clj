@@ -3,7 +3,10 @@
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as p]
+            [cmr.umm.core :as umm]
             [cmr.transmit.metadata-db :as mdb]
+            [cmr.transmit.search :as search]
+            [cmr.ingest.services.helper :as h]
             [cmr.ingest.services.additional-attribute-validation :as aa]))
 
 (defn- delete-time-validation
@@ -26,11 +29,40 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
+(defn- has-granule?
+  "Execute the given has-granule search, returns the error message if there are granules found
+  by the search."
+  [context search-map]
+  (let [{:keys [params error-msg]} search-map
+        hits (search/find-granule-hits context params)]
+    (when (> hits 0)
+      (str error-msg (format " Found %d granules." hits)))))
+
+(def collection-update-searches
+  "Defines a list of functions to construct the collection update searches in terms of search params
+  and error message to return when the search found invalidated granules. All functions take two
+  arguments: the UMM concept and the previous UMM concept."
+  [aa/additional-attribute-searches])
+
+(defn- collection-update-validation
+  [context concept]
+  (let [{:keys [provider-id extra-fields umm-concept]} concept
+        {:keys [entry-title]} extra-fields
+        prev-concept (first (h/find-visible-collections context {:provider-id provider-id
+                                                                 :entry-title entry-title}))]
+    (when prev-concept
+      (let [prev-umm-concept (umm/parse-concept prev-concept)
+            has-granule-searches (mapcat #(% umm-concept prev-umm-concept) collection-update-searches)
+            search-errors (->> has-granule-searches
+                               (map (partial has-granule? context))
+                               (remove nil?))]
+        (when (seq search-errors)
+          search-errors)))))
+
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
   {:collection [delete-time-validation
                 concept-id-validation
-                aa/additional-attributes-validation]
+                collection-update-validation]
    :granule []})
-
 

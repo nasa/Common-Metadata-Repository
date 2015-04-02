@@ -55,6 +55,9 @@
         "Not changing any additional attributes is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
 
+        "Add an additional attribute is OK."
+        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (dc/psa "alpha" :int)]
+
         "Removing an additional attribute that is not referenced by any granule is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8]
 
@@ -64,14 +67,17 @@
         "Changing the value of an additional attribute is OK."
         [a1 a2 (dc/psa "int" :int 10) a4 a5 a6 a7 a8 a9]
 
-        "Chage additional attribute value to a range is OK."
+        "Change additional attribute value to a range is OK."
         [a1 a2 (dc/psa "int" :int 1 10) a4 a5 a6 a7 a8 a9]
 
         "Removing the value/range of an additional attribute is OK."
         [a1 a2 (dc/psa "int" :int) a4 a5 a6 a7 a8 a9]
 
-        "Chage additional attribute range to a value is OK."
-        [a1 a2 a3 (dc/psa "float" :float 1.0) a5 a6 a7 a8 a9]))
+        "Change additional attribute range to a value is OK."
+        [a1 a2 a3 (dc/psa "float" :float 1.0) a5 a6 a7 a8 a9]
+
+        "Extending additional attribute range is OK."
+        [a1 a2 a3 (dc/psa "float" :float 0.0 99.0) a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
       (util/are2
@@ -122,7 +128,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are
+      (util/are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -131,14 +137,15 @@
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
-        [0 11]
-        [1 10]
-        [nil 10]
-        [1 nil]
-        []
-        [2 5]))
+        "expanded range" [0 11]
+        "same range" [1 10]
+        "removed min" [nil 10]
+        "removed max" [1 nil]
+        "no range" []
+        "minimal range" [2 5]
+        ))
     (testing "failure cases"
-      (are
+      (util/are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."))
@@ -150,11 +157,11 @@
           (= [400 [expected-error]]
              [status errors]))
 
-        [0 4] 1
-        [nil 4] 1
-        [3 6] 1
-        [3 nil] 1
-        [3 4] 2))))
+        "invalid max" [0 4] 1
+        "invalid max no min" [nil 4] 1
+        "invalid min" [3 6] 1
+        "invalid min no max" [3 nil] 1
+        "invalid min & max" [3 4] 2))))
 
 (deftest collection-update-additional-attributes-float-range-test
   (let [a1 (dc/psa "float" :float -10.0 10.0)
@@ -168,7 +175,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are
+      (util/are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -177,14 +184,14 @@
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
-        [-11.0 11.0]
-        [-10.0 10.0]
-        [nil 10.0]
-        [-10.0 nil]
-        []
-        [-2.0 5.0]))
+        "expanded range" [-11.0 11.0]
+        "same range" [-10.0 10.0]
+        "removed min" [nil 10.0]
+        "removed max" [-10.0 nil]
+        "no range"[]
+        "minimal range" [-2.0 5.0]))
     (testing "failure cases"
-      (are
+      (util/are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."))
@@ -196,13 +203,13 @@
           (= [400 [expected-error]]
              [status errors]))
 
-        [-3.0 4.99] 1
-        [nil 4.99] 1
-        [-1.99 6] 1
-        [-1.99 nil] 1
-        [-1.99 4.99] 2
-        [(Double/longBitsToDouble (dec (Double/doubleToLongBits -2.0))) nil] 1
-        [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))] 1))))
+        "invalid max" [-3.0 4.99] 1
+        "invalid max no min" [nil 4.99] 1
+        "invalid min" [-1.99 6] 1
+        "invalid min no max" [-1.99 nil] 1
+        "invalid min & max" [-1.99 4.99] 2
+        "invalid & very close to min" [(Double/longBitsToDouble (dec (Double/doubleToLongBits -2.0))) nil] 1
+        "invalid & very cleose to max" [nil (Double/longBitsToDouble (dec (Double/doubleToLongBits 5.0)))] 1))))
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial psa/parse-value :datetime)
@@ -217,7 +224,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are
+      (util/are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -227,14 +234,14 @@
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
-        ["2012-02-01T01:02:02Z" "2012-11-01T01:02:04Z"]
-        ["2012-02-01T01:02:03Z" "2012-11-01T01:02:03Z"]
-        [nil "2012-08-01T01:02:03Z"]
-        ["2012-04-01T01:02:03Z" nil]
-        []
-        ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
+        "expanded range" ["2012-02-01T01:02:02Z" "2012-11-01T01:02:04Z"]
+        "same range" ["2012-02-01T01:02:03Z" "2012-11-01T01:02:03Z"]
+        "removed min" [nil "2012-08-01T01:02:03Z"]
+        "removed max" ["2012-04-01T01:02:03Z" nil]
+        "no range" []
+        "minimal range" ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
     (testing "failure cases"
-      (are
+      (util/are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."))
@@ -247,11 +254,11 @@
           (= [400 [expected-error]]
              [status errors]))
 
-        ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"] 1
-        [nil "2012-08-01T01:02:02.999Z"] 1
-        ["2012-04-01T01:02:03.001Z" "2012-11-01T01:02:04Z"] 1
-        ["2012-04-01T01:02:03.001Z" nil] 1
-        ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"] 2))))
+        "invalid max" ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"] 1
+        "invalid max no min" [nil "2012-08-01T01:02:02.999Z"] 1
+        "invalid min" ["2012-04-01T01:02:03.001Z" "2012-11-01T01:02:04Z"] 1
+        "invalid min no max" ["2012-04-01T01:02:03.001Z" nil] 1
+        "invalid min & max" ["2012-04-01T01:02:03.001Z" "2012-08-01T01:02:02.999Z"] 2))))
 
 (deftest collection-update-additional-attributes-date-range-test
   (let [parse-fn (partial psa/parse-value :date)
@@ -266,7 +273,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are
+      (util/are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -276,14 +283,14 @@
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
-        ["2012-02-01Z" "2012-11-03Z"]
-        ["2012-02-02Z" "2012-11-02Z"]
-        [nil "2012-11-02Z"]
-        ["2012-02-02Z" nil]
-        []
-        ["2012-04-02Z" "2012-08-02Z"]))
+        "expanded range" ["2012-02-01Z" "2012-11-03Z"]
+        "same range" ["2012-02-02Z" "2012-11-02Z"]
+        "removed min" [nil "2012-11-02Z"]
+        "removed max" ["2012-02-02Z" nil]
+        "no range" []
+        "minimal range" ["2012-04-02Z" "2012-08-02Z"]))
     (testing "failure cases"
-      (are
+      (util/are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."))
@@ -296,11 +303,11 @@
           (= [400 [expected-error]]
              [status errors]))
 
-        ["2012-02-01Z" "2012-08-01Z"] 1
-        [nil "2012-08-01Z"] 1
-        ["2012-04-03Z" "2012-08-03Z"] 1
-        ["2012-04-03Z" nil] 1
-        ["2012-04-03Z" "2012-08-01Z"] 2))))
+        "invalid max" ["2012-02-01Z" "2012-08-01Z"] 1
+        "invalid max no min" [nil "2012-08-01Z"] 1
+        "invalid min" ["2012-04-03Z" "2012-08-03Z"] 1
+        "invalid min no max" ["2012-04-03Z" nil] 1
+        "invalid min & max" ["2012-04-03Z" "2012-08-01Z"] 2))))
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial psa/parse-value :time)
@@ -315,7 +322,7 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (are
+      (util/are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
@@ -325,14 +332,14 @@
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
-        ["01:02:02Z" "11:02:04Z"]
-        ["01:02:03Z" "11:02:03Z"]
-        [nil "11:02:03Z"]
-        ["01:02:03Z" nil]
-        []
-        ["04:02:03Z" "06:02:03Z"]))
+        "expanded range" ["01:02:02Z" "11:02:04Z"]
+        "same range" ["01:02:03Z" "11:02:03Z"]
+        "removed min" [nil "11:02:03Z"]
+        "removed max" ["01:02:03Z" nil]
+        "no range" []
+        "minimal range" ["04:02:03Z" "06:02:03Z"]))
     (testing "failure cases"
-      (are
+      (util/are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."))
@@ -345,8 +352,8 @@
           (= [400 [expected-error]]
              [status errors]))
 
-        ["01:02:04Z" "06:02:02.999Z"] 1
-        [nil "06:02:02.999Z"] 1
-        ["04:02:03.001Z" "11:02:04Z"] 1
-        ["04:02:03.001Z" nil] 1
-        ["04:02:03.001Z" "06:02:02.999Z"] 2))))
+        "invalid max" ["01:02:04Z" "06:02:02.999Z"] 1
+        "invalid max no min" [nil "06:02:02.999Z"] 1
+        "invalid min" ["04:02:03.001Z" "11:02:04Z"] 1
+        "invalid min no max" ["04:02:03.001Z" nil] 1
+        "invalid min & max" ["04:02:03.001Z" "06:02:02.999Z"] 2))))

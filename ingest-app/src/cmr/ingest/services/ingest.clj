@@ -57,7 +57,7 @@
         coll-concept (add-extra-fields-for-collection context concept collection)]
     (v/validate-business-rules
       context
-      (assoc coll-concept :additional-attributes (:product-specific-attributes collection)))
+      (assoc coll-concept :umm-concept collection))
     coll-concept))
 
 (defn- validate-granule-collection-ref
