@@ -94,8 +94,8 @@
   (routes
     (context (:relative-root-url system) []
       provider-api/provider-api-routes
-      (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
-        (jobs/reindex-collection-permitted-groups request-context)
+      (POST "/reindex-collection-permitted-groups" {:keys [headers params request-context]}
+        (jobs/reindex-collection-permitted-groups request-context (= "true" (:reindex-all params)))
         {:status 200})
       (POST "/cleanup-expired-collections" {:keys [headers request-context]}
         (jobs/cleanup-expired-collections request-context)

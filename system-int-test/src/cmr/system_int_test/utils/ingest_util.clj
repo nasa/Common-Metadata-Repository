@@ -71,10 +71,13 @@
 
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
-  []
-  (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                              {:connection-manager (s/conn-mgr)})]
-    (is (= 200 (:status response)))))
+  ([]
+   (reindex-collection-permitted-groups false))
+  ([reindex-all?]
+   (let [response (client/post (url/reindex-collection-permitted-groups-url)
+                               {:connection-manager (s/conn-mgr)
+                                :query-params {:reindex-all reindex-all?}})]
+     (is (= 200 (:status response))))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"

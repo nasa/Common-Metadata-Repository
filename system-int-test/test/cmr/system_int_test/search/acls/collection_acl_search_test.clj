@@ -166,15 +166,15 @@
       (testing "all items"
         (let [coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
           (is (= coll-od (:results (search/find-concepts-opendata :collection {:token guest-token
-                                                                                    :page-size 100}))))))
+                                                                               :page-size 100}))))))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
               coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
           (is (= coll-od (:results (search/find-concepts-opendata :collection
-                                                                       {:token guest-token
-                                                                        :page-size 100
-                                                                        :concept-id concept-ids})))))))))
+                                                                  {:token guest-token
+                                                                   :page-size 100
+                                                                   :concept-id concept-ids})))))))))
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
@@ -186,29 +186,44 @@
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
-    (index/wait-until-indexed)
-    (ingest/reindex-collection-permitted-groups)
-    (index/wait-until-indexed)
+    (testing "normal reindex collection permitted groups"
+      (index/wait-until-indexed)
+      (ingest/reindex-collection-permitted-groups)
+      (index/wait-until-indexed)
 
-    ;; before acls change
-    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      ;; before acls change
+      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
-    ;; Grant collection 2
-    (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
-    ;; Ungrant collection 3
-    (e/ungrant acl2)
-    ;; Grant collection 4
-    (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
+      ;; Grant collection 2
+      (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
+      ;; Ungrant collection 3
+      (e/ungrant acl2)
 
-    ;; Try searching again before the reindexing
-    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      ;; Try searching again before the reindexing
+      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
-    ;; Reindex collection permitted groups
-    (ingest/reindex-collection-permitted-groups)
-    (index/wait-until-indexed)
+      ;; Reindex collection permitted groups
+      (ingest/reindex-collection-permitted-groups)
+      (index/wait-until-indexed)
 
-    ;; Try searching again
-    (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {})))))
+      ;; Search after reindexing
+      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {}))))
+
+    (testing "reindex collection permitted groups - force reindex all"
+
+      ;; Grant collection 4
+      (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
+
+      ;; Try before reindexing
+      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {})))
+
+      ;; Reindex collection permitted groups - force reindex all
+      ;; manually check the logs here. It should say it's reindexing provider 1 and provider 3 as well.
+      (ingest/reindex-collection-permitted-groups true)
+      (index/wait-until-indexed)
+
+      ;; Search after reindexing
+      (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {}))))))
 
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
 ;; This isn't the desired behavior. It's just a side effect that shows it's working.
