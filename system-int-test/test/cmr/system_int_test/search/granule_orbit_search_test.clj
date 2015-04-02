@@ -53,11 +53,23 @@
                                                                  :inclination-angle 94
                                                                  :number-of-orbits 0.25
                                                                  :start-circular-latitude
-                                                                 -50
+                                                                 50
+                                                                 ; -50
                                                                  ; 0
                                                                  }})}))]
 
-    [coll (make-gran coll "gran1" 70.80471 -50 :asc 50 :asc)]))
+    [coll (make-gran coll "gran1"
+                     70.80471 ; ascending crossing
+                     -50 :asc ; start lat, start dir
+                     50 :asc ; end lat end dir
+                     {:beginning-date-time "2003-09-27T17:03:27.000000Z"
+                      :ending-date-time "2003-09-27T17:30:23.000000Z"
+                      :orbit-calculated-spatial-domains [{:orbit-number 3838
+                                                          :equator-crossing-longitude 70.80471
+                                                          :equator-crossing-date-time "2003-09-27T15:40:15Z"}
+                                                         {:orbit-number 3839
+                                                          :equator-crossing-longitude 46.602737
+                                                          :equator-crossing-date-time "2003-09-27T17:16:56Z"}]})]))
 
 
 
@@ -93,7 +105,13 @@
   ;; 2. Evaluate this block to find all the mbrs.
   ;; It will print out "Elapsed time: XXXX msecs" when it's done
   (def matching-mbrs
-    (future (time (doall (filter mbr-finds-granule? (create-mbrs 45.0 90.0 -55.0 55.0 3))))))
+    (future (time (doall (filter mbr-finds-granule? (create-mbrs 20.0 90.0 -90.0 90.0 3
+                                                                 ))))))
+
+  (mbr-finds-granule? (m/mbr 40 30 45 24))
+
+  (ge-helper/display-shapes "test_mbr.kml" [(m/mbr 40 30 45 24)])
+
 
   ;; How many were found? This will block on the future
   (count @matching-mbrs)
@@ -101,8 +119,12 @@
   ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
   ;; Google Earth will open when you evaluate it. (as long as you've installed it)
   ;; You can give different tests unique names. Otherwise it will overwrite the file.
+  (ge-helper/display-shapes "start_circ_pos_50_2.kml" @matching-mbrs)
+  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
   (ge-helper/display-shapes "start_circ_neg_50.kml" @matching-mbrs)
   (ge-helper/display-shapes "start_circ_0.kml" @matching-mbrs)
+
+  ;;TODO visualize kml returned by granule and commit this
 
 
 
