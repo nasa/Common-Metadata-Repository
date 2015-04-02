@@ -1,10 +1,11 @@
 (ns cmr.ingest.test.services.additional-attribute-validation
   (:require [clojure.test :refer :all]
             [cmr.umm.collection :as c]
+            [cmr.common.util :as util]
             [cmr.ingest.services.additional-attribute-validation :as v]))
 
 (deftest aa-range-reduced-test
-  (are
+  (util/are2
     [prev-params params reduced?]
     (let [aa (c/map->ProductSpecificAttribute
                {:parsed-parameter-range-begin (first params)
@@ -14,17 +15,17 @@
                      :parsed-parameter-range-end (last prev-params)})]
       (= reduced? (#'v/aa-range-reduced? aa prev-aa)))
 
-    [3 9] [4 8] true
-    [3 9] [4 10] true
-    [3 9] [4 nil] true
-    [3 9] [1 8] true
-    [3 9] [nil 8] true
+    "reduced on both ends" [3 9] [4 8] true
+    "reduced on min with max" [3 9] [4 10] true
+    "reduced on min no max" [3 9] [4 nil] true
+    "reduced on max with min" [3 9] [1 8] true
+    "reduced on max no min"[3 9] [nil 8] true
 
-    [3 9] [3 9] false
-    [3 9] [2 10] false
-    [3 9] [3 nil] false
-    [3 9] [nil 9] false
-    [3 9] [nil nil] false))
+    "same range" [3 9] [3 9] false
+    "expanded on both ends" [3 9] [2 10] false
+    "no max" [3 9] [3 nil] false
+    "no min" [3 9] [nil 9] false
+    "no range" [3 9] [nil nil] false))
 
 (deftest out-of-range-searches-test
   (are

@@ -41,31 +41,34 @@
                                        (:name %)))
          deleted-aas)))
 
+(defn- single-aa-type-range-search
+  "Returns the granule search for the given additional attribute and its previous version"
+  [[aa prev-aa]]
+  (let [{aa-name :name aa-type :data-type} aa
+        {prev-aa-type :data-type} prev-aa]
+    (if (= aa-type prev-aa-type)
+      ;; type does not change, check for range change
+      (when (aa-range-reduced? aa prev-aa)
+        (out-of-range-searches aa))
+      ;; additional attribute type is changed, we need to search that no granules reference this additional attribute
+      {:params {"attribute[]" [aa-name]}
+       :error-msg (format "Collection additional attribute [%s] was of DataType [%s], cannot be changed to [%s]."
+                          aa-name (psa/gen-data-type prev-aa-type) (psa/gen-data-type aa-type))})))
+
 (defn- build-aa-type-range-searches
   "Add granule searches for finding invalid additional attribute type and range changes to the given
   list of searches and returns it. It is done by going through the additional attributes that exist
   in the previous version of the collection and construct searches for those that either have type
   changed or range changed to a reduced range that needs to verify that no granules will become
   invalidated due to the changes."
-  [aas prev-aas searches]
+  [aas prev-aas]
   (let [prev-aas-map (group-by :name prev-aas)
-        ;; find the additional attributes that exists in the previous version of the collection
-        existing-aas (filter #(prev-aas-map (:name %)) aas)
-        build-fn (fn [searches aa]
-                   (let [{aa-name :name aa-type :data-type} aa
-                         prev-aa (first (prev-aas-map aa-name))
-                         {prev-aa-type :data-type} prev-aa]
-                     (if (= aa-type prev-aa-type)
-                       ;; type does not change, check for range change
-                       (if (aa-range-reduced? aa prev-aa)
-                         (conj searches (out-of-range-searches aa))
-                         searches)
-                       ;; additional attribute type is changed, we need to search that no granules reference this additional attribute
-                       (conj searches
-                             {:params {"attribute[]" [aa-name]}
-                              :error-msg (format "Collection additional attribute [%s] was of DataType [%s], cannot be changed to [%s]."
-                                                 aa-name (psa/gen-data-type prev-aa-type) (psa/gen-data-type aa-type))}))))]
-    (reduce build-fn searches existing-aas)))
+        link-fn (fn [aa]
+                  (when-let [prev-aa (first (prev-aas-map (:name aa)))]
+                    [aa prev-aa]))]
+    (->> (map link-fn aas)
+         (map single-aa-type-range-search)
+         (remove nil?))))
 
 (defn- append-common-params
   "Returns the has-granule search by appending the common search params to the given search"
@@ -86,7 +89,7 @@
   (let [{aas :product-specific-attributes} concept
         {prev-aas :product-specific-attributes
          concept-id :concept-id} prev-concept]
-    (->> (build-aa-deleted-searches aas prev-aas)
-         (build-aa-type-range-searches aas prev-aas)
+    (->> (concat (build-aa-deleted-searches aas prev-aas)
+                 (build-aa-type-range-searches aas prev-aas))
          (map (partial append-common-params concept-id)))))
 

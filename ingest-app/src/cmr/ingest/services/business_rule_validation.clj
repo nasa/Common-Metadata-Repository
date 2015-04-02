@@ -29,7 +29,14 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
-(defn- has-granule?
+(def collection-update-searches
+  "Defines a list of functions that take the updated UMM concept and the previous UMM concept and
+  return search maps used to validate that a collection was not updated in a way that invalidates
+  granules. Each search map contains a :params key of the parameters to use to execute the search
+  and an :error-msg to return if the search finds any hits."
+  [aa/additional-attribute-searches])
+
+(defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
   by the search."
   [context search-map]
@@ -38,13 +45,8 @@
     (when (> hits 0)
       (str error-msg (format " Found %d granules." hits)))))
 
-(def collection-update-searches
-  "Defines a list of functions to construct the collection update searches in terms of search params
-  and error message to return when the search found invalidated granules. All functions take two
-  arguments: the UMM concept and the previous UMM concept."
-  [aa/additional-attribute-searches])
-
 (defn- collection-update-validation
+  "Validate collection update does not invalidate any existing granules."
   [context concept]
   (let [{:keys [provider-id extra-fields umm-concept]} concept
         {:keys [entry-title]} extra-fields
@@ -54,7 +56,7 @@
       (let [prev-umm-concept (umm/parse-concept prev-concept)
             has-granule-searches (mapcat #(% umm-concept prev-umm-concept) collection-update-searches)
             search-errors (->> has-granule-searches
-                               (map (partial has-granule? context))
+                               (map (partial has-granule-search-error context))
                                (remove nil?))]
         (when (seq search-errors)
           search-errors)))))

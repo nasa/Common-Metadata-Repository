@@ -94,14 +94,14 @@
 
         "Multiple validation errors."
         [(dc/psa "float" :float 5.0 10.0)]
-        ["Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."
-         "Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
+        ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [datetime] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [date] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [time] is referenced by existing granules, cannot be removed. Found 1 granules."
-         "Collection additional attribute [dts] is referenced by existing granules, cannot be removed. Found 1 granules."]
+         "Collection additional attribute [dts] is referenced by existing granules, cannot be removed. Found 1 granules."
+         "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
         [(dc/psa "string" :int) a2 a3 a4 a5 a6 a7 a8 a9]
