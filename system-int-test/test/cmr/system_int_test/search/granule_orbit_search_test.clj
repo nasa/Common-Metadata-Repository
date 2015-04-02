@@ -124,7 +124,10 @@
   (ge-helper/display-shapes "start_circ_neg_50.kml" @matching-mbrs)
   (ge-helper/display-shapes "start_circ_0.kml" @matching-mbrs)
 
-  ;;TODO visualize kml returned by granule and commit this
+  ;; visualize the kml representation
+  (do (spit "granule_kml.kml"
+            (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
+    (clojure.java.shell/sh "open" "granule_kml.kml"))
 
 
 
