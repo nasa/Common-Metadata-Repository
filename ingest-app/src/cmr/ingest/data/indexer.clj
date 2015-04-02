@@ -36,6 +36,21 @@
                 delete-url status response)))
     response))
 
+(defn- try-to-publish
+  "Attempts to enqueue a message on the message queue. If the publish request does not complete
+  within the timeout period, it will throw a service unavailable error.
+  Returns true if the message was successfully enqueued and false otherwise."
+  [queue-broker queue-name msg]
+  (loop []
+    (let [message-published? (try
+                               (queue/publish queue-broker queue-name msg)
+                               (catch Exception e
+                                 (error e)
+                                 false))]
+      (when-not message-published?
+        (warn "Attempt to queue messaged failed. Retrying: " msg)
+        (recur)))))
+
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message
   fails to be put on the queue.
@@ -52,27 +67,13 @@
    (let [queue-broker (get-in context [:system :queue-broker])
          queue-name (config/index-queue-name)
          start-time (System/currentTimeMillis)]
-     (loop []
-       (let [message-published? (try
-                                  (let [response (timeout/thunk-timeout
-                                                   #(queue/publish queue-broker queue-name msg)
-                                                   timeout-ms)]
-                                    (when-not response
-                                      (if (< (- (System/currentTimeMillis) start-time) timeout-ms)
-                                        (warn "Attempt to queue message failed. Retrying: " msg)
-                                        (errors/throw-service-error
-                                          :service-unavailable
-                                          (str "All retries exhausted to queue message: " msg))))
-                                    response)
-                                  (catch java.util.concurrent.TimeoutException e
-                                    (errors/throw-service-error
-                                      :service-unavailable
-                                      (str "Request timed out when attempting to publish message: "
-                                           msg)
-                                      e)))]
-         (when-not message-published?
-           (Thread/sleep 2000)
-           (recur)))))))
+     (try
+       (timeout/thunk-timeout #(try-to-publish queue-broker queue-name msg) timeout-ms)
+       (catch java.util.concurrent.TimeoutException e
+         (errors/throw-service-error
+           :service-unavailable
+           (str "Request timed out when attempting to publish message: " msg)
+           e))))))
 
 (defmulti index-concept-with-method
   "Index the concept using an http request or the indexing queue"

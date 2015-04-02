@@ -153,6 +153,8 @@
             {:status 403
              :body "Cannot set message queue retry behvavior unless using the message queue wrapper."})))
 
+      ;; Used to change the timeout used for queueing messages on the message queue. For tests which
+      ;; simulate a timeout error, set the timeout value to 0.
       (POST "/set-publish-timeout" {:keys [params]}
         (let [timeout (Integer/parseInt (:timeout params))
               expect-timeout? (= timeout 0)]

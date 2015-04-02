@@ -143,6 +143,7 @@
   ;; Rabbit MQ Manual Tests
 
   ;; Pre-req to running any of the tests is to do the following:
+
   ;; 1.) Bring up the RabbitMQ VM
   ;; 2.) Configure dev-system to use external message queue
   ;; 3.) vagrant ssh to RabbitMQ VM
@@ -185,6 +186,7 @@
   ;; 9.) Verify you can ingest the granule above
 
   ;; Rabbit MQ Down while trying to queue a message
+
   ;; 1.) Bring down RabbitMQ
   ;;      sudo service rabbitmq-server stop
   ;; 2.) Attempt to ingest the collection
@@ -207,6 +209,7 @@
   ;;      sudo service rabbitmq-server start
 
   ;; Messages retrying while RabbitMQ is restarted
+
   ;; 1.) Force messages to take longer than normal:
   ;; Add the following line to indexer-app/src/cmr/indexer/services/index_service.clj to the
   ;; index-concept function:

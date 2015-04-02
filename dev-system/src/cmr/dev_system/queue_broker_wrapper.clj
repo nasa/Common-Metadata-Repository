@@ -166,7 +166,9 @@
 
       ;; Mark the enqueue as failed if we are timing things out or it fails
       (if (or @timeout-atom (not (queue/publish queue-broker queue-name tagged-msg)))
-        (update-message-queue-history this :enqueue tagged-msg :failure)
+        (do
+          (update-message-queue-history this :enqueue tagged-msg :failure)
+          false)
         true)))
 
   (subscribe

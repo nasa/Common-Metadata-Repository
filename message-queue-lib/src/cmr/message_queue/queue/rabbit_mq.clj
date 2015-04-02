@@ -217,7 +217,6 @@
     [this queue-name msg]
     (let [payload (json/generate-string msg)
           metadata {:content-type "application/json" :persistent true}]
-      (try
         (with-channel
           [pub-ch conn]
           ;; put channel into confirmation mode
@@ -226,10 +225,7 @@
           ;; publish the message
           (lb/publish pub-ch default-exchange-name queue-name payload metadata)
           ;; block until the confirm arrives or return false if queue nacks the message
-          (lcf/wait-for-confirms pub-ch))
-        (catch Exception e
-          (error e)
-          false))))
+          (lcf/wait-for-confirms pub-ch))))
 
   (subscribe
     [this queue-name handler params]
