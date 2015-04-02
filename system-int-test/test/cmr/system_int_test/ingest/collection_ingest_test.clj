@@ -290,18 +290,3 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
-
-
-(comment
-
-  (cmr.ingest.config/set-publish-queue-timeout-ms! 1)
-  (cmr.ingest.config/set-publish-queue-timeout-ms! 60000)
-
-
-  (do
-    (ingest/create-provider "provguid1" "PROV1")
-    (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
-    (doseq [_ (range 0 1)]
-      (ingest/ingest-concept (dc/collection-concept {}))))
-  )
-
