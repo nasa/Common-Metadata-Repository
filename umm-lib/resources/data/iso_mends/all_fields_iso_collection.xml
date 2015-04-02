@@ -135,6 +135,9 @@
          <gmd:abstract>
             <gco:CharacterString>A minimal valid collection</gco:CharacterString>
          </gmd:abstract>
+         <gmd:purpose>
+            <gco:CharacterString>A grand purpose</gco:CharacterString>
+         </gmd:purpose>
          <gmd:purpose gco:nilReason="missing"/>
          <gmd:pointOfContact>
             <gmd:CI_ResponsibleParty>

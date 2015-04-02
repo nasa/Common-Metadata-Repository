@@ -267,6 +267,7 @@
     </Data_Center>
     <Summary>
       <Abstract>Summary of collection.</Abstract>
+      <Purpose>A grand purpose</Purpose>
     </Summary>
     <Related_URL>
       <URL_Content_Type>
@@ -366,6 +367,7 @@
     </Data_Center>
     <Summary>
       <Abstract>summary of the dataset</Abstract>
+      <Purpose>A grand purpose</Purpose>
     </Summary>
     <Metadata_Name>CEOS IDN DIF</Metadata_Name>
     <Metadata_Version>VERSION 9.8.4</Metadata_Version>
@@ -377,6 +379,7 @@
                    {:entry-id "geodata_1848"
                     :entry-title "Global Land Cover 2000 (GLC 2000)"
                     :summary "Summary of collection."
+                    :purpose "A grand purpose"
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"

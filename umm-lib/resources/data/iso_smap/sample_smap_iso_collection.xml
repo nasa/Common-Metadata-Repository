@@ -125,9 +125,7 @@
             <gco:CharacterString>Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units.</gco:CharacterString>
           </gmd:abstract>
           <gmd:purpose>
-            <gco:CharacterString>This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land.
-                            The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index.
-                            The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures.</gco:CharacterString>
+            <gco:CharacterString>This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures.</gco:CharacterString>
           </gmd:purpose>
           <gmd:credit>
 <!-- This field can name individuals or organizations for credit. For now, it specifies NASA. -->
