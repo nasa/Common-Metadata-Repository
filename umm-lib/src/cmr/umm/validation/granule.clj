@@ -30,28 +30,28 @@
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
   (fn [field]
     (when-not (field spatial-coverage-ref)
-      {(conj spatial-coverage-path field) 
-       [(format 
+      {(conj spatial-coverage-path field)
+       [(format
           "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
           (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
   [field-path spatial-coverage-ref]
-  (let [granule-spatial-representation 
+  (let [granule-spatial-representation
         (get-in spatial-coverage-ref [:parent :granule-spatial-representation] :no-spatial)
-        is-not-allowed (spatial-field-not-allowed field-path 
-                                                  spatial-coverage-ref 
+        is-not-allowed (spatial-field-not-allowed field-path
+                                                  spatial-coverage-ref
                                                   granule-spatial-representation)
-        is-required (spatial-field-is-required field-path 
-                                               spatial-coverage-ref 
+        is-required (spatial-field-is-required field-path
+                                               spatial-coverage-ref
                                                granule-spatial-representation)
-        errors (case granule-spatial-representation 
-                 :no-spatial [(is-not-allowed :orbit) 
+        errors (case granule-spatial-representation
+                 :no-spatial [(is-not-allowed :orbit)
                               (is-not-allowed :geometries)]
-                 (:geodetic :cartesian) [(is-required :geometries) 
+                 (:geodetic :cartesian) [(is-required :geometries)
                                          (is-not-allowed :orbit)]
-                 :orbit [(is-not-allowed :geometries) 
+                 :orbit [(is-not-allowed :geometries)
                          (is-required :orbit)])]
     (apply merge (remove nil? errors))))
 
@@ -72,6 +72,28 @@
     ;; polygons etc do not know whether they are geodetic or not.
     set-geometries-spatial-representation
     {:geometries (v/every sv/spatial-validation)})])
+
+(defn- within-range?
+  "Checks if value falls within the bounds defined by min-value and max-value."
+  [[min-val max-val] value]
+  (cond (and min-val value (< value min-val)) false
+        (and max-val value (> value max-val)) false
+        :else true))
+
+(defn two-d-coordinates-range-validation
+  "Validate that the 2D coordinates in the granule fall within the bounds defined by the collection"
+  [field-path two-d-coordinate-system]
+  (let [{{min-1 :min-value max-1 :max-value} :coordinate-1
+         {min-2 :min-value max-2 :max-value} :coordinate-2} (:parent two-d-coordinate-system)
+        check-range  (fn [coordinate-key [low high]]
+                       (if-not (within-range? [low high] (coordinate-key two-d-coordinate-system))
+                         {(conj field-path coordinate-key)
+                          [(format "The field [%%s] does not fall with-in the bounds [%s %s] defined in the collection" (or low "-∞") (or high "∞"))]}))]
+    (remove nil? (merge
+                   (check-range :start-coordinate-1  [min-1 max-1])
+                   (check-range :end-coordinate-1  [min-1 max-1])
+                   (check-range :start-coordinate-2  [min-2 max-2])
+                   (check-range :end-coordinate-2  [min-2 max-2])))))
 
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
@@ -179,6 +201,8 @@
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
                     (v/every platform-ref-validations)]
+    :two-d-coordinate-system [(vu/has-parent-validator :name "2D Coordinate System name")
+                              two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
                                   (v/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)

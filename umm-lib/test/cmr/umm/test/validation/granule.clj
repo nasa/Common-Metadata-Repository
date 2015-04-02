@@ -9,6 +9,7 @@
             [cmr.spatial.point :as p]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.services.errors :as e]
+            [cmr.common.util :as u]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (defn assert-valid-gran
@@ -47,7 +48,7 @@
 
 (defn gran-with-geometries
   [geometries]
-  (make-granule {:spatial-coverage (c/map->SpatialCoverage {:geometries geometries})}))
+  (make-granule {:spatial-coverage (g/map->SpatialCoverage {:geometries geometries})}))
 
 ;; This is built on top of the existing spatial validation. It just ensures that the spatial
 ;; validation is being called
@@ -76,13 +77,14 @@
           (gran-with-geometries [valid-point invalid-point invalid-mbr])
           expected-errors)))))
 
+
 (deftest granule-spatial-representation
-  (let [collection-with-geodetic (make-collection {:spatial-coverage 
+  (let [collection-with-geodetic (make-collection {:spatial-coverage
                                                    {:granule-spatial-representation :geodetic}})
-        collection-with-cartesian (make-collection {:spatial-coverage 
+        collection-with-cartesian (make-collection {:spatial-coverage
                                                    {:granule-spatial-representation :cartesian}})
-        collection-with-orbit (make-collection {:spatial-coverage 
-                                                {:granule-spatial-representation :orbit 
+        collection-with-orbit (make-collection {:spatial-coverage
+                                                {:granule-spatial-representation :orbit
                                                  :orbit-parameters {:inclination-angle 98.2
                                                                     :period 100.0
                                                                     :swath-width 2600.0
@@ -90,67 +92,67 @@
                                                                     :number-of-orbits 2.0}}})
         collection-with-no-spatial (make-collection {})
         granule-with-geometry (gran-with-geometries [(m/mbr 0 0 0 0)])
-        granule-with-orbit (make-granule {:spatial-coverage 
-                                          (c/map->SpatialCoverage 
+        granule-with-orbit (make-granule {:spatial-coverage
+                                          (g/map->SpatialCoverage
                                             {:orbit (g/map->Orbit {:ascending-crossing 76.123
                                                                    :start-lat 50.0
                                                                    :start-direction :asc
                                                                    :end-lat 50.0
                                                                    :end-direction :desc})})})
-        granule-with-no-geometry (make-granule {:spatial-coverage (c/map->SpatialCoverage {})})]
+        granule-with-no-geometry (make-granule {:spatial-coverage (g/map->SpatialCoverage {})})]
     (testing "granule spatial does not match with granule spatial representation"
-      (are [collection granule expected-errors] 
+      (are [collection granule expected-errors]
            (= (set (map e/map->PathErrors expected-errors))
               (set (v/validate-granule collection granule)))
-           
-           collection-with-geodetic granule-with-no-geometry 
-           [{:path [:spatial-coverage :geometries] 
+
+           collection-with-geodetic granule-with-no-geometry
+           [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
-           
-           collection-with-orbit granule-with-no-geometry 
-           [{:path [:spatial-coverage :orbit] 
+
+           collection-with-orbit granule-with-no-geometry
+           [{:path [:spatial-coverage :orbit]
              :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-           
-           collection-with-cartesian granule-with-no-geometry 
-           [{:path [:spatial-coverage :geometries] 
+
+           collection-with-cartesian granule-with-no-geometry
+           [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
-           
-           collection-with-orbit granule-with-geometry  
+
+           collection-with-orbit granule-with-geometry
            [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
             {:path [:spatial-coverage :orbit]
              :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
-           
-           collection-with-no-spatial granule-with-geometry 
+
+           collection-with-no-spatial granule-with-geometry
            [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]
-           
-           collection-with-geodetic granule-with-orbit 
+
+           collection-with-geodetic granule-with-orbit
            [{:path [:spatial-coverage :orbit]
              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}
             {:path [:spatial-coverage :geometries]
              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
-           
-           collection-with-cartesian granule-with-orbit 
+
+           collection-with-cartesian granule-with-orbit
            [{:path [:spatial-coverage :orbit]
              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}
             {:path [:spatial-coverage :geometries]
-             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}] 
-           
-           collection-with-no-spatial granule-with-orbit 
-           [{:path [:spatial-coverage :orbit] 
+             :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
+
+           collection-with-no-spatial granule-with-orbit
+           [{:path [:spatial-coverage :orbit]
              :errors ["[Orbit] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]}]))
-    
+
     (testing "granule spatial matches with granule spatial representation"
       (are [collection granule]
            (is (empty? (v/validate-granule collection granule)))
-           
+
            collection-with-geodetic granule-with-geometry
-           
+
            collection-with-cartesian granule-with-geometry
-           
+
            collection-with-orbit granule-with-orbit
-           
+
            collection-with-no-spatial granule-with-no-geometry))))
 
 (defn granule-with-temporal
@@ -601,3 +603,70 @@
         (make-granule {:related-urls [r1 r2 r2]})
         [:related-urls]
         [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
+
+(deftest granule-two-d-coordinate-system-validation
+  (let [collection (make-collection {:two-d-coordinate-systems
+                                     [{:name "name"
+                                   :coordinate-1 {:min-value 0
+                                                  :max-value 35}
+                                   :coordinate-2 {:min-value 0
+                                                  :max-value 17}}]})
+        collection-with-missing-bounds (make-collection {:two-d-coordinate-systems
+                                                              [{:name "name"
+                                                                :coordinate-1 {:min-value 0}
+                                                                :coordinate-2 {:max-value 17}}]})]
+    (testing "valid granule with all coordinates present"
+      (assert-valid-gran collection (make-granule
+                                      {:two-d-coordinate-system {:name "name"
+                                                                 :start-coordinate-1 3
+                                                                 :end-coordinate-1 26
+                                                                 :start-coordinate-2 8
+                                                                 :end-coordinate-2 15}})))
+    (testing "valid granule with some granule coordinates missing"
+      (assert-valid-gran collection (make-granule {:two-d-coordinate-system
+                                                   {:name "name"
+                                                    :start-coordinate-1 3
+                                                    :end-coordinate-2 15}})))
+    (testing "valid granule with some coordinate bounds missing in the collection"
+      (assert-valid-gran collection-with-missing-bounds
+                         (make-granule {:two-d-coordinate-system {:name "name"
+                                                                  :start-coordinate-1 3
+                                                                  :end-coordinate-2 15}})))
+    (testing "invalid granule with non-existent coordinate system name"
+      (assert-invalid-gran
+        collection
+        (make-granule {:two-d-coordinate-system {:name "unsupported_name"}})
+        [:two-d-coordinate-system]
+        ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [unsupported_name]."]))
+    (testing "invalid granules with 2D coordinates out of range"
+      (u/are2 [collection granule expected-errors]
+           (= (set (map e/map->PathErrors expected-errors))
+              (set (v/validate-granule collection granule)))
+
+           "All granule coordinates out of range"
+           collection
+           (make-granule {:two-d-coordinate-system {:name "name"
+                                                    :start-coordinate-1 -1
+                                                    :end-coordinate-1 38
+                                                    :start-coordinate-2 19
+                                                    :end-coordinate-2 25}})
+           [{:path [:two-d-coordinate-system :start-coordinate-1]
+             :errors ["The field [Start Coordinate 1] does not fall with-in the bounds [0 35] defined in the collection"]}
+            {:path [:two-d-coordinate-system :end-coordinate-1]
+             :errors ["The field [End Coordinate 1] does not fall with-in the bounds [0 35] defined in the collection"]}
+            {:path [:two-d-coordinate-system :start-coordinate-2]
+             :errors ["The field [Start Coordinate 2] does not fall with-in the bounds [0 17] defined in the collection"]}
+            {:path [:two-d-coordinate-system :end-coordinate-2]
+             :errors ["The field [End Coordinate 2] does not fall with-in the bounds [0 17] defined in the collection"]}]
+
+           "Some granule coordinates out of range with collection missing some bounds"
+           collection-with-missing-bounds
+           (make-granule {:two-d-coordinate-system {:name "name"
+                                                    :start-coordinate-1 -1
+                                                    :start-coordinate-2 8
+                                                    :end-coordinate-2 19}})
+           [{:path [:two-d-coordinate-system :end-coordinate-2]
+             :errors ["The field [End Coordinate 2] does not fall with-in the bounds [-∞ 17] defined in the collection"]}
+            {:path [:two-d-coordinate-system :start-coordinate-1]
+             :errors ["The field [Start Coordinate 1] does not fall with-in the bounds [0 ∞] defined in the collection"]}]))))
+
