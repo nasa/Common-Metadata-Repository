@@ -37,11 +37,15 @@
     response))
 
 (defn- try-to-publish
-  "Attempts to enqueue a message on the message queue. If the publish request does not complete
-  within the timeout period, it will throw a service unavailable error.
+  "Attempts to enqueue a message on the message queue.
+
+  When the RabbitMQ server is down or unreachable, calls to publish will throw an exception. Rather
+  than raise an error to the caller immediately, the publication will be retried indefinitely.
+  By retrying, routine maintenance such as restarting the RabbitMQ server will not result in any
+  ingest errors returned to the provider.
+
   Returns true if the message was successfully enqueued and false otherwise."
   [queue-broker queue-name msg]
-  (loop []
     (let [message-published? (try
                                (queue/publish queue-broker queue-name msg)
                                (catch Exception e
@@ -49,18 +53,15 @@
                                  false))]
       (when-not message-published?
         (warn "Attempt to queue messaged failed. Retrying: " msg)
-        (recur)))))
+        (Thread/sleep 2000)
+        (recur queue-broker queue-name msg))))
 
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message
   fails to be put on the queue.
 
-  Requests to publish a message include a timeout value to handle error cases with the Rabbit MQ
-  server. Otherwise when the memory limit within RabbitMQ is reached it could block indefinitely.
-  Also when the server is down or unreachable, calls to publish will return a failure. Rather than
-  raise an error to the caller immediately, the publication will be retried until the timeout
-  period has expired. By retrying, routine maintenance such as restarting the RabbitMQ server
-  will not result in any ingest errors returned to the provider."
+  Requests to publish a message are wrapped in a timeout to handle error cases with the Rabbit MQ
+  server. Otherwise failures to publish will be retried indefinitely."
   ([context msg]
    (put-message-on-queue context msg (config/publish-queue-timeout-ms)))
   ([context msg timeout-ms]

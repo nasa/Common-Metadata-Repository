@@ -183,7 +183,7 @@
   ;;       sudo cp /etc/rabbitmq/rabbitmq.config /etc/rabbitmq/rabbitmq.config.orig
   ;; 8.) Restart RabbitMQ
   ;;       sudo service rabbitmq-server restart
-  ;; 9.) Verify you can ingest the granule above
+  ;; 9.) Verify you can ingest the collection above
 
   ;; Rabbit MQ Down while trying to queue a message
 
