@@ -11,7 +11,18 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-granule-orbit-number
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
+                                      [{:name "one CALIPSO"
+                                   :coordinate-1 {:min-value 100
+                                                  :max-value 200}
+                                   :coordinate-2 {:min-value 300
+                                                  :max-value 400}}]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
+                                      [{:name "BRAVO"
+                                   :coordinate-1 {:min-value 100
+                                                  :max-value 200}
+                                   :coordinate-2 {:min-value 300
+                                                  :max-value 400}}]}))
         gran1 (d/ingest "PROV1"
                         (dg/granule
                           coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
@@ -91,7 +102,7 @@
                                                               :end-coordinate-2 360.0})}))
         gran11 (d/ingest "PROV1"
                          (dg/granule
-                           coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
+                           coll2 {:two-d-coordinate-system (dg/two-d-coordinate-system
                                                              {:name "BRAVO"
                                                               :start-coordinate-1 100
                                                               :end-coordinate-1 120

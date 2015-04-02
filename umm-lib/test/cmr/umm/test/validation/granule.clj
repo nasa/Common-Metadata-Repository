@@ -607,26 +607,25 @@
 (deftest granule-two-d-coordinate-system-validation
   (let [collection (make-collection {:two-d-coordinate-systems
                                      [{:name "name"
-                                   :coordinate-1 {:min-value 0
-                                                  :max-value 35}
-                                   :coordinate-2 {:min-value 0
-                                                  :max-value 17}}]})
+                                       :coordinate-1 {:min-value 0
+                                                      :max-value 35}
+                                       :coordinate-2 {:min-value 0
+                                                      :max-value 17}}]})
         collection-with-missing-bounds (make-collection {:two-d-coordinate-systems
-                                                              [{:name "name"
-                                                                :coordinate-1 {:min-value 0}
-                                                                :coordinate-2 {:max-value 17}}]})
-        add-coordinate (fn[coordinate-key value] (when value {coordinate-key value}))]
+                                                         [{:name "name"
+                                                           :coordinate-1 {:min-value 0}
+                                                           :coordinate-2 {:max-value 17}}]})]
     (testing "granules with valid 2D coordinate system"
       (u/are2 [collection start1 end1 start2 end2]
               (empty? (v/validate-granule
                         collection
-                        (make-granule (g/map->TwoDCoordinateSystem
-                                        {:two-d-coordinate-system
-                                         (merge {:name "name"}
-                                                (add-coordinate :start-coordinate-1 start1)
-                                                (add-coordinate :end-coordinate-1 end1)
-                                                (add-coordinate :start-coordinate-2 start2)
-                                                (add-coordinate :end-coordinate-2 end2))}))))
+                        (make-granule {:two-d-coordinate-system
+                                       (g/map->TwoDCoordinateSystem
+                                         {:name "name"
+                                          :start-coordinate-1 start1
+                                          :end-coordinate-1 end1
+                                          :start-coordinate-2 start2
+                                          :end-coordinate-2 end2})})))
               "valid granule with all coordinates present"
               collection 3 26 8 15
 
@@ -640,13 +639,13 @@
               (= (set (map e/map->PathErrors expected-errors))
                  (set (v/validate-granule
                         collection
-                        (make-granule (g/map->TwoDCoordinateSystem
-                                        {:two-d-coordinate-system
-                                         (merge {:name coord-system-name}
-                                                (add-coordinate :start-coordinate-1 start1)
-                                                (add-coordinate :end-coordinate-1 end1)
-                                                (add-coordinate :start-coordinate-2 start2)
-                                                (add-coordinate :end-coordinate-2 end2))})))))
+                        (make-granule {:two-d-coordinate-system
+                                       (g/map->TwoDCoordinateSystem
+                                         {:name coord-system-name
+                                          :start-coordinate-1 start1
+                                          :end-coordinate-1 end1
+                                          :start-coordinate-2 start2
+                                          :end-coordinate-2 end2})}))))
 
               "Invalid granule with non-existent coordinate system name"
               collection "unsupported_name" nil nil nil nil

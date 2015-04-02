@@ -82,8 +82,8 @@
        (or (nil? max-val) (<= value max-val))))
 
 (defn- validate-coordinate-within-range
-  "Function which takes the two-d-coordinate-system of a granule and its path and returns a
-  function which takes one of the four 2D coordinate keys defined for granule TwoDCoordinateSystem
+  "Function which takes the two-d-coordinate-system of a granule and its path and returns a function
+  which takes one of the four 2D coordinate keys defined for a granule in TwoDCoordinateSystem
   and a range of values and validates that the value corresponding to the key falls within the
   range. If the coordinate key is not present in two-d-coordinate-system, it will not be validated."
   [field-path two-d-coordinate-system]
