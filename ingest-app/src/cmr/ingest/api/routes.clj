@@ -145,19 +145,18 @@
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
-      common-routes/job-api-routes
-
-      ;; These should check ACLs. CMR-1343 was filed to add that check
-      ;; job related routes
-      (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
-        (jobs/reindex-collection-permitted-groups request-context)
-        {:status 200})
-      (POST "/reindex-all-collections" {:keys [headers request-context]}
-        (jobs/reindex-all-collections request-context)
-        {:status 200})
-      (POST "/cleanup-expired-collections" {:keys [headers request-context]}
-        (jobs/cleanup-expired-collections request-context)
-        {:status 200})
+      (common-routes/job-api-routes
+        (routes
+          ;; These should check ACLs. CMR-1343 was filed to add that check
+          (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
+            (jobs/reindex-collection-permitted-groups request-context)
+            {:status 200})
+          (POST "/reindex-all-collections" {:keys [headers request-context]}
+            (jobs/reindex-all-collections request-context)
+            {:status 200})
+          (POST "/cleanup-expired-collections" {:keys [headers request-context]}
+            (jobs/cleanup-expired-collections request-context)
+            {:status 200})))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
