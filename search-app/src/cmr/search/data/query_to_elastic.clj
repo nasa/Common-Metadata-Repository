@@ -123,24 +123,29 @@
   ([field min-value max-value execution]
    (range-condition->elastic field min-value max-value execution true))
   ([field min-value max-value execution use-cache]
-   (cond
-     (and min-value max-value)
-     {:range {field {:gte min-value :lte max-value}
-              :execution execution
-              :_cache use-cache}}
+   (range-condition->elastic field min-value max-value execution use-cache false))
+  ([field min-value max-value execution use-cache exclusive?]
+   (let [[greater-than less-than] (if exclusive?
+                                    [:gt :lt]
+                                    [:gte :lte])]
+     (cond
+       (and min-value max-value)
+       {:range {field {greater-than min-value less-than max-value}
+                :execution execution
+                :_cache use-cache}}
 
-     min-value
-     {:range {field {:gte min-value}
-              :execution execution
-              :_cache use-cache}}
+       min-value
+       {:range {field {greater-than min-value}
+                :execution execution
+                :_cache use-cache}}
 
-     max-value
-     {:range {field {:lte max-value}
-              :execution execution
-              :_cache use-cache}}
+       max-value
+       {:range {field {less-than max-value}
+                :execution execution
+                :_cache use-cache}}
 
-     :else
-     (errors/internal-error! (m/nil-min-max-msg)))))
+       :else
+       (errors/internal-error! (m/nil-min-max-msg))))))
 
 (extend-protocol ConditionToElastic
   cmr.search.models.query.ConditionGroup
@@ -221,9 +226,10 @@
 
   cmr.search.models.query.NumericRangeCondition
   (condition->elastic
-    [{:keys [field min-value max-value]} concept-type]
-    (range-condition->elastic (query-field->elastic-field field concept-type)
-                              min-value max-value (numeric-range-execution-mode) (numeric-range-use-cache)))
+    [{:keys [field min-value max-value exclusive?]} concept-type]
+    (range-condition->elastic
+      (query-field->elastic-field field concept-type)
+      min-value max-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?))
 
 
   cmr.search.models.query.NumericRangeIntersectionCondition
@@ -258,14 +264,12 @@
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic
-    [{:keys [field start-date end-date]} concept-type]
+    [{:keys [field start-date end-date exclusive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
           from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
-          value {:from from-value}
-          value (if end-date (assoc value :to (h/utc-time->elastic-time end-date)) value)]
-      {:range {field value
-               :execution (numeric-range-execution-mode)
-               :_cache (numeric-range-use-cache)}}))
+          end-value (when end-date (h/utc-time->elastic-time end-date))]
+      (range-condition->elastic
+        field from-value end-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?)))
 
   cmr.search.models.query.DateValueCondition
   (condition->elastic

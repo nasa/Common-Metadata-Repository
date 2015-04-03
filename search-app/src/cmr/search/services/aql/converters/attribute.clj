@@ -16,7 +16,7 @@
                     {:type attrib-type
                      :name attrib-name
                      :value value})]
-    (p/parse-component-type condition)))
+    (p/parse-component-type condition false)))
 
 (defn- attrib-range-elem->condition
   [attrib-type attrib-name range-elem]
@@ -27,7 +27,7 @@
                      :name attrib-name
                      :min-value (when-not (s/blank? minv) minv)
                      :max-value (when-not (s/blank? maxv) maxv)})]
-    (p/parse-component-type condition)))
+    (p/parse-component-type condition false)))
 
 (defn- time-from-strings
   "Returns time from strings of hour, minute and second. Returns nil if all strings are nil."

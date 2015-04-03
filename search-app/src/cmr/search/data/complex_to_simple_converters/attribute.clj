@@ -60,17 +60,17 @@
   (qm/string-range-condition :string-value min-value max-value))
 
 (defmethod range-condition->range-filter :float
-  [{:keys [min-value max-value]}]
-  (qm/numeric-range-condition :float-value min-value max-value))
+  [{:keys [min-value max-value exclusive?]}]
+  (qm/numeric-range-condition :float-value min-value max-value exclusive?))
 
 (defmethod range-condition->range-filter :int
-  [{:keys [min-value max-value]}]
-  (qm/numeric-range-condition :int-value min-value max-value))
+  [{:keys [min-value max-value exclusive?]}]
+  (qm/numeric-range-condition :int-value min-value max-value exclusive?))
 
 (defn date-range-condition->range-filter
   "Helper for converting date range attribute conditions into filters"
-  [{:keys [type min-value max-value]}]
-  (qm/date-range-condition (type->field-name type) min-value max-value))
+  [{:keys [type min-value max-value exclusive?]}]
+  (qm/date-range-condition (type->field-name type) min-value max-value exclusive?))
 
 (defmethod range-condition->range-filter :datetime
   [condition]
