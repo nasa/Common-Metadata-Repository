@@ -134,6 +134,11 @@
   (format "http://localhost:%s/reindex-collection-permitted-groups"
           (transmit-config/ingest-port)))
 
+(defn reindex-all-collections-url
+  []
+  (format "http://localhost:%s/reindex-all-collections"
+          (transmit-config/ingest-port)))
+
 (defn cleanup-expired-collections-url
   []
   (format "http://localhost:%s/cleanup-expired-collections"
