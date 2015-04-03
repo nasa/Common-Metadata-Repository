@@ -25,6 +25,10 @@
   "Decode the content of a gmd:geographicElement"
   :tag)
 
+(defmethod decode-geo-content :default
+  [_]
+  nil)
+
 (defmethod encode cmr.spatial.mbr.Mbr
   [geometry]
   (let [{:keys [west north east south]} geometry
@@ -32,7 +36,7 @@
                        (x/element tag {}
                                   (x/element :gco:Decimal {} content)))]
     (x/element :gmd:geographicElement {}
-               (x/element :gmd:EX_GeographicBoundingBox {}
+               (x/element :gmd:EX_GeographicBoundingBox {:id (str "geo-" (java.util.UUID/randomUUID))}
                           (x/element :gmd:extentTypeCode {}
                                      (x/element :gco:Boolean {} 1))
                           (gen-point-fn :gmd:westBoundLongitude west)

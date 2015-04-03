@@ -40,16 +40,20 @@
   (string/join " " (map util/double->string (mapcat (juxt :lat :lon) points))))
 
 (defn- gml-linear-ring
-  "Returns a gml:LinearRing element from a CMR ring structure."
+  "Returns a gml:LinearRing element from a CMR ring structure. Assumes anti-clockwise point ordering."
   [{:keys [points]}]
   (x/element :gml:LinearRing {}
              (x/element :gml:posList {} (lat-lon-string points))))
+
+(defn- make-id
+  []
+  (str "geo-" (java.util.UUID/randomUUID)))
 
 ;; Points
 
 (defmethod encode cmr.spatial.point.Point
   [point]
-  (x/element :gml:Point {}
+  (x/element :gml:Point {:gml:id (make-id)}
              (x/element :gml:pos {} (lat-lon-string [point]))))
 
 (defmethod decode :Point
@@ -60,7 +64,7 @@
 
 (defmethod encode cmr.spatial.line_string.LineString
   [line]
-  (x/element :gml:LineString {}
+  (x/element :gml:LineString {:gml:id (make-id)}
              (x/element :gml:posList {} (lat-lon-string (:points line)))))
 
 (defmethod decode :LineString
@@ -71,7 +75,7 @@
 
 (defmethod encode cmr.spatial.polygon.Polygon
   [polygon]
-  (x/element :gml:Polygon {}
+  (x/element :gml:Polygon {:gml:id (make-id)}
              (x/element :gml:exterior {} (gml-linear-ring (poly/boundary polygon)))
              (map #(x/element :gml:interior {} (gml-linear-ring %)) (poly/holes polygon))))
 

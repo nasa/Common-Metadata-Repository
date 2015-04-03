@@ -14,19 +14,18 @@
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
+            [cmr.umm.spatial :as umm-s]
             [cmr.umm.iso-smap.core :as iso]
             [cmr.umm.test.echo10.collection :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
-  [spatial-coverage]
-  (let [{:keys [geometries]} spatial-coverage
-        bounding-boxes (filter #(= cmr.spatial.mbr.Mbr (type %)) geometries)]
-    (when (seq bounding-boxes)
-      (umm-c/map->SpatialCoverage
-        {:granule-spatial-representation :geodetic
-         :spatial-representation :geodetic
-         :geometries bounding-boxes}))))
+  [{:keys [geometries]}]
+  (when-let [bounding-boxes (seq (filter #(instance? cmr.spatial.mbr.Mbr %) geometries))]
+    (umm-c/map->SpatialCoverage
+     {:granule-spatial-representation :geodetic
+      :spatial-representation :geodetic
+      :geometries bounding-boxes})))
 
 (defn- platform->expected-parsed
   "Returns the expected parsed platform for the given platform."

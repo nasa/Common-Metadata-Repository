@@ -28,24 +28,15 @@
         (assoc :day-night nil)
         (assoc :size nil))))
 
-(defn- remove-polygon-interior-ring
-  "Returns the geometry with interior ring removed if applicable; otherwise returns the geometry"
-  [geometry]
-  (if (= cmr.spatial.polygon.Polygon (type geometry))
-    (update-in geometry [:rings] (fn[v] (subvec v 0 1)))
-    geometry))
+(defn set-geodetic
+  [obj]
+  (spatial/set-coordinate-system :geodetic obj))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
-  [spatial-coverage]
-  (when-let [geometries (seq
-                          (for [geometry (:geometries spatial-coverage)
-                                :let [gtype (type geometry)]
-                                :when (or (= cmr.spatial.mbr.Mbr gtype)
-                                          (= cmr.spatial.polygon.Polygon gtype))]
-                            ;; SMAP ISO polygon only has outer ring
-                            (remove-polygon-interior-ring geometry)))]
-    (umm-g/map->SpatialCoverage {:geometries geometries})))
+  [{:keys [geometries]}]
+  (when (seq geometries)
+    (umm-g/map->SpatialCoverage {:geometries (map set-geodetic geometries)})))
 
 (defn- related-url->expected-parsed
   [related-url]
@@ -127,7 +118,7 @@
                     (umm-g/map->SpatialCoverage
                       {:geometries
                        [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
-                        (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)])]})
+                        (set-geodetic (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)]))]})
                     :related-urls [(umm-c/map->RelatedURL
                                      {:type "GET DATA"
                                       :url "http://example.com/test1.hdf"
