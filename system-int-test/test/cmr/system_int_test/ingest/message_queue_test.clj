@@ -11,7 +11,7 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
-                       (index-util/reset-message-queue-retry-behavior-fixture)]))
+                       (index-util/reset-message-queue-behavior-fixture)]))
 
 (defn ingest-coll
   "Ingests the collection."
@@ -21,7 +21,8 @@
 (defn make-coll
   "Creates and ingests a collection using the unique number given."
   [n]
-  (ingest-coll (dc/collection {:entry-title (str "ET" n)})))
+  (ingest-coll (dc/collection {:concept-id (str "C" n "-PROV1")
+                               :entry-title (str "ET" n)})))
 
 (defn ingest-gran
   "Ingests the granule."
@@ -124,5 +125,115 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "failure"}]}
                (index-util/get-concept-message-queue-history)))))))
+
+(deftest publish-messages-failure-test
+  (s/only-with-real-message-queue
+    (testing "Timeouts on putting messages on message queue return 503"
+      (index-util/set-message-queue-publish-timeout 0)
+      (let [ingest-result (make-coll 1)]
+        (is (= 503 (:status ingest-result)))
+        (is (= [(str "Request timed out when attempting to publish message: {:action "
+                     ":index-concept, :concept-id \"C1-PROV1\", :revision-id 1}")]
+               (:errors ingest-result))))
+      ;; Verify the collection is in Oracle
+      (is (ingest/concept-exists-in-mdb? "C1-PROV1" 1)))))
+
+(comment
+
+  ;; Rabbit MQ Manual Tests
+
+  ;; Pre-req to running any of the tests is to do the following:
+
+  ;; 1.) Bring up the RabbitMQ VM
+  ;; 2.) Configure dev-system to use external message queue
+  ;; 3.) vagrant ssh to RabbitMQ VM
+  ;; 4.) Set the timeout interval for queueing messages to 10 seconds
+  (cmr.ingest.config/set-publish-queue-timeout-ms! 10000)
+  ;; 5.) Create a provider and give everyone permissions to ingest for that provider
+  (ingest/create-provider "provguid1" "PROV1")
+  (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
+
+  ;; Memory Threshold Exceeded while queueing messages
+
+  ;; 1.) sudo vi /etc/rabbitmq/rabbitmq.config.insufficient_memory
+  ;; The contents of the file should be the following:
+  ;; [{rabbit, [{vm_memory_high_watermark, 0.06}, {cluster_nodes, {['rabbit@rabbit1', 'rabbit@rabbit2', 'rabbit@rabbit3'], disc}}]}].
+  ;; 2.) Backup the original configuration file:
+  ;;      sudo cp /etc/rabbitmq/rabbitmq.config /etc/rabbitmq/rabbitmq.config.orig
+  ;; 3.) Switch the config files
+  ;;      sudo cp /etc/rabbitmq/rabbitmq.config.insufficient_memory /etc/rabbitmq/rabbitmq.config
+  ;; 4.) Restart RabbitMQ
+  ;;      sudo service rabbitmq-server restart
+  ;; 5.) Attempt to ingest the collection
+  (cmr.demos.helpers/curl "-XPUT -H 'Content-Type:application/echo10+xml' http://localhost:3002/providers/PROV1/collections/example_coll -d"
+        "<Collection>
+           <ShortName>ShortName_Larc</ShortName>
+           <VersionId>Version01</VersionId>
+           <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+           <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+           <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+           <LongName>LarcLongName</LongName>
+           <DataSetId>LarcDatasetId</DataSetId>
+           <Description>A minimal valid collection</Description>
+           <Orderable>true</Orderable>
+           <Visible>true</Visible>
+        </Collection>")
+  ;; 6.) Verify that after 10 seconds a 503 is returned with an error message indicating a timeout
+  ;; 7.) Switch the config file back
+  ;;       sudo cp /etc/rabbitmq/rabbitmq.config /etc/rabbitmq/rabbitmq.config.orig
+  ;; 8.) Restart RabbitMQ
+  ;;       sudo service rabbitmq-server restart
+  ;; 9.) Verify you can ingest the collection above
+
+  ;; Rabbit MQ Down while trying to queue a message
+
+  ;; 1.) Bring down RabbitMQ
+  ;;      sudo service rabbitmq-server stop
+  ;; 2.) Attempt to ingest the collection
+  (cmr.demos.helpers/curl "-XPUT -H 'Content-Type:application/echo10+xml' http://localhost:3002/providers/PROV1/collections/example_coll -d"
+      "<Collection>
+         <ShortName>ShortName_Larc</ShortName>
+         <VersionId>Version01</VersionId>
+         <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+         <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+         <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+         <LongName>LarcLongName</LongName>
+         <DataSetId>LarcDatasetId</DataSetId>
+         <Description>A minimal valid collection</Description>
+         <Orderable>true</Orderable>
+         <Visible>true</Visible>
+      </Collection>")
+  ;; 3.) Verify that after 10 seconds a 503 is returned with an error message indicating it was
+  ;; unable to queue a message
+  ;; 4.) Bring RabbitMQ back up
+  ;;      sudo service rabbitmq-server start
+
+  ;; Messages retrying while RabbitMQ is restarted
+
+  ;; 1.) Force messages to take longer than normal:
+  ;; Add the following line to indexer-app/src/cmr/indexer/services/index_service.clj to the
+  ;; index-concept function:
+  ;;   (Thread/sleep 2000)
+  ;; 2.) Force messages to retry 4 times before being processed so that messages are on each of the
+  ;; different queues.
+  (index-util/set-message-queue-retry-behavior 4)
+  ;; 3.) Get a count of the collections in your system before you start:
+  (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
+  ;; 4.) Ingest a bunch of collections - note you will want to be ready to restart things quickly
+  (doseq [_ (range 150)]
+      (ingest/ingest-concept (dc/collection-concept {})))
+  ;; 5.) You can monitor the queues at http://localhost:15672/#/queues to see that there are some
+  ;; messages on the various queues. You can adjust the sleep time to longer in step #1 if you
+  ;; do not see messages on all of the queues.
+  ;; 6.) Restart RabbitMQ several times using stop and/or restart:
+  ;;      sudo service rabbitmq-server stop
+  ;; Wait 30 seconds then run the following several times:
+  ;;      sudo service rabbitmq-server restart
+  ;; 7.) Wait until everything is indexed
+  ;; 8.) Verify that every collection was ingested successfully by adding 150 to the original count.
+  (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
+
+  ;; At the end of the tests make sure to return behavior to normal by running reset
+  )
 
 

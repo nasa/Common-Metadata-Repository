@@ -21,7 +21,8 @@
 
   (publish
     [this queue-name msg]
-    "Publishes a message on the queue with the given queue name")
+    "Publishes a message on the queue with the given queue name. Returns true if the message was
+    successfully enqueued. Otherwise returns false.")
 
   (subscribe
     [this queue-name handler-fn params]

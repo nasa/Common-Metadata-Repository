@@ -290,4 +290,3 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
-

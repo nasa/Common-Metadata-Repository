@@ -110,7 +110,8 @@
       (exec-dev-system-function "stop" system)
       (System/exit 0))
 
-    ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR running in dev-system.
+    ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR
+    ;; running in dev-system.
     (context "/time-keeper" []
       (POST "/clear-current-time" []
         (tk/clear-current-time!)
@@ -150,7 +151,23 @@
                 (Integer/parseInt num-retries))
               {:status 200})
             {:status 403
-             :body "Cannot set message queue retry behvavior unless using the message queue wrapper."}))))
+             :body "Cannot set message queue retry behvavior unless using the message queue wrapper."})))
+
+      ;; Used to change the timeout used for queueing messages on the message queue. For tests which
+      ;; simulate a timeout error, set the timeout value to 0.
+      (POST "/set-publish-timeout" {:keys [params]}
+        (let [timeout (Integer/parseInt (:timeout params))
+              expect-timeout? (= timeout 0)]
+          (debug (format "dev system setting message queue publish timeout to %d ms" timeout))
+          (iconfig/set-publish-queue-timeout-ms! timeout)
+          (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
+            (do
+              (wrapper/set-message-queue-timeout-expected!
+                broker-wrapper
+                expect-timeout?)
+              {:status 200})
+            {:status 403
+             :body "Cannot set message queue timeout unless using the message queue wrapper."}))))
 
     (route/not-found "Not Found")))
 

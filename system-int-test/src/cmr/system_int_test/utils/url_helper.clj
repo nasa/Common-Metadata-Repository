@@ -33,6 +33,11 @@
   []
   (format "http://localhost:%s/message-queue/set-retry-behavior" dev-system-port))
 
+(defn dev-system-set-message-queue-publish-timeout-url
+  "The message queue set-message-queue-publish-timeout url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/set-publish-timeout" dev-system-port))
+
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []
