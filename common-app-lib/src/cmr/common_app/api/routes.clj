@@ -49,9 +49,10 @@
         (cache/reset-caches context))
       {:status 200})))
 
-(def job-api-routes
+(defn job-api-routes
   "Creates common routes for managing jobs such as pausing and resuming. The caller must have
   system ingest management update permission to call any of the jobs routes."
+  [additional-job-routes]
   (context "/jobs" []
     ;; Pause all jobs
     (POST "/pause" {:keys [request-context params headers]}
@@ -73,7 +74,9 @@
         (acl/verify-ingest-management-permission context :update)
         (let [paused? (jobs/paused? (get-in context [:system :scheduler]))]
           {:status 200
-           :body (json/generate-string {:paused paused?})})))))
+           :body (json/generate-string {:paused paused?})})))
+
+    additional-job-routes))
 
 (defn health-api-routes
   "Creates common routes for checking the health of a CMR application. Takes a health-fn which

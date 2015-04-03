@@ -128,7 +128,7 @@
           (bulk-index-collection request-context body params)))
 
       ;; Add routes for managing jobs.
-      common-routes/job-api-routes
+      (common-routes/job-api-routes)
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes

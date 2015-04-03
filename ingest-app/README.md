@@ -327,13 +327,13 @@ Example un-healthy response body:
 
 Collections which ACLs have changed can be reindexed by sending the following request.
 
-    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/reindex-collection-permitted-groups
+    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/reindex-collection-permitted-groups
 
 ### Run Reindex All Collections Job
 
 Reindexes every collection in every provider.
 
-    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/reindex-all-collections
+    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/jobs/reindex-all-collections
 
 ### Pause ingest scheduled jobs
 

@@ -28,21 +28,7 @@
         (acl/verify-ingest-management-permission context :update)
         (cache/reset-caches request-context)
         (concept-service/reset context)
-        {:status 204}))
-
-    (context "/jobs" []
-      ;; Trigger the old revision concept cleanup
-      (POST "/old-revision-concept-cleanup" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (mdb-jobs/old-revision-concept-cleanup context)
-          {:status 204}))
-
-      (POST "/expired-concept-cleanup" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (mdb-jobs/expired-concept-cleanup context)
-          {:status 204})))))
+        {:status 204}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -52,7 +38,23 @@
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
       common-routes/cache-api-routes
-      common-routes/job-api-routes
+
+      (common-routes/job-api-routes
+        (routes
+          ;; Trigger the old revision concept cleanup
+          (POST "/old-revision-concept-cleanup" {:keys [request-context params headers]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (mdb-jobs/old-revision-concept-cleanup context)
+              {:status 204}))
+
+          (POST "/expired-concept-cleanup" {:keys [request-context params headers]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (mdb-jobs/expired-concept-cleanup context)
+              {:status 204}))))
+
+
       (common-routes/health-api-routes hs/health)
       admin-api-routes)
 
