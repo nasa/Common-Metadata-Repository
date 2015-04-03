@@ -329,9 +329,11 @@ Collections which ACLs have changed can be reindexed by sending the following re
 
     curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/reindex-collection-permitted-groups
 
-All collections in all providers can be forced to reindex by adding the reindex-all parameter
+### Run Reindex All Collections Job
 
-    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/reindex-collection-permitted-groups?reindex-all=true
+Reindexes every collection in every provider.
+
+    curl -i -XPOST -H "Echo-Token: mock-echo-system-token" http://localhost:3002/reindex-all-collections
 
 ### Pause ingest scheduled jobs
 
