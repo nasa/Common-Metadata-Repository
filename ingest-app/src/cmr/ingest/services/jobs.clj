@@ -11,10 +11,6 @@
   "The number of seconds between jobs to check for ACL changes and reindex collections."
   3600)
 
-(def REINDEX_ALL_COLLECTION_PERMITTED_GROUPS_INTERVAL
-  "The number of seconds between jobs to reindex all collections."
-  (* 24 3600))
-
 (def CLEANUP_EXPIRED_COLLECTIONS_INTERVAL
   "The number of seconds between jobs to cleanup expired collections"
   3600)
@@ -28,27 +24,36 @@
             ;; Convert them to a set so hash is consistent without order
             [provider-id (hash (set provider-acls))]))))
 
+(defn reindex-all-collections
+  "Reindexes all collections in all providers"
+  [context]
+  (let [providers (mdb/get-providers context)
+        current-provider-id-acl-hashes (acls->provider-id-hashes
+                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
+    (info "Reindexing collections in all providers:" (pr-str providers))
+    (indexer/reindex-provider-collections context providers)
+
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
+
 (defn reindex-collection-permitted-groups
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
   the groups that have permission to find collections are indexed with the collections."
-  ([context]
-   (reindex-collection-permitted-groups context false))
-  ([context reindex-everything?]
-   (let [providers (mdb/get-providers context)
-         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
-         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                          (echo-acls/get-acls-by-type context "CATALOG_ITEM"))
-         providers-requiring-reindex (if reindex-everything?
-                                       providers ;; reindex all providers
-                                       (filter (fn [provider-id]
-                                                        (not= (get current-provider-id-acl-hashes provider-id)
-                                                              (get provider-id-acl-hashes provider-id)))
-                                                      providers))]
-     (when (seq providers-requiring-reindex)
-       (info "Reindex collections for providers" (pr-str providers-requiring-reindex))
-       (indexer/reindex-provider-collections context providers-requiring-reindex))
+  [context]
+  (let [providers (mdb/get-providers context)
+        provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
+        current-provider-id-acl-hashes (acls->provider-id-hashes
+                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))
+        providers-requiring-reindex (filter (fn [provider-id]
+                                              (not= (get current-provider-id-acl-hashes provider-id)
+                                                    (get provider-id-acl-hashes provider-id)))
+                                            providers)]
+    (when (seq providers-requiring-reindex)
+      (info "Providers" (pr-str providers-requiring-reindex)
+            "ACLs have changed. Reindexing collections")
+      (indexer/reindex-provider-collections context providers-requiring-reindex))
 
-     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes))))
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
+
 
 ;; Periodically checks the acls for a provider. When they change reindexes all the collections in a
 ;; provider.
@@ -60,10 +65,10 @@
 ;; Reindexes all collections for providers regardless of whether the ACLs have changed or not.
 ;; This is done as a temporary fix for CMR-1311 but we may keep it around to help temper other race
 ;; conditions that may occur.
-(def-stateful-job ReindexAllCollectionPermittedGroups
+(def-stateful-job ReindexAllCollections
   [ctx system]
   (let [context {:system system}]
-    (reindex-collection-permitted-groups context true)))
+    (reindex-all-collections context)))
 
 (defn cleanup-expired-collections
   "Finds collections that have expired (have a delete date in the past) and removes them from
@@ -86,7 +91,8 @@
   "A list of jobs for ingest"
   [{:job-type ReindexCollectionPermittedGroups
     :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}
-   {:job-type ReindexAllCollectionPermittedGroups
-    :interval REINDEX_ALL_COLLECTION_PERMITTED_GROUPS_INTERVAL}
+   {:job-type ReindexAllCollections
+    ;; Run everyday at 2 am. Chosen because it is offset from the bootstrap database synchronize job by 2 hours.
+    :daily-at-hour-and-minute [2 0]}
    {:job-type CleanupExpiredCollections
     :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}])

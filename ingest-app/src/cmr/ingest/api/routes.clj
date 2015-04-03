@@ -94,12 +94,6 @@
   (routes
     (context (:relative-root-url system) []
       provider-api/provider-api-routes
-      (POST "/reindex-collection-permitted-groups" {:keys [headers params request-context]}
-        (jobs/reindex-collection-permitted-groups request-context (= "true" (:reindex-all params)))
-        {:status 200})
-      (POST "/cleanup-expired-collections" {:keys [headers request-context]}
-        (jobs/cleanup-expired-collections request-context)
-        {:status 200})
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type headers request-context]}
@@ -152,6 +146,18 @@
 
       ;; add routes for managing jobs
       common-routes/job-api-routes
+
+      ;; These should check ACLs. CMR-1343 was filed to add that check
+      ;; job related routes
+      (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
+        (jobs/reindex-collection-permitted-groups request-context)
+        {:status 200})
+      (POST "/reindex-all-collections" {:keys [headers request-context]}
+        (jobs/reindex-all-collections request-context)
+        {:status 200})
+      (POST "/cleanup-expired-collections" {:keys [headers request-context]}
+        (jobs/cleanup-expired-collections request-context)
+        {:status 200})
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

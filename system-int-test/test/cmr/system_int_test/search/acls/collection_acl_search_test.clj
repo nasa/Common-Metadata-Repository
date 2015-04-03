@@ -209,7 +209,7 @@
       ;; Search after reindexing
       (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {}))))
 
-    (testing "reindex collection permitted groups - force reindex all"
+    (testing "reindex all collections"
 
       ;; Grant collection 4
       (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
@@ -217,9 +217,9 @@
       ;; Try before reindexing
       (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {})))
 
-      ;; Reindex collection permitted groups - force reindex all
+      ;; Reindex all collections
       ;; manually check the logs here. It should say it's reindexing provider 1 and provider 3 as well.
-      (ingest/reindex-collection-permitted-groups true)
+      (ingest/reindex-all-collections)
       (index/wait-until-indexed)
 
       ;; Search after reindexing
