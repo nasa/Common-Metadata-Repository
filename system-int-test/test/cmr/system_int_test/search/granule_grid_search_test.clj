@@ -12,17 +12,17 @@
 
 (deftest search-by-granule-orbit-number
   (let [coll1 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
-                                      [{:name "one CALIPSO"
-                                   :coordinate-1 {:min-value 100
-                                                  :max-value 200}
-                                   :coordinate-2 {:min-value 300
-                                                  :max-value 400}}]}))
+                                                [{:name "one CALIPSO"
+                                                  :coordinate-1 {:min-value 100
+                                                                 :max-value 200}
+                                                  :coordinate-2 {:min-value 300
+                                                                 :max-value 400}}]}))
         coll2 (d/ingest "PROV1" (dc/collection {:two-d-coordinate-systems
-                                      [{:name "BRAVO"
-                                   :coordinate-1 {:min-value 100
-                                                  :max-value 200}
-                                   :coordinate-2 {:min-value 300
-                                                  :max-value 400}}]}))
+                                                [{:name "BRAVO"
+                                                  :coordinate-1 {:min-value 100
+                                                                 :max-value 200}
+                                                  :coordinate-2 {:min-value 300
+                                                                 :max-value 400}}]}))
         gran1 (d/ingest "PROV1"
                         (dg/granule
                           coll1 {:two-d-coordinate-system (dg/two-d-coordinate-system
