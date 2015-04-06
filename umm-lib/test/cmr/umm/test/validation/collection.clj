@@ -64,8 +64,8 @@
       (assert-invalid (c/map->UmmCollection
                         {:spatial-coverage
                          (c/map->SpatialCoverage {:granule-spatial-representation :orbit})})
-                      [:spatial-coverage :orbit-parameters]
-                      ["[Orbit Parameters] must be defined for a collection whose granule spatial representation is ORBIT."]))))
+                      [:spatial-coverage]
+                      ["Orbit Parameters must be defined for a collection whose granule spatial representation is ORBIT."]))))
 
 (deftest collection-product-specific-attributes-validation
   (testing "product specific attributes names"
