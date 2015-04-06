@@ -85,10 +85,9 @@
   - additional attribute is removed but has existing granules referencing it
   - additional attribute type changed but has existing granules referencing it
   - additional attribute range changed but has existing granules outside of the new range"
-  [concept prev-concept]
+  [concept-id concept prev-concept]
   (let [{aas :product-specific-attributes} concept
-        {prev-aas :product-specific-attributes
-         concept-id :concept-id} prev-concept]
+        {prev-aas :product-specific-attributes} prev-concept]
     (->> (concat (build-aa-deleted-searches aas prev-aas)
                  (build-aa-type-range-searches aas prev-aas))
          (map (partial append-common-params concept-id)))))

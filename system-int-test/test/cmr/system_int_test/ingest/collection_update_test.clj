@@ -40,7 +40,16 @@
         gran7 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "time" ["01:02:03Z"])]}))
         gran8 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))]
+                                                 [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
+        ;; The following collection and granule are added to verify that the validation is using
+        ;; the collection concept id for searching granules. If we don't use the collection concept
+        ;; id during granule search the test that changes additional attribute with name "int" to
+        ;; a range of [1 10] would have failed.
+        coll1 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "parent-collection-1"
+                                   :product-specific-attributes [a3]}))
+        gran9 (d/ingest "PROV1"(dg/granule coll1 {:product-specific-attributes
+                                                  [(dg/psa "int" ["20"])]}))]
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"

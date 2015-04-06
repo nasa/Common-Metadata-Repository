@@ -30,10 +30,10 @@
                    concept-id mdb-concept-id native-id)])))))
 
 (def collection-update-searches
-  "Defines a list of functions that take the updated UMM concept and the previous UMM concept and
-  return search maps used to validate that a collection was not updated in a way that invalidates
-  granules. Each search map contains a :params key of the parameters to use to execute the search
-  and an :error-msg to return if the search finds any hits."
+  "Defines a list of functions that take the concept-id, updated UMM concept and the previous UMM
+  concept and return search maps used to validate that a collection was not updated in a way that
+  invalidates granules. Each search map contains a :params key of the parameters to use to execute
+  the search and an :error-msg to return if the search finds any hits."
   [aa/additional-attribute-searches])
 
 (defn- has-granule-search-error
@@ -54,7 +54,8 @@
                                                                  :entry-title entry-title}))]
     (when prev-concept
       (let [prev-umm-concept (umm/parse-concept prev-concept)
-            has-granule-searches (mapcat #(% umm-concept prev-umm-concept) collection-update-searches)
+            has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
+                                         collection-update-searches)
             search-errors (->> has-granule-searches
                                (map (partial has-granule-search-error context))
                                (remove nil?))]
