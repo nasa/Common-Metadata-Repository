@@ -14,8 +14,8 @@
   (let [{:keys [granule-spatial-representation orbit-parameters]} spatial-coverage-ref]
     (if (and (= granule-spatial-representation :orbit) (nil? orbit-parameters))
       {field-path
-       [(format (str "Orbit Parameters must be defined for a collection whose "
-                     "granule spatial representation is ORBIT."))]})))
+       [(str "Orbit Parameters must be defined for a collection "
+             "whose granule spatial representation is ORBIT.")]})))
 
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
