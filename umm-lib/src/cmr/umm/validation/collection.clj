@@ -8,21 +8,31 @@
             [cmr.umm.validation.validation-helper :as h]
             [cmr.umm.validation.product-specific-attribute :as psa]))
 
+(defn orbit-collection-has-orbit-parameters
+  "Validates the existence of orbit parameters when the granule spatial representation is orbit"
+  [field-path spatial-coverage-ref]
+  (let [{:keys [granule-spatial-representation orbit-parameters]} spatial-coverage-ref]
+    (if (and (= granule-spatial-representation :orbit) (nil? orbit-parameters))
+      {field-path
+       [(str "Orbit Parameters must be defined for a collection "
+             "whose granule spatial representation is ORBIT.")]})))
+
 (defn set-geometries-spatial-representation
   "Sets the spatial represention from the spatial coverage on the geometries"
   [spatial-coverage]
   (let [{:keys [spatial-representation geometries]} spatial-coverage]
     (assoc spatial-coverage
-           :geometries
-           (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
+      :geometries
+      (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for collections."
-  (v/pre-validation
-    ;; The spatial representation has to be set on the geometries before the conversion because
-    ;;polygons etc do not know whether they are geodetic or not.
-    set-geometries-spatial-representation
-    {:geometries (v/every sv/spatial-validation)}))
+  [orbit-collection-has-orbit-parameters
+   (v/pre-validation
+     ;; The spatial representation has to be set on the geometries before the conversion because
+     ;;polygons etc do not know whether they are geodetic or not.
+     set-geometries-spatial-representation
+     {:geometries (v/every sv/spatial-validation)})])
 
 (def sensor-validations
   "Defines the sensor validations for collections"
