@@ -133,7 +133,7 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-(deftest duplicate-id-test
+(deftest duplicate-entry-title-test
   (testing "same entry-title and native-id across providers is valid"
     (assert-valid
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})

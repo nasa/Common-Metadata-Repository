@@ -66,18 +66,26 @@
 
 (defn granule-concept
   "Creates a granule concept"
-  [provider-id parent-collection-id uniq-num & concept-id]
-  (let [granule {:concept-type :granule
-                 :native-id (str "native-id " uniq-num)
-                 :provider-id provider-id
-                 :metadata (str "xml here " uniq-num)
-                 :format "application/echo10+xml"
-                 :deleted false
-                 :extra-fields {:parent-collection-id parent-collection-id
-                                :delete-time nil}}]
-    (if concept-id
-      (assoc granule :concept-id (first concept-id))
-      granule)))
+  ([provider-id parent-collection-id uniq-num]
+   (granule-concept provider-id parent-collection-id uniq-num nil {}))
+  ([provider-id parent-collection-id uniq-num concept-id]
+   (granule-concept provider-id parent-collection-id uniq-num concept-id {}))
+  ([provider-id parent-collection-id uniq-num concept-id extra-fields]
+   (let [granule {:concept-type :granule
+                  :native-id (str "native-id " uniq-num)
+                  :provider-id provider-id
+                  :metadata (str "xml here " uniq-num)
+                  :format "application/echo10+xml"
+                  :deleted false
+                  :extra-fields (merge {:parent-collection-id parent-collection-id
+                                        :delete-time nil
+                                        ;; TODO Uncomment when adding granule-ur for CMR-1239
+                                        ; :granule-ur (str "granule-ur " uniq-num)
+                                        }
+                                       extra-fields)}]
+     (if concept-id
+       (assoc granule :concept-id concept-id)
+       granule))))
 
 
 (defn- parse-concept

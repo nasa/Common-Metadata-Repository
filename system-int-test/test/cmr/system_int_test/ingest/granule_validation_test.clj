@@ -319,7 +319,8 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-(deftest duplicate-id-test
+;; TODO uncomment this test when implementing CMR-1239
+#_(deftest duplicate-granule-ur-test
   (testing "same granule-ur and native-id across providers is valid"
     (assert-valid
       {}
@@ -327,8 +328,7 @@
     (assert-valid
       {}
       {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
-  ;; TODO add this test if we do need to make the change for CMR-1239
-  #_(testing "granule-ur must be unique for a provider"
+  (testing "granule-ur must be unique for a provider"
     (assert-conflict
       {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
       ["The Granule Ur [UR-1] must be unique. The following concepts with the same entry title were found: [G1-PROV1]."])))
