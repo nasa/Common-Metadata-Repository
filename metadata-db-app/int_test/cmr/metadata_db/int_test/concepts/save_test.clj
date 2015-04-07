@@ -224,7 +224,7 @@
 
       ;; We need to verify that the granule which was inserted and failed the post commit
       ;; constraint checks is cleaned up from the database. We do this by verifying that
-      ;; the db only contains the original collection.
+      ;; the db only contains the original granule.
       (let [found-concepts (util/find-concepts :granule
                                                {:granule-ur "GR-UR1" :provider-id "PROV1"})]
         (is (= [existing-granule]
