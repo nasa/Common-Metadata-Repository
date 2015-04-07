@@ -1,7 +1,15 @@
 (ns cmr.spatial.encoding.gml
   "Functions for dealing with spatial data in the GML XML format.
   Spatial objects parsed from GML default to a :cartesian coordinate
-  system."
+  system.
+
+  The OpenGIS Geography Markup Language Encoding Standard (GML) The
+  Geography Markup Language (GML) is an XML grammar for expressing
+  geographical features. GML serves as a modeling language for
+  geographic systems as well as an open interchange format for
+  geographic transactions on the Internet.
+
+  http://www.opengeospatial.org/standards/gml"
   (:require [clojure.data.xml :as x]
             [clojure.string :as string]
             [cmr.common.util :as util]
