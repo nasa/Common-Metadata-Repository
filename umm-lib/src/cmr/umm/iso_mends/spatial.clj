@@ -70,5 +70,6 @@
   (->> geometries
        (map (partial umm-s/set-coordinate-system spatial-representation))
        (map d/calculate-derived)
+       ;; ISO MENDS interleaves MBRs and actual spatial areas
        (mapcat (juxt r/mbr identity))
        (map gmd/encode)))
