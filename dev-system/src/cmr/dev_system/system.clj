@@ -8,6 +8,8 @@
 
             [cmr.bootstrap.system :as bootstrap-system]
 
+            [cmr.cubby.system :as cubby-system]
+
             [cmr.metadata-db.system :as mdb-system]
             [cmr.metadata-db.data.memory-db :as memory]
 
@@ -74,11 +76,13 @@
    :search {:start search-system/start
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
-               :stop bootstrap-system/stop}})
+               :stop bootstrap-system/stop}
+   :cubby {:start cubby-system/start
+           :stop cubby-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :metadata-db :index-set :indexer :ingest :search :bootstrap])
+  [:mock-echo :cubby :metadata-db :index-set :indexer :ingest :search :bootstrap])
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -281,6 +285,7 @@
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
+              :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
               :indexer (create-indexer-app queue-broker queue-listener)
