@@ -1,6 +1,11 @@
 (ns cmr.spatial.encoding.gmd
   "Functions for encoding and decoding between spatial geometries and
-  gmd:geographicElement elements."
+  gmd:geographicElement elements.
+
+  GMD is the Geographic MetaData schema for describing geographic
+  information in ISO XML documents.
+
+  see: http://www.isotc211.org/schemas/2005/gmd/"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.spatial.encoding.gml :as gml]
