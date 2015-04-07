@@ -69,6 +69,8 @@
         ;; ECHO10 OnlineResources' title is built as description plus resource-type
         (assoc :related-urls related-urls)
         (assoc :personnel personnel)
+        ;; ECHO10 does not have metadata-language
+        (dissoc :metadata-language)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100

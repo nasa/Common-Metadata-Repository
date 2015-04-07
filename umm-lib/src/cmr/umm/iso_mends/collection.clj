@@ -83,6 +83,7 @@
        :purpose (cx/string-at-path id-elem [:purpose :CharacterString])
        :product product
        :access-value (xml-elem->access-value id-elem)
+       :metadata-language (cx/string-at-path xml-struct [:language :CharacterString])
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (k/xml-elem->spatial-keywords id-elem)
        :temporal-keywords (k/xml-elem->temporal-keywords id-elem)
@@ -236,14 +237,14 @@
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel]} collection
+                   personnel metadata-language]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :gmi:MI_Metadata iso-header-attributes
                     (h/iso-string-element :gmd:fileIdentifier dataset-id)
-                    (h/iso-string-element :gmd:language "eng")
+                    (h/iso-string-element :gmd:language metadata-language)
                     iso-charset-element
                     iso-hierarchy-level-element
                     (x/element :gmd:contact {:gco:nilReason "missing"})

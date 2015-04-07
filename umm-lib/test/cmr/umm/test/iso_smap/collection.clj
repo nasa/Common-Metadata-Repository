@@ -162,6 +162,7 @@
                     :entry-title "SMAP Collection Dataset ID"
                     :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
                     :purpose "This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures."
+                    :metadata-language "eng"
                     :product (umm-c/map->Product
                                {:short-name "SPL1AA"
                                 :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
@@ -254,4 +255,3 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
-
