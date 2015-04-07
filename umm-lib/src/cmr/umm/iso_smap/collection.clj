@@ -84,6 +84,8 @@
                        :MD_Identifier :code :CharacterString])
        :summary (cx/string-at-path product-elem [:abstract :CharacterString])
        :purpose (cx/string-at-path product-elem [:purpose :CharacterString])
+       :metadata-language (cx/string-at-path xml-struct [:seriesMetadata :MI_Metadata :language
+                                                         :CharacterString])
        :product product
        :data-provider-timestamps data-provider-timestamps
        :temporal (t/xml-elem->Temporal xml-struct)
@@ -182,7 +184,7 @@
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [organizations temporal platforms spatial-coverage summary purpose
-                   associated-difs science-keywords]} collection
+                   associated-difs science-keywords metadata-language]} collection
            ;; UMM model has a nested relationship between instruments and platforms,
            ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
            ;; To work around this problem, we list all instruments under each platform.
@@ -197,7 +199,7 @@
              :gmd:seriesMetadata {}
              (x/element
                :gmi:MI_Metadata {}
-               (h/iso-string-element :gmd:language "eng")
+               (h/iso-string-element :gmd:language metadata-language)
                h/iso-charset-element
                (h/iso-hierarchy-level-element "series")
                (x/element :gmd:contact {})

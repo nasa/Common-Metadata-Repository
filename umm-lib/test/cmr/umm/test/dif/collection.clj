@@ -113,6 +113,8 @@
         (dissoc :two-d-coordinate-systems)
         ;; DIF does not have associated-difs
         (dissoc :associated-difs)
+        ;; DIF does not have metadata-language
+        (dissoc :metadata-language)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100

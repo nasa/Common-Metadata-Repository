@@ -248,7 +248,7 @@
    entry-title
 
    summary
-   
+
    ;; This element contains the summary of intentions with which this
    ;; collection was developed.
    purpose
@@ -289,6 +289,9 @@
    associated-difs
 
    personnel
+
+   ;; String containing the Language of the metadata
+   metadata-language
 
    ])
 
