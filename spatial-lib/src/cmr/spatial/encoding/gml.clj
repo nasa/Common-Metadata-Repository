@@ -23,12 +23,25 @@
 
 ;; Helpers
 
+(defn parse-srs
+  "Returns a CMR coordinate system keyword from a SRS string (URL or
+  short string)."
+  [s]
+  (condp re-find s
+    #"EPSG[:/]9825" :cartesian
+    #"EPSG[:/]4326" :geodetic
+    nil))
+
+(def srs-url
+  "Returns the canonical URL for a coordinate system keyword."
+  {:cartesian "http://www.opengis.net/def/crs/EPSG/9825"
+   :geodetic  "http://www.opengis.net/def/crs/EPSG/4326"})
+
 (defn parse-lat-lon-string
   "Converts a string of lat lon pairs separated by spaces into a list of points"
   [s]
   {:pre [(string? s)]}
-  (->> (re-seq #"(\-|)\d+(\.\d+|)" s)
-       (map first)
+  (->> (re-seq #"\S+" s) ; split on whitespace
        (map #(Double/parseDouble %))
        (partition 2)
        (map (fn [[lat lon]]
@@ -75,7 +88,8 @@
 
 (defmethod encode cmr.spatial.polygon.Polygon
   [polygon]
-  (x/element :gml:Polygon {:gml:id (make-id)}
+  (x/element :gml:Polygon {:gml:id (make-id)
+                           :srsName (srs-url (:coordinate-system polygon))}
              (x/element :gml:exterior {} (gml-linear-ring (poly/boundary polygon)))
              (map #(x/element :gml:interior {} (gml-linear-ring %)) (poly/holes polygon))))
 
@@ -83,7 +97,9 @@
   [element]
   (let [exterior  (parse-lat-lon-string (cx/string-at-path element [:exterior :LinearRing :posList]))
         interiors (map parse-lat-lon-string (cx/strings-at-path element [:interior :LinearRing :posList]))
-        ring      #(rr/ring :cartesian %)
+        srs       (or (some-> element :attrs :srsName parse-srs)
+                      :cartesian)
+        ring      #(rr/ring srs %)
         rings     (cons (ring exterior)
                         (map ring interiors))]
-    (poly/polygon rings)))
+    (poly/polygon srs rings)))

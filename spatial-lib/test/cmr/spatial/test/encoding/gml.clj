@@ -34,6 +34,15 @@
          </gml:LinearRing>
        </gml:exterior>
      </gml:Polygon>
+     <gml:Polygon srsName=\"http://www.opengis.net/def/crs/EPSG/4326\">
+       <gml:exterior>
+         <gml:LinearRing>
+           <gml:posList>
+             45.256 -110.45 46.46 -109.48 43.84 -109.86 45.256 -110.45
+           </gml:posList>
+         </gml:LinearRing>
+       </gml:exterior>
+     </gml:Polygon>
    </root>")
 
 (defn- emit-gml-str
@@ -62,8 +71,10 @@
 
 (deftest test-decode-polygon
   (testing "decoding GML polygons"
-    (is (= (poly/polygon [(rr/ords->ring :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
-           (gml/decode (cx/element-at-path (x/parse-str gml-xml) [:Polygon]))))))
+    (is (= (poly/polygon :cartesian [(rr/ords->ring :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
+           (gml/decode (first (cx/elements-at-path (x/parse-str gml-xml) [:Polygon])))))
+    (is (= (poly/polygon :geodetic [(rr/ords->ring :geodetic -110.45 45.256, -109.48 46.46, -109.86 43.84, -110.45 45.256)])
+           (gml/decode (second (cx/elements-at-path (x/parse-str gml-xml) [:Polygon])))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Property-Based Tests
@@ -79,6 +90,8 @@
       (= l (gml/decode element)))))
 
 (defspec check-gml-polygon-round-trip 100
-  (for-all [polygon spatial-gen/cartesian-polygons-with-holes]
+  (for-all [polygon spatial-gen/polygons-with-holes]
     (let [element (-> (gml/encode polygon) emit-gml-str x/parse-str)]
-      (= (:points polygon) (:points (gml/decode element))))))
+      (and (seq (map :points (:rings polygon)))
+           (= (map :points (:rings polygon))
+              (map :points (:rings (gml/decode element))))))))
