@@ -29,17 +29,16 @@
 
 (def NASA_PUBLISHER_HIERARCHY
   "opendata publisher hierarchy for NASA providers"
-  {:name "National Aeronautics and Space Administration",
-   :subOrganizationOf {
-                       :name "U.S. Government"}})
+  ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
+  (sorted-map :name "National Aeronautics and Space Administration",
+              :subOrganizationOf {:name "U.S. Government"}))
 
 (def USGS_EROS_PUBLISHER_HIERARCHY
   "opendata publisher hierarchy for the USGS_EROS provider"
-  {:name "U.S. Geological Survey",
-   :subOrganizationOf {
-                       :name "U.S. Department of the Interior",
-                       :subOrganizationOf {
-                                           :name "U.S. Government"}}})
+  ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
+  (sorted-map :name "U.S. Geological Survey",
+              :subOrganizationOf {:name "U.S. Department of the Interior",
+                                  :subOrganizationOf {:name "U.S. Government"}}))
 
 (def LANGUAGE_CODE
   "opendata language code for NASA data"
