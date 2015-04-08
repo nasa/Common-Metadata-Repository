@@ -93,7 +93,7 @@
   "Returns a rotation matrix around the z-axis by an amount equal to the Earth's
    rotation in t seconds"
   [^double t]
-  (m/z-axis-rotation-matrix (* EARTH_ANGULAR_VELOCITY_RAD_S t)))
+  (m/z-axis-rotation-matrix (- (* EARTH_ANGULAR_VELOCITY_RAD_S t))))
 
 (defn- orbit-latitude-transform
   "Returns a rotation matrix around the y-axis (orbit track) by the given number

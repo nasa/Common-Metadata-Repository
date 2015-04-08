@@ -15,7 +15,8 @@
             [cmr.spatial.mbr :as m]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as derived]
-            [cmr.spatial.codec :as codec]))
+            [cmr.spatial.codec :as codec]
+            [cmr.common.util :as u]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -36,6 +37,41 @@
                              dg/spatial
                              orbit
                              nil)}))))
+
+(deftest fractional-orbit-non-zero-start-clat
+  ;; Added to test fix for CMR-1168
+  (let [;; orbit parameters
+        op1 {:swath-width 2
+             :period 96.7
+             :inclination-angle 94.0
+             :number-of-orbits 0.25
+             :start-circular-latitude 50.0}
+        coll1 (d/ingest "PROV1"
+                        (dc/collection
+                          {:entry-title "orbit-params1"
+                           :spatial-coverage (dc/spatial {:gsr :orbit
+                                                          :orbit op1})}))
+        g1 (make-gran coll1 "gran1" 70.80471 50.0 :asc  50.0 :desc)
+        g2 (make-gran coll1 "gran2" 70.80471 50.0 :desc -50.0 :desc)
+        g3 (make-gran coll1 "gran3" 70.80471 -50.0 :desc -50.0 :asc)
+        g4 (make-gran coll1 "gran4" 70.80471 -50.0 :asc 49.85 :asc)]
+    (index/wait-until-indexed)
+
+    (testing "Fractional orbits with non-zero start circular latitude"
+      (u/are2 [items wnes params]
+              (let [found (search/find-refs
+                            :granule
+                            (merge {:bounding-box
+                                    (codec/url-encode (apply m/mbr wnes))
+                                    :page-size 50} params))
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
+
+              "Search for orbits crossing a rectangle as given in CMR-1168"
+              [g1] [54.844 52.133 97.734 25.165] nil))))
 
 (deftest orbit-search
   (let [;; orbit parameters
@@ -82,28 +118,28 @@
     (index/wait-until-indexed)
 
     (testing "bounding rectangle searches"
-      (are [items wnes params]
-           (let [found (search/find-refs
-                         :granule
-                         (merge {:bounding-box
-                                 (codec/url-encode (apply m/mbr wnes))
-                                 :page-size 50} params))
-                 matches? (d/refs-match? items found)]
-             (when-not matches?
-               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-             matches?)
+      (u/are2 [items wnes params]
+              (let [found (search/find-refs
+                            :granule
+                            (merge {:bounding-box
+                                    (codec/url-encode (apply m/mbr wnes))
+                                    :page-size 50} params))
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
 
-           ;; Search for orbits crossing a rectangle over the equator and anti-meridian
-           [g2 g7 g9] [145 45 -145 -45] nil
-           ;; Search for orbits crossing a rectangle over the equator and meridian
-           [g1 g3 g8 g9] [-45 45 45 -45] nil
-           ;; Search for orbits crossing a rectangle in the western hemisphere near the north pole
-           [g5] [-90 89 -45 85] nil
-           ;; Search for orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian
-           [g2 g3 g4 g7] [145 -45 -145 -85] nil
-           ;; Search while specifying parent collection
-           [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))
+              "Orbits crossing a rectangle over the equator and anti-meridian"
+              [g2 g7 g9] [145 45 -145 -45] nil
+              "Orbits crossing a rectangle over the equator and meridian"
+              [g1 g3 g8 g9] [-45 45 45 -45] nil
+              "Orbits crossing a rectangle in the western hemisphere near the north pole"
+              [g5] [-90 89 -45 85] nil
+              "Orbits crossing a rectangle in the southern hemisphere crossing the anti-meridian"
+              [g2 g3 g4 g7] [145 -45 -145 -85] nil
+              "Specifying parent collection"
+              [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))
 
     (testing "point searches"
       (are [items lon_lat params]
@@ -141,24 +177,24 @@
            ))
 
     (testing "polygon searches"
-      (are [items coords params]
-           (let [found (search/find-refs
-                         :granule
-                         (merge {:polygon
-                                 (apply st/search-poly coords)
-                                 :page-size 50} params))
-                 matches? (d/refs-match? items found)]
-             (when-not matches?
-               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-             matches?)
+      (u/are2 [items coords params]
+              (let [found (search/find-refs
+                            :granule
+                            (merge {:polygon
+                                    (apply st/search-poly coords)
+                                    :page-size 50} params))
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
 
-           ;; Trangle crossing prime meridian
-           [g1 g8] [-45,-45 45,-45 45,0, -45,-45] nil
-           ;; Pentagon over the north pole
-           [g1 g2 g3 g4 g5 g9] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
-           ;; Concave polygon crossing antimeridian and equator
-           [g2 g4 g7 g9] [170,-70 -170,-80 -175,20 -179,-10 175,25 170,-70] nil))))
+              "Triangle crossing prime meridian"
+              [g1 g8] [-45,-45 45,-45 45,0, -45,-45] nil
+              "Pentagon over the north pole"
+              [g1 g2 g3 g4 g5 g9] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
+              "Concave polygon crossing antimeridian and equator"
+              [g2 g4 g7 g9] [170,-70 -170,-80 -175,20 -179,-10 175,25 170,-70] nil))))
 
 (deftest multi-orbit-search
   (let [;; orbit parameters
@@ -187,42 +223,42 @@
     (index/wait-until-indexed)
 
     (testing "bounding rectangle searches"
-      (are [items wnes params]
-           (let [found (search/find-refs
-                         :granule
-                         (merge {:bounding-box
-                                 (codec/url-encode (apply m/mbr wnes))
-                                 :page-size 50} params))
-                 matches? (d/refs-match? items found)]
-             (when-not matches?
-               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-             matches?)
+      (u/are2 [items wnes params]
+              (let [found (search/find-refs
+                            :granule
+                            (merge {:bounding-box
+                                    (codec/url-encode (apply m/mbr wnes))
+                                    :page-size 50} params))
+                    matches? (d/refs-match? items found)]
+                (when-not matches?
+                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+                matches?)
 
-           ;; Search with large box that finds the granule
-           [g1] [-134.648 69.163 76.84 65.742] {:concept-id (:concept-id coll1)}
-           ;; Search near equator that doesn't intersect granule
-           [] [0 1 1 0] {:concept-id (:concept-id coll1)}
-           ;; Search near equator that intersects granule
-           [g1] [1 11 15 1] {:concept-id (:concept-id coll1)}
-           ;; Search near north pole
-           [] [1 89.5 1.5 89] {:concept-id (:concept-id coll1)}
-           ;; Search for granules with exactly one orbit does not match areas seen on the second pass
-           [] [175.55 38.273 -164.883 17.912] {:concept-id (:concept-id coll2)}
-           ;; The following test is deliberately commented out because it is marked as @broken
-           ;; in ECHO. It is included here for completeness.
-           ;;
-           ;; The following comment is repeated verbatim from the ECHO cucumber test:
-           ;;
-           ;; Orbit searching is known to have some issues. The following query successfully finds a granule
-           ;; when it appears from the drawing of the granule in Reverb that it shouldn't.  I manually verified that
-           ;; the query does match the query output in echo-catalog when searching the legacy provider schemas.
-           ;; At some point it would be a good idea for someone in the ECHO organization to have a better understanding
-           ;; of the backtrack algorithm and be able to definitively state when an orbit granule doesn intersect a
-           ;; particular bounding box.
-           ;;
-           ;[] [0 1 6 0] nil
-           ))))
+              "Search large box that finds the granule"
+              [g1] [-134.648 69.163 76.84 65.742] {:concept-id (:concept-id coll1)}
+              "Search near equator that doesn't intersect granule"
+              [] [0 1 1 0] {:concept-id (:concept-id coll1)}
+              "Search near equator that intersects granule"
+              [g1] [1 11 15 1] {:concept-id (:concept-id coll1)}
+              "Search near north pole - FIXME"
+              [] [1 89.5 1.5 89] {:concept-id (:concept-id coll1)}
+              "Search for granules with exactly one orbit does not match areas seen on the second pass"
+              [] [175.55 38.273 -164.883 17.912] {:concept-id (:concept-id coll2)}
+              ;; The following test is deliberately commented out because it is marked as @broken
+              ;; in ECHO. It is included here for completeness.
+              ;;
+              ;; The following comment is repeated verbatim from the ECHO cucumber test:
+              ;;
+              ;; Orbit searching is known to have some issues. The following query successfully finds a granule
+              ;; when it appears from the drawing of the granule in Reverb that it shouldn't.  I manually verified that
+              ;; the query does match the query output in echo-catalog when searching the legacy provider schemas.
+              ;; At some point it would be a good idea for someone in the ECHO organization to have a better understanding
+              ;; of the backtrack algorithm and be able to definitively state when an orbit granule doesn intersect a
+              ;; particular bounding box.
+              ;;
+              ;[] [0 1 6 0] nil
+              ))))
 
 
 
