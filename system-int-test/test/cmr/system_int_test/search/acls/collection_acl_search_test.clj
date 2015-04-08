@@ -164,17 +164,17 @@
 
     (testing "opendata ACL enforcement"
       (testing "all items"
-        (let [coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (:results (search/find-concepts-opendata :collection {:token guest-token
-                                                                               :page-size 100}))))))
+        (let [actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                    :page-size 100})]
+          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od)))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
-              coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (:results (search/find-concepts-opendata :collection
-                                                                  {:token guest-token
-                                                                   :page-size 100
-                                                                   :concept-id concept-ids})))))))))
+              actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                    :page-size 100
+                                                                    :concept-id concept-ids})]
+          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))))
+
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
