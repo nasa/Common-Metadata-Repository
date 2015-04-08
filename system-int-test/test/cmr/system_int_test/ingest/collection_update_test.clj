@@ -372,12 +372,9 @@
   (let [coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :projects (dc/projects "p1" "p2" "p3" "p4")}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:project-refs
-                                                 ["p1"]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:project-refs
-                                                 ["p2" "p3"]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:project-refs
-                                                 ["p3"]}))]
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p1"]}))
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p2" "p3"]}))
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))]
 
     (index/wait-until-indexed)
 
@@ -407,4 +404,4 @@
 
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
-        ["Collection project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
+        ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
