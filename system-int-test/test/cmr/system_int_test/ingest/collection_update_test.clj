@@ -366,3 +366,42 @@
         "invalid min" ["04:02:03.001Z" "11:02:04Z"] 1
         "invalid min no max" ["04:02:03.001Z" nil] 1
         "invalid min & max" ["04:02:03.001Z" "06:02:02.999Z"] 2))))
+
+
+(deftest collection-update-project-test
+  (let [coll (d/ingest "PROV1" (dc/collection
+                                 {:entry-title "parent-collection"
+                                  :projects (dc/projects "p1" "p2" "p3" "p4")}))
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p1"]}))
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p2" "p3"]}))
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))]
+
+    (index/wait-until-indexed)
+
+    (testing "Update collection successful cases"
+      (util/are2
+        [projects]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                           {:entry-title "parent-collection"
+                                            :projects (apply dc/projects projects)}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        "Adding an additional project is OK"
+        ["p1" "p2" "p3" "p4" "p5"]
+
+        "Removing a project not referenced by any granule is OK"
+        ["p1" "p2" "p3"]))
+
+    (testing "Update collection failure cases"
+      (util/are2
+        [projects expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                           {:entry-title "parent-collection"
+                                            :projects (apply dc/projects projects)}))
+              {:keys [status errors]} response]
+          (= [400 expected-errors] [status errors]))
+
+        "Removing a project that is referenced by a granule is invalid."
+        ["p1" "p2" "p4"]
+        ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
