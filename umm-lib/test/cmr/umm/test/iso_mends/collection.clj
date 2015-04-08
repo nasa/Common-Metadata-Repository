@@ -22,12 +22,13 @@
             [cmr.spatial.derived :as d]))
 
 (defn- spatial-coverage->expected-parsed
-  [{:keys [geometries spatial-representation] :as sc}]
+  "Returns the expected parsed ISO MENDS SpatialCoverage from a UMM collection."
+  [{:keys [geometries spatial-representation]}]
   (when geometries
     (umm-c/map->SpatialCoverage
      {:spatial-representation spatial-representation
       :granule-spatial-representation spatial-representation
-      :geometries geometries})))
+      :geometries (map #(umm-s/set-coordinate-system spatial-representation %) geometries)})))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -152,9 +153,12 @@
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
-          parsed-iso (update-in parsed-iso [:spatial-coverage] derive-geometries)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
+          ;; fudge the spatial coverage here because ECHO 10 doesn't
+          ;; apply the collection spatial representation to the
+          ;; geometries it contains...
+          parsed-echo10 (update-in parsed-echo10 [:spatial-coverage] spatial-coverage->expected-parsed)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
       (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
