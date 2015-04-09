@@ -26,8 +26,7 @@
     (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-collection-with-revision-date-test
-  (let [concept (assoc (util/collection-concept "PROV1" 1)
-                       :revision-date (t/date-time 2001 1 1 12 12 14))
+  (let [concept (util/collection-concept "PROV1" 1 {:revision-date (t/date-time 2001 1 1 12 12 14)})
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= 201 status))
     (is (= revision-id 1))
@@ -35,13 +34,13 @@
       (is (= (:revision-date concept) (:revision-date (:concept retrieved-concept)))))))
 
 (deftest save-collection-with-bad-revision-date-test
-  (let [concept (assoc (util/collection-concept "PROV1" 1) :revision-date "foo")
+  (let [concept (util/collection-concept "PROV1" 1 {:revision-date "foo"})
         {:keys [status errors]} (util/save-concept concept)]
     (is (= 422 status))
     (is (= ["[foo] is not a valid datetime"] errors))))
 
 (deftest save-collection-without-version-id-test
-  (let [concept (assoc-in (util/collection-concept "PROV1" 1) [:extra-fields :version-id] nil)
+  (let [concept (util/collection-concept "PROV1" 1 {:extra-fields {:version-id nil}})
         {:keys [status revision-id concept-id]} (util/save-concept concept)]
     (is (= 201 status))
     (is (= revision-id 1))
@@ -94,7 +93,7 @@
     (is (nil? retrieved-revision))))
 
 (deftest save-concept-with-revision-id-0
-  (let [concept-with-bad-revision (assoc (util/collection-concept "PROV1" 1) :revision-id 0)
+  (let [concept-with-bad-revision (util/collection-concept "PROV1" 1 {:revision-id 0})
         {:keys [status]} (util/save-concept concept-with-bad-revision)]
     (is (= 409 status))))
 
@@ -126,7 +125,7 @@
 (deftest save-granule-with-concept-id
   (let [collection (util/collection-concept "PROV1" 1)
         parent-collection-id (:concept-id (util/save-concept collection))
-        granule (util/granule-concept "PROV1" parent-collection-id 1 "G10-PROV1")
+        granule (util/granule-concept "PROV1" parent-collection-id 1 {:concept-id "G10-PROV1"})
         {:keys [status revision-id concept-id]} (util/save-concept granule)]
     (is (= 201 status))
     (is (= revision-id 1))
@@ -151,8 +150,9 @@
                (select-keys response [:status :errors])))))
 
     (testing "with incorrect concept id matching another concept"
-      (let [granule2 (assoc (util/granule-concept "PROV1" parent-collection-id 1 "G11-PROV1")
-                            :native-id "native2")
+      (let [granule2 (util/granule-concept "PROV1" parent-collection-id 1
+                                           {:concept-id "G11-PROV1"
+                                            :native-id "native2"})
             _ (is (= 201 (:status (util/save-concept granule2))))
             response (util/save-concept (assoc granule :concept-id "G11-PROV1"))]
         (is (= {:status 409,
@@ -181,12 +181,14 @@
 
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"
-    (let [existing-collection (assoc (util/collection-concept "PROV1" 1 {:entry-title "ET-1"})
-                                     :concept-id "C1-PROV1"
-                                     :revision-id 1)
-          test-collection (assoc (util/collection-concept "PROV1" 2 {:entry-title "ET-1"})
-                                 :concept-id "C2-PROV1"
-                                 :revision-id 1)
+    (let [existing-collection (util/collection-concept "PROV1" 1
+                                                       {:concept-id "C1-PROV1"
+                                                        :revision-id 1
+                                                        :extra-fields {:entry-title "ET-1"}})
+          test-collection (util/collection-concept "PROV1" 2
+                                                   {:concept-id "C2-PROV1"
+                                                    :revision-id 1
+                                                    :extra-fields {:entry-title "ET-1"}})
           _ (util/save-concept existing-collection)
           test-collection-response (util/save-concept test-collection)]
 
@@ -201,5 +203,34 @@
       (let [found-concepts (util/find-concepts :collection
                                                {:entry-title "ET-1" :provider-id "PROV1"})]
         (is (= [existing-collection]
+               (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
+
+;; TODO Uncomment this test when implementing CMR-1239
+#_(deftest save-granule-post-commit-constraint-violations
+  (testing "duplicate granule URs"
+    (let [collection (util/collection-concept "PROV1" 1)
+          parent-collection-id (:concept-id (util/save-concept collection))
+          existing-granule (util/granule-concept "PROV1" parent-collection-id 1
+                                                 {:concept-id "G1-PROV1"
+                                                  :revision-id 1
+                                                  :extra-fields {:granule-ur "GR-UR1"}})
+          test-granule (util/granule-concept "PROV1" parent-collection-id 2
+                                             {:concept-id "G2-PROV1"
+                                              :revision-id 1
+                                              :extra-fields {:granule-ur "GR-UR1"}})
+          _ (util/save-concept existing-granule)
+          test-granule-response (util/save-concept test-granule)]
+
+      ;; The granule should be rejected due to another granule having the same granule-ur
+      (is (= {:status 409,
+              :errors [(msg/duplicate-field-msg :granule-ur [existing-granule])]}
+             (select-keys test-granule-response [:status :errors])))
+
+      ;; We need to verify that the granule which was inserted and failed the post commit
+      ;; constraint checks is cleaned up from the database. We do this by verifying that
+      ;; the db only contains the original granule.
+      (let [found-concepts (util/find-concepts :granule
+                                               {:granule-ur "GR-UR1" :provider-id "PROV1"})]
+        (is (= [existing-granule]
                (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
 
