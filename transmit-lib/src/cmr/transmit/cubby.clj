@@ -56,7 +56,7 @@
   "Used to convert a raw response when fetching something into the actual result."
   [{:keys [status body] :as resp}]
   (cond
-    (and (>= status 200) (<= status 299)) body
+    (<= 200 status 299) body
     (= status 404) nil
     :else (errors/internal-error!
             (format "Received unexpected status code %s with response %s"
@@ -65,7 +65,7 @@
 (defn- handle-raw-update-response
   "Handles a raw response to an update request. Any non successful request is considered an error."
   [{:keys [status body] :as resp}]
-  (when-not (and (>= status 200) (<= status 299))
+  (when-not (<= 200 status 299)
     (errors/internal-error!
       (format "Received unexpected status code %s with response %s"
               status (pr-str resp)))))
@@ -112,8 +112,8 @@
   ([context key-name value]
    (set-value context key-name value false))
   ([context key-name value is-raw]
-   (cubby-request context {:url-fn (partial key-url key-name),
-                           :method :put,
+   (cubby-request context {:url-fn (partial key-url key-name)
+                           :method :put
                            :raw? is-raw
                            :http-options {:body value}})))
 

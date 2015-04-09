@@ -21,10 +21,9 @@
   application is deployed in an environment where it is accessed through a VIP."
   {:default ""})
 
-(def
-  ^{:doc "Defines the order to start the components."
-    :private true}
-  component-order [:log :web])
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log :web])
 
 (defn create-system
   "Returns a new instance of the whole application."

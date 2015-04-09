@@ -2,23 +2,8 @@
   "Tests for mime-type functions."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :refer [for-all]]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.mime-types-helper :as mth]))
-
-(def unsupported-mime-types
-  "Other mime-types."
-  #{"text/html"
-    "text/xml"
-    "application/xhtml+xml"
-    "applicaiton/dart"
-    "application/javascript"
-    "application/ecmascript"
-    "application/pdf"})
 
 (def supported-mime-types
   "The mime-types supported by search."
@@ -32,39 +17,48 @@
     "application/iso:smap+xml"
     "text/csv"
     "application/vnd.google-earth.kml+xml"
-    "application/opendata+json"
-    })
+    "application/opendata+json"})
 
-(def optional-params
-  "Some optional parameters to construct semicolon clauses."
-  #{"charset=UTF-8"
-    "charset=UTF-16"
-    "header=present"
-    ""})
+;; Tests various times when the content type should be used when extracting mime types from headers
+(deftest mime-type-from-headers-test
+  (testing "extract first preferred valid mime type"
+    (is (= "application/json"
+           (mt/mime-type-from-headers
+             {"accept" "text/html, application/json;q=9"}))))
 
-(def all-mime-types
-  (gen/elements (concat unsupported-mime-types supported-mime-types)))
+  (testing "accept header used if available"
+    (is (= "application/iso:smap+xml"
+           (mt/mime-type-from-headers
+             {"accept" "application/iso:smap+xml"
+              "content-type" "application/xml"})))
 
-(def mime-type-clause
-  (gen/fmap (fn [[type params]]
-              (if (empty? params)
-                type
-                (str type "; " params)))
-            (gen/tuple all-mime-types (gen/elements optional-params))))
+    (testing "accept parameters are ignored"
+      (is (= "application/xml"
+             (mt/mime-type-from-headers
+               {"accept" "application/xml; q=1"})))))
 
-(def mime-type-strings
-  (gen/fmap (fn [mime-type-vec] (str/join "," mime-type-vec))
-            (gen/vector mime-type-clause)))
+  (testing "content type used if accept not set"
+    (is (= "application/xml"
+           (mt/mime-type-from-headers
+             {"content-type" "application/xml"})))
 
-(defspec mime-type-from-headers 100
-  (for-all [mime-type-str mime-type-strings]
-    (let [headers {"accept" mime-type-str}
-          mime-type (mt/mime-type-from-headers headers (disj supported-mime-types "*/*"))]
-      (or ((disj supported-mime-types "*/*") mime-type)
-          (= mime-type-str mime-type)
-          (and (nil? mime-type)
-               (or (empty? mime-type-str)
-                   (= "*/*" mime-type-str)))))))
+    (testing "accept parameters are ignored"
+      (is (= "application/xml"
+             (mt/mime-type-from-headers
+               {"content-type" "application/xml; q=1"})))))
+
+  (testing "*/* in accept header is ignored"
+    (testing "use content type if not provided"
+      (is (= "application/xml"
+             (mt/mime-type-from-headers
+               {"accept" "*/*"
+                "content-type" "application/xml"}))))
+    (testing "nil returned otherwise"
+      (is (nil? (mt/mime-type-from-headers {"accept" "*/*"}))))
+
+    (testing "accept parameters are ignored"
+      (is (nil? (mt/mime-type-from-headers {"accept" "*/*; q=1"}))))))
+
 
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"

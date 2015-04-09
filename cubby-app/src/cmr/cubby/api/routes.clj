@@ -9,7 +9,7 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.cubby.data :as d]))
 
-(defn context->db
+(defn- context->db
   "Returns the db in the context"
   [context]
   (get-in context [:system :db]))

@@ -3,7 +3,9 @@
   (:require [cmr.cubby.data :as d]
             [cmr.common.lifecycle :as l]))
 
-(def initial-cache-state {})
+(def initial-cache-state
+  "The inital state of the memory cache store (an empty map)."
+  {})
 
 (defrecord MemoryCacheStore
   [data-atom]

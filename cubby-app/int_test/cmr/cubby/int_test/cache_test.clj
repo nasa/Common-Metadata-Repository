@@ -4,6 +4,7 @@
             [cmr.transmit.cubby :as c]
             [cmr.cubby.int-test.utils :as u]))
 
+;; TODO refactor the run-app fixture to be once per jvm session somehow.
 (use-fixtures :once u/run-app-fixture)
 (use-fixtures :each u/reset-fixture)
 

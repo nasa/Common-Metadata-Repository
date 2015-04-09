@@ -7,5 +7,5 @@
 (defn -main
   "Starts the App."
   [& args]
-  (let [system (system/start (system/create-system))]
-    (info "Running cubby...")))
+  (system/start (system/create-system))
+  (info "Running cubby..."))

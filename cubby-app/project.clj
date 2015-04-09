@@ -1,4 +1,4 @@
-(defproject nasa-cmr/cubby-app "0.1.0-SNAPSHOT"
+(defproject nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"
   :description "Provides a centralized caching service for the CMR. See README for details."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/cubby-app"
   :dependencies [[org.clojure/clojure "1.6.0"]
