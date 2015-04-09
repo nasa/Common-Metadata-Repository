@@ -29,17 +29,16 @@
 
 (def NASA_PUBLISHER_HIERARCHY
   "opendata publisher hierarchy for NASA providers"
-  {:name "National Aeronautics and Space Administration",
-   :subOrganizationOf {
-                       :name "U.S. Government"}})
+  ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
+  (sorted-map :name "National Aeronautics and Space Administration",
+              :subOrganizationOf {:name "U.S. Government"}))
 
 (def USGS_EROS_PUBLISHER_HIERARCHY
   "opendata publisher hierarchy for the USGS_EROS provider"
-  {:name "U.S. Geological Survey",
-   :subOrganizationOf {
-                       :name "U.S. Department of the Interior",
-                       :subOrganizationOf {
-                                           :name "U.S. Government"}}})
+  ;; Improve readability by ensuring :name always appears before nested :subOrganizationOf map
+  (sorted-map :name "U.S. Geological Survey",
+              :subOrganizationOf {:name "U.S. Department of the Interior",
+                                  :subOrganizationOf {:name "U.S. Government"}}))
 
 (def LANGUAGE_CODE
   "opendata language code for NASA data"
@@ -139,7 +138,7 @@
      :end-date end-date
      :provider-id provider-id
      :access-value access-value ;; needed for acl enforcment
-     :keywords science-keywords-flat
+     :science-keywords-flat science-keywords-flat
      :entry-title entry-title
      :archive-center archive-center}))
 
@@ -188,18 +187,29 @@
   (let [hierarchy (if (= provider-id "USGS_EROS")
                     USGS_EROS_PUBLISHER_HIERARCHY
                     NASA_PUBLISHER_HIERARCHY)]
-  {:name archive-center
-   :subOrganizationOf hierarchy}))
+    {:name archive-center
+     :subOrganizationOf hierarchy}))
+
+(defn keywords
+  "Create the keyword field for the collection based on the science keywords for the collection.
+  Takes the science keywords as a flat list rather than hierarchical."
+  [science-keywords-flat]
+  (conj science-keywords-flat "NGDA" "National Geospatial Data Asset"))
+
+(defn theme
+  "Create the theme field for the collection based on the project short-names for the collection."
+  [project-short-names]
+  (conj project-short-names "geospatial"))
 
 (defn- result->opendata
   "Converts a search result item to opendata."
   [context concept-type pretty? item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
-                keywords entry-title opendata-format start-date end-date
+                science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
     (util/remove-nil-keys {:title entry-title
                            :description (not-empty summary)
-                           :keyword (not-empty keywords)
+                           :keyword (keywords science-keywords-flat)
                            :modified (not-empty update-time)
                            :publisher (publisher provider-id archive-center)
                            :contactPoint (contact-point personnel)
@@ -209,7 +219,7 @@
                            :programCode [PROGRAM_CODE]
                            :spatial (spatial shapes pretty?)
                            :temporal (temporal start-date end-date)
-                           :theme (not-empty (str/join "," project-sn))
+                           :theme (theme project-sn)
                            :distribution (distribution related-urls)
                            :landingPage (landing-page related-urls)
                            :language  [LANGUAGE_CODE]
