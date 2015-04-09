@@ -148,11 +148,11 @@
     (format "Granule start date [%s] is earlier than collection start date [%s]."
             gran-start coll-start)
 
-    (t/after? gran-start coll-end)
+    (and coll-end (t/after? gran-start coll-end))
     (format "Granule start date [%s] is later than collection end date [%s]."
             gran-start coll-end)
 
-    (and gran-end (t/after? gran-end coll-end))
+    (and coll-end gran-end (t/after? gran-end coll-end))
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 

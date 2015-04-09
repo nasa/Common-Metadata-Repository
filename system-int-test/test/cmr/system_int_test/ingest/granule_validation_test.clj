@@ -54,7 +54,7 @@
                          "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
 
     (testing "granule with end date slightly in the future and collection with
-             EndsAtPresentFlag=true and end date in the far future"
+             EndsAtPresentFlag=true and end date in the far future (see CMR-1351)"
              (let [collection (dc/collection {:entry-title "correct"
                                               :short-name "S1"
                                               :version-id "V1"
