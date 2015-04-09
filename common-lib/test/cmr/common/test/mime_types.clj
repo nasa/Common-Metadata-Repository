@@ -2,8 +2,7 @@
   "Tests for mime-type functions."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.services.mime-types-helper :as mth]))
+            [cmr.common.mime-types :as mt]))
 
 (def supported-mime-types
   "The mime-types supported by search."
@@ -83,14 +82,3 @@
          ""
          "granules.json/json"
          "granules.j%25son")))
-
-(deftest validate-search-result-mime-type-test
-  (testing "valid mime types"
-    (mth/validate-request-mime-type "application/json" supported-mime-types)
-    (mth/validate-request-mime-type "application/xml" supported-mime-types)
-    (mth/validate-request-mime-type "*/*" supported-mime-types))
-  (testing "invalid mime types"
-    (is (thrown-with-msg?
-          clojure.lang.ExceptionInfo
-          #"The mime type \[application/foo\] is not supported."
-          (mth/validate-request-mime-type "application/foo" supported-mime-types)))))
