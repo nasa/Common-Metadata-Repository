@@ -90,21 +90,18 @@
    :results {:conformsTo odrh/OPENDATA_SCHEMA
              :dataset (map collection->expected-opendata collections)}})
 
-(defn- map-with-sequentials->map-with-sets
-  "Converts all of the collections within a map to sets. This allows maps to be compared such that
-  the order of elements in a collection is ignored."
-  [m]
-  (into #{} (for [v m]
-              (util/map-values #(if (sequential? %) (set %) %) v))))
+(defn- opendata-results-map->opendata-results-map-using-sets
+  "Converts all of the collections within an opendata results map to sets. This allows maps to be
+  compared such that the order of elements in a collection is ignored."
+  [opendata-results-map]
+  (update-in opendata-results-map [:results :dataset]
+             (fn [dataset]
+               (into #{} (for [field dataset]
+                           (util/map-values #(if (sequential? %) (set %) %) field))))))
 
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items"
   [collections actual-result]
-  (is (= (-> (collections->expected-opendata collections)
-             (update-in [:results :dataset] set)
-             (update-in [:results :dataset]
-                        #(map-with-sequentials->map-with-sets %)))
-         (-> actual-result
-             (update-in [:results :dataset] set)
-             (update-in [:results :dataset]
-                        #(map-with-sequentials->map-with-sets %))))))
+  (is (= (opendata-results-map->opendata-results-map-using-sets
+           (collections->expected-opendata collections))
+         (opendata-results-map->opendata-results-map-using-sets actual-result))))
