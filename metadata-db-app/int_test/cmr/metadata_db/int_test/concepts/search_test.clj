@@ -187,7 +187,7 @@
                                 (let [expire-time (t/plus time-now (t/seconds num-secs))]
                                   (util/create-and-save-collection
                                     prov uniq-num num-revisions
-                                    {:delete-time (str expire-time)})))
+                                    {:extra-fields {:delete-time (str expire-time)}})))
         ;; Expired a long time ago.
         coll1 (make-coll-expiring-in "PROV1" 1 1 -600000)
         coll2 (make-coll-expiring-in "PROV1" 2 2 -600000)
