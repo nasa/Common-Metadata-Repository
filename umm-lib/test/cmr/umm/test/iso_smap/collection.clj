@@ -124,6 +124,8 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; SMAP ISO does not support quality
+        (dissoc :quality)
         ;; We don't write out personnel entries when generating SMAP XML
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))

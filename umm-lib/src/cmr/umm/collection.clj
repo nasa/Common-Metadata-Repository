@@ -293,6 +293,9 @@
    ;; String containing the Language of the metadata
    metadata-language
 
+   ;; String containing quality information
+   quality
+
    ])
 
 

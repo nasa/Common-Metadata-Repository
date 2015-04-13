@@ -71,6 +71,8 @@
         (assoc :personnel personnel)
         ;; ECHO10 does not have metadata-language
         (dissoc :metadata-language)
+        ;; ECHO10 does not have quality
+        (dissoc :quality)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
