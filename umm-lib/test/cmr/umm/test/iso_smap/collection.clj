@@ -107,6 +107,8 @@
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         ;; SMAP ISO does not support RestrictionFlag
         (dissoc :access-value)
+        ;; SMAP ISO does not support UseConstraints
+        (dissoc :use-constraints)
         ;; SMAP ISO does not support SpatialKeywords
         (dissoc :spatial-keywords)
         ;; SMAP ISO does not support TemporalKeywords

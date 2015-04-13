@@ -61,6 +61,7 @@
      :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
      :product (xml-elem->Product xml-struct)
      :quality (cx/string-at-path xml-struct [:Quality])
+     :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
      ;; See CMR-588
      ;:spatial-keywords (seq (cx/strings-at-path xml-struct [:Location]))
@@ -98,7 +99,7 @@
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
-                   temporal-keywords personnel collection-associations quality]} collection
+                   temporal-keywords personnel collection-associations quality use-constraints]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -118,6 +119,7 @@
                       (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk)))
                     (pj/generate-projects projects)
                     (x/element :Quality {} quality)
+                    (x/element :Use_Constraints {} use-constraints)
                     (org/generate-data-center organizations)
                     (x/element :Summary {}
                                (x/element :Abstract {} summary)

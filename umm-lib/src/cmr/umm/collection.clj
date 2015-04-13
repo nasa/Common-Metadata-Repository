@@ -296,6 +296,12 @@
    ;; String containing quality information
    quality
 
+   ;; (String) The Use Constraints element is designed to protect
+   ;; privacy and/or intellectual property by allowing the author to
+   ;; specify how the item collection may or may not be used after
+   ;; access is granted.
+   use-contraints
+
    ])
 
 

@@ -83,6 +83,7 @@
        :purpose (cx/string-at-path id-elem [:purpose :CharacterString])
        :product product
        :access-value (xml-elem->access-value id-elem)
+       :use-constraints (cx/string-at-path id-elem [:resourceConstraints :MD_LegalConstraints :useLimitation :CharacterString])
        :metadata-language (cx/string-at-path xml-struct [:language :CharacterString])
        :data-provider-timestamps data-provider-timestamps
        :spatial-keywords (k/xml-elem->spatial-keywords id-elem)
@@ -157,12 +158,12 @@
 
 (defn- iso-resource-constraints-element
   "Returns the iso resource constraints element"
-  [restriction-flag]
+  [restriction-flag use-constraints]
   (x/element
     :gmd:resourceConstraints {}
     (x/element
       :gmd:MD_LegalConstraints {}
-      (h/iso-string-element :gmd:useLimitation "Restriction Comment:")
+      (h/iso-string-element :gmd:useLimitation use-constraints)
       (h/iso-string-element :gmd:otherConstraints (str "Restriction Flag:" restriction-flag)))))
 
 (defn- iso-processing-level-id-element
@@ -237,7 +238,7 @@
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel metadata-language]} collection
+                   personnel metadata-language use-constraints]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -276,7 +277,6 @@
                                                   (h/iso-string-element :gmd:code short-name)
                                                   (h/iso-string-element :gmd:description long-name)))
                             (dif/generate-associated-difs associated-difs)))
-
                         (h/iso-string-element :gmd:abstract summary)
                         (if purpose
                           (h/iso-string-element :gmd:purpose purpose)
@@ -288,7 +288,7 @@
                         (proj/generate-project-keywords projects)
                         (platform/generate-platform-keywords platforms)
                         (platform/generate-instrument-keywords platforms)
-                        (iso-resource-constraints-element restriction-flag)
+                        (iso-resource-constraints-element restriction-flag use-constraints)
                         (ca/generate-collection-associations collection-associations)
                         (h/iso-string-element :gmd:language "eng")
                         (x/element :gmd:extent {}

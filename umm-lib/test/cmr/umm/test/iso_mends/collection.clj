@@ -204,6 +204,7 @@
                                 :version-id "1"
                                 :processing-level-id "1B"})
                     :access-value 4.2
+                    :use-constraints "Restriction Comment:"
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})
