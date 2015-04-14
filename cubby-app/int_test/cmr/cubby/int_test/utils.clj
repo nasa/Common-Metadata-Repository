@@ -39,12 +39,6 @@
        mock-echo-system/start
        mock-echo-system/stop)]))
 
-(defn reset-fixture
-  "Test fixture that resets the application before each test."
-  [f]
-  (mock-echo-client/reset (conn-context))
-  (c/reset (conn-context))
-  (f))
 
 (defn elastic-root
   []
@@ -57,6 +51,14 @@
 (defn refresh-elastic-index
   []
   (client/post (elastic-refresh-url)))
+
+(defn reset-fixture
+  "Test fixture that resets the application before each test."
+  [f]
+  (mock-echo-client/reset (conn-context))
+  (c/reset (conn-context))
+  (refresh-elastic-index)
+  (f))
 
 (defn assert-value-saved-and-retrieved
   "Asserts that the given keyname and value can be set and retrieved."

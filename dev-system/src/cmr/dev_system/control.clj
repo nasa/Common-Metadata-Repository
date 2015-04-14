@@ -75,10 +75,7 @@
    :metadata-db cache/reset-caches
    :search cache/reset-caches
    :ingest cache/reset-caches
-
-   ;; TODO add the cubby function to do that
-
-   })
+   :cubby cache/reset-caches})
 
 (defn- build-routes [system]
   (routes
