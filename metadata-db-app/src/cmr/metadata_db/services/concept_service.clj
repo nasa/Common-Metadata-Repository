@@ -140,7 +140,7 @@
 (defn- handle-save-errors
   "Deal with errors encountered during saves."
   [concept result]
-  (condp = (:error result)
+  (case (:error result)
     :revision-id-conflict
     (cmsg/data-error :conflict
                      msg/concept-id-and-revision-id-conflict
