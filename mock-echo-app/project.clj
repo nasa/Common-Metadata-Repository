@@ -3,6 +3,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/mock-echo-app"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.3.2"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]]

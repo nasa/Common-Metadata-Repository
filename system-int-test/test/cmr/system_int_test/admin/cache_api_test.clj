@@ -4,7 +4,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
@@ -61,10 +61,10 @@
     (json/decode (:body response) true)))
 
 (deftest cache-apis
-  (e/grant-group-admin "admin-read-group-guid" :read)
+  (e/grant-group-admin (s/context) "admin-read-group-guid" :read)
   ;; login as a member of group 1
-  (let [admin-read-token (e/login "admin" ["admin-read-group-guid"])
-        normal-user-token (e/login "user")
+  (let [admin-read-token (e/login (s/context) "admin" ["admin-read-group-guid"])
+        normal-user-token (e/login (s/context) "user")
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))]
     (testing "list caches"
       (are [url caches]

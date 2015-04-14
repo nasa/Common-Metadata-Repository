@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
@@ -103,9 +104,9 @@
 
 (deftest retrieve-collection-facets-test
   ;; Grant guests permission to provider 1
-  (e/grant-guest (e/coll-catalog-item-id "provguid1"))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
   ;; Grant guests permission to specific collections in provider 2
-  (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"])))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"])))
 
   (let [coll1 (make-coll 1 "PROV1"
                          (projects "proj1" "PROJ2")

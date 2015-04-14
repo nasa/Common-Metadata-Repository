@@ -21,6 +21,7 @@
             [cmr.ingest.services.ingest :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
+            [cmr.cubby.api.routes :as cubby-api]
             [cmr.common.cache :as cache]))
 
 (defn app-context
@@ -64,7 +65,8 @@
    :indexer indexer-service/reset
    :ingest ingest-service/reset
    :search cache/reset-caches
-   :mock-echo mock-echo-api/reset})
+   :mock-echo mock-echo-api/reset
+   :cubby cubby-api/reset})
 
 (def service-clear-cache-fns
   "A map of services to reset functions."
@@ -72,7 +74,11 @@
    :index-set cache/reset-caches
    :metadata-db cache/reset-caches
    :search cache/reset-caches
-   :ingest cache/reset-caches})
+   :ingest cache/reset-caches
+
+   ;; TODO add the cubby function to do that
+
+   })
 
 (defn- build-routes [system]
   (routes

@@ -37,6 +37,10 @@
   (d/delete-value (context->db context) key-name)
   {:status 200})
 
+(defn reset
+  [context]
+  (d/reset (context->db context)))
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -52,7 +56,7 @@
             (delete-value context key-name))))
       (POST "/reset" {context :request-context}
         ;; TODO enforce ACLs
-        (d/reset (context->db context))))
+        (reset context)))
     (route/not-found "Not Found")))
 
 (defn make-api [system]

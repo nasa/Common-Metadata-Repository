@@ -1,51 +1,44 @@
-(ns cmr.system-int-test.utils.echo-util
+(ns cmr.mock-echo.client.echo-util
   "Contains helper functions for working with the echo mock"
-  (:require [cmr.transmit.echo.mock :as mock]
+  (:require [cmr.mock-echo.client.mock-echo-client :as echo-client]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.transmit.config :as config]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.url-helper :as url]
             [clj-http.client :as client]
             [cmr.common.util :as util]))
 
-(defn- context
-  "Returns a context to pass to the mock transmit api"
-  []
-  {:system (s/system)})
-
 (defn reset
   "Resets the mock echo."
-  []
-  (mock/reset (context)))
+  [context]
+  (echo-client/reset context))
 
 (defn create-providers
   "Creates the providers in the mock echo."
-  [provider-guid-id-map]
-  (mock/create-providers (context) provider-guid-id-map))
+  [context provider-guid-id-map]
+  (echo-client/create-providers context provider-guid-id-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Token related
 
 (defn login-guest
   "Logs in as a guest and returns the token"
-  []
-  (tokens/login-guest (context)))
+  [context]
+  (tokens/login-guest context))
 
 (defn login
   "Logs in as the specified user and returns the token. No password needed because mock echo
   doesn't enforce passwords. Group guids can be optionally specified. The logged in user will
   be in the given groups."
-  ([user]
-   (login user nil))
-  ([user group-guids]
+  ([context user]
+   (login context user nil))
+  ([context user group-guids]
    (if group-guids
-     (mock/login-with-group-access (context) user "password" group-guids)
-     (tokens/login (context) user "password"))))
+     (echo-client/login-with-group-access context user "password" group-guids)
+     (tokens/login context user "password"))))
 
 (defn logout
   "Logs out the specified token."
-  [token]
-  (tokens/logout (context) token))
+  [context token]
+  (tokens/logout context token))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ACL related
@@ -101,19 +94,19 @@
 
 (defn grant
   "Creates an ACL in mock echo with the id, access control entries, identities"
-  ([aces catalog-item-identity object-identity-type acl-type]
-   (grant aces catalog-item-identity object-identity-type acl-type nil))
-  ([aces catalog-item-identity object-identity-type acl-type provider-guid]
+  ([context aces catalog-item-identity object-identity-type acl-type]
+   (grant context aces catalog-item-identity object-identity-type acl-type nil))
+  ([context aces catalog-item-identity object-identity-type acl-type provider-guid]
    (let [acl {:aces aces
               :catalog-item-identity catalog-item-identity
               object-identity-type (util/remove-nil-keys {:provider-guid provider-guid
                                                           :target acl-type})}]
-     (mock/create-acl (context) acl))))
+     (echo-client/create-acl context acl))))
 
 (defn ungrant
   "Removes the acl"
-  [acl]
-  (mock/delete-acl (context) (:id acl)))
+  [context acl]
+  (echo-client/delete-acl context (:id acl)))
 
 (def guest-ace
   "A CMR style access control entry granting guests read access."
@@ -134,14 +127,15 @@
 (defn grant-all
   "Creates an ACL in mock echo granting guests and registered users access to catalog items
   identified by the catalog-item-identity"
-  [catalog-item-identity]
-  (grant [guest-ace registered-user-ace] catalog-item-identity :system-object-identity nil))
+  [context catalog-item-identity]
+  (grant context [guest-ace registered-user-ace] catalog-item-identity :system-object-identity nil))
 
 (defn grant-all-ingest
   "Creates an ACL in mock echo granting guests and registered users access to ingest for the given
   provider."
-  [provider-guid]
-  (grant [{:permissions [:update :delete]
+  [context provider-guid]
+  (grant context
+         [{:permissions [:update :delete]
            :user-type :guest}
           {:permissions [:update :delete]
            :user-type :registered}]
@@ -153,27 +147,27 @@
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
-  [catalog-item-identity]
-  (grant [guest-ace] catalog-item-identity :system-object-identity nil))
+  [context catalog-item-identity]
+  (grant context [guest-ace] catalog-item-identity :system-object-identity nil))
 
 (defn grant-registered-users
   "Creates an ACL in mock echo granting all registered users access to catalog items identified by
   the catalog-item-identity"
-  [catalog-item-identity]
-  (grant [registered-user-ace] catalog-item-identity :system-object-identity nil))
+  [context catalog-item-identity]
+  (grant context [registered-user-ace] catalog-item-identity :system-object-identity nil))
 
 (defn grant-group
   "Creates an ACL in mock echo granting users in the group access to catalog items identified by
   the catalog-item-identity"
-  [group-guid catalog-item-identity]
-  (grant [(group-ace group-guid [:read])] catalog-item-identity :system-object-identity nil))
+  [context group-guid catalog-item-identity]
+  (grant context [(group-ace group-guid [:read])] catalog-item-identity :system-object-identity nil))
 
 (defn grant-group-admin
   "Creates an ACL in mock echo granting users in the group the given permissions for system ingest
   management.  If no permissions are provided the group is given read and update permission."
-  [group-guid & permission-types]
-  (grant [(group-ace group-guid (or (seq permission-types)
-                                    [:read :update]))]
+  [context group-guid & permission-types]
+  (grant context [(group-ace group-guid (or (seq permission-types)
+                                            [:read :update]))]
          nil
          :system-object-identity
          ingest-management-acl))
@@ -181,9 +175,9 @@
 (defn grant-group-provider-admin
   "Creates an ACL in mock echo granting users in the group the given permissions to ingest for the
   given provider.  If no permissions are provided the group is given update and delete permissions."
-  [group-guid provider-guid & permission-types]
-  (grant [(group-ace group-guid (or (seq permission-types)
-                                    [:update :delete]))]
+  [context group-guid provider-guid & permission-types]
+  (grant context [(group-ace group-guid (or (seq permission-types)
+                                            [:update :delete]))]
          nil
          :provider-object-identity
          ingest-management-acl
