@@ -32,7 +32,12 @@
         revision-id (get headers "revision-id")]
     (if concept-id
       (if revision-id
-        (assoc concept :concept-id concept-id :revision-id (Integer/parseInt revision-id))
+        (try
+          (assoc concept :concept-id concept-id :revision-id (Integer/parseInt revision-id))
+          (catch NumberFormatException e
+            (srvc-errors/throw-service-error
+              :bad-request
+              (msg/invalid-revision-id revision-id))))
         (assoc concept :concept-id concept-id))
       concept)))
 

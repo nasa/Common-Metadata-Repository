@@ -9,7 +9,8 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]))
+            [cmr.spatial.mbr :as m]
+            [cmr.ingest.services.messages :as msg]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -143,3 +144,19 @@
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
       ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."])))
+
+(deftest header-validations
+  (testing "ingesting a concept with the same concept-id and revision-id fails"
+    (let [concept-id "C1-PROV1"
+          existing-concept (dc/collection-concept {:revision-id 1 :concept-id concept-id})
+          _ (ingest/ingest-concept existing-concept)
+          response (ingest/ingest-concept existing-concept)]
+      (is (= {:status 409
+              :errors [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]}
+             response))))
+  (testing "attempting to ingest using an invalid revision id returns an error"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
+                                                                  :revision-id "NaN"}))]
+      (is (= {:status 400
+              :errors [(msg/invalid-revision-id "NaN")]}
+             response)))))
