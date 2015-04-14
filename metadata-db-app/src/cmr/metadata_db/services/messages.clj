@@ -24,10 +24,8 @@
     "Expected revision-id of [%s] got [%s] for [%s]"
     expected-id received-id concept-id))
 
-(defn invalid-revision-id-unknown-expected [revision-id]
-  (format
-    "Invalid revision-id [%s]"
-    revision-id))
+(defn concept-id-and-revision-id-conflict [concept-id revision-id]
+  (format "Conflict with existing concept-id [%s] and revision-id [%s]" concept-id revision-id))
 
 (defn missing-concept-type []
   "Concept must include concept-type.")
@@ -69,9 +67,6 @@
     provider-id
     given-concept-id
     given-native-id))
-
-(defn maximum-save-attempts-exceeded [error-msg]
-  (str "Reached limit of attempts to save concept - giving up. Potential cause: " error-msg))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept Constraint Messages
