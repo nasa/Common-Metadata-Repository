@@ -1,6 +1,15 @@
 # cubby-app
 
-The cubby app provides a centralized caching service for the CMR. Most caching in the CMR should be done in each application in separate in-memory cache. Sometimes a single central cache will be needed. The cubby application provides that capability.
+The cubby app provides a centralized caching service for the CMR. Most caching in the CMR should be done in each application in separate in-memory cache. Sometimes a single central cache will be needed. The cubby application provides that capability. Cubby data is stored in an Elasticsearch index.
+
+## Managing Elasticsearch Indexes
+
+During initial deployment the index in Elasticsearch needs to be created. During subsequent deployments if any of the mappings are changed they need to be updated in Elasticsearch. If you are running Cubby locally in a REPL then this is handled for you. In other environments this handled through the main method in `cmr.db`. One command will detect if the indexes exist or not. If they do not exist they will be created. If they exist the mappings will be updated.
+
+```
+CMR_ELASTIC_HOST=localhost CMR_ELASTIC_PORT=9210 java -cp target/cmr-cubby-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
+```
+
 ## API
 
 ### Overview
@@ -63,8 +72,6 @@ Deletes all the cached keys.
     curl -i -XDELETE http://localhost:3007/keys
 
 ## Admin API
-
-TODO add cmr.db migration
 
 ### Reset
 
