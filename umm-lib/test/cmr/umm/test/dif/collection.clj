@@ -384,6 +384,7 @@
                     :summary "Summary of collection."
                     :purpose "A grand purpose"
                     :quality "High Quality Metadata"
+                    :use-constraints "Public"
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"

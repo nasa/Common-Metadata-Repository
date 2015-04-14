@@ -73,6 +73,8 @@
         (dissoc :metadata-language)
         ;; ECHO10 does not have quality
         (dissoc :quality)
+        ;; ECHO10 does not have use-constraints
+        (dissoc :use-constraints)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
