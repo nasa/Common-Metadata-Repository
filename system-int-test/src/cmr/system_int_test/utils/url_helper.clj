@@ -77,6 +77,14 @@
   (str (elastic-root) "/_refresh"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cubby URLs
+
+(defn cubby-read-caches-url
+  "URL to read the cubby caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/cubby-port)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
 
 (defn create-provider-url

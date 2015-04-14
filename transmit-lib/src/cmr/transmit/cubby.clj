@@ -16,15 +16,15 @@
 
   )
 
-(defn- reset-url
+(defn reset-url
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
-(defn- keys-url
+(defn keys-url
   [conn]
   (format "%s/keys" (conn/root-url conn)))
 
-(defn- key-url
+(defn key-url
   [key-name conn]
   (format "%s/keys/%s" (conn/root-url conn) (codec/url-encode key-name)))
 
@@ -36,16 +36,6 @@
       (json/decode s true)
       (catch Exception _
         s))))
-
-(defn app-running?
-  "Returns true if the cubby application appears to be running at the given port and url."
-  [context]
-  (try
-    (client/options (conn/root-url (config/context->app-connection context :cubby))
-                    {:throw-exceptions false})
-    true
-    (catch java.net.ConnectException _
-      false)))
 
 (defn- http-response->raw-response
   "Parses a clj-http response and returns only the keys that we would normally be interested in.
@@ -96,6 +86,7 @@
                      (merge {:url (url-fn conn)
                              :method method
                              :throw-exceptions false
+                             :headers {config/token-header (config/echo-system-token)}
                              :connection-manager (conn/conn-mgr conn)}
                             http-options)))]
     (cond
@@ -133,6 +124,13 @@
    (delete-value context key-name false))
   ([context key-name is-raw]
    (cubby-request context {:url-fn (partial key-url key-name), :method :delete, :raw? is-raw})))
+
+(defn delete-all-values
+  "Deletes all values"
+  ([context]
+   (delete-all-values context false))
+  ([context is-raw]
+   (cubby-request context {:url-fn keys-url, :method :delete, :raw? is-raw})))
 
 (defn reset
   "Clears all values in the cache service"

@@ -14,6 +14,9 @@
   (delete-value
     [this key-name]
     "Dissociates any value with the given key")
+  (delete-all-values
+    [this]
+    "Removes all values")
   (reset
     [this]
     "Resets the cache store removing all saved data."))

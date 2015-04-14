@@ -7,7 +7,7 @@ The cubby app provides a centralized caching service for the CMR. Most caching i
 
   * **/keys**
     * **GET** - fetch all keys.
-    * **DELETE** - TODO make this clear the cache
+    * **DELETE** - Deletes all cached values
     * **/:key**
       * **GET** - Fetch value associated with a key
       * **PUT** - Set a value associated with a key
@@ -46,6 +46,11 @@ Content-Type: application/json; charset=utf-8
 ["my-key-name"]
 ```
 
+### Delete All Keys
+
+Deletes all the cached keys.
+
+TODO example
 
 ## Admin API
 

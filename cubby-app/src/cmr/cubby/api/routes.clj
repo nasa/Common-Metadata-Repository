@@ -7,7 +7,9 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
-            [cmr.cubby.data :as d]))
+            [cmr.cubby.data :as d]
+            [cmr.acl.core :as acl]
+            [cmr.common-app.api.routes :as common-routes]))
 
 (defn- context->db
   "Returns the db in the context"
@@ -37,26 +39,41 @@
   (d/delete-value (context->db context) key-name)
   {:status 200})
 
+(defn delete-all-values
+  [context]
+  (d/delete-all-values (context->db context))
+  {:status 200})
+
 (defn reset
   [context]
   (d/reset (context->db context)))
 
+(def key-routes
+  (context "/keys" []
+    (GET "/" {context :request-context}
+      (get-keys context))
+    (DELETE "/" {context :request-context}
+      (delete-all-values context))
+    (context "/:key-name" [key-name]
+      (GET "/" {context :request-context}
+        (get-value context key-name))
+      (PUT "/" {context :request-context body :body}
+        (set-value context key-name (slurp body)))
+      (DELETE "/" {context :request-context}
+        (delete-value context key-name)))))
+
+(def admin-routes
+  (POST "/reset" {:keys [request-context params headers]}
+    (let [context (acl/add-authentication-to-context request-context params headers)]
+      (acl/verify-ingest-management-permission context :update)
+      (reset context))))
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
-      (context "/keys" []
-        (GET "/" {context :request-context}
-          (get-keys context))
-        (context "/:key-name" [key-name]
-          (GET "/" {context :request-context}
-            (get-value context key-name))
-          (PUT "/" {context :request-context body :body}
-            (set-value context key-name (slurp body)))
-          (DELETE "/" {context :request-context}
-            (delete-value context key-name))))
-      (POST "/reset" {context :request-context}
-        ;; TODO enforce ACLs
-        (reset context)))
+      admin-routes
+      common-routes/cache-api-routes
+      key-routes)
     (route/not-found "Not Found")))
 
 (defn make-api [system]

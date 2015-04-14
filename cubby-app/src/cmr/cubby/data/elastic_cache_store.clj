@@ -153,6 +153,11 @@
       (errors/throw-service-error :not-found (format "No cached value with key [%s] was found"
                                                      key-name))))
 
+  (delete-all-values
+    [this]
+    (try-elastic-operation
+      (esd/delete-by-query conn index-name type-name (q/match-all))))
+
   (reset
     [this]
     (when (esi/exists? conn index-name)

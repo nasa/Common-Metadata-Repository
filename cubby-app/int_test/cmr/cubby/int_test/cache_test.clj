@@ -3,11 +3,9 @@
   (:require [clojure.test :refer :all]
             [cmr.transmit.cubby :as c]
             [cmr.cubby.int-test.utils :as u]
-            [cmr.elastic-utils.test-util :as elastic-test-util]))
+            ))
 
-(use-fixtures :once (join-fixtures
-                      [elastic-test-util/run-elastic-fixture
-                       u/run-app-fixture]))
+(use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each u/reset-fixture)
 
 
@@ -28,7 +26,7 @@
   (testing "retrieve unsaved key returns 404"
     (is (= 404 (:status (c/get-value (u/conn-context) "foo" true)))))
   (testing "no keys found"
-    (is (= [] (c/get-keys (u/conn-context))))))
+    (u/assert-keys [])))
 
 (deftest set-and-retrieve-value-basic-test
   (testing "save value the first time"
@@ -47,8 +45,7 @@
   (dotimes [n 50]
     (c/set-value (u/conn-context) (str "key" n) (str n)))
   (u/refresh-elastic-index)
-  (is (= (sort (map #(str "key" %) (range 50)))
-         (sort (c/get-keys (u/conn-context))))))
+  (u/assert-keys (map #(str "key" %) (range 50))))
 
 (deftest save-multiple-keys
   (u/assert-value-saved-and-retrieved "foo" "foo value")
@@ -77,3 +74,14 @@
         value (str "value" test-chars)]
     (u/assert-value-saved-and-retrieved key-name value)
     (u/assert-keys [key-name])))
+
+(deftest delete-all-keys
+  (u/assert-value-saved-and-retrieved "foo" "foo value")
+  (u/assert-value-saved-and-retrieved "bar" "bar value")
+  (u/assert-value-saved-and-retrieved "charlie" "charlie value")
+  (u/assert-keys ["foo" "bar" "charlie"])
+
+  (c/delete-all-values (u/conn-context))
+  (u/refresh-elastic-index)
+  (u/assert-keys []))
+

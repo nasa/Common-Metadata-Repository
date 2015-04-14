@@ -81,7 +81,8 @@
                                          "index-names"
                                          "token-imp"
                                          "token-sid"
-                                         "xsl-transformer-templates"])
+                                         "xsl-transformer-templates"]
+           (url/cubby-read-caches-url) ["token-imp"])
       (s/only-with-real-database
         (testing "list caches for bootstrap"
           (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
@@ -102,7 +103,8 @@
            (url/index-set-read-caches-url)
            (url/mdb-read-caches-url)
            (url/ingest-read-caches-url)
-           (url/search-read-caches-url))
+           (url/search-read-caches-url)
+           (url/cubby-read-caches-url))
       (s/only-with-real-database
         (testing "normal user cannot access cache list API for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -137,7 +139,8 @@
            (str (url/index-set-read-caches-url) "/acls")
            (str (url/mdb-read-caches-url) "/acls")
            (str (url/ingest-read-caches-url) "/acls")
-           (str (url/search-read-caches-url) "/acls"))
+           (str (url/search-read-caches-url) "/acls")
+           (str (url/cubby-read-caches-url) "/acls"))
       (s/only-with-real-database
         (testing "normal user cannot retrieve cache keys for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -173,7 +176,8 @@
            (url/search-read-caches-url) "index-names" []
            (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
            (url/search-read-caches-url) "token-sid" []
-           (url/search-read-caches-url) "xsl-transformer-templates" [])
+           (url/search-read-caches-url) "xsl-transformer-templates" []
+           (url/cubby-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]])
       (s/only-with-real-database
         (testing "list cache keys for bootstrap"
           (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
@@ -196,7 +200,8 @@
            (str (url/index-set-read-caches-url) "/acls/acls")
            (str (url/mdb-read-caches-url) "/acls/acls")
            (str (url/ingest-read-caches-url) "/acls/acls")
-           (str (url/search-read-caches-url) "/acls/acls"))
+           (str (url/search-read-caches-url) "/acls/acls")
+           (str (url/cubby-read-caches-url) "/acls/acls"))
       (s/only-with-real-database
         (testing "normal user cannot retrieve cache values for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
