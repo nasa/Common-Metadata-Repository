@@ -8,24 +8,45 @@
             [alex-and-georges.debug-repl :refer (debug-repl)]
             [cmr.cubby.system :as system]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.dev.util :as d]))
+            [cmr.common.dev.util :as d]
+            [cmr.common.lifecycle :as l]
+            [cmr.elastic-utils.embedded-elastic-server :as es]
+            [cmr.elastic-utils.config :as elastic-config]))
+
+(def in-memory-elastic-port 9206)
 
 (def system nil)
+
+;; Local in memory elasticserver to make available when running the cubby app by itself.
+(def elastic-server nil)
+
+(defn- create-elastic-server
+  "Creates an instance of an elasticsearch server in memory."
+  []
+  (elastic-config/set-elastic-port! in-memory-elastic-port)
+  (es/create-server
+    in-memory-elastic-port
+    (+ in-memory-elastic-port 10)
+    "es_data/cubby"))
 
 (defn start
   "Starts the current development system."
   []
-  (let [s (system/create-system)]
-    (alter-var-root #'system
-                    (constantly
-                      (system/start s))))
-  (d/touch-user-clj))
+  (alter-var-root #'elastic-server
+                  (constantly
+                    (l/start (create-elastic-server) nil)))
+
+  (alter-var-root #'system
+                  (constantly
+                    (system/start (system/create-system))))
+
+    (d/touch-user-clj))
 
 (defn stop
   "Shuts down and destroys the current development system."
   []
-  (alter-var-root #'system
-                  (fn [s] (when s (system/stop s)))))
+  (alter-var-root #'elastic-server #(when % (l/stop % system)))
+  (alter-var-root #'system #(when % (system/stop %))))
 
 (defn reset []
   ; Stops the running code

@@ -14,3 +14,4 @@ pom.xml.asc
 /log
 /.nrepl-port
 testreports.xml
+/es_data

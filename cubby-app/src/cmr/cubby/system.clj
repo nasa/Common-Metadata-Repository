@@ -8,7 +8,8 @@
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.cubby.data.memory-cache-store :as mem-cache-store]))
+            [cmr.elastic-utils.config :as es-config]
+            [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]))
 
 (defconfig cubby-port
   "Port cubby application listens on."
@@ -23,13 +24,13 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :web])
+  [:log :db :web])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
   {:log (log/create-logger)
-   :db (mem-cache-store/create-memory-cache-store)
+   :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
    :web (web/create-web-server (cubby-port) routes/make-api)
    :relative-root-url (cubby-relative-root-url)
    :zipkin (context/zipkin-config "cubby" false)})

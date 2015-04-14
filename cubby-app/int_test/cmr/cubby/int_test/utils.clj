@@ -3,7 +3,9 @@
   (:require [clojure.test :refer :all]
             [cmr.transmit.config :as config]
             [cmr.transmit.cubby :as c]
-            [cmr.cubby.system :as system]))
+            [cmr.cubby.system :as system]
+            [cmr.elastic-utils.config :as es-config]
+            [clj-http.client :as client]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -42,10 +44,23 @@
         (finally
           (system/stop cubby-system))))))
 
+(defn elastic-root
+  []
+  (format "http://localhost:%s" (es-config/elastic-port)))
+
+(defn elastic-refresh-url
+  []
+  (str (elastic-root) "/_refresh"))
+
+(defn refresh-elastic-index
+  []
+  (client/post (elastic-refresh-url)))
+
 (defn assert-value-saved-and-retrieved
   "Asserts that the given keyname and value can be set and retrieved."
   [key-name value]
   (is (= 200 (:status (c/set-value (conn-context) key-name value true))))
+  (refresh-elastic-index)
   (is (= {:status 200 :body value}
          (select-keys (c/get-value (conn-context) key-name true)
                       [:status :body]))))

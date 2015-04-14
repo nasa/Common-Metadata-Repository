@@ -9,9 +9,7 @@
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [compojure "1.3.2"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
-                 [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.15"]
-                 [org.clojure/tools.cli "0.3.1"]]
+                 [ring/ring-json "0.3.1"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
   :profiles

@@ -4,7 +4,6 @@
             [cmr.transmit.cubby :as c]
             [cmr.cubby.int-test.utils :as u]))
 
-;; TODO refactor the run-app fixture to be once per jvm session somehow.
 (use-fixtures :once u/run-app-fixture)
 (use-fixtures :each u/reset-fixture)
 
@@ -17,6 +16,8 @@
   (c/get-value (u/conn-context) "charlie" true)
   (c/get-value (u/conn-context) "charlie")
   (c/get-value (u/conn-context) "foo")
+
+  (c/reset (u/conn-context))
 
   )
 
@@ -32,8 +33,19 @@
     (testing "keys are available"
       (u/assert-keys ["foo"])))
 
+  (testing "keys are case sensitive"
+    (u/assert-value-saved-and-retrieved "Foo" "a different value")
+
+    (is (= "the value" (c/get-value (u/conn-context) "foo"))))
   (testing "replace value"
     (u/assert-value-saved-and-retrieved "foo" "updated value")))
+
+(deftest retrieve-many-keys-test
+  (dotimes [n 50]
+    (c/set-value (u/conn-context) (str "key" n) (str n)))
+  (u/refresh-elastic-index)
+  (is (= (sort (map #(str "key" %) (range 50)))
+         (sort (c/get-keys (u/conn-context))))))
 
 (deftest save-multiple-keys
   (u/assert-value-saved-and-retrieved "foo" "foo value")
@@ -47,9 +59,11 @@
   (u/assert-value-saved-and-retrieved "charlie" "charlie value")
 
   (is (= 200 (:status (c/delete-value (u/conn-context) "bar" true))))
+  (u/refresh-elastic-index)
 
   (testing "404 is returned after deleting"
-    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true)))))
+    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true))))
+    (is (= 404 (:status (c/delete-value (u/conn-context) "bar" true)))))
 
   (testing "key is removed after deleting"
     (u/assert-keys ["foo" "charlie"])))
