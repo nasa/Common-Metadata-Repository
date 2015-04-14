@@ -160,3 +160,20 @@
       (is (= {:status 400
               :errors [(msg/invalid-revision-id "NaN")]}
              response)))))
+
+(comment
+  (ingest/delete-provider "PROV1")
+  ;; Attempt to create race conditions by ingesting the same concept-id simultaneously. We expect
+  ;; some requests to succeed while others return a 409.
+  ;; If the race condition is reproduced you will see a message like:
+  ;; 409 returned, Errors: [Conflict with existing concept-id [C1-PROV1] and revision-id [23]]
+  (do
+    (ingest/create-provider "provguid1" "PROV1")
+    (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
+
+    (doseq [_ (range 150)]
+      (future (do (let [response (ingest/ingest-concept
+                                   (dc/collection-concept {:concept-id "C1-PROV1"
+                                                           :native-id "Same Native ID"}))]
+                    (when (= 409 (:status response))
+                      (println "409 returned, Errors:" (:errors response)))))))))
