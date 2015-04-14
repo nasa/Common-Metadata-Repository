@@ -24,19 +24,10 @@
   (c/reset (conn-context))
   (f))
 
-(defn app-running?
-  "Returns true if the cubby app is running."
-  []
-  (try
-    (c/get-keys (conn-context))
-    true
-    (catch java.net.ConnectException _
-      false)))
-
 (defn run-app-fixture
   "Test fixture that will automatically run the application if it's not detected as currently running."
   [f]
-  (if (app-running?)
+  (if (c/app-running? (conn-context))
     (f)
     (let [cubby-system (system/start (system/create-system))]
       (try

@@ -37,6 +37,16 @@
       (catch Exception _
         s))))
 
+(defn app-running?
+  "Returns true if the cubby application appears to be running at the given port and url."
+  [context]
+  (try
+    (client/options (conn/root-url (config/context->app-connection context :cubby))
+                    {:throw-exceptions false})
+    true
+    (catch java.net.ConnectException _
+      false)))
+
 (defn- http-response->raw-response
   "Parses a clj-http response and returns only the keys that we would normally be interested in.
   Parses the json in the body if the content type is JSON. The \"raw\" respond body is considered
