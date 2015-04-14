@@ -8,6 +8,7 @@
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.cubby.data :as d]
+            [cmr.common.cache :as cache]
             [cmr.acl.core :as acl]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.elastic-utils.connect :as es-conn]
@@ -48,6 +49,7 @@
 
 (defn reset
   [context]
+  (cache/reset-caches context)
   (d/reset (context->db context)))
 
 (defn health

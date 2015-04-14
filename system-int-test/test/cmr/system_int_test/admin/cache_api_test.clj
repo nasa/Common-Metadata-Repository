@@ -177,9 +177,7 @@
            (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
            (url/search-read-caches-url) "token-sid" []
            (url/search-read-caches-url) "xsl-transformer-templates" []
-           (url/cubby-read-caches-url) "token-imp" [["ABC-3" "update"] [nil "update"] ["ABC-4" "update"]
-                                                    ["mock-echo-system-token" "update"] ["ABC-1" "update"]
-                                                    ["ABC-2" "update"] ["ABC-2" "read"] ["ABC-1" "read"]])
+           (url/cubby-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]])
       (s/only-with-real-database
         (testing "list cache keys for bootstrap"
           (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
