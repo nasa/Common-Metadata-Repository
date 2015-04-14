@@ -120,12 +120,12 @@
              "iso19115")))
 
     (testing "Retrieving results in SMAP ISO format is not supported"
-      (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+      (is (= {:errors ["The mime types specified in the accept header [application/iso:smap+xml] are not supported."],
               :status 400}
              (search/get-search-failure-xml-data
                (search/find-metadata :collection :iso-smap {}))))
       (testing "as extension"
-        (is (= {:errors ["The mime type [application/iso:smap+xml] is not supported."],
+        (is (= {:errors ["The URL extension [iso_smap] is not supported."],
                 :status 400}
                (search/get-search-failure-xml-data
                  (search/find-concepts-in-format
@@ -169,7 +169,7 @@
                              (cx/string-at-path (fx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
-                    (= (str "The mime type [" mime-type "] is not supported.") err-msg)))
+                    (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
              "application/atom+xml" true
              "application/json" false
              "text/csv" false)))
@@ -494,7 +494,7 @@
 
 (deftest search-errors-in-json-or-xml-format
   (testing "invalid format"
-    (is (= {:errors ["The mime type [application/echo11+xml] is not supported."],
+    (is (= {:errors ["The mime types specified in the accept header [application/echo11+xml] are not supported."],
             :status 400}
            (search/get-search-failure-xml-data
              (search/find-concepts-in-format
