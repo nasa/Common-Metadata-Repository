@@ -39,7 +39,6 @@
        mock-echo-system/start
        mock-echo-system/stop)]))
 
-
 (defn elastic-root
   []
   (format "http://localhost:%s" (es-config/elastic-port)))

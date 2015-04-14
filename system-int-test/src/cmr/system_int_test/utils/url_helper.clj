@@ -84,6 +84,11 @@
   []
   (format "http://localhost:%s/caches" (transmit-config/cubby-port)))
 
+(defn cubby-health-url
+  "URL to check cubby health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/cubby-port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
 

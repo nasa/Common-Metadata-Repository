@@ -9,7 +9,9 @@
             [cmr.system-trace.http :as http-trace]
             [cmr.cubby.data :as d]
             [cmr.acl.core :as acl]
-            [cmr.common-app.api.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.elastic-utils.connect :as es-conn]
+            [cmr.transmit.echo.rest :as echo-rest]))
 
 (defn- context->db
   "Returns the db in the context"
@@ -48,6 +50,16 @@
   [context]
   (d/reset (context->db context)))
 
+(defn health
+  "Returns the health state of the app."
+  [context]
+  (let [elastic-health (es-conn/health context :db)
+        echo-rest-health (echo-rest/health context)
+        ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
+    {:ok? ok?
+     :dependencies {:elastic_search elastic-health
+                    :echo echo-rest-health}}))
+
 (def key-routes
   (context "/keys" []
     (GET "/" {context :request-context}
@@ -73,6 +85,7 @@
     (context (:relative-root-url system) []
       admin-routes
       common-routes/cache-api-routes
+      (common-routes/health-api-routes health)
       key-routes)
     (route/not-found "Not Found")))
 

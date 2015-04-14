@@ -14,6 +14,16 @@ The cubby app provides a centralized caching service for the CMR. Most caching i
       * **DELETE** - remove a key
   * **/reset**
     * **POST** - Recreates indexes dropping all data.
+  * **/health**
+    * **GET** - Returns the health of the application
+  * **/caches**
+    * **GET** - Returns a list of the in memory caches.
+    * **/:cache-name**
+      * **GET** - Gets the keys of the given cache
+      * **/:cache-key**
+        * **GET** - Fetches value of item cached with this key.
+    * **/clear-caches**
+      * **POST** - Clear caches
 
 
 ### Set Value
@@ -50,50 +60,11 @@ Content-Type: application/json; charset=utf-8
 
 Deletes all the cached keys.
 
-TODO example
+    curl -i -XDELETE http://localhost:3007/keys
 
 ## Admin API
 
-TODO more about creating and updating indexes
-
-
-What do we want for migrating/index creation
-
-  * single API that any application could expose for migrating the database or elasticsearch
-  * If the elasticsearch index doesn't exist yet it creates it
-  * If the elasticsearch index exists it updates the mappings (if needed)
-  * What about testing this? Should we have a delete index api?
-    * Yes
-  * What about during deployment of cubby? It will be running and won't have an index.
-    * If an set value request comes in elastic will automatically create the index
-      * TODO file earthdata infrastructure issue to stop this
-    * Cubby read requests will naturally fail.
-    * Cubby will check on every write request that it's index exist.
-      * This is temporary until the new issue mentioned above is fixed.
-      * TODO file issue to reverse this and make it dependent on the other issue.
-    * The indexer will fail on reading or writing to cubby until migrated. We will allow this to fail.
-      * All uses of the indexer will retry after some period of time.
-
-### Migrate
-
-    curl -XPOST http://localhost:3007/admin/migrate
-
-or
-
-    CMR_ELASTIC_HOST=localhost CMR_ELASTIC_PORT=9200 java -cp target/cmr-cubby-app-0.1.0-SNAPSHOT-standalone.jar cmr.db migrate
-
-
-So we actually prefer the last one here. Jon likes it best of all as do Chris and I. I won't expose an API to do these things. I'll manually test it.
-
 TODO add cmr.db migration
-
-
-### Delete index
-
-    curl -XPOST http://localhost:3007/admin/delete-index
-
-
-
 
 ### Reset
 
@@ -101,6 +72,56 @@ Drops and recreates the indexes that save cubby data.
 
     curl -XPOST http://localhost:3007/reset
 
+### Querying caches
+
+Endpoints are provided for querying the contents of the various in memory caches used by the application.
+The following curl will return the list of caches:
+
+    curl -i http://localhost:3007/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i http://localhost:3007/caches/cache-name
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i http://localhost:3007/caches/cache-name/cache-key
+
+### Check application health
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET "http://localhost:3007/health?pretty=true"
+
+Example healthy response body:
+
+```
+{
+  "elastic_search" : {
+    "ok?" : true
+  },
+  "echo" : {
+    "ok?" : true
+  }
+}
+```
+
+Example un-healthy response body:
+
+```
+{
+  "elastic_search" : {
+    "ok?" : false,
+    "problem" : {
+      "status" : "Inaccessible",
+      "problem" : "Unable to get elasticsearch cluster health, caught exception: Connection refused"
+    }
+  },
+  "echo" : {
+    "ok?" : true
+  }
+}
+```
 
 ## License
 

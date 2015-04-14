@@ -138,9 +138,3 @@
    (reset context false))
   ([context is-raw]
    (cubby-request context {:url-fn reset-url, :method :post, :raw? is-raw})))
-
-;; TODO this will be done in a subsequent pull request when elasticsearch is added.
-(defn get-health
-  "TODO"
-  [context]
-  )
