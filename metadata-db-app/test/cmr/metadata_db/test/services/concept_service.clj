@@ -87,20 +87,20 @@
               (du/message->regex (messages/invalid-revision-id (:concept-id concept) 1 2))
               (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
 
-
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
-  (testing "valid no revision-id"
-    (let [db (memory/create-db [example-concept])
-          result (cs/try-to-save db (dissoc example-concept :revision-id) nil)]
-      (is (= (:revision-id result) 2))))
+  (testing "must be called with a revision-id"
+    (let [db (memory/create-db [example-concept])]
+      (is (thrown-with-msg? AssertionError #"Assert failed: .*revision-id"
+                            (cs/try-to-save db (dissoc example-concept :revision-id))))))
   (testing "valid with revision-id"
     (let [db (memory/create-db [example-concept])
-          result (cs/try-to-save db (assoc example-concept :revision-id 2) 2)]
-      (is (= (:revision-id result) 2))))
-  (testing "invalid with low revision-id"
-    (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-revision-id-unknown-expected 1))
-                          (cs/try-to-save (memory/create-db [example-concept]) (assoc example-concept :revision-id 1) 1)))))
-
-
-
+          result (cs/try-to-save db (assoc example-concept :revision-id 2))]
+      (is (= 2 (:revision-id result)))))
+  (testing "conflicting concept-id and revision-id"
+    (is (thrown-with-msg?
+          ExceptionInfo (du/message->regex (messages/concept-id-and-revision-id-conflict
+                                             (:concept-id example-concept)
+                                             1))
+          (cs/try-to-save (memory/create-db [example-concept])
+                          (assoc example-concept :revision-id 1))))))

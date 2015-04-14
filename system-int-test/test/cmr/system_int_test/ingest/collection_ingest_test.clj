@@ -290,3 +290,23 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+
+(deftest concept-id-revision-id-conflicts
+  (testing "ingesting a concept with the same concept-id and revision-id fails"
+    (let [concept-id "C1-PROV1"
+          existing-concept (dc/collection-concept {:revision-id 1 :concept-id concept-id})
+          _ (ingest/ingest-concept existing-concept)
+          result (ingest/ingest-concept existing-concept)]
+      (is (= [409 [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]]
+             [(:status result) (:errors result)])))))
+
+(comment
+  (def existing-concept (dc/collection-concept {:revision-id 1 :concept-id "C1-PROV1"}))
+  (ingest/ingest-concept existing-concept)
+  (cmr.metadata-db.services.concept-service/validate-concept-revision-id (cmr.metadata-db.data.memory-db/create-db) existing-concept)
+
+
+  (cmr.metadata-db.services.concept-service/check-concept-revision-id (cmr.metadata-db.data.memory-db/create-db) existing-concept nil)
+
+  (cmr.metadata-db.int-test.utility/find-concepts :collection
+                                                  {:provider-id "PROV1"}))
