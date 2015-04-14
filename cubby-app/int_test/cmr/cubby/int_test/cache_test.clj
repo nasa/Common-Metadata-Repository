@@ -2,9 +2,12 @@
   "Provides integration tests for the cubby application"
   (:require [clojure.test :refer :all]
             [cmr.transmit.cubby :as c]
-            [cmr.cubby.int-test.utils :as u]))
+            [cmr.cubby.int-test.utils :as u]
+            [cmr.elastic-utils.test-util :as elastic-test-util]))
 
-(use-fixtures :once u/run-app-fixture)
+(use-fixtures :once (join-fixtures
+                      [elastic-test-util/run-elastic-fixture
+                       u/run-app-fixture]))
 (use-fixtures :each u/reset-fixture)
 
 
