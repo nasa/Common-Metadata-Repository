@@ -84,6 +84,8 @@
             (assert-validation-success concept (d/item->concept collection :iso19115))
             (assert-validation-success concept (d/item->concept collection :dif))))
 
+
+
         (testing "invalid collection xml"
           (assert-validation-errors
             [(msg/invalid-parent-collection-for-validation
@@ -209,61 +211,92 @@
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference should have at least Entry Title or Short Name and Version Id."]}]
                 (d/item->concept granule :iso-smap)
-                coll-concept))))))
+                coll-concept)))))
 
-    (testing "with ingested collection"
-      (let [collection (d/ingest "PROV1" (dc/collection {}))]
-        (testing "successful validation of granule"
-          (let [granule-concept (d/item->concept (dg/granule collection))]
-            (assert-validation-success granule-concept)
+      (testing "with ingested collection"
+        (let [collection (d/ingest "PROV1" (dc/collection {}))]
+          (testing "successful validation of granule"
+            (let [granule-concept (d/item->concept (dg/granule collection))]
+              (assert-validation-success granule-concept)
 
-            (testing "with ingested parent collection"
-              (assert-validation-success granule-concept (d/item->concept collection)))))
-        (testing "invalid granule xml"
-          (assert-validation-errors
-            expected-errors
-            (-> collection
-                dg/granule
-                d/item->concept
-                (assoc :metadata invalid-granule-xml))))))))
+              (testing "with ingested parent collection"
+                (assert-validation-success granule-concept (d/item->concept collection)))))
+          (testing "invalid granule xml"
+            (assert-validation-errors
+              expected-errors
+              (-> collection
+                  dg/granule
+                  d/item->concept
+                  (assoc :metadata invalid-granule-xml))))))))
 
-(defn polygon
-  "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
-  [& ords]
-  (poly/polygon [(apply umm-s/ords->ring ords)]))
+  (defn polygon
+    "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
+    [& ords]
+    (poly/polygon [(apply umm-s/ords->ring ords)]))
 
-(defn assert-invalid
-  ([coll-attributes gran-attributes field-path errors]
-   (assert-invalid coll-attributes gran-attributes field-path errors :echo10))
-  ([coll-attributes gran-attributes field-path errors metadata-format]
-   (testing "through validation api"
-     (let [coll (dc/collection coll-attributes)
-           coll-concept (d/item->concept coll metadata-format)
-           granule (dg/granule coll gran-attributes)
-           gran-concept (d/item->concept granule)
-           response (ingest/validate-granule gran-concept coll-concept)]
-       (is (= {:status 400
-               :errors [{:path field-path
-                         :errors errors}]}
-              (select-keys response [:status :errors])))))
+  (defn assert-invalid
+    ([coll-attributes gran-attributes field-path errors]
+     (assert-invalid coll-attributes gran-attributes field-path errors :echo10))
+    ([coll-attributes gran-attributes field-path errors metadata-format]
+     (testing "through validation api"
+       (let [coll (dc/collection coll-attributes)
+             coll-concept (d/item->concept coll metadata-format)
+             granule (dg/granule coll gran-attributes)
+             gran-concept (d/item->concept granule)
+             response (ingest/validate-granule gran-concept coll-concept)]
+         (is (= {:status 400
+                 :errors [{:path field-path
+                           :errors errors}]}
+                (select-keys response [:status :errors])))))
 
-   (testing "through ingest API"
-     (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)
-           response (d/ingest "PROV1" (dg/granule coll gran-attributes) metadata-format)]
-       (is (= {:status 400
-               :errors [{:path field-path
-                         :errors errors}]}
-              (select-keys response [:status :errors])))))))
+     (testing "through ingest API"
+       (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)
+             response (d/ingest "PROV1" (dg/granule coll gran-attributes) metadata-format)]
+         (is (= {:status 400
+                 :errors [{:path field-path
+                           :errors errors}]}
+                (select-keys response [:status :errors])))))))
 
-(defn assert-valid
-  [coll-attributes gran-attributes]
-  (testing "through validation api"
-    (let [coll (dc/collection coll-attributes)
-          coll-concept (d/item->concept coll)
-          granule (dg/granule coll gran-attributes)
-          gran-concept (d/item->concept granule)
-          response (ingest/validate-granule gran-concept coll-concept)]
-      (is (= {:status 200}
+  (defn assert-valid
+    [coll-attributes gran-attributes]
+    (testing "through validation api"
+      (let [coll (dc/collection coll-attributes)
+            coll-concept (d/item->concept coll)
+            granule (dg/granule coll gran-attributes)
+            gran-concept (d/item->concept granule)
+            response (ingest/validate-granule gran-concept coll-concept)]
+        (is (= {:status 200}
+               (select-keys response [:status :errors])))))
+
+    (testing "through ingest API"
+      (let [provider-id (get gran-attributes :provider-id "PROV1")
+            coll (d/ingest provider-id (dc/collection coll-attributes))
+            response (d/ingest provider-id (dg/granule coll gran-attributes))]
+        (is (= {:status 200} (select-keys response [:status :errors]))))))
+
+  (defn assert-invalid-spatial
+    ([coord-sys shapes errors]
+     (assert-invalid-spatial coord-sys shapes errors :echo10))
+    ([coord-sys shapes errors metadata-format]
+     (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
+       (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys})}
+                       {:spatial-coverage (apply dg/spatial shapes)}
+                       ["SpatialCoverage" "Geometries" 0]
+                       errors
+                       metadata-format))))
+
+  (defn assert-valid-spatial
+    [coord-sys shapes]
+    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
+      (assert-valid {:spatial-coverage (dc/spatial {:gsr coord-sys})}
+                    {:spatial-coverage (apply dg/spatial shapes)})))
+
+  (defn assert-conflict
+    [gran-attributes errors]
+    (let [collection (d/ingest "PROV1" (dc/collection))
+          response (d/ingest "PROV1" (dg/granule collection gran-attributes))]
+      (is (= {:status 409
+              :errors errors}
              (select-keys response [:status :errors])))))
 
   (testing "through ingest API"
