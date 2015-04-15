@@ -14,7 +14,7 @@
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (cache/create-cache))
+  (cache/create-in-memory-cache))
 
 (def cache-key
   :collections-for-gran-acls)
@@ -60,13 +60,13 @@
   [context]
   (let [cache (cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
-    (cache/update-cache cache #(assoc % :collections collections-map))))
+    (cache/set-value cache :collections collections-map)))
 
 (defn get-collections-map
   "Gets the cached value."
   [context]
   (let [coll-cache (cache/context->cache context cache-key)
-        collection-map (cache/cache-lookup
+        collection-map (cache/get-value
                          coll-cache
                          :collections
                          (fn [] (fetch-collections-map context)))]

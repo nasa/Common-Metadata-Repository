@@ -47,7 +47,7 @@
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {ac/acl-cache-key (ac/create-acl-cache)
-                      cache/general-cache-key (cache/create-cache)
+                      cache/general-cache-key (cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder

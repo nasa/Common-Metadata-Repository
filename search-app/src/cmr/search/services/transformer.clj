@@ -35,7 +35,7 @@
 (defn- get-template
   "Returns a XSLT template from the filename, using the context cache."
   [context f]
-  (cache/cache-lookup
+  (cache/get-value
    (cache/context->cache context xsl-transformer-cache-name)
    f
    #(xslt/read-template f)))

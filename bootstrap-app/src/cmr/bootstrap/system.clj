@@ -47,7 +47,7 @@
                     ;; Setting the parent-collection-cache to cache parent collection umm
                     ;; of granules during bulk indexing.
                     (assoc-in [:caches g/parent-collection-cache-key]
-                              (cache/create-cache :lru {} {:threshold 2000}))
+                              (cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         sys {:log (log/create-logger)

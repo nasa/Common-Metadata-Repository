@@ -13,10 +13,14 @@
   "The key used to store the acl cache in the system cache map."
   :acls)
 
+
+;; TODO there needs to be two different version of the ACL cache. Search shouldn't use the same acl
+;; cache as the indexer. It shouldn't make a request to cubby for every search.
+
 (defn create-acl-cache
   "Creates a new empty ACL cache."
   []
-  (cache/create-cache))
+  (cache/create-in-memory-cache))
 
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
@@ -25,15 +29,13 @@
   [context]
   (let [acl-cache (cache/context->cache context acl-cache-key)
         updated-acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")]
-    (cache/update-cache
-      acl-cache
-      #(assoc % :acls updated-acls))))
+    (cache/set-value acl-cache :acls updated-acls)))
 
 (defn get-acls
   "Gets the current cached acls."
   [context]
   (let [acl-cache (cache/context->cache context acl-cache-key)]
-    (cache/cache-lookup
+    (cache/get-value
       acl-cache
       :acls
       (fn []

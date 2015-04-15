@@ -8,9 +8,7 @@
   "Creates a fake context with the acls in an acl cache"
   [& acls]
   (let [acl-cache (ac/create-acl-cache)]
-    (cache/update-cache
-      acl-cache
-      #(assoc % :acls acls))
+    (cache/set-value acl-cache :acls acls)
     {:system {:caches {ac/acl-cache-key acl-cache}}}))
 
 (defn group-ace

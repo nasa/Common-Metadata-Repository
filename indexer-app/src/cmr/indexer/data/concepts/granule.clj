@@ -38,8 +38,8 @@
 (defn- get-parent-collection
   [context parent-collection-id]
   (if-let [cache (cache/context->cache context parent-collection-cache-key)]
-    (cache/cache-lookup cache parent-collection-id
-                        (partial fetch-parent-collection context parent-collection-id))
+    (cache/get-value cache parent-collection-id
+                     (partial fetch-parent-collection context parent-collection-id))
     (fetch-parent-collection context parent-collection-id)))
 
 (defn orbit->circular-latitude-range
