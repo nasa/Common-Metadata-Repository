@@ -10,11 +10,10 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.common.lifecycle :as l]
+            [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as es]
             [cmr.elastic-utils.config :as elastic-config]
             [cmr.mock-echo.system :as mock-echo]))
-
-(def in-memory-elastic-port 9206)
 
 (def system nil)
 
@@ -23,16 +22,16 @@
   nil)
 
 (def mock-echo
-  "Local in memory mocke echo to make available when running the cubby app by itself."
+  "Local in memory mock echo to make available when running the cubby app by itself."
   nil)
 
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
   []
-  (elastic-config/set-elastic-port! in-memory-elastic-port)
+  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
   (es/create-server
-    in-memory-elastic-port
-    (+ in-memory-elastic-port 10)
+    elastic-test-util/IN_MEMORY_ELASTIC_PORT
+    (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
     "es_data/cubby"))
 
 (defn start

@@ -89,6 +89,17 @@
   []
   (format "http://localhost:%s/health" (transmit-config/cubby-port)))
 
+(defn cubby-reset-url
+  "Resets the cubby application Only development team to use this functionality."
+  []
+  (format "http://localhost:%s/reset" (transmit-config/cubby-port)))
+
+(defn cubby-clear-cache-url
+  "Clear cache in cubby app."
+  []
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/cubby-port)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
 

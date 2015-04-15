@@ -30,6 +30,7 @@
 
             [cmr.spatial.dev.viz-helper :as viz-helper]
 
+            [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.elastic-utils.config :as elastic-config]
 
@@ -41,8 +42,6 @@
             [cmr.dev-system.control :as control]
 
             [cmr.transmit.config :as transmit-config]))
-
-(def in-memory-elastic-port 9206)
 
 (def external-elastic-port 9210)
 
@@ -112,10 +111,10 @@
 
 (defmethod create-elastic :in-memory
   [type]
-  (elastic-config/set-elastic-port! in-memory-elastic-port)
+  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
   (elastic-server/create-server
-    in-memory-elastic-port
-    (+ in-memory-elastic-port 10)
+    elastic-test-util/IN_MEMORY_ELASTIC_PORT
+    (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
     "es_data/dev_system"))
 
 (defmethod create-elastic :external

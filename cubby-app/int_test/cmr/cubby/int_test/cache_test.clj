@@ -2,8 +2,7 @@
   "Provides integration tests for the cubby application"
   (:require [clojure.test :refer :all]
             [cmr.transmit.cubby :as c]
-            [cmr.cubby.int-test.utils :as u]
-            ))
+            [cmr.cubby.int-test.utils :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each u/reset-fixture)
@@ -44,7 +43,6 @@
 (deftest retrieve-many-keys-test
   (dotimes [n 50]
     (c/set-value (u/conn-context) (str "key" n) (str n)))
-  (u/refresh-elastic-index)
   (u/assert-keys (map #(str "key" %) (range 50))))
 
 (deftest save-multiple-keys
@@ -59,11 +57,12 @@
   (u/assert-value-saved-and-retrieved "charlie" "charlie value")
 
   (is (= 200 (:status (c/delete-value (u/conn-context) "bar" true))))
-  (u/refresh-elastic-index)
+
+  (testing "deleting again is ok"
+    (is (= 200 (:status (c/delete-value (u/conn-context) "bar" true)))))
 
   (testing "404 is returned after deleting"
-    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true))))
-    (is (= 404 (:status (c/delete-value (u/conn-context) "bar" true)))))
+    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true)))))
 
   (testing "key is removed after deleting"
     (u/assert-keys ["foo" "charlie"])))
@@ -82,6 +81,5 @@
   (u/assert-keys ["foo" "bar" "charlie"])
 
   (c/delete-all-values (u/conn-context))
-  (u/refresh-elastic-index)
   (u/assert-keys []))
 

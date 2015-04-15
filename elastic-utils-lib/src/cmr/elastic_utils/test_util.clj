@@ -4,6 +4,10 @@
             [cmr.elastic-utils.connect :as conn]
             [cmr.common.lifecycle :as l]))
 
+(def IN_MEMORY_ELASTIC_PORT
+  "A constant defining the common in memory elastic port to use for local testing. This avoids having
+  to repeat the same information in multiple places and keeps the local port we use consistent."
+  9206)
 
 (defn elastic-running?
   "Checks if elastic is running."

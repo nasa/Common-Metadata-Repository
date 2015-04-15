@@ -55,4 +55,6 @@
          (url/indexer-clear-cache-url)
          (url/indexer-reset-url)
          (url/mdb-reset-url)
-         (url/index-set-reset-url))))
+         (url/index-set-reset-url)
+         (url/cubby-reset-url)
+         (url/cubby-clear-cache-url))))

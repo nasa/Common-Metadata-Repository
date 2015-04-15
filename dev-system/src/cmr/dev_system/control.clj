@@ -69,7 +69,7 @@
    :cubby cubby-api/reset})
 
 (def service-clear-cache-fns
-  "A map of services to reset functions."
+  "A map of services to clear cache functions."
   {:indexer cache/reset-caches
    :index-set cache/reset-caches
    :metadata-db cache/reset-caches

@@ -20,9 +20,12 @@
    :store "yes"
    :index "not_analyzed"})
 
-(def type-name "cached-value")
+(def type-name
+  "The name of the mapping type within the cubby elasticsearch index."
+  "cached-value")
 
 (def mappings
+  "Defines the field mappings and type options for cubby stored values in elasticsearch."
   {type-name
    {:dynamic "strict",
     :_source {:enabled true},
@@ -32,6 +35,7 @@
                  :value string-type}}})
 
 (def index-settings
+  "Defines the cubby elasticsearch index settings."
   {:index
    {:number_of_shards 3,
     :number_of_replicas 1,
@@ -121,7 +125,7 @@
     [this]
     (let [response (esd/search conn index-name type-name
                                :query (q/match-all)
-                               :size 1000
+                               :size 10000
                                :fields [:key-name])
           num-keys-found (get-in response [:hits :total])
           num-keys-in-response (count (get-in response [:hits :hits])) ]
@@ -145,25 +149,27 @@
     (try-elastic-operation
       (esd/create conn index-name type-name
                   {:key-name key-name :value value}
-                  :id key-name)))
+                  :id key-name
+                  :refresh true)))
 
   (delete-value
     [this key-name]
-    (when-not (:found (try-elastic-operation (esd/delete conn index-name type-name key-name)))
-      (errors/throw-service-error :not-found (format "No cached value with key [%s] was found"
-                                                     key-name))))
+    (try-elastic-operation (esd/delete conn index-name type-name key-name :refresh true)))
 
   (delete-all-values
     [this]
     (try-elastic-operation
-      (esd/delete-by-query conn index-name type-name (q/match-all))))
+      (esd/delete-by-query conn index-name type-name (q/match-all)))
+    (try-elastic-operation
+      (esi/refresh conn index-name)))
 
   (reset
     [this]
     (when (esi/exists? conn index-name)
       (info "Deleting the cubby index")
       (esi/delete conn index-name))
-    (create-index-or-update-mappings this)))
+    (create-index-or-update-mappings this)
+    (esi/refresh conn index-name)))
 
 (defn create-elastic-cache-store
   [config]

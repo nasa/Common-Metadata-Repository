@@ -6,7 +6,6 @@
             [cmr.cubby.system :as system]
             [cmr.mock-echo.system :as mock-echo-system]
             [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
-            [cmr.elastic-utils.config :as es-config]
             [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.common-app.test.client-util :as common-client-test-util]
             [clj-http.client :as client]))
@@ -23,6 +22,7 @@
   @conn-context-atom)
 
 (defn int-test-fixtures
+  "Returns test fixtures for starting the cubby application and its external dependencies."
   []
   (ct/join-fixtures
     [elastic-test-util/run-elastic-fixture
@@ -39,31 +39,17 @@
        mock-echo-system/start
        mock-echo-system/stop)]))
 
-(defn elastic-root
-  []
-  (format "http://localhost:%s" (es-config/elastic-port)))
-
-(defn elastic-refresh-url
-  []
-  (str (elastic-root) "/_refresh"))
-
-(defn refresh-elastic-index
-  []
-  (client/post (elastic-refresh-url)))
-
 (defn reset-fixture
   "Test fixture that resets the application before each test."
   [f]
   (mock-echo-client/reset (conn-context))
   (c/reset (conn-context))
-  (refresh-elastic-index)
   (f))
 
 (defn assert-value-saved-and-retrieved
   "Asserts that the given keyname and value can be set and retrieved."
   [key-name value]
   (is (= 200 (:status (c/set-value (conn-context) key-name value true))))
-  (refresh-elastic-index)
   (is (= {:status 200 :body value}
          (select-keys (c/get-value (conn-context) key-name true)
                       [:status :body]))))
