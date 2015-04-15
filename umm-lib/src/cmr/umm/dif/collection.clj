@@ -53,6 +53,8 @@
          :update-time (t/string->datetime update-time)}))))
 
 (def umm-dif-publication-reference-mappings
+  "A seq of [umm-key dif-tag-name] which maps between the UMM
+  PublicationReference fields and the DIF Reference XML element."
   (map (fn [x]
          (if (keyword? x)
            [(csk/->kebab-case-keyword x) x]
@@ -78,9 +80,8 @@
   [xml-struct]
   (when-let [reference (cx/element-at-path xml-struct [:Reference])]
     (c/map->PublicationReference
-     (into {} (map (fn [[umm-key dif-tag]]
-                     [umm-key (cx/string-at-path reference [dif-tag])])
-                   umm-dif-publication-reference-mappings)))))
+     (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
+                [umm-key (cx/string-at-path reference [dif-tag])])))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -125,10 +126,10 @@
   "Returns the DIF Reference element from a UMM publication-reference value."
   [publication-reference]
   (x/element :Reference {}
-             (map (fn [[umm-key dif-tag]]
-                    (when-let [v (get publication-reference umm-key)]
-                      (x/element dif-tag {} v)))
-                  umm-dif-publication-reference-mappings)))
+             (for [[umm-key dif-tag] umm-dif-publication-reference-mappings
+                   :let [v (get publication-reference umm-key)]
+                   :when v]
+               (x/element dif-tag {} v))))
 
 (extend-protocol cmr.umm.dif.core/UmmToDifXml
   UmmCollection
