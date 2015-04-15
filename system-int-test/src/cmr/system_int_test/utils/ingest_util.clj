@@ -11,7 +11,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.echo-util :as echo-util]
+            [cmr.mock-echo.client.echo-util :as echo-util]
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
@@ -72,9 +72,16 @@
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   []
-  (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                              {:connection-manager (s/conn-mgr)})]
-    (is (= 200 (:status response)))))
+   (let [response (client/post (url/reindex-collection-permitted-groups-url)
+                               {:connection-manager (s/conn-mgr)})]
+     (is (= 200 (:status response)))))
+
+(defn reindex-all-collections
+  "Tells ingest to run the reindex all collections job"
+  []
+   (let [response (client/post (url/reindex-all-collections-url)
+                               {:connection-manager (s/conn-mgr)})]
+     (is (= 200 (:status response)))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"
@@ -262,10 +269,11 @@
    (create-provider provider-guid provider-id grant-all-search? true))
   ([provider-guid provider-id grant-all-search? grant-all-ingest?]
    (create-mdb-provider provider-id)
-   (echo-util/create-providers {provider-guid provider-id})
+   (echo-util/create-providers (s/context) {provider-guid provider-id})
 
    (when grant-all-search?
-     (echo-util/grant [echo-util/guest-ace
+     (echo-util/grant (s/context)
+                      [echo-util/guest-ace
                        echo-util/registered-user-ace]
                       (assoc (echo-util/catalog-item-id provider-guid)
                              :collection-applicable true
@@ -273,7 +281,7 @@
                       :system-object-identity
                       nil))
    (when grant-all-ingest?
-     (echo-util/grant-all-ingest provider-guid))))
+     (echo-util/grant-all-ingest (s/context) provider-guid))))
 
 (defn reset-fixture
   "Creates the given providers in ECHO and the CMR then clears out all data at the end."

@@ -14,19 +14,18 @@
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.core :as echo10]
             [cmr.umm.collection :as umm-c]
+            [cmr.umm.spatial :as umm-s]
             [cmr.umm.iso-smap.core :as iso]
             [cmr.umm.test.echo10.collection :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
-  [spatial-coverage]
-  (let [{:keys [geometries]} spatial-coverage
-        bounding-boxes (filter #(= cmr.spatial.mbr.Mbr (type %)) geometries)]
-    (when (seq bounding-boxes)
-      (umm-c/map->SpatialCoverage
-        {:granule-spatial-representation :geodetic
-         :spatial-representation :geodetic
-         :geometries bounding-boxes}))))
+  [{:keys [geometries]}]
+  (when-let [bounding-boxes (seq (filter #(instance? cmr.spatial.mbr.Mbr %) geometries))]
+    (umm-c/map->SpatialCoverage
+     {:granule-spatial-representation :geodetic
+      :spatial-representation :geodetic
+      :geometries bounding-boxes})))
 
 (defn- platform->expected-parsed
   "Returns the expected parsed platform for the given platform."
@@ -108,6 +107,8 @@
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         ;; SMAP ISO does not support RestrictionFlag
         (dissoc :access-value)
+        ;; SMAP ISO does not support UseConstraints
+        (dissoc :use-constraints)
         ;; SMAP ISO does not support SpatialKeywords
         (dissoc :spatial-keywords)
         ;; SMAP ISO does not support TemporalKeywords
@@ -125,6 +126,8 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; SMAP ISO does not support quality
+        (dissoc :quality)
         ;; We don't write out personnel entries when generating SMAP XML
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
@@ -162,6 +165,7 @@
                     :entry-title "SMAP Collection Dataset ID"
                     :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
                     :purpose "This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures."
+                    :metadata-language "eng"
                     :product (umm-c/map->Product
                                {:short-name "SPL1AA"
                                 :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
@@ -254,4 +258,3 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
            (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
-

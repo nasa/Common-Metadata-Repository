@@ -59,7 +59,13 @@
                              {:path [:spatial-coverage :geometries 2]
                               :errors ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]}]]
         (assert-multiple-invalid (coll-with-geometries [valid-point invalid-point invalid-mbr])
-                                 expected-errors)))))
+                                 expected-errors)))
+    (testing "Orbit parameters missing for an orbit collection"
+      (assert-invalid (c/map->UmmCollection
+                        {:spatial-coverage
+                         (c/map->SpatialCoverage {:granule-spatial-representation :orbit})})
+                      [:spatial-coverage]
+                      ["Orbit Parameters must be defined for a collection whose granule spatial representation is ORBIT."]))))
 
 (deftest collection-product-specific-attributes-validation
   (testing "product specific attributes names"

@@ -4,6 +4,8 @@
             [cmr.transmit.connection :as conn]
             [camel-snake-kebab.core :as csk]))
 
+(def token-header
+  "echo-token")
 
 (defmacro def-app-conn-config
   "Defines three configuration entries for an application for the host, port and relative root URL"
@@ -33,6 +35,7 @@
 (def-app-conn-config indexer 3004)
 (def-app-conn-config index-set 3005)
 (def-app-conn-config bootstrap 3006)
+(def-app-conn-config cubby 3007)
 
 (defconfig echo-rest-protocol
   "The protocol to use when contructing ECHO Rest URLs."
@@ -80,6 +83,9 @@
    :bootstrap {:host (bootstrap-host)
                :port (bootstrap-port)
                :context (bootstrap-relative-root-url)}
+   :cubby {:host (cubby-host)
+           :port (cubby-port)
+           :context (cubby-relative-root-url)}
    :echo-rest {:protocol (echo-rest-protocol)
                :host (echo-rest-host)
                :port (echo-rest-port)

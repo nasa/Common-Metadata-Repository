@@ -9,9 +9,10 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]))
+            [cmr.spatial.mbr :as m]
+            [cmr.ingest.services.messages :as msg]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest validation-endpoint-test
   (testing "successful validation of collection"
@@ -45,7 +46,8 @@
 (defn assert-valid
   [coll-attributes]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection)]
+        provider-id (get coll-attributes :provider-id "PROV1")
+        response (d/ingest provider-id collection)]
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn assert-invalid-spatial
@@ -70,7 +72,7 @@
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection :echo10)]
+        response (d/ingest "PROV1" collection)]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
@@ -132,10 +134,46 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-(deftest duplicate-id-test
-  (testing "entry-title validation"
+(deftest duplicate-entry-title-test
+  (testing "same entry-title and native-id across providers is valid"
     (assert-valid
       {:entry-title "ET-1" :concept-id "C1-PROV1" :native-id "Native1"})
+    (assert-valid
+      {:entry-title "ET-1" :concept-id "C1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+  (testing "entry-title must be unique for a provider"
     (assert-conflict
       {:entry-title "ET-1" :concept-id "C2-PROV1" :native-id "Native2"}
       ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."])))
+
+(deftest header-validations
+  (testing "ingesting a concept with the same concept-id and revision-id fails"
+    (let [concept-id "C1-PROV1"
+          existing-concept (dc/collection-concept {:revision-id 1 :concept-id concept-id})
+          _ (ingest/ingest-concept existing-concept)
+          response (ingest/ingest-concept existing-concept)]
+      (is (= {:status 409
+              :errors [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]}
+             response))))
+  (testing "attempting to ingest using an invalid revision id returns an error"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
+                                                                  :revision-id "NaN"}))]
+      (is (= {:status 400
+              :errors [(msg/invalid-revision-id "NaN")]}
+             response)))))
+
+(comment
+  (ingest/delete-provider "PROV1")
+  ;; Attempt to create race conditions by ingesting the same concept-id simultaneously. We expect
+  ;; some requests to succeed while others return a 409.
+  ;; If the race condition is reproduced you will see a message like:
+  ;; 409 returned, Errors: [Conflict with existing concept-id [C1-PROV1] and revision-id [23]]
+  (do
+    (ingest/create-provider "provguid1" "PROV1")
+    (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
+
+    (doseq [_ (range 150)]
+      (future (do (let [response (ingest/ingest-concept
+                                   (dc/collection-concept {:concept-id "C1-PROV1"
+                                                           :native-id "Same Native ID"}))]
+                    (when (= 409 (:status response))
+                      (println "409 returned, Errors:" (:errors response)))))))))

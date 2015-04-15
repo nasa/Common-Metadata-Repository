@@ -10,7 +10,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.opendata :as od]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
@@ -35,20 +36,20 @@
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1" "notexist"])))
   ;; restriction flag acl grants matches coll4
-  (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll4"] {:min-value 4 :max-value 6})))
 
   ;; Grant undefined access values in prov3
-  (e/grant-guest (e/coll-catalog-item-id "provguid3" (e/coll-id nil {:include-undefined true})))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid3" (e/coll-id nil {:include-undefined true})))
 
   ;; all collections in prov2 granted to guests
-  (e/grant-guest (e/coll-catalog-item-id "provguid2"))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2"))
   ;; grant registered users permission to coll2 and coll4
-  (e/grant-registered-users (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2" "coll4"])))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2" "coll4"])))
   ;; grant specific group permission to coll3, coll6, and coll8
-  (e/grant-group "group-guid1" (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll3"])))
-  (e/grant-group "group-guid2" (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll6" "coll8"])))
+  (e/grant-group (s/context) "group-guid1" (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll3"])))
+  (e/grant-group (s/context) "group-guid2" (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll6" "coll8"])))
 
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -79,10 +80,10 @@
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10]
         guest-permitted-collections [coll1 coll4 coll6 coll7 coll8 coll9]
-        guest-token (e/login-guest)
-        user1-token (e/login "user1")
-        user2-token (e/login "user2" ["group-guid1"])
-        user3-token (e/login "user3" ["group-guid1" "group-guid2"])]
+        guest-token (e/login-guest (s/context))
+        user1-token (e/login (s/context) "user1")
+        user2-token (e/login (s/context) "user2" ["group-guid1"])
+        user3-token (e/login (s/context) "user3" ["group-guid1" "group-guid2"])]
 
     (index/wait-until-indexed)
 
@@ -164,64 +165,79 @@
 
     (testing "opendata ACL enforcement"
       (testing "all items"
-        (let [coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (:results (search/find-concepts-opendata :collection {:token guest-token
-                                                                                    :page-size 100}))))))
+        (let [actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                    :page-size 100})]
+          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od)))
 
       (testing "by concept id"
         (let [concept-ids (map :concept-id all-colls)
-              coll-od (:results (od/collections->expected-opendata guest-permitted-collections))]
-          (is (= coll-od (:results (search/find-concepts-opendata :collection
-                                                                       {:token guest-token
-                                                                        :page-size 100
-                                                                        :concept-id concept-ids})))))))))
+              actual-od (search/find-concepts-opendata :collection {:token guest-token
+                                                                    :page-size 100
+                                                                    :concept-id concept-ids})]
+          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))))
+
 
 ;; This tests that when acls change after collections have been indexed that collections will be
 ;; reindexed when ingest detects the acl hash has change.
 (deftest acl-change-test
-  (let [acl1 (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
-        acl2 (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
+  (let [acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
+        acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
-    (index/wait-until-indexed)
-    (ingest/reindex-collection-permitted-groups)
-    (index/wait-until-indexed)
+    (testing "normal reindex collection permitted groups"
+      (index/wait-until-indexed)
+      (ingest/reindex-collection-permitted-groups)
+      (index/wait-until-indexed)
 
-    ;; before acls change
-    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      ;; before acls change
+      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
-    ;; Grant collection 2
-    (e/grant-guest (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
-    ;; Ungrant collection 3
-    (e/ungrant acl2)
-    ;; Grant collection 4
-    (e/grant-guest (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
+      ;; Grant collection 2
+      (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll2"])))
+      ;; Ungrant collection 3
+      (e/ungrant (s/context) acl2)
 
-    ;; Try searching again before the reindexing
-    (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
+      ;; Try searching again before the reindexing
+      (is (d/refs-match? [coll1 coll3] (search/find-refs :collection {})))
 
-    ;; Reindex collection permitted groups
-    (ingest/reindex-collection-permitted-groups)
-    (index/wait-until-indexed)
+      ;; Reindex collection permitted groups
+      (ingest/reindex-collection-permitted-groups)
+      (index/wait-until-indexed)
 
-    ;; Try searching again
-    (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {})))))
+      ;; Search after reindexing
+      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {}))))
+
+    (testing "reindex all collections"
+
+      ;; Grant collection 4
+      (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll4"])))
+
+      ;; Try before reindexing
+      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {})))
+
+      ;; Reindex all collections
+      ;; manually check the logs here. It should say it's reindexing provider 1 and provider 3 as well.
+      (ingest/reindex-all-collections)
+      (index/wait-until-indexed)
+
+      ;; Search after reindexing
+      (is (d/refs-match? [coll1 coll2 coll4] (search/find-refs :collection {}))))))
 
 ;; Verifies that tokens are cached by checking that a logged out token still works after it was used.
 ;; This isn't the desired behavior. It's just a side effect that shows it's working.
 (deftest cache-token-test
-  (let [acl1 (e/grant-registered-users (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
+  (let [acl1 (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
-        user1-token (e/login "user1")
-        user2-token (e/login "user2")]
+        user1-token (e/login (s/context) "user1")
+        user2-token (e/login (s/context) "user2")]
 
     (index/wait-until-indexed)
 
     ;; A logged out token is normally not useful
-    (e/logout user2-token)
+    (e/logout (s/context) user2-token)
     (is (= {:errors ["Token ABC-2 does not exist"], :status 401}
            (search/find-refs :collection {:token user2-token})))
 
@@ -229,7 +245,7 @@
     (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))
 
     ;; logout
-    (e/logout user1-token)
+    (e/logout (s/context) user1-token)
     ;; The token should be cached
     (is (d/refs-match? [coll1] (search/find-refs :collection {:token user1-token})))))
 

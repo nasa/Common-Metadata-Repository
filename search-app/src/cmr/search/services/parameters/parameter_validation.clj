@@ -140,7 +140,7 @@
 (def pattern-option #{:pattern})
 (def or-option #{:or})
 (def and-or-option #{:and :or})
-(def exclude-plus-or-option #{:exclude-collection :or})
+(def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def string-plus-and-options #{:pattern :ignore-case :and})
 (def string-plus-or-options #{:pattern :ignore-case :or})
 
@@ -457,7 +457,7 @@
 (defn line-validation
   ([params] (line-validation nil params))
   ([_ params] (spatial-validation params :line)))
-  
+
 (defn unrecognized-aql-params-validation
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
@@ -663,9 +663,9 @@
 
 (def valid-tile-search-params
   "Valid parameters for tile search"
-   #{:bounding-box 
-     :line 
-     :point 
+   #{:bounding-box
+     :line
+     :point
      :polygon})
 
 (defn unrecognized-tile-params-validation
@@ -675,14 +675,14 @@
          (set/difference (set (keys params)) valid-tile-search-params)))
 
 (defn validate-tile-parameters
-  "Validates the query parameters passed in with a tile search. Throws exceptions to send 
+  "Validates the query parameters passed in with a tile search. Throws exceptions to send
   to the user if a validation fails. Returns parameters if validation is successful."
   [params]
-  (let [errors (mapcat #(% params) 
+  (let [errors (mapcat #(% params)
                        [unrecognized-tile-params-validation
-                        polygon-validation 
-                        bounding-box-validation 
-                        point-validation 
+                        polygon-validation
+                        bounding-box-validation
+                        point-validation
                         line-validation])]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))

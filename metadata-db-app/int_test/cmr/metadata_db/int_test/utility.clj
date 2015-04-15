@@ -48,37 +48,43 @@
   "Creates a collection concept"
   ([provider-id uniq-num]
    (collection-concept provider-id uniq-num {}))
-  ([provider-id uniq-num extra-fields]
-   (let [short-name (str "short" uniq-num)
-         version-id (str "V" uniq-num)]
-     {:concept-type :collection
-      :native-id (str "native-id " uniq-num)
-      :provider-id provider-id
-      :metadata (str "xml here " uniq-num)
-      :format "application/echo10+xml"
-      :deleted false
-      :extra-fields (merge {:short-name short-name
-                            :version-id version-id
-                            :entry-id (str short-name "_" version-id)
-                            :entry-title (str "dataset" uniq-num)
-                            :delete-time nil}
-                           extra-fields)})))
+  ([provider-id uniq-num attributes]
+   (let [extra-fields (:extra-fields attributes)
+         main-attributes (dissoc attributes :extra-fields)
+         short-name (str "short" uniq-num)
+         version-id (str "V" uniq-num)
+         collection {:concept-type :collection
+                     :native-id (str "native-id " uniq-num)
+                     :provider-id provider-id
+                     :metadata (str "xml here " uniq-num)
+                     :format "application/echo10+xml"
+                     :deleted false
+                     :extra-fields {:short-name short-name
+                                    :version-id version-id
+                                    :entry-id (str short-name "_" version-id)
+                                    :entry-title (str "dataset" uniq-num)
+                                    :delete-time nil}}]
+     (update-in (merge collection main-attributes) [:extra-fields] merge extra-fields))))
 
 (defn granule-concept
   "Creates a granule concept"
-  [provider-id parent-collection-id uniq-num & concept-id]
-  (let [granule {:concept-type :granule
-                 :native-id (str "native-id " uniq-num)
-                 :provider-id provider-id
-                 :metadata (str "xml here " uniq-num)
-                 :format "application/echo10+xml"
-                 :deleted false
-                 :extra-fields {:parent-collection-id parent-collection-id
-                                :delete-time nil}}]
-    (if concept-id
-      (assoc granule :concept-id (first concept-id))
-      granule)))
-
+  ([provider-id parent-collection-id uniq-num]
+   (granule-concept provider-id parent-collection-id uniq-num {}))
+  ([provider-id parent-collection-id uniq-num attributes]
+   (let [extra-fields (:extra-fields attributes)
+         main-attributes (dissoc attributes :extra-fields)
+         granule {:concept-type :granule
+                  :native-id (str "native-id " uniq-num)
+                  :provider-id provider-id
+                  :metadata (str "xml here " uniq-num)
+                  :format "application/echo10+xml"
+                  :deleted false
+                  :extra-fields {:parent-collection-id parent-collection-id
+                                 :delete-time nil
+                                 ;; TODO Uncomment when adding granule-ur for CMR-1239
+                                 ; :granule-ur (str "granule-ur " uniq-num)
+                                 }}]
+     (update-in (merge granule main-attributes) [:extra-fields] merge extra-fields))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -287,8 +293,8 @@
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
    (create-and-save-collection provider-id uniq-num num-revisions {}))
-  ([provider-id uniq-num num-revisions extra-fields]
-   (let [concept (collection-concept provider-id uniq-num extra-fields)
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (collection-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

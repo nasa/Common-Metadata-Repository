@@ -24,6 +24,17 @@
             ;; Convert them to a set so hash is consistent without order
             [provider-id (hash (set provider-acls))]))))
 
+(defn reindex-all-collections
+  "Reindexes all collections in all providers"
+  [context]
+  (let [providers (mdb/get-providers context)
+        current-provider-id-acl-hashes (acls->provider-id-hashes
+                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
+    (info "Reindexing collections in all providers:" (pr-str providers))
+    (indexer/reindex-provider-collections context providers)
+
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
+
 (defn reindex-collection-permitted-groups
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
   the groups that have permission to find collections are indexed with the collections."
@@ -43,12 +54,21 @@
 
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 
+
 ;; Periodically checks the acls for a provider. When they change reindexes all the collections in a
 ;; provider.
 (def-stateful-job ReindexCollectionPermittedGroups
   [ctx system]
   (let [context {:system system}]
     (reindex-collection-permitted-groups context)))
+
+;; Reindexes all collections for providers regardless of whether the ACLs have changed or not.
+;; This is done as a temporary fix for CMR-1311 but we may keep it around to help temper other race
+;; conditions that may occur.
+(def-stateful-job ReindexAllCollections
+  [ctx system]
+  (let [context {:system system}]
+    (reindex-all-collections context)))
 
 (defn cleanup-expired-collections
   "Finds collections that have expired (have a delete date in the past) and removes them from
@@ -71,5 +91,8 @@
   "A list of jobs for ingest"
   [{:job-type ReindexCollectionPermittedGroups
     :interval REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL}
+   {:job-type ReindexAllCollections
+    ;; Run everyday at 2 am. Chosen because it is offset from the bootstrap database synchronize job by 2 hours.
+    :daily-at-hour-and-minute [2 0]}
    {:job-type CleanupExpiredCollections
     :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}])

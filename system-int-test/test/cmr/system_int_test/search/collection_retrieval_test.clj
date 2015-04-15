@@ -6,7 +6,8 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
@@ -17,7 +18,7 @@
   (ingest/create-provider "provguid1" "PROV1")
   (ingest/create-provider "provguid2" "PROV2")
 
-  (def user1-token (e/login "user1"))
+  (def user1-token (e/login (s/context) "user1"))
 
   (search/get-concept-by-concept-id "C1200000000-PROV1"
                                     {:query-params {:token user1-token}})
@@ -29,7 +30,7 @@
 (deftest retrieve-collection-by-cmr-concept-id
 
   ;; Registered users have access to coll1
-  (e/grant-registered-users (e/coll-catalog-item-id "provguid1" ["coll1"]))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1" ["coll1"]))
 
   ;; Ingest 2 early versions of coll1
   (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
@@ -43,8 +44,8 @@
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
         del-coll (d/ingest "PROV1" (dc/collection))
         ;; tokens
-        guest-token (e/login-guest)
-        user1-token (e/login "user1")]
+        guest-token (e/login-guest (s/context))
+        user1-token (e/login (s/context) "user1")]
     (ingest/delete-concept (d/item->concept del-coll :echo10))
     (index/wait-until-indexed)
 

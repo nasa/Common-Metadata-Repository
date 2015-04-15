@@ -33,6 +33,11 @@
   []
   (format "http://localhost:%s/message-queue/set-retry-behavior" dev-system-port))
 
+(defn dev-system-set-message-queue-publish-timeout-url
+  "The message queue set-message-queue-publish-timeout url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/set-publish-timeout" dev-system-port))
+
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []
@@ -70,6 +75,30 @@
 (defn elastic-refresh-url
   []
   (str (elastic-root) "/_refresh"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Cubby URLs
+
+(defn cubby-read-caches-url
+  "URL to read the cubby caches."
+  []
+  (format "http://localhost:%s/caches" (transmit-config/cubby-port)))
+
+(defn cubby-health-url
+  "URL to check cubby health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/cubby-port)))
+
+(defn cubby-reset-url
+  "Resets the cubby application Only development team to use this functionality."
+  []
+  (format "http://localhost:%s/reset" (transmit-config/cubby-port)))
+
+(defn cubby-clear-cache-url
+  "Clear cache in cubby app."
+  []
+  (format "http://localhost:%s/caches/clear-cache" (transmit-config/cubby-port)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB URLs
@@ -126,12 +155,17 @@
 
 (defn reindex-collection-permitted-groups-url
   []
-  (format "http://localhost:%s/reindex-collection-permitted-groups"
+  (format "http://localhost:%s/jobs/reindex-collection-permitted-groups"
+          (transmit-config/ingest-port)))
+
+(defn reindex-all-collections-url
+  []
+  (format "http://localhost:%s/jobs/reindex-all-collections"
           (transmit-config/ingest-port)))
 
 (defn cleanup-expired-collections-url
   []
-  (format "http://localhost:%s/cleanup-expired-collections"
+  (format "http://localhost:%s/jobs/cleanup-expired-collections"
           (transmit-config/ingest-port)))
 
 (defn ingest-url

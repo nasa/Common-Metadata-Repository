@@ -22,7 +22,8 @@
   \"The following list of Platform short names did not exist in the referenced parent collection: [foo].\""
   [parent-ref-field human-readable-field-name]
   (fn [field-path values]
-    (let [missing-parent-list
+    (let [values (if (or (sequential? values) (nil? values)) values [values])
+          missing-parent-list
           (->> values
                (remove :parent)
                (map parent-ref-field))]

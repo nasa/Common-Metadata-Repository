@@ -36,7 +36,10 @@ date && echo "Running tests" &&
 CMR_ELASTIC_PORT=9206 lein modules test-out
 if [ $? -ne 0 ] ; then
   echo "Failed Tests" >&2
+  cat */testreports.xml
+  (curl -XPOST http://localhost:2999/stop; true)
   exit 1
 fi
+cat */testreports.xml
 date && echo "Stopping applications" &&
 (curl -XPOST http://localhost:2999/stop; true)

@@ -8,7 +8,8 @@
             UmmGranule
             PlatformRef
             InstrumentRef
-            SensorRef]))
+            SensorRef
+            TwoDCoordinateSystem]))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
@@ -27,6 +28,14 @@
            :let [parent (parent-obj-by-name (name-field child))]]
        (set-parent child parent)))))
 
+(defn- set-parent-by-name
+  "This function does the same thing as set-parents-by-name, but for the case where the parent has
+  multiple objects but there is only one child object(in granule) i.e. child object is not a list of
+  values but a single value with a reference to its parent"
+  [obj parent-objs name-field]
+  (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
+    (set-parent obj (parent-obj-by-name (name-field obj)))))
+
 (extend-protocol
   ParentWeaver
 
@@ -40,12 +49,14 @@
         (update-in [:spatial-coverage] set-parent (:spatial-coverage coll))
         (update-in [:temporal] set-parent (:temporal coll))
         (update-in [:platform-refs] set-parents-by-name (:platforms coll) :short-name)
+        (update-in [:two-d-coordinate-system] set-parent-by-name
+                   (:two-d-coordinate-systems coll) :name)
         (update-in [:product-specific-attributes]
                    set-parents-by-name (:product-specific-attributes coll) :name)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  clojure.lang.IRecord
-  ;; Default implementation of set-parent for records
+  clojure.lang.IPersistentMap
+  ;; Default implementation of set-parent for associative arrays
   (set-parent
     [obj parent]
     (assoc obj :parent parent))

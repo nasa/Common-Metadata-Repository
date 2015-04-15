@@ -22,12 +22,13 @@
             [cmr.spatial.derived :as d]))
 
 (defn- spatial-coverage->expected-parsed
-  [{:keys [geometries spatial-representation] :as sc}]
+  "Returns the expected parsed ISO MENDS SpatialCoverage from a UMM collection."
+  [{:keys [geometries spatial-representation]}]
   (when geometries
     (umm-c/map->SpatialCoverage
      {:spatial-representation spatial-representation
       :granule-spatial-representation spatial-representation
-      :geometries geometries})))
+      :geometries (map #(umm-s/set-coordinate-system spatial-representation %) geometries)})))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -122,6 +123,9 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; It looks like ISO-19115-2 does not have a string we can extract representing quality.
+        ;; ISO-19115-1 will have a string which we can extract.
+        (dissoc :quality)
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
@@ -152,9 +156,12 @@
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)
           parsed-iso (c/parse-collection xml)
-          parsed-iso (update-in parsed-iso [:spatial-coverage] derive-geometries)
           echo10-xml (echo10/umm->echo10-xml parsed-iso)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
+          ;; fudge the spatial coverage here because ECHO 10 doesn't
+          ;; apply the collection spatial representation to the
+          ;; geometries it contains...
+          parsed-echo10 (update-in parsed-echo10 [:spatial-coverage] spatial-coverage->expected-parsed)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-iso collection))]
       (and (= parsed-echo10 expected-parsed)
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
@@ -190,12 +197,14 @@
                     :entry-title "A minimal valid collection V 1"
                     :summary "A minimal valid collection"
                     :purpose "A grand purpose"
+                    :metadata-language "eng"
                     :product (umm-c/map->Product
                                {:short-name "MINIMAL"
                                 :long-name "A minimal valid collection"
                                 :version-id "1"
                                 :processing-level-id "1B"})
                     :access-value 4.2
+                    :use-constraints "Restriction Comment:"
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})

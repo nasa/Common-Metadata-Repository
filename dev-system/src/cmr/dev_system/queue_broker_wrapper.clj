@@ -83,11 +83,18 @@
        :messages
        (map :state)))
 
+(defn- current-messages
+  "Return a list of the current messages."
+  [broker-wrapper]
+  (->> @(:message-queue-history-atom broker-wrapper)
+       last
+       :messages))
+
 (defn- wait-for-terminal-states
   "Wait until the messages that have been enqueued have all reached a terminal states. If it takes
   longer than ms-to-wait, log a warning and stop waiting."
   ([broker-wrapper]
-   (wait-for-terminal-states broker-wrapper 5000))
+   (wait-for-terminal-states broker-wrapper 7000))
   ([broker-wrapper ms-to-wait]
    (let [start-time (System/currentTimeMillis)]
      (loop [current-states (set (current-message-states broker-wrapper))]
@@ -95,8 +102,9 @@
          (Thread/sleep 10)
          (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
            (recur (set (current-message-states broker-wrapper)))
-           (warn (format "Waited %d ms for messages to complete, but they did not complete."
-                         ms-to-wait))))))))
+           (warn (format "Waited %d ms for messages to complete, but they did not complete: %s"
+                         ms-to-wait
+                         (current-messages broker-wrapper)))))))))
 
 (defrecord BrokerWrapper
   [
@@ -122,6 +130,9 @@
    ;; processed normally. Useful for automated tests verifying specific behaviors on retry and
    ;; failure.
    num-retries-atom
+
+   ;; Tracks whether enqueuing messages will fail with a timeout error.
+   timeout-atom
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -153,8 +164,12 @@
       ;; Set the initial state of the message to :initial
       (update-message-queue-history this :enqueue tagged-msg :initial)
 
-      ;; delegate the request to the wrapped broker
-      (queue/publish queue-broker queue-name tagged-msg)))
+      ;; Mark the enqueue as failed if we are timing things out or it fails
+      (if (or @timeout-atom (not (queue/publish queue-broker queue-name tagged-msg)))
+        (do
+          (update-message-queue-history this :enqueue tagged-msg :failure)
+          false)
+        true)))
 
   (subscribe
     [this queue-name handler params]
@@ -201,6 +216,12 @@
   ;; Use an atom to set state?
   (reset! (:num-retries-atom broker-wrapper) num-retries))
 
+(defn set-message-queue-timeout-expected!
+  "Used to change the behavior of the message queue to indicate that enqueueing a message will
+  result in a timeout."
+  [broker-wrapper timeout?]
+  ;; Use an atom to set state?
+  (reset! (:timeout-atom broker-wrapper) timeout?))
 
 (defn- queue-response->message-state
   "Converts the response of a message queue action to the appropriate message state. If a message
@@ -251,4 +272,4 @@
 (defn create-queue-broker-wrapper
   "Create a BrokerWrapper"
   [broker]
-  (->BrokerWrapper broker (atom 0) (atom false) (atom []) (atom 0)))
+  (->BrokerWrapper broker (atom 0) (atom false) (atom []) (atom 0) (atom false)))

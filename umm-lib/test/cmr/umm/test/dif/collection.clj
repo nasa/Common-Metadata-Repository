@@ -113,6 +113,8 @@
         (dissoc :two-d-coordinate-systems)
         ;; DIF does not have associated-difs
         (dissoc :associated-difs)
+        ;; DIF does not have metadata-language
+        (dissoc :metadata-language)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -222,6 +224,7 @@
       <Short_Name>UNEP/GRID</Short_Name>
       <Long_Name>UNEP/Global Resources Information Database</Long_Name>
     </Project>
+    <Quality>High Quality Metadata</Quality>
     <Use_Constraints>Public</Use_Constraints>
     <Data_Center>
       <Data_Center_Name>
@@ -380,6 +383,8 @@
                     :entry-title "Global Land Cover 2000 (GLC 2000)"
                     :summary "Summary of collection."
                     :purpose "A grand purpose"
+                    :quality "High Quality Metadata"
+                    :use-constraints "Public"
                     :product (umm-c/map->Product
                                {:short-name "geodata_1848"
                                 :long-name "Global Land Cover 2000 (GLC 2000)"

@@ -13,9 +13,12 @@
             [cmr.spatial.mbr :as m]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.ingest.services.messages :as msg]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.common.time-keeper :as tk]
+            [clj-time.format :as tf]
+            [clj-time.core :as t]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (comment
   (do
@@ -49,6 +52,26 @@
   (let [invalid-granule-xml "<Granule>invalid xml</Granule>"
         expected-errors ["Line 1 - cvc-complex-type.2.3: Element 'Granule' cannot have character [children], because the type's content type is element-only."
                          "Line 1 - cvc-complex-type.2.4.b: The content of element 'Granule' is not complete. One of '{GranuleUR}' is expected."]]
+
+    (testing "granule with end date slightly in the future and collection with
+             EndsAtPresentFlag=true and end date in the far future (see CMR-1351)"
+             (let [collection (dc/collection {:entry-title "correct"
+                                              :short-name "S1"
+                                              :version-id "V1"
+                                              :temporal (dc/temporal
+                                                          {:beginning-date-time "2009-03-08T00:00:00Z"
+                                                           :ending-date-time "2121-11-04T00:00:00Z"
+                                                           :ends-at-present? true})})
+                   coll-concept (d/item->concept collection)
+                   future-date-time (t/plus (tk/now) (t/hours 1))
+                   time-formatter (tf/formatters :date-time-no-ms)
+                   future-date-time-str (tf/unparse time-formatter future-date-time)
+                   granule (assoc (dg/granule collection)
+                                  :temporal (dg/temporal {:beginning-date-time "2010-11-04T00:00:00Z"
+                                                          :ending-date-time future-date-time-str}))]
+               (assert-validation-success
+                 (d/item->concept granule)
+                 coll-concept)))
 
     (testing "with collection as additional parameter"
       (let [collection (dc/collection-dif {})
@@ -244,8 +267,9 @@
              (select-keys response [:status :errors])))))
 
   (testing "through ingest API"
-    (let [coll (d/ingest "PROV1" (dc/collection coll-attributes))
-          response (d/ingest "PROV1" (dg/granule coll gran-attributes))]
+    (let [provider-id (get gran-attributes :provider-id "PROV1")
+          coll (d/ingest provider-id (dc/collection coll-attributes))
+          response (d/ingest provider-id (dg/granule coll gran-attributes))]
       (is (= {:status 200} (select-keys response [:status :errors]))))))
 
 (defn assert-invalid-spatial
@@ -264,6 +288,14 @@
   (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
     (assert-valid {:spatial-coverage (dc/spatial {:gsr coord-sys})}
                   {:spatial-coverage (apply dg/spatial shapes)})))
+
+(defn assert-conflict
+  [gran-attributes errors]
+  (let [collection (d/ingest "PROV1" (dc/collection))
+        response (d/ingest "PROV1" (dg/granule collection gran-attributes))]
+    (is (= {:status 409
+            :errors errors}
+           (select-keys response [:status :errors])))))
 
 ;; This tests that UMM type validations are applied during collection ingest.
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related
@@ -308,9 +340,18 @@
       (assert-invalid-spatial
         :geodetic
         [(m/mbr -180 45 180 46)]
-        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))
+        ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
-
-
-
-    ))
+;; TODO uncomment this test when implementing CMR-1239
+#_(deftest duplicate-granule-ur-test
+    (testing "same granule-ur and native-id across providers is valid"
+      (assert-valid
+        {}
+        {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"})
+      (assert-valid
+        {}
+        {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+    (testing "granule-ur must be unique for a provider"
+      (assert-conflict
+        {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
+        ["The Granule Ur [UR-1] must be unique. The following concepts with the same entry title were found: [G1-PROV1]."])))

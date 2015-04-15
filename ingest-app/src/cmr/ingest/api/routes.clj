@@ -24,13 +24,22 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]))
 
-(defn- set-concept-id
-  "Set concept-id in concept if it is passed in the header"
+(defn- set-concept-id-and-revision-id
+  "Set concept-id and revision-id for the given concept based on the headers. Ignore the
+  revision-id if no concept-id header is passed in."
   [concept headers]
-  (let [concept-id (get headers "concept-id")]
-    (if (empty? concept-id)
-      concept
-      (assoc concept :concept-id concept-id))))
+  (let [concept-id (get headers "concept-id")
+        revision-id (get headers "revision-id")]
+    (if concept-id
+      (if revision-id
+        (try
+          (assoc concept :concept-id concept-id :revision-id (Integer/parseInt revision-id))
+          (catch NumberFormatException e
+            (srvc-errors/throw-service-error
+              :bad-request
+              (msg/invalid-revision-id revision-id))))
+        (assoc concept :concept-id concept-id))
+      concept)))
 
 (defn- sanitize-concept-type
   "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
@@ -40,13 +49,13 @@
 (defn- body->concept
   "Create a metadata concept from the given request body"
   [concept-type provider-id native-id body content-type headers]
-  (let [metadata (str/trim (slurp body))
-        base-concept {:metadata metadata
-                      :format (sanitize-concept-type content-type)
-                      :provider-id provider-id
-                      :native-id native-id
-                      :concept-type concept-type}]
-    (set-concept-id base-concept headers)))
+  (let [metadata (str/trim (slurp body))]
+    (-> {:metadata metadata
+         :format (sanitize-concept-type content-type)
+         :provider-id provider-id
+         :native-id native-id
+         :concept-type concept-type}
+        (set-concept-id-and-revision-id headers))))
 
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
@@ -94,12 +103,6 @@
   (routes
     (context (:relative-root-url system) []
       provider-api/provider-api-routes
-      (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
-        (jobs/reindex-collection-permitted-groups request-context)
-        {:status 200})
-      (POST "/cleanup-expired-collections" {:keys [headers request-context]}
-        (jobs/cleanup-expired-collections request-context)
-        {:status 200})
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type headers request-context]}
@@ -151,7 +154,18 @@
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
-      common-routes/job-api-routes
+      (common-routes/job-api-routes
+        (routes
+          ;; These should check ACLs. CMR-1343 was filed to add that check
+          (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
+            (jobs/reindex-collection-permitted-groups request-context)
+            {:status 200})
+          (POST "/reindex-all-collections" {:keys [headers request-context]}
+            (jobs/reindex-all-collections request-context)
+            {:status 200})
+          (POST "/cleanup-expired-collections" {:keys [headers request-context]}
+            (jobs/cleanup-expired-collections request-context)
+            {:status 200})))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

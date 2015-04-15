@@ -27,6 +27,14 @@
     {:connection-manager (s/conn-mgr)
      :query-params {:num-retries num-retries}}))
 
+(defn set-message-queue-publish-timeout
+  "Set the message queue publish timeout"
+  [timeout]
+  (client/post
+    (url/dev-system-set-message-queue-publish-timeout-url)
+    {:connection-manager (s/conn-mgr)
+     :query-params {:timeout timeout}}))
+
 (defn get-message-queue-history
   "Returns the message queue history."
   []
@@ -55,7 +63,7 @@
   []
   (concept-history (get-message-queue-history)))
 
-(defn reset-message-queue-retry-behavior-fixture
+(defn reset-message-queue-behavior-fixture
   "This is a clojure.test fixture that will reset the message queue behavior to normal processing
   after a test completes."
   []
@@ -64,4 +72,5 @@
       (f)
       (finally
         (s/only-with-real-message-queue
-          (set-message-queue-retry-behavior 0))))))
+          (set-message-queue-retry-behavior 0)
+          (set-message-queue-publish-timeout 60000))))))

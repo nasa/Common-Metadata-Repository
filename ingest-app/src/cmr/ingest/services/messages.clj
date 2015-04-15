@@ -18,6 +18,10 @@
           (str/join ", " actual-params)
           (str/join ", " expected-params)))
 
+(defn invalid-revision-id
+  [revision-id]
+  (format "Invalid revision-id [%s]. Revision-id must be an integer." revision-id))
+
 (defn invalid-parent-collection-for-validation
   [collection-validation-error]
   (str "The collection given for validating the granule was invalid: " collection-validation-error))

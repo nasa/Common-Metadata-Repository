@@ -4,6 +4,7 @@
    :cmr-search-app "0.1.0-SNAPSHOT"
    :cmr-indexer-app "0.1.0-SNAPSHOT"
    :cmr-bootstrap-app "0.1.0-SNAPSHOT"
+   :cmr-cubby-app "0.1.0-SNAPSHOT"
    :cmr-metadata-db-app "0.1.0-SNAPSHOT"
    :cmr-index-set-app "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
@@ -52,6 +53,7 @@
   ;                        project-dependencies)
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-index-set-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
