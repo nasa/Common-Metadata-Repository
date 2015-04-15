@@ -56,15 +56,19 @@
 
 (comment
 
-  (d/reset (:db user/system))
+  (def db (get-in user/system [:apps :cubby :db]))
 
-  (d/set-value (:db user/system) "foo" "v")
-  (d/set-value (:db user/system) "bar" "v2")
-  (d/set-value (:db user/system) "charlie" "v2")
+  (d/reset db)
 
-  (d/get-keys (:db user/system))
-  (d/get-value (:db user/system) "bar")
-  (d/delete-value (:db user/system) "bar")
+  (d/set-value db "foo" "v")
+  (d/set-value db "bar" "v2")
+  (d/set-value db "charlie" "v2")
+
+
+
+  (d/get-keys db)
+  (d/get-value db "bar")
+  (d/delete-value db "bar")
 
   (esd/search (-> user/system :db :conn)
               index-name type-name :query (q/match-all)
@@ -139,12 +143,8 @@
 
   (get-value
     [this key-name]
-    (->> (esd/search conn index-name type-name
-                     :query {:filtered {:query (q/match-all)
-                                        :filter {:term {:key-name key-name}}}}
-                     :fields [:value])
-         (extract-field-from-hits :value)
-         first))
+    (get-in (esd/get conn index-name type-name key-name)
+            [:_source :value]))
 
   (set-value
     [this key-name value]
