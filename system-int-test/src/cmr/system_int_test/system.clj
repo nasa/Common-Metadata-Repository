@@ -82,6 +82,11 @@
     system
     (start)))
 
+(defn context
+  "Returns a context containing the system"
+  []
+  {:system (system)})
+
 (defn conn-mgr
   "Returns the HTTP connection manager to use. This allows system integration tests to use
   persistent HTTP connections"

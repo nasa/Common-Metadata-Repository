@@ -16,15 +16,15 @@
 
   )
 
-(defn- reset-url
+(defn reset-url
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
-(defn- keys-url
+(defn keys-url
   [conn]
   (format "%s/keys" (conn/root-url conn)))
 
-(defn- key-url
+(defn key-url
   [key-name conn]
   (format "%s/keys/%s" (conn/root-url conn) (codec/url-encode key-name)))
 
@@ -86,6 +86,7 @@
                      (merge {:url (url-fn conn)
                              :method method
                              :throw-exceptions false
+                             :headers {config/token-header (config/echo-system-token)}
                              :connection-manager (conn/conn-mgr conn)}
                             http-options)))]
     (cond
@@ -124,15 +125,16 @@
   ([context key-name is-raw]
    (cubby-request context {:url-fn (partial key-url key-name), :method :delete, :raw? is-raw})))
 
+(defn delete-all-values
+  "Deletes all values"
+  ([context]
+   (delete-all-values context false))
+  ([context is-raw]
+   (cubby-request context {:url-fn keys-url, :method :delete, :raw? is-raw})))
+
 (defn reset
   "Clears all values in the cache service"
   ([context]
    (reset context false))
   ([context is-raw]
    (cubby-request context {:url-fn reset-url, :method :post, :raw? is-raw})))
-
-;; TODO this will be done in a subsequent pull request when elasticsearch is added.
-(defn get-health
-  "TODO"
-  [context]
-  )

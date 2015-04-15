@@ -151,7 +151,7 @@
   (cmr.ingest.config/set-publish-queue-timeout-ms! 10000)
   ;; 5.) Create a provider and give everyone permissions to ingest for that provider
   (ingest/create-provider "provguid1" "PROV1")
-  (cmr.system-int-test.utils.echo-util/grant-all-ingest "PROV1")
+  (cmr.mock-echo.client.echo-util/grant-all-ingest (s/context) "PROV1")
 
   ;; Memory Threshold Exceeded while queueing messages
 

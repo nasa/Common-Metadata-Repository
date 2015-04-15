@@ -14,8 +14,6 @@
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
                  [clj-http "1.0.1"]
-                 [org.clojure/tools.reader "0.8.15"]
-                 [org.clojure/tools.cli "0.3.1"]
                  [drift "1.5.2"]
 
                  ;; Database related

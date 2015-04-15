@@ -1,7 +1,6 @@
 (ns cmr.indexer.runner
   "Entry point for the application. Defines a main method that accepts arguments."
   (:require [cmr.indexer.system :as system]
-            [clojure.tools.cli :refer [cli]]
             [clojure.string :as string]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.indexer.api.routes :as routes]

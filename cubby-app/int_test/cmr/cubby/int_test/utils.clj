@@ -1,9 +1,14 @@
 (ns cmr.cubby.int-test.utils
   "Provides integration tests utilities."
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :as ct :refer [is]]
             [cmr.transmit.config :as config]
             [cmr.transmit.cubby :as c]
-            [cmr.cubby.system :as system]))
+            [cmr.cubby.system :as system]
+            [cmr.mock-echo.system :as mock-echo-system]
+            [cmr.mock-echo.client.mock-echo-client :as mock-echo-client]
+            [cmr.elastic-utils.test-util :as elastic-test-util]
+            [cmr.common-app.test.client-util :as common-client-test-util]
+            [clj-http.client :as client]))
 
 (def conn-context-atom
   "An atom containing the cached connection context map."
@@ -13,34 +18,33 @@
   "Retrieves a context map that contains a connection to the cubby app."
   []
   (when-not @conn-context-atom
-    (reset! conn-context-atom {:system (config/system-with-connections {} [:cubby])}))
+    (reset! conn-context-atom {:system (config/system-with-connections {} [:cubby :echo-rest])}))
   @conn-context-atom)
+
+(defn int-test-fixtures
+  "Returns test fixtures for starting the cubby application and its external dependencies."
+  []
+  (ct/join-fixtures
+    [elastic-test-util/run-elastic-fixture
+     (common-client-test-util/run-app-fixture
+       (conn-context)
+       :cubby
+       (system/create-system)
+       system/start
+       system/stop)
+     (common-client-test-util/run-app-fixture
+       (conn-context)
+       :echo-rest
+       (mock-echo-system/create-system)
+       mock-echo-system/start
+       mock-echo-system/stop)]))
 
 (defn reset-fixture
   "Test fixture that resets the application before each test."
   [f]
+  (mock-echo-client/reset (conn-context))
   (c/reset (conn-context))
   (f))
-
-(defn app-running?
-  "Returns true if the cubby app is running."
-  []
-  (try
-    (c/get-keys (conn-context))
-    true
-    (catch java.net.ConnectException _
-      false)))
-
-(defn run-app-fixture
-  "Test fixture that will automatically run the application if it's not detected as currently running."
-  [f]
-  (if (app-running?)
-    (f)
-    (let [cubby-system (system/start (system/create-system))]
-      (try
-        (f)
-        (finally
-          (system/stop cubby-system))))))
 
 (defn assert-value-saved-and-retrieved
   "Asserts that the given keyname and value can be set and retrieved."

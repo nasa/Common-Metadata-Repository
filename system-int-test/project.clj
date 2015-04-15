@@ -17,6 +17,9 @@
                  ;; included to allow access to catalog rest and db connection code
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
 
+                 ;; Needed for client libraries
+                 [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+
                  ; include ring-core to support encoding of params
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]]
   :plugins [[lein-test-out "0.3.1"]]
