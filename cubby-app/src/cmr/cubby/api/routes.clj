@@ -39,8 +39,12 @@
 
 (defn delete-value
   [context key-name]
-  (d/delete-value (context->db context) key-name)
-  {:status 200})
+  (if (d/delete-value (context->db context) key-name)
+    {:status 200}
+    {:status 404
+     :content-type :json
+     :errors [(format "No cached value with key [%s] was found"
+                      key-name)]}))
 
 (defn delete-all-values
   [context]

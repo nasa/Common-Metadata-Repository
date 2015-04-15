@@ -58,11 +58,9 @@
 
   (is (= 200 (:status (c/delete-value (u/conn-context) "bar" true))))
 
-  (testing "deleting again is ok"
-    (is (= 200 (:status (c/delete-value (u/conn-context) "bar" true)))))
-
   (testing "404 is returned after deleting"
-    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true)))))
+    (is (= 404 (:status (c/get-value (u/conn-context) "bar" true))))
+    (is (= 404 (:status (c/delete-value (u/conn-context) "bar" true)))))
 
   (testing "key is removed after deleting"
     (u/assert-keys ["foo" "charlie"])))

@@ -125,6 +125,8 @@
     [this]
     (let [response (esd/search conn index-name type-name
                                :query (q/match-all)
+                               ;; The size here must be specified to get more than 10 keys back.
+                               ;; We are limited to a maximum number of keys that is specified here.
                                :size 10000
                                :fields [:key-name])
           num-keys-found (get-in response [:hits :total])
@@ -154,7 +156,7 @@
 
   (delete-value
     [this key-name]
-    (try-elastic-operation (esd/delete conn index-name type-name key-name :refresh true)))
+    (:found (try-elastic-operation (esd/delete conn index-name type-name key-name :refresh true))))
 
   (delete-all-values
     [this]

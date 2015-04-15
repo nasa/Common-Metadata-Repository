@@ -13,7 +13,8 @@
     "Associates a value with the specified key")
   (delete-value
     [this key-name]
-    "Dissociates any value with the given key if it exists")
+    "Dissociates any value with the given key if it exists. Returns true if the key existed and
+    false otherwise.")
   (delete-all-values
     [this]
     "Removes all values")
