@@ -9,6 +9,7 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.acl.acl-cache :as ac]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -47,7 +48,7 @@
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {ac/acl-cache-key (ac/create-acl-cache)
-                      cache/general-cache-key (cache/create-in-memory-cache)
+                      cache/general-cache-key (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder

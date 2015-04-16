@@ -7,7 +7,8 @@
             [cmr.common.jobs :refer [defjob]]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]))
+            [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
@@ -20,7 +21,7 @@
 (defn create-acl-cache
   "Creates a new empty ACL cache."
   []
-  (cache/create-in-memory-cache))
+  (mem-cache/create-in-memory-cache))
 
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
@@ -40,7 +41,6 @@
       :acls
       (fn []
         (echo-acls/get-acls-by-type context "CATALOG_ITEM")))))
-
 
 (defjob RefreshAclCacheJob
   [ctx system]

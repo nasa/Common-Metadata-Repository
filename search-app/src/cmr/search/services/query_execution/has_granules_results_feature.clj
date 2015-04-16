@@ -5,7 +5,8 @@
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.search.data.elastic-search-index :as idx]))
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
   "The frequency in seconds of the refresh-has-granules-map-job"
@@ -17,7 +18,7 @@
 (defn create-has-granules-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (cache/create-in-memory-cache))
+  (mem-cache/create-in-memory-cache))
 
 (defn- collection-granule-counts->has-granules-map
   "Converts a map of collection ids to granule counts to a map of collection ids to true or false

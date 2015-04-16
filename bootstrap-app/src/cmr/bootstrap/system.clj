@@ -20,6 +20,7 @@
             [cmr.indexer.system :as idx-system]
             [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.bootstrap.config :as bootstrap-config]
             [cmr.acl.core :as acl]))
@@ -47,7 +48,7 @@
                     ;; Setting the parent-collection-cache to cache parent collection umm
                     ;; of granules during bulk indexing.
                     (assoc-in [:caches g/parent-collection-cache-key]
-                              (cache/create-in-memory-cache :lru {} {:threshold 2000}))
+                              (mem-cache/create-in-memory-cache :lru {} {:threshold 2000}))
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         sys {:log (log/create-logger)

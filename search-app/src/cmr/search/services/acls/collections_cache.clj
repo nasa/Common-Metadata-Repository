@@ -4,6 +4,7 @@
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.search.models.query :as q]
             [cmr.search.services.query-execution :as qe]))
 
@@ -14,7 +15,7 @@
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (cache/create-in-memory-cache))
+  (mem-cache/create-in-memory-cache))
 
 (def cache-key
   :collections-for-gran-acls)
