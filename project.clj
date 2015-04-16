@@ -18,7 +18,8 @@
 
   :profiles
   {:uberjar
-   {:modules {:dirs ["bootstrap-app"
+   {:modules {:dirs ["cubby-app"
+                     "bootstrap-app"
                      "index-set-app"
                      "indexer-app"
                      "ingest-app"

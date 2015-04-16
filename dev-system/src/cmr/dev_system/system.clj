@@ -8,6 +8,8 @@
 
             [cmr.bootstrap.system :as bootstrap-system]
 
+            [cmr.cubby.system :as cubby-system]
+
             [cmr.metadata-db.system :as mdb-system]
             [cmr.metadata-db.data.memory-db :as memory]
 
@@ -28,6 +30,7 @@
 
             [cmr.spatial.dev.viz-helper :as viz-helper]
 
+            [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.elastic-utils.config :as elastic-config]
 
@@ -39,8 +42,6 @@
             [cmr.dev-system.control :as control]
 
             [cmr.transmit.config :as transmit-config]))
-
-(def in-memory-elastic-port 9206)
 
 (def external-elastic-port 9210)
 
@@ -74,11 +75,13 @@
    :search {:start search-system/start
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
-               :stop bootstrap-system/stop}})
+               :stop bootstrap-system/stop}
+   :cubby {:start cubby-system/start
+           :stop cubby-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :metadata-db :index-set :indexer :ingest :search :bootstrap])
+  [:mock-echo :cubby :metadata-db :index-set :indexer :ingest :search :bootstrap])
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -108,10 +111,10 @@
 
 (defmethod create-elastic :in-memory
   [type]
-  (elastic-config/set-elastic-port! in-memory-elastic-port)
+  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
   (elastic-server/create-server
-    in-memory-elastic-port
-    (+ in-memory-elastic-port 10)
+    elastic-test-util/IN_MEMORY_ELASTIC_PORT
+    (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
     "es_data/dev_system"))
 
 (defmethod create-elastic :external
@@ -281,6 +284,7 @@
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
+              :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
               :indexer (create-indexer-app queue-broker queue-listener)

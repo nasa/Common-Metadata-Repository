@@ -14,8 +14,8 @@
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as svc-errors]
+            [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
-            [cmr.common.services.mime-types-helper :as mth]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
             [cmr.system-trace.http :as http-trace]
@@ -107,9 +107,9 @@
 (defn- path-w-extension->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
   was passed."
-  [search-path-w-extension]
+  [search-path-w-extension valid-mime-types]
   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-    (or (mt/format->mime-type (keyword extension))
+    (or (valid-mime-types (mt/format->mime-type (keyword extension)))
         (svc-errors/throw-service-error
           :bad-request (format "The URL extension [%s] is not supported." extension)))))
 
@@ -118,22 +118,30 @@
   [path-w-extension]
   (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
 
+(defn- extract-header-mime-type
+  "Extracts the given header value from the headers and returns the first valid preferred mime type.
+  If validate? is true it will throw an error if the header was passed by the client but no mime type
+  in the header value was acceptable."
+  [valid-mime-types headers header validate?]
+  (when-let [header-value (get headers header)]
+    (if-let [mime-type (some valid-mime-types (mt/extract-mime-types header-value))]
+      mime-type
+      (when validate?
+        (svc-errors/throw-service-error
+          :bad-request (format "The mime types specified in the %s header [%s] are not supported."
+                               header header-value))))))
+
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
   ([path-w-extension headers default-mime-type]
    (get-search-results-format
      path-w-extension headers search-result-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
-   (let [ext-mime-type (path-w-extension->mime-type path-w-extension)
-         mime-type (or ext-mime-type
-                       (mt/mime-type-from-headers headers valid-mime-types)
-                       default-mime-type)]
-     ;; This validate check retained here to fail early if search accept headers are
-     ;; not in search-result-supported-mime-types.
-     ;; Concept specific format validation done during query validation.
-     (mth/validate-request-mime-type mime-type valid-mime-types)
-     ;; set the default format to xml
-     (mt/mime-type->format mime-type default-mime-type))))
+   (mt/mime-type->format
+     (or (path-w-extension->mime-type path-w-extension valid-mime-types)
+         (extract-header-mime-type valid-mime-types headers "accept" true)
+         (extract-header-mime-type valid-mime-types headers "concept-type" false))
+     default-mime-type)))
 
 (defn process-params
   "Processes the parameters by removing unecessary keys and adding other keys like result format."

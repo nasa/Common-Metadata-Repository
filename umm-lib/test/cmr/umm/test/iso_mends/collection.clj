@@ -123,6 +123,9 @@
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; It looks like ISO-19115-2 does not have a string we can extract representing quality.
+        ;; ISO-19115-1 will have a string which we can extract.
+        (dissoc :quality)
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))
@@ -201,6 +204,7 @@
                                 :version-id "1"
                                 :processing-level-id "1B"})
                     :access-value 4.2
+                    :use-constraints "Restriction Comment:"
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})

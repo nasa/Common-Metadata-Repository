@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 ;; total number of collections in PROV1
@@ -71,16 +72,16 @@
 (deftest retrieve-provider-holdings
 
   ;; Grant all holdings to registered users
-  (e/grant-registered-users (e/coll-catalog-item-id "provguid1"))
-  (e/grant-registered-users (e/coll-catalog-item-id "provguid2"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
+  (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid2"))
 
   ;; Grant provider 1 holdings to guests
-  (e/grant-guest (e/coll-catalog-item-id "provguid1"))
+  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
 
   (let [all-holdings (create-holdings)
         expected-all-holdings (set (flatten (vals all-holdings)))
-        guest-token (e/login-guest)
-        user-token (e/login "user1")]
+        guest-token (e/login-guest (s/context))
+        user-token (e/login (s/context) "user1")]
 
     (testing "Retrieving provider holdings from Metadata DB"
       (let [response (ingest/provider-holdings)]

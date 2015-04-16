@@ -8,7 +8,7 @@
             [camel-snake-kebab.core :as csk]
             [cmr.acl.core :as acl]
             [cmr.common.services.errors :as errors]
-            [cmr.transmit.echo.rest :as rest]
+            [cmr.transmit.echo.rest :as echo-rest]
             [cmr.index-set.services.messages :as m]
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
@@ -216,7 +216,7 @@
   "Returns the health state of the app."
   [context]
   (let [elastic-health (es-util/health context :index)
-        echo-rest-health (rest/health context)
+        echo-rest-health (echo-rest/health context)
         ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
     {:ok? ok?
      :dependencies {:elastic_search elastic-health

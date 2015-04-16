@@ -16,8 +16,6 @@
                  [nasa-echo/echo-orbits-java "0.1.5"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.15"]
-                 [org.clojure/tools.cli "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.2"]
                  [net.sf.saxon/Saxon-HE "9.6.0-4"]]

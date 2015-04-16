@@ -107,6 +107,8 @@
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         ;; SMAP ISO does not support RestrictionFlag
         (dissoc :access-value)
+        ;; SMAP ISO does not support UseConstraints
+        (dissoc :use-constraints)
         ;; SMAP ISO does not support SpatialKeywords
         (dissoc :spatial-keywords)
         ;; SMAP ISO does not support TemporalKeywords
@@ -124,6 +126,8 @@
         (dissoc :related-urls)
         ;; SMAP ISO does not support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
+        ;; SMAP ISO does not support quality
+        (dissoc :quality)
         ;; We don't write out personnel entries when generating SMAP XML
         (assoc :personnel personnel)
         umm-c/map->UmmCollection)))

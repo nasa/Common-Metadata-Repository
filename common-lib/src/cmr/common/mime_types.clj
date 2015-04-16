@@ -1,6 +1,8 @@
 (ns cmr.common.mime-types
   "Provides functions for handling mime types."
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cmr.common.util :as util]
+            [ring.middleware.format-response :as fr]))
 
 (def base-mime-type-to-format
   "A map of base mime types to the format symbols supported"
@@ -44,24 +46,35 @@
          (get base-mime-type-to-format default-mime-type))
      (get base-mime-type-to-format default-mime-type))))
 
+(defn extract-mime-types
+  "Extracts mime types from an accept header string according to RFC 2616 and returns them
+  as combined type/sub-type strings in order of preference.
+  Example from spec:
+
+  audio/*; q=0.2, audio/basic
+
+  \"SHOULD be interpreted as \"I prefer audio/basic, but send me any audio
+   type if it is the best available after an 80% mark-down in quality.\"\"
+
+  This function will return [\"audio/basic\" \"audio/*\"]
+
+  Note that we do not currently handle asterisks and matching them. So \"*/xml\" would not match
+  application/xml."
+  [mime-type-str]
+  (when mime-type-str
+    (for [{:keys [sub-type type]} (fr/parse-accept-header* mime-type-str)]
+      (str type "/" sub-type))))
+
 (defn mime-type-from-headers
-  "Returns a mime-type based on the 'accept' or 'content-type' headers.  If an accept header is
-  passed in it will attempt to match it against a known potential mime-type.  If there is an
-  accept header, but it cannot be matched, it will still be returned and is up to the caller
-  to determine appropriate action.  If no accept header is included then it will return the
-  content-type header.  Note that */* is treated as if no accept header was passed in."
-  [headers potential-mime-types]
-  (let [orig-mime-type-str (get headers "accept")
-        ;; Strip out any semicolon clauses
-        mime-type-str (when orig-mime-type-str
-                        (str/replace orig-mime-type-str  #";.*?(,|$)" "$1"))
-        ;; Split mime-type string on commas
-        mime-types (when mime-type-str (str/split (str/lower-case mime-type-str), #"[,]"))
-        first-potential-mime-type (some (set mime-types) potential-mime-types)
-        accept-mime-type (when-not (= "*/*" orig-mime-type-str)
-                           (or first-potential-mime-type orig-mime-type-str))
-        content-type-mime-type (when-not accept-mime-type (get headers "content-type"))]
-    (or accept-mime-type content-type-mime-type)))
+  "Returns first acceptable preferred mime-type based on the 'accept' or 'content-type' headers or the
+  first preferred mime type if none of them were acceptable"
+  ([headers]
+   (mime-type-from-headers headers all-supported-mime-types))
+  ([headers potential-mime-types]
+   (let [headers (util/map-keys str/lower-case headers)]
+     (some (set potential-mime-types)
+           (concat (extract-mime-types (get headers "accept"))
+                   (extract-mime-types (get headers "content-type")))))))
 
 (defn path-w-extension->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
