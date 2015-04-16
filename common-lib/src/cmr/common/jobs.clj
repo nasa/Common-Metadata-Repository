@@ -138,8 +138,24 @@
     (qt/with-identity (qt/key (str job-key ".trigger")))
     (qt/with-schedule (qcron/daily-at-hour-and-minute hour minute))))
 
+(defn- try-to-schedule-job
+  "Attempts to schedule a job. Swallows the exception if there is an error. Returns
+  true if the job was successfully scheduled and false otherwise."
+  [scheduler job-key quartz-job trigger]
+  (try
+    ;; We delete existing jobs and recreate them
+    (when (qs/get-job scheduler job-key)
+      (qs/delete-job scheduler (qj/key job-key)))
+    (qs/schedule scheduler quartz-job trigger)
+    true
+    (catch Throwable e
+      (warn e)
+      false)))
+
 (defn- schedule-job
-  "Schedules a quartzite job (stopping existing job first)."
+  "Schedules a quartzite job (stopping existing job first). This can fail due to race conditions
+  with other nodes trying to schedule the job at the same time. We will retry up to 3 times to
+  schedule the job."
   [scheduler system-holder-var-name job]
   (let [{:keys [^Class job-type job-key]} job
         job-key (or job-key (str (.getSimpleName job-type) ".job"))
@@ -148,11 +164,11 @@
                      (qj/using-job-data {"system-holder-var-name" system-holder-var-name})
                      (qj/with-identity (qj/key job-key)))
         trigger (create-trigger job-key job)]
-    (when trigger
-      ;; We delete existing jobs and recreate them
-      (when (qs/get-job scheduler job-key)
-        (qs/delete-job scheduler (qj/key job-key)))
-      (qs/schedule scheduler quartz-job trigger))))
+    (loop [max-tries 3]
+      (when-not (try-to-schedule-job scheduler job-key quartz-job trigger)
+        (if (pos? max-tries)
+          (recur (dec max-tries))
+          (warn (format "All retries to schedule job [%s] failed." job-key)))))))
 
 (defprotocol JobRunner
   "Defines functions for pausing and resuming jobs"
