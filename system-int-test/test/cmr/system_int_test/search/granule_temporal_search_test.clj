@@ -48,6 +48,16 @@
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-01-01T10:00:00Z,2010-01-10T12:00:00Z"})]
         (is (d/refs-match? [gran1] references))))
+    (testing "search by temporal_range, options :exclude-boundary false"
+      (let [references (search/find-refs :granule
+                                         {"temporal[]" "2010-01-11T12:00:00Z,2010-01-31T12:00:00Z"
+                                          "options[temporal][exclude_boundary]" "false"})]
+        (is (d/refs-match? [gran1 gran2 gran6] references))))
+    (testing "search by temporal_range, options :exclude-boundary true"
+      (let [references (search/find-refs :granule
+                                         {"temporal[]" "2010-01-11T12:00:00Z,2010-01-31T12:00:00Z"
+                                          "options[temporal][exclude_boundary]" "true"})]
+        (is (d/refs-match? [gran6] references))))
     (testing "search by temporal_range with alternative datetime format."
       (let [references (search/find-refs :granule
                                          {"temporal[]" "2010-01-01T10:00:00,2010-01-10T12:00:00.123Z"})]
@@ -61,6 +71,12 @@
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][and]" "true"})]
         (is (d/refs-match? [gran1] references))))
+    (testing "search by multiple temporal_range, options :or :exclude-boundary"
+      (let [references (search/find-refs :granule
+                                         {"temporal[]" ["2009-02-22T10:00:00Z,2010-01-31T12:00:00Z" "2010-12-20T12:00:00Z,2011-02-01T12:00:00Z"]
+                                          "options[temporal][or]" "true"
+                                          "options[temporal][exclude_boundary]" "true"})]
+        (is (d/refs-match? [gran1 gran4 gran6 gran7] references))))
 
     (testing "search granules by temporal with aql"
       (are [items start-date stop-date]

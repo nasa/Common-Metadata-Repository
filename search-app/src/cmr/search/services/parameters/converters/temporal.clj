@@ -25,5 +25,6 @@
       (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
                                   :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
                                   :start-day (string->int-value start-day)
-                                  :end-day (string->int-value end-day)}))))
+                                  :end-day (string->int-value end-day)
+                                  :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))}))))
 
