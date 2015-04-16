@@ -26,9 +26,10 @@
         params {"temporal[]" temporal-param
                 :collection-concept-id concept-id
                 "options[temporal][exclude_boundary]" true}
-        error-strs (if before? ["earlier" "start"] ["later" "end"])
-        error-msg (apply format (str "Found granules %s than collection %s date [%s].")
-                         (conj error-strs date-time))]
+        error-msg (format (str "Found granules %s than collection %s date [%s].")
+                          (if before? "earlier" "later")
+                          (if before? "start" "end")
+                          date-time)]
     {:params params
      :error-msg error-msg}))
 
