@@ -5,7 +5,8 @@
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.search.data.elastic-search-index :as idx]))
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
   "The frequency in seconds of the refresh-has-granules-map-job"
@@ -17,7 +18,7 @@
 (defn create-has-granules-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (cache/create-cache))
+  (mem-cache/create-in-memory-cache))
 
 (defn- collection-granule-counts->has-granules-map
   "Converts a map of collection ids to granule counts to a map of collection ids to true or false
@@ -30,20 +31,21 @@
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
   (let [has-granules-map (collection-granule-counts->has-granules-map
-                                                (idx/get-collection-granule-counts context nil))]
-  (cache/update-cache (cache/context->cache context has-granule-cache-key)
-                      #(assoc % :has-granules has-granules-map))))
+                           (idx/get-collection-granule-counts context nil))]
+    (cache/set-value (cache/context->cache context has-granule-cache-key)
+                     :has-granules has-granules-map)))
+
 (defn get-has-granules-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
   of whether the collections have granules or not. If the has-granules-map has not yet been cached
   it will retrieve it and cache it."
   [context]
   (let [has-granules-map-cache (cache/context->cache context has-granule-cache-key)]
-    (cache/cache-lookup has-granules-map-cache
-                        :has-granules
-                        (fn []
-                          (collection-granule-counts->has-granules-map
-                                                (idx/get-collection-granule-counts context nil))))))
+    (cache/get-value has-granules-map-cache
+                     :has-granules
+                     (fn []
+                       (collection-granule-counts->has-granules-map
+                         (idx/get-collection-granule-counts context nil))))))
 
 ;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
 (defmethod query-execution/post-process-query-result-feature :has-granules

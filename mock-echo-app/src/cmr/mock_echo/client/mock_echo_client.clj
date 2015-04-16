@@ -1,4 +1,4 @@
-(ns cmr.transmit.echo.mock
+(ns cmr.mock-echo.client.mock-echo-client
   "Contains functions for communicating with the mock echo api that aren't normal echo-rest
   operations"
   (:require [cmr.transmit.echo.rest :as r]

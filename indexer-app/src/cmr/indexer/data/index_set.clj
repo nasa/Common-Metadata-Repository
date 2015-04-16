@@ -487,7 +487,7 @@
   "Fetch index names associated with concepts."
   [context]
   (let [cache (cache/context->cache context cache/general-cache-key)]
-    (cache/cache-lookup cache :concept-indices (partial fetch-concept-type-index-names context))))
+    (cache/get-value cache :concept-indices (partial fetch-concept-type-index-names context))))
 
 (defn get-concept-index-name
   "Return the concept index name for the given concept id"
@@ -523,4 +523,4 @@
   "Fetch mapping types associated with concepts."
   [context]
   (let [cache (cache/context->cache context cache/general-cache-key)]
-    (cache/cache-lookup cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
+    (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))

@@ -7,7 +7,12 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.system-trace.http :as http-trace]
-            [cmr.cubby.data :as d]))
+            [cmr.cubby.data :as d]
+            [cmr.common.cache :as cache]
+            [cmr.acl.core :as acl]
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.elastic-utils.connect :as es-conn]
+            [cmr.transmit.echo.rest :as echo-rest]))
 
 (defn- context->db
   "Returns the db in the context"
@@ -34,25 +39,60 @@
 
 (defn delete-value
   [context key-name]
-  (d/delete-value (context->db context) key-name)
+  (if (d/delete-value (context->db context) key-name)
+    {:status 200}
+    {:status 404
+     :content-type :json
+     :errors [(format "No cached value with key [%s] was found"
+                      key-name)]}))
+
+(defn delete-all-values
+  [context]
+  (d/delete-all-values (context->db context))
   {:status 200})
+
+(defn reset
+  [context]
+  (cache/reset-caches context)
+  (d/reset (context->db context)))
+
+(defn health
+  "Returns the health state of the app."
+  [context]
+  (let [elastic-health (es-conn/health context :db)
+        echo-rest-health (echo-rest/health context)
+        ok? (and (:ok? elastic-health) (:ok? echo-rest-health))]
+    {:ok? ok?
+     :dependencies {:elastic_search elastic-health
+                    :echo echo-rest-health}}))
+
+(def key-routes
+  (context "/keys" []
+    (GET "/" {context :request-context}
+      (get-keys context))
+    (DELETE "/" {context :request-context}
+      (delete-all-values context))
+    (context "/:key-name" [key-name]
+      (GET "/" {context :request-context}
+        (get-value context key-name))
+      (PUT "/" {context :request-context body :body}
+        (set-value context key-name (slurp body)))
+      (DELETE "/" {context :request-context}
+        (delete-value context key-name)))))
+
+(def admin-routes
+  (POST "/reset" {:keys [request-context params headers]}
+    (let [context (acl/add-authentication-to-context request-context params headers)]
+      (acl/verify-ingest-management-permission context :update)
+      (reset context))))
 
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
-      (context "/keys" []
-        (GET "/" {context :request-context}
-          (get-keys context))
-        (context "/:key-name" [key-name]
-          (GET "/" {context :request-context}
-            (get-value context key-name))
-          (PUT "/" {context :request-context body :body}
-            (set-value context key-name (slurp body)))
-          (DELETE "/" {context :request-context}
-            (delete-value context key-name))))
-      (POST "/reset" {context :request-context}
-        ;; TODO enforce ACLs
-        (d/reset (context->db context))))
+      admin-routes
+      common-routes/cache-api-routes
+      (common-routes/health-api-routes health)
+      key-routes)
     (route/not-found "Not Found")))
 
 (defn make-api [system]

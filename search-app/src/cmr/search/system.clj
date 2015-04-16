@@ -3,6 +3,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]
             [cmr.acl.acl-cache :as ac]
             [cmr.acl.core :as acl]
@@ -66,13 +67,13 @@
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {idx/index-cache-name (cache/create-cache)
-                      ac/acl-cache-key (ac/create-acl-cache)
+             :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
+                      ac/acl-cache-key (mem-cache/create-in-memory-cache)
                       ;; Caches a map of tokens to the security identifiers
-                      ah/token-sid-cache-name (cache/create-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
+                      ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
-                      transformer/xsl-transformer-cache-name (cache/create-cache)
+                      transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf

@@ -72,7 +72,7 @@
 
 (defn set-or-generate-revision-id
   "Get the next available revision id from the DB for the given concept or
-  zero if the concept has never been saved."
+  one if the concept has never been saved."
   [db concept & previous-revision]
   (if (:revision-id concept)
     concept
@@ -139,56 +139,51 @@
 
 (defn- handle-save-errors
   "Deal with errors encountered during saves."
-  [concept result tries-left revision-id-provided?]
-  (let [error-code (:error result)]
-    (when (= tries-left 1)
-      (errors/internal-error! (msg/maximum-save-attempts-exceeded (:error-message result))
-                              (:throwable result)))
-    (condp = error-code
-      :revision-id-conflict
-      (when revision-id-provided?
-        (cmsg/data-error :conflict
-                         msg/invalid-revision-id-unknown-expected
-                         revision-id-provided?))
+  [concept result]
+  (case (:error result)
+    :revision-id-conflict
+    (cmsg/data-error :conflict
+                     msg/concept-id-and-revision-id-conflict
+                     (:concept-id concept)
+                     (:revision-id concept))
 
-      :concept-id-concept-conflict
-      (let [{:keys [concept-id concept-type provider-id native-id]} concept
-            {:keys [existing-concept-id existing-native-id]} result]
-        (cmsg/data-error :conflict
-                         msg/concept-exists-with-different-id
-                         existing-concept-id
-                         existing-native-id
-                         concept-id
-                         native-id
-                         concept-type
-                         provider-id))
-
-      (errors/internal-error! (:error-message result) (:throwable result)))))
+    :concept-id-concept-conflict
+    (let [{:keys [concept-id concept-type provider-id native-id]} concept
+          {:keys [existing-concept-id existing-native-id]} result]
+      (cmsg/data-error :conflict
+                       msg/concept-exists-with-different-id
+                       existing-concept-id
+                       existing-native-id
+                       concept-id
+                       native-id
+                       concept-type
+                       provider-id))
+    ;; else
+    (errors/internal-error! (:error-message result) (:throwable result))))
 
 (defn try-to-save
-  "Try to save a concept by looping until we find a good revision-id or give up."
-  [db concept revision-id-provided?]
-  (loop [concept concept tries-left 3]
-    (let [result (c/save-concept db concept)]
-      (if (nil? (:error result))
-        (do
-          ;; Perform post commit constraint checks - don't perform check if deleting concepts
-          (when-not (:deleted concept)
-            (cc/perform-post-commit-constraint-checks
-              db
-              concept
-              ;; When there are constraint violations we send in a rollback function to delete the
-              ;; concept that had just been saved and then throw an error.
-              #(c/force-delete db
-                               (:concept-type concept)
-                               (:provider-id concept)
-                               (:concept-id concept)
-                               (:revision-id concept))))
-          concept)
-        ;; depending on the error we will either throw an exception or try again (recur)
-        (do
-          (handle-save-errors concept result tries-left revision-id-provided?)
-          (recur (set-or-generate-revision-id db concept nil) (dec tries-left)))))))
+  "Try to save a concept. The concept must include a revision-id. Ensures that revision-id and
+  concept-id constraints are enforced as well as post commit uniqueness constraints. Returns the
+  concept if successful, otherwise throws an exception."
+  [db concept]
+  {:pre [(:revision-id concept)]}
+  (let [result (c/save-concept db concept)]
+    (if (nil? (:error result))
+      (do
+        ;; Perform post commit constraint checks - don't perform check if deleting concepts
+        (when-not (:deleted concept)
+          (cc/perform-post-commit-constraint-checks
+            db
+            concept
+            ;; When there are constraint violations we send in a rollback function to delete the
+            ;; concept that had just been saved and then throw an error.
+            #(c/force-delete db
+                             (:concept-type concept)
+                             (:provider-id concept)
+                             (:concept-id concept)
+                             (:revision-id concept))))
+        concept)
+      (handle-save-errors concept result))))
 
 ;;; service methods
 
@@ -351,12 +346,11 @@
   (let [db (util/context->db context)]
     (validate-providers-exist db [(:provider-id concept)])
     (validate-concept-revision-id db concept)
-    (let [revision-id-provided? (:revision-id concept)
-          concept (->> concept
+    (let [concept (->> concept
                        (set-or-generate-concept-id db)
                        (set-or-generate-revision-id db)
                        (set-deleted-flag false))]
-      (try-to-save db concept revision-id-provided?))))
+      (try-to-save db concept))))
 
 (deftracefn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
@@ -373,7 +367,7 @@
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db tombstone previous-revision)]
-            (try-to-save db revisioned-tombstone revision-id))))
+            (try-to-save db revisioned-tombstone))))
       (if revision-id
         (cmsg/data-error :not-found
                          msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -456,7 +450,7 @@
           (doseq [coll expired-concepts]
             (let [revision-id (inc (:revision-id coll))
                   tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
-              (try-to-save db tombstone revision-id)))
+              (try-to-save db tombstone)))
           (recur))))))
 
 (defn force-delete-with

@@ -11,8 +11,6 @@
                  [compojure "1.3.2"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
-                 [org.clojure/tools.reader "0.8.15"]
-                 [org.clojure/tools.cli "0.3.1"]
                  [sqlingvo "0.7.8"]
                  [org.clojure/core.async "0.1.338.0-5c5012-alpha"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]]

@@ -45,10 +45,13 @@
     (is (= {:status 200} (select-keys response [:status :errors])))))
 
 (defn ingest-coll
-  "Validates and ingests the collection"
+  "Validates and ingests the collection. Allow the revision-id to be determined by metadata-db
+  rather than passing one in."
   [coll]
   (assert-valid coll)
-  (d/ingest "PROV1" coll))
+  (let [response (d/ingest "PROV1" (dissoc coll :revision-id))]
+    (is (= 200 (:status response)))
+    response))
 
 (defn make-coll
   "Creates, validates, and ingests a collection using the unique number given"
@@ -61,13 +64,16 @@
   (ingest-coll (merge coll attribs)))
 
 (defn ingest-gran
-  "Validates and ingests the granle"
+  "Validates and ingests the granule. Allow the revision-id to be determined by metadata-db
+  rather than passing one in."
   [coll granule]
   ;; Granule is valid sent by itself
   (assert-valid granule)
   ;; Granule is valid sent with parent collection
   (assert-granule-with-parent-collection-valid granule coll)
-  (d/ingest "PROV1" granule))
+  (let [response (d/ingest "PROV1" (dissoc granule :revision-id))]
+    (is (= 200 (:status response)))
+    response))
 
 (defn make-gran
   "Creates, validates, and ingests a granule using the unique number given"

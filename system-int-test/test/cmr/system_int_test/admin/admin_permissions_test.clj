@@ -4,7 +4,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
-            [cmr.system-int-test.utils.echo-util :as e]
+            [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
             [clj-http.client :as client]))
@@ -28,18 +28,18 @@
 
 (deftest ingest-management-permission-test
   ;; Grant admin-group-guid admin permission
-  (e/grant-group-admin "admin-read-group-guid" :read)
-  (e/grant-group-admin "admin-update-group-guid" :update)
-  (e/grant-group-admin "admin-read-update-group-guid" :read :update)
+  (e/grant-group-admin (s/context) "admin-read-group-guid" :read)
+  (e/grant-group-admin (s/context) "admin-update-group-guid" :update)
+  (e/grant-group-admin (s/context) "admin-read-update-group-guid" :read :update)
   ;; Grant provider admin permission, but not system permission
-  (e/grant-group-provider-admin "prov-admin-group-guid" "provguid1" :read :update :delete)
+  (e/grant-group-provider-admin (s/context) "prov-admin-group-guid" "provguid1" :read :update :delete)
 
-  (let [guest-token (e/login-guest)
-        user-token (e/login "user1" ["group-guid2" "group-guid3"])
-        admin-read-token (e/login "admin" ["admin-read-group-guid" "group-guid3"])
-        admin-update-token (e/login "admin" ["admin-update-group-guid" "group-guid3"])
-        admin-read-update-token (e/login "admin" ["admin-read-update-group-guid" "group-guid3"])
-        prov-admin-token (e/login "prov-admin" ["prov-admin-group-guid" "group-guid3"])]
+  (let [guest-token (e/login-guest (s/context))
+        user-token (e/login (s/context) "user1" ["group-guid2" "group-guid3"])
+        admin-read-token (e/login (s/context) "admin" ["admin-read-group-guid" "group-guid3"])
+        admin-update-token (e/login (s/context) "admin" ["admin-update-group-guid" "group-guid3"])
+        admin-read-update-token (e/login (s/context) "admin" ["admin-read-update-group-guid" "group-guid3"])
+        prov-admin-token (e/login (s/context) "prov-admin" ["prov-admin-group-guid" "group-guid3"])]
 
     (are [url]
          (and
@@ -55,4 +55,6 @@
          (url/indexer-clear-cache-url)
          (url/indexer-reset-url)
          (url/mdb-reset-url)
-         (url/index-set-reset-url))))
+         (url/index-set-reset-url)
+         (url/cubby-reset-url)
+         (url/cubby-clear-cache-url))))

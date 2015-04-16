@@ -28,21 +28,3 @@
       (GET "/" {context :request-context}
         (ah/status-ok (get-providers context))))))
 
-
-(comment
-
-  (do
-    (require '[cmr.transmit.echo.providers :as p])
-    (require '[cmr.transmit.echo.mock :as m])
-
-    (m/create-providers {:system user/system} {"guid1" "PROV1"
-                                               "guid2" "PROV2"}))
-
-  (get-providers {:system user/system})
-
-  (p/get-provider-guid-id-map {:system user/system})
-
-
-
-
-  )

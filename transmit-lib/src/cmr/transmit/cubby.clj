@@ -16,15 +16,19 @@
 
   )
 
-(defn- reset-url
+(defn reset-url
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
-(defn- keys-url
+(defn health-url
+  [conn]
+  (format "%s/health" (conn/root-url conn)))
+
+(defn keys-url
   [conn]
   (format "%s/keys" (conn/root-url conn)))
 
-(defn- key-url
+(defn key-url
   [key-name conn]
   (format "%s/keys/%s" (conn/root-url conn) (codec/url-encode key-name)))
 
@@ -86,6 +90,7 @@
                      (merge {:url (url-fn conn)
                              :method method
                              :throw-exceptions false
+                             :headers {config/token-header (config/echo-system-token)}
                              :connection-manager (conn/conn-mgr conn)}
                             http-options)))]
     (cond
@@ -124,6 +129,13 @@
   ([context key-name is-raw]
    (cubby-request context {:url-fn (partial key-url key-name), :method :delete, :raw? is-raw})))
 
+(defn delete-all-values
+  "Deletes all values"
+  ([context]
+   (delete-all-values context false))
+  ([context is-raw]
+   (cubby-request context {:url-fn keys-url, :method :delete, :raw? is-raw})))
+
 (defn reset
   "Clears all values in the cache service"
   ([context]
@@ -131,8 +143,18 @@
   ([context is-raw]
    (cubby-request context {:url-fn reset-url, :method :post, :raw? is-raw})))
 
-;; TODO this will be done in a subsequent pull request when elasticsearch is added.
-(defn get-health
-  "TODO"
+(defn get-cubby-health-fn
+  "Returns the health status of cubby"
   [context]
-  )
+  (let [conn (config/context->app-connection context :cubby)
+        {:keys [status body]} (cubby-request context {:url-fn health-url, :method :get, :raw? true})]
+    (if (= 200 status)
+      {:ok? true :dependencies body}
+      {:ok? false :problem body})))
+
+(defn get-cubby-health
+  "Returns the cubby health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-cubby-health-fn context) timeout-ms)))
+
