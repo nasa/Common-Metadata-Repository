@@ -8,13 +8,21 @@
   (is (empty? (c/get-keys cache)))
   (is (nil? (c/get-value cache :foo))))
 
+(defn always-fail
+  "A function that will always throw an exception. Use this when you want to check the lookup
+  function isn't called"
+  []
+  (throw (Exception. "Always failing")))
+
 (defn- value-type-support
   "Checks that different kinds of values can be stored and retrieved in the cache."
   [cache]
   (are [v]
        (do
          (c/set-value cache :foo v)
-         (= v (c/get-value cache :foo)))
+         (= v
+            (c/get-value cache :foo)
+            (c/get-value cache :foo always-fail)))
        :a
        "b"
        'c
@@ -44,7 +52,9 @@
   (are [k]
        (do
          (c/set-value cache k 1)
-         (= 1 (c/get-value cache k)))
+         (= 1
+            (c/get-value cache k)
+            (c/get-value cache k always-fail)))
        :a
        "b"
        'c
@@ -71,14 +81,14 @@
     ;; lookup function is used the first time
     (is (= 1 (c/get-value cache :foo lookup-fn)))
     ;; The value is cached now
-    (is (= 1 (c/get-value cache :foo lookup-fn)))
+    (is (= 1 (c/get-value cache :foo always-fail)))
     (is (= 1 @counter))
 
     (c/reset cache)
     ;; lookup function used after cache has been cleared
     (is (= 2 (c/get-value cache :foo lookup-fn)))
     ;; The value is cached now
-    (is (= 2 (c/get-value cache :foo lookup-fn)))
+    (is (= 2 (c/get-value cache :foo always-fail)))
     (is (= 2 @counter))))
 
 (def ^:private cache-test-fns

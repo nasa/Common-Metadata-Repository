@@ -13,7 +13,7 @@
                              (mem-cache/create-in-memory-cache)
                              (mem-cache/create-in-memory-cache))))
 
-(deftest consistent-cache-functions-as-consistent-cache-tes
+(deftest consistent-cache-functions-as-consistent-cache-test
   (let [hash-cache (mem-cache/create-in-memory-cache)]
     (consistent-cache-spec/assert-consistent-cache
       (cc/create-consistent-cache (mem-cache/create-in-memory-cache) hash-cache)

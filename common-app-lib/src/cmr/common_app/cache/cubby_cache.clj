@@ -1,6 +1,6 @@
 (ns cmr.common-app.cache.cubby-cache
   "An implementation of the CMR cache protocol on top of the cubby application. Cubby only supports
-  persistence and returning strings to this automatically serializes and deserializes the keys and
+  persistence and returning strings so this automatically serializes and deserializes the keys and
   values with EDN. Any key or value serializable to EDN is supported."
   (:require [cmr.common.cache :as c]
             [cmr.transmit.cubby :as cubby]
@@ -17,7 +17,7 @@
   [v]
   (when v (edn/read-string v)))
 
-;; Implementes the CmrCache protocol by saving data in the cubby application
+;; Implements the CmrCache protocol by saving data in the cubby application
 (defrecord CubbyCache
   [;; A context containing a connection to cubby
    context-with-conn
@@ -34,11 +34,10 @@
 
   (get-value
     [this key lookup-fn]
-    (let [key (serialize key)]
-      (or (c/get-value this key)
-          (let [value (lookup-fn)]
-            (c/set-value this key value)
-            value))))
+    (or (c/get-value this key)
+        (let [value (lookup-fn)]
+          (c/set-value this key value)
+          value)))
 
   (reset
     [this]
