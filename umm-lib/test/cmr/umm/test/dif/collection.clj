@@ -275,9 +275,18 @@
       <Author>author</Author>
       <Publication_Date>2015</Publication_Date>
       <Title>title</Title>
+      <Series>1</Series>
+      <Edition>2</Edition>
+      <Volume>3</Volume>
+      <Issue>4</Issue>
+      <Report_Number>5</Report_Number>
       <Publication_Place>Frederick, MD</Publication_Place>
       <Publisher>publisher</Publisher>
+      <Pages>678</Pages>
+      <ISBN>978-0-394-80001-1</ISBN>
+      <Online_Resource>http://example.com</Online_Resource>
       <DOI>http://dx.doi.org/12.3456/ABC012XYZ</DOI>
+      <Other_Reference_Details>blah</Other_Reference_Details>
     </Reference>
     <Related_URL>
       <URL_Content_Type>
@@ -413,9 +422,18 @@
                                                {:author "author"
                                                 :publication-date "2015"
                                                 :title "title"
+                                                :series "1"
+                                                :edition "2"
+                                                :volume "3"
+                                                :issue "4"
+                                                :report-number "5"
                                                 :publication-place "Frederick, MD"
                                                 :publisher "publisher"
-                                                :doi "http://dx.doi.org/12.3456/ABC012XYZ"})]
+                                                :pages "678"
+                                                :isbn "978-0-394-80001-1"
+                                                :related-url "http://example.com"
+                                                :doi "http://dx.doi.org/12.3456/ABC012XYZ"
+                                                :other-reference-details "blah"})]
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SPOT-1"
