@@ -75,8 +75,7 @@
     (c/reset cache-a)
     (is (empty? (c/get-keys cache-a)))
     (is (empty? (c/get-keys cache-b)))
-    (assert-values-in-caches caches {:foo nil :bar nil})
-    cache-b))
+    (assert-values-in-caches caches {:foo nil :bar nil})))
 
 (defn get-value-with-lookup-test
   "This tests that get value with a lookup function will perform correctly. The names of objects in

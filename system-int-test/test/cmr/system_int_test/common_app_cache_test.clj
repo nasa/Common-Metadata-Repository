@@ -6,10 +6,7 @@
             [cmr.common-app.cache.consistent-cache-spec :as consistent-cache-spec]
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [cmr.common.cache :as c]
-            [cmr.common.cache.cache-spec :as cache-spec]
-            [cmr.cubby.test.utils :as cubby-test-util]))
-
-(use-fixtures :each cubby-test-util/reset-fixture)
+            [cmr.common.cache.cache-spec :as cache-spec]))
 
 (deftest cubby-cache-functions-as-cache-test
   (cache-spec/assert-cache (cubby-cache/create-cubby-cache)))

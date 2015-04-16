@@ -7,21 +7,11 @@
             [cmr.common.jobs :refer [defjob]]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]))
+            [cmr.common.cache :as cache]))
 
 (def acl-cache-key
   "The key used to store the acl cache in the system cache map."
   :acls)
-
-
-;; TODO there needs to be two different version of the ACL cache. Search shouldn't use the same acl
-;; cache as the indexer. It shouldn't make a request to cubby for every search.
-
-(defn create-acl-cache
-  "Creates a new empty ACL cache."
-  []
-  (mem-cache/create-in-memory-cache))
 
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer

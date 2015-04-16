@@ -9,13 +9,13 @@
   If you have N consistent caches in different processes that share a common hash cache they will
   always return the same value as long as the value hasn't changed in any of them. Once one of them
   has an updated value the other caches will have that value \"invalidated\". Fetching the value from
-  the other caches in that case will return nil or if a look function has been provided it will be
+  the other caches in that case will return nil or if a lookup function has been provided it will be
   used to retrieve the latest value.
 
   ## How it Works:
 
   Every time a value is stored in the cache it is put in the in memory cache and the hash code of that
-  value is stored in the hash cache. Every time a value is retrieved the hash code is retreived from
+  value is stored in the hash cache. Every time a value is retrieved the hash code is retrieved from
   the hash cache and compared to the value. If the hashes do not match it indicates that a value was
   modified in another cache so the current value should be considered out of date. Nil is returned
   in that case or if a lookup function is provided it is used to fetch the latest value.

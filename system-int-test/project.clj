@@ -14,9 +14,6 @@
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
 
-                 ;; Needed for access to cubby test util
-                 [nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"]
-
                  ;; included to allow access to catalog rest and db connection code
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
 

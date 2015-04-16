@@ -2,7 +2,7 @@
   "Provides integration tests for the cubby application"
   (:require [clojure.test :refer :all]
             [cmr.transmit.cubby :as c]
-            [cmr.cubby.test.utils :as u]))
+            [cmr.cubby.int-test.utils :as u]))
 
 (use-fixtures :once (u/int-test-fixtures))
 (use-fixtures :each u/reset-fixture)

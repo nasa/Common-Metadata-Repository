@@ -1,4 +1,4 @@
-(ns cmr.cubby.test.utils
+(ns cmr.cubby.int-test.utils
   "Provides integration tests utilities."
   (:require [clojure.test :as ct :refer [is]]
             [cmr.transmit.config :as config]
