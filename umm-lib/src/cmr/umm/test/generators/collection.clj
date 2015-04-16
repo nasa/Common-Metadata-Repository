@@ -284,7 +284,7 @@
                 :related-urls (ext-gen/nil-if-empty (gen/vector related-url 0 5))
                 :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages)
-                :publication-reference (ext-gen/optional publication-references)
+                :publication-references (ext-gen/nil-if-empty (gen/vector publication-references 0 3))
                 :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3)))
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)

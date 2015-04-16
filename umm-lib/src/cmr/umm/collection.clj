@@ -239,7 +239,6 @@
    contacts
    ])
 
-
 (defrecord PublicationReference
     [
      author
@@ -338,9 +337,9 @@
    ;; access is granted.
    use-contraints
 
-   ;; (Map) This element describes key bibliographic citations
+   ;; (seq of PublicationReference) This element describes key bibliographic citations
    ;; pertaining to the data.
-   publication-reference
+   publication-references
 
    ])
 

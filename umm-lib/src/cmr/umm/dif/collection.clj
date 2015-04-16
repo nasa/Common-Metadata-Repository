@@ -75,10 +75,10 @@
         [:related-url :Online_Resource]
         :Other_Reference_Details]))
 
-(defn xml-elem->PublicationReference
-  "Returns a UMM PublicationReference from a DIF collection XML node."
-  [xml-struct]
-  (when-let [reference (cx/element-at-path xml-struct [:Reference])]
+(defn parse-publication-references
+  "Returns a seq of publication references from a DIF collection XML node."
+  [dif-xml-root]
+  (for [reference (cx/elements-at-path dif-xml-root [:Reference])]
     (c/map->PublicationReference
      (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
                 [umm-key (cx/string-at-path reference [dif-tag])])))))
@@ -108,7 +108,7 @@
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
      :organizations (org/xml-elem->Organizations xml-struct)
      :personnel (personnel/xml-elem->personnel xml-struct)
-     :publication-reference (xml-elem->PublicationReference xml-struct)}))
+     :publication-references (seq (parse-publication-references xml-struct))}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -122,14 +122,15 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
-(defn generate-reference-element
-  "Returns the DIF Reference element from a UMM publication-reference value."
-  [publication-reference]
-  (x/element :Reference {}
-             (for [[umm-key dif-tag] umm-dif-publication-reference-mappings
-                   :let [v (get publication-reference umm-key)]
-                   :when v]
-               (x/element dif-tag {} v))))
+(defn generate-reference-elements
+  "Returns a seq of DIF Reference elements from a seq of UMM publication references."
+  [references]
+  (for [reference references]
+    (x/element :Reference {}
+               (for [[umm-key dif-tag] umm-dif-publication-reference-mappings
+                     :let [v (get reference umm-key)]
+                     :when v]
+                 (x/element dif-tag {} v)))))
 
 (extend-protocol cmr.umm.dif.core/UmmToDifXml
   UmmCollection
@@ -142,7 +143,7 @@
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
-                   publication-reference]} collection
+                   publication-references]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)
            emit-fn (if indent? x/indent-str x/emit-str)]
@@ -164,8 +165,8 @@
                     (x/element :Quality {} quality)
                     (x/element :Use_Constraints {} use-constraints)
                     (org/generate-data-center organizations)
-                    (when publication-reference
-                      (generate-reference-element publication-reference))
+                    (when publication-references
+                      (generate-reference-elements publication-references))
                     (x/element :Summary {}
                                (x/element :Abstract {} summary)
                                (x/element :Purpose {} purpose))

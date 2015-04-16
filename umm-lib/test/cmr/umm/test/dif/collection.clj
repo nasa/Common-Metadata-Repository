@@ -409,13 +409,13 @@
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})
-                    :publication-reference (umm-c/map->PublicationReference
-                                            {:author "author"
-                                             :publication-date "2015"
-                                             :title "title"
-                                             :publication-place "Frederick, MD"
-                                             :publisher "publisher"
-                                             :doi "http://dx.doi.org/12.3456/ABC012XYZ"})
+                    :publication-references [(umm-c/map->PublicationReference
+                                               {:author "author"
+                                                :publication-date "2015"
+                                                :title "title"
+                                                :publication-place "Frederick, MD"
+                                                :publisher "publisher"
+                                                :doi "http://dx.doi.org/12.3456/ABC012XYZ"})]
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SPOT-1"

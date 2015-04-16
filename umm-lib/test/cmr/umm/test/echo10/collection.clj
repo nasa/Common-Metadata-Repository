@@ -76,7 +76,7 @@
         ;; ECHO10 does not have use-constraints
         (dissoc :use-constraints)
         ;; ECHO10 does not have publication-reference
-        (dissoc :publication-reference)
+        (dissoc :publication-references)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
