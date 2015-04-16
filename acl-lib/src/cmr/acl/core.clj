@@ -6,6 +6,7 @@
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.acl.collection-matchers :as cm]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]))
 
 (def BROWSER_CLIENT_ID "browser")
@@ -92,7 +93,7 @@
 (defn create-token-imp-cache
   "Creates a cache for which tokens have ingest management permission."
   []
-  (cache/create-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
 (def object-identity-type->acl-key
   {"CATALOG_ITEM" :catalog-item-identity
@@ -121,7 +122,7 @@
    (verify-ingest-management-permission context permission-type "SYSTEM_OBJECT" nil))
   ([context permission-type object-identity-type provider-id]
    (let [cache-key [(:token context) permission-type]
-         has-permission? (cache/cache-lookup
+         has-permission? (cache/get-value
                            (cache/context->cache context token-imp-cache-key)
                            cache-key
                            #(has-ingest-management-permission? context

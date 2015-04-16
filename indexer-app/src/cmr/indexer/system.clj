@@ -9,6 +9,7 @@
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.acl.acl-cache :as ac]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -20,7 +21,8 @@
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
-            [cmr.indexer.services.queue-listener :as ql]))
+            [cmr.indexer.services.queue-listener :as ql]
+            [cmr.common-app.cache.consistent-cache :as consistent-cache]))
 
 (defconfig colls-with-separate-indexes
   "Configuration value that contains a list of collections with separate indexes for their
@@ -46,8 +48,8 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {ac/acl-cache-key (ac/create-acl-cache)
-                      cache/general-cache-key (cache/create-cache)
+             :caches {ac/acl-cache-key (consistent-cache/create-consistent-cache)
+                      cache/general-cache-key (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
@@ -62,7 +64,7 @@
                                                                                 %
                                                                                 ql/handle-index-action)}))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
