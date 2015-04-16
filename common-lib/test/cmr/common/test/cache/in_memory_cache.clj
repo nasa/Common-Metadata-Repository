@@ -1,14 +1,11 @@
 (ns cmr.common.test.cache.in-memory-cache
   (:require [clojure.test :refer :all]
             [cmr.common.cache :as c]
-            [cmr.common.cache.in-memory-cache :as mem-cache]))
+            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.cache.cache-spec :as cache-spec]))
 
-(def counter (atom 0))
-
-(defn increment-counter
-  "Increments the counter atom and returns it"
-  []
-  (swap! counter inc))
+(deftest memory-cache-functions-as-cache-test
+  (cache-spec/assert-cache (mem-cache/create-in-memory-cache)))
 
 (defn lru-cache-with
   [initial-value threshold]
@@ -17,16 +14,7 @@
     initial-value
     {:threshold threshold}))
 
-(deftest get-value-test
-  (testing "cache hit, miss and reset with lookup fn"
-    (let [cache (mem-cache/create-in-memory-cache)]
-      (reset! counter 0)
-      (is (= 1 (c/get-value cache "key" increment-counter)))
-      ;; look up again will not call the increment-counter function
-      (is (= 1 (c/get-value cache "key" increment-counter)))
-      (c/reset cache)
-      (is (= 2 (c/get-value cache "key" increment-counter)))
-      (is (= 2 (c/get-value cache "key" increment-counter)))))
+(deftest hit-and-miss-test
   (testing "cache, hit, miss, and reset without a lookup fn"
     (testing "value retrieval"
       (let [cache (lru-cache-with {:foo 1 :bar 2} 2)]
@@ -70,12 +58,4 @@
         ;; bar is not present
         (is (nil? (c/get-value cache :bar)))))))
 
-
-(deftest set-value-test
-  (let [cache (mem-cache/create-in-memory-cache)]
-    (reset! counter 0)
-    (c/get-value cache "key" increment-counter)
-    (is (= 1 (c/get-value cache "key" increment-counter)))
-    (c/set-value cache "key" (increment-counter))
-    (is (= 2 (c/get-value cache "key" increment-counter)))))
 

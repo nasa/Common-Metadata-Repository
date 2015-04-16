@@ -146,6 +146,7 @@
 (deftracefn health
   "Returns the health state of the app."
   [context]
+  ;; TODO add cubby
   (let [elastic-health (es-util/health context :db)
         echo-rest-health (rest/health context)
         metadata-db-health (meta-db/get-metadata-db-health context)

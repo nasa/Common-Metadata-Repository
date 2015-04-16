@@ -56,7 +56,6 @@
           (index-svc/update-indexes context))
         {:status 200})
 
-      ;; TODO clearing the indexer caches should cause it to clear the cache in cubby as well.
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 

@@ -10,7 +10,6 @@
   [context cache-key]
   (get-in context [:system :caches cache-key]))
 
-;; TODO add a cubby implemented version of this protocol
 (defprotocol CmrCache
   "Defines a protocol used for caching data."
   (get-keys
