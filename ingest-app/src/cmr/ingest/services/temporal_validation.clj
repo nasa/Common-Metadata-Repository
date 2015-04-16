@@ -4,17 +4,17 @@
             [clj-time.core :as t]
             [cmr.umm.start-end-date :as sed]))
 
-(defn- covers-temporal-range
+(defn- covers-temporal-range?
   "Checks if the temporal range defined by the first pair of arguments covers the temporal range
    defined by the second pair of arguments."
-  [start-date-time1 end-date-time1 start-date-time2 end-date-time2]
+  [updated-start-time updated-end-time prev-start-time prev-end-time]
    (and
-     (or (nil? start-date-time1)
-         (and start-date-time2
-              (t/before? start-date-time1 start-date-time2)))
-     (or (nil? end-date-time1)
-         (and end-date-time2
-              (t/after? end-date-time1 end-date-time2)))))
+     (or (nil? updated-start-time)
+         (and prev-start-time
+              (not (t/after? updated-start-time prev-start-time))))
+     (or (nil? updated-end-time)
+         (and prev-end-time
+              (not (t/before? updated-end-time prev-end-time))))))
 
 (defn- out-of-bounds-params
   "Returns a map containing search parameters to determine granules for the collection with
@@ -36,12 +36,12 @@
   "Returns the search parameters for identifying granules which fall outside
   the temporal range defined for the collection"
   [concept-id concept prev-concept]
-  (let [start-date-time1 (sed/start-date :collection (:temporal concept))
-        end-date-time1 (sed/end-date :collection (:temporal concept))
-        start-date-time2 (sed/start-date :collection (:temporal prev-concept))
-        end-date-time2 (sed/end-date :collection (:temporal prev-concept))]
-    (when-not (covers-temporal-range start-date-time1 end-date-time1
-                                     start-date-time2 end-date-time2)
+  (let [updated-start-time (sed/start-date :collection (:temporal concept))
+        updated-end-time (sed/end-date :collection (:temporal concept))
+        prev-start-time (sed/start-date :collection (:temporal prev-concept))
+        prev-end-time (sed/end-date :collection (:temporal prev-concept))]
+    (when-not (covers-temporal-range? updated-start-time updated-end-time
+                                     prev-start-time prev-end-time)
       (remove nil?
-              [(when start-date-time1 (out-of-bounds-params concept-id start-date-time1 true))
-               (when end-date-time1 (out-of-bounds-params concept-id end-date-time1 false))]))))
+              [(when updated-start-time (out-of-bounds-params concept-id updated-start-time true))
+               (when updated-end-time (out-of-bounds-params concept-id updated-end-time false))]))))

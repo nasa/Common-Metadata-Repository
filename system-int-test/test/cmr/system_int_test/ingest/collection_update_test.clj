@@ -413,6 +413,9 @@
                                                 :beginning-date-time "2000-01-01T12:00:00Z"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"
                                                 :beginning-date-time "2000-01-01T12:00:00Z"}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"
+                                                :beginning-date-time "2001-01-01T12:00:00Z"
+                                                :ending-date-time "2010-05-11T12:00:00Z"}))
         collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
                                                         :beginning-date-time "1999-01-02T12:00:00Z"
                                                         :ending-date-time "1999-05-01T12:00:00Z"}))
@@ -430,7 +433,10 @@
         gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"}))
         gran6 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule6"
                                                    :beginning-date-time "2000-06-01T12:00:00Z"
-                                                   :ending-date-time "2000-08-01T12:00:00Z"}))]
+                                                   :ending-date-time "2000-08-01T12:00:00Z"}))
+        gran7 (d/ingest "PROV1" (dg/granule coll4 {:granule-ur "Granule7"
+                                                   :beginning-date-time "2001-01-01T12:00:00Z"
+                                                   :ending-date-time "2010-05-11T12:00:00Z"}))]
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -469,7 +475,9 @@
 
         "Update dataset (with no granules) to one with no temporal coverage"
         "Dataset-No-Granule" nil nil
-        ))
+
+        "Update dataset with same temporal coverage and granule having same temporal coverage as collection"
+        "Dataset4" "2001-01-01T12:00:00Z" "2010-05-11T12:00:00Z"))
 
     (testing "Update collection failure cases"
       (util/are2
@@ -479,6 +487,7 @@
                                             :beginning-date-time beginning-date-time
                                             :ending-date-time ending-date-time}))
               {:keys [status errors]} response]
+          (cmr.common.dev.capture-reveal/capture errors)
           (= [400 expected-errors] [status errors]))
 
         "Update dataset with smaller temporal coverage and does not contain all existing granules, begin date time too late"
