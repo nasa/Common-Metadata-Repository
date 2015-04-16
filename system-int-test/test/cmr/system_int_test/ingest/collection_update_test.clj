@@ -372,9 +372,13 @@
   (let [coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :projects (dc/projects "p1" "p2" "p3" "p4")}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "parent-collection2"
+                                   :projects (dc/projects "p4")}))
         _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p2" "p3"]}))
-        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))]
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))
+        _ (d/ingest "PROV1" (dg/granule coll2 {:project-refs ["p4"]}))]
 
     (index/wait-until-indexed)
 
@@ -390,7 +394,7 @@
         "Adding an additional project is OK"
         ["p1" "p2" "p3" "p4" "p5"]
 
-        "Removing a project not referenced by any granule is OK"
+        "Removing a project not referenced by any granule in the collection is OK"
         ["p1" "p2" "p3"]))
 
     (testing "Update collection failure cases"
