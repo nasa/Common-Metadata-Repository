@@ -154,6 +154,8 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
+For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+
 #### Find collections by project
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
@@ -648,6 +650,8 @@ See under "Find collections by entry title" for more examples of how to use this
 The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
+
+For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
 #### Exclude granules from elastic results by echo granule id and concept ids.
 

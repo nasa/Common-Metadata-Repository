@@ -76,6 +76,12 @@
                                          {"temporal[]" ["2010-01-01T10:00:00Z,2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                           "options[temporal][and]" "true"})]
         (is (d/refs-match? [coll1 coll13] references))))
+    (testing "search by multiple temporal_range, options :or :exclude-boundary"
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" ["2009-02-22T10:00:00Z,2010-01-01T12:00:00Z" "2010-01-11T12:00:00Z,2010-12-03T12:00:00Z"]
+                                          "options[temporal][or]" "true"
+                                          "options[temporal][exclude_boundary]" "true"})]
+        (is (d/refs-match? [coll2 coll6 coll10 coll13] references))))
 
     (testing "search by temporal date-range with aql"
       (are [items start-date stop-date]

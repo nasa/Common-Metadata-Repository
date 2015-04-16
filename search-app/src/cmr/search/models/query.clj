@@ -238,6 +238,7 @@
    end-date
    start-day
    end-day
+   exclusive?
    ])
 
 (defrecord OrbitNumberValueCondition
