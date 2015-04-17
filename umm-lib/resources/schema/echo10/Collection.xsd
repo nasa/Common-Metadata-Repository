@@ -707,7 +707,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />
-            <xs:maxLength value="80" />
+            <xs:maxLength value="1024" />
           </xs:restriction>
         </xs:simpleType>
       </xs:element>

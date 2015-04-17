@@ -290,3 +290,13 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+
+;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
+(deftest project-long-name-can-be-upto-1024-characters
+  (let [project (dc/project "p1" (str "A long name longer than eighty characters should not result"
+                                      " in a schema validation error"))
+        concept (assoc (dc/collection-concept {:projects [project]})
+                  :format "application/echo10+xml; charset=utf-8")
+        {:keys [status]} (ingest/ingest-concept concept)]
+    (index/wait-until-indexed)
+    (is (= status 200))))
