@@ -145,6 +145,13 @@
            :long-name (d/unique-str "long-name")})
        short-names))
 
+(defn project
+  "Return a project with the given short name and long name"
+  [project-sn long-name]
+  (c/map->Project
+    {:short-name project-sn
+     :long-name (d/unique-str long-name)}))
+
 (defn org
   "Return archive/ processing center"
   [type center-name]
