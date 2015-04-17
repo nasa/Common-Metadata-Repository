@@ -130,6 +130,8 @@
         (dissoc :quality)
         ;; We don't write out personnel entries when generating SMAP XML
         (assoc :personnel personnel)
+        ;; to be supported later
+        (dissoc :publication-references)
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
