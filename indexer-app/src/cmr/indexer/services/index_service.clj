@@ -149,14 +149,18 @@
   [context]
   (let [elastic-health (es-util/health context :db)
         echo-rest-health (rest/health context)
-        cubby-health (cubby/get-cubby-health context)
+        ;; Cubby health disabled until https://bugs.earthdata.nasa.gov/browse/EI-3348 is completed
+        ;; and cubby is available in all environments
+        ; cubby-health (cubby/get-cubby-health context)
         metadata-db-health (meta-db/get-metadata-db-health context)
         index-set-health (tis/get-index-set-health context)
-        ok? (every? :ok? [elastic-health echo-rest-health cubby-health metadata-db-health index-set-health])]
+        ok? (every? :ok? [elastic-health echo-rest-health
+                          ; cubby-health
+                          metadata-db-health index-set-health])]
     {:ok? ok?
      :dependencies {:elastic_search elastic-health
                     :echo echo-rest-health
-                    :cubby cubby-health
+                    ; :cubby cubby-health
                     :metadata-db metadata-db-health
                     :index-set index-set-health}}))
 

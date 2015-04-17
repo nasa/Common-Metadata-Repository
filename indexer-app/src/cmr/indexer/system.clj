@@ -52,6 +52,7 @@
 
                       ;; Environmental support for the cubby application is not ready yet so we use the in memory cache for now
                       ;; See https://bugs.earthdata.nasa.gov/browse/EI-3348
+                      ;; When readding this make sure to readd cubby to health check.
                       ; ac/acl-cache-key (consistent-cache/create-consistent-cache)
                       ac/acl-cache-key (mem-cache/create-in-memory-cache)
 
