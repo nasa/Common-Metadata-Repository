@@ -48,7 +48,13 @@
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
-             :caches {ac/acl-cache-key (consistent-cache/create-consistent-cache)
+             :caches {
+
+                      ;; Environmental support for the cubby application is not ready yet so we use the in memory cache for now
+                      ;; See https://bugs.earthdata.nasa.gov/browse/EI-3348
+                      ; ac/acl-cache-key (consistent-cache/create-consistent-cache)
+                      ac/acl-cache-key (mem-cache/create-in-memory-cache)
+
                       cache/general-cache-key (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
