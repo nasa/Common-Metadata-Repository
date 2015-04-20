@@ -19,6 +19,10 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.ring-relations :as rr]))
 
+(def xml-namespace
+  "XML namespace defining GML elements."
+  "http://www.opengis.net/gml/3.2")
+
 ;; Core Interface
 
 (defmulti encode
