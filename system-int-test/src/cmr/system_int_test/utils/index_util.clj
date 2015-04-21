@@ -3,7 +3,6 @@
   (:require [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.indexer.config :as config]
-            [cmr.ingest.config :as ingest-config]
             [cmr.system-int-test.utils.queue :as queue]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
