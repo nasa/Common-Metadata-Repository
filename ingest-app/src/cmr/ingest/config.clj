@@ -52,4 +52,4 @@
 (defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
-  {:default 60000 :type Long})
+  {:default 10000 :type Long})

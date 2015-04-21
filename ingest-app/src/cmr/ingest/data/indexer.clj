@@ -46,15 +46,15 @@
 
   Returns true if the message was successfully enqueued and false otherwise."
   [queue-broker queue-name msg]
-    (let [message-published? (try
-                               (queue/publish queue-broker queue-name msg)
-                               (catch Exception e
-                                 (error e)
-                                 false))]
-      (when-not message-published?
-        (warn "Attempt to queue messaged failed. Retrying: " msg)
-        (Thread/sleep 2000)
-        (recur queue-broker queue-name msg))))
+  (let [message-published? (try
+                             (queue/publish queue-broker queue-name msg)
+                             (catch Exception e
+                               (error e)
+                               false))]
+    (when-not message-published?
+      (warn "Attempt to queue messaged failed. Retrying: " msg)
+      (Thread/sleep 2000)
+      (recur queue-broker queue-name msg))))
 
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message
@@ -76,12 +76,8 @@
            (str "Request timed out when attempting to publish message: " msg)
            e))))))
 
-(defmulti index-concept-with-method
-  "Index the concept using an http request or the indexing queue"
-  (fn [context concept-id revision-id]
-    (keyword (config/indexing-communication-method))))
-
-(defmethod index-concept-with-method :http
+(defn- index-concept-using-http
+  "TODO"
   [context concept-id revision-id]
   (let [conn (transmit-config/context->app-connection context :indexer)
         indexer-url (transmit-conn/root-url conn)
@@ -99,12 +95,34 @@
                 status
                 response)))))
 
-(defmethod index-concept-with-method :queue
-  [context concept-id revision-id]
-  (let [msg {:action :index-concept
+(defn- enqueue-message
+  "TODO"
+  [context concept-id revision-id action]
+  (let [msg {:action action
              :concept-id concept-id
              :revision-id revision-id}]
     (put-message-on-queue context msg)))
+
+(defmulti index-concept-with-method
+  "Index the concept using an http request or the indexing queue"
+  (fn [context concept-id revision-id]
+    (keyword (config/indexing-communication-method))))
+
+(defmethod index-concept-with-method :http
+  [context concept-id revision-id]
+  (index-concept-using-http context concept-id revision-id))
+
+(defmethod index-concept-with-method :queue
+  [context concept-id revision-id]
+  (enqueue-message context concept-id revision-id :index-concept))
+
+(defmethod index-concept-with-method :queue_with_fallback_to_http
+  [context concept-id revision-id]
+  (try
+    (enqueue-message context concept-id revision-id :index-concept)
+    (catch Exception e
+      (warn "Failed to queue message, will attempt to index concept using http. Exception info: " e)
+      (index-concept-using-http context concept-id revision-id))))
 
 (defmulti delete-from-index-with-method
   "Delete the concpet using an http request or the indexing queue"
@@ -118,10 +136,16 @@
 
 (defmethod delete-from-index-with-method :queue
   [context concept-id revision-id]
-  (let [msg {:action :delete-concept
-             :concept-id concept-id
-             :revision-id revision-id}]
-    (put-message-on-queue context msg)))
+  (enqueue-message context concept-id revision-id :delete-concept))
+
+(defmethod delete-from-index-with-method :queue_with_fallback_to_http
+  [context concept-id revision-id]
+  (try
+    (enqueue-message context concept-id revision-id :delete-concept)
+    (catch Exception e
+      (warn "Failed to queue message, will attempt to delete concept using http. Exception info: " e)
+      (let [delete-url (format "%s/%s" concept-id revision-id)]
+        (delete-from-index-via-http context delete-url)))))
 
 (deftracefn reindex-provider-collections
   "Re-indexes all the collections in the provider"
