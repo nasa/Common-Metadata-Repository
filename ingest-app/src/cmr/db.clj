@@ -11,12 +11,12 @@
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (o/create-user db (ingest-config/db-username) (ingest-config/db-password))))
+    (o/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password))))
 
 (defn drop-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (o/drop-user db (ingest-config/db-username))))
+    (o/drop-user db (ingest-config/ingest-username))))
 
 (defn -main
   "Execute the given database operation specified by input arguments."

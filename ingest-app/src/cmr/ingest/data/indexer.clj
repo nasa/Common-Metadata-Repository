@@ -46,15 +46,14 @@
 
   Returns true if the message was successfully enqueued and false otherwise."
   [queue-broker queue-name msg]
-  (let [message-published? (try
-                             (queue/publish queue-broker queue-name msg)
-                             (catch Exception e
-                               (error e)
-                               false))]
-    (when-not message-published?
-      (warn "Attempt to queue messaged failed. Retrying: " msg)
-      (Thread/sleep 2000)
-      (recur queue-broker queue-name msg))))
+  (when-not (try
+              (queue/publish queue-broker queue-name msg)
+              (catch Exception e
+                (error e)
+                false))
+    (warn "Attempt to queue messaged failed. Retrying: " msg)
+    (Thread/sleep 2000)
+    (recur queue-broker queue-name msg)))
 
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message

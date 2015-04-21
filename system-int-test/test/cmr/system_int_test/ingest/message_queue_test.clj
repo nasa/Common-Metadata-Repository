@@ -138,7 +138,6 @@
       (index-util/set-message-queue-retry-behavior 6)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
         (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
         (assert-not-indexed :collection collection)
@@ -170,12 +169,11 @@
       (let [collection (make-coll 1)]
         ;; Verify ingest received a successful status code
         (is (= 200 (:status collection)))
-        ;; Verify the message queue did not receive the message
-        (is (nil? (index-util/get-concept-message-queue-history)))
-        ;; Verify the collection is in Oracle
         (assert-in-metadata-db collection)
         (index-util/wait-until-indexed)
-        (assert-indexed :collection collection)))))
+        (assert-indexed :collection collection)
+        ;; Verify the message queue did not receive the message
+        (is (nil? (index-util/get-concept-message-queue-history)))))))
 
 (deftest message-queue-fallback-to-http-test
   (s/only-with-real-message-queue
@@ -200,7 +198,7 @@
             (assert-not-indexed :collection collection)
             (assert-not-indexed :granule granule)
 
-            ;; Verify the message queue did not process the delete messages
+            ;; Verify the message queue did not receive the delete messages
             (is (nil? (index-util/get-concept-message-queue-history)))))))))
 
 (comment
