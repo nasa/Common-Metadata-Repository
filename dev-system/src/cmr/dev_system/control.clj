@@ -169,13 +169,13 @@
            :body "Cannot turn message queue fallback on unless using the message queue."}))
 
       (POST "/turn-off-http-fallback" []
-        (debug "Turning on http fallback for message queue")
+        (debug "Turning off http fallback for message queue")
         (if (iconfig/use-index-queue?)
           (do
             (iconfig/set-indexing-communication-method! "queue")
             {:status 200})
           {:status 403
-           :body "Cannot turn message queue fallback on unless using the message queue."}))
+           :body "Cannot turn message queue fallback off unless using the message queue."}))
 
       ;; Used to change the timeout used for queueing messages on the message queue. For tests which
       ;; simulate a timeout error, set the timeout value to 0.
