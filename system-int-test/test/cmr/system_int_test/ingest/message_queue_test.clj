@@ -62,8 +62,7 @@
 (defn- assert-not-indexed
   "Verifies that a given concept is not found when searching"
   [concept-type concept]
-  (is (d/refs-match? []
-                     (search/find-refs concept-type (select-keys concept [:concept-id])))))
+  (is (zero? (:hits (search/find-refs concept-type (select-keys concept [:concept-id]))))))
 
 (defn- assert-in-metadata-db
   "Verifies that all of the provided concepts are stored in metadata-db"
