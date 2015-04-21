@@ -96,8 +96,6 @@
                                             #(when % (lifecycle/start % system))))
                                started-system
                                component-order)]
-
-    (oracle/test-db-connection! (:db started-system))
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (dbs/handle-db-synchronization-requests started-system)

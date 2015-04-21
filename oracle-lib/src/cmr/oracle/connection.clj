@@ -47,15 +47,6 @@
   [oracle-store]
   (hh/get-health #(health-fn oracle-store) 30000))
 
-(defn test-db-connection!
-  "Tests the database connection. Throws an exception if the database is unhealthy."
-  [oracle-store]
-  (let [db-health (health oracle-store)]
-    (when-not (:ok? db-health)
-      (error (str "Could not get successful health from oracle store: "
-                  (db-conn-info-safe-for-logging oracle-store)))
-      (throw (Exception. (:problem db-health))))))
-
 (defn db->oracle-conn
   "Gets an oracle connection from the outer database connection. Should be called from within as
   with-db-transaction block."
@@ -134,9 +125,7 @@
   lifecycle/Lifecycle
 
   (start [this system]
-         (let [this (assoc this :datasource (pool spec))]
-           (test-db-connection! this)
-           this))
+         (assoc this :datasource (pool spec)))
 
   (stop [this system]
 
