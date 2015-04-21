@@ -80,7 +80,7 @@
              (select-keys collection [:concept-id]) :collection [collection]
              (select-keys granule [:concept-id]) :granule [granule])
 
-        ;; Verify retried exactly one time and at the correct retry interval
+        ;; Verify retried exactly one time - (need to manually verify the correct retry interval)
         (is (= {[(:concept-id granule) (:revision-id granule)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}

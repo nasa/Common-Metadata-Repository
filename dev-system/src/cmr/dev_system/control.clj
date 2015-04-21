@@ -159,6 +159,24 @@
             {:status 403
              :body "Cannot set message queue retry behvavior unless using the message queue wrapper."})))
 
+      (POST "/turn-on-http-fallback" []
+        (debug "Turning on http fallback for message queue")
+        (if (iconfig/use-index-queue?)
+          (do
+            (iconfig/set-indexing-communication-method! "queue_with_fallback_to_http")
+            {:status 200})
+          {:status 403
+           :body "Cannot turn message queue fallback on unless using the message queue."}))
+
+      (POST "/turn-off-http-fallback" []
+        (debug "Turning on http fallback for message queue")
+        (if (iconfig/use-index-queue?)
+          (do
+            (iconfig/set-indexing-communication-method! "queue")
+            {:status 200})
+          {:status 403
+           :body "Cannot turn message queue fallback on unless using the message queue."}))
+
       ;; Used to change the timeout used for queueing messages on the message queue. For tests which
       ;; simulate a timeout error, set the timeout value to 0.
       (POST "/set-publish-timeout" {:keys [params]}

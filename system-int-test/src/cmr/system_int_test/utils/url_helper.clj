@@ -38,6 +38,16 @@
   []
   (format "http://localhost:%s/message-queue/set-publish-timeout" dev-system-port))
 
+(defn dev-system-turn-on-message-queue-http-fallback-url
+  "The message queue turn-on-message-queue-http-fallback url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/turn-on-http-fallback" dev-system-port))
+
+(defn dev-system-turn-off-message-queue-http-fallback-url
+  "The message queue turn-off-message-queue-http-fallback url on the dev system control api."
+  []
+  (format "http://localhost:%s/message-queue/turn-off-http-fallback" dev-system-port))
+
 (defn dev-system-reset-url
   "The reset url on the dev system control api."
   []

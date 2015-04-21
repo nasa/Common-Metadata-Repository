@@ -3,6 +3,7 @@
   (:require [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.indexer.config :as config]
+            [cmr.ingest.config :as ingest-config]
             [cmr.system-int-test.utils.queue :as queue]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
@@ -34,6 +35,18 @@
     (url/dev-system-set-message-queue-publish-timeout-url)
     {:connection-manager (s/conn-mgr)
      :query-params {:timeout timeout}}))
+
+(defn turn-on-http-fallback
+  "Turn on http fallback on message enqueue failures."
+  []
+  (client/post
+    (url/dev-system-turn-on-message-queue-http-fallback-url) {:connection-manager (s/conn-mgr)}))
+
+(defn turn-off-http-fallback
+  "Turn off http fallback on message enqueue failures."
+  []
+  (client/post
+    (url/dev-system-turn-off-message-queue-http-fallback-url) {:connection-manager (s/conn-mgr)}))
 
 (defn get-message-queue-history
   "Returns the message queue history."
@@ -73,4 +86,5 @@
       (finally
         (s/only-with-real-message-queue
           (set-message-queue-retry-behavior 0)
-          (set-message-queue-publish-timeout 60000))))))
+          (set-message-queue-publish-timeout 60000)
+          (turn-off-http-fallback))))))
