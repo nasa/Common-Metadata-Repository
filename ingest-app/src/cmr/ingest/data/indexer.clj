@@ -115,10 +115,6 @@
 
 (defmethod index-concept-with-method :queue
   [context concept-id revision-id]
-  (enqueue-message context concept-id revision-id :index-concept))
-
-(defmethod index-concept-with-method :queue_with_fallback_to_http
-  [context concept-id revision-id]
   (try
     (enqueue-message context concept-id revision-id :index-concept)
     (catch Exception e
@@ -136,10 +132,6 @@
     (delete-from-index-via-http context delete-url)))
 
 (defmethod delete-from-index-with-method :queue
-  [context concept-id revision-id]
-  (enqueue-message context concept-id revision-id :delete-concept))
-
-(defmethod delete-from-index-with-method :queue_with_fallback_to_http
   [context concept-id revision-id]
   (try
     (enqueue-message context concept-id revision-id :delete-concept)

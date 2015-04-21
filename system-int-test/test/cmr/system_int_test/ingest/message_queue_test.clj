@@ -13,19 +13,19 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (index-util/reset-message-queue-behavior-fixture)]))
 
-(defn ingest-coll
+(defn- ingest-coll
   "Ingests the collection."
   [coll]
   (d/ingest "PROV1" coll))
 
-(defn make-coll
+(defn- make-coll
   "Creates and ingests a collection using the unique number given."
   [n]
   (ingest-coll (dc/collection {:concept-id (str "C" n "-PROV1")
                                :entry-title (str "ET" n)
                                :native-id (str "ET" n)})))
 
-(defn delete-coll
+(defn- delete-coll
   "Creates a tombstone for the given collection."
   [collection]
   (ingest/delete-concept (assoc collection
@@ -33,25 +33,43 @@
                                 :provider-id "PROV1"
                                 :concept-type :collection)))
 
-(defn ingest-gran
+(defn- ingest-gran
   "Ingests the granule."
   [granule]
   (d/ingest "PROV1" granule))
 
-(defn make-gran
+(defn- make-gran
   "Creates and ingests a granule using the unique number given."
   [coll n]
   (ingest-gran (dg/granule coll {:granule-ur (str "GR" n)
                                  :native-id (str "GR" n)
                                  :concept-id (str "G" n "-PROV1")})))
 
-(defn delete-gran
+(defn- delete-gran
   "Creates a tombstone for the given granule."
   [granule]
   (ingest/delete-concept (assoc granule
                                 :native-id (:granule-ur granule)
                                 :provider-id "PROV1"
                                 :concept-type :granule)))
+
+(defn- assert-indexed
+  "Verifies that a given concept is found when searching"
+  [concept-type concept]
+  (is (d/refs-match? [concept]
+                     (search/find-refs concept-type (select-keys concept [:concept-id])))))
+
+(defn- assert-not-indexed
+  "Verifies that a given concept is not found when searching"
+  [concept-type concept]
+  (is (d/refs-match? []
+                     (search/find-refs concept-type (select-keys concept [:concept-id])))))
+
+(defn- assert-in-metadata-db
+  "Verifies that all of the provided concepts are stored in metadata-db"
+  [& concepts]
+  (doseq [concept concepts]
+    (is (ingest/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))))
 
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue
@@ -98,15 +116,10 @@
       (index-util/set-message-queue-retry-behavior 1)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
-        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
-        ;; Verify the collection and granule are indexed - search returns correct results
-        (are [search concept-type expected]
-             (d/refs-match? expected (search/find-refs concept-type search))
-             (select-keys collection [:concept-id]) :collection [collection]
-             (select-keys granule [:concept-id]) :granule [granule])
+        (assert-indexed :collection collection)
+        (assert-indexed :granule granule)
 
         ;; Verify retried exactly one time - (need to manually verify the correct retry interval)
         (is (= {[(:concept-id granule) (:revision-id granule)]
@@ -126,14 +139,10 @@
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
         ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
-        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
-        ;; Verify the collection and granule are not indexed
-        (are [search concept-type expected]
-             (d/refs-match? expected (search/find-refs concept-type search))
-             (select-keys collection [:concept-id]) :collection []
-             (select-keys granule [:concept-id]) :granule [])
+        (assert-not-indexed :collection collection)
+        (assert-not-indexed :granule granule)
 
         ;; Verify retried five times and then marked as a failure
         (is (= {[(:concept-id granule) (:revision-id granule)]
@@ -156,51 +165,40 @@
 
 (deftest publish-messages-failure-test
   (s/only-with-real-message-queue
-    (testing "Timeouts on putting messages on message queue return 503"
+    (testing "When unable to queue a message on the queue, the concept is indexed via http"
       (index-util/set-message-queue-publish-timeout 0)
-      (let [ingest-result (make-coll 1)]
-        (is (= 503 (:status ingest-result)))
-        (is (= [(str "Request timed out when attempting to publish message: {:action "
-                     ":index-concept, :concept-id \"C1-PROV1\", :revision-id 1}")]
-               (:errors ingest-result))))
-      ;; Verify the collection is in Oracle
-      (is (ingest/concept-exists-in-mdb? "C1-PROV1" 1)))))
+      (let [collection (make-coll 1)]
+        ;; Verify ingest received a successful status code
+        (is (= 200 (:status collection)))
+        ;; Verify the message queue did not receive the message
+        (is (nil? (index-util/get-concept-message-queue-history)))
+        ;; Verify the collection is in Oracle
+        (assert-in-metadata-db collection)
+        (index-util/wait-until-indexed)
+        (assert-indexed :collection collection)))))
 
 (deftest message-queue-fallback-to-http-test
   (s/only-with-real-message-queue
     (testing "Fallback to indexing using http if enqueueing a message fails"
       (index-util/set-message-queue-publish-timeout 0)
-      (index-util/turn-on-http-fallback)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-
-        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
-        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
-
+        (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
+        (assert-indexed :collection collection)
+        (assert-indexed :granule granule)
 
-        ;; Verify the collection and granule are indexed - search returns correct results
-        (are [search concept-type expected]
-             (d/refs-match? expected (search/find-refs concept-type search))
-             (select-keys collection [:concept-id]) :collection [collection]
-             (select-keys granule [:concept-id]) :granule [granule])
-
-        ;; Verify the message queue did not process the messages
+        ;; Verify the message queue did not receive the messages
         (is (nil? (index-util/get-concept-message-queue-history)))
         (testing "Concepts will be deleted via http if enqueuing a message fails"
           (let [delete-granule-response (delete-gran granule)
                 delete-collection-response (delete-coll collection)]
             (is (= 200 (:status delete-collection-response)))
             (is (= 200 (:status delete-granule-response)))
-
             (index-util/wait-until-indexed)
-
             ;; Verify concepts have been removed from the index
-            (are [search concept-type expected]
-                 (d/refs-match? expected (search/find-refs concept-type search))
-                 (select-keys collection [:concept-id]) :collection []
-                 (select-keys granule [:concept-id]) :granule [])
+            (assert-not-indexed :collection collection)
+            (assert-not-indexed :granule granule)
 
             ;; Verify the message queue did not process the delete messages
             (is (nil? (index-util/get-concept-message-queue-history)))))))))

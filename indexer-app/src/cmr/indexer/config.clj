@@ -12,12 +12,10 @@
 
 (defconfig indexing-communication-method
   "Used to determine whether the indexer will expect index requests via http requests or
-  via a message queue. Valid values are \"queue\", \"http\", and \"queue_with_fallback_to_http\""
+  via a message queue. Valid values are \"queue\" and \"http\"."
   {:default "http"})
 
 (defn use-index-queue?
   "Returns true if indexer is configured to use the message queue for indexing and false otherwise."
   []
-  (case (indexing-communication-method)
-    ("queue" "queue_with_fallback_to_http") true
-    false))
+  (= "queue" (indexing-communication-method)))

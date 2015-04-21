@@ -36,18 +36,6 @@
     {:connection-manager (s/conn-mgr)
      :query-params {:timeout timeout}}))
 
-(defn turn-on-http-fallback
-  "Turn on http fallback on message enqueue failures."
-  []
-  (client/post
-    (url/dev-system-turn-on-message-queue-http-fallback-url) {:connection-manager (s/conn-mgr)}))
-
-(defn turn-off-http-fallback
-  "Turn off http fallback on message enqueue failures."
-  []
-  (client/post
-    (url/dev-system-turn-off-message-queue-http-fallback-url) {:connection-manager (s/conn-mgr)}))
-
 (defn get-message-queue-history
   "Returns the message queue history."
   []
@@ -86,5 +74,4 @@
       (finally
         (s/only-with-real-message-queue
           (set-message-queue-retry-behavior 0)
-          (set-message-queue-publish-timeout 10000)
-          (turn-off-http-fallback))))))
+          (set-message-queue-publish-timeout 10000))))))
