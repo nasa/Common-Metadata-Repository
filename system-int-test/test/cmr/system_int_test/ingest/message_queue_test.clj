@@ -26,13 +26,12 @@
                                :native-id (str "ET" n)})))
 
 (defn delete-coll
-  "Creates a tombstone for a collection created with the unique number given."
-  [n]
-  (ingest/delete-concept (assoc (dc/collection {:concept-id (str "C" n "-PROV1")
-                                                :entry-title (str "ET" n)})
-                                               :native-id (str "ET" n)
-                                               :provider-id "PROV1"
-                                               :concept-type :collection)))
+  "Creates a tombstone for the given collection."
+  [collection]
+  (ingest/delete-concept (assoc collection
+                                :native-id (:entry-title collection)
+                                :provider-id "PROV1"
+                                :concept-type :collection)))
 
 (defn ingest-gran
   "Ingests the granule."
@@ -47,13 +46,12 @@
                                  :concept-id (str "G" n "-PROV1")})))
 
 (defn delete-gran
-  "Creates a tombstone for granule created with the unique number given."
-  [coll n]
-  (ingest/delete-concept (assoc (dg/granule coll {:granule-ur (str "GR" n)
-                                                  :concept-id (str "G" n "-PROV1")})
-                                            :native-id (str "GR" n)
-                                            :provider-id "PROV1"
-                                            :concept-type :granule)))
+  "Creates a tombstone for the given granule."
+  [granule]
+  (ingest/delete-concept (assoc granule
+                                :native-id (:granule-ur granule)
+                                :provider-id "PROV1"
+                                :concept-type :granule)))
 
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue
@@ -63,34 +61,35 @@
           coll2-2 (make-coll 2)
           coll2-3 (make-coll 2)
           gran1-1 (make-gran coll1-1 1)
-          delete-granule-response (delete-gran coll1-1 1)
-          delete-collection-response (delete-coll 2)]
+          delete-granule-response (delete-gran gran1-1)
+          delete-collection-response (delete-coll coll2-1)]
+      (is (= 200 (:status delete-granule-response) (:status delete-collection-response)))
       (index-util/wait-until-indexed)
       (testing "Successfully processed index and delete concept messages"
         (is (= {["C2-PROV1" 4]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["G1-PROV1" 2]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["G1-PROV1" 1]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["C2-PROV1" 3]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["C2-PROV1" 2]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["C3-PROV1" 1]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["C2-PROV1" 1]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}],
-           ["C1-PROV1" 1]
-           [{:action "enqueue", :result "initial"}
-            {:action "process", :result "success"}]}
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["G1-PROV1" 2]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["G1-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C2-PROV1" 3]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C2-PROV1" 2]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C3-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C2-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C1-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}]}
                (index-util/get-concept-message-queue-history)))))))
 
 (deftest message-queue-retry-test
@@ -174,14 +173,13 @@
       (index-util/turn-on-http-fallback)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-        (cmr.common.dev.capture-reveal/capture collection)
-        (cmr.common.dev.capture-reveal/capture granule)
 
         ;; Verify the collection and granule are in Oracle - metadata-db find concepts
         (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
         (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
 
         (index-util/wait-until-indexed)
+
         ;; Verify the collection and granule are indexed - search returns correct results
         (are [search concept-type expected]
              (d/refs-match? expected (search/find-refs concept-type search))
@@ -191,23 +189,21 @@
         ;; Verify the message queue did not process the messages
         (is (nil? (index-util/get-concept-message-queue-history)))
         (testing "Concepts will be deleted via http if enqueuing a message fails"
-          (let [delete-granule (delete-gran collection 1)
-                delete-collection (delete-coll 1)]
-            (is (= 200 (:status delete-collection)))
-            (is (= 200 (:status delete-granule)))
+          (let [delete-granule-response (delete-gran granule)
+                delete-collection-response (delete-coll collection)]
+            (is (= 200 (:status delete-collection-response)))
+            (is (= 200 (:status delete-granule-response)))
 
             (index-util/wait-until-indexed)
 
+            ;; Verify concepts have been removed from the index
             (are [search concept-type expected]
                  (d/refs-match? expected (search/find-refs concept-type search))
                  (select-keys collection [:concept-id]) :collection []
                  (select-keys granule [:concept-id]) :granule [])
+
             ;; Verify the message queue did not process the delete messages
             (is (nil? (index-util/get-concept-message-queue-history)))))))))
-
-(comment
-  (cmr.demos.helpers/curl "-H 'Cmr-pretty:true' http://localhost:3003/concepts/C1-PROV1")
-  (cmr.demos.helpers/curl "http://localhost:3003/concepts/G1-PROV1"))
 
 (comment
 

@@ -86,5 +86,5 @@
       (finally
         (s/only-with-real-message-queue
           (set-message-queue-retry-behavior 0)
-          (set-message-queue-publish-timeout 60000)
+          (set-message-queue-publish-timeout 10000)
           (turn-off-http-fallback))))))

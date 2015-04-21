@@ -77,7 +77,7 @@
            e))))))
 
 (defn- index-concept-using-http
-  "TODO"
+  "Calls the indexer to index a concept by using the HTTP API."
   [context concept-id revision-id]
   (let [conn (transmit-config/context->app-connection context :indexer)
         indexer-url (transmit-conn/root-url conn)
@@ -96,7 +96,8 @@
                 response)))))
 
 (defn- enqueue-message
-  "TODO"
+  "Helper function to put a message on the queue for the indexer to process. Valid actions are
+  :index-concept and :delete-concept"
   [context concept-id revision-id action]
   (let [msg {:action action
              :concept-id concept-id
