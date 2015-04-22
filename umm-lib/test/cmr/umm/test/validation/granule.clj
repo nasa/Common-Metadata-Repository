@@ -99,21 +99,21 @@
                                                                    :start-direction :asc
                                                                    :end-lat 50.0
                                                                    :end-direction :desc})})})
-        granule-with-no-geometry (make-granule {:spatial-coverage (g/map->SpatialCoverage {})})]
+        granule-with-no-spatial (make-granule {})]
     (testing "granule spatial does not match with granule spatial representation"
       (are [collection granule expected-errors]
            (= (set (map e/map->PathErrors expected-errors))
               (set (v/validate-granule collection granule)))
 
-           collection-with-geodetic granule-with-no-geometry
+           collection-with-geodetic granule-with-no-spatial
            [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"]}]
 
-           collection-with-orbit granule-with-no-geometry
+           collection-with-orbit granule-with-no-spatial
            [{:path [:spatial-coverage :orbit]
              :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
 
-           collection-with-cartesian granule-with-no-geometry
+           collection-with-cartesian granule-with-no-spatial
            [{:path [:spatial-coverage :geometries]
              :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
 
@@ -153,7 +153,7 @@
 
            collection-with-orbit granule-with-orbit
 
-           collection-with-no-spatial granule-with-no-geometry))))
+           collection-with-no-spatial granule-with-no-spatial))))
 
 (defn granule-with-temporal
   [a b]
