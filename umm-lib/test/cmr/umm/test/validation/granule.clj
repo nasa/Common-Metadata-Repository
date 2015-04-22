@@ -160,54 +160,51 @@
   (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
 
 (deftest granule-temporal-coverage
-  (let [coll-start "2015-01-01T00:00:00Z"
-        coll-end   "2015-01-02T00:00:00Z"
-        coll-range (helpers/range-date-time coll-start coll-end)
-        coll (helpers/coll-with-range-date-times [coll-range])
-        assert-valid #(assert-valid-gran coll %)
-        assert-invalid #(assert-invalid-gran coll %1 [:temporal] [%2])]
+  (let [fn-coll (fn [coll-start coll-end ends-at-present-flag]
+                  (helpers/coll-with-range-date-times
+                    [(helpers/range-date-time coll-start coll-end)] ends-at-present-flag))
+        assert-valid #(assert-valid-gran %1 %2)
+        assert-invalid #(assert-invalid-gran %1 %2 [:temporal] [%3])
+        coll (fn-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
+        coll-ends-at-present (fn-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
+        coll-no-end-date (fn-coll "2015-01-01T00:00:00Z" nil false)]
 
     (testing "Granule with no temporal coverage values is valid"
-      (assert-valid (make-granule {})))
+      (assert-valid coll (make-granule {})))
 
     (testing "Granule with range equal to collection range is valid"
-      (assert-valid (granule-with-temporal coll-start coll-end)))
+      (assert-valid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z")))
 
     (testing "Granule with range inside of collection range is valid"
-      (assert-valid (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
+      (assert-valid coll (granule-with-temporal "2015-01-01T01:00:00Z" "2015-01-01T02:00:00Z")))
 
-    (testing "Granule with no end date and start date within collection range is invalid"
-      (assert-invalid (granule-with-temporal "2015-01-01T01:00:00Z" nil)
-                      "There is no granule end date whereas collection has an end date of [2015-01-02T00:00:00.000Z]"))
+    (testing "Granule with no end date and collection with ends at present flag equal to true is valid"
+      (assert-valid coll-ends-at-present (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
 
-    (assert-invalid (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
+    (testing "Granule with no end date and collection with no end date is valid"
+      (assert-valid coll-no-end-date (granule-with-temporal "2015-01-01T01:00:00Z" nil)))
+
+    (testing "Granule with no end date and collection with an end date and without ends at present flag is invalid"
+      (assert-invalid coll (granule-with-temporal "2015-01-01T01:00:00Z" nil)
+                    "There is no granule end date whereas collection has an end date of [2015-01-02T00:00:00.000Z]"))
+
+    (assert-invalid coll (granule-with-temporal "2015-01-01T02:00:00Z" "2015-01-01T01:00:00Z")
                     "Granule start date [2015-01-01T02:00:00.000Z] is later than granule end date [2015-01-01T01:00:00.000Z].")
 
-    (assert-invalid (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+    (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
                     "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
 
-    (assert-invalid (granule-with-temporal "2014-01-01T00:00:00Z" nil)
+    (assert-invalid coll (granule-with-temporal "2014-01-01T00:00:00Z" nil)
                     "Granule start date [2014-01-01T00:00:00.000Z] is earlier than collection start date [2015-01-01T00:00:00.000Z].")
 
-    (assert-invalid (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
+    (assert-invalid coll (granule-with-temporal "2015-01-01T00:00:00Z" "2015-01-02T01:00:00Z")
                     "Granule end date [2015-01-02T01:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
 
-    (assert-invalid (granule-with-temporal "2015-01-03T00:00:00Z" "2015-01-04T00:00:00Z")
+    (assert-invalid coll (granule-with-temporal "2015-01-03T00:00:00Z" "2015-01-04T00:00:00Z")
                     "Granule start date [2015-01-03T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
 
-    (assert-invalid (granule-with-temporal "2016-01-01T00:00:00Z" nil)
+    (assert-invalid coll (granule-with-temporal "2016-01-01T00:00:00Z" nil)
                     "Granule start date [2016-01-01T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")))
-
-(deftest granule-temporal-with-no-end-date
-  (let [coll-start "2015-01-01T00:00:00Z"
-        coll-end   "2015-01-02T00:00:00Z"
-        range-with-end-date (helpers/range-date-time coll-start coll-end)
-        range-with-no-end-date (helpers/range-date-time coll-start nil)
-        coll-with-ends-at-present (helpers/coll-with-range-date-times [range-with-end-date] true)
-        coll-with-no-end-date (helpers/coll-with-range-date-times [range-with-no-end-date] false)
-        granule-no-temporal (granule-with-temporal "2015-01-01T01:00:00Z" nil)]
-    (assert-valid-gran coll-with-ends-at-present granule-no-temporal)
-    (assert-valid-gran coll-with-no-end-date granule-no-temporal)))
 
 (deftest granule-project-refs
   (let [c1 (c/map->Project {:short-name "C1"})
