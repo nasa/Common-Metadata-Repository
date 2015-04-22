@@ -11,7 +11,7 @@
     (try
     	(h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)"
                    t t))
-    	(h/sql "drop index crdi")
+    	(h/sql (format "drop index %s_crdi" t))
     (catch Exception e))))
 
 (defn down
