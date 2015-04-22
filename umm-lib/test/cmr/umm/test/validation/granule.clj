@@ -160,14 +160,14 @@
   (make-granule {:temporal (g/map->GranuleTemporal {:range-date-time (helpers/range-date-time a b)})}))
 
 (deftest granule-temporal-coverage
-  (let [fn-coll (fn [coll-start coll-end ends-at-present-flag]
-                  (helpers/coll-with-range-date-times
-                    [(helpers/range-date-time coll-start coll-end)] ends-at-present-flag))
+  (let [make-coll (fn [coll-start coll-end ends-at-present-flag]
+                    (helpers/coll-with-range-date-times
+                      [(helpers/range-date-time coll-start coll-end)] ends-at-present-flag))
         assert-valid #(assert-valid-gran %1 %2)
         assert-invalid #(assert-invalid-gran %1 %2 [:temporal] [%3])
-        coll (fn-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
-        coll-ends-at-present (fn-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
-        coll-no-end-date (fn-coll "2015-01-01T00:00:00Z" nil false)]
+        coll (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
+        coll-ends-at-present (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
+        coll-no-end-date (make-coll "2015-01-01T00:00:00Z" nil false)]
 
     (testing "Granule with no temporal coverage values is valid"
       (assert-valid coll (make-granule {})))
