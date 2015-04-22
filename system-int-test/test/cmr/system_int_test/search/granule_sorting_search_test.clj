@@ -138,7 +138,8 @@
   (let [make-coll (fn [provider begin end]
                     (d/ingest provider
                               (dc/collection {:beginning-date-time (d/make-datetime begin)
-                                              :ending-date-time (d/make-datetime end)})))
+                                              :ending-date-time (d/make-datetime end)
+                                              :ends-at-present? true})))
         make-gran (fn [coll begin end]
                     (d/ingest (:provider-id coll)
                               (dg/granule coll {:beginning-date-time (d/make-datetime begin)
