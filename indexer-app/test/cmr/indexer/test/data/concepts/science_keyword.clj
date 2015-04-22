@@ -15,7 +15,7 @@
         collection {:science-keywords [science-keyword1
                                        science-keyword2
                                        science-keyword3]}
-        flattened-science-keywords (sk/flatten-science-keywords collection)]
-    (is (= (count flattened-science-keywords) 5))
-    (is (=  (set flattened-science-keywords)
-           #{"category" "topic" "term" "another-term" "another-topic"}))))
+        actual-keywords (sk/flatten-science-keywords collection)
+        expected-keywords #{"category" "topic" "term" "another-term" "another-topic"}]
+    (is (= (count expected-keywords) (count actual-keywords)))
+    (is (=  expected-keywords (set actual-keywords)))))
