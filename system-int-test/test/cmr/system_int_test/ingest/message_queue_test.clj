@@ -13,26 +13,62 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (index-util/reset-message-queue-behavior-fixture)]))
 
-(defn ingest-coll
+(defn- ingest-coll
   "Ingests the collection."
   [coll]
   (d/ingest "PROV1" coll))
 
-(defn make-coll
+(defn- make-coll
   "Creates and ingests a collection using the unique number given."
   [n]
   (ingest-coll (dc/collection {:concept-id (str "C" n "-PROV1")
-                               :entry-title (str "ET" n)})))
+                               :entry-title (str "ET" n)
+                               :native-id (str "ET" n)})))
 
-(defn ingest-gran
+(defn- delete-coll
+  "Creates a tombstone for the given collection."
+  [collection]
+  (ingest/delete-concept (assoc collection
+                                :native-id (:entry-title collection)
+                                :provider-id "PROV1"
+                                :concept-type :collection)))
+
+(defn- ingest-gran
   "Ingests the granule."
   [granule]
   (d/ingest "PROV1" granule))
 
-(defn make-gran
+(defn- make-gran
   "Creates and ingests a granule using the unique number given."
   [coll n]
-  (ingest-gran (dg/granule coll {:granule-ur (str "GR" n)})))
+  (ingest-gran (dg/granule coll {:granule-ur (str "GR" n)
+                                 :native-id (str "GR" n)
+                                 :concept-id (str "G" n "-PROV1")})))
+
+(defn- delete-gran
+  "Creates a tombstone for the given granule."
+  [granule]
+  (ingest/delete-concept (assoc granule
+                                :native-id (:granule-ur granule)
+                                :provider-id "PROV1"
+                                :concept-type :granule)))
+
+(defn- assert-indexed
+  "Verifies that a given concept is found when searching"
+  [concept-type concept]
+  (is (d/refs-match? [concept]
+                     (search/find-refs concept-type (select-keys concept [:concept-id])))))
+
+(defn- assert-not-indexed
+  "Verifies that a given concept is not found when searching"
+  [concept-type concept]
+  (is (zero? (:hits (search/find-refs concept-type (select-keys concept [:concept-id]))))))
+
+(defn- assert-in-metadata-db
+  "Verifies that all of the provided concepts are stored in metadata-db"
+  [& concepts]
+  (doseq [concept concepts]
+    (is (ingest/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))))
 
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue
@@ -41,25 +77,34 @@
           coll3-1 (make-coll 3)
           coll2-2 (make-coll 2)
           coll2-3 (make-coll 2)
-          gran1-1 (make-gran coll1-1 1)]
+          gran1-1 (make-gran coll1-1 1)
+          delete-granule-response (delete-gran gran1-1)
+          delete-collection-response (delete-coll coll2-1)]
+      (is (= 200 (:status delete-granule-response) (:status delete-collection-response)))
       (index-util/wait-until-indexed)
-      (testing "successfully processed concepts"
-        (is (= {[(:concept-id gran1-1) (:revision-id gran1-1)]
+      (testing "Successfully processed index and delete concept messages"
+        (is (= {["C2-PROV1" 4]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}],
-                [(:concept-id coll2-3) (:revision-id coll2-3)]
+                ["G1-PROV1" 2]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}],
-                [(:concept-id coll2-2) (:revision-id coll2-2)]
+                ["G1-PROV1" 1]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}],
-                [(:concept-id coll3-1) (:revision-id coll3-1)]
+                ["C2-PROV1" 3]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}],
-                [(:concept-id coll2-1) (:revision-id coll2-1)]
+                ["C2-PROV1" 2]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}],
-                [(:concept-id coll1-1) (:revision-id coll1-1)]
+                ["C3-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C2-PROV1" 1]
+                [{:action "enqueue", :result "initial"}
+                 {:action "process", :result "success"}],
+                ["C1-PROV1" 1]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}]}
                (index-util/get-concept-message-queue-history)))))))
@@ -70,17 +115,12 @@
       (index-util/set-message-queue-retry-behavior 1)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
-        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
-        ;; Verify the collection and granule are indexed - search returns correct results
-        (are [search concept-type expected]
-             (d/refs-match? expected (search/find-refs concept-type search))
-             (select-keys collection [:concept-id]) :collection [collection]
-             (select-keys granule [:concept-id]) :granule [granule])
+        (assert-indexed :collection collection)
+        (assert-indexed :granule granule)
 
-        ;; Verify retried exactly one time and at the correct retry interval
+        ;; Verify retried exactly one time - (need to manually verify the correct retry interval)
         (is (= {[(:concept-id granule) (:revision-id granule)]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
@@ -97,15 +137,10 @@
       (index-util/set-message-queue-retry-behavior 6)
       (let [collection (make-coll 1)
             granule (make-gran collection 1)]
-        ;; Verify the collection and granule are in Oracle - metadata-db find concepts
-        (is (ingest/concept-exists-in-mdb? (:concept-id collection) (:revision-id collection)))
-        (is (ingest/concept-exists-in-mdb? (:concept-id granule) (:revision-id granule)))
+        (assert-in-metadata-db collection granule)
         (index-util/wait-until-indexed)
-        ;; Verify the collection and granule are not indexed
-        (are [search concept-type expected]
-             (d/refs-match? expected (search/find-refs concept-type search))
-             (select-keys collection [:concept-id]) :collection []
-             (select-keys granule [:concept-id]) :granule [])
+        (assert-not-indexed :collection collection)
+        (assert-not-indexed :granule granule)
 
         ;; Verify retried five times and then marked as a failure
         (is (= {[(:concept-id granule) (:revision-id granule)]
@@ -128,15 +163,42 @@
 
 (deftest publish-messages-failure-test
   (s/only-with-real-message-queue
-    (testing "Timeouts on putting messages on message queue return 503"
+    (testing "When unable to queue a message on the queue, the concept is indexed via http"
       (index-util/set-message-queue-publish-timeout 0)
-      (let [ingest-result (make-coll 1)]
-        (is (= 503 (:status ingest-result)))
-        (is (= [(str "Request timed out when attempting to publish message: {:action "
-                     ":index-concept, :concept-id \"C1-PROV1\", :revision-id 1}")]
-               (:errors ingest-result))))
-      ;; Verify the collection is in Oracle
-      (is (ingest/concept-exists-in-mdb? "C1-PROV1" 1)))))
+      (let [collection (make-coll 1)]
+        ;; Verify ingest received a successful status code
+        (is (= 200 (:status collection)))
+        (assert-in-metadata-db collection)
+        (index-util/wait-until-indexed)
+        (assert-indexed :collection collection)
+        ;; Verify the message queue did not receive the message
+        (is (nil? (index-util/get-concept-message-queue-history)))))))
+
+(deftest message-queue-fallback-to-http-test
+  (s/only-with-real-message-queue
+    (testing "Fallback to indexing using http if enqueueing a message fails"
+      (index-util/set-message-queue-publish-timeout 0)
+      (let [collection (make-coll 1)
+            granule (make-gran collection 1)]
+        (assert-in-metadata-db collection granule)
+        (index-util/wait-until-indexed)
+        (assert-indexed :collection collection)
+        (assert-indexed :granule granule)
+
+        ;; Verify the message queue did not receive the messages
+        (is (nil? (index-util/get-concept-message-queue-history)))
+        (testing "Concepts will be deleted via http if enqueuing a message fails"
+          (let [delete-granule-response (delete-gran granule)
+                delete-collection-response (delete-coll collection)]
+            (is (= 200 (:status delete-collection-response)))
+            (is (= 200 (:status delete-granule-response)))
+            (index-util/wait-until-indexed)
+            ;; Verify concepts have been removed from the index
+            (assert-not-indexed :collection collection)
+            (assert-not-indexed :granule granule)
+
+            ;; Verify the message queue did not receive the delete messages
+            (is (nil? (index-util/get-concept-message-queue-history)))))))))
 
 (comment
 
@@ -166,18 +228,18 @@
   ;;      sudo service rabbitmq-server restart
   ;; 5.) Attempt to ingest the collection
   (cmr.demos.helpers/curl "-XPUT -H 'Content-Type:application/echo10+xml' http://localhost:3002/providers/PROV1/collections/example_coll -d"
-        "<Collection>
-           <ShortName>ShortName_Larc</ShortName>
-           <VersionId>Version01</VersionId>
-           <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-           <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-           <DeleteTime>2015-05-23T22:30:59</DeleteTime>
-           <LongName>LarcLongName</LongName>
-           <DataSetId>LarcDatasetId</DataSetId>
-           <Description>A minimal valid collection</Description>
-           <Orderable>true</Orderable>
-           <Visible>true</Visible>
-        </Collection>")
+                          "<Collection>
+                          <ShortName>ShortName_Larc</ShortName>
+                          <VersionId>Version01</VersionId>
+                          <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+                          <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+                          <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+                          <LongName>LarcLongName</LongName>
+                          <DataSetId>LarcDatasetId</DataSetId>
+                          <Description>A minimal valid collection</Description>
+                          <Orderable>true</Orderable>
+                          <Visible>true</Visible>
+                          </Collection>")
   ;; 6.) Verify that after 10 seconds a 503 is returned with an error message indicating a timeout
   ;; 7.) Switch the config file back
   ;;       sudo cp /etc/rabbitmq/rabbitmq.config /etc/rabbitmq/rabbitmq.config.orig
@@ -191,18 +253,18 @@
   ;;      sudo service rabbitmq-server stop
   ;; 2.) Attempt to ingest the collection
   (cmr.demos.helpers/curl "-XPUT -H 'Content-Type:application/echo10+xml' http://localhost:3002/providers/PROV1/collections/example_coll -d"
-      "<Collection>
-         <ShortName>ShortName_Larc</ShortName>
-         <VersionId>Version01</VersionId>
-         <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-         <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-         <DeleteTime>2015-05-23T22:30:59</DeleteTime>
-         <LongName>LarcLongName</LongName>
-         <DataSetId>LarcDatasetId</DataSetId>
-         <Description>A minimal valid collection</Description>
-         <Orderable>true</Orderable>
-         <Visible>true</Visible>
-      </Collection>")
+                          "<Collection>
+                          <ShortName>ShortName_Larc</ShortName>
+                          <VersionId>Version01</VersionId>
+                          <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+                          <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+                          <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+                          <LongName>LarcLongName</LongName>
+                          <DataSetId>LarcDatasetId</DataSetId>
+                          <Description>A minimal valid collection</Description>
+                          <Orderable>true</Orderable>
+                          <Visible>true</Visible>
+                          </Collection>")
   ;; 3.) Verify that after 10 seconds a 503 is returned with an error message indicating it was
   ;; unable to queue a message
   ;; 4.) Bring RabbitMQ back up
@@ -221,7 +283,7 @@
   (cmr.demos.helpers/curl "http://localhost:3003/collections.xml?page_size=0")
   ;; 4.) Ingest a bunch of collections - note you will want to be ready to restart things quickly
   (doseq [_ (range 150)]
-      (ingest/ingest-concept (dc/collection-concept {})))
+    (ingest/ingest-concept (dc/collection-concept {})))
   ;; 5.) You can monitor the queues at http://localhost:15672/#/queues to see that there are some
   ;; messages on the various queues. You can adjust the sleep time to longer in step #1 if you
   ;; do not see messages on all of the queues.

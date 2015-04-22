@@ -4,11 +4,13 @@
             [cmr.oracle.config :as oracle-config]
             [cmr.oracle.connection :as conn]))
 
-(def db-username
-  (cfg/config-value-fn :ingest-username "CMR_INGEST"))
+(defconfig ingest-username
+  "Ingest database username"
+  {***REMOVED***})
 
-(def db-password
-  (cfg/config-value-fn :ingest-password "CMR_INGEST"))
+(defconfig ingest-password
+  "Ingest database password"
+  {***REMOVED***})
 
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
@@ -18,22 +20,25 @@
     (oracle-config/db-url)
     (oracle-config/db-fcf-enabled)
     (oracle-config/db-ons-config)
-    (db-username)
-    (db-password)))
+    (ingest-username)
+    (ingest-password)))
 
-(def index-queue-name
+(defconfig index-queue-name
   "Queue used for requesting indexing of concepts"
-  (cfg/config-value-fn :index-queue-name "cmr_index.queue"))
+  {:default "cmr_index.queue"})
 
-(def indexing-communication-method
-  "Either \"http\" or \"queue\""
-  (cfg/config-value-fn :indexing-communication-method "http"))
+(defconfig indexing-communication-method
+  "Used to determine whether the ingest will queue messages asynchronously for the indexer, or will
+  synchronously send http requests to the indexer to index concepts. Valid values are \"queue\"
+  and \"http\"."
+  {:default "http"})
 
-(def use-index-queue?
-  "Boolean flag indicating whether or not to use the message queue for indexing"
-  #(= "queue" (indexing-communication-method)))
+(defn use-index-queue?
+  "Returns true if ingest is configured to use the message queue for indexing and false otherwise."
+  []
+  (= "queue" (indexing-communication-method)))
 
 (defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
-  {:default 60000 :type Long})
+  {:default 10000 :type Long})
