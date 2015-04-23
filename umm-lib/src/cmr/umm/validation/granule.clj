@@ -158,6 +158,9 @@
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 
+    (and coll-end (nil? gran-end))
+    (format "There is no granule end date whereas collection has an end date of [%s]" coll-end)
+
     (and gran-end (t/after? gran-start gran-end))
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
