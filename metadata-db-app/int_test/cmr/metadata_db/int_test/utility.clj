@@ -81,9 +81,7 @@
                   :deleted false
                   :extra-fields {:parent-collection-id parent-collection-id
                                  :delete-time nil
-                                 ;; TODO Uncomment when adding granule-ur for CMR-1239
-                                 ; :granule-ur (str "granule-ur " uniq-num)
-                                 }}]
+                                 :granule-ur (str "granule-ur " uniq-num)}}]
      (update-in (merge granule main-attributes) [:extra-fields] merge extra-fields))))
 
 (defn- parse-concept

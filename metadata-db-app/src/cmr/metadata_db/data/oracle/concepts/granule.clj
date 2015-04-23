@@ -13,12 +13,13 @@
           (assoc-in [:extra-fields :parent-collection-id] (:parent_collection_id result))
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
-                      (c/oracle-timestamp->str-time db (:delete_time result))))))
+                      (c/oracle-timestamp->str-time db (:delete_time result))))
+          (assoc-in [:extra-fields :granule-ur] (:granule_ur result))))
 
 (defmethod c/concept->insert-args :granule
   [concept]
-  (let [{{:keys [parent-collection-id delete-time]} :extra-fields} concept
+  (let [{{:keys [parent-collection-id delete-time granule-ur]} :extra-fields} concept
         [cols values] (c/concept->insert-args (assoc concept :concept-type :default))
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime  delete-time)))]
-    [(concat cols ["parent_collection_id" "delete_time"])
-     (concat values [parent-collection-id delete-time])]))
+    [(concat cols ["parent_collection_id" "delete_time" "granule_ur"])
+     (concat values [parent-collection-id delete-time granule-ur])]))

@@ -205,7 +205,8 @@
      :format "application/echo10+xml"
      :native-id "granule ur"
      :extra-fields {:parent-collection-id "C1-JPROV"
-                    :delete-time "2014-05-05T00:00:00Z"}})
+                    :delete-time "2014-05-05T00:00:00Z"
+                    :granule-ur "granule ur"}})
 
 
   (insert-concept system example-collection)
