@@ -11,7 +11,7 @@
     (h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)"))
     (h/sql (format "drop index %s_crdi" t))))
 (defn down
-  "Migrates the database down from vedrsion 12."
+  "Migrates the database down from version 12."
   []
   (println "migrations.012-add-granule-index-with-revision-date down...")
   (doseq [t (h/get-granule-tablenames)]
