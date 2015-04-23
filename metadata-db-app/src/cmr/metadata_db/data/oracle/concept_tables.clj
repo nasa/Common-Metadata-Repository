@@ -95,6 +95,7 @@
                                    revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                    deleted INTEGER DEFAULT 0 NOT NULL,
                                    delete_time TIMESTAMP WITH TIME ZONE,
+                                   granule_ur VARCHAR(250) NOT NULL,
                                    CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                                    ;; Unique constraint on native id and revision id
@@ -137,7 +138,8 @@
     (j/db-do-commands
       db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
                  table-name
-                 table-name))))
+                 table-name))
+    (j/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name))))
 
 
 (defn create-provider-concept-tables
