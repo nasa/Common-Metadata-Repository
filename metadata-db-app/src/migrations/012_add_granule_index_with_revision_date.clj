@@ -8,7 +8,7 @@
   []
   (println "migrations.012-add-granule-index-with-revision-date up...")
   (doseq [t (h/get-granule-tablenames)]
-    (h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)"))
+    (h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)" t t))
     (h/sql (format "drop index %s_crdi" t))))
 
 (defn down
@@ -16,5 +16,5 @@
   []
   (println "migrations.012-add-granule-index-with-revision-date down...")
   (doseq [t (h/get-granule-tablenames)]
-    (h/sql (format "create index %s_crdi on %s (concept_id, revision_id, deleted, delete_time)"))
+    (h/sql (format "create index %s_crdi on %s (concept_id, revision_id, deleted, delete_time)" t t))
     (h/sql (format "drop index %s_crddr" t))))
