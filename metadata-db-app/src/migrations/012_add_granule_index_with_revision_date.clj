@@ -8,12 +8,8 @@
   []
   (println "migrations.012-add-granule-index-with-revision-date up...")
   (doseq [t (h/get-granule-tablenames)]
-    (try
-    	(h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)"
-                   t t))
-    	(h/sql (format "drop index %s_crdi" t))
-    (catch Exception e))))
-
+    (h/sql (format "create index %s_crddr on %s (concept_id, revision_id, deleted, delete_time, revision_date)"))
+    (h/sql (format "drop index %s_crdi" t))))
 (defn down
   "Migrates the database down from vedrsion 12."
   []
