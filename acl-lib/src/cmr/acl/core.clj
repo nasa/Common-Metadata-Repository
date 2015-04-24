@@ -119,15 +119,18 @@
   ([context permission-type]
    (verify-ingest-management-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
-   (let [cache-key [(:token context) permission-type]
-         has-permission? (cache/get-value
-                           (cache/context->cache context token-imp-cache-key)
-                           cache-key
-                           #(has-ingest-management-permission? context
-                                                               permission-type
-                                                               object-identity-type
-                                                               provider-id))]
+   (let [has-permission-fn #(has-ingest-management-permission?
+                              context permission-type object-identity-type provider-id)
+         has-permission? (if-let [cache (cache/context->cache context token-imp-cache-key)]
+                           ;; Read using cache. Cache key is combo of token and permission type
+                           (cache/get-value
+                             cache [(:token context) permission-type] has-permission-fn)
+                           ;; No token cache so directly check permission.
+                           (has-permission-fn))]
      (when-not has-permission?
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
+
+
+
