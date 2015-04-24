@@ -1,8 +1,8 @@
 (ns cmr.acl.acl-fetcher
   "Provides functions to easily fetch ACLs from ECHO. It has the ability to use an acl cache if one
   is configured in the system. If the acl cache is used the job defined in this namespace should be
-  used to keep the acls freash.This keeps ACLs fresh available instantly for callers without any
-  caller having to pay the price to fetch the acls."
+  used to keep the acls fresh. By using the cache and background job, ACLs will always be available
+  for callers without any"
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [defjob]]
@@ -20,7 +20,7 @@
   "Creates the acl cache using the given cmr cache protocol implementation and object-identity-types.
   The object-identity-types are specified and stored as extra information in the cache so that when
   fetching acls later we will always pull and retrieve all of the ACLs needed for the application.
-  Otherwise we might pull a subset and put in the cache and it would look like and subsequent cache
+  Otherwise we might pull a subset and put in the cache and it would look like to subsequent cache
   actions that acls with other object-identity-types didn't exist."
   [cache-impl object-identity-types]
   ;; Instead of creating a new map to hold this information that would have to implement the cache
@@ -72,6 +72,9 @@
 
     ;; No cache is configured. Directly fetch the acls.
     (echo-acls/get-acls-by-types context object-identity-types)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Job for refreshing ACLs in the cache.
 
 (defjob RefreshAclCacheJob
   [ctx system]

@@ -8,7 +8,7 @@
             [clojure.string :as str]
             [camel-snake-kebab.core :as csk]))
 
-(defn lookup-provider-id
+(defn- lookup-provider-id
   "Fetches the provider id associated with a specific provider guid. If the provider does not exist
   in echo it will throw an internal error."
   [provider-guid-id-map provider-guid]
