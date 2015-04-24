@@ -11,7 +11,7 @@
   [field]
   (fn [db concept]
     (let [field-value (get-in concept [:extra-fields field])]
-      (let [concepts (->> (c/find-latest-concepts db {:concept-type :collection
+      (let [concepts (->> (c/find-latest-concepts db {:concept-type (:concept-type concept)
                                                       :provider-id (:provider-id concept)
                                                       field field-value})
                           ;; Remove tombstones from the list of concepts
@@ -33,7 +33,8 @@
 (def concept-type->constraints
   "Maps concept type to a list of constraint functions to run."
   {:collection [(unique-field-constraint :entry-title)
-                (unique-field-constraint :entry-id)]})
+                (unique-field-constraint :entry-id)]
+   :granule [(unique-field-constraint :granule-ur)]})
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if

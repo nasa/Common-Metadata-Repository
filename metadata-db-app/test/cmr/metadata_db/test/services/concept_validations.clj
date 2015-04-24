@@ -18,7 +18,8 @@
    :native-id "foo"
    :provider-id "PROV1"
    :concept-type :granule
-   :extra-fields {:parent-collection-id "C1-PROV1"}})
+   :extra-fields {:parent-collection-id "C1-PROV1"
+                  :granule-ur "GR-UR"}})
 
 
 (deftest find-params-validation-test

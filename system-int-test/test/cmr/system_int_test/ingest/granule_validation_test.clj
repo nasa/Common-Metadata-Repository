@@ -345,21 +345,20 @@
 (deftest missing-spatial-coverage-test
   (let [collection-attrs {:spatial-coverage {:granule-spatial-representation :geodetic}}
         granule-attrs {:format "application/echo10+xml; charset=utf-8"}]
-        (assert-invalid collection-attrs
-                        granule-attrs
-                        ["SpatialCoverage" "Geometries"]
-                        ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
+    (assert-invalid collection-attrs
+                    granule-attrs
+                    ["SpatialCoverage" "Geometries"]
+                    ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
 
-;; TODO uncomment this test when implementing CMR-1239
-#_(deftest duplicate-granule-ur-test
-    (testing "same granule-ur and native-id across providers is valid"
-      (assert-valid
-        {}
-        {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"})
-      (assert-valid
-        {}
-        {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
-    (testing "granule-ur must be unique for a provider"
-      (assert-conflict
-        {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
-        ["The Granule Ur [UR-1] must be unique. The following concepts with the same entry title were found: [G1-PROV1]."])))
+(deftest duplicate-granule-ur-test
+  (testing "same granule-ur and native-id across providers is valid"
+    (assert-valid
+      {}
+      {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"})
+    (assert-valid
+      {}
+      {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+  (testing "granule-ur must be unique for a provider"
+    (assert-conflict
+      {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}
+      ["The Granule Ur [UR-1] must be unique. The following concepts with the same granule ur were found: [G1-PROV1]."])))

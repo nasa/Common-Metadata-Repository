@@ -150,7 +150,7 @@
                (select-keys response [:status :errors])))))
 
     (testing "with incorrect concept id matching another concept"
-      (let [granule2 (util/granule-concept "PROV1" parent-collection-id 1
+      (let [granule2 (util/granule-concept "PROV1" parent-collection-id 2
                                            {:concept-id "G11-PROV1"
                                             :native-id "native2"})
             _ (is (= 201 (:status (util/save-concept granule2))))
@@ -205,8 +205,7 @@
         (is (= [existing-collection]
                (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
 
-;; TODO Uncomment this test when implementing CMR-1239
-#_(deftest save-granule-post-commit-constraint-violations
+(deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
     (let [collection (util/collection-concept "PROV1" 1)
           parent-collection-id (:concept-id (util/save-concept collection))
