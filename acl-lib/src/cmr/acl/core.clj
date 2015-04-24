@@ -1,7 +1,7 @@
 (ns cmr.acl.core
   "Contains code for retrieving and manipulating ACLs."
   (:require [cmr.common.services.errors :as errors]
-            [cmr.acl.acl-cache :as acl-cache]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.acl.collection-matchers :as cm]
@@ -71,7 +71,7 @@
   this collection"
   [context provider-id coll]
 
-  (->> (acl-cache/get-acls context)
+  (->> (acl-fetcher/get-acls context [:catalog-item])
        ;; Find only acls that are applicable to this collection
        (filter (partial cm/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
@@ -95,19 +95,14 @@
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
-(def object-identity-type->acl-key
-  {"CATALOG_ITEM" :catalog-item-identity
-   "SYSTEM_OBJECT" :system-object-identity
-   "PROVIDER_OBJECT" :provider-object-identity})
-
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
-  (->> (echo-acls/get-acls-by-type context object-identity-type provider-id)
+  (->> (acl-fetcher/get-acls context [object-identity-type])
        ;; Find acls on INGEST_MANAGEMENT
        (filter (comp (partial = "INGEST_MANAGEMENT_ACL")
-                     :target (object-identity-type->acl-key object-identity-type)))
+                     :target (echo-acls/acl-type->acl-key object-identity-type)))
        ;; Find acls for this user and permission type
        (filter (partial acl-matches-sids-and-permission?
                         (context->sids context)
@@ -117,9 +112,9 @@
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"
   ([context]
-   (verify-ingest-management-permission context :update "SYSTEM_OBJECT" nil))
+   (verify-ingest-management-permission context :update :system-object nil))
   ([context permission-type]
-   (verify-ingest-management-permission context permission-type "SYSTEM_OBJECT" nil))
+   (verify-ingest-management-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
    (let [cache-key [(:token context) permission-type]
          has-permission? (cache/get-value
@@ -133,6 +128,3 @@
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
-
-(comment
-  (def context {:system (get-in user/system [:apps :ingest])}))

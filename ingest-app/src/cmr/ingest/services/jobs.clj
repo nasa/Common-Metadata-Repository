@@ -29,7 +29,7 @@
   [context]
   (let [providers (mdb/get-providers context)
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))]
+                                         (echo-acls/get-acls-by-types context [:catalog-item]))]
     (info "Reindexing collections in all providers:" (pr-str providers))
     (indexer/reindex-provider-collections context providers)
 
@@ -42,7 +42,7 @@
   (let [providers (mdb/get-providers context)
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (echo-acls/get-acls-by-type context "CATALOG_ITEM"))
+                                         (echo-acls/get-acls-by-types context [:catalog-item]))
         providers-requiring-reindex (filter (fn [provider-id]
                                               (not= (get current-provider-id-acl-hashes provider-id)
                                                     (get provider-id-acl-hashes provider-id)))

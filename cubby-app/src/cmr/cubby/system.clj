@@ -10,6 +10,7 @@
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
             [cmr.acl.core :as acl]
+            [cmr.common.cache.non-caching-cache :as nc]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
             [cmr.transmit.config :as transmit-config]))
 
@@ -34,7 +35,9 @@
   (let [sys {:log (log/create-logger)
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (cubby-port) routes/make-api)
-             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
+             ;; Cubby has to work with ACL APIs but will not cache anything. It only applies ACLs
+             ;; to the reset endpoint which won't be invoked frequently.
+             :caches {acl/token-imp-cache-key nc/non-caching-cache}
              :relative-root-url (cubby-relative-root-url)
              :zipkin (context/zipkin-config "cubby" false)}]
     (transmit-config/system-with-connections sys [:echo-rest])))

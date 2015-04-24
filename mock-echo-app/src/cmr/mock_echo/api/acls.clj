@@ -5,7 +5,8 @@
             [cmr.mock-echo.data.acl-db :as acl-db]
             [cmr.mock-echo.api.api-helpers :as ah]
             [cmr.common.services.errors :as svc-errors]
-            [cmr.mock-echo.data.provider-db :as p-db]))
+            [cmr.mock-echo.data.provider-db :as p-db]
+            [clojure.string :as str]))
 
 (defn create-acl
   [context body]
@@ -28,13 +29,17 @@
       :bad-request
       "Mock ECHO does not currently support retrieving acls as references"))
 
-  (let [acl-key (object-identity-type->acl-key (:object_identity_type params))
+  (let [acl-keys (map object-identity-type->acl-key (str/split (:object_identity_type params) #","))
         provider-id (:provider_id params)]
     (if provider-id
       (when-let [provider-guid (p-db/provider-id->provider-guid context provider-id)]
-        (filter #(= (get-in % [:acl acl-key :provider_guid]) provider-guid)
-                (acl-db/get-acls context)))
-      (filter #(get-in % [:acl acl-key]) (acl-db/get-acls context)))))
+        (filter (fn [acl]
+                  (some #(= (get-in acl [:acl % :provider_guid]) provider-guid)
+                        acl-keys)
+                  (acl-db/get-acls context))))
+      (filter (fn [acl]
+                (some #(get-in acl [:acl %]) acl-keys))
+              (acl-db/get-acls context)))))
 
 (defn delete-acl
   [context guid]

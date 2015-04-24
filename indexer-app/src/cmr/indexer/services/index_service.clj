@@ -18,7 +18,7 @@
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.indexer.config :as config]
-            [cmr.acl.acl-cache :as acl-cache]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
@@ -55,7 +55,7 @@
 
   ;; Refresh the ACL cache.
   ;; We want the latest permitted groups to be indexed with the collections
-  (acl-cache/refresh-acl-cache context)
+  (acl-fetcher/refresh-acl-cache context)
 
   (doseq [provider-id provider-ids]
     (let [collections (->> (meta-db/find-collections context {:provider-id provider-id})

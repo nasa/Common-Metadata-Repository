@@ -115,7 +115,7 @@
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
+                context :update :provider-object provider-id)
               (r/response
                 (ingest/save-concept
                   request-context
@@ -126,7 +126,7 @@
                                    :concept-type :collection}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
+                context :update :provider-object provider-id)
 
               (r/response (ingest/delete-concept request-context concept-attribs)))))
 
@@ -139,7 +139,7 @@
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
+                context :update :provider-object provider-id)
               (r/response
                 (ingest/save-concept
                   request-context
@@ -150,7 +150,7 @@
                                    :concept-type :granule}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
+                context :update :provider-object provider-id)
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
