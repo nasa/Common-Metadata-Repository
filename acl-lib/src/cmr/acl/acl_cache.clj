@@ -1,44 +1,14 @@
 (ns cmr.acl.acl-cache
-  "Maintains an in-memory local cache of ACLs that is refreshed via a background job. This keeps
-  ACLs fresh available instantly for callers without any caller having to pay the price to fetch
-  the acls."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.time-keeper :as tk]
-            [cmr.common.jobs :refer [defjob]]
-            [cmr.transmit.echo.acls :as echo-acls]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]))
+  "Deprecated namespace. This is kept around only for allowing the RefreshAclCacheJob to be moved
+  to the acl-fetcher namespace."
+  (:require [cmr.common.jobs :refer [defjob]]))
 
-(def acl-cache-key
-  "The key used to store the acl cache in the system cache map."
-  :acls)
 
-(defn refresh-acl-cache
-  "Refreshes the acls stored in the cache. This should be called from a background job on a timer
-  to keep the cache fresh. This will throw an exception if there is a problem fetching ACLs. The
-  caller is responsible for catching and logging the exception."
-  [context]
-  (let [acl-cache (cache/context->cache context acl-cache-key)
-        updated-acls (echo-acls/get-acls-by-type context "CATALOG_ITEM")]
-    (cache/set-value acl-cache :acls updated-acls)))
-
-(defn get-acls
-  "Gets the current cached acls."
-  [context]
-  (let [acl-cache (cache/context->cache context acl-cache-key)]
-    (cache/get-value
-      acl-cache
-      :acls
-      (fn []
-        (echo-acls/get-acls-by-type context "CATALOG_ITEM")))))
-
+;; Quartz puts the full classpath of jobs into the database. If the class isn't available in the
+;; application you can't unschedule or delete the job. This is here to allow the application to
+;; startup and reschedule the job. That will remove the reference to this class and then it can
+;; be removed in a subsequent release.
+;; TODO remove this namespace in sprint 25.
 (defjob RefreshAclCacheJob
-  [ctx system]
-  (refresh-acl-cache {:system system}))
-
-(defn refresh-acl-cache-job
-  [job-key]
-  {:job-type RefreshAclCacheJob
-   :job-key job-key
-   :interval 3600})
-
+  [_ _]
+  (throw (Exception. "Old version of RefreshAclCacheJob is running when it shouldn't be.")))

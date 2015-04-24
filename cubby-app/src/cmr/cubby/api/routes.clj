@@ -90,7 +90,6 @@
   (routes
     (context (:relative-root-url system) []
       admin-routes
-      common-routes/cache-api-routes
       (common-routes/health-api-routes health)
       key-routes)
     (route/not-found "Not Found")))

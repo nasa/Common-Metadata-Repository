@@ -63,14 +63,10 @@
             [cmr.search.services.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
-            [cmr.search.services.acls.acl-helper :as ah]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
-            [cmr.common.cache :as cache]
-            [cmr.acl.acl-cache :as acl-cache]
-            [cmr.search.services.acls.collections-cache :as coll-cache]
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as s]
@@ -241,7 +237,7 @@
   (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
 
 (deftracefn find-tiles-by-geometry
-  "Gets all the tile coordinates for the given input parameters. The function returns all the tile 
+  "Gets all the tile coordinates for the given input parameters. The function returns all the tile
   coordinates if the input parameters does not include any spatial parameters"
   [context params]
   (let [spatial-params (->> params

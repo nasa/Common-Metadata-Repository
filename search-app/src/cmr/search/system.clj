@@ -5,7 +5,7 @@
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]
-            [cmr.acl.acl-cache :as ac]
+            [cmr.acl.acl-fetcher :as af]
             [cmr.acl.core :as acl]
             [cmr.common.jobs :as jobs]
             [cmr.search.api.routes :as routes]
@@ -68,7 +68,9 @@
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
-                      ac/acl-cache-key (mem-cache/create-in-memory-cache)
+                      af/acl-cache-key (af/create-acl-cache
+                                         (mem-cache/create-in-memory-cache)
+                                         [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)
@@ -80,7 +82,7 @@
              :scheduler (jobs/create-scheduler
                           `system-holder
                           :db
-                          [(ac/refresh-acl-cache-job "search-acl-cache-refresh")
+                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
     (transmit-config/system-with-connections sys [:index-set :echo-rest])))
