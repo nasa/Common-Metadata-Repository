@@ -119,9 +119,10 @@
   (let [granule-echo-table (mu/catalog-rest-table system provider-id :granule)
         granule-mdb-table (mu/metadata-db-concept-table system provider-id :granule)
         stmt (format (str "INSERT INTO %s (id, concept_id, native_id, parent_collection_id, "
-                          "metadata, format, delete_time, revision_date) "
+                          "metadata, format, delete_time, revision_date, granule_ur) "
                           "SELECT %s_seq.NEXTVAL, echo_granule_id, granule_ur, '%s', "
-                          "compressed_xml, xml_mime_type, delete_time, ingest_updated_at "
+                          "compressed_xml, xml_mime_type, delete_time, ingest_updated_at, "
+                          "granule_ur "
                           "FROM %s WHERE dataset_record_id = %d and %s")
                      granule-mdb-table
                      granule-mdb-table

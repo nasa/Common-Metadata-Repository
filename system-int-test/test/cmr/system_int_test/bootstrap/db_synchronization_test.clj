@@ -114,7 +114,8 @@
      :revision-id 1
      :deleted false
      :extra-fields {:parent-collection-id (:concept-id collection-concept)
-                    :delete-time nil}
+                    :delete-time nil
+                    :granule-ur granule-ur}
      :provider-id provider-id
      :native-id granule-ur}))
 
@@ -135,7 +136,8 @@
      :revision-id 1
      :deleted false
      :extra-fields {:parent-collection-id (:concept-id collection-concept)
-                    :delete-time "2000-01-01T12:00:00Z"}
+                    :delete-time "2000-01-01T12:00:00Z"
+                    :granule-ur granule-ur}
      :provider-id provider-id
      :native-id granule-ur}))
 
