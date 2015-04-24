@@ -99,15 +99,18 @@
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
-  (->> (acl-fetcher/get-acls context [object-identity-type])
-       ;; Find acls on INGEST_MANAGEMENT
-       (filter (comp (partial = "INGEST_MANAGEMENT_ACL")
-                     :target (echo-acls/acl-type->acl-key object-identity-type)))
-       ;; Find acls for this user and permission type
-       (filter (partial acl-matches-sids-and-permission?
-                        (context->sids context)
-                        permission-type))
-       seq))
+  (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+    (->> (acl-fetcher/get-acls context [object-identity-type])
+         ;; Find acls on INGEST_MANAGEMENT
+         (filter #(= "INGEST_MANAGEMENT_ACL" (get-in % [acl-oit-key :target])))
+         ;; Find acls for this user and permission type
+         (filter (partial acl-matches-sids-and-permission?
+                          (context->sids context)
+                          permission-type))
+         ;; Find acls for this provider
+         (filter #(or (nil? provider-id)
+                      (= provider-id (get-in % [acl-oit-key :provider-id]))))
+         seq)))
 
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"

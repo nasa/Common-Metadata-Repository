@@ -8,13 +8,22 @@
             [clojure.string :as str]
             [camel-snake-kebab.core :as csk]))
 
+(defn lookup-provider-id
+  "Fetches the provider id associated with a specific provider guid. If the provider does not exist
+  in echo it will throw an internal error."
+  [provider-guid-id-map provider-guid]
+  (or (provider-guid-id-map provider-guid)
+      (errors/internal-error! (format "Could not find ECHO provider associated with provider guid %s"
+                                      provider-guid))))
+
 (defn- convert-provider-guid-to-id-in-acl
   "Change all provider-guid references to provider-id for the given ACL. This simplifies working
   with ACLs since provider ids are commonly used throughout the code."
   [provider-guid-id-map acl]
   (let [converter (fn [identity-map]
                     (some-> identity-map
-                            (assoc :provider-id (provider-guid-id-map (:provider-guid identity-map)))
+                            (assoc :provider-id (lookup-provider-id provider-guid-id-map
+                                                                    (:provider-guid identity-map)))
                             (dissoc :provider-guid)))]
     (-> acl
         (update-in [:catalog-item-identity] converter)
