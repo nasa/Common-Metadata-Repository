@@ -8,7 +8,11 @@
   "Applies the sql update"
   [stmt-str]
   (println "Applying update" stmt-str)
-  (j/db-do-commands (config/db) stmt-str))
+  (let [start-time (System/currentTimeMillis)]
+    (j/db-do-commands (config/db) stmt-str)
+    (println (format "Finished update %s in [%s] ms."
+                     stmt-str
+                     (- (System/currentTimeMillis) start-time)))))
 
 (defn get-provider-ids
   "Gets a list of the provider ids in the database. Primarily for enabling migrations of existing
