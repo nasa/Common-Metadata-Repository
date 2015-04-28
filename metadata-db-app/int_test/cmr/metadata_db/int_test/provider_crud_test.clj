@@ -13,29 +13,33 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
-  (testing "Save a provider that has never been saved before."
-    (let [{:keys [status]} (util/save-provider "PROV1")]
-      (is (= status 201))
-      (is (util/verify-provider-was-saved "PROV1")))))
+  (let [{:keys [status]} (util/save-provider "PROV1")]
+    (is (= status 201))
+    (is (util/verify-provider-was-saved "PROV1"))))
+
+;; TODO cmr-only should be a required field
+
 
 (deftest save-provider-twice-test
-  (testing "Fail to save a provider that has been saved before."
-    (util/save-provider "PROV1")
-    (is (= 409 (:status (util/save-provider "PROV1"))))))
+  (util/save-provider "PROV1")
+  (is (= 409 (:status (util/save-provider "PROV1")))))
 
 (deftest get-providers-test
-  (testing "Get the list of providers."
-    (util/save-provider "PROV1")
-    (util/save-provider "PROV2")
-    (let [{:keys [status providers]} (util/get-providers)]
-      (is (= status 200))
-      (is (= (sort providers) ["PROV1" "PROV2"])))))
+  (util/save-provider "PROV1")
+  (util/save-provider "PROV2")
+  (let [{:keys [status providers]} (util/get-providers)]
+    (is (= status 200))
+    (is (= [{:provider-id "PROV1" :cmr-only false}
+            {:provider-id "PROV2" :cmr-only false}]
+           (sort-by :provider-id providers)))))
 
 (deftest delete-provider-test
-  (testing "Delete provider removes provider"
-    (util/save-provider "PROV1")
-    (util/save-provider "PROV2")
-    (util/delete-provider "PROV1")
-    (let [{:keys [status providers]} (util/get-providers)]
-      (is (= status 200))
-      (is (= providers ["PROV2"])))))
+  (util/save-provider "PROV1")
+  (util/save-provider "PROV2")
+  (util/delete-provider "PROV1")
+  (let [{:keys [status providers]} (util/get-providers)]
+    (is (= status 200))
+    (is (= [{:provider-id "PROV2" :cmr-only false}] providers))))
+
+(deftest delete-nonexistant-provider-test
+  (is (= 404 (:status (util/delete-provider "PROV1")))))

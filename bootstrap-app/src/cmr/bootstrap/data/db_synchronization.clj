@@ -581,7 +581,7 @@
   (let [{:keys [sync-types provider-id]} params
         sync-types (set sync-types)
         providers (filter #(or (nil? provider-id) (= % provider-id))
-                          (provider-service/get-providers {:system system}))
+                          (map :provider-id (provider-service/get-providers {:system system})))
         params (dissoc params :provider-id :sync-types)
         ;; start date and end date are only supported for updates
         params-without-dates (dissoc params :start-date :end-date)]

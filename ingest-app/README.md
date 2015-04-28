@@ -58,6 +58,9 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3002/providers
 
+TODO this should include cmr only
+TOOD note API changes in the wiki
+
 ### Delete provider
 
     curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3002/providers/PROV1
@@ -65,6 +68,8 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 ### Get providers
 
     curl http://localhost:3002/providers
+
+TODO example response and see if there's a test related to this
 
 ### Create concept
 
