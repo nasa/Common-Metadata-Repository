@@ -267,24 +267,26 @@
 
 (defn create-provider
   ([provider-guid provider-id]
-   (create-provider provider-guid provider-id true))
-  ([provider-guid provider-id grant-all-search?]
-   (create-provider provider-guid provider-id grant-all-search? true))
-  ([provider-guid provider-id grant-all-search? grant-all-ingest?]
-   (create-mdb-provider provider-id)
-   (echo-util/create-providers (s/context) {provider-guid provider-id})
+   (create-provider provider-guid provider-id {}))
+  ([provider-guid provider-id options]
+   (let [grant-all-search? (get options :grant-all-search? true)
+         grant-all-ingest? (get options :grant-all-ingest? true)
+         cmr-only (get options :cmr-only false)]
 
-   (when grant-all-search?
-     (echo-util/grant (s/context)
-                      [echo-util/guest-ace
-                       echo-util/registered-user-ace]
-                      (assoc (echo-util/catalog-item-id provider-guid)
-                             :collection-applicable true
-                             :granule-applicable true)
-                      :system-object-identity
-                      nil))
-   (when grant-all-ingest?
-     (echo-util/grant-all-ingest (s/context) provider-guid))))
+     (create-mdb-provider provider-id cmr-only)
+     (echo-util/create-providers (s/context) {provider-guid provider-id})
+
+     (when grant-all-search?
+       (echo-util/grant (s/context)
+                        [echo-util/guest-ace
+                         echo-util/registered-user-ace]
+                        (assoc (echo-util/catalog-item-id provider-guid)
+                               :collection-applicable true
+                               :granule-applicable true)
+                        :system-object-identity
+                        nil))
+     (when grant-all-ingest?
+       (echo-util/grant-all-ingest (s/context) provider-guid)))))
 
 (defn reset-fixture
   "Creates the given providers in ECHO and the CMR then clears out all data at the end."
@@ -298,5 +300,6 @@
    (fn [f]
      (dev-sys-util/reset)
      (doseq [[provider-guid provider-id] provider-guid-id-map]
-       (create-provider provider-guid provider-id grant-all-search? grant-all-ingest?))
+       (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
+                                                   :grant-all-ingest? grant-all-ingest?}))
      (f))))
