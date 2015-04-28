@@ -35,7 +35,7 @@
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
         (save-provider request-context params {:provider-id (get body "provider-id")
-                                               :cmr-only (= "true" (get body "cmr-only"))})))
+                                               :cmr-only (get body "cmr-only")})))
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context

@@ -11,23 +11,47 @@
             [cmr.common.dev.util :as du])
   (import clojure.lang.ExceptionInfo))
 
-(deftest validate-provider-id-test
-  (testing "valid provider-id"
-    (let [provider-id "PROV_1"]
-      (is (nil? (ps/validate-provider-id provider-id)))))
-  (testing "empty provider-id"
-    (let [provider-id ""]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
-                            (ps/validate-provider-id provider-id)))))
-  (testing "nil provider-id"
-    (let [provider-id nil]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
-                            (ps/validate-provider-id provider-id)))))
-  (testing "provider-id too long"
-    (let [provider-id "ab123456789"]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-too-long provider-id))
-                            (ps/validate-provider-id provider-id)))))
-  (testing "invalid character"
-    (let [provider-id "ab:123"]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-provider-id provider-id))
-                            (ps/validate-provider-id provider-id))))))
+(defn assert-exception-info-contains-errors
+  "Asserts the ExceptionInfo exception contains a "
+  [e errors]
+  (is (= {:type :bad-request :errors errors} (ex-data e))))
+
+(defmacro assert-exception-thrown-with-errors
+  [errors & body]
+  `(try
+     (do
+       ~@body)
+     (is false "No exception was thrown")
+     (catch ExceptionInfo e#
+       (assert-exception-info-contains-errors e# ~errors))))
+
+
+(deftest validate-provider-test
+  (testing "valid provider"
+    (ps/validate-provider {:provider-id "PROV1" :cmr-only false}))
+  (testing "invalid provider-ids"
+    (testing "empty provider-id"
+      (assert-exception-thrown-with-errors
+        [(messages/provider-id-empty)]
+        (ps/validate-provider {:provider-id "" :cmr-only false})))
+    (testing "nil provider-id"
+      (assert-exception-thrown-with-errors
+        [(messages/provider-id-empty)]
+        (ps/validate-provider {:provider-id nil :cmr-only false})))
+    (testing "provider-id too long"
+      (assert-exception-thrown-with-errors
+        [(messages/provider-id-too-long "a2345678901")]
+        (ps/validate-provider {:provider-id "a2345678901" :cmr-only false})))
+    (testing "invalid character"
+      (assert-exception-thrown-with-errors
+        [(messages/invalid-provider-id "ab:123")]
+        (ps/validate-provider {:provider-id "ab:123" :cmr-only false}))))
+  (testing "invalid cmr-only"
+    (testing "not provided"
+      (assert-exception-thrown-with-errors
+        ["Cmr Only is required."]
+        (ps/validate-provider {:provider-id "PROV1" :cmr-only nil})))
+    (testing "not boolean"
+      (assert-exception-thrown-with-errors
+        ["Cmr Only must be either true or false but was [\"true\"]"]
+        (ps/validate-provider {:provider-id "PROV1" :cmr-only "true"})))))

@@ -317,17 +317,19 @@
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
   status and a list of error messages."
-  [provider-id]
-  (let [response (client/post providers-url
-                              {:body (json/generate-string {:provider-id provider-id})
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :connection-manager (conn-mgr)
-                               :headers {acl/token-header (transmit-config/echo-system-token)}})
-        status (:status response)
-        {:keys [errors provider-id]} (json/decode (:body response) true)]
-    {:status status :errors errors :provider-id provider-id}))
+  ([provider-id]
+   (save-provider provider-id false))
+  ([provider-id cmr-only]
+   (let [response (client/post providers-url
+                               {:body (json/generate-string {:provider-id provider-id :cmr-only cmr-only})
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :connection-manager (conn-mgr)
+                                :headers {acl/token-header (transmit-config/echo-system-token)}})
+         status (:status response)
+         {:keys [errors provider-id]} (json/decode (:body response) true)]
+     {:status status :errors errors :provider-id provider-id})))
 
 (defn get-providers
   "Make a GET request to retrieve the list of providers."
@@ -355,8 +357,12 @@
 
 (defn verify-provider-was-saved
   "Verify that the given provider-id is in the list of providers."
-  [provider-id]
-  (some #{provider-id} (map :provider-id (:providers (get-providers)))))
+  ([provider-id]
+   (verify-provider-was-saved provider-id false))
+  ([provider-id cmr-only]
+   (some #{{:provider-id provider-id
+            :cmr-only cmr-only}}
+         (:providers (get-providers)))))
 
 ;;; miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

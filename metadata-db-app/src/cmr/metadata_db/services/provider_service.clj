@@ -5,41 +5,56 @@
             [cmr.metadata-db.services.messages :as msg]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util]
+            [cmr.common.validations.core :as v]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
 
-(defn provider-id-length-validation
-  [provider-id]
+(defn- provider-id-length-validation
+  [field-path provider-id]
   (when (> (count provider-id) 10)
-    [(msg/provider-id-too-long provider-id)]))
+    {field-path [(msg/provider-id-too-long provider-id)]}))
 
-(defn provider-id-empty-validation
-  [provider-id]
+(defn- provider-id-empty-validation
+  [field-path provider-id]
   (when (empty? provider-id)
-    [(msg/provider-id-empty provider-id)]))
+    {field-path [(msg/provider-id-empty)]}))
 
-(defn provider-id-format-validation
-  [provider-id]
-  (when provider-id
-    (when-not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)
-      [(msg/invalid-provider-id provider-id)])))
+(defn- provider-id-format-validation
+  [field-path provider-id]
+  (when (and provider-id (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)))
+    {field-path [(msg/invalid-provider-id provider-id)]}))
 
-(def provider-id-validation
-  "Verify that a provider-id is in the correct form and return a list of errors if not."
-  (util/compose-validations [provider-id-length-validation
-                             provider-id-empty-validation
-                             provider-id-format-validation]))
+(defn- must-be-boolean
+  [field-path value]
+  (when-not (or (= true value) (= false value))
+    {field-path [(format "%%s must be either true or false but was [%s]" (pr-str value))]}))
 
-(def validate-provider-id
-  "Validates a provider-id. Throws an error if invalid."
-  (util/build-validator :invalid-data provider-id-validation))
+(def ^:private provider-validations
+  {:provider-id (v/first-failing provider-id-length-validation
+                                 provider-id-empty-validation
+                                 provider-id-format-validation)
+   :cmr-only (v/first-failing v/required must-be-boolean)})
+
+(defn validate-provider
+  [provider]
+  (let [errors (v/validate provider-validations provider)]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request (v/create-error-messages errors)))))
+
+(comment
+
+  (validate-provider {})
+  (validate-provider {:provider-id "foo" :cmr-only false})
+
+  )
+
 
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id] :as provider}]
   (info "Creating provider [" provider-id "]")
-  (validate-provider-id provider-id)
+  (validate-provider provider)
   (let [db (mdb-util/context->db context)
         result (providers/save-provider db provider)
         error-code (:error result)]

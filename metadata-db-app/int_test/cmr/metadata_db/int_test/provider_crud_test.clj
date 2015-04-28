@@ -13,16 +13,20 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
-  (let [{:keys [status]} (util/save-provider "PROV1")]
-    (is (= status 201))
-    (is (util/verify-provider-was-saved "PROV1"))))
-
-;; TODO cmr-only should be a required field
-
-
-(deftest save-provider-twice-test
-  (util/save-provider "PROV1")
-  (is (= 409 (:status (util/save-provider "PROV1")))))
+  (testing "with cmr-only false"
+    (let [{:keys [status]} (util/save-provider "PROV1" false)]
+      (is (= status 201))
+      (is (util/verify-provider-was-saved "PROV1" false))))
+  (testing "save provider twice"
+    (is (= 409 (:status (util/save-provider "PROV1")))))
+  (testing "with cmr-only true"
+    (let [{:keys [status]} (util/save-provider "PROV2" true)]
+      (is (= status 201))
+      (is (util/verify-provider-was-saved "PROV2" true))))
+  (testing "without cmr-only"
+    (is (= {:status 400
+            :errors ["Cmr Only is required."]}
+           (select-keys (util/save-provider "PROV3" nil) [:status :errors])))))
 
 (deftest get-providers-test
   (util/save-provider "PROV1")

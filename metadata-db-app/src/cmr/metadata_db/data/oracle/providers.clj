@@ -13,7 +13,7 @@
   "Converts a map result from the database to a provider map"
   [{:keys [provider_id cmr_only]}]
   {:provider-id provider_id
-   :cmr-only (= 1 cmr_only)})
+   :cmr-only (== 1 cmr_only)})
 
 (extend-protocol p/ProvidersStore
   OracleStore

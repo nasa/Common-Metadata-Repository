@@ -18,22 +18,26 @@
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
-  [provider-id endpoint-url]
+  [provider-id cmr-only endpoint-url]
   (client/post endpoint-url
-               {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+               {:body (json/generate-string {:provider-id provider-id :cmr-only cmr-only})
                 :content-type :json
                 :connection-manager (s/conn-mgr)
                 :headers {acl/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
-  [provider-id]
-  (create-provider-through-url provider-id (url/create-provider-url)))
+  ([provider-id]
+   (create-mdb-provider provider-id false))
+  ([provider-id cmr-only]
+   (create-provider-through-url provider-id cmr-only (url/create-provider-url))))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
-  [provider-id]
-  (create-provider-through-url provider-id (url/ingest-create-provider-url)))
+  ([provider-id]
+   (create-ingest-provider provider-id false))
+  ([provider-id cmr-only]
+   (create-provider-through-url provider-id cmr-only (url/ingest-create-provider-url))))
 
 (defn get-providers-through-url
   [provider-url]

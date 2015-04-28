@@ -29,17 +29,29 @@
               field-map))))
 
 (defn seq-of-validations
-  "Returns a validator merging results from a list of validators."
-  [validators]
-  (let [validators (map auto-validation-convert validators)]
-    (fn [field-path value]
-      (reduce (fn [field-errors validator]
-                (let [errors (validator field-path value)]
-                  (if (seq errors)
-                    (merge-with concat field-errors errors)
-                    field-errors)))
-              {}
-              validators))))
+  "Returns a validator merging results from a list of validators. Takes an optional argument
+  indicating if validations should short circuit. When short circuiting the error messages from the
+  first validation will be returned without running subsequent validations."
+  ([validators]
+   (seq-of-validations validators false))
+  ([validators short-circuit?]
+   (let [validators (map auto-validation-convert validators)]
+     (fn [field-path value]
+       (reduce (fn [field-errors validator]
+                 (let [errors (validator field-path value)]
+                   (if (seq errors)
+                     (if short-circuit?
+                       ;; The call to reduced here will make reduce exit early with only these errors
+                       (reduced errors)
+                       (merge-with concat field-errors errors))
+                     field-errors)))
+               {}
+               validators)))))
+
+(defn first-failing
+  "Syntactic sugar for creating a sequence of validations that will short circuit."
+  [& validators]
+  (seq-of-validations validators true))
 
 (defn auto-validation-convert
   "Handles converting basic clojure data structures into a validation function."

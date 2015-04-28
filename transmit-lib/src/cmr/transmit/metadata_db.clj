@@ -4,7 +4,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
             [cmr.transmit.config :as config]
-            [cheshire.core :as cheshire]
+            [cheshire.core :as json]
             [clojure.walk :as walk]
             [cmr.system-trace.http :as ch]
             [ring.util.codec :as codec]
@@ -21,7 +21,7 @@
                               :headers (ch/context->http-headers context)
                               :connection-manager (conn/conn-mgr conn)})]
     (if (= 200 (:status response))
-      (cheshire/decode (:body response) true)
+      (json/decode (:body response) true)
       (errors/throw-service-error
         :not-found
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
@@ -39,7 +39,7 @@
                                :connection-manager (conn/conn-mgr conn)})
          status (:status response)]
      (if (= 200 status)
-       (cheshire/parse-string (:body response) true)
+       (json/parse-string (:body response) true)
        (when (and throw-service-error? (= 404 status))
          (errors/throw-service-error
            :not-found
@@ -60,7 +60,7 @@
                                            :throw-exceptions false
                                            :connection-manager (conn/conn-mgr conn)})
          status (:status response)
-         body (cheshire/decode (:body response))]
+         body (json/decode (:body response))]
      (case status
        404
        (when throw-service-error?
@@ -73,7 +73,7 @@
        (get body "concept-id")
 
        ;; default
-       (let [errors-str (cheshire/generate-string (flatten (get body "errors")))
+       (let [errors-str (json/generate-string (flatten (get body "errors")))
              err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
          (errors/internal-error! (str err-msg  " " errors-str)))))))
 
@@ -83,7 +83,7 @@
    (get-concept-revisions context concept-tuples false))
   ([context concept-tuples allow-missing?]
    (let [conn (config/context->app-connection context :metadata-db)
-         tuples-json-str (cheshire/generate-string concept-tuples)
+         tuples-json-str (json/generate-string concept-tuples)
          request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
          response (client/post request-url {:body tuples-json-str
                                             :content-type :json
@@ -100,7 +100,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (cheshire/decode (:body response) true)
+       (json/decode (:body response) true)
 
        ;; default
        (errors/internal-error! (str "Get concept revisions failed. MetadataDb app response status code: "
@@ -114,7 +114,7 @@
    (get-latest-concepts context concept-ids false))
   ([context concept-ids allow-missing?]
    (let [conn (config/context->app-connection context :metadata-db)
-         ids-json-str (cheshire/generate-string concept-ids)
+         ids-json-str (json/generate-string concept-ids)
          request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
          response (client/post request-url {:body ids-json-str
                                             :query-params {:allow_missing allow-missing?}
@@ -131,7 +131,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (cheshire/decode (:body response) true)
+       (json/decode (:body response) true)
 
        ;; default
        (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
@@ -151,7 +151,7 @@
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (case status
-      200 (cheshire/decode body true)
+      200 (json/decode body true)
       ;; default
       (errors/internal-error!
         (format "Collection search failed. status: %s body: %s"
@@ -169,7 +169,7 @@
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (case status
-      200 (cheshire/decode body true)
+      200 (json/decode body true)
       ;; default
       (errors/internal-error!
         (format "Collection search failed. status: %s body: %s"
@@ -177,19 +177,19 @@
 
 (defn create-provider-raw
   "Create the provider with the given provider id, returns the raw response coming back from metadata-db"
-  [context provider-id]
+  [context provider]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/providers")]
     (client/post request-url
-                 {:body (format "{\"provider-id\": \"%s\"}" provider-id)
+                 {:body (json/generate-string provider)
                   :content-type :json
                   :headers {config/token-header (config/echo-system-token)}
                   :throw-exceptions false})))
 
 (defn create-provider
   "Create the provider with the given provider id"
-  [context provider-id]
-  (let [{:keys [status body]} (create-provider-raw context provider-id)]
+  [context provider]
+  (let [{:keys [status body]} (create-provider-raw context provider)]
     (when-not (= status 201)
       (errors/internal-error!
         (format "Failed to create provider status: %s body: %s"
@@ -229,7 +229,7 @@
   [context]
   (let [{:keys [status body]} (get-providers-raw context)]
     (case status
-      200 (-> body (cheshire/decode true) :providers)
+      200 (-> body (json/decode true) :providers)
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
@@ -237,7 +237,7 @@
   "Saves a concept in metadata db and index."
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
-        concept-json-str (cheshire/generate-string concept)
+        concept-json-str (json/generate-string concept)
         response (client/post (str (conn/root-url conn) "/concepts")
                               {:body concept-json-str
                                :content-type :json
@@ -246,11 +246,11 @@
                                :headers (ch/context->http-headers context)
                                :connection-manager (conn/conn-mgr conn)})
         status (:status response)
-        body (cheshire/decode (:body response))
+        body (json/decode (:body response))
         {:strs [concept-id revision-id]} body]
     (case status
       422
-      (let [errors-str (cheshire/generate-string (flatten (get body "errors")))]
+      (let [errors-str (json/generate-string (flatten (get body "errors")))]
         ;; catalog rest supplied invalid concept id
         (errors/throw-service-error :invalid-data errors-str))
 
@@ -277,10 +277,10 @@
                                  :headers (ch/context->http-headers context)
                                  :connection-manager (conn/conn-mgr conn)})
         status (:status response)
-        body (cheshire/decode (:body response))]
+        body (json/decode (:body response))]
     (case status
       404
-      (let [errors-str (cheshire/generate-string (flatten (get body "errors")))]
+      (let [errors-str (json/generate-string (flatten (get body "errors")))]
         (errors/throw-service-error :not-found errors-str))
 
       200
@@ -301,7 +301,7 @@
                                           :throw-exceptions false
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response
-        result (cheshire/decode body true)]
+        result (json/decode body true)]
     (if (= 200 status)
       {:ok? true :dependencies result}
       {:ok? false :problem result})))

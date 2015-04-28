@@ -21,6 +21,8 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]))
 
+;; TODO update to honor cmr-only setting in provider.
+
 (defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"
   {:default 1000 :type Long})
