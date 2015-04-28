@@ -110,9 +110,9 @@
 (defmethod es/concept->elastic-doc :granule
   [context concept umm-granule]
   (let [{:keys [concept-id extra-fields provider-id revision-date format]} concept
-        {:keys [parent-collection-id granule-ur]} extra-fields
+        {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
-        {:keys [data-granule temporal platform-refs project-refs related-urls cloud-cover
+        {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
                 access-value two-d-coordinate-system]} umm-granule
         {:keys [size producer-gran-id day-night]} data-granule
         {:keys [start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]

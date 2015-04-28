@@ -358,6 +358,10 @@
     (assert-valid
       {}
       {:granule-ur "UR-1" :concept-id "G1-PROV2" :native-id "Native1" :provider-id "PROV2"}))
+  (testing "updating the same granule is valid"
+    (assert-valid
+      {}
+      {:granule-ur "UR-1" :concept-id "G1-PROV1" :native-id "Native1"}))
   (testing "granule-ur must be unique for a provider"
     (assert-conflict
       {:granule-ur "UR-1" :concept-id "G2-PROV1" :native-id "Native2"}

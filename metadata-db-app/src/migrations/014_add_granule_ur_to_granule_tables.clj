@@ -16,7 +16,7 @@
   ;; overall migration
   (doall (pmap (fn [t]
                  (h/sql (format "update %s set granule_ur = native_id" t))
-                 (h/sql (format "alter table %s modify granule_ur VARCHAR(250) NOT NULL" t))
+                 (h/sql (format "alter table %s modify granule_ur NOT NULL" t))
                  (h/sql (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" t t)))
                (h/get-granule-tablenames))))
 

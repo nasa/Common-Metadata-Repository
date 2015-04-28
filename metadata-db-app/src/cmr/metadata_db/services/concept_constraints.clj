@@ -6,7 +6,7 @@
             [cmr.common.util :as util]))
 
 (defn unique-field-constraint
-  "Returns a function which verifies that there is only one non-deleted collection for a provider
+  "Returns a function which verifies that there is only one non-deleted concept for a provider
   with the value for the given field."
   [field]
   (fn [db concept]
