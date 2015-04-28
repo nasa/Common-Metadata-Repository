@@ -5,17 +5,35 @@
             [cmr.mock-echo.data.acl-db :as acl-db]
             [cmr.mock-echo.api.api-helpers :as ah]
             [cmr.common.services.errors :as svc-errors]
-            [cmr.mock-echo.data.provider-db :as p-db]))
+            [cmr.mock-echo.data.provider-db :as p-db]
+            [clojure.string :as str]))
 
 (defn create-acl
   [context body]
   (let [acl (json/decode body true)]
     (acl-db/create-acl context (json/decode body true))))
 
-(def object-identity-type->acl-key
+(def object-identity-type->acl-field
   {"CATALOG_ITEM" :catalog_item_identity
    "SYSTEM_OBJECT" :system_object_identity
    "PROVIDER_OBJECT" :provider_object_identity})
+
+(defn- get-acls-having-fields-and-provider
+  "Fetches acls from the acl db that have object identity type fields with the specified provider-id"
+  [context acl-fields provider-id]
+  (when-let [provider-guid (p-db/provider-id->provider-guid context provider-id)]
+    ;; Filter acls applicable to this provider guid
+    (filter (fn [acl]
+              (some #(= (get-in acl [:acl % :provider_guid]) provider-guid)
+                    acl-fields)
+              (acl-db/get-acls context)))))
+
+(defn- get-acls-having-fields
+  "Gets acls having at least one of the given fields populated."
+  [context acl-fields]
+  (filter (fn [acl]
+            (some #(get-in acl [:acl %]) acl-fields))
+          (acl-db/get-acls context)))
 
 (defn get-acls
   [context params]
@@ -28,13 +46,11 @@
       :bad-request
       "Mock ECHO does not currently support retrieving acls as references"))
 
-  (let [acl-key (object-identity-type->acl-key (:object_identity_type params))
+  (let [acl-fields (map object-identity-type->acl-field (str/split (:object_identity_type params) #","))
         provider-id (:provider_id params)]
     (if provider-id
-      (when-let [provider-guid (p-db/provider-id->provider-guid context provider-id)]
-        (filter #(= (get-in % [:acl acl-key :provider_guid]) provider-guid)
-                (acl-db/get-acls context)))
-      (filter #(get-in % [:acl acl-key]) (acl-db/get-acls context)))))
+      (get-acls-having-fields-and-provider context acl-fields provider-id)
+      (get-acls-having-fields context acl-fields))))
 
 (defn delete-acl
   [context guid]

@@ -57,6 +57,11 @@
          :concept-type concept-type}
         (set-concept-id-and-revision-id headers))))
 
+(defn- concept->loggable-string
+  "Returns a string with information about the concept as a loggable string."
+  [concept]
+  (pr-str (dissoc concept :metadata)))
+
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
   or a normal request with the XML as the body."
@@ -67,9 +72,9 @@
 
 (defmethod validate-granule :default
   [provider-id native-id {:keys [body content-type headers request-context] :as request}]
-  (ingest/validate-granule
-    request-context
-    (body->concept :granule provider-id native-id body content-type headers)))
+  (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+    (info "Validating granule" (concept->loggable-string concept))
+    (ingest/validate-granule request-context concept)))
 
 (defn- multipart-param->concept
   "Converts a multipart parameter "
@@ -97,6 +102,8 @@
                        provider-id native-id :collection (get multipart-params "collection"))
         gran-concept (multipart-param->concept
                        provider-id native-id :granule (get multipart-params "granule"))]
+    (info "Validating granule" (concept->loggable-string gran-concept) "with collection"
+          (concept->loggable-string coll-concept))
     (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
 
 (defn- build-routes [system]
@@ -106,28 +113,27 @@
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type headers request-context]}
-            (ingest/validate-concept
-              request-context
-              (body->concept :collection provider-id native-id body content-type headers))
-            {:status 200}))
+            (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+              (info "Validating Collection" (concept->loggable-string concept))
+              (ingest/validate-concept request-context concept)
+              {:status 200})))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
-              (r/response
-                (ingest/save-concept
-                  request-context
-                  (body->concept :collection provider-id native-id body content-type headers)))))
+                context :update :provider-object provider-id)
+              (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+                (info "Ingesting collection" (concept->loggable-string concept))
+                (r/response (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
                                    :concept-type :collection}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
-
+                context :update :provider-object provider-id)
+              (info "Deleting collection" (pr-str concept-attribs))
               (r/response (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
@@ -139,18 +145,18 @@
           (PUT "/" {:keys [body content-type headers request-context params]}
             (let [context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
-              (r/response
-                (ingest/save-concept
-                  request-context
-                  (body->concept :granule provider-id native-id body content-type headers)))))
+                context :update :provider-object provider-id)
+              (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+                (info "Ingesting granule" (concept->loggable-string concept))
+                (r/response (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
                                    :concept-type :granule}
                   context (acl/add-authentication-to-context request-context params headers)]
               (acl/verify-ingest-management-permission
-                context :update "PROVIDER_OBJECT" provider-id)
+                context :update :provider-object provider-id)
+              (info "Deleting granule" (pr-str concept-attribs))
               (r/response (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs

@@ -9,7 +9,6 @@
             [cmr.system-trace.context :as context]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
-            [cmr.acl.core :as acl]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
             [cmr.transmit.config :as transmit-config]))
 
@@ -34,7 +33,6 @@
   (let [sys {:log (log/create-logger)
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (cubby-port) routes/make-api)
-             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :relative-root-url (cubby-relative-root-url)
              :zipkin (context/zipkin-config "cubby" false)}]
     (transmit-config/system-with-connections sys [:echo-rest])))

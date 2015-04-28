@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false false))
 
 (defn- ingest-succeeded?
   "Returns true if the provided token has permission to perform the given function."

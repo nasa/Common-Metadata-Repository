@@ -10,7 +10,7 @@
             [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.acl.acl-cache :as ac]
+            [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
@@ -53,15 +53,17 @@
                       ;; Environmental support for the cubby application is not ready yet so we use the in memory cache for now
                       ;; See https://bugs.earthdata.nasa.gov/browse/EI-3348
                       ;; When readding this make sure to readd cubby to health check.
-                      ; ac/acl-cache-key (consistent-cache/create-consistent-cache)
-                      ac/acl-cache-key (mem-cache/create-in-memory-cache)
+                      af/acl-cache-key (af/create-acl-cache
+                                         ; (consistent-cache/create-consistent-cache)
+                                          (mem-cache/create-in-memory-cache)
+                                          [:catalog-item :system-object :provider-object])
 
                       cache/general-cache-key (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           :db
-                          [(ac/refresh-acl-cache-job "indexer-acl-cache-refresh")])
+                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (when (config/use-index-queue?)
                              (rmq/create-queue-broker (assoc (rmq-conf/default-config)
                                                              :queues [(config/index-queue-name)])))
