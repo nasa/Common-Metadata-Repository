@@ -229,7 +229,7 @@
   [context]
   (let [{:keys [status body]} (get-providers-raw context)]
     (case status
-      200 (-> body (json/decode true) :providers)
+      200 (json/decode body true)
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 

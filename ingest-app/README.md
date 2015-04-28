@@ -56,20 +56,23 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 
 ### Create provider
 
-    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3002/providers
+Creates a provider in the CMR. The provider id specified should match that of a provider configured in ECHO. The `cmr-only` parameter indicates if this is a provider that's only in the CMR or if it is also in Catalog REST. `cmr-only` defaults to false.
 
-TODO this should include cmr only
-TOOD note API changes in the wiki
+    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only": false}' http://localhost:3002/providers
 
 ### Delete provider
+
+Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch
 
     curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3002/providers/PROV1
 
 ### Get providers
 
+Returns a list of the configured providers in the CMR.
+
     curl http://localhost:3002/providers
 
-TODO example response and see if there's a test related to this
+    [{"provider-id":"PROV2","cmr-only":true},{"provider-id":"PROV1","cmr-only":false}]
 
 ### Create concept
 

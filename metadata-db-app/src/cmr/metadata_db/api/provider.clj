@@ -25,7 +25,7 @@
   [context params]
   (let [providers (provider-service/get-providers context)]
     {:status 200
-     :body (rh/to-json {:providers providers} params)
+     :body (rh/to-json providers params)
      :headers rh/json-header}))
 
 (def provider-api-routes
@@ -35,7 +35,7 @@
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
         (save-provider request-context params {:provider-id (get body "provider-id")
-                                               :cmr-only (get body "cmr-only")})))
+                                               :cmr-only (get body "cmr-only" false)})))
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context

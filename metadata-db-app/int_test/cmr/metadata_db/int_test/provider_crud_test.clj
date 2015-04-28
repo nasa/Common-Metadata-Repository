@@ -24,9 +24,10 @@
       (is (= status 201))
       (is (util/verify-provider-was-saved "PROV2" true))))
   (testing "without cmr-only"
-    (is (= {:status 400
-            :errors ["Cmr Only is required."]}
-           (select-keys (util/save-provider "PROV3" nil) [:status :errors])))))
+    (let [{:keys [status]} (util/save-provider "PROV3" nil)]
+      (is (= status 201))
+      ;; cmr-only defaults to false
+      (is (util/verify-provider-was-saved "PROV3" false)))))
 
 (deftest get-providers-test
   (util/save-provider "PROV1")

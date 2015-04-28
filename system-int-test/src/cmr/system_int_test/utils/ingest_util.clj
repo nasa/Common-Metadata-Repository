@@ -43,8 +43,7 @@
   [provider-url]
   (-> (client/get provider-url {:connection-manager (s/conn-mgr)})
       :body
-      (json/decode true)
-      :providers))
+      (json/decode true)))
 
 (defn get-providers
   []

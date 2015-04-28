@@ -285,17 +285,25 @@ Synchronously runs the expired concept cleanup job. Requires token with UPDATE i
 
 ### Create provider
 
-    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1"}' http://localhost:3001/providers
+Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is a provider that's only in the CMR or if it is also in Catalog REST. `cmr-only` defaults to false.
+
+    curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":false}' http://localhost:3001/providers
 
 ### Delete provider
+
+Removes a provider from the CMR. Deletes all data for the provider.
 
     curl -v -XDELETE -H "Echo-Token: mock-echo-system-token" http://localhost:3001/providers/PROV1
 
 ### Get providers
 
+Returns a list of the configured providers in Metadata DB.
+
     curl http://localhost:3001/providers
 
-### Querying caches
+    [{"provider-id":"PROV2","cmr-only":true},{"provider-id":"PROV1","cmr-only":false}]
+
+## Querying caches
 
 Endpoints are provided for querying the contents of the various caches used by the application.
 The following curl will return the list of caches:
@@ -310,7 +318,7 @@ This curl will return the value for a specific key in the named cache:
 
     curl -i http://localhost:3001/caches/cache-name/cache-key
 
-### Check application health
+## Check application health
 
 This will report the current health of the application. It checks all resources and services used by the application and reports their healthes in the response body in JSON format. For resources, the report includes an "ok?" status and a "problem" field if the resource is not OK. For services, the report includes an overall "ok?" status for the service and health reports for each of its dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
 

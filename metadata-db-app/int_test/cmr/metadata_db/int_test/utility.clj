@@ -321,7 +321,10 @@
    (save-provider provider-id false))
   ([provider-id cmr-only]
    (let [response (client/post providers-url
-                               {:body (json/generate-string {:provider-id provider-id :cmr-only cmr-only})
+                               {:body (json/generate-string
+                                        (merge {:provider-id provider-id}
+                                               (when (some? cmr-only)
+                                                 {:cmr-only cmr-only})))
                                 :content-type :json
                                 :accept :json
                                 :throw-exceptions false
@@ -339,8 +342,10 @@
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
         status (:status response)
-        {:keys [errors providers]} (json/decode (:body response) true)]
-    {:status status :errors errors :providers providers}))
+        body (json/decode (:body response) true)]
+    {:status status
+     :errors (:errors body)
+     :providers (when (= status 200) body)}))
 
 (defn delete-provider
   "Make a DELETE request to remove a provider."

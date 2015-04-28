@@ -42,14 +42,6 @@
     (when (seq errors)
       (errors/throw-service-errors :bad-request (v/create-error-messages errors)))))
 
-(comment
-
-  (validate-provider {})
-  (validate-provider {:provider-id "foo" :cmr-only false})
-
-  )
-
-
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id] :as provider}]
