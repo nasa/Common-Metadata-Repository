@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.ingest
+(ns cmr.ingest.services.ingest-service
   (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
@@ -11,7 +11,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.util :as util]
+            [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
@@ -49,7 +49,7 @@
       (v/validate-collection-umm collection))
     collection))
 
-(defn validate-collection
+(defn-timed validate-collection
   "Validate the collection. Throws a service error if any validation issues are found."
   [context concept]
   (let [collection (validate-and-parse-collection-concept context concept)
@@ -96,31 +96,31 @@
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
                                   :delete-time (when delete-time (str delete-time))})))
 
-(defn validate-granule
+(defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.
 
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
   This can be used to provide the collection through an alternative means like the API."
-  ([context concept]
-   (validate-granule
-     context concept get-granule-parent-collection-and-concept))
-  ([context concept fetch-parent-collection-concept-fn]
-   (v/validate-concept-request concept)
-   (v/validate-concept-xml concept)
+  [context concept & [fetch-parent-collection-concept-fn]]
+  (v/validate-concept-request concept)
+  (v/validate-concept-xml concept)
 
-   (let [granule (umm/parse-concept concept)
-         [parent-collection-concept
-          parent-collection] (fetch-parent-collection-concept-fn
-                               context concept granule)]
-     ;; UMM Validation
-     (when (ingest-validation-enabled?)
-       (v/validate-granule-umm parent-collection granule))
+  ;; fetch-parent-collection-concept-fn defaults to get-granule-parent-collection-and-concept
+  (let [fetch-parent-collection-concept-fn (or fetch-parent-collection-concept-fn
+                                               get-granule-parent-collection-and-concept)
+        granule (umm/parse-concept concept)
+        [parent-collection-concept
+         parent-collection] (fetch-parent-collection-concept-fn
+                              context concept granule)]
+    ;; UMM Validation
+    (when (ingest-validation-enabled?)
+      (v/validate-granule-umm parent-collection granule))
 
-     ;; Add extra fields for the granule
-     (let [gran-concept (add-extra-fields-for-granule
-                          context concept granule parent-collection-concept)]
-       (v/validate-business-rules context gran-concept)
-       gran-concept))))
+    ;; Add extra fields for the granule
+    (let [gran-concept (add-extra-fields-for-granule
+                         context concept granule parent-collection-concept)]
+      (v/validate-business-rules context gran-concept)
+      gran-concept)))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
@@ -147,7 +147,7 @@
   [context concept]
   (validate-granule context concept))
 
-(deftracefn save-concept
+(defn-timed save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
   (let [concept (validate-concept context concept)]
@@ -155,7 +155,7 @@
       (indexer/index-concept context concept-id revision-id)
       {:concept-id concept-id, :revision-id revision-id})))
 
-(deftracefn delete-concept
+(defn-timed delete-concept
   "Delete a concept from mdb and indexer."
   [context concept-attribs]
   (let [{:keys [concept-type provider-id native-id]}  concept-attribs

@@ -19,7 +19,7 @@
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
-            [cmr.ingest.services.ingest :as ingest-service]
+            [cmr.ingest.services.ingest-service :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.cubby.api.routes :as cubby-api]

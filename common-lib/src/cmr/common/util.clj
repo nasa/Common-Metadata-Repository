@@ -92,6 +92,23 @@
          result# (do ~@body)]
      [(- (System/currentTimeMillis) start#) result#]))
 
+(defmacro defn-timed
+  "Creates a function that logs how long it took to execute the body"
+  [fn-name doc-string bindings & body]
+  (when-not (and (string? doc-string) (vector? bindings))
+    (throw (Exception. "defn-timed doesn't support different sets of args and must be used with a doc string.")))
+  (let [fn-name-str (name fn-name)
+        ns-str (str *ns*)]
+    `(defn ~fn-name
+       ~doc-string
+       ~bindings
+       (let [start# (System/currentTimeMillis)]
+         (try
+           ~@body
+           (finally
+             (let [elapsed# (- (System/currentTimeMillis) start#)]
+               (debug (format
+                        "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will

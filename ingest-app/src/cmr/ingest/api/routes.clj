@@ -17,7 +17,7 @@
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
             [cmr.acl.core :as acl]
-            [cmr.ingest.services.ingest :as ingest]
+            [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.services.jobs :as jobs]
             [cmr.ingest.api.provider :as provider-api]
