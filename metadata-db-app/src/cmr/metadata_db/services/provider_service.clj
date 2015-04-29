@@ -9,23 +9,28 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+(def ^:private ^:const PROVIDER_ID_MAX_LENGTH 10)
 
 (defn- provider-id-length-validation
+  "Validates the provider id isn't too long."
   [field-path provider-id]
-  (when (> (count provider-id) 10)
+  (when (> (count provider-id) PROVIDER_ID_MAX_LENGTH)
     {field-path [(msg/provider-id-too-long provider-id)]}))
 
 (defn- provider-id-empty-validation
+  "Validates the provider id isn't empty."
   [field-path provider-id]
   (when (empty? provider-id)
     {field-path [(msg/provider-id-empty)]}))
 
 (defn- provider-id-format-validation
+  "Validates the provider id is in the correct format."
   [field-path provider-id]
   (when (and provider-id (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)))
     {field-path [(msg/invalid-provider-id provider-id)]}))
 
 (defn- must-be-boolean
+  "Validates the value given is of Boolean type."
   [field-path value]
   (when-not (or (= true value) (= false value))
     {field-path [(format "%%s must be either true or false but was [%s]" (pr-str value))]}))
@@ -37,6 +42,7 @@
    :cmr-only (v/first-failing v/required must-be-boolean)})
 
 (defn validate-provider
+  "Validates the provider. Throws an exception with validation errors if the provider is invalid."
   [provider]
   (let [errors (v/validate provider-validations provider)]
     (when (seq errors)

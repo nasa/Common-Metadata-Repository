@@ -56,7 +56,7 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 
 ### Create provider
 
-Creates a provider in the CMR. The provider id specified should match that of a provider configured in ECHO. The `cmr-only` parameter indicates if this is a provider that's only in the CMR or if it is also in Catalog REST. `cmr-only` defaults to false.
+Creates a provider in the CMR. The provider id specified should match that of a provider configured in ECHO. The `cmr-only` parameter indicates if this is a provider that's only in the CMR or if it is also in Catalog REST. A CMR Only provider will still have ACLs configured in ECHO and support ordering through ECHO. A CMR Only provider will not have any data in Catalog REST. `cmr-only` defaults to false.
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only": false}' http://localhost:3002/providers
 

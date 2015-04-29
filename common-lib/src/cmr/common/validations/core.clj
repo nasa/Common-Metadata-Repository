@@ -7,6 +7,37 @@
   into record-validation or seq-of-validations."
   (:require [clojure.string :as str]))
 
+(comment
+
+  ;; Example Validations
+
+  (def address-validations
+    {:city required
+     :street required})
+
+  (defn last-not-first
+    [field-path person-name]
+    (when (= (:last person-name) (:first person-name))
+      {field-path ["Last name must not equal first name"]}))
+
+  (def person-validations
+    {:addresses (every address-validations)
+     :name (first-failing {:first required
+                           :last required}
+                          last-not-first)
+     :age [required integer]})
+
+  (validate person-validations {:addresses [{:street "5 Main"
+                                             :city "Annapolis"}
+                                            {:city "dd"}
+                                            {:city "dd"}
+                                            {:street "dfkkd"}]
+                                :name {:first "Jason"
+                                       :last "Jason"}
+                                :age "35"})
+
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support functions
 
@@ -137,47 +168,3 @@
     (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
       {field-path [(format "%%s must be within [%s] and [%s] but was [%s]."
                            minv maxv value)]})))
-
-
-(comment
-
-  ((seq-of-validations
-     [required integer])
-   [:foo] 5)
-
-  ((record-validation {:a [required number]
-                       :b [{:name required} (fn [f _] {f ["always fail"]})]})
-   [:foo] {:b {:name "foo"}})
-
-  ((record-validation {:a [required number]
-                       :b [required (fn [f _] {f ["always fail"]})]})
-   [:foo] {:b {:name "foo"}})
-
-
-
-  (def address-validations
-    {:city required
-     :street required})
-
-  (defn last-not-first
-    [field-path person-name]
-    (when (= (:last person-name) (:first person-name))
-      {field-path ["Last name must not equal first name"]}))
-
-  (def person-validations
-    {:addresses (every address-validations)
-     :name [{:first required
-             :last required}
-            last-not-first]
-     :age [required integer]})
-
-  (validate person-validations {:addresses [{:street "5 Main"
-                                             :city "Annapolis"}
-                                            {:city "dd"}
-                                            {:city "dd"}
-                                            {:street "dfkkd"}]
-                                :name {:first "Jason"
-                                       :last "Jason"}
-                                :age "35"})
-
-  )
