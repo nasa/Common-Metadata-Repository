@@ -9,12 +9,19 @@
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]
             [cmr.spatial.relations :as sr]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.common.dev.capture-reveal])
   (:import gov.nasa.echo_orbits.EchoOrbitsRubyBootstrap))
 
 (def orbits
   "Java wrapper for echo-orbits ruby library."
   (EchoOrbitsRubyBootstrap/bootstrapEchoOrbits))
+
+(comment
+
+  (.hello orbits)
+
+  )
 
 (defn- shape->script-cond
   [shape]
@@ -157,16 +164,29 @@
     (map (fn [lat-range-lon-range]
            (let [lat-range (first (first lat-range-lon-range))
                  ;_ (cmr.common.dev.capture-reveal/capture lat-range)
+                 _ (println (str "ORIGINAL LAT RANGE: " (vec lat-range)))
                  [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits
                                                                              (first lat-range)
                                                                              (last lat-range))
+                 ;asc-lat-ranges (first lat-range)
+                 ;desc-lat-ranges (last lat-range)
                  lat-ranges (if ascending? asc-lat-ranges desc-lat-ranges)
+                 _ (doseq [r lat-ranges]
+                    (println (str "LAT RANGE: " (vec r))))
                  lat-conds (range->numeric-range-intersection-condition lat-ranges)
                  crossings (last lat-range-lon-range)]
              (gc/and-conds
                [lat-conds
                 (crossing-ranges->condition crossings)])))
          lat-ranges-crossings)))
+
+(comment
+  (cmr.common.dev.capture-reveal/reveal orbital-cond)
+  (cmr.common.dev.capture-reveal/reveal asc-crossings-lat-ranges)
+  (cmr.common.dev.capture-reveal/reveal desc-crossings-lat-ranges)
+
+  (.denormalizeLatitudeRange orbits 25.165 49.95)
+)
 
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
@@ -192,8 +212,11 @@
     (when (seq crossings-map)
       (gc/or-conds
         (map (fn [collection-id]
+               ;; FIXME - I think there is a problem here
                (let [[asc-crossings-lat-ranges desc-crossings-lat-ranges]
                      (get crossings-map collection-id)]
+                 (cmr.common.dev.capture-reveal/capture asc-crossings-lat-ranges)
+                 (cmr.common.dev.capture-reveal/capture desc-crossings-lat-ranges)
                  (gc/and-conds
                    [(qm/string-condition :collection-concept-id collection-id, true, false)
                     (gc/or-conds
@@ -211,6 +234,7 @@
     (let [shape (d/calculate-derived shape)
           orbital-cond (when (= :granule (:query-concept-type context))
                          (orbital-condition context shape))
+          _ (cmr.common.dev.capture-reveal/capture orbital-cond)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)

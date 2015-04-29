@@ -117,11 +117,19 @@
   [context]
   (get-in context [:system :search-index :conn]))
 
+
+(comment
+
+  (cmr.common.dev.capture-reveal/reveal elastic-query)
+
+  )
+
 (deftracefn send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
   [context query]
   (let [{:keys [page-size page-num concept-type result-format aggregations]} query
         elastic-query (q2e/query->elastic query)
+        ; _ (cmr.common.dev.capture-reveal/capture elastic-query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         fields (concept-type+result-format->fields concept-type query)

@@ -241,7 +241,7 @@
   (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
 
 (deftracefn find-tiles-by-geometry
-  "Gets all the tile coordinates for the given input parameters. The function returns all the tile 
+  "Gets all the tile coordinates for the given input parameters. The function returns all the tile
   coordinates if the input parameters does not include any spatial parameters"
   [context params]
   (let [spatial-params (->> params
