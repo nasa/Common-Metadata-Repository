@@ -9,9 +9,10 @@
             [cmr.system-trace.http :as ch]
             [ring.util.codec :as codec]
             [cmr.transmit.connection :as conn]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.util :as util :refer [defn-timed]]))
 
-(defn get-concept
+(defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -26,7 +27,7 @@
         :not-found
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
 
-(defn get-latest-concept
+(defn-timed get-latest-concept
   "Retrieve the latest version of the concept"
   ([context concept-id]
    (get-latest-concept context concept-id true))
@@ -45,7 +46,7 @@
            :not-found
            (str "Failed to retrieve concept " concept-id " from metadata-db: " (:body response))))))))
 
-(defn get-concept-id
+(defn-timed get-concept-id
   "Return the concept-id for the concept matches the given arguments.
   By default, throw-service-error? is true and a 404 error is thrown if the concept is not found in
   metadata-db. It returns nil if the concept is not found and throw-service-error? is false."
@@ -77,7 +78,7 @@
              err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
          (errors/internal-error! (str err-msg  " " errors-str)))))))
 
-(defn get-concept-revisions
+(defn-timed get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
   ([context concept-tuples]
    (get-concept-revisions context concept-tuples false))
@@ -108,7 +109,7 @@
                                     " "
                                     response))))))
 
-(defn get-latest-concepts
+(defn-timed get-latest-concepts
   "Search metadata db and return the latest-concepts given by the concept-id list"
   ([context concept-ids]
    (get-latest-concepts context concept-ids false))
@@ -139,7 +140,7 @@
                                     " "
                                     response))))))
 
-(defn find-collections
+(defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -157,7 +158,7 @@
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
 
-(defn get-expired-collection-concept-ids
+(defn-timed get-expired-collection-concept-ids
   "Searches metadata db for collections in a provider that have expired and returns their concept ids."
   [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -186,7 +187,7 @@
                   :headers {config/token-header (config/echo-system-token)}
                   :throw-exceptions false})))
 
-(defn create-provider
+(defn-timed create-provider
   "Create the provider with the given provider id"
   [context provider]
   (let [{:keys [status body]} (create-provider-raw context provider)]
@@ -204,7 +205,7 @@
     (client/delete request-url {:throw-exceptions false
                                 :headers {config/token-header (config/echo-system-token)}})))
 
-(defn delete-provider
+(defn-timed delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [context provider-id]
   (let [{:keys [status body]} (delete-provider-raw context provider-id)]
@@ -224,7 +225,7 @@
                              :throw-exceptions false
                              :connection-manager (conn/conn-mgr conn)})))
 
-(defn get-providers
+(defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
   (let [{:keys [status body]} (get-providers-raw context)]
@@ -233,7 +234,7 @@
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
-(defn save-concept
+(defn-timed save-concept
   "Saves a concept in metadata db and index."
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
@@ -267,7 +268,7 @@
                                    " "
                                    response)))))
 
-(defn delete-concept
+(defn-timed delete-concept
   "Delete a concept from metatdata db."
   [context concept-id]
   (let [conn (config/context->app-connection context :metadata-db)
