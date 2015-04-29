@@ -92,23 +92,35 @@
          result# (do ~@body)]
      [(- (System/currentTimeMillis) start#) result#]))
 
+
 (defmacro defn-timed
   "Creates a function that logs how long it took to execute the body"
-  [fn-name doc-string bindings & body]
-  (when-not (and (string? doc-string) (vector? bindings))
-    (throw (Exception. "defn-timed doesn't support different sets of args and must be used with a doc string.")))
+  [fn-name & fn-tail]
   (let [fn-name-str (name fn-name)
-        ns-str (str *ns*)]
+        ns-str (str *ns*)
+        ;; Extract the doc string from the function if present
+        [doc-string fn-tail] (if (string? (first fn-tail))
+                               [(first fn-tail) (next fn-tail)]
+                               [nil fn-tail])
+        ;; Wrap single arity functions in a list
+        fn-tail (if (vector? (first fn-tail))
+                  (list fn-tail)
+                  fn-tail)
+        ;; extract other arities defined in the function which will not be timed.
+        other-arities (drop-last fn-tail)
+        ;; extract the last arity definitions bindings and body
+        [timed-arity-bindings timed-arity-body] (last fn-tail)]
     `(defn ~fn-name
-       ~doc-string
-       ~bindings
-       (let [start# (System/currentTimeMillis)]
-         (try
-           ~@body
-           (finally
-             (let [elapsed# (- (System/currentTimeMillis) start#)]
-               (debug (format
-                        "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#)))))))))
+       ~@(when doc-string [doc-string])
+       ~@other-arities
+       (~timed-arity-bindings
+         (let [start# (System/currentTimeMillis)]
+           (try
+             ~timed-arity-body
+             (finally
+               (let [elapsed# (- (System/currentTimeMillis) start#)]
+                 (debug (format
+                          "Timed function %s/%s took %d ms." ~ns-str ~fn-name-str elapsed#))))))))))
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will

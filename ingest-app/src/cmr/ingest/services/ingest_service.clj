@@ -101,26 +101,26 @@
 
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
   This can be used to provide the collection through an alternative means like the API."
-  [context concept & [fetch-parent-collection-concept-fn]]
-  (v/validate-concept-request concept)
-  (v/validate-concept-xml concept)
+  ([context concept]
+   (validate-granule context concept get-granule-parent-collection-and-concept))
+  ([context concept fetch-parent-collection-concept-fn]
+   (v/validate-concept-request concept)
+   (v/validate-concept-xml concept)
 
-  ;; fetch-parent-collection-concept-fn defaults to get-granule-parent-collection-and-concept
-  (let [fetch-parent-collection-concept-fn (or fetch-parent-collection-concept-fn
-                                               get-granule-parent-collection-and-concept)
-        granule (umm/parse-concept concept)
-        [parent-collection-concept
-         parent-collection] (fetch-parent-collection-concept-fn
-                              context concept granule)]
-    ;; UMM Validation
-    (when (ingest-validation-enabled?)
-      (v/validate-granule-umm parent-collection granule))
+   ;; fetch-parent-collection-concept-fn defaults to get-granule-parent-collection-and-concept
+   (let [granule (umm/parse-concept concept)
+         [parent-collection-concept
+          parent-collection] (fetch-parent-collection-concept-fn
+                               context concept granule)]
+     ;; UMM Validation
+     (when (ingest-validation-enabled?)
+       (v/validate-granule-umm parent-collection granule))
 
-    ;; Add extra fields for the granule
-    (let [gran-concept (add-extra-fields-for-granule
-                         context concept granule parent-collection-concept)]
-      (v/validate-business-rules context gran-concept)
-      gran-concept)))
+     ;; Add extra fields for the granule
+     (let [gran-concept (add-extra-fields-for-granule
+                          context concept granule parent-collection-concept)]
+       (v/validate-business-rules context gran-concept)
+       gran-concept))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
