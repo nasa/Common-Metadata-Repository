@@ -151,11 +151,6 @@
              range-end))
          crossing-ranges)))
 
-(comment
-
-  ;(cmr.common.dev.capture-reveal/reveal lat-range)
-  )
-
 (defn- lat-lon-crossings-conditions
   "Create the seacrh conditions for a latitude-range / equator crosssing longitude-range returned
   by echo-orbits"
@@ -163,16 +158,10 @@
   (gc/or-conds
     (map (fn [lat-range-lon-range]
            (let [lat-range (first (first lat-range-lon-range))
-                 ;_ (cmr.common.dev.capture-reveal/capture lat-range)
-                 _ (println (str "ORIGINAL LAT RANGE: " (vec lat-range)))
                  [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits
                                                                              (first lat-range)
                                                                              (last lat-range))
-                 ;asc-lat-ranges (first lat-range)
-                 ;desc-lat-ranges (last lat-range)
                  lat-ranges (if ascending? asc-lat-ranges desc-lat-ranges)
-                 _ (doseq [r lat-ranges]
-                    (println (str "LAT RANGE: " (vec r))))
                  lat-conds (range->numeric-range-intersection-condition lat-ranges)
                  crossings (last lat-range-lon-range)]
              (gc/and-conds
@@ -180,22 +169,11 @@
                 (crossing-ranges->condition crossings)])))
          lat-ranges-crossings)))
 
-(comment
-  (cmr.common.dev.capture-reveal/reveal orbital-cond)
-  (cmr.common.dev.capture-reveal/reveal asc-crossings-lat-ranges)
-  (cmr.common.dev.capture-reveal/reveal desc-crossings-lat-ranges)
-
-  (.denormalizeLatitudeRange orbits 25.165 49.95)
-)
-
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
   to a spatial search."
   [context shape]
   (let [mbr (sr/mbr shape)
-        [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        asc-lat-conds (range->numeric-range-intersection-condition asc-lat-ranges)
-        desc-lat-conds (range->numeric-range-intersection-condition desc-lat-ranges)
         {:keys [query-collection-ids]} context
         orbit-params (query-helper/collection-orbit-parameters context query-collection-ids true)
         stored-ords (srl/shape->stored-ords shape)
@@ -212,7 +190,6 @@
     (when (seq crossings-map)
       (gc/or-conds
         (map (fn [collection-id]
-               ;; FIXME - I think there is a problem here
                (let [[asc-crossings-lat-ranges desc-crossings-lat-ranges]
                      (get crossings-map collection-id)]
                  (cmr.common.dev.capture-reveal/capture asc-crossings-lat-ranges)

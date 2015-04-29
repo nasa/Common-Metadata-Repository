@@ -44,183 +44,6 @@
                                      nil)}
                 other-attribs))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Ingests for visualizations
-
-(defn ingest-orbit-coll-and-granule
-  []
-  (let [coll (d/ingest "PROV1"
-                       (dc/collection
-                         {:entry-title "orbit-params1"
-                          :spatial-coverage (dc/spatial {:gsr :orbit
-                                                         :orbit {:swath-width 2
-                                                                 :period 96.7
-                                                                 :inclination-angle 94
-                                                                 :number-of-orbits 0.25
-                                                                 :start-circular-latitude
-                                                                 50
-                                                                 ; -50
-                                                                 ; 0
-                                                                 }})}))]
-
-    [coll (make-gran coll "gran1"
-                     70.80471 ; ascending crossing
-                     -50 :asc ; start lat, start dir
-                     50 :asc ; end lat end dir
-                     {:beginning-date-time "2003-09-27T17:03:27.000000Z"
-                      :ending-date-time "2003-09-27T17:30:23.000000Z"
-                      :orbit-calculated-spatial-domains [{:orbit-number 3838
-                                                          :equator-crossing-longitude 70.80471
-                                                          :equator-crossing-date-time "2003-09-27T15:40:15Z"}
-                                                         {:orbit-number 3839
-                                                          :equator-crossing-longitude 46.602737
-                                                          :equator-crossing-date-time "2003-09-27T17:16:56Z"}]})]))
-
-
-(defn ingest-orbit-coll-and-granules-north-pole
-  []
-  (let [coll (d/ingest "PROV1"
-                       (dc/collection
-                         {:entry-title "orbit-params1"
-                          :spatial-coverage (dc/spatial {:gsr :orbit
-                                                         :orbit {:swath-width 2
-                                                                 :period 96.7
-                                                                 :inclination-angle 94
-                                                                 :number-of-orbits 0.25
-                                                                 :start-circular-latitude
-                                                                 ;50
-                                                                 -50
-                                                                 ; 0
-                                                                 }})}))]
-
-    [coll (make-gran coll "gran1" 31.48193 50 :desc -50 :desc)]))
-
-(defn ingest-orbit-coll-and-granules-prime-meridian
-  []
-  (let [coll (d/ingest "PROV1"
-                       (dc/collection
-                         {:entry-title "orbit-params1"
-                          :spatial-coverage (dc/spatial {:gsr :orbit
-                                                         :orbit {:swath-width 2
-                                                                 :period 96.7
-                                                                 :inclination-angle 94
-                                                                 :number-of-orbits 0.25
-                                                                 :start-circular-latitude
-                                                                 -50
-                                                                 }})}))]
-    [coll (make-gran coll "gran1" 7.28116 -50 :asc 50 :asc)]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-(defn mbr-finds-granule?
-  [mbr]
-  (let [resp (search/find-refs :granule {:bounding-box (codec/url-encode mbr) :page-size 0})]
-    (> (:hits resp) 0)))
-
-(defn polygon-finds-granule?
-  [coords]
-  (println "COORDS:")
-  (println coords)
-  (let [resp (search/find-refs
-               :granule
-               {:polygon (apply st/search-poly coords)
-                :page-size 0})]
-    (println resp)
-    (> (:hits resp) 0)))
-
-(defn create-mbrs
-  ([]
-   (create-mbrs -180.0 180.0 -90.0 90.0 3.0))
-  ([min-lon max-lon min-lat max-lat step]
-   (for [[west east] (partition 2 1 (range min-lon (inc max-lon) step))
-         [south north] (partition 2 1 (range min-lat (inc max-lat) step))]
-     (m/mbr west north east south))))
-
-(defn mbr->polygon-coords
-  "Get the coordinates from the corners of an mbr"
-  [mbr]
-  (let [corners (-> (m/corner-points mbr)
-                    distinct
-                    reverse)
-        points (conj (vec corners) (first corners))]
-    (p/points->ords points)))
-
-
-(defn create-polygons
-  ([]
-   (create-polygons -180.0 180.0 -90.0 90.0 30.0))
-  ([min-lon max-lon min-lat max-lat step]
-   (let [mbrs (create-mbrs min-lon max-lon min-lat max-lat step)]
-     (map mbr->polygon-coords mbrs))))
-
-
-(comment
-
-  ;; 1. Perform setup
-  ;; evaluate this block
-  ;; First modify the metadata in ingest-orbit-coll-and-granule if you want.
-  (do
-    (dev-sys-util/reset)
-    (taoensso.timbre/set-level! :warn) ; turn down log level
-    (ingest/create-provider "provguid1" "PROV1")
-    #_(ingest-orbit-coll-and-granules-north-pole)
-    (ingest-orbit-coll-and-granules-prime-meridian)
-    #_(ingest-orbit-coll-and-granule))
-
-  ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
-  (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
-  (count (create-mbrs))
-
-  ;; 2. Evaluate this block to find all the mbrs.
-  ;; It will print out "Elapsed time: XXXX msecs" when it's done
-  (def matching-mbrs
-    (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3
-                                                                 ))))))
-
-  (def matching-polys
-    (future (time (doall (keep (fn [coords] (when (polygon-finds-granule? coords)
-                                              (umm-s/set-coordinate-system
-                                                :geodetic
-                                                (apply st/polygon coords))))
-                               (create-polygons -46.0 46.0 -89.0 89.0 3))))))
-
-  (mbr-finds-granule? (m/mbr 40 30 45 24))
-
-  (ge-helper/display-shapes "test_mbr.kml" [(m/mbr 40 30 45 24)])
-
-
-  ;; How many were found? This will block on the future
-  (count @matching-mbrs)
-  (count @matching-polys)
-
-  ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
-  ;; Google Earth will open when you evaluate it. (as long as you've installed it)
-  ;; You can give different tests unique names. Otherwise it will overwrite the file.
-  (ge-helper/display-shapes "start_circ_pos_50_2.kml" @matching-mbrs)
-  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
-  (ge-helper/display-shapes "start_circ_neg_50.kml" @matching-mbrs)
-  (ge-helper/display-shapes "start_circ_0.kml" @matching-mbrs)
-
-  (ge-helper/display-shapes "start_circ_pos_50_poly.kml" @matching-polys)
-
-  ;; visualize the kml representation
-  (do (spit "granule_kml.kml"
-            (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
-    (clojure.java.shell/sh "open" "granule_kml.kml"))
-
-
-
-
-
-  )
-
-
-
-
-
 (deftest fractional-orbit-non-zero-start-clat
   ;; Added to test fix for CMR-1168
   (let [;; orbit parameters
@@ -271,36 +94,6 @@
               "Search for granules crossing a rectangle as given in CMR-1168"
               [g1] [54.844,25.165 97.734,25.165 97.734,52.133 54.844,52.133 54.844,25.165] nil))))
 
-(deftest failing-test
-  (let [;; orbit parameters
-        op2 {:swath-width 2
-             :period 96.7
-             :inclination-angle 94
-             :number-of-orbits 0.25
-             :start-circular-latitude -50}
-        coll2 (d/ingest "PROV1"
-                        (dc/collection
-                          {:entry-title "orbit-params2"
-                           :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op2})}))
-        g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)]
-    (index/wait-until-indexed)
-    (testing "polygon searches"
-      (u/are2 [items coords params]
-              (let [found (search/find-refs
-                            :granule
-                            (merge {:polygon
-                                    (apply st/search-poly coords)
-                                    :page-size 50} params))
-                    matches? (d/refs-match? items found)]
-                (when-not matches?
-                  (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-                  (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-                matches?)
-
-              "Triangle crossing prime meridian"
-              [g8] [-45,-45 45,-45 45,0, -45,-45] nil))))
-
 (deftest orbit-search
   (let [;; orbit parameters
         op1 {:swath-width 1450
@@ -344,7 +137,6 @@
         g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)
         g9 (make-gran coll3 "gran9" 127.73 81.8 :desc -81.8 :desc)]
     (index/wait-until-indexed)
-
 
     (testing "bounding rectangle searches"
       (u/are2 [items wnes params]
@@ -486,8 +278,177 @@
               ;; of the backtrack algorithm and be able to definitively state when an orbit granule doesn intersect a
               ;; particular bounding box.
               ;;
-              ;[] [0 1 6 0] nil
+              ; "Broken test"
+              ; [] [0 1 6 0] nil
               ))))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Visualizations
+;;
 
+;; Ingests for visualizations
+
+(defn- ingest-orbit-coll-and-granule
+  []
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:entry-title "orbit-params1"
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit {:swath-width 2
+                                                                 :period 96.7
+                                                                 :inclination-angle 94
+                                                                 :number-of-orbits 0.25
+                                                                 :start-circular-latitude
+                                                                 50
+                                                                 ; -50
+                                                                 ; 0
+                                                                 }})}))]
+
+    [coll (make-gran coll "gran1"
+                     70.80471 ; ascending crossing
+                     -50 :asc ; start lat, start dir
+                     50 :asc ; end lat end dir
+                     {:beginning-date-time "2003-09-27T17:03:27.000000Z"
+                      :ending-date-time "2003-09-27T17:30:23.000000Z"
+                      :orbit-calculated-spatial-domains [{:orbit-number 3838
+                                                          :equator-crossing-longitude 70.80471
+                                                          :equator-crossing-date-time "2003-09-27T15:40:15Z"}
+                                                         {:orbit-number 3839
+                                                          :equator-crossing-longitude 46.602737
+                                                          :equator-crossing-date-time "2003-09-27T17:16:56Z"}]})]))
+
+
+(defn- ingest-orbit-coll-and-granules-north-pole
+  []
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:entry-title "orbit-params1"
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit {:swath-width 2
+                                                                 :period 96.7
+                                                                 :inclination-angle 94
+                                                                 :number-of-orbits 0.25
+                                                                 :start-circular-latitude
+                                                                 ;50
+                                                                 -50
+                                                                 ; 0
+                                                                 }})}))]
+
+    [coll (make-gran coll "gran1" 31.48193 50 :desc -50 :desc)]))
+
+(defn- ingest-orbit-coll-and-granules-prime-meridian
+  []
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:entry-title "orbit-params1"
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit {:swath-width 2
+                                                                 :period 96.7
+                                                                 :inclination-angle 94
+                                                                 :number-of-orbits 0.25
+                                                                 :start-circular-latitude
+                                                                 -50
+                                                                 }})}))]
+    [coll (make-gran coll "gran1" 7.28116 -50 :asc 50 :asc)]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Visualization code
+
+(defn- mbr-finds-granule?
+  [mbr]
+  (let [resp (search/find-refs :granule {:bounding-box (codec/url-encode mbr) :page-size 0})]
+    (> (:hits resp) 0)))
+
+(defn- polygon-finds-granule?
+  [coords]
+  (println "COORDS:")
+  (println coords)
+  (let [resp (search/find-refs
+               :granule
+               {:polygon (apply st/search-poly coords)
+                :page-size 0})]
+    (println resp)
+    (> (:hits resp) 0)))
+
+(defn- create-mbrs
+  ([]
+   (create-mbrs -180.0 180.0 -90.0 90.0 3.0))
+  ([min-lon max-lon min-lat max-lat step]
+   (for [[west east] (partition 2 1 (range min-lon (inc max-lon) step))
+         [south north] (partition 2 1 (range min-lat (inc max-lat) step))]
+     (m/mbr west north east south))))
+
+(defn- mbr->polygon-coords
+  "Get the coordinates from the corners of an mbr"
+  [mbr]
+  (let [corners (-> (m/corner-points mbr)
+                    distinct
+                    reverse)
+        points (conj (vec corners) (first corners))]
+    (p/points->ords points)))
+
+
+(defn- create-polygons
+  ([]
+   (create-polygons -180.0 180.0 -90.0 90.0 30.0))
+  ([min-lon max-lon min-lat max-lat step]
+   (let [mbrs (create-mbrs min-lon max-lon min-lat max-lat step)]
+     (map mbr->polygon-coords mbrs))))
+
+
+(comment
+
+  ;; 1. Perform setup
+  ;; evaluate this block
+  ;; First modify the metadata in ingest-orbit-coll-and-granule if you want.
+  (do
+    (dev-sys-util/reset)
+    (taoensso.timbre/set-level! :warn) ; turn down log level
+    (ingest/create-provider "provguid1" "PROV1")
+    #_(ingest-orbit-coll-and-granules-north-pole)
+    #_(ingest-orbit-coll-and-granules-prime-meridian)
+    (ingest-orbit-coll-and-granule))
+
+  ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
+  (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
+  (count (create-mbrs))
+
+  ;; 2. Evaluate this block to find all the mbrs.
+  ;; It will print out "Elapsed time: XXXX msecs" when it's done
+  (def matching-mbrs
+    (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3
+                                                                 ))))))
+
+  ;; Or evaluate this block to use polygons instead of mbrs
+  (def matching-polys
+    (future (time (doall (keep (fn [coords] (when (polygon-finds-granule? coords)
+                                              (umm-s/set-coordinate-system
+                                                :geodetic
+                                                (apply st/polygon coords))))
+                               (create-polygons -46.0 46.0 -89.0 89.0 3))))))
+
+  (mbr-finds-granule? (m/mbr 40 30 45 24))
+
+  (ge-helper/display-shapes "test_mbr.kml" [(m/mbr 40 30 45 24)])
+
+
+  ;; How many were found? This will block on the future
+  (count @matching-mbrs)
+  (count @matching-polys)
+
+  ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
+  ;; Google Earth will open when you evaluate it. (as long as you've installed it)
+  ;; You can give different tests unique names. Otherwise it will overwrite the file.
+  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
+
+  (ge-helper/display-shapes "start_circ_pos_50_poly.kml" @matching-polys)
+
+  ;; visualize the kml representation
+  (do (spit "granule_kml.kml"
+            (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
+    (clojure.java.shell/sh "open" "granule_kml.kml"))
+
+)
