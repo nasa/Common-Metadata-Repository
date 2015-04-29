@@ -102,12 +102,12 @@
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
   This can be used to provide the collection through an alternative means like the API."
   ([context concept]
-   (validate-granule context concept get-granule-parent-collection-and-concept))
+   (validate-granule
+     context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
    (v/validate-concept-xml concept)
 
-   ;; fetch-parent-collection-concept-fn defaults to get-granule-parent-collection-and-concept
    (let [granule (umm/parse-concept concept)
          [parent-collection-concept
           parent-collection] (fetch-parent-collection-concept-fn
