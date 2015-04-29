@@ -13,12 +13,13 @@
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
+            [cmr.elastic-utils.test-util :as elastic-util]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
-            [cmr.ingest.services.ingest :as ingest-service]
+            [cmr.ingest.services.ingest-service :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.cubby.api.routes :as cubby-api]
@@ -42,7 +43,7 @@
   [system]
   (let [indexer-cached-acls (deref (get-in system [:apps :indexer :caches :acls]))
         search-cached-acls (deref (get-in system [:apps :search :caches :acls]))
-        actual-acls (echo-acls/get-acls-by-type (app-context system :indexer) "CATALOG_ITEM")
+        actual-acls (echo-acls/get-acls-by-types (app-context system :indexer) [:catalog-item])
         coll-permitted-groups (es/get-collection-permitted-groups (app-context system :search))
         result {:collection-permitted-groups coll-permitted-groups}]
 
@@ -92,6 +93,8 @@
               ;; Only call reset on applications which are deployed to the current system
               :when (get-in system [:apps service-name])]
         (reset-fn (app-context system service-name)))
+      ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
+      (elastic-util/wait-for-healthy-elastic (get-in system [:apps :indexer :db]))
       (debug "dev system /reset complete")
       {:status 200})
 

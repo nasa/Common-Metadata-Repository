@@ -8,6 +8,7 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.cartesian-ring :as cr]
             [cmr.spatial.line-string :as l]
+            [cmr.spatial.encoding.gml :as gml]
             [clojure.string :as str]))
 
 (def coordinate-syste->srs-name
@@ -42,7 +43,8 @@
   (shape->gml
     [line]
     (let [srs-name (coordinate-syste->srs-name (:coordinate-system line))]
-      (x/element :gml:LineString {:srsName srs-name} (shape->string line))))
+      (x/element :gml:LineString {:xmlns:gml gml/xml-namespace :srsName srs-name}
+                 (shape->string line))))
 
   cmr.spatial.mbr.Mbr
   (shape->string
@@ -73,7 +75,8 @@
   (shape->gml
     [{:keys [rings] :as shape}]
     (let [srs-name (coordinate-syste->srs-name (:coordinate-system shape))]
-      (x/element :gml:Polygon {:srsName srs-name}
+      (x/element :gml:Polygon {:xmlns:gml gml/xml-namespace
+                               :srsName srs-name}
                  (x/element :gml:outerBoundaryIs {}
                             (shape->gml (first rings)))
                  (when-let [holes (rest rings)]
@@ -91,7 +94,7 @@
         boxes (when-let [boxes (get shapes-by-type cmr.spatial.mbr.Mbr)]
                 (shape->string (first boxes)))
         polygons (when-let [polygons (get shapes-by-type cmr.spatial.polygon.Polygon)]
-                   (cx/remove-xml-processing-instructions (xml-fn (shape->gml (first polygons)))))
+                   (xml-fn (shape->gml (first polygons))))
         lines (when-let [lines (get shapes-by-type cmr.spatial.line_string.LineString)]
-                (cx/remove-xml-processing-instructions (xml-fn (shape->gml (first lines)))))]
+                (xml-fn (shape->gml (first lines))))]
     (or polygons lines boxes points)))

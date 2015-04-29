@@ -20,6 +20,10 @@
   [conn]
   (format "%s/reset" (conn/root-url conn)))
 
+(defn health-url
+  [conn]
+  (format "%s/health" (conn/root-url conn)))
+
 (defn keys-url
   [conn]
   (format "%s/keys" (conn/root-url conn)))
@@ -138,3 +142,19 @@
    (reset context false))
   ([context is-raw]
    (cubby-request context {:url-fn reset-url, :method :post, :raw? is-raw})))
+
+(defn get-cubby-health-fn
+  "Returns the health status of cubby"
+  [context]
+  (let [conn (config/context->app-connection context :cubby)
+        {:keys [status body]} (cubby-request context {:url-fn health-url, :method :get, :raw? true})]
+    (if (= 200 status)
+      {:ok? true :dependencies body}
+      {:ok? false :problem body})))
+
+(defn get-cubby-health
+  "Returns the cubby health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-cubby-health-fn context) timeout-ms)))
+

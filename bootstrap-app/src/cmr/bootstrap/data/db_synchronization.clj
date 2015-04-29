@@ -114,7 +114,7 @@
   (let [stmt (add-updates-to-work-table-stmt system provider-id concept-type params)]
     (j/execute! (:db system) stmt)))
 
-(defn get-work-items-batch
+(defn- get-work-items-batch
   "Selects n work items from the table starting at the given index and retrieving up to n items"
   [system start-index n]
   (let [sql "select concept_id, revision_id from sync_work where id >= ? and id < ?"
@@ -133,7 +133,7 @@
         partial-ins (when (> num-in-partial 0) [(make-in num-in-partial)])]
     (str/join " or " (concat full-ins partial-ins))))
 
-(defn get-latest-concept-id-revision-ids
+(defn- get-latest-concept-id-revision-ids
   "Finds the revision ids for the given concept ids in metadata db. Returns tuples of concept id and
   revision id"
   [system provider-id concept-type concept-ids]
@@ -231,7 +231,7 @@
         (warn (format "Skipping Catalog REST Item %s with delete time %s in the past"
                       concept-id delete-time))))))
 
-(defn process-items-from-work-table
+(defn- process-items-from-work-table
   "Starts a process that will retrieve items in batches from the work table and writes them to a
   channel. The channel is returned. Each message on the channel is a sequence of batched items.
   Items are tuples of concept id and revision id."
@@ -251,7 +251,7 @@
           (debug "process-items-from-work-table completed"))))
     item-batch-chan))
 
-(defn map-missing-items-to-concepts
+(defn- map-missing-items-to-concepts
   "Starts a process that will map batches of items to individual concepts from Catalog REST that
   should be saved in the Metadata DB. Returns the channel that will contain the concepts to save."
   [system provider-id concept-type item-batch-chan]
@@ -275,7 +275,7 @@
           (debug "map-missing-items-to-concepts completed"))))
     concepts-chan))
 
-(defn save-and-index-concept
+(defn- save-and-index-concept
   "Saves the concept to the Metadata DB and indexes it using the indexer"
   [system concept]
   ;; This is going to copy the item to metadata db. If it was never added to MDB in the first place
@@ -299,7 +299,7 @@
         (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
                          concept-id revision-id (.getMessage e)))))))
 
-(defn process-missing-concepts
+(defn- process-missing-concepts
   "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
   Returns when all concepts have been processed or an error has occured."
   [system concepts-chan]
@@ -321,7 +321,7 @@
       (<!! thread-chan))))
 
 
-(defn synchronize-updates
+(defn- synchronize-updates
   "Finds any items in Catalog REST, loads the concepts from Catalog REST, saves them in the
   Metadata DB and indexes them."
   [system provider-id concept-type params]
@@ -394,7 +394,7 @@
   (let [stmt (add-missing-to-work-table-stmt system provider-id concept-type params)]
     (j/execute! (:db system) stmt)))
 
-(defn synchronize-missing
+(defn- synchronize-missing
   "Finds items missing from Metadata DB, loads the concepts from Catalog REST, saves them in the
   Metadata DB and indexes them."
   [system provider-id concept-type params]
@@ -491,7 +491,7 @@
                select rownum, concept_id, revision_id from sync_delete_work
                where deleted = 0"]))
 
-(defn add-deleted-items-to-work-table
+(defn- add-deleted-items-to-work-table
   "Populates the work table with deleted items. This is a several step process to find the items
   that are missing and require a tombstone in metadata db."
   [system provider-id concept-type params]
@@ -505,7 +505,7 @@
   ;; batch processing. We also skip any revisions that are a tombstone.
   (transfer-delete-work-items-to-work-table system))
 
-(defn map-extra-items-batches-to-deletes
+(defn- map-extra-items-batches-to-deletes
   "Starts a process that maps batches of items to delete to individual tuples of concept ids and
   revision ids of a tombstone that should be created. Returns that channel that will receive the
   individual tombstones."
@@ -524,7 +524,7 @@
           (debug "map-extra-items-batches-to-deletes completed"))))
     tuples-chan))
 
-(defn create-tombstone-and-unindex-concept
+(defn- create-tombstone-and-unindex-concept
   "Creates a tombstone with the given concept id and revision id and unindexes the concept."
   [system concept-id revision-id]
   (try
@@ -543,7 +543,7 @@
       (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
                        concept-id revision-id (.getMessage e))))))
 
-(defn process-deletes
+(defn- process-deletes
   "Starts a series of threads that read items one at a time off the channel then creates a tombstone
   and unindexes them. Returns when all items have been processed or an error has occured."
   [system tuples-chan]
@@ -564,7 +564,7 @@
       ;; Wait for the thread to close the channel/return a result indicating it's done.
       (<!! thread-chan))))
 
-(defn synchronize-deletes
+(defn- synchronize-deletes
   "Finds items that exist in Metadata DB but do not exist in Catalog REST. It creates tombstones
   for these items and unindexes them."
   [system provider-id concept-type params]
@@ -580,26 +580,27 @@
   [system params]
   (let [{:keys [sync-types provider-id]} params
         sync-types (set sync-types)
-        providers (filter #(or (nil? provider-id) (= % provider-id))
+        providers (filter #(or (nil? provider-id) (= (:provider-id %) provider-id))
                           (provider-service/get-providers {:system system}))
         params (dissoc params :provider-id :sync-types)
         ;; start date and end date are only supported for updates
         params-without-dates (dissoc params :start-date :end-date)]
-    (doseq [provider providers]
+    (doseq [{:keys [provider-id cmr-only]} providers
+            :when (not cmr-only)]
       ;; Collections
       (when (:missing sync-types)
-        (synchronize-missing system provider :collection params-without-dates))
+        (synchronize-missing system provider-id :collection params-without-dates))
       (when (:updates sync-types)
-        (synchronize-updates system provider :collection params))
+        (synchronize-updates system provider-id :collection params))
       (when (:deletes sync-types)
-        (synchronize-deletes system provider :collection params-without-dates))
+        (synchronize-deletes system provider-id :collection params-without-dates))
       ;; Granules
       (when (:missing sync-types)
-        (synchronize-missing system provider :granule params-without-dates))
+        (synchronize-missing system provider-id :granule params-without-dates))
       (when (:updates sync-types)
-        (synchronize-updates system provider :granule params))
+        (synchronize-updates system provider-id :granule params))
       (when (:deletes sync-types)
-        (synchronize-deletes system provider :granule params-without-dates))))
+        (synchronize-deletes system provider-id :granule params-without-dates))))
   (info "Synchronization complete"))
 
 

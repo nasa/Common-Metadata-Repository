@@ -1,11 +1,12 @@
 (ns cmr.acl.core
   "Contains code for retrieving and manipulating ACLs."
   (:require [cmr.common.services.errors :as errors]
-            [cmr.acl.acl-cache :as acl-cache]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.acl.collection-matchers :as cm]
             [cmr.common.cache :as cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]))
 
 (def BROWSER_CLIENT_ID "browser")
@@ -70,7 +71,7 @@
   this collection"
   [context provider-id coll]
 
-  (->> (acl-cache/get-acls context)
+  (->> (acl-fetcher/get-acls context [:catalog-item])
        ;; Find only acls that are applicable to this collection
        (filter (partial cm/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
@@ -92,46 +93,44 @@
 (defn create-token-imp-cache
   "Creates a cache for which tokens have ingest management permission."
   []
-  (cache/create-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
-
-(def object-identity-type->acl-key
-  {"CATALOG_ITEM" :catalog-item-identity
-   "SYSTEM_OBJECT" :system-object-identity
-   "PROVIDER_OBJECT" :provider-object-identity})
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
-  (->> (echo-acls/get-acls-by-type context object-identity-type provider-id)
-       ;; Find acls on INGEST_MANAGEMENT
-       (filter (comp (partial = "INGEST_MANAGEMENT_ACL")
-                     :target (object-identity-type->acl-key object-identity-type)))
-       ;; Find acls for this user and permission type
-       (filter (partial acl-matches-sids-and-permission?
-                        (context->sids context)
-                        permission-type))
-       seq))
+  (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+    (->> (acl-fetcher/get-acls context [object-identity-type])
+         ;; Find acls on INGEST_MANAGEMENT
+         (filter #(= "INGEST_MANAGEMENT_ACL" (get-in % [acl-oit-key :target])))
+         ;; Find acls for this user and permission type
+         (filter (partial acl-matches-sids-and-permission?
+                          (context->sids context)
+                          permission-type))
+         ;; Find acls for this provider
+         (filter #(or (nil? provider-id)
+                      (= provider-id (get-in % [acl-oit-key :provider-id]))))
+         seq)))
 
 (defn verify-ingest-management-permission
   "Verifies the current user has been granted INGEST_MANAGEMENT_PERMISSION in ECHO ACLs"
   ([context]
-   (verify-ingest-management-permission context :update "SYSTEM_OBJECT" nil))
+   (verify-ingest-management-permission context :update :system-object nil))
   ([context permission-type]
-   (verify-ingest-management-permission context permission-type "SYSTEM_OBJECT" nil))
+   (verify-ingest-management-permission context permission-type :system-object nil))
   ([context permission-type object-identity-type provider-id]
-   (let [cache-key [(:token context) permission-type]
-         has-permission? (cache/cache-lookup
-                           (cache/context->cache context token-imp-cache-key)
-                           cache-key
-                           #(has-ingest-management-permission? context
-                                                               permission-type
-                                                               object-identity-type
-                                                               provider-id))]
+   (let [has-permission-fn #(has-ingest-management-permission?
+                              context permission-type object-identity-type provider-id)
+         has-permission? (if-let [cache (cache/context->cache context token-imp-cache-key)]
+                           ;; Read using cache. Cache key is combo of token and permission type
+                           (cache/get-value
+                             cache [(:token context) permission-type] has-permission-fn)
+                           ;; No token cache so directly check permission.
+                           (has-permission-fn))]
      (when-not has-permission?
        (errors/throw-service-error
          :unauthorized
          "You do not have permission to perform that action.")))))
 
-(comment
-  (def context {:system (get-in user/system [:apps :ingest])}))
+
+

@@ -13,16 +13,19 @@
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions
   so that it will be easier to convert into elastic json"
   [temporal]
-  (let [{:keys [start-date end-date]} temporal
+  (let [{:keys [start-date end-date exclusive?]} temporal
         conditions (if end-date
                      [(qm/map->DateRangeCondition {:field :start-date
-                                                   :end-date end-date})
+                                                   :end-date end-date
+                                                   :exclusive? exclusive?})
                       (gc/or-conds [(qm/map->MissingCondition {:field :end-date})
                                     (qm/map->DateRangeCondition {:field :end-date
-                                                                 :start-date start-date})])]
+                                                                 :start-date start-date
+                                                                 :exclusive? exclusive?})])]
                      [(gc/or-conds [(qm/map->MissingCondition {:field :end-date})
                                     (qm/map->DateRangeCondition {:field :end-date
-                                                                 :start-date start-date})])])]
+                                                                 :start-date start-date
+                                                                 :exclusive? exclusive?})])])]
     (gc/and-conds (concat
                     [(qm/map->ExistCondition {:field :start-date})]
                     conditions))))

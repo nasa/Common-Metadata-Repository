@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.common.cache :as cache]
             [cmr.search.services.acls.granule-acls :as g]
-            [cmr.search.services.acls.collections-cache :as coll-cache]))
+            [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (defn access-value
   "Creates an access value filter"
@@ -61,7 +62,7 @@
 (defn context-with-cached-collections
   "Creates a context with the specified collections in the collections cache"
   [collections]
-  (let [coll-cache (cache/create-cache
+  (let [coll-cache (mem-cache/create-in-memory-cache
                      :default
                      {:collections {:by-concept-id
                                     (into {} (for [{:keys [concept-id] :as coll} collections]

@@ -141,6 +141,7 @@
 (def or-option #{:or})
 (def and-or-option #{:and :or})
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
+(def exclude-plus-and-or-option #{:exclude-boundary :and :or})
 (def string-plus-and-options #{:pattern :ignore-case :and})
 (def string-plus-or-options #{:pattern :ignore-case :or})
 
@@ -173,7 +174,7 @@
    :dif-entry-id string-plus-and-options
    :provider string-param-options
    :attribute exclude-plus-or-option
-   :temporal and-or-option})
+   :temporal exclude-plus-and-or-option})
 
 (defn parameter-options-validation
   [concept-type params]

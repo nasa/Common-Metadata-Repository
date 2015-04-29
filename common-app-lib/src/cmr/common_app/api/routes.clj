@@ -26,7 +26,7 @@
         (acl/verify-ingest-management-permission context :read)
         (let [cache (cache/context->cache context (keyword cache-name))]
           (when cache
-            (let [result (cache/cache-keys cache)]
+            (let [result (cache/get-keys cache)]
               {:status 200
                :body (json/generate-string result)})))))
 
@@ -38,7 +38,7 @@
         (acl/verify-ingest-management-permission context :read)
         (let [cache-key (keyword cache-key)
               cache (cache/context->cache context (keyword cache-name))
-              result (cache/cache-lookup cache cache-key)]
+              result (cache/get-value cache cache-key)]
           (when result
             {:status 200
              :body (json/generate-string result)}))))

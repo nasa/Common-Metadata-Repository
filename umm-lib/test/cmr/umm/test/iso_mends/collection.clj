@@ -128,6 +128,8 @@
         (dissoc :quality)
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
         (assoc :personnel personnel)
+        ;; publication-reference will be added later
+        (dissoc :publication-references)
         umm-c/map->UmmCollection)))
 
 (defn derive-geometries

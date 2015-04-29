@@ -330,7 +330,8 @@
                                   :stop-orbit-number 4.0
                                   :equator-crossing-longitude -45.0
                                   :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})
-        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"}) :iso-smap)
+        gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
+                                                   :spatial-coverage (dg/spatial (p/point 1 2))}) :iso-smap)
         ;; Granule #5 is added for CMR-1115, where a granule with orbit spatial but no
         ;; OrbitCalculatedSpatialDomains will not have polygon info in its atom/json representation.
         gran5 (make-gran coll3 {:granule-ur "OrbitGranuleWithoutOrbitCalculatedSpatialDomains"

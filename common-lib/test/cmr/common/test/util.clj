@@ -7,7 +7,7 @@
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clj-time.core :as t]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util :refer [defn-timed]]))
 
 (deftest test-sequence->fn
   (testing "vector of values"
@@ -55,6 +55,34 @@
                   [x y] (= x y)
                   2 (+ 1 1)
                   4 (* 2 2)))))))
+
+(defn-timed test-timed-multi-arity
+  "The doc string"
+  ([f]
+   (test-timed-multi-arity f f))
+  ([fa fb]
+   (test-timed-multi-arity fa fb fa))
+  ([fa fb fc]
+   (fa)
+   (fb)
+   (fc)))
+
+(defn-timed test-timed-single-arity
+  "the doc string"
+  [f]
+  (f)
+  (f)
+  (f))
+
+(deftest defn-timed-test
+  (testing "single arity"
+    (let [counter (atom 0)
+          counter-fn #(swap! counter inc)]
+      (is (= 3 (test-timed-single-arity counter-fn))))
+    (testing "multi arity"
+    (let [counter (atom 0)
+          counter-fn #(swap! counter inc)]
+      (is (= 3 (test-timed-multi-arity counter-fn)))))))
 
 (deftest build-validator-test
   (let [error-type :not-found

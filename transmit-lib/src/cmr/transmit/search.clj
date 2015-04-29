@@ -5,9 +5,10 @@
             [cmr.transmit.config :as config]
             [cheshire.core :as cheshire]
             [cmr.system-trace.http :as ch]
-            [cmr.transmit.connection :as conn]))
+            [cmr.transmit.connection :as conn]
+            [cmr.common.util :as util :refer [defn-timed]]))
 
-(defn find-granule-hits
+(defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
   [context params]
   (let [conn (config/context->app-connection context :search)

@@ -239,6 +239,41 @@
    contacts
    ])
 
+(defrecord PublicationReference
+    [
+     author
+
+     publication-date
+
+     title
+
+     series
+
+     edition
+
+     volume
+
+     issue
+
+     report-number
+
+     publication-place
+
+     publisher
+
+     pages
+
+     isbn
+
+     ;; Digital Object Identifier
+     doi
+
+     related-url
+
+     ;; String for miscellaneous content
+     other-reference-details
+     ])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -301,6 +336,10 @@
    ;; specify how the item collection may or may not be used after
    ;; access is granted.
    use-contraints
+
+   ;; (seq of PublicationReference) This element describes key bibliographic citations
+   ;; pertaining to the data.
+   publication-references
 
    ])
 

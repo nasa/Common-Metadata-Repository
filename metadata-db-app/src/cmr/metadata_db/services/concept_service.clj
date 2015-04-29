@@ -47,7 +47,7 @@
 (defn validate-providers-exist
   "Validates that all of the providers in the list exist."
   [db provider-ids]
-  (let [existing-provider-ids (set (provider-db/get-providers db))
+  (let [existing-provider-ids (set (map :provider-id (provider-db/get-providers db)))
         unknown-providers (set/difference (set provider-ids) existing-provider-ids)]
     (when (> (count unknown-providers) 0)
       (errors/throw-service-error :not-found (msg/providers-do-not-exist unknown-providers)))))
@@ -230,7 +230,7 @@
 (defn- filter-non-existent-providers
   "Removes providers that don't exist from a map of provider-ids to values."
   [db provider-id-map]
-  (let [existing-provider-ids (set (provider-db/get-providers db))]
+  (let [existing-provider-ids (set (map :provider-id (provider-db/get-providers db)))]
     (into {} (filter (comp existing-provider-ids first) provider-id-map))))
 
 (deftracefn get-concepts
@@ -325,7 +325,7 @@
         latest-only? (= "true" (:latest params))
         params (dissoc params :latest)]
     (cv/validate-find-params params)
-    (if (contains? (set (provider-db/get-providers db)) (:provider-id params))
+    (if (contains? (set (map :provider-id (provider-db/get-providers db))) (:provider-id params))
       (if latest-only?
         (c/find-latest-concepts db params)
         (c/find-concepts db params))
@@ -419,7 +419,7 @@
   [context]
   (let [db (util/context->db context)
         ;; Get a map of provider id to counts of granules per collection concept id
-        provider-to-count-maps (into {} (pmap (fn [provider-id]
+        provider-to-count-maps (into {} (pmap (fn [{:keys [provider-id]}]
                                                 [provider-id (c/get-concept-type-counts-by-collection
                                                                db :granule provider-id)])
                                               (provider-db/get-providers db)))

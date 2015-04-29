@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.spatial.point :as p]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -367,14 +368,17 @@
         "invalid min no max" ["04:02:03.001Z" nil] 1
         "invalid min & max" ["04:02:03.001Z" "06:02:02.999Z"] 2))))
 
-
 (deftest collection-update-project-test
   (let [coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :projects (dc/projects "p1" "p2" "p3" "p4")}))
+        coll2 (d/ingest "PROV1" (dc/collection
+                                  {:entry-title "parent-collection2"
+                                   :projects (dc/projects "p4")}))
         _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p2" "p3"]}))
-        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))]
+        _ (d/ingest "PROV1" (dg/granule coll {:project-refs ["p3"]}))
+        _ (d/ingest "PROV1" (dg/granule coll2 {:project-refs ["p4"]}))]
 
     (index/wait-until-indexed)
 
@@ -390,7 +394,7 @@
         "Adding an additional project is OK"
         ["p1" "p2" "p3" "p4" "p5"]
 
-        "Removing a project not referenced by any granule is OK"
+        "Removing a project not referenced by any granule in the collection is OK"
         ["p1" "p2" "p3"]))
 
     (testing "Update collection failure cases"
@@ -405,3 +409,173 @@
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
         ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
+
+(deftest collection-update-granule-spatial-representation-test
+  (let [make-coll (fn [entry-title spatial-params]
+                    (d/ingest "PROV1" (dc/collection {:entry-title entry-title
+                                                      :spatial-coverage (when spatial-params
+                                                                          (dc/spatial spatial-params))})))
+        make-gran (fn [coll spatial]
+                    (d/ingest "PROV1" (dg/granule coll {:spatial-coverage
+                                                        (when spatial (dg/spatial spatial))})))
+
+        ;; Geodetic test collections
+        coll-geodetic-no-grans (make-coll "coll-geodetic-no-grans" {:gsr :geodetic})
+        coll-geodetic-with-grans (make-coll "coll-geodetic-with-grans" {:gsr :geodetic})
+        gran1 (make-gran coll-geodetic-with-grans (p/point 10 22))
+
+        ;; Cartesian test collections
+        coll-cartesian-no-grans (make-coll "coll-cartesian-no-grans" {:gsr :cartesian})
+        coll-cartesian-with-grans (make-coll "coll-cartesian-with-grans" {:gsr :cartesian})
+        gran2 (make-gran coll-cartesian-with-grans (p/point 10 22))
+
+        ;; Orbit test collections
+        orbit-params {:swath-width 1450
+                      :period 98.88
+                      :inclination-angle 98.15
+                      :number-of-orbits 0.5
+                      :start-circular-latitude -90}
+        coll-orbit-no-grans (make-coll "coll-orbit-no-grans" {:gsr :orbit :orbit orbit-params})
+        coll-orbit-with-grans (make-coll "coll-orbit-with-grans" {:gsr :orbit :orbit orbit-params})
+        gran3 (make-gran coll-orbit-with-grans (dg/orbit -158.1 81.8 :desc  -81.8 :desc))
+
+        ;; No Spatial test collections
+        coll-no-spatial-no-grans  (make-coll "coll-no-spatial-no-grans" nil)
+        coll-no-spatial-with-grans  (make-coll "coll-no-spatial-with-grans" nil)
+        gran4 (make-gran coll-no-spatial-with-grans nil)
+
+        update-collection (fn [coll new-spatial-params]
+                            (let [updated-coll (dissoc coll :revision-id)
+                                  updated-coll (assoc updated-coll
+                                                      :spatial-coverage (when new-spatial-params
+                                                                          (dc/spatial new-spatial-params)))]
+                              (d/ingest "PROV1" updated-coll)))]
+
+    (index/wait-until-indexed)
+    (testing "Updates allowed with no granules"
+      (are [coll new-spatial-params]
+           (= 200 (:status (update-collection coll new-spatial-params)))
+           coll-geodetic-no-grans {:gsr :cartesian}
+           coll-cartesian-no-grans {:gsr :geodetic}
+           coll-orbit-no-grans {:gsr :geodetic}
+           coll-no-spatial-no-grans {:gsr :geodetic}))
+
+    (testing "Updates not permitted with granules"
+      (are [coll new-spatial-params prev-gsr new-gsr]
+           (= {:status 400
+               :errors [(format (str "Collection changing from %s granule spatial representation to "
+                                     "%s is not allowed when the collection has granules."
+                                     " Found 1 granules.")
+                                prev-gsr new-gsr)]}
+              (update-collection coll new-spatial-params))
+
+           coll-geodetic-with-grans {:gsr :cartesian} "GEODETIC" "CARTESIAN"
+           coll-geodetic-with-grans nil "GEODETIC" "NO_SPATIAL"
+           coll-geodetic-with-grans {:gsr :orbit :orbit orbit-params} "GEODETIC" "ORBIT"
+           coll-cartesian-with-grans {:gsr :geodetic} "CARTESIAN" "GEODETIC"
+           coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
+           coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
+
+(deftest collection-update-temporal-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "2001-01-01T12:00:00Z"
+                                                :ending-date-time "2010-05-11T12:00:00Z"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
+                                                :beginning-date-time "2000-01-01T12:00:00Z"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset3"
+                                                :beginning-date-time "2000-01-01T12:00:00Z"}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"
+                                                :beginning-date-time "2001-01-01T12:00:00Z"
+                                                :ending-date-time "2010-05-11T12:00:00Z"}))
+        collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
+                                                        :beginning-date-time "1999-01-02T12:00:00Z"
+                                                        :ending-date-time "1999-05-01T12:00:00Z"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+                                                   :beginning-date-time "2010-01-01T12:00:00Z"
+                                                   :ending-date-time "2010-01-11T12:00:00Z"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
+                                                   :beginning-date-time "2010-01-31T12:00:00Z"
+                                                   :ending-date-time "2010-02-12T12:00:00Z"}))
+        gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
+                                                   :beginning-date-time "2010-02-03T12:00:00Z"
+                                                   :ending-date-time "2010-03-20T12:00:00Z"}))
+        gran4 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule4"
+                                                   :beginning-date-time "2010-03-12T12:00:00Z"}))
+        gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"}))
+        gran6 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule6"
+                                                   :beginning-date-time "2000-06-01T12:00:00Z"
+                                                   :ending-date-time "2000-08-01T12:00:00Z"}))
+        gran7 (d/ingest "PROV1" (dg/granule coll4 {:granule-ur "Granule7"
+                                                   :beginning-date-time "2001-01-01T12:00:00Z"
+                                                   :ending-date-time "2010-05-11T12:00:00Z"}))]
+    (index/wait-until-indexed)
+
+    (testing "Update collection successful cases"
+      (util/are2
+        [entry-title beginning-date-time ending-date-time]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                           {:entry-title entry-title
+                                            :beginning-date-time beginning-date-time
+                                            :ending-date-time ending-date-time}))
+              {:keys [status errors]} response]
+          (= [200 nil] [status errors]))
+
+        "Update dataset with the same temporal coverage"
+        "Dataset1" "2010-01-01T12:00:00Z" "2010-05-01T12:00:00Z"
+
+        "Update dataset with no temporal coverage"
+        "Dataset1" nil nil
+
+        "Update dataset with bigger temporal coverage"
+        "Dataset1" "2009-12-01T12:00:00Z" "2010-05-02T12:00:00Z"
+
+        "Update dataset with bigger temporal coverage, no end date time"
+        "Dataset1" "2009-12-01T12:00:00Z" nil
+
+        "Update dataset with smaller temporal coverage, but still contains all existing granules"
+        "Dataset1" "2010-01-01T12:00:00Z" "2010-04-01T12:00:00Z"
+
+        "Update dataset (no end_date_time) to one with end_date_time that covers all existing granules"
+        "Dataset2" "2000-06-01T12:00:00Z" "2011-03-01T12:00:00Z"
+
+        "Update dataset (with no granules) to one with bigger temporal coverage"
+        "Dataset-No-Granule" "1999-01-01T00:00:00Z" "1999-09-01T12:00:00Z"
+
+        "Update dataset (with no granules) to one with smaller temporal coverage"
+        "Dataset-No-Granule" "1999-02-01T00:00:00Z" "1999-03-01T12:00:00Z"
+
+        "Update dataset (with no granules) to one with no temporal coverage"
+        "Dataset-No-Granule" nil nil
+
+        "Update dataset with same temporal coverage and granule having same temporal coverage as collection"
+        "Dataset4" "2001-01-01T12:00:00Z" "2010-05-11T12:00:00Z"))
+
+    (testing "Update collection failure cases"
+      (util/are2
+        [entry-title beginning-date-time ending-date-time expected-errors]
+        (let [response (d/ingest "PROV1" (dc/collection
+                                           {:entry-title entry-title
+                                            :beginning-date-time beginning-date-time
+                                            :ending-date-time ending-date-time}))
+              {:keys [status errors]} response]
+          (= [400 expected-errors] [status errors]))
+
+        "Update dataset with smaller temporal coverage and does not contain all existing granules, begin date time too late"
+        "Dataset1" "2010-01-02T12:00:00Z" "2010-04-01T12:00:00Z"
+        ["Found granules earlier than collection start date [2010-01-02T12:00:00.000Z]. Found 1 granules."]
+
+        "Update dataset with smaller temporal coverage and does not contain all existing granules, end date time too early"
+        "Dataset1" "2010-01-01T12:00:00Z" "2010-03-19T12:00:00Z"
+        ["Found granules later than collection end date [2010-03-19T12:00:00.000Z]. Found 1 granules."]
+
+        "Update dataset (no end_date_time) to one with begin_date_time that does not cover all existing granules"
+        "Dataset2" "2000-06-02T12:00:00Z" nil
+        ["Found granules earlier than collection start date [2000-06-02T12:00:00.000Z]. Found 1 granules."]
+
+        "Update dataset (no end_date_time) to one with end_date but having granules with no end_date"
+        "Dataset3" "2000-06-02T12:00:00Z" "2011-06-02T12:00:00Z"
+        ["Found granules later than collection end date [2011-06-02T12:00:00.000Z]. Found 1 granules."]
+
+        "Update dataset (no end_date_time) to one with end_date_time that does not cover all existing granules"
+        "Dataset2" "2000-05-01T12:00:00Z" "2000-07-01T12:00:00Z"
+        ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))

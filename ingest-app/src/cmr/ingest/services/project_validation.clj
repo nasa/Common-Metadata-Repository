@@ -11,6 +11,7 @@
                                 (set (map :short-name (:projects prev-concept)))
                                 (set (map :short-name (:projects concept))))]
     (for [name deleted-project-names]
-      {:params {"project[]" name}
+      {:params {"project[]" name
+                :collection-concept-id concept-id}
        :error-msg (format (str "Collection Project [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))

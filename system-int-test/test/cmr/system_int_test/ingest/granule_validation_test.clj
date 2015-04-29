@@ -342,6 +342,14 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
+(deftest missing-spatial-coverage-test
+  (let [collection-attrs {:spatial-coverage {:granule-spatial-representation :geodetic}}
+        granule-attrs {:format "application/echo10+xml; charset=utf-8"}]
+        (assert-invalid collection-attrs
+                        granule-attrs
+                        ["SpatialCoverage" "Geometries"]
+                        ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
+
 ;; TODO uncomment this test when implementing CMR-1239
 #_(deftest duplicate-granule-ur-test
     (testing "same granule-ur and native-id across providers is valid"

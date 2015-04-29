@@ -5,7 +5,7 @@
            [clojure.string :as string]
            [clojure.pprint :refer (pprint pp)]
            [clojure.java.jdbc :as j]
-           [cmr.metadata-db.services.util :as util]
+           [cmr.metadata-db.services.provider-service :as provider-service]
            [inflections.core :as inf]))
 
 (def all-concept-types [:collection :granule])
@@ -14,7 +14,7 @@
   "Get the name for the table for a given provider-id and concept-type"
   [provider-id concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
-  (util/validate-provider-id provider-id)
+  (provider-service/validate-provider {:provider-id provider-id :cmr-only false})
   (format "%s_%s" (string/lower-case provider-id) (inf/plural (name concept-type))))
 
 (defn create-concept-table-id-sequence
@@ -118,7 +118,7 @@
                                  table-name))
     ;; can't create constraint with column of datatype TIME/TIMESTAMP WITH TIME ZONE
     ;; so we create the index separately from the create table statement
-    (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
+    (j/db-do-commands db (format "CREATE INDEX %s_crddr ON %s (concept_id, revision_id, deleted, delete_time, revision_date)"
                                  table-name
                                  table-name))
     (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id)"

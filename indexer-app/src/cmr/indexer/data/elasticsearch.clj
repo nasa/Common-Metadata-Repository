@@ -117,7 +117,6 @@
     [this system]
     (let [context {:system system}
           conn (es/try-connect (:config this))]
-      (create-indexes context)
       (assoc this :conn conn)))
 
   (stop [this system]

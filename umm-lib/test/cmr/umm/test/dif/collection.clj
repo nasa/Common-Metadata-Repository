@@ -121,9 +121,8 @@
   (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]
       (and
-        (> (count xml) 0)
-        (= 0 (count (c/validate-xml xml)))))))
-
+       (seq xml)
+       (empty? (c/validate-xml xml))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
@@ -272,6 +271,23 @@
       <Abstract>Summary of collection.</Abstract>
       <Purpose>A grand purpose</Purpose>
     </Summary>
+    <Reference>
+      <Author>author</Author>
+      <Publication_Date>2015</Publication_Date>
+      <Title>title</Title>
+      <Series>1</Series>
+      <Edition>2</Edition>
+      <Volume>3</Volume>
+      <Issue>4</Issue>
+      <Report_Number>5</Report_Number>
+      <Publication_Place>Frederick, MD</Publication_Place>
+      <Publisher>publisher</Publisher>
+      <Pages>678</Pages>
+      <ISBN>978-0-394-80001-1</ISBN>
+      <Online_Resource>http://example.com</Online_Resource>
+      <DOI>http://dx.doi.org/12.3456/ABC012XYZ</DOI>
+      <Other_Reference_Details>blah</Other_Reference_Details>
+    </Reference>
     <Related_URL>
       <URL_Content_Type>
         <Type>GET DATA</Type>
@@ -368,6 +384,14 @@
         <Last_Name>UNEP</Last_Name>
       </Personnel>
     </Data_Center>
+    <Reference>
+      <Author>author</Author>
+      <Publication_Date>2015</Publication_Date>
+      <Title>title</Title>
+      <Publication_Place>Frederick, MD</Publication_Place>
+      <Publisher>publisher</Publisher>
+      <DOI>http://dx.doi.org/12.3456/ABC012XYZ</DOI>
+    </Reference>
     <Summary>
       <Abstract>summary of the dataset</Abstract>
       <Purpose>A grand purpose</Purpose>
@@ -394,6 +418,22 @@
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-date "2013-02-21")
                                                  :update-time (p/parse-date "2013-10-22")})
+                    :publication-references [(umm-c/map->PublicationReference
+                                               {:author "author"
+                                                :publication-date "2015"
+                                                :title "title"
+                                                :series "1"
+                                                :edition "2"
+                                                :volume "3"
+                                                :issue "4"
+                                                :report-number "5"
+                                                :publication-place "Frederick, MD"
+                                                :publisher "publisher"
+                                                :pages "678"
+                                                :isbn "978-0-394-80001-1"
+                                                :related-url "http://example.com"
+                                                :doi "http://dx.doi.org/12.3456/ABC012XYZ"
+                                                :other-reference-details "blah"})]
                     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :platforms [(umm-c/map->Platform
                                   {:short-name "SPOT-1"
@@ -496,7 +536,7 @@
 
 (deftest validate-xml
   (testing "valid xml"
-    (is (= 0 (count (c/validate-xml valid-collection-xml)))))
+    (is (empty? (c/validate-xml valid-collection-xml))))
   (testing "invalid xml"
     (is (= [(str "Line 18 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'XXXX'. "
                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center_URL, "

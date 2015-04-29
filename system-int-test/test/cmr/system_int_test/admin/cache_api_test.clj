@@ -74,15 +74,14 @@
            (url/indexer-read-caches-url) ["acls" "general" "token-imp"]
            (url/index-set-read-caches-url) ["token-imp"]
            (url/mdb-read-caches-url) ["token-imp"]
-           (url/ingest-read-caches-url) ["token-imp"]
+           (url/ingest-read-caches-url) ["token-imp" "acls"]
            (url/search-read-caches-url) ["acls"
                                          "collections-for-gran-acls"
                                          "has-granules-map"
                                          "index-names"
                                          "token-imp"
                                          "token-sid"
-                                         "xsl-transformer-templates"]
-           (url/cubby-read-caches-url) ["token-imp"])
+                                         "xsl-transformer-templates"])
       (s/only-with-real-database
         (testing "list caches for bootstrap"
           (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
@@ -103,8 +102,7 @@
            (url/index-set-read-caches-url)
            (url/mdb-read-caches-url)
            (url/ingest-read-caches-url)
-           (url/search-read-caches-url)
-           (url/cubby-read-caches-url))
+           (url/search-read-caches-url))
       (s/only-with-real-database
         (testing "normal user cannot access cache list API for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -139,8 +137,7 @@
            (str (url/index-set-read-caches-url) "/acls")
            (str (url/mdb-read-caches-url) "/acls")
            (str (url/ingest-read-caches-url) "/acls")
-           (str (url/search-read-caches-url) "/acls")
-           (str (url/cubby-read-caches-url) "/acls"))
+           (str (url/search-read-caches-url) "/acls"))
       (s/only-with-real-database
         (testing "normal user cannot retrieve cache keys for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -170,14 +167,13 @@
            (url/ingest-read-caches-url) "token-imp" [[nil "update"]
                                                      ["ABC-1" "read"]
                                                      ["ABC-2" "read"]]
-           (url/search-read-caches-url) "acls" []
+           (url/search-read-caches-url) "acls" ["acls"]
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
            (url/search-read-caches-url) "index-names" []
            (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
            (url/search-read-caches-url) "token-sid" []
-           (url/search-read-caches-url) "xsl-transformer-templates" []
-           (url/cubby-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]])
+           (url/search-read-caches-url) "xsl-transformer-templates" [])
       (s/only-with-real-database
         (testing "list cache keys for bootstrap"
           (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
@@ -200,8 +196,7 @@
            (str (url/index-set-read-caches-url) "/acls/acls")
            (str (url/mdb-read-caches-url) "/acls/acls")
            (str (url/ingest-read-caches-url) "/acls/acls")
-           (str (url/search-read-caches-url) "/acls/acls")
-           (str (url/cubby-read-caches-url) "/acls/acls"))
+           (str (url/search-read-caches-url) "/acls/acls"))
       (s/only-with-real-database
         (testing "normal user cannot retrieve cache values for bootstrap"
           (let [response (client/request {:url (url/bootstrap-read-caches-url)
@@ -227,29 +222,6 @@
       (are [url cache cache-key value]
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= (set value) (set response))))
-           (url/indexer-read-caches-url) "acls" "acls" [{:aces
-                                                         [{:permissions ["read"], :user-type "guest"}
-                                                          {:permissions ["read"], :user-type "registered"}],
-                                                         :catalog-item-identity
-                                                         {:provider-id "PROV3",
-                                                          :granule-applicable true,
-                                                          :collection-applicable true},
-                                                         :system-object-identity {}}
-                                                        {:aces
-                                                         [{:permissions ["read"], :user-type "guest"}
-                                                          {:permissions ["read"], :user-type "registered"}],
-                                                         :catalog-item-identity
-                                                         {:provider-id "PROV2",
-                                                          :granule-applicable true,
-                                                          :collection-applicable true},
-                                                         :system-object-identity {}}
-                                                        {:aces
-                                                         [{:permissions ["read"], :user-type "guest"}
-                                                          {:permissions ["read"], :user-type "registered"}],
-                                                         :catalog-item-identity
-                                                         {:provider-id "PROV1",
-                                                          :granule-applicable true,
-                                                          :collection-applicable true},
-                                                         :system-object-identity {}}]
            (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
                                                                             :granule "granule"}))))
+

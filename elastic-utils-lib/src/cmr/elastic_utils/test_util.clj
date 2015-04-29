@@ -2,7 +2,9 @@
   (:require [cmr.elastic-utils.config :as config]
             [cmr.elastic-utils.embedded-elastic-server :as ees]
             [cmr.elastic-utils.connect :as conn]
-            [cmr.common.lifecycle :as l]))
+            [cmr.common.lifecycle :as l]
+            [clojurewerkz.elastisch.rest.admin :as admin]
+            [cmr.common.services.errors :as errors]))
 
 (def IN_MEMORY_ELASTIC_PORT
   "A constant defining the common in memory elastic port to use for local testing. This avoids having
@@ -26,3 +28,10 @@
         (f)
         (finally
           (l/stop server nil))))))
+
+(defn wait-for-healthy-elastic
+  "Waits for the elasticsearch cluster health to reach yellow. Pass in a elasticsearch store that
+  has a :conn key with the elastisch connection"
+  [elastic-store]
+  (when (:timed_out (admin/cluster-health (:conn elastic-store) :wait_for_status "yellow" :timeout "3s"))
+    (errors/internal-error! "Timed out waiting for elasticsearch to reach a healthy state")))

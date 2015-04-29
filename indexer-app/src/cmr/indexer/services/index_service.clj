@@ -10,6 +10,7 @@
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as tis]
             [cmr.transmit.echo.rest :as rest]
+            [cmr.transmit.cubby :as cubby]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.elastic-utils.connect :as es-util]
             [cmr.umm.core :as umm]
@@ -17,7 +18,7 @@
             [cheshire.core :as cheshire]
             [cmr.indexer.data.index-set :as idx-set]
             [cmr.indexer.config :as config]
-            [cmr.acl.acl-cache :as acl-cache]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
@@ -54,7 +55,7 @@
 
   ;; Refresh the ACL cache.
   ;; We want the latest permitted groups to be indexed with the collections
-  (acl-cache/refresh-acl-cache context)
+  (acl-fetcher/refresh-acl-cache context)
 
   (doseq [provider-id provider-ids]
     (let [collections (->> (meta-db/find-collections context {:provider-id provider-id})
@@ -148,12 +149,18 @@
   [context]
   (let [elastic-health (es-util/health context :db)
         echo-rest-health (rest/health context)
+        ;; Cubby health disabled until https://bugs.earthdata.nasa.gov/browse/EI-3348 is completed
+        ;; and cubby is available in all environments
+        ; cubby-health (cubby/get-cubby-health context)
         metadata-db-health (meta-db/get-metadata-db-health context)
         index-set-health (tis/get-index-set-health context)
-        ok? (every? :ok? [elastic-health echo-rest-health metadata-db-health index-set-health])]
+        ok? (every? :ok? [elastic-health echo-rest-health
+                          ; cubby-health
+                          metadata-db-health index-set-health])]
     {:ok? ok?
      :dependencies {:elastic_search elastic-health
                     :echo echo-rest-health
+                    ; :cubby cubby-health
                     :metadata-db metadata-db-health
                     :index-set index-set-health}}))
 

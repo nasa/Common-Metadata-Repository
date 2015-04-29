@@ -2,16 +2,17 @@
   (:require [clojure.test :refer :all]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as a]
-            [cmr.acl.acl-cache :as ac]))
+            [cmr.acl.acl-fetcher :as af]
+            [cmr.common.cache.in-memory-cache :as mem-cache]))
 
 (defn context-with-acls
   "Creates a fake context with the acls in an acl cache"
   [& acls]
-  (let [acl-cache (ac/create-acl-cache)]
-    (cache/update-cache
-      acl-cache
-      #(assoc % :acls acls))
-    {:system {:caches {ac/acl-cache-key acl-cache}}}))
+  (let [acl-cache (af/create-acl-cache
+                    (mem-cache/create-in-memory-cache)
+                    [:catalog-item])]
+    (cache/set-value acl-cache :acls acls)
+    {:system {:caches {af/acl-cache-key acl-cache}}}))
 
 (defn group-ace
   [group-guid & permissions]

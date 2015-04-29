@@ -37,13 +37,14 @@
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
-  [field-path spatial-coverage-ref]
+  [_ granule]
   (let [granule-spatial-representation
-        (get-in spatial-coverage-ref [:parent :granule-spatial-representation] :no-spatial)
-        is-not-allowed (spatial-field-not-allowed field-path
+        (get-in granule [:parent :spatial-coverage :granule-spatial-representation] :no-spatial)
+        spatial-coverage-ref (:spatial-coverage granule)
+        is-not-allowed (spatial-field-not-allowed [:spatial-coverage]
                                                   spatial-coverage-ref
                                                   granule-spatial-representation)
-        is-required (spatial-field-is-required field-path
+        is-required (spatial-field-is-required [:spatial-coverage]
                                                spatial-coverage-ref
                                                granule-spatial-representation)
         errors (case granule-spatial-representation
@@ -66,12 +67,11 @@
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
-  [spatial-matches-granule-spatial-representation
-   (v/pre-validation
-    ;; The spatial representation has to be set on the geometries before the conversion because
-    ;; polygons etc do not know whether they are geodetic or not.
-    set-geometries-spatial-representation
-    {:geometries (v/every sv/spatial-validation)})])
+  [(v/pre-validation
+     ;; The spatial representation has to be set on the geometries before the conversion because
+     ;; polygons etc do not know whether they are geodetic or not.
+     set-geometries-spatial-representation
+     {:geometries (v/every sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -158,6 +158,9 @@
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 
+    (and coll-end (nil? gran-end))
+    (format "There is no granule end date whereas collection has an end date of [%s]" coll-end)
+
     (and gran-end (t/after? gran-start gran-end))
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
@@ -220,6 +223,7 @@
                                   (v/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
     :related-urls h/online-access-urls-validation}
-   projects-reference-collection])
+   projects-reference-collection
+   spatial-matches-granule-spatial-representation])
 
 
