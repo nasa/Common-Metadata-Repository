@@ -442,19 +442,19 @@
         ;; No Spatial test collections
         coll-no-spatial-no-grans  (make-coll "coll-no-spatial-no-grans" nil)
         coll-no-spatial-with-grans  (make-coll "coll-no-spatial-with-grans" nil)
-        gran4 (make-gran coll-no-spatial-with-grans nil)]
+        gran4 (make-gran coll-no-spatial-with-grans nil)
+
+        update-collection (fn [coll new-spatial-params]
+                            (let [updated-coll (dissoc coll :revision-id)
+                                  updated-coll (assoc updated-coll
+                                                      :spatial-coverage (when new-spatial-params
+                                                                          (dc/spatial new-spatial-params)))]
+                              (d/ingest "PROV1" updated-coll)))]
 
     (index/wait-until-indexed)
     (testing "Updates allowed with no granules"
       (are [coll new-spatial-params]
-           (let [updated-coll (as-> coll updated-coll
-                                    (dissoc updated-coll :revision-id)
-                                    (if new-spatial-params
-                                      (assoc updated-coll
-                                             :spatial-coverage (dc/spatial new-spatial-params))
-                                      (dissoc updated-coll :spatial-coverage)))]
-             (= 200 (:status (d/ingest "PROV1" updated-coll))))
-
+           (= 200 (:status (update-collection coll new-spatial-params)))
            coll-geodetic-no-grans {:gsr :cartesian}
            coll-cartesian-no-grans {:gsr :geodetic}
            coll-orbit-no-grans {:gsr :geodetic}
@@ -462,20 +462,16 @@
 
     (testing "Updates not permitted with granules"
       (are [coll new-spatial-params prev-gsr new-gsr]
-           (let [updated-coll (as-> coll updated-coll
-                                    (dissoc updated-coll :revision-id)
-                                    (if new-spatial-params
-                                      (assoc updated-coll
-                                             :spatial-coverage (dc/spatial new-spatial-params))
-                                      (dissoc updated-coll :spatial-coverage)))]
-             (= {:status 400
-                 :errors [(format (str "Collection changing from %s granule spatial representation to "
-                                       "%s is not allowed when the collection has granules."
-                                       " Found 1 granules.")
-                                  prev-gsr new-gsr)]}
-                (d/ingest "PROV1" updated-coll)))
+           (= {:status 400
+               :errors [(format (str "Collection changing from %s granule spatial representation to "
+                                     "%s is not allowed when the collection has granules."
+                                     " Found 1 granules.")
+                                prev-gsr new-gsr)]}
+              (update-collection coll new-spatial-params))
 
            coll-geodetic-with-grans {:gsr :cartesian} "GEODETIC" "CARTESIAN"
+           coll-geodetic-with-grans nil "GEODETIC" "NO_SPATIAL"
+           coll-geodetic-with-grans {:gsr :orbit :orbit orbit-params} "GEODETIC" "ORBIT"
            coll-cartesian-with-grans {:gsr :geodetic} "CARTESIAN" "GEODETIC"
            coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
            coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
