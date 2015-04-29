@@ -82,7 +82,7 @@
     (testing "multi arity"
     (let [counter (atom 0)
           counter-fn #(swap! counter inc)]
-      (is (= 3 (test-timed-multi-arity counter-fnf)))))))
+      (is (= 3 (test-timed-multi-arity counter-fn)))))))
 
 (deftest build-validator-test
   (let [error-type :not-found
