@@ -34,7 +34,10 @@
   "Maps concept type to a list of constraint functions to run."
   {:collection [(unique-field-constraint :entry-title)
                 (unique-field-constraint :entry-id)]
-   :granule [(unique-field-constraint :granule-ur)]})
+   ;; TODO - Uncomment for CMR-1239 after index has been created on granule_ur column as part of
+   ;; CMR-1380 migration
+   ;; :granule [(unique-field-constraint :granule-ur)]})
+   })
 
 (defn perform-post-commit-constraint-checks
   "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if

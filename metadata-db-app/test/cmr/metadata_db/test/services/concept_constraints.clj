@@ -135,6 +135,8 @@
                 #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
                 ((cc/unique-field-constraint :invalid-field) db test-concept))))))))
 
+;; TODO - Add granule-ur concept constraint test as part of CMR-1239
+
 
 (comment
   (cmr.metadata-db.int-test.utility/find-concepts :collection

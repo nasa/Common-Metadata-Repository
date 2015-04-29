@@ -350,7 +350,8 @@
                     ["SpatialCoverage" "Geometries"]
                     ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
 
-(deftest duplicate-granule-ur-test
+;; TODO Uncomment when working CMR-1239
+#_(deftest duplicate-granule-ur-test
   (testing "same granule-ur and native-id across providers is valid"
     (assert-valid
       {}

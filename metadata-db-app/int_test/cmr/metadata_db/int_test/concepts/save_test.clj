@@ -205,7 +205,8 @@
         (is (= [existing-collection]
                (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
 
-(deftest save-granule-post-commit-constraint-violations
+;; TODO Uncomment when working CMR-1239
+#_(deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
     (let [collection (util/collection-concept "PROV1" 1)
           parent-collection-id (:concept-id (util/save-concept collection))
