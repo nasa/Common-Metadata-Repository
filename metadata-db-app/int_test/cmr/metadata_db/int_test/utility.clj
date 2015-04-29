@@ -318,7 +318,7 @@
   "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
   status and a list of error messages."
   ([provider-id]
-   (save-provider provider-id false))
+   (save-provider provider-id nil))
   ([provider-id cmr-only]
    (let [response (client/post providers-url
                                {:body (json/generate-string

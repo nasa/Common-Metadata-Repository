@@ -7,7 +7,7 @@
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.test.test-check-ext :as tc :refer [defspec]]
             [clojure.string :as s]
-            [cmr.common.dev.util :as cu])
+            [cmr.common.test.test-util :as tu])
   (:import clojure.lang.ExceptionInfo))
 
 
@@ -78,13 +78,15 @@
 
 ;; Test for mixed parameters
 (deftest mixed-paramter-types
-  (is (thrown-with-msg? ExceptionInfo (cu/message->regex (a-msg/mixed-legacy-and-cmr-style-parameters-msg))
-                        (lp/process-legacy-psa {:attribute ["string,abc,xyz"
-                                                            {:name "PDQ"}
-                                                            {:type "string"}
-                                                            {:value "ABC"}]}
-                                               (legacy-psa-maps->legacy-psa-query
-                                                 [{:name "PDQ" :type "string" :value "ABC"}])))))
+  (tu/assert-exception-thrown-with-errors
+    :bad-request
+    [(a-msg/mixed-legacy-and-cmr-style-parameters-msg)]
+    (lp/process-legacy-psa {:attribute ["string,abc,xyz"
+                                        {:name "PDQ"}
+                                        {:type "string"}
+                                        {:value "ABC"}]}
+                           (legacy-psa-maps->legacy-psa-query
+                             [{:name "PDQ" :type "string" :value "ABC"}]))))
 
 
 

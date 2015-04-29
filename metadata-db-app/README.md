@@ -285,7 +285,7 @@ Synchronously runs the expired concept cleanup job. Requires token with UPDATE i
 
 ### Create provider
 
-Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is a provider that's only in the CMR or if it is also in Catalog REST. `cmr-only` defaults to false.
+Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is a provider that has ingest directly to the CMR and not through Catalog REST. `cmr-only` defaults to false.
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":false}' http://localhost:3001/providers
 

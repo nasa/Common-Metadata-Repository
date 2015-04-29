@@ -26,7 +26,7 @@
 (defn- provider-id-format-validation
   "Validates the provider id is in the correct format."
   [field-path provider-id]
-  (when (and provider-id (not (re-matches #"^[a-zA-Z](\w|_)*" provider-id)))
+  (when (and provider-id (not (re-matches #"^[A-Z][A-Z0-9_]*" provider-id)))
     {field-path [(msg/invalid-provider-id provider-id)]}))
 
 (defn- must-be-boolean
