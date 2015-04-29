@@ -92,9 +92,10 @@
          result# (do ~@body)]
      [(- (System/currentTimeMillis) start#) result#]))
 
-
 (defmacro defn-timed
-  "Creates a function that logs how long it took to execute the body"
+  "Creates a function that logs how long it took to execute the body. It supports multiarity functions
+  but only times how long the last listed arity version takes. This means it should be used with
+  multiarity functions where it calls itself with the extra arguments."
   [fn-name & fn-tail]
   (let [fn-name-str (name fn-name)
         ns-str (str *ns*)
