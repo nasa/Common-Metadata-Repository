@@ -100,7 +100,7 @@
   (format "Provider [%s] already exists."
           provider-id))
 
-(defn provider-id-empty [provider-id]
+(defn provider-id-empty []
   (format "Provider ID cannot be empty"))
 
 (defn provider-id-too-long [provider-id]

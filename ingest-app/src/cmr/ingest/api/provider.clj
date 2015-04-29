@@ -10,7 +10,8 @@
     (POST "/" {:keys [request-context body params headers]}
       (let [request-context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission request-context :update)
-        (ps/create-provider request-context (get body "provider-id"))))
+        (ps/create-provider request-context {:provider-id (get body "provider-id")
+                                             :cmr-only (get body "cmr-only")})))
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context

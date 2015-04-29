@@ -4,8 +4,8 @@
 
 (defn create-provider
   "Create a provider."
-  [context provider-id]
-  (mdb/create-provider-raw context provider-id))
+  [context provider]
+  (mdb/create-provider-raw context provider))
 
 (defn delete-provider
   "Delete a provider and all its concepts."

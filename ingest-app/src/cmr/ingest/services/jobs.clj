@@ -27,7 +27,7 @@
 (defn reindex-all-collections
   "Reindexes all collections in all providers"
   [context]
-  (let [providers (mdb/get-providers context)
+  (let [providers (map :provider-id (mdb/get-providers context))
         current-provider-id-acl-hashes (acls->provider-id-hashes
                                          (echo-acls/get-acls-by-types context [:catalog-item]))]
     (info "Reindexing collections in all providers:" (pr-str providers))
@@ -39,7 +39,7 @@
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
   the groups that have permission to find collections are indexed with the collections."
   [context]
-  (let [providers (mdb/get-providers context)
+  (let [providers (map :provider-id (mdb/get-providers context))
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
                                          (echo-acls/get-acls-by-types context [:catalog-item]))
@@ -74,7 +74,7 @@
   "Finds collections that have expired (have a delete date in the past) and removes them from
   metadata db and the index"
   [context]
-  (doseq [provider-id (mdb/get-providers context)]
+  (doseq [{:keys [provider-id]} (mdb/get-providers context)]
     (info "Cleaning up expired collections for provider" provider-id)
     (when-let [concept-ids (mdb/get-expired-collection-concept-ids context provider-id)]
       (info "Removing expired collections:" (pr-str concept-ids))

@@ -48,7 +48,7 @@
   "Checks if the given provider exists in cmr."
   [context provider-id]
   (let [provider-list (provider-service/get-providers context)]
-    (some #{provider-id} provider-list)))
+    (some #{provider-id} (map :provider-id provider-list))))
 
 (defn get-collection
   "Get specified collection from cmr."

@@ -161,7 +161,7 @@
   database into the metadata db database."
   [system provider-id]
   (transmit-mdb/delete-provider {:system system} provider-id)
-  (transmit-mdb/create-provider {:system system} provider-id)
+  (transmit-mdb/create-provider {:system system} {:provider-id provider-id :cmr-only false})
   (copy-collection-data system provider-id)
   (copy-granule-data-for-provider system provider-id)
   (info "Processing of provider" provider-id "completed."))

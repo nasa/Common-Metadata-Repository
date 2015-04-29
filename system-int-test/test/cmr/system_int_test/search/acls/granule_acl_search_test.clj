@@ -50,11 +50,11 @@
 (comment
   (do
     (dev-sys-util/reset)
-    (ingest/create-provider "provguid1" "PROV1" false)
-    (ingest/create-provider "provguid2" "PROV2" false)
-    (ingest/create-provider "provguid3" "PROV3" false)
-    (ingest/create-provider "provguid4" "PROV4" false)
-    (ingest/create-provider "provguid5" "PROV5" false))
+    (ingest/create-provider "provguid1" "PROV1" {:grant-all-search? false})
+    (ingest/create-provider "provguid2" "PROV2" {:grant-all-search? false})
+    (ingest/create-provider "provguid3" "PROV3" {:grant-all-search? false})
+    (ingest/create-provider "provguid4" "PROV4" {:grant-all-search? false})
+    (ingest/create-provider "provguid5" "PROV5" {:grant-all-search? false}))
   )
 
 (deftest granule-search-with-acls-test
