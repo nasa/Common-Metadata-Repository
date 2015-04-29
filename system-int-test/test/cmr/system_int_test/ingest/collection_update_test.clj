@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.spatial.point :as p]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -408,6 +409,76 @@
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
         ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
+
+(deftest collection-update-granule-spatial-representation-test
+  (let [make-coll (fn [entry-title spatial-params]
+                    (d/ingest "PROV1" (dc/collection {:entry-title entry-title
+                                                      :spatial-coverage (when spatial-params
+                                                                          (dc/spatial spatial-params))})))
+        make-gran (fn [coll spatial]
+                    (d/ingest "PROV1" (dg/granule coll {:spatial-coverage
+                                                        (when spatial (dg/spatial spatial))})))
+
+        ;; Geodetic test collections
+        coll-geodetic-no-grans (make-coll "coll-geodetic-no-grans" {:gsr :geodetic})
+        coll-geodetic-with-grans (make-coll "coll-geodetic-with-grans" {:gsr :geodetic})
+        gran1 (make-gran coll-geodetic-with-grans (p/point 10 22))
+
+        ;; Cartesian test collections
+        coll-cartesian-no-grans (make-coll "coll-cartesian-no-grans" {:gsr :cartesian})
+        coll-cartesian-with-grans (make-coll "coll-cartesian-with-grans" {:gsr :cartesian})
+        gran2 (make-gran coll-cartesian-with-grans (p/point 10 22))
+
+        ;; Orbit test collections
+        orbit-params {:swath-width 1450
+                      :period 98.88
+                      :inclination-angle 98.15
+                      :number-of-orbits 0.5
+                      :start-circular-latitude -90}
+        coll-orbit-no-grans (make-coll "coll-orbit-no-grans" {:gsr :orbit :orbit orbit-params})
+        coll-orbit-with-grans (make-coll "coll-orbit-with-grans" {:gsr :orbit :orbit orbit-params})
+        gran3 (make-gran coll-orbit-with-grans (dg/orbit -158.1 81.8 :desc  -81.8 :desc))
+
+        ;; No Spatial test collections
+        coll-no-spatial-no-grans  (make-coll "coll-no-spatial-no-grans" nil)
+        coll-no-spatial-with-grans  (make-coll "coll-no-spatial-with-grans" nil)
+        gran4 (make-gran coll-no-spatial-with-grans nil)]
+
+    (index/wait-until-indexed)
+    (testing "Updates allowed with no granules"
+      (are [coll new-spatial-params]
+           (let [updated-coll (as-> coll updated-coll
+                                    (dissoc updated-coll :revision-id)
+                                    (if new-spatial-params
+                                      (assoc updated-coll
+                                             :spatial-coverage (dc/spatial new-spatial-params))
+                                      (dissoc updated-coll :spatial-coverage)))]
+             (= 200 (:status (d/ingest "PROV1" updated-coll))))
+
+           coll-geodetic-no-grans {:gsr :cartesian}
+           coll-cartesian-no-grans {:gsr :geodetic}
+           coll-orbit-no-grans {:gsr :geodetic}
+           coll-no-spatial-no-grans {:gsr :geodetic}))
+
+    (testing "Updates not permitted with granules"
+      (are [coll new-spatial-params prev-gsr new-gsr]
+           (let [updated-coll (as-> coll updated-coll
+                                    (dissoc updated-coll :revision-id)
+                                    (if new-spatial-params
+                                      (assoc updated-coll
+                                             :spatial-coverage (dc/spatial new-spatial-params))
+                                      (dissoc updated-coll :spatial-coverage)))]
+             (= {:status 400
+                 :errors [(format (str "Collection changing from %s granule spatial representation to "
+                                       "%s is not allowed when the collection has granules."
+                                       " Found 1 granules.")
+                                  prev-gsr new-gsr)]}
+                (d/ingest "PROV1" updated-coll)))
+
+           coll-geodetic-with-grans {:gsr :cartesian} "GEODETIC" "CARTESIAN"
+           coll-cartesian-with-grans {:gsr :geodetic} "CARTESIAN" "GEODETIC"
+           coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
+           coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
