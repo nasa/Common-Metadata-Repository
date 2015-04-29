@@ -17,7 +17,10 @@
             [cmr.common.mime-types :as mime-types]))
 
 
-(use-fixtures :each (bootstrap/db-fixture "CPROV1" "CPROV2"))
+(use-fixtures :each (bootstrap/db-fixture {"CPROV1" false
+                                           "CPROV2" false
+                                           ;; This provider will be CMR Only
+                                           "CPROV3" true}))
 
 (comment
   (do
@@ -216,6 +219,21 @@
           results (search/find-refs-with-post concept-type {:concept-id (map :concept-id type-concepts)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
+(deftest db-synchronize-cmr-only-provider
+  (s/only-with-real-database
+    (let [concept-counter (atom 1)
+          coll1-1 (coll-concept concept-counter "CPROV3" "coll1")
+          system (bootstrap/system)]
+
+      (ingest/save-concept coll1-1)
+
+      ;; CPROV3 is a CMR Only provider so nothing shoould change when it is synchronized.
+      (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing] :provider-id "CPROV3"})
+
+      ;; Check that they are synchronized now with the latest data.
+      (assert-concepts-in-mdb [coll1-1])
+      (assert-concepts-indexed [coll1-1]))))
+
 (deftest db-synchronize-collection-updates-test
   (s/only-with-real-database
     (let [concept-counter (atom 1)
@@ -254,7 +272,6 @@
       ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
       (cat-rest/insert-concept system coll5-1)
       (cat-rest/insert-concept system coll6-1)
-
 
       ;; Catalog REST and Metadata DB are not in sync now.
       ;; Put them back in sync

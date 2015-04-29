@@ -7,6 +7,37 @@
   into record-validation or seq-of-validations."
   (:require [clojure.string :as str]))
 
+(comment
+
+  ;; Example Validations
+
+  (def address-validations
+    {:city required
+     :street required})
+
+  (defn last-not-first
+    [field-path person-name]
+    (when (= (:last person-name) (:first person-name))
+      {field-path ["Last name must not equal first name"]}))
+
+  (def person-validations
+    {:addresses (every address-validations)
+     :name (first-failing {:first required
+                           :last required}
+                          last-not-first)
+     :age [required integer]})
+
+  (validate person-validations {:addresses [{:street "5 Main"
+                                             :city "Annapolis"}
+                                            {:city "dd"}
+                                            {:city "dd"}
+                                            {:street "dfkkd"}]
+                                :name {:first "Jason"
+                                       :last "Jason"}
+                                :age "35"})
+
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Support functions
 
@@ -29,17 +60,29 @@
               field-map))))
 
 (defn seq-of-validations
-  "Returns a validator merging results from a list of validators."
-  [validators]
-  (let [validators (map auto-validation-convert validators)]
-    (fn [field-path value]
-      (reduce (fn [field-errors validator]
-                (let [errors (validator field-path value)]
-                  (if (seq errors)
-                    (merge-with concat field-errors errors)
-                    field-errors)))
-              {}
-              validators))))
+  "Returns a validator merging results from a list of validators. Takes an optional argument
+  indicating if validations should short circuit. When short circuiting the error messages from the
+  first validation will be returned without running subsequent validations."
+  ([validators]
+   (seq-of-validations validators false))
+  ([validators short-circuit?]
+   (let [validators (map auto-validation-convert validators)]
+     (fn [field-path value]
+       (reduce (fn [field-errors validator]
+                 (let [errors (validator field-path value)]
+                   (if (seq errors)
+                     (if short-circuit?
+                       ;; The call to reduced here will make reduce exit early with only these errors
+                       (reduced errors)
+                       (merge-with concat field-errors errors))
+                     field-errors)))
+               {}
+               validators)))))
+
+(defn first-failing
+  "Syntactic sugar for creating a sequence of validations that will short circuit."
+  [& validators]
+  (seq-of-validations validators true))
 
 (defn auto-validation-convert
   "Handles converting basic clojure data structures into a validation function."
@@ -125,47 +168,3 @@
     (when (and value (or (< (compare value minv) 0) (> (compare value maxv) 0)))
       {field-path [(format "%%s must be within [%s] and [%s] but was [%s]."
                            minv maxv value)]})))
-
-
-(comment
-
-  ((seq-of-validations
-     [required integer])
-   [:foo] 5)
-
-  ((record-validation {:a [required number]
-                       :b [{:name required} (fn [f _] {f ["always fail"]})]})
-   [:foo] {:b {:name "foo"}})
-
-  ((record-validation {:a [required number]
-                       :b [required (fn [f _] {f ["always fail"]})]})
-   [:foo] {:b {:name "foo"}})
-
-
-
-  (def address-validations
-    {:city required
-     :street required})
-
-  (defn last-not-first
-    [field-path person-name]
-    (when (= (:last person-name) (:first person-name))
-      {field-path ["Last name must not equal first name"]}))
-
-  (def person-validations
-    {:addresses (every address-validations)
-     :name [{:first required
-             :last required}
-            last-not-first]
-     :age [required integer]})
-
-  (validate person-validations {:addresses [{:street "5 Main"
-                                             :city "Annapolis"}
-                                            {:city "dd"}
-                                            {:city "dd"}
-                                            {:street "dfkkd"}]
-                                :name {:first "Jason"
-                                       :last "Jason"}
-                                :age "35"})
-
-  )

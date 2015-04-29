@@ -9,56 +9,66 @@
             [cmr.metadata-db.data.oracle.concept-tables :as ct])
   (:import cmr.oracle.connection.OracleStore))
 
-(defn dbresult->provider-list
-  "Convert the sequence of maps coming from the database into a sequence of strings"
-  [result]
-  (map :provider_id result))
+(defn dbresult->provider
+  "Converts a map result from the database to a provider map"
+  [{:keys [provider_id cmr_only]}]
+  {:provider-id provider_id
+   :cmr-only (== 1 cmr_only)})
 
 (extend-protocol p/ProvidersStore
   OracleStore
 
   (save-provider
-    [db provider-id]
-    (try (do
-           (j/insert! db
-                      :providers
-                      ["provider_id"]
-                      [provider-id])
-           (ct/create-provider-concept-tables db provider-id))
-      {:provider-id provider-id}
-      (catch Exception e
-        (error (.getMessage e))
-        (let [error-message (.getMessage e)
-              error-code (cond
-                           (re-find #"UNIQUE_PROVIDER_ID" error-message)
-                           :provider-id-conflict
-
-                           :else
-                           :unknown-error)]
-          {:error error-code :error-message error-message}))))
+    [db provider]
+    (try
+      (let [{:keys [provider-id cmr-only]} provider]
+        (j/insert! db
+                   :providers
+                   ["provider_id" "cmr_only"]
+                   [provider-id (if cmr-only 1 0)])
+        (ct/create-provider-concept-tables db provider-id))
+      (catch java.sql.BatchUpdateException e
+        (let [error-message (.getMessage e)]
+          (if (re-find #"UNIQUE_PROVIDER_ID" error-message)
+            {:error :provider-id-conflict
+             :error-message error-message}
+            (throw e))))))
 
   (get-providers
     [db]
-    (dbresult->provider-list
-      (j/query db ["SELECT provider_id FROM providers"])))
+    (map dbresult->provider
+         (j/query db ["SELECT provider_id, cmr_only FROM providers"])))
 
   (delete-provider
     [db provider-id]
-    (try (do
-           (ct/delete-provider-concept-tables db provider-id)
-           (j/delete! db :providers ["provider_id = ?" provider-id]))
-      (catch Exception e
-        (error (.getMessage e))
-        (let [error-message (.getMessage e)
-              error-code (cond
-                           (re-find #"table or view does not exist" error-message)
-                           :not-found
-
-                           :else
-                           :unknown-error)]
-          {:error error-code :error-message error-message}))))
+    (if (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
+             first vals first (== 1)) ;; == is important because type returned is a big decimal
+      (do
+        (ct/delete-provider-concept-tables db provider-id)
+        (j/delete! db :providers ["provider_id = ?" provider-id]))
+      {:error :not-found
+       :error-message (format "Provider %s does not exist." provider-id)}))
 
   (reset-providers
     [db]
-    (doseq [provider-id (p/get-providers db)]
+    (doseq [{:keys [provider-id]} (p/get-providers db)]
       (p/delete-provider db provider-id))))
+
+
+(comment
+
+  (def db (get-in user/system [:apps :metadata-db :db]))
+
+  (p/get-providers db)
+  (p/reset-providers db)
+  (p/delete-provider db "PROV1")
+  (p/delete-provider db "FOO")
+
+  (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
+             first vals first (== 0))
+
+
+
+  (j/delete! db :providers ["provider_id = ?" "FOO"])
+
+  )

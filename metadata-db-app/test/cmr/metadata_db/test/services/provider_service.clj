@@ -4,30 +4,44 @@
             [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [cmr.metadata-db.services.util :as util]
+            [cmr.metadata-db.services.provider-service :as ps]
             [cmr.metadata-db.services.concept-service :as cs]
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.dev.util :as du])
-  (import clojure.lang.ExceptionInfo))
+            [cmr.common.test.test-util :as tu]))
 
-(deftest validate-provider-id-test
-  (testing "valid provider-id"
-    (let [provider-id "PROV_1"]
-      (is (nil? (util/validate-provider-id provider-id)))))
-  (testing "empty provider-id"
-    (let [provider-id ""]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
-                            (util/validate-provider-id provider-id)))))
-  (testing "nil provider-id"
-    (let [provider-id nil]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-empty provider-id))
-                            (util/validate-provider-id provider-id)))))
-  (testing "provider-id too long"
-    (let [provider-id "ab123456789"]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/provider-id-too-long provider-id))
-                            (util/validate-provider-id provider-id)))))
-  (testing "invalid character"
-    (let [provider-id "ab:123"]
-      (is (thrown-with-msg? ExceptionInfo (du/message->regex (messages/invalid-provider-id provider-id))
-                            (util/validate-provider-id provider-id))))))
+(deftest validate-provider-test
+  (testing "valid provider"
+    (ps/validate-provider {:provider-id "PROV1" :cmr-only false}))
+  (testing "invalid provider-ids"
+    (testing "empty provider-id"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        [(messages/provider-id-empty)]
+        (ps/validate-provider {:provider-id "" :cmr-only false})))
+    (testing "nil provider-id"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        [(messages/provider-id-empty)]
+        (ps/validate-provider {:provider-id nil :cmr-only false})))
+    (testing "provider-id too long"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        [(messages/provider-id-too-long "a2345678901")]
+        (ps/validate-provider {:provider-id "a2345678901" :cmr-only false})))
+    (testing "invalid character"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        [(messages/invalid-provider-id "ab:123")]
+        (ps/validate-provider {:provider-id "ab:123" :cmr-only false}))))
+  (testing "invalid cmr-only"
+    (testing "not provided"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        ["Cmr Only is required."]
+        (ps/validate-provider {:provider-id "PROV1" :cmr-only nil})))
+    (testing "not boolean"
+      (tu/assert-exception-thrown-with-errors
+        :bad-request
+        ["Cmr Only must be either true or false but was [\"true\"]"]
+        (ps/validate-provider {:provider-id "PROV1" :cmr-only "true"})))))

@@ -2,7 +2,7 @@
   "Contains various utility methods to support integration tests."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
-            [cheshire.core :as cheshire]
+            [cheshire.core :as json]
             [clojure.walk :as walk]
             [clj-time.core :as t]
             [clj-time.format :as f]
@@ -91,7 +91,7 @@
   [response]
   (-> response
       :body
-      (cheshire/decode true)
+      (json/decode true)
       (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
       (update-in [:concept-type] keyword)))
 
@@ -100,7 +100,7 @@
   [response]
   (-> response
       :body
-      (cheshire/decode true)))
+      (json/decode true)))
 
 (defn- parse-concepts
   "Parses multiple concept from a JSON response"
@@ -108,7 +108,7 @@
   (map #(-> %
             (update-in [:revision-date] (partial f/parse (f/formatters :date-time)))
             (update-in [:concept-type] keyword))
-       (cheshire/decode (:body response) true)))
+       (json/decode (:body response) true)))
 
 (defn get-concept-id
   "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
@@ -118,8 +118,8 @@
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        {:strs [concept-id errors]} body]
+        body (json/decode (:body response) true)
+        {:keys [concept-id errors]} body]
     {:status status :concept-id concept-id :errors errors}))
 
 (defn get-concept-by-id-and-revision
@@ -157,7 +157,7 @@
          path "search/concept-revisions"
          response (client/post (str concepts-url path)
                                {:query-params query-params
-                                :body (cheshire/generate-string tuples)
+                                :body (json/generate-string tuples)
                                 :content-type :json
                                 :accept :json
                                 :throw-exceptions false
@@ -179,7 +179,7 @@
          path "search/latest-concept-revisions"
          response (client/post (str concepts-url path)
                                {:query-params query-params
-                                :body (cheshire/generate-string concept-ids)
+                                :body (json/generate-string concept-ids)
                                 :content-type :json
                                 :accept :json
                                 :throw-exceptions false
@@ -220,7 +220,7 @@
         status (:status response)]
     (if (= status 200)
       {:status status
-       :concept-ids (cheshire/parse-string (:body response))}
+       :concept-ids (json/decode (:body response) true)}
       (assoc (parse-errors response) :status status))))
 
 (defn save-concept
@@ -231,14 +231,14 @@
                            ;; Convert date times to string but allow invalid strings to be passed through
                            #(when % (str %)))
         response (client/post concepts-url
-                              {:body (cheshire/generate-string concept)
+                              {:body (json/generate-string concept)
                                :content-type :json
                                :accept :json
                                :throw-exceptions false
                                :connection-manager (conn-mgr)})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        {:strs [revision-id concept-id errors]} body]
+        body (json/decode (:body response) true)
+        {:keys [revision-id concept-id errors]} body]
     {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
 
 (defn delete-concept
@@ -259,8 +259,8 @@
                                   :query-params query-params
                                   :connection-manager (conn-mgr)})
          status (:status response)
-         body (cheshire/parse-string (:body response))
-         {:strs [revision-id errors]} body]
+         body (json/decode (:body response) true)
+         {:keys [revision-id errors]} body]
      {:status status :revision-id revision-id :errors errors})))
 
 (defn force-delete-concept
@@ -271,8 +271,8 @@
                                 {:throw-exceptions false
                                  :connection-manager (conn-mgr)})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        {:strs [revision-id errors]} body]
+        body (json/decode (:body response) true)
+        {:keys [revision-id errors]} body]
     {:status status :revision-id revision-id :errors errors}))
 
 (defn verify-concept-was-saved
@@ -317,19 +317,22 @@
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
   status and a list of error messages."
-  [provider-id]
-  (let [response (client/post providers-url
-                              {:body (cheshire/generate-string {:provider-id provider-id})
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :connection-manager (conn-mgr)
-                               :headers {acl/token-header (transmit-config/echo-system-token)}})
-        status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors (get body "errors")
-        provider-id (get body "provider-id")]
-    {:status status :errors errors :provider-id provider-id}))
+  ([provider-id]
+   (save-provider provider-id nil))
+  ([provider-id cmr-only]
+   (let [response (client/post providers-url
+                               {:body (json/generate-string
+                                        (merge {:provider-id provider-id}
+                                               (when (some? cmr-only)
+                                                 {:cmr-only cmr-only})))
+                                :content-type :json
+                                :accept :json
+                                :throw-exceptions false
+                                :connection-manager (conn-mgr)
+                                :headers {acl/token-header (transmit-config/echo-system-token)}})
+         status (:status response)
+         {:keys [errors provider-id]} (json/decode (:body response) true)]
+     {:status status :errors errors :provider-id provider-id})))
 
 (defn get-providers
   "Make a GET request to retrieve the list of providers."
@@ -339,10 +342,10 @@
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors (get body "errors")
-        providers (get body "providers")]
-    {:status status :errors errors :providers providers}))
+        body (json/decode (:body response) true)]
+    {:status status
+     :errors (:errors body)
+     :providers (when (= status 200) body)}))
 
 (defn delete-provider
   "Make a DELETE request to remove a provider."
@@ -353,15 +356,18 @@
                                  :connection-manager (conn-mgr)
                                  :headers {acl/token-header (transmit-config/echo-system-token)}})
         status (:status response)
-        body (cheshire/parse-string (:body response))
-        errors (get body "errors")]
+        {:keys [errors]} (json/decode (:body response) true)]
     {:status status :errors errors}))
 
 
 (defn verify-provider-was-saved
   "Verify that the given provider-id is in the list of providers."
-  [provider-id]
-  (some #{provider-id} (:providers (get-providers))))
+  ([provider-id]
+   (verify-provider-was-saved provider-id false))
+  ([provider-id cmr-only]
+   (some #{{:provider-id provider-id
+            :cmr-only cmr-only}}
+         (:providers (get-providers)))))
 
 ;;; miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -391,7 +397,6 @@
     (client/post reset-url {:throw-exceptions false
                             :headers {acl/token-header (transmit-config/echo-system-token)}
                             :connection-manager (conn-mgr)})))
-
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn reset-database-fixture

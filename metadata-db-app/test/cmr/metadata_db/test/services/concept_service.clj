@@ -10,7 +10,7 @@
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
-            [cmr.common.dev.util :as du])
+            [cmr.common.test.test-util :as tu])
   (import clojure.lang.ExceptionInfo))
 
 
@@ -70,10 +70,10 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "invalid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 3)]
-        (is (thrown-with-msg?
-              ExceptionInfo
-              (du/message->regex (messages/invalid-revision-id (:concept-id concept) 2 3))
-              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))
+        (tu/assert-exception-thrown-with-errors
+          :conflict
+          [(messages/invalid-revision-id (:concept-id concept) 2 3)]
+          (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
@@ -82,10 +82,10 @@
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 2))]
-        (is (thrown-with-msg?
-              ExceptionInfo
-              (du/message->regex (messages/invalid-revision-id (:concept-id concept) 1 2))
-              (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))))))
+        (tu/assert-exception-thrown-with-errors
+          :conflict
+          [(messages/invalid-revision-id (:concept-id concept) 1 2)]
+          (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept))))))
 
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
@@ -98,9 +98,8 @@
           result (cs/try-to-save db (assoc example-concept :revision-id 2))]
       (is (= 2 (:revision-id result)))))
   (testing "conflicting concept-id and revision-id"
-    (is (thrown-with-msg?
-          ExceptionInfo (du/message->regex (messages/concept-id-and-revision-id-conflict
-                                             (:concept-id example-concept)
-                                             1))
-          (cs/try-to-save (memory/create-db [example-concept])
-                          (assoc example-concept :revision-id 1))))))
+    (tu/assert-exception-thrown-with-errors
+      :conflict
+      [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
+      (cs/try-to-save (memory/create-db [example-concept])
+                      (assoc example-concept :revision-id 1)))))

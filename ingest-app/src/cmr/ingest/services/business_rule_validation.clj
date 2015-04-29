@@ -9,7 +9,8 @@
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.services.additional-attribute-validation :as aa]
             [cmr.ingest.services.project-validation :as pv]
-            [cmr.ingest.services.temporal-validation :as tv]))
+            [cmr.ingest.services.temporal-validation :as tv]
+            [cmr.ingest.services.spatial-validation :as sv]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.
@@ -38,7 +39,8 @@
   the search and an :error-msg to return if the search finds any hits."
   [aa/additional-attribute-searches
    pv/deleted-project-searches
-   tv/out-of-range-temporal-searches])
+   tv/out-of-range-temporal-searches
+   sv/spatial-param-change-searches])
 
 (defn- has-granule-search-error
   "Execute the given has-granule search, returns the error message if there are granules found
