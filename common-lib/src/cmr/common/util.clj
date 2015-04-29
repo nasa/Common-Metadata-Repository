@@ -109,14 +109,14 @@
         ;; extract other arities defined in the function which will not be timed.
         other-arities (drop-last fn-tail)
         ;; extract the last arity definitions bindings and body
-        [timed-arity-bindings timed-arity-body] (last fn-tail)]
+        [timed-arity-bindings & timed-arity-body] (last fn-tail)]
     `(defn ~fn-name
        ~@(when doc-string [doc-string])
        ~@other-arities
        (~timed-arity-bindings
          (let [start# (System/currentTimeMillis)]
            (try
-             ~timed-arity-body
+             ~@timed-arity-body
              (finally
                (let [elapsed# (- (System/currentTimeMillis) start#)]
                  (debug (format

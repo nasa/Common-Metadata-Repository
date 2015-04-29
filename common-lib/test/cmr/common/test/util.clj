@@ -58,23 +58,31 @@
 
 (defn-timed test-timed-multi-arity
   "The doc string"
-  ([a]
-   (test-timed-multi-arity a a))
-  ([a b]
-   (test-timed-multi-arity a b a))
-  ([a b c]
-   [a b c]))
+  ([f]
+   (test-timed-multi-arity f f))
+  ([fa fb]
+   (test-timed-multi-arity fa fb fa))
+  ([fa fb fc]
+   (fa)
+   (fb)
+   (fc)))
 
 (defn-timed test-timed-single-arity
   "the doc string"
-  [a]
-  a)
+  [f]
+  (f)
+  (f)
+  (f))
 
 (deftest defn-timed-test
   (testing "single arity"
-    (is (= 5 (test-timed-single-arity 5))))
-  (testing "multi arity"
-    (is (= [5 5 5] (test-timed-multi-arity 5)))))
+    (let [counter (atom 0)
+          counter-fn #(swap! counter inc)]
+      (is (= 3 (test-timed-single-arity counter-fn))))
+    (testing "multi arity"
+    (let [counter (atom 0)
+          counter-fn #(swap! counter inc)]
+      (is (= 3 (test-timed-multi-arity counter-fnf)))))))
 
 (deftest build-validator-test
   (let [error-type :not-found
