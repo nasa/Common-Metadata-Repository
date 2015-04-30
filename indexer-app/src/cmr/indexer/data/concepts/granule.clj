@@ -73,7 +73,6 @@
       (let [orbit (get-in granule [:spatial-coverage :orbit])
             {:keys [ascending-crossing start-lat start-direction end-lat end-direction]} orbit
             [^double orbit-start-clat ^double orbit-end-clat] (orbit->circular-latitude-range orbit)]
-        (println (str "orbit-start: " orbit-start-clat "  orbit-end: " orbit-end-clat))
         {:orbit-asc-crossing-lon ascending-crossing
          :orbit-start-clat orbit-start-clat
          :orbit-end-clat (if (= orbit-end-clat orbit-start-clat)

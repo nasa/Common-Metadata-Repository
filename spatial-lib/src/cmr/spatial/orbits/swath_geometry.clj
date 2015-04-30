@@ -75,8 +75,8 @@
 
 (defn- temporal-offset-range
   "Given a temporal range and an ascending crossing datetime, returns a list of
-   two items containing the temporal start and end dates expressed as seconds
-   offset from the ascending crossing time"
+  two items containing the temporal start and end dates expressed as seconds
+  offset from the ascending crossing time"
   [start-date end-date ascending-crossing-date]
   (let [begin-s (to-unix-time start-date)
         end-s (to-unix-time end-date)
@@ -91,13 +91,13 @@
 
 (defn- earth-rotation-transform
   "Returns a rotation matrix around the z-axis by an amount equal to the Earth's
-   rotation in t seconds"
+  rotation in t seconds"
   [^double t]
-  (m/z-axis-rotation-matrix (- (* EARTH_ANGULAR_VELOCITY_RAD_S t))))
+  (m/z-axis-rotation-matrix (* EARTH_ANGULAR_VELOCITY_RAD_S t)))
 
 (defn- orbit-latitude-transform
   "Returns a rotation matrix around the y-axis (orbit track) by the given number
-   of radians"
+  of radians"
   [^double circular-latitude]
   (m/y-axis-rotation-matrix (- circular-latitude)))
 
@@ -108,30 +108,30 @@
 
 (defn- orbit-crossing-theta-transform
   "Returns a rotation matrix around the z-axis by the given orbit's ascending
-   equatorial crossing, given in radians"
+  equatorial crossing, given in radians"
   [ascending-crossing-theta]
   (m/z-axis-rotation-matrix ascending-crossing-theta))
 
 (defn- fn-time->track-position-transform
   "Given an orbit and an ascending equatorial crossing (in radians), returns
-   a function which takes a time offset in seconds and returns a matrix
-   which will transform the vector <1, 0, 0> into the <x, y, z> position
-   along the orbit track at the given time."
+  a function which takes a time offset in seconds and returns a matrix
+  which will transform the vector <1, 0, 0> into the <x, y, z> position
+  along the orbit track at the given time."
   [orbit-parameters ascending-crossing-theta]
   (let [orientation-transform (cm/mmul (orbit-crossing-theta-transform ascending-crossing-theta)
                                        (orbit-declination-transform orbit-parameters))
         angular-velocity-rad-s (orbits/angular-velocity-rad-s orbit-parameters)]
     (fn [^double t]
       (cm/mmul
-       (earth-rotation-transform t)
-       orientation-transform
-       (orbit-latitude-transform (* angular-velocity-rad-s t))))))
+        (earth-rotation-transform t)
+        orientation-transform
+        (orbit-latitude-transform (* angular-velocity-rad-s t))))))
 
 (defn- fn-time->swath-edges
   "Given an orbit and an ascending equatorial crossing (in radians), returns
-   a function which takes a time offset in seconds and returns a two-element
-   array containing the left and right lat/lon swath edge points at the
-   given time"
+  a function which takes a time offset in seconds and returns a two-element
+  array containing the left and right lat/lon swath edge points at the
+  given time"
   [orbit-parameters ascending-crossing-theta]
   (let [time->track-position-transform (fn-time->track-position-transform orbit-parameters ascending-crossing-theta)
         half-swath-width-rad (/ (orbits/swath-width-rad orbit-parameters) 2.0)
@@ -146,51 +146,51 @@
 
 (defn- interpolation-times
   "Returns a sequence of time offsets (in seconds) starting at start-time-s and
-   ending at end-time-s, separated by at most interval-separation-s seconds.  The
-   start and end time offsets will be included in the resulting sequence."
+  ending at end-time-s, separated by at most interval-separation-s seconds.  The
+  start and end time offsets will be included in the resulting sequence."
   [start-time-s end-time-s interval-separation-s]
   (concat (range start-time-s end-time-s interval-separation-s) [end-time-s]))
 
 (defn to-swaths
   "Returns a sequence of sequences two-element arrays corresponding to left and right
-   swath edges along the given granule's orbit separated by at most interval-separation-s
-   seconds (default: 300), one outer sequence per orbit revolution.
+  swath edges along the given granule's orbit separated by at most interval-separation-s
+  seconds (default: 300), one outer sequence per orbit revolution.
 
-   Parameters:
-     orbit-parameters: the granule's collection-level orbit metadata
-     ascending-crossing-lon: the granule's ascending crossing lon
-     ocsds: a sequence of the granule's orbit calculated spatial domain elements
-     start-date: the granule's temporal start date
-     end-date: the granule's temporal end date
-     interval-separation-s: the maximum desired time sparation in seconds
-       between two edge points"
+  Parameters:
+  orbit-parameters: the granule's collection-level orbit metadata
+  ascending-crossing-lon: the granule's ascending crossing lon
+  ocsds: a sequence of the granule's orbit calculated spatial domain elements
+  start-date: the granule's temporal start date
+  end-date: the granule's temporal end date
+  interval-separation-s: the maximum desired time sparation in seconds
+  between two edge points"
   ([orbit-parameters ascending-crossing-lon ocsds start-date end-date]
-     (to-swaths orbit-parameters ascending-crossing-lon ocsds start-date end-date 300.0))
+   (to-swaths orbit-parameters ascending-crossing-lon ocsds start-date end-date 300.0))
   ([orbit-parameters ascending-crossing-lon ocsds start-date end-date interval-separation-s]
-     (let [ascending-crossing-date (ascending-crossing-time orbit-parameters ascending-crossing-lon ocsds)
-           [start-time-s end-time-s] (temporal-offset-range start-date end-date ascending-crossing-date)
-           ascending-crossing-theta (radians ascending-crossing-lon)
-           time->swath-edges (fn-time->swath-edges orbit-parameters ascending-crossing-theta)
-           orbit-starts (interpolation-times start-time-s end-time-s (* ^double (:period orbit-parameters) 60.0))
-           orbit-time-ranges (map vector orbit-starts (rest orbit-starts))
-           times (map (fn [[start end]] (interpolation-times start end interval-separation-s)) orbit-time-ranges)]
-       (map (partial map time->swath-edges) times))))
+   (let [ascending-crossing-date (ascending-crossing-time orbit-parameters ascending-crossing-lon ocsds)
+         [start-time-s end-time-s] (temporal-offset-range start-date end-date ascending-crossing-date)
+         ascending-crossing-theta (radians ascending-crossing-lon)
+         time->swath-edges (fn-time->swath-edges orbit-parameters ascending-crossing-theta)
+         orbit-starts (interpolation-times start-time-s end-time-s (* ^double (:period orbit-parameters) 60.0))
+         orbit-time-ranges (map vector orbit-starts (rest orbit-starts))
+         times (map (fn [[start end]] (interpolation-times start end interval-separation-s)) orbit-time-ranges)]
+     (map (partial map time->swath-edges) times))))
 
 (defn- to-polygon
   "Swath is a sequence of vectors containing
-   [left-swath-edge-point right-swath-edge-point]"
+  [left-swath-edge-point right-swath-edge-point]"
   [swath]
   (let [ring (concat (map first swath)
-                    (reverse (map second swath))
-                    [(ffirst swath)])]
+                     (reverse (map second swath))
+                     [(ffirst swath)])]
     (poly/polygon :geodetic [(gr/ring (doall ring))])))
 
 (defn to-polygons
   [& args]
   (map to-polygon (apply to-swaths args)))
 
-  ;; Tests
-  ;(require '[cmr.spatial.dev.viz-helper :as viz-helper])
+;; Tests
+;(require '[cmr.spatial.dev.viz-helper :as viz-helper])
 (comment
 
   (defn to-polygons
@@ -226,7 +226,7 @@
           ]
       (with-progress-reporting
         (bench (to-polygons orbit-parameters ascending-crossing-lon ocsds start-time end-time)))))
-)
+  )
 (comment
   ; Based on G195170098-GSFCS4PA and G195170099-GSFCS4PA.  These should line up one against the other
   (defn test-orbit-to-poly-2
@@ -248,4 +248,4 @@
         (viz-helper/add-geometries geo0)
         (viz-helper/add-geometries geo1)
         [geo0 geo1])))
-)
+  )

@@ -451,4 +451,4 @@
             (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
     (clojure.java.shell/sh "open" "granule_kml.kml"))
 
-)
+  )

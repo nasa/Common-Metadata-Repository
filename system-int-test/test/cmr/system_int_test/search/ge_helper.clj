@@ -1,4 +1,5 @@
 (ns cmr.system-int-test.search.ge-helper
+  "Helpers for spatial visualization"
   (:require [clojure.string :as str]
             [clojure.java.shell :as shell]
             [cmr.search.results-handlers.kml-results-handler :as kml-rh]

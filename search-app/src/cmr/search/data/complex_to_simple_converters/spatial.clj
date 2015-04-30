@@ -9,19 +9,12 @@
             [cmr.spatial.serialize :as srl]
             [cmr.spatial.derived :as d]
             [cmr.spatial.relations :as sr]
-            [clojure.string :as str]
-            [cmr.common.dev.capture-reveal])
+            [clojure.string :as str])
   (:import gov.nasa.echo_orbits.EchoOrbitsRubyBootstrap))
 
 (def orbits
   "Java wrapper for echo-orbits ruby library."
   (EchoOrbitsRubyBootstrap/bootstrapEchoOrbits))
-
-(comment
-
-  (.hello orbits)
-
-  )
 
 (defn- shape->script-cond
   [shape]
@@ -192,8 +185,6 @@
         (map (fn [collection-id]
                (let [[asc-crossings-lat-ranges desc-crossings-lat-ranges]
                      (get crossings-map collection-id)]
-                 (cmr.common.dev.capture-reveal/capture asc-crossings-lat-ranges)
-                 (cmr.common.dev.capture-reveal/capture desc-crossings-lat-ranges)
                  (gc/and-conds
                    [(qm/string-condition :collection-concept-id collection-id, true, false)
                     (gc/or-conds
@@ -211,7 +202,6 @@
     (let [shape (d/calculate-derived shape)
           orbital-cond (when (= :granule (:query-concept-type context))
                          (orbital-condition context shape))
-          _ (cmr.common.dev.capture-reveal/capture orbital-cond)
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
           spatial-script (shape->script-cond shape)
