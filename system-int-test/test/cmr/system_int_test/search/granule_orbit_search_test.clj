@@ -44,26 +44,28 @@
                                      nil)}
                 other-attribs))))))
 
+;; This tests searching for bounding boxes or polygons that cross the start circular
+;; latitude of the collection with fractional orbit granules. This was added to test
+;; the fix for this issue as described in CMR-1168 and uses the collection/granules from
+;; that issue.
 (deftest fractional-orbit-non-zero-start-clat
-  ;; Added to test fix for CMR-1168
-  (let [;; orbit parameters
-        op1 {:swath-width 2
-             :period 96.7
-             :inclination-angle 94.0
-             :number-of-orbits 0.25
-             :start-circular-latitude 50.0}
+  (let [orbit-parameters {:swath-width 2
+                          :period 96.7
+                          :inclination-angle 94.0
+                          :number-of-orbits 0.25
+                          :start-circular-latitude 50.0}
         coll1 (d/ingest "PROV1"
                         (dc/collection
                           {:entry-title "orbit-params1"
                            :spatial-coverage (dc/spatial {:gsr :orbit
-                                                          :orbit op1})}))
+                                                          :orbit orbit-parameters})}))
         g1 (make-gran coll1 "gran1" 70.80471 50.0 :asc  50.0 :desc)
         g2 (make-gran coll1 "gran2" 70.80471 50.0 :desc -50.0 :desc)
         g3 (make-gran coll1 "gran3" 70.80471 -50.0 :desc -50.0 :asc)
         g4 (make-gran coll1 "gran4" 70.80471 -50.0 :asc 50 :asc)]
     (index/wait-until-indexed)
 
-    (testing "Fractional orbits with non-zero start circular latitude - BR"
+    (testing "Bounding box"
       (u/are2 [items wnes params]
               (let [found (search/find-refs
                             :granule
@@ -76,9 +78,22 @@
                   (println "Actual:" (->> found :refs (map :name) sort pr-str)))
                 matches?)
 
-              "Search for granules crossing a rectangle as given in CMR-1168"
-              [g1] [54.844 52.133 97.734 25.165] nil))
-    (testing "Fractional orbits with non-zero start circular latitude - polygon"
+              "Rectangle crossing the start circular latitude of the collection"
+              [g1] [54.844 52.133 97.734 25.165] nil
+              "Rectangle crossing the start circular latitdue of the colletion on the other side
+              of the earth"
+              [g1 g2] [-125.156 52.133 -82.266 25.165] nil
+              "Rectangle crossing the start circular latitude * -1"
+              [g3 g4] [54.844 -25.165 97.734 -52.133] nil
+              "Rectangle touching the north pole"
+              [g1] [-90 90 90 85] nil
+              "Rectangle touching the south pole"
+              [g3] [0 -85 180 -90] nil
+              "Rectangle crossing the antimeridian and the collection start circular latitude"
+              [g1 g2] [125.156 52.133 -82.266 25.165] nil
+              "The whole earth"
+              [g1 g2 g3 g4] [-180 90 180 -90] nil))
+    (testing "Polygon"
       (u/are2 [items coords params]
               (let [found (search/find-refs
                             :granule
@@ -91,8 +106,23 @@
                   (println "Actual:" (->> found :refs (map :name) sort pr-str)))
                 matches?)
 
-              "Search for granules crossing a rectangle as given in CMR-1168"
-              [g1] [54.844,25.165 97.734,25.165 97.734,52.133 54.844,52.133 54.844,25.165] nil))))
+              "Rectangle crossing the start circular latitude of the collection"
+              [g1] [54.844,25.165 97.734,25.165 97.734,52.133 54.844,52.133 54.844,25.165] nil
+              "Rectangle crossing the start circular latitdue of the colletion on the other side
+              of the earth"
+              [g1 g2] [-125.156,52.133 -125.156,25.165 -82.266,25.165 -82.266,52.133 -125.156,52.133] nil
+              "Rectangle crossing the start circular latitude * -1"
+              [g3 g4] [97.734,-52.133 97.734,-25.165 54.844,-25.165 54.844,-52.133 97.734,-52.133] nil
+              "Triangle touching the north pole"
+              [g1] [0,90 -45,85 45,85 0,90] nil
+              "Pentagon touching the south pole"
+              [g3 g4] [97.734,-52.133 97.734,-25.165 54.844,-25.165 54.844,-52.133 97.734,-90 97.734,-52.133] nil
+              "Rectangle crossing the antimeridian and the collection start circular latitude"
+              [g1 g2] [125.156,52.133 125.156,25.165 -82.266,25.165 -82.266,52.133 125.156,52.133] nil
+              "Pentagon over the north pole"
+              [g1] [0,80 72,80 144,80 -144,80 -72,80 0,80] nil
+              "Pentagon over the south pole"
+              [g3] [0,-80 -72,-80 -144,-80 144,-80 72,-80 0,-80] nil))))
 
 (deftest orbit-search
   (let [;; orbit parameters
@@ -308,8 +338,8 @@
 
     [coll (make-gran coll "gran1"
                      70.80471 ; ascending crossing
-                     -50 :asc ; start lat, start dir
-                     50 :asc ; end lat end dir
+                     -50 :desc ; start lat, start dir
+                     -50 :asc ; end lat end dir
                      {:beginning-date-time "2003-09-27T17:03:27.000000Z"
                       :ending-date-time "2003-09-27T17:30:23.000000Z"
                       :orbit-calculated-spatial-domains [{:orbit-number 3838
@@ -364,16 +394,14 @@
 
 (defn- polygon-finds-granule?
   [coords]
-  (println "COORDS:")
-  (println coords)
   (let [resp (search/find-refs
                :granule
                {:polygon (apply st/search-poly coords)
                 :page-size 0})]
-    (println resp)
     (> (:hits resp) 0)))
 
 (defn- create-mbrs
+  "Split an area on the earth into a bunch of bounding rectangles and return them as a list"
   ([]
    (create-mbrs -180.0 180.0 -90.0 90.0 3.0))
   ([min-lon max-lon min-lat max-lat step]
@@ -392,6 +420,7 @@
 
 
 (defn- create-polygons
+  "Split an area on the earth into a bunch of box shaped polygons and return them as a list"
   ([]
    (create-polygons -180.0 180.0 -90.0 90.0 30.0))
   ([min-lon max-lon min-lat max-lat step]

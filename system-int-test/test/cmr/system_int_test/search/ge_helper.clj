@@ -28,6 +28,7 @@
                         (x/element :color {} "ffffffff"))))
 
 (defn shapes->kml
+  "Create KML from a list of shapes for viewing in Google Earth"
   [shapes]
   (x/indent-str
     (x/element :kml kml-rh/KML_XML_NAMESPACE_ATTRIBUTES
@@ -42,6 +43,8 @@
                                        (kml-rh/shape->xml-element shape)))))))
 
 (defn display-shapes
+  "Write out a list of shapes as KML to a file then open it in Google Earth, starting the
+  application if it is not already open"
   [results-name shapes]
   (spit results-name (shapes->kml shapes))
   (shell/sh "open" results-name))

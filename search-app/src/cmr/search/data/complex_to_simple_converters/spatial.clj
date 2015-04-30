@@ -71,6 +71,8 @@
   "Returns true only if the latitude/longitude range array returned from echo-orbits has
   longitudes (it always has latitudes)"
   [lat-lon-crossing-ranges]
+  ;; If the back-tracking doesn't find a valid range it returns and empty vector for the longitudes,
+  ;; but this is paired with the latitudes that were originally sent in.
   (seq (last (first lat-lon-crossing-ranges))))
 
 (defn- orbit-crossings
