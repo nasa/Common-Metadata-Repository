@@ -27,15 +27,17 @@
         (testing "concurrent request for the same key will only invoke lookup once"
           (let [futures (for [n (range 10)]
                           (future (c/get-value cache :foo slow-lookup-fn)))]
-            ;; The lookup function should only be called once and every request ended up with the same value
+            ;; The lookup function should only be called once and every request ends up with the same value
             (is (= #{1} (set (map deref futures))))
             ;; the lookup function was only called once.
             (is (= 1 (deref counter)))))
 
         (testing "subsequent requests for the same key will get the cached value"
-          (is (= 1 (c/get-value cache :foo fail-lookup-fn))))
+          (is (= 1 (c/get-value cache :foo fail-lookup-fn)))
+          (is (= 1 (deref counter))))
 
         (testing "a different key will cause a lookup"
-          (is (= 2 (c/get-value cache :bar slow-lookup-fn)))))
+          (is (= 2 (c/get-value cache :bar slow-lookup-fn)))
+          (is (= 2 (deref counter)))))
       (finally
         (l/stop cache nil)))))

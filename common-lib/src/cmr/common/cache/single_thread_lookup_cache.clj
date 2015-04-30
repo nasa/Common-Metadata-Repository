@@ -3,7 +3,7 @@
   should be used when the lookup function is very expensive and you want to minimize the number of
   times it's called.
 
-  When the value is already is cached the request for a value is very fast. When the value is not
+  When the value is already cached the request for a value is very fast. When the value is not
   cached a request is queued to fetch the value. A separate thread processes these requests off a
   core.async channel. The processing this way forces the serialization of cache lookups during a
   cache miss. Earlier cache requests will likely populate the cache with a single request using
@@ -13,7 +13,7 @@
   This cache implements the cmr.common.lifecycle/Lifecycle protocol and must be started and stopped
   because it has a separate running thread."
   (:require [cmr.common.cache :as c]
-            [clojure.core.async :as async :refer [>!! <!!]]
+            [clojure.core.async :as async]
             [cmr.common.util :as u]
             [cmr.common.lifecycle :as l]
             [cmr.common.cache.in-memory-cache :as mc]))
@@ -26,10 +26,10 @@
   (async/thread
     ;; Attempt to read messages from the lookup request channel until it's closed.
     (u/while-let
-      [{:keys [key lookup-fn response-channel]} (<!! lookup-request-channel)]
+      [{:keys [key lookup-fn response-channel]} (async/<!! lookup-request-channel)]
       ;; Get the requested value and put it back on the response channel.
-      ;; The delegate will determine if calling the lookup function is necessary.
-      (>!! response-channel (c/get-value delegate-cache key lookup-fn)))))
+      ;; The delegate cache will determine if calling the lookup function is necessary.
+      (async/>!! response-channel (c/get-value delegate-cache key lookup-fn)))))
 
 
 (defrecord SingleThreadLookupCache
@@ -62,10 +62,10 @@
       (c/get-value this key)
       ;; Or queue a request to get the value and wait for a response
       (let [response-channel (async/chan)]
-        (>!! lookup-request-channel {:key key
+        (async/>!! lookup-request-channel {:key key
                                      :lookup-fn lookup-fn
                                      :response-channel response-channel})
-        (<!! response-channel))))
+        (async/<!! response-channel))))
 
   (reset
     [this]
@@ -95,7 +95,7 @@
       (-> this
           (update-in [:lookup-request-channel] async/close!)
           ;; Wait for the thread to finish and then it should be closed
-          (update-in [:lookup-process-thread-channel] <!!))
+          (update-in [:lookup-process-thread-channel] async/<!!))
       ;; Not running
       this)))
 
@@ -110,19 +110,40 @@
 
 (comment
 
-  (def slc (l/start (create-single-thread-lookup-cache) nil))
-
   (def counter (atom 0))
 
+  ;; An expensive lookup function. It returns a unique value each time it calls.
   (defn lookup-a-value
     []
     (Thread/sleep 1000)
     (swap! counter inc))
 
-  (c/get-value slc :foo lookup-a-value)
+  ;; Create a regular memory cache
+  (def mem-cache (mc/create-in-memory-cache))
 
-  (c/get-value slc :bar lookup-a-value)
+  ;; If we execute a bunch of concurrent requests for a value the lookup will be invoked N times with
+  ;; a regular memory cache. The values returned will all be the same due to how the cache works.
+  (map deref (for [n (range 10)]
+               (future
+                 (c/get-value mem-cache :foo lookup-a-value))))
 
+  ;; But the count show it's been called more than 1 time
+  (deref counter) ; => 10
+
+  ;; Set the counter back to 0
+  (reset! counter 0)
+
+  ;; Create a single threaded lookup cache and start it
+  (def slc (l/start (create-single-thread-lookup-cache) nil))
+
+  ;; If we execute a bunch of concurrent requests for a value the lookup will be invoked once.
+  (map deref (for [_ (range 10)]
+               (future (c/get-value slc :foo lookup-a-value))))
+
+  ;; The counter shows it's been called only once.
+  (deref counter) ; => 1
+
+  ;; Stop the cache
   (l/stop slc nil)
 
   )
