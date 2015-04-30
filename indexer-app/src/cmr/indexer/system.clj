@@ -10,6 +10,7 @@
             [cmr.indexer.config :as config]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.jobs :as jobs]
             [cmr.indexer.api.routes :as routes]
@@ -32,7 +33,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :scheduler :queue-broker :queue-listener :web])
+  component-order [:log :caches :db :scheduler :queue-broker :queue-listener :web])
 
 (def system-holder
   "Required for jobs"
@@ -55,7 +56,7 @@
                       ;; When readding this make sure to readd cubby to health check.
                       af/acl-cache-key (af/create-acl-cache
                                          ; (consistent-cache/create-consistent-cache)
-                                          (mem-cache/create-in-memory-cache)
+                                          (stl-cache/create-single-thread-lookup-cache)
                                           [:catalog-item :system-object :provider-object])
 
                       cache/general-cache-key (mem-cache/create-in-memory-cache)

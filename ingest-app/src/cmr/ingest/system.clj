@@ -14,7 +14,7 @@
             [cmr.common.jobs :as jobs]
             [cmr.acl.core :as acl]
             [cmr.acl.acl-fetcher :as af]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
@@ -23,7 +23,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :db :queue-broker :scheduler :web])
+  component-order [:log :caches :db :queue-broker :scheduler :web])
 
 (def system-holder
   "Required for jobs"
@@ -43,7 +43,7 @@
                            (conj ingest-jobs/jobs (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        af/acl-cache-key (af/create-acl-cache
-                                          (mem-cache/create-in-memory-cache)
+                                          (stl-cache/create-single-thread-lookup-cache)
                                           [:system-object :provider-object])}
               :relative-root-url (transmit-config/ingest-relative-root-url)
               :queue-broker (when (config/use-index-queue?)
