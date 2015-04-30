@@ -1,7 +1,7 @@
 (ns cmr.common.cache.single-thread-lookup-cache
-  "The single thread lookup cache is a cache that will only execute the lookup function passed
-  when retrieving a value on a single thread. It should be used when the lookup function is very
-  expensive and you want to minimize the number of times it's called.
+  "Defines a cache that serializes all calls to execute the lookup function on a single thread. It
+  should be used when the lookup function is very expensive and you want to minimize the number of
+  times it's called.
 
   When the value is already is cached the request for a value is very fast. When the value is not
   cached a request is queued to fetch the value. A separate thread processes these requests off a
@@ -27,6 +27,8 @@
     ;; Attempt to read messages from the lookup request channel until it's closed.
     (u/while-let
       [{:keys [key lookup-fn response-channel]} (<!! lookup-request-channel)]
+      ;; Get the requested value and put it back on the response channel.
+      ;; The delegate will determine if calling the lookup function is necessary.
       (>!! response-channel (c/get-value delegate-cache key lookup-fn)))))
 
 
@@ -35,11 +37,11 @@
    ;; The underlying cache this will delegate to.
    delegate-cache
 
-   ;; A core.async channel. Each message will contain a map with the :lookup-fn, :key, and :response-channel
+   ;; A core.async channel containing requests to lookup a value that was initially missed on the
+   ;; cache. Each message will contain a map with the :lookup-fn, :key, and :response-channel
    lookup-request-channel
 
-   ;; The single thread channel per cache instance that will listen for messages on the
-   ;; lookup-request-channel.
+   ;; The channel returned when creating the single thread processes messages off the lookup-request-channel.
    lookup-process-thread-channel
    ]
 
