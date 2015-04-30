@@ -56,4 +56,7 @@
          (url/indexer-reset-url)
          (url/mdb-reset-url)
          (url/index-set-reset-url)
-         (url/cubby-reset-url))))
+         (url/cubby-reset-url)
+         (url/reindex-collection-permitted-groups-url)
+         (url/reindex-all-collections-url)
+         (url/cleanup-expired-collections-url))))
