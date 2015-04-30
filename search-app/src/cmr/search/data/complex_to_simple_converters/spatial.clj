@@ -67,6 +67,14 @@
     (re-matches #".*poly.*" type) "poly"
     :else type))
 
+(defn- lat-lon-crossings-valid?
+  "Returns true only if the latitude/longitude range array returned from echo-orbits has
+  longitudes (it always has latitudes)"
+  [lat-lon-crossing-ranges]
+  ;; If the back-tracking doesn't find a valid range it returns and empty vector for the longitudes,
+  ;; but this is paired with the latitudes that were originally sent in.
+  (seq (last (first lat-lon-crossing-ranges))))
+
 (defn- orbit-crossings
   "Compute the orbit crossing ranges (max and min longitude) for a single collection
   used to create the crossing conditions for orbital crossing searches.
@@ -74,12 +82,13 @@
   the search area (as returned by the shape->stored-ords method of the spatial library.
   The orbit-params paraemter is the set of orbit parameters for a single collection.
   Returns a vector of vectors of doubles representing the ascending and descending crossing ranges."
-  [stored-ords orbit-params]
+  [mbr stored-ords orbit-params]
   ;; Use the orbit parameters to perform orbital back tracking to longitude ranges to be used
   ;; in the search.
   (let [shape-type (resolve-shape-type (name (:type (first stored-ords))))
         coords (double-array (map srl/stored->ordinate
-                                  (:ords (first stored-ords))))]
+                                  (:ords (first stored-ords))))
+        lat-range (double-array [(:south mbr) (:north mbr)])]
     (let [{:keys [swath-width
                   period
                   inclination-angle
@@ -90,6 +99,7 @@
                  (seq coords))
         (let [asc-crossing (.areaCrossingRange
                              orbits
+                             lat-range
                              shape-type
                              coords
                              true
@@ -100,6 +110,7 @@
                              number-of-orbits)
               desc-crossing (.areaCrossingRange
                               orbits
+                              lat-range
                               shape-type
                               coords
                               false
@@ -108,8 +119,8 @@
                               swath-width
                               start-circular-latitude
                               number-of-orbits)]
-          (when (or (seq asc-crossing)
-                    (seq desc-crossing))
+          (when (or (lat-lon-crossings-valid? asc-crossing)
+                    (lat-lon-crossings-valid? desc-crossing))
             [asc-crossing desc-crossing]))))))
 
 (defn- range->numeric-range-intersection-condition
@@ -135,42 +146,55 @@
              range-end))
          crossing-ranges)))
 
+(defn- lat-lon-crossings-conditions
+  "Create the seacrh conditions for a latitude-range / equator crosssing longitude-range returned
+  by echo-orbits"
+  [lat-ranges-crossings ascending?]
+  (gc/or-conds
+    (map (fn [lat-range-lon-range]
+           (let [lat-range (first (first lat-range-lon-range))
+                 [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits
+                                                                             (first lat-range)
+                                                                             (last lat-range))
+                 lat-ranges (if ascending? asc-lat-ranges desc-lat-ranges)
+                 lat-conds (range->numeric-range-intersection-condition lat-ranges)
+                 crossings (last lat-range-lon-range)]
+             (gc/and-conds
+               [lat-conds
+                (crossing-ranges->condition crossings)])))
+         lat-ranges-crossings)))
+
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
   to a spatial search."
   [context shape]
   (let [mbr (sr/mbr shape)
-        [asc-lat-ranges desc-lat-ranges] (.denormalizeLatitudeRange orbits (:south mbr) (:north mbr))
-        asc-lat-conds (range->numeric-range-intersection-condition asc-lat-ranges)
-        desc-lat-conds (range->numeric-range-intersection-condition desc-lat-ranges)
         {:keys [query-collection-ids]} context
         orbit-params (query-helper/collection-orbit-parameters context query-collection-ids true)
         stored-ords (srl/shape->stored-ords shape)
         crossings-map (reduce (fn [memo params]
-                                (let [lon-crossings (orbit-crossings stored-ords params)]
-                                  (if (seq lon-crossings)
+                                (let [lon-crossings-lat-ranges (orbit-crossings mbr stored-ords params)]
+                                  (if (seq lon-crossings-lat-ranges)
                                     (assoc
                                       memo
                                       (:concept-id params)
-                                      lon-crossings)
+                                      lon-crossings-lat-ranges)
                                     memo)))
                               {}
                               orbit-params)]
     (when (seq crossings-map)
       (gc/or-conds
         (map (fn [collection-id]
-               (let [[asc-crossings desc-crossings] (get crossings-map collection-id)]
+               (let [[asc-crossings-lat-ranges desc-crossings-lat-ranges]
+                     (get crossings-map collection-id)]
                  (gc/and-conds
                    [(qm/string-condition :collection-concept-id collection-id, true, false)
                     (gc/or-conds
                       [;; ascending
-                       (gc/and-conds
-                         [asc-lat-conds
-                          (crossing-ranges->condition asc-crossings)])
+                       (lat-lon-crossings-conditions asc-crossings-lat-ranges true)
                        ;; descending
-                       (gc/and-conds
-                         [desc-lat-conds
-                          (crossing-ranges->condition desc-crossings)])])])))
+                       (lat-lon-crossings-conditions desc-crossings-lat-ranges false)])])))
+
              (keys crossings-map))))))
 
 (extend-protocol c2s/ComplexQueryToSimple
