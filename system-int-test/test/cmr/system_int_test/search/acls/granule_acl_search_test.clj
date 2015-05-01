@@ -276,7 +276,7 @@
         (let [expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
                  (csv-response->granule-urs
-                   (search/find-grans-csv :granule {:token guest-token
+                   (search/find-concepts-csv :granule {:token guest-token
                                                     :page-size 100}))))))
 
       (testing "by concept id"
@@ -284,7 +284,7 @@
               expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
                  (csv-response->granule-urs
-                   (search/find-grans-csv :granule {:token guest-token
+                   (search/find-concepts-csv :granule {:token guest-token
                                                     :page-size 100
                                                     :concept-id concept-ids})))))))
 
