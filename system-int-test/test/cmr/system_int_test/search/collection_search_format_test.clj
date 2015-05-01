@@ -391,7 +391,7 @@
       (testing "as csv extension"
         (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
                 :status 400}
-             (search/find-concepts-csv :collection {} {:url-extension "opendata"})))))
+             (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
