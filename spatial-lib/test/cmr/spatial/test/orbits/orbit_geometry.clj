@@ -19,7 +19,7 @@
 
 (def ^:private default-orbit-parameters {:inclination-angle 98.2
                                      :period 100.0
-                                     :swath-width 2600.0
+                                     :swath-width 2
                                      :start-circular-latitude 50.0
                                      :number-of-orbits 2.0})
 
@@ -96,15 +96,16 @@
       (is (= 2 (count (second swath))))
     ))
   (testing "returns entries along the orbit"
-    ;; If the backtracking algorithm ever becomes available to this project, backtracking each point on a variety of orbits
-    ;; would serve as an additional check
-    (let [swath (first (to-swaths (make-orbit-parameters)
+    ;; Numbers below verified using orbital backtracking visualization. See CMR-1368 in JIRA
+    ;; for screenshot. This test is primarily a regression test.
+    (let [swath (first (to-swaths (make-orbit-parameters {:number-of-orbits 0.25 :swath-width 2.0})
                                   default-ascending-crossing
                                   [(make-calculated-spatial-domain)]
                                   default-start-date
                                   default-end-date
-                                  600))]
-      (is (close-to-swath? (nth swath 0) [[76.41862128042021 -1.6570985493644115] [99.58137871957977 1.6570985493644115]]))
-      (is (close-to-swath? (nth swath 1) [[70.85670428936116 32.73641825556157] [99.01304126948644 36.77045950909374]]))
-      (is (close-to-swath? (nth swath 2) [[45.21826435122187 63.23545546556328] [105.63711155205173 71.93405939073072]]))
-      (is (close-to-swath? (nth swath 3) [[-36.718264351221855 63.235455465563284] [-97.13711155205176 71.93405939073075]])))))
+                                  360))]
+      (is (close-to-swath? (nth swath 0) [[87.99109374485913 -0.001283410966090324] [88.00890625514086 0.001283410966090324]]))
+      (is (close-to-swath? (nth swath 1) [[83.2583464594273 21.36688026248042] [83.27744340142561 21.3696365582091]]))
+      (is (close-to-swath? (nth swath 2) [[77.35934672174437 42.650620749765494] [77.38335131919246 42.65411075412148]]))
+      (is (close-to-swath? (nth swath 3) [[66.61868786564945 63.57966521450148] [66.6570029111061 63.58543454697764]]))
+      (is (close-to-swath? (nth swath 4) [[15.77954479889124 81.04125453912454] [15.82575163858306 81.05775283423944]])))))
