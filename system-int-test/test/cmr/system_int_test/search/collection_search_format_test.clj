@@ -384,6 +384,15 @@
         (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
                                                  coll8] results)))
 
+    (testing "csv is not supported"
+      (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
+                :status 400}
+             (search/find-concepts-csv :collection {})))
+      (testing "as csv extension"
+        (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
+                :status 400}
+             (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
+
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7

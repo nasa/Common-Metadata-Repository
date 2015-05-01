@@ -185,10 +185,10 @@
   [params]
   (get-granule-timeline params {:method :post}))
 
-(defn find-grans-csv
+(defn find-concepts-csv
   "Returns the response of granule search in csv format"
   ([concept-type params]
-   (find-grans-csv concept-type params {}))
+   (find-concepts-csv concept-type params {}))
   ([concept-type params options]
    (get-search-failure-data
      (find-concepts-in-format "text/csv" concept-type params options))))
@@ -238,7 +238,7 @@
 
 (defn find-concepts-opendata
   "Returns the response of search in opendata format"
-   ([concept-type params]
+  ([concept-type params]
    (find-concepts-opendata concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
