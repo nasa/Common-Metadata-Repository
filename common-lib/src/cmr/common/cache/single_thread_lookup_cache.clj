@@ -14,6 +14,7 @@
   because it has a separate running thread."
   (:require [cmr.common.cache :as c]
             [clojure.core.async :as async]
+            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.util :as u]
             [cmr.common.lifecycle :as l]
             [cmr.common.cache.in-memory-cache :as mc]))
@@ -24,13 +25,29 @@
   in the message."
   [{:keys [delegate-cache lookup-request-channel]}]
   (async/thread
-    ;; Attempt to read messages from the lookup request channel until it's closed.
-    (u/while-let
-      [{:keys [key lookup-fn response-channel]} (async/<!! lookup-request-channel)]
-      ;; Get the requested value and put it back on the response channel.
-      ;; The delegate cache will determine if calling the lookup function is necessary.
-      (async/>!! response-channel (c/get-value delegate-cache key lookup-fn)))))
+    (try
+      ;; Attempt to read messages from the lookup request channel until it's closed.
+      (u/while-let
+        [{:keys [key lookup-fn response-channel]} (async/<!! lookup-request-channel)]
 
+        (let [value (try
+                      (c/get-value delegate-cache key lookup-fn)
+
+                      ;; Guard against exceptions while getting a value from the delegate cache.
+                      ;; These will most likely come from lookup function.
+                      (catch Exception e
+                        (error e (format "Exception occurred while fetching key %s: %s"
+                                         key (.getMessage e)))
+                        ;; The exception is returned so it will be put on the response channel and
+                        ;; thrown to the caller.
+                        e))]
+          (async/>!! response-channel value)))
+
+      ;; Guard against unexpected exceptions
+      (catch Throwable t
+        (error t (str "Unexpected exception forcing lookup thread to stop. " (.getMessage t)))
+        ;; Close the lookup request channel so subsequent writes will fail
+        (async/close! lookup-request-channel)))))
 
 (defrecord SingleThreadLookupCache
   [
@@ -63,9 +80,14 @@
       ;; Or queue a request to get the value and wait for a response
       (let [response-channel (async/chan)]
         (async/>!! lookup-request-channel {:key key
-                                     :lookup-fn lookup-fn
-                                     :response-channel response-channel})
-        (async/<!! response-channel))))
+                                           :lookup-fn lookup-fn
+                                           :response-channel response-channel})
+        (let [result (async/<!! response-channel)]
+          ;; Exceptions caught while executing the lookup will be returned on the response channel
+          (if (instance? Throwable result)
+            ;; We throw these back to the caller so they can deal with them.
+            (throw result)
+            result)))))
 
   (reset
     [this]
