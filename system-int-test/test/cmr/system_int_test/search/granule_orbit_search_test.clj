@@ -320,6 +320,22 @@
 
 ;; Ingests for visualizations
 
+
+(defn- ingest-orbit-coll-and-granule-swath
+  []
+  (let [coll (d/ingest "PROV1"
+                       (dc/collection
+                         {:entry-title "orbit-params1"
+                          :spatial-coverage (dc/spatial {:gsr :orbit
+                                                         :orbit {:inclination-angle 98.2
+                                                                 :period 100.0
+                                                                 :swath-width 2
+                                                                 :start-circular-latitude 0
+                                                                 :number-of-orbits 0.25}})}))]
+
+    [coll (make-gran coll "gran1" 88.0 0 :asc 88 :asc)]))
+
+
 (defn- ingest-orbit-coll-and-granule
   []
   (let [coll (d/ingest "PROV1"
@@ -338,8 +354,8 @@
 
     [coll (make-gran coll "gran1"
                      70.80471 ; ascending crossing
-                     -50 :desc ; start lat, start dir
-                     -50 :asc ; end lat end dir
+                     -50 :asc ; start lat, start dir
+                     50 :asc ; end lat end dir
                      {:beginning-date-time "2003-09-27T17:03:27.000000Z"
                       :ending-date-time "2003-09-27T17:30:23.000000Z"
                       :orbit-calculated-spatial-domains [{:orbit-number 3838
@@ -439,7 +455,8 @@
     (ingest/create-provider "provguid1" "PROV1")
     #_(ingest-orbit-coll-and-granules-north-pole)
     #_(ingest-orbit-coll-and-granules-prime-meridian)
-    (ingest-orbit-coll-and-granule))
+    #_(ingest-orbit-coll-and-granule)
+    (ingest-orbit-coll-and-granule-swath))
 
   ;; Figure out how many mbrs we're going to search with to get an idea of how long things will take
   (count (create-mbrs 45.0 90.0 -55.0 55.0 3))
@@ -471,7 +488,7 @@
   ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
   ;; Google Earth will open when you evaluate it. (as long as you've installed it)
   ;; You can give different tests unique names. Otherwise it will overwrite the file.
-  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
+  (ge-helper/display-shapes "start_circ_pos_501.kml" @matching-mbrs)
 
   (ge-helper/display-shapes "start_circ_pos_50_poly.kml" @matching-polys)
 
