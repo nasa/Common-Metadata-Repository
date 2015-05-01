@@ -488,7 +488,7 @@
   ;; 3. Evaluate a block like this to save the mbrs to kml and open in google earth.
   ;; Google Earth will open when you evaluate it. (as long as you've installed it)
   ;; You can give different tests unique names. Otherwise it will overwrite the file.
-  (ge-helper/display-shapes "start_circ_pos_501.kml" @matching-mbrs)
+  (ge-helper/display-shapes "start_circ_pos_50.kml" @matching-mbrs)
 
   (ge-helper/display-shapes "start_circ_pos_50_poly.kml" @matching-polys)
 
