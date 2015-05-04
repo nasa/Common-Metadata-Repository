@@ -177,14 +177,22 @@
   "Returns the health state of the app."
   [context]
   (let [db-health (conn/health (pah/context->db context))
-        rabbit-mq-health (rmq/health context)
         echo-rest-health (rest/health context)
         metadata-db-health (mdb/get-metadata-db-health context)
         indexer-health (indexer/get-indexer-health context)
-        ok? (every? :ok? [db-health rabbit-mq-health echo-rest-health metadata-db-health indexer-health])]
-    {:ok? ok?
-     :dependencies {:oracle db-health
-                    :rabbit-mq rabbit-mq-health
-                    :echo echo-rest-health
-                    :metadata-db metadata-db-health
-                    :indexer indexer-health}}))
+        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])
+        deps {:oracle db-health
+              :echo echo-rest-health
+              :metadata-db metadata-db-health
+              :indexer indexer-health}]
+    (if (config/use-index-queue?)
+      (let [rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
+            ok? (and ok? (:ok? rabbit-mq-health))
+            deps (assoc deps :rabbit-mq-health rabbit-mq-health)]
+        {:ok? ok?
+         :dependencies deps})
+      {:ok? ok?
+       :dependencies deps})))
+
+
+

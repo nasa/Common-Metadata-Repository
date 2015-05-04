@@ -149,22 +149,26 @@
   "Returns the health state of the app."
   [context]
   (let [elastic-health (es-util/health context :db)
-        rabbit-mq-health (rmq/health context)
         echo-rest-health (rest/health context)
         cubby-health (cubby/get-cubby-health context)
         metadata-db-health (meta-db/get-metadata-db-health context)
         index-set-health (tis/get-index-set-health context)
         ok? (every? :ok? [elastic-health
-                          rabbit-mq-health
                           echo-rest-health
                           cubby-health
                           metadata-db-health
-                          index-set-health])]
-    {:ok? ok?
-     :dependencies {:elastic_search elastic-health
-                    :rabbit-mq rabbit-mq-health
-                    :echo echo-rest-health
-                    :cubby cubby-health
-                    :metadata-db metadata-db-health
-                    :index-set index-set-health}}))
+                          index-set-health])
+        deps {:elastic_search elastic-health
+              :echo echo-rest-health
+              :cubby cubby-health
+              :metadata-db metadata-db-health
+              :index-set index-set-health}]
+    (if (config/use-index-queue?)
+      (let [rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
+            ok? (and ok? (:ok? rabbit-mq-health))
+            deps (assoc deps :rabbit-mq-health rabbit-mq-health)]
+        {:ok? ok?
+         :dependencies deps})
+      {:ok? ok?
+       :dependencies deps})))
 

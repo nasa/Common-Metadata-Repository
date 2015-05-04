@@ -14,7 +14,7 @@
             [langohr.basic :as lb]
             [clj-http.client :as client]
             [cheshire.core :as json]
-            [cmr.common.services.health-helper :as hh]])
+            [cmr.common.services.health-helper :as hh])
   (:import java.io.IOException))
 
 (defmacro with-channel
@@ -144,6 +144,27 @@
                                 wq (wait-queue-name queue-name wait-queue-num)]]
                     (lq/delete ch wq)))))
 
+(defn health-fn
+  "Check that the queue is up and responding"
+  [queue-broker]
+  (try
+    (let [{:keys [host admin-port username password]} queue-broker
+          {:keys [status body]} (client/request
+                                  {:url (format "http://%s:%s/api/aliveness-test/%s"
+                                                host admin-port
+                                                "%2f")
+                                   :method :get
+                                   :throw-exceptions false
+                                   :basic-auth [username password]})]
+      (if (= status 200)
+        (let [rmq-status (-> body (json/decode true) :status)]
+          (if (= rmq-status "ok")
+            {:ok? true}
+            {:ok? false :problem rmq-status}))
+        {:ok? false :problem body}))
+    (catch Exception e
+      {:ok? false :problem (.getMessage e)})))
+
 (defrecord RabbitMQBroker
   [
    ;; RabbitMQ server host
@@ -247,6 +268,11 @@
     (doseq [queue-name persistent-queues]
       (purge-queue this queue-name))
     )
+
+  (health
+    [this]
+    (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(health-fn this) timeout-ms)))
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -255,39 +281,6 @@
   [params]
   (let [{:keys [host port admin-port username password queues]} params]
     (->RabbitMQBroker host port admin-port username password nil queues false)))
-
-
-(defn health-fn
-  "Check that the queue is up and responding"
-  [context]
-  (try
-    (let [queue-broker (get-in context [:system :queue-broker])
-          ;; need to deal with broker-wrapper
-          queue-broker (if (instance? RabbitMQBroker queue-broker)
-                         queue-broker
-                         (:queue-broker queue-broker))
-          {:keys [host admin-port username password]} queue-broker
-          {:keys [status body]} (client/request
-                                  {:url (format "http://%s:%s/api/aliveness-test/%s"
-                                                host admin-port
-                                                "%2f")
-                                   :method :get
-                                   :throw-exceptions false
-                                   :basic-auth [username password]})]
-      (if (= status 200)
-        (let [rmq-status (-> body (json/decode true) :status)]
-          (if (= rmq-status "ok")
-            {:ok? true}
-            {:ok? false :problem rmq-status}))
-        {:ok? false :problem body}))
-    (catch Exception e
-      {:ok? false :problem (.getMessage e)})))
-
-(defn health
-  "Check RabbitMQ health with timeout handling."
-  [context]
-  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
-    (hh/get-health #(health-fn context) timeout-ms)))
 
 
 (comment

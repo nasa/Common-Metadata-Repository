@@ -42,7 +42,16 @@
 
   (reset
     [this]
-    "Reset the broker, deleting any queues and any queued messages"))
+    "Reset the broker, deleting any queues and any queued messages")
+
+  (health
+    [this]
+    "Checks to see if the queue is up and functioning properly. Returns a map with the
+    following keys/values:
+    :ok? - set to true if the queue is operational and false if not.
+    :problem (only present when :ok? is false) - a string indicating the problem.
+
+    This function handles exceptions and timeouts internally."))
 
 ;; A record that is used to start a consumer of messages on a queue.
 (defrecord QueueListener
