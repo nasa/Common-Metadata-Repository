@@ -22,8 +22,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
-            [cmr.common.lifecycle :as lifecycle]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]))
+            [cmr.common.lifecycle :as lifecycle]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."

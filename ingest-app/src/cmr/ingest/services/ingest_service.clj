@@ -18,8 +18,7 @@
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.message-queue.queue.rabbit-mq :as rmq]))
+            [cmr.system-trace.core :refer [deftracefn]]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
