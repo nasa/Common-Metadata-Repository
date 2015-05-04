@@ -167,13 +167,9 @@
   [type]
   (indexer-config/set-indexing-communication-method! "queue")
   (rmq-conf/set-rabbit-mq-ttls! [1 1 1 1 1])
-  (let [rmq-config {:port (rmq-conf/rabbit-mq-port)
-                    :admin-port (rmq-conf/rabbit-mq-admin-port)
-                    :host (rmq-conf/rabbit-mq-host)
-                    :username (rmq-conf/rabbit-mq-user)
-                    :password (rmq-conf/rabbit-mq-password)
-                    :ttls [1 1 1 1 1]
-                    :queues [(indexer-config/index-queue-name)]}]
+  (let [rmq-config (merge (rmq-conf/default-config)
+                          {:ttls [1 1 1 1 1]
+                           :queues [(indexer-config/index-queue-name)]})]
     (-> (rmq/create-queue-broker rmq-config)
         wrapper/create-queue-broker-wrapper)))
 
