@@ -18,7 +18,8 @@
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
             [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
@@ -176,12 +177,14 @@
   "Returns the health state of the app."
   [context]
   (let [db-health (conn/health (pah/context->db context))
+        rabbit-mq-health (rmq/health context)
         echo-rest-health (rest/health context)
         metadata-db-health (mdb/get-metadata-db-health context)
         indexer-health (indexer/get-indexer-health context)
-        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])]
+        ok? (every? :ok? [db-health rabbit-mq-health echo-rest-health metadata-db-health indexer-health])]
     {:ok? ok?
      :dependencies {:oracle db-health
+                    :rabbit-mq rabbit-mq-health
                     :echo echo-rest-health
                     :metadata-db metadata-db-health
                     :indexer indexer-health}}))

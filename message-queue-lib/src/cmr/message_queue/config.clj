@@ -7,6 +7,10 @@
   "The port to use for connecting to Rabbit MQ"
   {:default 5672 :type Long})
 
+(defconfig rabbit-mq-admin-port
+  "The port to use for making admin requests to Rabbit MQ"
+  {:default 15672 :type Long})
+
 (defconfig rabbit-mq-host
   "The host to use for connecting to Rabbit MQ"
   {:default "localhost"})
@@ -29,5 +33,6 @@
   []
   {:host (rabbit-mq-host)
    :port (rabbit-mq-port)
+   :admin-port (rabbit-mq-admin-port)
    :username (rabbit-mq-user)
    :password (rabbit-mq-password)})

@@ -22,7 +22,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
-            [cmr.common.lifecycle :as lifecycle]))
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -148,13 +149,20 @@
   "Returns the health state of the app."
   [context]
   (let [elastic-health (es-util/health context :db)
+        rabbit-mq-health (rmq/health context)
         echo-rest-health (rest/health context)
         cubby-health (cubby/get-cubby-health context)
         metadata-db-health (meta-db/get-metadata-db-health context)
         index-set-health (tis/get-index-set-health context)
-        ok? (every? :ok? [elastic-health echo-rest-health cubby-health metadata-db-health index-set-health])]
+        ok? (every? :ok? [elastic-health
+                          rabbit-mq-health
+                          echo-rest-health
+                          cubby-health
+                          metadata-db-health
+                          index-set-health])]
     {:ok? ok?
      :dependencies {:elastic_search elastic-health
+                    :rabbit-mq rabbit-mq-health
                     :echo echo-rest-health
                     :cubby cubby-health
                     :metadata-db metadata-db-health

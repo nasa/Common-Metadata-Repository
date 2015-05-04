@@ -12,7 +12,9 @@
             [langohr.consumers :as lc]
             [langohr.confirm :as lcf]
             [langohr.basic :as lb]
-            [cheshire.core :as json])
+            [clj-http.client :as client]
+            [cheshire.core :as json]
+            [cmr.common.services.health-helper :as hh]])
   (:import java.io.IOException))
 
 (defmacro with-channel
@@ -147,8 +149,11 @@
    ;; RabbitMQ server host
    host
 
-   ;; RabbitMQ server port
+   ;; RabbitMQ server port for queueing requests
    port
+
+   ;; RabbitMQ server port for admin requests (http)
+   admin-port
 
    ;; RabbitMQ user name
    username
@@ -217,15 +222,15 @@
     [this queue-name msg]
     (let [payload (json/generate-string msg)
           metadata {:content-type "application/json" :persistent true}]
-        (with-channel
-          [pub-ch conn]
-          ;; put channel into confirmation mode
-          (lcf/select pub-ch)
+      (with-channel
+        [pub-ch conn]
+        ;; put channel into confirmation mode
+        (lcf/select pub-ch)
 
-          ;; publish the message
-          (lb/publish pub-ch default-exchange-name queue-name payload metadata)
-          ;; block until the confirm arrives or return false if queue nacks the message
-          (lcf/wait-for-confirms pub-ch))))
+        ;; publish the message
+        (lb/publish pub-ch default-exchange-name queue-name payload metadata)
+        ;; block until the confirm arrives or return false if queue nacks the message
+        (lcf/wait-for-confirms pub-ch))))
 
   (subscribe
     [this queue-name handler params]
@@ -245,24 +250,58 @@
   )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (defn create-queue-broker
   "Create a RabbitMQBroker"
   [params]
-  (let [{:keys [host port username password queues]} params]
-    (->RabbitMQBroker host port username password nil queues false)))
+  (let [{:keys [host port admin-port username password queues]} params]
+    (->RabbitMQBroker host port admin-port username password nil queues false)))
+
+
+(defn health-fn
+  "Check that the queue is up and responding"
+  [context]
+  (try
+    (let [queue-broker (get-in context [:system :queue-broker])
+          ;; need to deal with broker-wrapper
+          queue-broker (if (instance? RabbitMQBroker queue-broker)
+                         queue-broker
+                         (:queue-broker queue-broker))
+          {:keys [host admin-port username password]} queue-broker
+          {:keys [status body]} (client/request
+                                  {:url (format "http://%s:%s/api/aliveness-test/%s"
+                                                host admin-port
+                                                "%2f")
+                                   :method :get
+                                   :throw-exceptions false
+                                   :basic-auth [username password]})]
+      (if (= status 200)
+        (let [rmq-status (-> body (json/decode true) :status)]
+          (if (= rmq-status "ok")
+            {:ok? true}
+            {:ok? false :problem rmq-status}))
+        {:ok? false :problem body}))
+    (catch Exception e
+      {:ok? false :problem (.getMessage e)})))
+
+(defn health
+  "Check RabbitMQ health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(health-fn context) timeout-ms)))
 
 
 (comment
-
   (do
     (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
                                          :port (config/rabbit-mq-port)
+                                         :admin-port (config/rabbit-mq-admin-port)
                                          :username (config/rabbit-mq-user)
                                          :password (config/rabbit-mq-password)
                                          :queues ["test.simple"]
                                          :ttls [1 1 1 1 1]})]
              (lifecycle/start q {})))
+
+    (health {:system {:queue-broker q}})
 
     (defn random-message-handler
       [msg]
