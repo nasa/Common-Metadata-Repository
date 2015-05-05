@@ -172,26 +172,24 @@
       (queue/reset queue-broker)))
   (cache/reset-caches context))
 
+(defn- health-check-fns
+  "A map of keywords to functions to be called for health checks"
+  []
+  {:oracle #(conn/health (pah/context->db %))
+   :echo rest/health
+   :metadata-db mdb/get-metadata-db-health
+   :indexer indexer/get-indexer-health})
+
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [db-health (conn/health (pah/context->db context))
-        echo-rest-health (rest/health context)
-        metadata-db-health (mdb/get-metadata-db-health context)
-        indexer-health (indexer/get-indexer-health context)
-        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])
-        deps {:oracle db-health
-              :echo echo-rest-health
-              :metadata-db metadata-db-health
-              :indexer indexer-health}]
-    (if (config/use-index-queue?)
-      (let [rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
-            ok? (and ok? (:ok? rabbit-mq-health))
-            deps (assoc deps :rabbit-mq-health rabbit-mq-health)]
-        {:ok? ok?
-         :dependencies deps})
-      {:ok? ok?
-       :dependencies deps})))
+  (let [health-fns (merge (health-check-fns)
+                          (when (config/use-index-queue?)
+                            {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))
+        dep-health (reduce-kv (fn [m, dep, f] (assoc m dep (f context))) {} health-fns)
+        ok? (every? :ok? (vals dep-health))]
+    {:ok? ok?
+     :dependencies dep-health}))
 
 
 

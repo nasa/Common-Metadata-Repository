@@ -144,30 +144,22 @@
   (es/update-indexes context)
   (cache/reset-caches context))
 
+(defn- health-check-fns
+  "A map of keywords to functions to be called for health checks"
+  []
+  {:elastic_search #(es-util/health % :db)
+   :echo rest/health
+   :cubby cubby/get-cubby-health
+   :metadata-db meta-db/get-metadata-db-health
+   :index-set tis/get-index-set-health})
+
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [elastic-health (es-util/health context :db)
-        echo-rest-health (rest/health context)
-        cubby-health (cubby/get-cubby-health context)
-        metadata-db-health (meta-db/get-metadata-db-health context)
-        index-set-health (tis/get-index-set-health context)
-        ok? (every? :ok? [elastic-health
-                          echo-rest-health
-                          cubby-health
-                          metadata-db-health
-                          index-set-health])
-        deps {:elastic_search elastic-health
-              :echo echo-rest-health
-              :cubby cubby-health
-              :metadata-db metadata-db-health
-              :index-set index-set-health}]
-    (if (config/use-index-queue?)
-      (let [rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
-            ok? (and ok? (:ok? rabbit-mq-health))
-            deps (assoc deps :rabbit-mq-health rabbit-mq-health)]
-        {:ok? ok?
-         :dependencies deps})
-      {:ok? ok?
-       :dependencies deps})))
-
+  (let [health-fns (merge (health-check-fns)
+                          (when (config/use-index-queue?)
+                            {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))
+        dep-health (reduce-kv (fn [m, dep, f] (assoc m dep (f context))) {} health-fns)
+        ok? (every? :ok? (vals dep-health))]
+    {:ok? ok?
+     :dependencies dep-health}))
