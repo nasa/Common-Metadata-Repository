@@ -2,6 +2,7 @@
   "Contains code for retrieving and manipulating ACLs."
   (:require [cmr.common.services.errors :as errors]
             [cmr.acl.acl-fetcher :as acl-fetcher]
+            [cmr.transmit.config :as tc]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
             [cmr.acl.collection-matchers :as cm]
@@ -13,13 +14,10 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
-(def token-header
-  "echo-token")
-
 (defn- get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
-  (or (:token params) (get headers token-header)))
+  (or (:token params) (get headers tc/token-header)))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"

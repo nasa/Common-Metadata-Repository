@@ -30,11 +30,17 @@
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (try
-      (doseq [[type-name type-mapping] mapping]
-        (let [response (esi/update-mapping conn index-name (name type-name) :mapping mapping)]
-          (when-not (= {:acknowledged true} response)
-            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                         (pr-str response))))))
+      (if (esi/exists? conn index-name)
+        ;; The index exists. Update the mappings.
+        (doseq [[type-name type-mapping] mapping]
+          (let [response (esi/update-mapping conn index-name (name type-name) :mapping mapping)]
+            (when-not (= {:acknowledged true} response)
+              (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                           (pr-str response))))))
+        ;; The index does not exist. Create it.
+        (do
+          (info "Index" index-name "does not exist so it will be created")
+          (esi/create conn index-name :settings settings :mappings mapping)))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
               error (:error body)]

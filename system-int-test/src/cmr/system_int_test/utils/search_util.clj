@@ -10,6 +10,7 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
@@ -443,3 +444,12 @@
       {:status (:status response)
        :results (json/decode (:body response))}
       response)))
+
+(defn clear-caches
+  "Clears caches in the search application"
+  []
+  (client/post (url/search-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
+

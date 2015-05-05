@@ -160,9 +160,8 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
-        json-index-set-str (json/generate-string index-set)
         idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)
-        es-store (context->es-store context) ]
+        es-store (context->es-store context)]
 
     ;; rollback index-set creation if index creation fails
     (try
@@ -184,9 +183,8 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
-        json-index-set-str (json/generate-string index-set)
         idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)
-        es-store (context->es-store context) ]
+        es-store (context->es-store context)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))
