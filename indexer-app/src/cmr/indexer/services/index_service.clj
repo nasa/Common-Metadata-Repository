@@ -7,6 +7,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.date-time-parser :as date]
             [cmr.common.cache :as cache]
+            [cmr.common.util :as util]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as tis]
             [cmr.transmit.echo.rest :as rest]
@@ -147,19 +148,19 @@
 (defn- health-check-fns
   "A map of keywords to functions to be called for health checks"
   []
-  {:elastic_search #(es-util/health % :db)
-   :echo rest/health
-   :cubby cubby/get-cubby-health
-   :metadata-db meta-db/get-metadata-db-health
-   :index-set tis/get-index-set-health})
+  (let [default-fns {:elastic_search #(es-util/health % :db)
+                     :echo rest/health
+                     :cubby cubby/get-cubby-health
+                     :metadata-db meta-db/get-metadata-db-health
+                     :index-set tis/get-index-set-health}]
+    (merge default-fns
+           (when (config/use-index-queue?)
+             {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))))
 
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [health-fns (merge (health-check-fns)
-                          (when (config/use-index-queue?)
-                            {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))
-        dep-health (reduce-kv (fn [m, dep, f] (assoc m dep (f context))) {} health-fns)
+  (let [dep-health (util/map-values #(% context) (health-check-fns))
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
