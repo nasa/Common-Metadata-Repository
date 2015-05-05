@@ -18,7 +18,9 @@
 (defn- get-headers
   "Gets the headers to use for communicating with the indexer."
   [context]
-  (assoc (ch/context->http-headers context) acl/token-header (transmit-config/echo-system-token)))
+  (assoc (ch/context->http-headers context)
+         transmit-config/token-header
+         (transmit-config/echo-system-token)))
 
 (defn-timed delete-from-index-via-http
   "Execute http delete of the given url on the indexer"

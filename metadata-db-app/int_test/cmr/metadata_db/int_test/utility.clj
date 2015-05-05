@@ -11,7 +11,6 @@
             [inflections.core :as inf]
             [cmr.metadata-db.config :as config]
             [clj-http.conn-mgr :as conn-mgr]
-            [cmr.acl.core :as acl]
             [cmr.transmit.config :as transmit-config]))
 
 (def conn-mgr-atom (atom nil))
@@ -329,7 +328,7 @@
                                 :accept :json
                                 :throw-exceptions false
                                 :connection-manager (conn-mgr)
-                                :headers {acl/token-header (transmit-config/echo-system-token)}})
+                                :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
          status (:status response)
          {:keys [errors provider-id]} (json/decode (:body response) true)]
      {:status status :errors errors :provider-id provider-id})))
@@ -354,7 +353,7 @@
                                 {:accept :json
                                  :throw-exceptions false
                                  :connection-manager (conn-mgr)
-                                 :headers {acl/token-header (transmit-config/echo-system-token)}})
+                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
         status (:status response)
         {:keys [errors]} (json/decode (:body response) true)]
     {:status status :errors errors}))
@@ -378,7 +377,7 @@
   (:status
     (client/post old-revision-concept-cleanup-url
                  {:throw-exceptions false
-                  :headers {acl/token-header (transmit-config/echo-system-token)}
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                   :connection-manager (conn-mgr)})))
 
 (defn expired-concept-cleanup
@@ -387,7 +386,7 @@
   (:status
     (client/post expired-concept-cleanup-url
                  {:throw-exceptions false
-                  :headers {acl/token-header (transmit-config/echo-system-token)}
+                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                   :connection-manager (conn-mgr)})))
 
 (defn reset-database
@@ -395,7 +394,7 @@
   []
   (:status
     (client/post reset-url {:throw-exceptions false
-                            :headers {acl/token-header (transmit-config/echo-system-token)}
+                            :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                             :connection-manager (conn-mgr)})))
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

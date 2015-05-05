@@ -11,8 +11,7 @@
             [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
             [cmr.common.config :as cfg]
-            [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.acl.core :as acl]))
+            [cmr.system-trace.core :refer [deftracefn]]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections
@@ -421,7 +420,7 @@
       {:method :post
        :url index-set-reset-url
        :content-type :json
-       :headers {acl/token-header (transmit-config/echo-system-token)}
+       :headers {transmit-config/token-header (transmit-config/echo-system-token)}
        :accept :json})))
 
 (defn create
@@ -436,7 +435,7 @@
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
-                    :headers {acl/token-header (transmit-config/echo-system-token)}
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)]
     (when-not (= 201 status)
@@ -456,7 +455,7 @@
                     :body (cheshire/generate-string index-set)
                     :content-type :json
                     :accept :json
-                    :headers {acl/token-header (transmit-config/echo-system-token)}
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
                     :throw-exceptions false})
         status (:status response)]
     (when-not (= 200 status)

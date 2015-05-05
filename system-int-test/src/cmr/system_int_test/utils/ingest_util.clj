@@ -7,7 +7,6 @@
             [cmr.umm.echo10.granule :as g]
             [cmr.system-int-test.data2.provider-holdings :as ph]
             [cmr.umm.echo10.core :as echo10]
-            [cmr.acl.core :as acl]
             [cmr.transmit.config :as transmit-config]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.index-util :as index]
@@ -23,7 +22,7 @@
                {:body (json/generate-string {:provider-id provider-id :cmr-only cmr-only})
                 :content-type :json
                 :connection-manager (s/conn-mgr)
-                :headers {acl/token-header (transmit-config/echo-system-token)}}))
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
@@ -59,7 +58,7 @@
   (let [response (client/delete (url/delete-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
-                                 :headers {acl/token-header (transmit-config/echo-system-token)}})
+                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
         status (:status response)]
     (is (some #{200 404} [status]))))
 
@@ -69,7 +68,7 @@
   (let [response (client/delete (url/ingest-delete-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
-                                 :headers {acl/token-header (transmit-config/echo-system-token)}})]
+                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (:status response)))
 
 (defn reindex-collection-permitted-groups

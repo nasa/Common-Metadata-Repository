@@ -4,6 +4,7 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.indexer.config :as config]
             [cmr.system-int-test.utils.queue :as queue]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cheshire.core :as json]
             [cmr.system-int-test.system :as s]))
@@ -18,6 +19,13 @@
   (when (config/use-index-queue?)
     (client/post (url/dev-system-wait-for-indexing-url) {:connection-manager (s/conn-mgr)}))
   (refresh-elastic-index))
+
+(defn update-indexes
+  "Makes the indexer update the index set mappings and indexes"
+  []
+  (client/post (url/indexer-update-indexes)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn set-message-queue-retry-behavior
   "Set the message queue retry behavior"
