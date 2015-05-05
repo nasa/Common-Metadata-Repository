@@ -238,6 +238,8 @@
            {:entry-title "correct" :short-name "S2" :version-id "V1"}
            ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
 
+;; This tests that additional granule indexes can be configured in the indexer and that these can
+;; be introduced with an existing index set at run time.
 (deftest update-granule-collection-indexes-test
   (let [orig-colls-with-sep-indexes (indexer-system/colls-with-separate-indexes)
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :concept-id "C1-PROV1"}))
