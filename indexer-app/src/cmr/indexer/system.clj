@@ -50,7 +50,7 @@
              :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {af/acl-cache-key (af/create-acl-cache
-                                         (stl-cache/create-single-thread-lookup-cache 
+                                         (stl-cache/create-single-thread-lookup-cache
                                            (consistent-cache/create-consistent-cache))
                                          [:catalog-item :system-object :provider-object])
                       cache/general-cache-key (mem-cache/create-in-memory-cache)

@@ -194,7 +194,11 @@
       (reset! id-sequence-atom 0)
       (reset! message-queue-history-atom [])
       (finally
-        (reset! resetting?-atom false)))))
+        (reset! resetting?-atom false))))
+
+  (health
+    [this]
+    (queue/health (:queue-broker this))))
 
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed or failed."
