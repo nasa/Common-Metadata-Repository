@@ -52,7 +52,8 @@
           (esi/update-mapping conn index-name type-name mapping)))
       (do
         (info "Creating cubby index")
-        (esi/create conn index-name :settings index-settings :mappings mappings)))))
+        (esi/create conn index-name :settings index-settings :mappings mappings)
+        (esc/wait-for-healthy-elastic elastic-store)))))
 
 (comment
 

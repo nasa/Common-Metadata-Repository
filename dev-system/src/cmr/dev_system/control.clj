@@ -13,7 +13,7 @@
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
-            [cmr.elastic-utils.test-util :as elastic-util]
+            [cmr.elastic-utils.connect :as elastic-conn]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -94,7 +94,7 @@
               :when (get-in system [:apps service-name])]
         (reset-fn (app-context system service-name)))
       ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
-      (elastic-util/wait-for-healthy-elastic (get-in system [:apps :indexer :db]))
+      (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :db]))
       (debug "dev system /reset complete")
       {:status 200})
 
