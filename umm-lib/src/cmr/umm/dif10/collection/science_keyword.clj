@@ -1,0 +1,30 @@
+(ns cmr.umm.dif10.collection.science-keyword
+  "Provide functions to parse and generate DIF10 Science Keyword elements."
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
+            [cmr.umm.collection :as c]))
+
+(defn xml-elem->ScienceKeyword
+  [science-keyword-elem]
+  (let [category (cx/string-at-path science-keyword-elem [:Category])
+        topic (cx/string-at-path science-keyword-elem [:Topic])
+        term (cx/string-at-path science-keyword-elem [:Term])
+        variable-level-1 (cx/string-at-path science-keyword-elem [:Variable_Level_1])
+        variable-level-2 (cx/string-at-path science-keyword-elem [:Variable_Level_2])
+        variable-level-3 (cx/string-at-path science-keyword-elem [:Variable_Level_3])
+        detailed-variable (cx/string-at-path science-keyword-elem [:Detailed_Variable])]
+    (c/map->ScienceKeyword
+      {:category category
+       :topic topic
+       :term term
+       :variable-level-1 variable-level-1
+       :variable-level-2 variable-level-2
+       :variable-level-3 variable-level-3
+       :detailed-variable detailed-variable})))
+
+(defn xml-elem->ScienceKeywords
+  [collection-element]
+  (seq (map xml-elem->ScienceKeyword
+            (cx/elements-at-path
+              collection-element
+              [:Science_Keywords]))))
