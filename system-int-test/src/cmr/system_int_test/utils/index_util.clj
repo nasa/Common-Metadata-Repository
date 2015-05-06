@@ -1,6 +1,7 @@
 (ns ^{:doc "provides index related utilities."}
   cmr.system-int-test.utils.index-util
-  (:require [clj-http.client :as client]
+  (:require [clojure.test :refer [is]]
+            [clj-http.client :as client]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.indexer.config :as config]
             [cmr.system-int-test.utils.queue :as queue]
@@ -23,9 +24,11 @@
 (defn update-indexes
   "Makes the indexer update the index set mappings and indexes"
   []
-  (client/post (url/indexer-update-indexes)
-               {:connection-manager (s/conn-mgr)
-                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+  (let [response (client/post (url/indexer-update-indexes)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
 
 (defn set-message-queue-retry-behavior
   "Set the message queue retry behavior"
