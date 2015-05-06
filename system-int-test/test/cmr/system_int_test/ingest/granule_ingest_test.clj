@@ -241,7 +241,7 @@
 ;; This tests that additional granule indexes can be configured in the indexer and that these can
 ;; be introduced with an existing index set at run time.
 (deftest update-granule-collection-indexes-test
-  (let [orig-colls-with-sep-indexes (indexer-system/colls-with-separate-indexes)
+  (let [orig-colls-with-sep-indexes (dev-sys-util/eval-in-dev-sys `(indexer-system/colls-with-separate-indexes))
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1" :concept-id "C1-PROV1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2" :concept-id "C2-PROV1"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :concept-id "C3-PROV1"}))
@@ -251,8 +251,9 @@
       (is (d/refs-match? [gran1] (search/find-refs :granule {})))
 
       ;; Add additional collections to the collections with separate indexes
-      (indexer-system/set-colls-with-separate-indexes!
-        (concat orig-colls-with-sep-indexes ["C2-PROV1" "C3-PROV1"]))
+      (dev-sys-util/eval-in-dev-sys
+        `(indexer-system/set-colls-with-separate-indexes!
+           (concat ~orig-colls-with-sep-indexes ["C2-PROV1" "C3-PROV1"])))
 
       ;; Make the indexer update indexes adding two new indexes for coll2 and coll3
       (index/update-indexes)
@@ -269,7 +270,8 @@
         (is (d/refs-match? [gran1 gran2 gran3] (search/find-refs :granule {}))))
 
       (finally
-        (indexer-system/set-colls-with-separate-indexes!
-          orig-colls-with-sep-indexes)))))
+        (dev-sys-util/eval-in-dev-sys
+          `(indexer-system/set-colls-with-separate-indexes!
+             ~orig-colls-with-sep-indexes))))))
 
 

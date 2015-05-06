@@ -116,6 +116,16 @@
       (exec-dev-system-function "stop" system)
       (System/exit 0))
 
+    ;; Reads and evaluates code sent to dev system then encodes the response as clojure EDN for the
+    ;; caller to read. This avoids having to add a million different endpoints to dev system control
+    ;; to do different things inside the system.
+    (POST "/eval" {:keys [body]}
+      (let [body-str (slurp body)]
+        (cmr.common.dev.capture-reveal/capture body-str)
+        (debug (str "dev-system evaling [" body-str "]"))
+        {:status 200
+         :body (pr-str (eval (read-string body-str)))}))
+
     ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR
     ;; running in dev-system.
     (context "/time-keeper" []

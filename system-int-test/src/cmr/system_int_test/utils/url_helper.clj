@@ -18,6 +18,11 @@
   "The port number for the dev system control api"
   2999)
 
+(defn dev-system-eval-url
+  "The url on the dev system control api for evaling arbitrary code in dev system"
+  []
+  (format "http://localhost:%s/eval" dev-system-port))
+
 (defn dev-system-wait-for-indexing-url
   "The wait-for-indexing url on the dev system control api."
   []
