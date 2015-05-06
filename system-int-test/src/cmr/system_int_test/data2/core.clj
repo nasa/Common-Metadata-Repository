@@ -197,6 +197,15 @@
       (println (pr-str search-result)))
     result))
 
+(defn assert-refs-match
+  "Asserts that the references match the results returned. Use this in place of refs-match? to
+  get better output during tests."
+  [items search-result]
+  (is (= (set (map item->ref items))
+         ;; need to remove score etc. because it won't be available in collections
+         ;; to which we are comparing
+         (set (map #(dissoc % :score :granule-count) (:refs search-result))))))
+
 (defn refs-match-order?
   "Returns true if the references match the expected items in the order specified"
   [items search-result]
