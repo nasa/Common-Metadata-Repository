@@ -121,7 +121,6 @@
     ;; to do different things inside the system.
     (POST "/eval" {:keys [body]}
       (let [body-str (slurp body)]
-        (cmr.common.dev.capture-reveal/capture body-str)
         (debug (str "dev-system evaling [" body-str "]"))
         {:status 200
          :body (pr-str (eval (read-string body-str)))}))
