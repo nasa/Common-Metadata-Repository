@@ -12,7 +12,7 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.indexer.system :as indexer-system]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "LONG_PROV2"}))
 
 (defn get-colls-with-separate-indexes
   "Gets the collections with separate indexes configured in the running dev system."
@@ -42,7 +42,8 @@
   [body]
   `(let [orig-colls-with-sep-indexes# (get-colls-with-separate-indexes)]
      (set-colls-with-separate-indexes!
-       (concat orig-colls-with-sep-indexes# ["C2-PROV1" "C3-PROV1"]))
+       (concat orig-colls-with-sep-indexes# ["C2-PROV1" "C3-PROV1"]
+               (map #(str "C" % "-LONG_PROV2") (range 250))))
      (try
        ~body
        (finally
