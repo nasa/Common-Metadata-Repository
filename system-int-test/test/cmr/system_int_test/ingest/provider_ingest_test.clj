@@ -84,7 +84,7 @@
   (is (= 404 (ingest/delete-ingest-provider "NON_EXIST"))))
 
 (deftest delete-provider-without-permission-test
-  (let [response (client/delete (url/ingest-delete-provider-url "PROV1")
+  (let [response (client/delete (url/ingest-provider-url "PROV1")
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
                                  :query-params {:token "dummy-token"}})]
