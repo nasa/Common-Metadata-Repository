@@ -358,7 +358,7 @@
                               :connection-manager (conn-mgr)
                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
         status (:status response)
-        {:keys [errors provider-id]} (:body response)]
+        {:keys [errors]} (:body response)]
     {:status status :errors errors}))
 
 (defn delete-provider
