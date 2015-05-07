@@ -1,6 +1,7 @@
 (ns cmr.ingest.services.provider-service
   "Functions for CRUD operations on providers. All functions return
-  the underlying Metadata DB API response."
+  the underlying Metadata DB API clj-http response which can be used
+  as a Ring response."
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]))
 
