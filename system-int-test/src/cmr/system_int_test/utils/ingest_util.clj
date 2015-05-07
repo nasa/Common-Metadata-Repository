@@ -65,7 +65,7 @@
 (defn delete-ingest-provider
   "Delete the provider with the matching provider-id through the CMR ingest app."
   [provider-id]
-  (let [response (client/delete (url/ingest-delete-provider-url provider-id)
+  (let [response (client/delete (url/ingest-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
                                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
