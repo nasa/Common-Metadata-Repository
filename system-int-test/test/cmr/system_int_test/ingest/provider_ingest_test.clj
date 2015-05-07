@@ -21,9 +21,16 @@
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
+    (ingest/create-ingest-provider "PROV3" true)
     (ingest/create-ingest-provider "PROV4" false)
     (ingest/update-ingest-provider "PROV4" true)
-    (is (true? (:cmr-only (first (filter #(= "PROV4" (:provider-id %)) (ingest/get-providers))))))))
+    (is (= [{:provider-id "PROV4" :cmr-only true}
+            {:provider-id "PROV3" :cmr-only true}
+            {:provider-id "PROV2" :cmr-only false}
+            {:provider-id "PROV1" :cmr-only false}]
+           (ingest/get-ingest-providers))))
+  (testing "updating a non-existent provider fails"
+    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true))))))
 
 (deftest delete-provider-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))
