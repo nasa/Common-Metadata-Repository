@@ -21,7 +21,7 @@
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream))
 
-;; TODO - copied from metadatadb - move to cmr.common
+;; copied from metadatadb - move to cmr.common - This will be addressed in CMR-1400.
 (defn string->gzip-bytes
   "Convert a string to an array of compressed bytes"
   [input]
