@@ -1,4 +1,6 @@
 (ns cmr.ingest.services.provider-service
+  "Functions for CRUD operations on providers. All functions return
+  the underlying Metadata DB API response."
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]))
 
