@@ -40,7 +40,7 @@
          (j/query db ["SELECT provider_id, cmr_only FROM providers"])))
 
   (update-provider
-    [db {:keys [provider-id cmr-only] :as provider}]
+    [db {:keys [provider-id cmr-only]}]
     (j/update! db
                :providers
                {:cmr_only (if cmr-only 1 0)}
