@@ -32,11 +32,6 @@ if [ $? -ne 0 ] ; then
   echo "Failed to build and start up dev system" >&2
   exit 1
 fi
-
-# When dev system starts up it may or may not have the initial indexes created for elastic. Running
-# a reset here helps avoid seeing an error in the logs when the jobs kick off.
-curl -XPOST http://localhost:2999/reset
-
 date && echo "Running tests" &&
 CMR_ELASTIC_PORT=9206 lein modules test-out
 if [ $? -ne 0 ] ; then
