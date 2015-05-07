@@ -60,6 +60,12 @@ Creates a provider in the CMR. The provider id specified should match that of a 
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only": false}' http://localhost:3002/providers
 
+### Update provider
+
+Updates the attributes of a provider in the CMR.
+
+    curl -v -XPUT -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":true}' http://localhost:3002/providers/PROV1
+
 ### Delete provider
 
 Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch
