@@ -206,6 +206,13 @@
                  :headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false})))
 
+(defn update-provider
+  [context provider]
+  (let [{:keys [status body]} (update-provider-raw context provider)]
+    (when-not (contains? #{200 404 400} status)
+      (errors/internal-error!
+       (format "Failed to update provider status: %s body: %s" status body)))))
+
 (defn delete-provider-raw
   "Delete the provider with the matching provider-id from the CMR metadata repo,
   returns the raw response coming back from metadata-db."
