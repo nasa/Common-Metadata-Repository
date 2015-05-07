@@ -19,6 +19,12 @@
       (is (= 201 status))
       (is (= (ingest/get-providers) (ingest/get-ingest-providers))))))
 
+(deftest update-provider-test
+  (testing "creating a provider and changing attributes"
+    (ingest/create-ingest-provider "PROV4" false)
+    (ingest/update-ingest-provider "PROV4" true)
+    (is (true? (:cmr-only (first (filter #(= "PROV4" (:provider-id %)) (ingest/get-providers))))))))
+
 (deftest delete-provider-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1))

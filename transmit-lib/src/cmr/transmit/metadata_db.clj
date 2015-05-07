@@ -196,6 +196,16 @@
         (format "Failed to create provider status: %s body: %s"
                 status body)))))
 
+(defn update-provider-raw
+  [context {:keys [provider-id] :as provider}]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers/" provider-id)]
+    (client/put request-url
+                {:body (json/generate-string provider)
+                 :content-type :json
+                 :headers {config/token-header (config/echo-system-token)}
+                 :throw-exceptions false})))
+
 (defn delete-provider-raw
   "Delete the provider with the matching provider-id from the CMR metadata repo,
   returns the raw response coming back from metadata-db."

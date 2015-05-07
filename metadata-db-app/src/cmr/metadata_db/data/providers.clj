@@ -5,13 +5,18 @@
   "Functions for saving and retrieving providers"
 
   (save-provider
-    [db provider-id]
+    [db provider]
     "Saves a provider and returns the provider id. If the provider already
     exists then an exception is thrown.")
 
   (get-providers
     [db]
     "Get a sequence of all the providers.")
+
+  (update-provider
+    [db provider]
+    "Updates an existing provider in the database based on the
+    provider map's provider-id value..")
 
   (delete-provider
     [db provider-id]

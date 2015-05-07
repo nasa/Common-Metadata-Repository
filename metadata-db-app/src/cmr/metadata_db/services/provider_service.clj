@@ -74,6 +74,21 @@
   (let [db (mdb-util/context->db context)]
     (providers/get-providers db)))
 
+(deftracefn update-provider
+  "Updates a provider."
+  [context {:keys [provider-id] :as provider}]
+  (info "Updating provider [" provider-id "]")
+  (let [db (mdb-util/context->db context)
+        result (providers/update-provider db provider)
+        error-code (:error result)]
+    (when error-code
+      (cond
+        (= error-code :not-found)
+        (cmsg/data-error :not-found msg/provider-does-not-exist provider-id)
+
+        :else
+        (errors/internal-error! (:error-message result))))))
+
 (deftracefn delete-provider
   "Delete a provider and all its concept tables."
   [context provider-id]

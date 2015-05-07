@@ -7,6 +7,11 @@
   [context provider]
   (mdb/create-provider-raw context provider))
 
+(defn update-provider
+  "Update an existing provider."
+  [context provider]
+  (mdb/update-provider-raw context provider))
+
 (defn delete-provider
   "Delete a provider and all its concepts."
   [context provider-id]

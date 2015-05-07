@@ -71,6 +71,18 @@
                                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (:status response)))
 
+(defn update-ingest-provider
+  "Updates the cmr-only attribute of an ingest provider."
+  [provider-id cmr-only]
+  (let [response (client/put (url/ingest-provider-url provider-id)
+                             {:throw-exceptions false
+                              :body (json/generate-string {:provider-id provider-id
+                                                           :cmr-only cmr-only})
+                              :content-type :json
+                              :connection-manager (s/conn-mgr)
+                              :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
+    response))
+
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   []

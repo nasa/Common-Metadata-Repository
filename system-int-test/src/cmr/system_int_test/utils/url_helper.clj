@@ -187,6 +187,11 @@
   [provider-id]
   (format "http://localhost:%s/providers/%s" (transmit-config/ingest-port) provider-id))
 
+(defn ingest-provider-url
+  [provider-id]
+  ;; same as the delete URL for now
+  (ingest-delete-provider-url provider-id))
+
 (defn ingest-health-url
   "URL to check ingest health."
   []
