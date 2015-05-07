@@ -16,7 +16,7 @@
   (update-provider
     [db provider]
     "Updates an existing provider in the database based on the
-    provider map's provider-id value..")
+    provider map's provider-id value.")
 
   (delete-provider
     [db provider-id]
