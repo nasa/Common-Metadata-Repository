@@ -109,3 +109,7 @@
 
 (defn invalid-provider-id [provider-id]
   (format "provider-id [%s] is invalid" provider-id))
+
+(defn cmr-only-missing
+  []
+  "cmr-only value is missing")

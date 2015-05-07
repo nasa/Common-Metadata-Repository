@@ -348,18 +348,15 @@
 
 (defn update-provider
   [provider-id cmr-only]
-  (let [response (client/put (format "%s/%s" providers-url provider-id)
-                             {:body (json/generate-string {:provider-id provider-id
-                                                           :cmr-only cmr-only})
-                              :content-type :json
-                              :accept :json
-                              :as :json
-                              :throw-exceptions false
-                              :connection-manager (conn-mgr)
-                              :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-        status (:status response)
-        {:keys [errors]} (:body response)]
-    {:status status :errors errors}))
+  (client/put (format "%s/%s" providers-url provider-id)
+              {:body (json/generate-string {:provider-id provider-id
+                                            :cmr-only cmr-only})
+               :content-type :json
+               :accept :json
+               :as :json
+               :throw-exceptions false
+               :connection-manager (conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn delete-provider
   "Make a DELETE request to remove a provider."
