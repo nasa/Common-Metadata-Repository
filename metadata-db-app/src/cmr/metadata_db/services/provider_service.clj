@@ -78,6 +78,7 @@
   "Updates a provider."
   [context {:keys [provider-id] :as provider}]
   (info "Updating provider [" provider-id "]")
+  (validate-provider provider)
   (let [db (mdb-util/context->db context)
         result (providers/update-provider db provider)
         error-code (:error result)]
