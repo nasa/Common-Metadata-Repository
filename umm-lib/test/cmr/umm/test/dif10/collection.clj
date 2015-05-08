@@ -77,6 +77,22 @@
         </Contact_Person>
       </Personnel>
     </Organization>
+    <Reference>
+      <Author>author</Author>
+      <Publication_Date>2015</Publication_Date>
+      <Title>title</Title>
+      <Series>1</Series>
+      <Edition>2</Edition>
+      <Volume>3</Volume>
+      <Issue>4</Issue>
+      <Report_Number>5</Report_Number>
+      <Publication_Place>Frederick, MD</Publication_Place>
+      <Publisher>publisher</Publisher>
+      <Pages>678</Pages>
+      <ISBN>978-0-394-80001-1</ISBN>
+      <Online_Resource>http://example.com</Online_Resource>
+      <Other_Reference_Details>blah</Other_Reference_Details>
+    </Reference>
     <Summary>
       <Abstract>summary of the dataset</Abstract>
       <Purpose>A grand purpose</Purpose>
@@ -110,6 +126,21 @@
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
                                                  :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
+                    :publication-references [(umm-c/map->PublicationReference
+                                               {:author "author"
+                                                :publication-date "2015"
+                                                :title "title"
+                                                :series "1"
+                                                :edition "2"
+                                                :volume "3"
+                                                :issue "4"
+                                                :report-number "5"
+                                                :publication-place "Frederick, MD"
+                                                :publisher "publisher"
+                                                :pages "678"
+                                                :isbn "978-0-394-80001-1"
+                                                :related-url "http://example.com"
+                                                :other-reference-details "blah"})]
                     :platforms [(umm-c/map->Platform
                                   {:short-name "Short Name"
                                    :long-name "Long Name"
