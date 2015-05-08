@@ -4,7 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
-            [cmr.umm.dif.core :as dif-core]
+            [cmr.umm.dif10.core :as dif10-core]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
             [camel-snake-kebab.core :as csk]
@@ -74,11 +74,11 @@
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
 
-(extend-protocol cmr.umm.dif10.core/UmmToDif10Xml
+(extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
   (umm->dif10-xml
     ([collection]
-     (cmr.umm.dif10.core/umm->dif10-xml collection false))
+     (dif10-core/umm->dif10-xml collection false))
     ([collection indent?]
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
