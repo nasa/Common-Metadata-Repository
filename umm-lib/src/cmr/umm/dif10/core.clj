@@ -1,7 +1,7 @@
 (ns cmr.umm.dif10.core
   "Contains main functions for parsing and generating DIF 10 XML")
 
-(defprotocol UmmToDifXml
+(defprotocol UmmToDif10Xml
   "Functions for converting umm items to xml."
   (umm->dif10-xml
     [item] [item indent?]

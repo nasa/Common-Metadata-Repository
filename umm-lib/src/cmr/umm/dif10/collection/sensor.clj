@@ -1,4 +1,5 @@
 (ns cmr.umm.dif10.collection.sensor
+  "Functions to parse and generate DIF10 sensor elements which are part of instrument elements"
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
@@ -21,3 +22,14 @@
             (cx/elements-at-path
               instrument-element
               [:Sensor]))))
+
+(defn generate-sensors
+  [sensors]
+  (when-not (empty? sensors)
+    (for [sensor sensors]
+      (let [{:keys [short-name long-name technique characteristics]} sensor]
+        (x/element :Sensor {}
+                   (x/element :Short_Name {} short-name)
+                   (when long-name (x/element :Long_Name {} long-name))
+                   (when technique (x/element :Technique {} technique))
+                   (ch/generate-characteristics characteristics))))))

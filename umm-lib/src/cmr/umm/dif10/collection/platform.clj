@@ -1,8 +1,24 @@
 (ns cmr.umm.dif10.collection.platform
-  (:require [cmr.common.xml :as cx]
+  "Functions to parse and generate DIF10 Platform elements"
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.umm.dif10.collection.instrument :as inst]
             [cmr.umm.dif10.collection.characteristic :as char]))
+
+(def PLATFORM_TYPES
+  #{"Not provided"
+    "Aircraft"
+    "Balloons/Rockets"
+    "Earth Observation Satellites"
+    "In Situ Land-based Platforms"
+    "In Sit Ocean-based Platforms"
+    "Interplanetary Spacecraft"
+    "Maps/Charts/Photographs"
+    "Models/Analyses"
+    "Navigation Platforms"
+    "Solar/Space Observation Satellites"
+    "Space Stations/Manned Spacecraft"})
 
 (defn xml-elem->Platform
   [platform-elem]
@@ -24,3 +40,20 @@
             (cx/elements-at-path
               collection-element
               [:Platform]))))
+
+(defn generate-platforms
+  [platforms]
+  (if (seq platforms)
+    (for [platform platforms]
+      (let [{:keys [short-name long-name type instruments characteristics]} platform]
+        (x/element :Platform {}
+                   (x/element :Type {} (or (PLATFORM_TYPES type) "Not provided"))
+                   (x/element :Short_Name {} short-name)
+                   (x/element :Long_Name {} long-name)
+                   (char/generate-characteristics characteristics)
+                   (inst/generate-instruments instruments))))
+    ;;Added since Platforms is a required field in DIF10
+    (x/element :Platform {}
+               (x/element :Type {} "Not provided")
+               (x/element :Short_Name {} "Not provided")
+               (inst/generate-instruments []))))

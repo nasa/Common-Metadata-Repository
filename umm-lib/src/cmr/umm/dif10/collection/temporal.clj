@@ -1,8 +1,10 @@
 (ns cmr.umm.dif10.collection.temporal
   "Contains functions for parsing the DIF10 temporal coverage element."
-  (:require [cmr.common.xml :as cx]
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as parser]
-            [cmr.umm.collection :as c]))
+            [cmr.umm.collection :as c]
+            [cmr.umm.generator-util :as gu]))
 
 (defn- xml-elem->RangeDateTimes
   "Returns a list of UMM RangeDateTimes from a parsed Temporal XML structure"
@@ -16,13 +18,15 @@
   "Returns a list of UMM PeriodicDateTimes from a parsed Temporal XML structure"
   [temporal-element]
   (let [elements (cx/elements-at-path temporal-element [:Periodic_DateTime])]
-    (map #(c/map->PeriodicDateTime {:name (cx/string-at-path % [:Name])
-                                    :start-date (cx/datetime-at-path % [:Start_Date])
-                                    :end-date (cx/datetime-at-path % [:End_Date])
-                                    :duration-unit (cx/string-at-path % [:Duration_Unit])
-                                    :duration-value (cx/long-at-path % [:Duration_Value])
-                                    :period-cycle-duration-unit (cx/string-at-path % [:Period_Cycle_Duration_Unit])
-                                    :period-cycle-duration-value (cx/long-at-path % [:Period_Cycle_Duration_Value])})
+    (map (fn [element]
+           (c/map->PeriodicDateTime
+             {:name (cx/string-at-path element [:Name])
+              :start-date (cx/datetime-at-path element [:Start_Date])
+              :end-date (cx/datetime-at-path element [:End_Date])
+              :duration-unit (cx/string-at-path element [:Duration_Unit])
+              :duration-value (cx/long-at-path element [:Duration_Value])
+              :period-cycle-duration-unit (cx/string-at-path element [:Period_Cycle_Duration_Unit])
+              :period-cycle-duration-value (cx/long-at-path element [:Period_Cycle_Duration_Value])}))
          elements)))
 
 (defn string->datetime
@@ -37,13 +41,48 @@
   "Returns a UMM Temporal from a parsed Collection Content XML structure"
   [collection-element]
   (when-let [temporal-element (cx/element-at-path collection-element [:Temporal_Coverage])]
-    (let [range-date-times (xml-elem->RangeDateTimes temporal-element)
-          periodic-date-times (xml-elem->PeriodicDateTimes temporal-element)]
-      (c/map->Temporal {:time-type (cx/string-at-path temporal-element [:Time_Type])
-                        :date-type (cx/string-at-path temporal-element [:Date_Type])
-                        :temporal-range-type (cx/string-at-path temporal-element [:Temporal_Range_Type])
-                        :precision-of-seconds (cx/long-at-path temporal-element [:Precision_Of_Seconds])
-                        :ends-at-present-flag (cx/bool-at-path temporal-element [:Ends_At_Present_Flag])
-                        :range-date-times range-date-times
-                        :single-date-times (cx/datetimes-at-path temporal-element [:Single_Date_Time])
-                        :periodic-date-times periodic-date-times}))))
+    (c/map->Temporal
+      {:time-type (cx/string-at-path temporal-element [:Time_Type])
+       :date-type (cx/string-at-path temporal-element [:Date_Type])
+       :temporal-range-type (cx/string-at-path temporal-element [:Temporal_Range_Type])
+       :precision-of-seconds (cx/long-at-path temporal-element [:Precision_Of_Seconds])
+       :ends-at-present-flag (cx/bool-at-path temporal-element [:Ends_At_Present_Flag])
+       :range-date-times (xml-elem->RangeDateTimes temporal-element)
+       :single-date-times (cx/datetimes-at-path temporal-element [:Single_Date_Time])
+       :periodic-date-times (xml-elem->PeriodicDateTimes temporal-element)})))
+
+(defn generate-temporal
+  "Generates the temporal element of ECHO10 XML from a UMM Collection temporal record."
+  [temporal]
+  (when temporal
+    (let [{:keys [time-type date-type temporal-range-type precision-of-seconds
+                  ends-at-present-flag range-date-times single-date-times periodic-date-times]} temporal]
+      (x/element :Temporal_Coverage {}
+                 (gu/optional-elem :Time_Type time-type)
+                 (gu/optional-elem :Date_Type date-type)
+                 (gu/optional-elem :Temporal_Range_Type temporal-range-type)
+                 (gu/optional-elem :Precision_Of_Seconds precision-of-seconds)
+                 (gu/optional-elem :Ends_At_Present_Flag ends-at-present-flag)
+
+                 (for [range-date-time range-date-times]
+                   (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
+                     (x/element :Range_DateTime {}
+                                (when beginning-date-time
+                                  (x/element :Beginning_Date_Time {} (str beginning-date-time)))
+                                (when ending-date-time
+                                  (x/element :Ending_Date_Time {} (str ending-date-time))))))
+
+                 (for [single-date-time single-date-times]
+                   (x/element :Single_DateTime {} (str single-date-time)))
+
+                 (for [periodic-date-time periodic-date-times]
+                   (let [{:keys [name start-date end-date duration-unit duration-value
+                                 period-cycle-duration-unit period-cycle-duration-value]} periodic-date-time]
+                     (x/element :Periodic_DateTime {}
+                                (gu/optional-elem :Name name)
+                                (when start-date (x/element :Start_Date {} (str start-date)))
+                                (when end-date (x/element :End_Date {} (str end-date)))
+                                (gu/optional-elem :Duration_Unit duration-unit)
+                                (gu/optional-elem :Duration_Value duration-value)
+                                (gu/optional-elem :Period_Cycle_Duration_Unit period-cycle-duration-unit)
+                                (gu/optional-elem :Period_Cycle_Duration_Value period-cycle-duration-value))))))))

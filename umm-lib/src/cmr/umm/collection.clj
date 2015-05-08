@@ -144,7 +144,10 @@
    coordinate-2
    ])
 
-(def organization-types [:archive-center :processing-center :distribution-center])
+(def organization-types [:archive-center
+                         :processing-center
+                         :distribution-center
+                         :originating-center])
 
 ;; See CMR-202 issue description
 (defrecord Organization

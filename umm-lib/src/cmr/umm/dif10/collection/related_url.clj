@@ -1,13 +1,12 @@
 (ns cmr.umm.dif10.collection.related-url
-  "Provide functions to parse and generate DIF Related_URL elements."
+  "Provide functions to parse and generate DIF10 Related_URL elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]))
 
-;; There is no required element in Multimedia_Sample according to the schema
-;; We only deal with DIF Related_URL for now
-
-(defn xml-elem->RelatedURL
+(defn build-RelatedURLs
+  "Returns a function to build UMM RelatedURL records from the corresponding DIF10 xml element: Related_URL.
+  Note that a single Related_URL element in DIF10 can have several urls within it."
   [related-url-elem]
   (let [urls (cx/strings-at-path related-url-elem [:URL])
         description (cx/string-at-path related-url-elem [:Description])
@@ -24,5 +23,22 @@
 
 (defn xml-elem->RelatedURLs
   [collection-element]
-  (seq (mapcat xml-elem->RelatedURL
+  (seq (mapcat build-RelatedURLs
                (cx/elements-at-path collection-element [:Related_URL]))))
+
+(defn generate-related-urls
+  [related-urls]
+  (if (seq related-urls)
+    (for [related-url related-urls]
+      (let [{:keys [url type sub-type description]} related-url]
+        (x/element :Related_URL {}
+                   (when type
+                     (x/element :URL_Content_Type {}
+                                (x/element :Type {} type)
+                                (when sub-type (x/element :Subtype {} sub-type))))
+                   (x/element :URL {} url)
+                   (when description
+                     (x/element :Description {} description)))))
+    ;;Added since Related_URL is a required field in DIF10
+    (x/element :Related_URL {}
+               (x/element :URL {} ""))))

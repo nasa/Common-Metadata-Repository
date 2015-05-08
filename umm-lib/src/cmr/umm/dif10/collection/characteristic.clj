@@ -1,5 +1,8 @@
 (ns cmr.umm.dif10.collection.characteristic
-  (:require [cmr.common.xml :as cx]
+  "Functions to parse and generate DIF10 Characteristic elements which are used in Platform,
+  Instrument and Sensor elements."
+  (:require [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]))
 
 (defn xml-elem->Characteristic
@@ -17,3 +20,15 @@
             (cx/elements-at-path
               platform-element
               [:Characteristics]))))
+
+(defn generate-characteristics
+  [characteristics]
+  (when-not (empty? characteristics)
+      (for [characteristic characteristics]
+        (let [{:keys [name description data-type unit value]} characteristic]
+          (x/element :Characteristics {}
+                     (x/element :Name {} name)
+                     (x/element :Description {} description)
+                     (x/element :DataType {} data-type)
+                     (x/element :Unit {} unit)
+                     (x/element :Value {} value))))))
