@@ -3,8 +3,6 @@
   (:require [clojure.walk :as walk]
             [compojure.core :refer :all]
             [cmr.acl.core :as acl]
-            [cmr.common.services.errors :as err]
-            [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.api.route-helpers :as rh]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -57,10 +55,6 @@
       (let [provider (walk/keywordize-keys provider)
             context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
-        (when-not (:provider-id provider)
-          (err/throw-service-error :bad-request (msg/provider-id-empty)))
-        (when-not (some? (:cmr-only provider))
-          (err/throw-service-error :bad-request (msg/cmr-only-missing)))
         (update-provider request-context params provider)))
 
     ;; delete a provider
