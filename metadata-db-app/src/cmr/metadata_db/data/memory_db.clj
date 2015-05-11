@@ -57,7 +57,7 @@
    ;; The next id to use for generating a concept id.
    next-id-atom
 
-   ;; A set of provider ids that exist
+   ;; A map of provider ids to providers that exist
    providers-atom
    ]
 
@@ -255,24 +255,24 @@
   providers/ProvidersStore
 
   (save-provider
-    [db provider-id]
+    [db {:keys [provider-id] :as provider}]
     (if (@providers-atom provider-id)
       {:error :provider-id-conflict :error-message (format "Provider [%s] already exists." provider-id)}
-      (swap! providers-atom conj provider-id)))
+      (swap! providers-atom assoc provider-id provider)))
 
   (get-providers
     [db]
-    @providers-atom)
+    (vals @providers-atom))
 
   (delete-provider
     [db provider-id]
     (if (@providers-atom provider-id)
-      (swap! providers-atom disj provider-id)
+      (swap! providers-atom dissoc provider-id)
       {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)}))
 
   (reset-providers
     [db]
-    (reset! providers-atom #{})))
+    (reset! providers-atom {})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -285,4 +285,4 @@
    ;; sort by revision-id reversed so latest will be first
    (->MemoryDB (atom (reverse (sort-by :revision-id concepts)))
                (atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM))
-               (atom #{}))))
+               (atom {}))))

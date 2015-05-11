@@ -3,13 +3,16 @@
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
-            [clojure.string :as string]
+            [cmr.system-int-test.utils.search-util :as search]
+            [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [cmr.umm.granule :as umm-g]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.indexer.system :as indexer-system]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -179,9 +182,9 @@
                       :format (mt/format->mime-type concept-format)
                       :metadata (-> concept
                                     :metadata
-                                    (string/replace "2010-12-12T12:00:00" "A")
+                                    (str/replace "2010-12-12T12:00:00" "A")
                                     ;; this is to cause validation error for iso-smap format
-                                    (string/replace "gmd:DS_Series" "XXXX"))))]
+                                    (str/replace "gmd:DS_Series" "XXXX"))))]
          (index/wait-until-indexed)
          (= [400 validation-errors] [status errors]))
 
@@ -234,3 +237,4 @@
 
            {:entry-title "correct" :short-name "S2" :version-id "V1"}
            ["Collection with Entry Title [correct], Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]))))
+

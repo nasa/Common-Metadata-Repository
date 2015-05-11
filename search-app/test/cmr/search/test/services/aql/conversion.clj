@@ -6,7 +6,8 @@
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as q]
             [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.services.aql.conversion :as c]))
+            [cmr.search.services.aql.conversion :as c]
+            [cmr.common.test.test-util :as tu]))
 
 (defn- aql-string-elem->condition
   [aql-snippet]
@@ -174,10 +175,10 @@
 
 (deftest aql-datetime-validation-test
   (testing "aql datetime validation"
-    (is (thrown-with-msg?
-          clojure.lang.ExceptionInfo
-          #"Invalid datetime in AQL: Value 13 for monthOfYear must be in the range \[1,12\]"
-          (a/date-time-from-strings "2014" "13" "22" nil nil nil)))))
+    (tu/assert-exception-thrown-with-errors
+      :bad-request
+      ["Invalid datetime in AQL: Value 13 for monthOfYear must be in the range [1,12]"]
+      (a/date-time-from-strings "2014" "13" "22" nil nil nil))))
 
 (deftest validate-aql-pattern-test
   (testing "aql pattern string validation success"

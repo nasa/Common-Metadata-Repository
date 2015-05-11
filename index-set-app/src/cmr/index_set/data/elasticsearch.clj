@@ -10,7 +10,40 @@
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
             [cmr.elastic-utils.connect :as es]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [clojure.data.codec.base64 :as b64]
+            [clojure.java.io :as io])
+  (:import java.util.zip.GZIPInputStream
+           java.io.ByteArrayInputStream))
+
+(defn- decode-field-compressed
+  "Convert a json encoded, gzipped, base 64 encoded field back to a Clojure object"
+  [value]
+  (-> value
+      .getBytes
+      b64/decode
+      ByteArrayInputStream.
+      GZIPInputStream.
+      slurp
+      (cheshire/decode true)))
+
+(defn- decode-field
+  "Attempt to decode a field using gzip, b64. Return the original field json decoded
+  if there are any exceptions. This function is here to deal with any legacy fields that are not
+  gzipped."
+  [value]
+  (try
+    (decode-field-compressed value)
+    (catch Exception e
+      (warn (.getMessage e))
+      (cheshire/decode value true))))
+
+
+(comment
+  (decode-field (cheshire/generate-string {:a (range 5)}))
+
+
+  )
 
 (defn create-index
   "Create elastic index"
@@ -30,11 +63,17 @@
   [{:keys [conn]} idx-w-config]
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (try
-      (doseq [[type-name type-mapping] mapping]
-        (let [response (esi/update-mapping conn index-name (name type-name) :mapping mapping)]
-          (when-not (= {:acknowledged true} response)
-            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
-                                         (pr-str response))))))
+      (if (esi/exists? conn index-name)
+        ;; The index exists. Update the mappings.
+        (doseq [[type-name type-mapping] mapping]
+          (let [response (esi/update-mapping conn index-name (name type-name) :mapping mapping)]
+            (when-not (= {:acknowledged true} response)
+              (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                           (pr-str response))))))
+        ;; The index does not exist. Create it.
+        (do
+          (info "Index" index-name "does not exist so it will be created")
+          (esi/create conn index-name :settings settings :mappings mapping)))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
               error (:error body)]
@@ -57,7 +96,7 @@
       (when-not result
         (errors/throw-service-error :not-found
                                     (m/index-set-not-found-msg index-set-id)))
-      (cheshire.core/decode (first index-set-json-str) true))))
+      (decode-field (first index-set-json-str)))))
 
 (defn get-index-set-ids
   "Fetch ids of all index-sets in elastic."
@@ -72,7 +111,7 @@
   [{:keys [conn]} index-name idx-mapping-type]
   (when (esi/exists? conn index-name)
     (let [result (doc/search conn index-name idx-mapping-type "fields" "index-set-request")]
-      (map (comp #(cheshire/decode (first % ) true) :index-set-request :fields) (get-in result [:hits :hits])))))
+      (map (comp #(decode-field (first % )) :index-set-request :fields) (get-in result [:hits :hits])))))
 
 (defn delete-index
   "Delete given elastic index"

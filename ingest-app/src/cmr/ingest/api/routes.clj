@@ -17,7 +17,7 @@
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
             [cmr.acl.core :as acl]
-            [cmr.ingest.services.ingest :as ingest]
+            [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.services.jobs :as jobs]
             [cmr.ingest.api.provider :as provider-api]
@@ -162,16 +162,21 @@
       ;; add routes for managing jobs
       (common-routes/job-api-routes
         (routes
-          ;; These should check ACLs. CMR-1343 was filed to add that check
-          (POST "/reindex-collection-permitted-groups" {:keys [headers request-context]}
-            (jobs/reindex-collection-permitted-groups request-context)
-            {:status 200})
-          (POST "/reindex-all-collections" {:keys [headers request-context]}
-            (jobs/reindex-all-collections request-context)
-            {:status 200})
-          (POST "/cleanup-expired-collections" {:keys [headers request-context]}
-            (jobs/cleanup-expired-collections request-context)
-            {:status 200})))
+          (POST "/reindex-collection-permitted-groups" {:keys [headers params request-context]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (jobs/reindex-collection-permitted-groups context)
+              {:status 200}))
+          (POST "/reindex-all-collections" {:keys [headers params request-context]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (jobs/reindex-all-collections context)
+              {:status 200}))
+          (POST "/cleanup-expired-collections" {:keys [headers params request-context]}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
+              (acl/verify-ingest-management-permission context :update)
+              (jobs/cleanup-expired-collections request-context)
+              {:status 200}))))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

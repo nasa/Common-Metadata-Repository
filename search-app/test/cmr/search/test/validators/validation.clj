@@ -33,7 +33,8 @@
          [] :collection :dif
          [] :collection :atom
          [] :collection :iso19115
-         [] :collection :csv
+         [] :collection :opendata
+         ["The mime type [text/csv] is not supported for collections."] :collection :csv
          [] :collection :kml
          [] :granule :xml
          [] :granule :json
@@ -41,5 +42,6 @@
          ["The mime type [application/dif+xml] is not supported for granules."] :granule :dif
          [] :granule :atom
          [] :granule :iso19115
+         ["The mime type [application/opendata+json] is not supported for granules."] :granule :opendata
          [] :granule :csv
          [] :granule :kml)))

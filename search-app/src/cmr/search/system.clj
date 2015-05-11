@@ -18,6 +18,7 @@
             [cmr.elastic-utils.config :as es-config]
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
             [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.search.services.transformer :as transformer]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -48,7 +49,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :search-index :scheduler :web])
+  component-order [:log :caches :search-index :scheduler :web])
 
 (def system-holder
   "Required for jobs"
@@ -69,8 +70,8 @@
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache
-                                         (mem-cache/create-in-memory-cache)
-                                         [:catalog-item :system-object :provider-object])
+                                         (stl-cache/create-single-thread-lookup-cache)
+                                         [:catalog-item])
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)

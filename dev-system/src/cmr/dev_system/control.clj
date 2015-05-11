@@ -13,13 +13,13 @@
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
-            [cmr.elastic-utils.test-util :as elastic-util]
+            [cmr.elastic-utils.connect :as elastic-conn]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
             [cmr.index-set.services.index-service :as index-set-service]
             [cmr.indexer.services.index-service :as indexer-service]
-            [cmr.ingest.services.ingest :as ingest-service]
+            [cmr.ingest.services.ingest-service :as ingest-service]
             [cmr.search.services.query-service :as search-service]
             [cmr.mock-echo.api.routes :as mock-echo-api]
             [cmr.cubby.api.routes :as cubby-api]
@@ -94,7 +94,7 @@
               :when (get-in system [:apps service-name])]
         (reset-fn (app-context system service-name)))
       ;; After reset some elasticsearch indexes may not be initialized yet. We will check the status here
-      (elastic-util/wait-for-healthy-elastic (get-in system [:apps :indexer :db]))
+      (elastic-conn/wait-for-healthy-elastic (get-in system [:apps :indexer :db]))
       (debug "dev system /reset complete")
       {:status 200})
 
@@ -115,6 +115,15 @@
       (debug "dev system /stop")
       (exec-dev-system-function "stop" system)
       (System/exit 0))
+
+    ;; Reads and evaluates code sent to dev system then encodes the response as clojure EDN for the
+    ;; caller to read. This avoids having to add a million different endpoints to dev system control
+    ;; to do different things inside the system.
+    (POST "/eval" {:keys [body]}
+      (let [body-str (slurp body)]
+        (debug (str "dev-system evaling [" body-str "]"))
+        {:status 200
+         :body (pr-str (eval (read-string body-str)))}))
 
     ;; Defines the time keeper API that allows programmatic HTTP control of the time of the CMR
     ;; running in dev-system.

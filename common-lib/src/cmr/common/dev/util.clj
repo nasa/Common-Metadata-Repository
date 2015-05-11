@@ -41,12 +41,3 @@
   (let [clipboard (.getSystemClipboard (Toolkit/getDefaultToolkit))]
     (.setContents clipboard (StringSelection. s) nil))
   s)
-
-(defn message->regex
-  "Converts an expected message into the a regular expression that matches the exact string.
-  Handles escaping special regex characters"
-  [msg]
-  (-> msg
-      (str/replace #"\[" "\\\\[")
-      (str/replace #"\]" "\\\\]")
-      re-pattern))

@@ -11,15 +11,18 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
             [cmr.message-queue.services.queue :as queue]
+            [cmr.common.util :as util :refer [defn-timed]]
             [cmr.acl.core :as acl]
             [clojail.core :as timeout]))
 
 (defn- get-headers
   "Gets the headers to use for communicating with the indexer."
   [context]
-  (assoc (ch/context->http-headers context) acl/token-header (transmit-config/echo-system-token)))
+  (assoc (ch/context->http-headers context)
+         transmit-config/token-header
+         (transmit-config/echo-system-token)))
 
-(defn- delete-from-index-via-http
+(defn-timed delete-from-index-via-http
   "Execute http delete of the given url on the indexer"
   [context delete-url]
   (let [conn (transmit-config/context->app-connection context :indexer)
@@ -75,7 +78,7 @@
            (str "Request timed out when attempting to publish message: " msg)
            e))))))
 
-(defn- index-concept-using-http
+(defn-timed index-concept-using-http
   "Calls the indexer to index a concept by using the HTTP API."
   [context concept-id revision-id]
   (let [conn (transmit-config/context->app-connection context :indexer)
@@ -94,7 +97,7 @@
                 status
                 response)))))
 
-(defn- enqueue-message
+(defn-timed enqueue-message
   "Helper function to put a message on the queue for the indexer to process. Valid actions are
   :index-concept and :delete-concept"
   [context concept-id revision-id action]

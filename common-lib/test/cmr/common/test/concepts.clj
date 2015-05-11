@@ -7,7 +7,8 @@
 
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
-            [cmr.common.concepts :as c]))
+            [cmr.common.concepts :as c]
+            [cmr.common.test.test-util :as tu]))
 
 (deftest parse-concept-id-test
   (testing "parse collection id"
@@ -21,8 +22,10 @@
             :provider-id "PROV_A42"}
            (c/parse-concept-id "G12-PROV_A42"))))
   (testing "parse invalid concept id"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo #"Concept-id \[.*\] is not valid."
-                          (c/parse-concept-id "G5-PROV1;")))))
+    (tu/assert-exception-thrown-with-errors
+      :bad-request
+      ["Concept-id [G5-PROV1;] is not valid."]
+      (c/parse-concept-id "G5-PROV1;"))))
 
 (deftest concept-type-validation-test
   (testing "valid types"

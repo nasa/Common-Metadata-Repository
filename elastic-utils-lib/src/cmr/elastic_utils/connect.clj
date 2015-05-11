@@ -6,7 +6,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
             [clj-http.conn-mgr :as conn-mgr]
-            [cmr.common.api.web-server :as web-server]))
+            [cmr.common.api.web-server :as web-server]
+            [clojurewerkz.elastisch.rest.admin :as admin]))
 
 (def ELASTIC_CONNECTION_TIMOUT
   "The number of milliseconds to wait before timeing out a connection attempt to elasticsearch.
@@ -43,6 +44,13 @@
     (catch Exception e
       (errors/internal-error!
         (format "Unable to connect to elasticsearch at: %s. with %s" config e)))))
+
+(defn wait-for-healthy-elastic
+  "Waits for the elasticsearch cluster health to reach yellow. Pass in a elasticsearch store that
+  has a :conn key with the elastisch connection"
+  [elastic-store]
+  (when (:timed_out (admin/cluster-health (:conn elastic-store) :wait_for_status "yellow" :timeout "3s"))
+    (errors/internal-error! "Timed out waiting for elasticsearch to reach a healthy state")))
 
 (defn- get-elastic-health
   "Returns the elastic health by calling elasticsearch cluster health api"

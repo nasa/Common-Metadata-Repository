@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.ingest
+(ns cmr.ingest.services.ingest-service
   (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
@@ -11,7 +11,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
-            [cmr.common.util :as util]
+            [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
             [clojure.string :as string]
@@ -49,7 +49,7 @@
       (v/validate-collection-umm collection))
     collection))
 
-(defn validate-collection
+(defn-timed validate-collection
   "Validate the collection. Throws a service error if any validation issues are found."
   [context concept]
   (let [collection (validate-and-parse-collection-concept context concept)
@@ -97,7 +97,7 @@
                                   :delete-time (when delete-time (str delete-time))
                                   :granule-ur granule-ur})))
 
-(defn validate-granule
+(defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.
 
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
@@ -148,7 +148,7 @@
   [context concept]
   (validate-granule context concept))
 
-(deftracefn save-concept
+(defn-timed save-concept
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
   (let [concept (validate-concept context concept)]
@@ -156,7 +156,7 @@
       (indexer/index-concept context concept-id revision-id)
       {:concept-id concept-id, :revision-id revision-id})))
 
-(deftracefn delete-concept
+(defn-timed delete-concept
   "Delete a concept from mdb and indexer."
   [context concept-attribs]
   (let [{:keys [concept-type provider-id native-id]}  concept-attribs
@@ -173,16 +173,24 @@
       (queue/reset queue-broker)))
   (cache/reset-caches context))
 
+(defn- health-check-fns
+  "A map of keywords to functions to be called for health checks"
+  []
+  (let [default-fns {:oracle #(conn/health (pah/context->db %))
+                     :echo rest/health
+                     :metadata-db mdb/get-metadata-db-health
+                     :indexer indexer/get-indexer-health}]
+    (merge default-fns
+           (when (config/use-index-queue?)
+             {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))))
+
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [db-health (conn/health (pah/context->db context))
-        echo-rest-health (rest/health context)
-        metadata-db-health (mdb/get-metadata-db-health context)
-        indexer-health (indexer/get-indexer-health context)
-        ok? (every? :ok? [db-health echo-rest-health metadata-db-health indexer-health])]
+  (let [dep-health (util/map-values #(% context) (health-check-fns))
+        ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
-     :dependencies {:oracle db-health
-                    :echo echo-rest-health
-                    :metadata-db metadata-db-health
-                    :indexer indexer-health}}))
+     :dependencies dep-health}))
+
+
+

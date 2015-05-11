@@ -166,13 +166,11 @@
 (defmethod create-queue-broker :external
   [type]
   (indexer-config/set-indexing-communication-method! "queue")
+  ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
   (rmq-conf/set-rabbit-mq-ttls! [1 1 1 1 1])
-  (let [rmq-config {:port (rmq-conf/rabbit-mq-port)
-                    :host (rmq-conf/rabbit-mq-host)
-                    :username (rmq-conf/rabbit-mq-user)
-                    :password (rmq-conf/rabbit-mq-password)
-                    :ttls [1 1 1 1 1]
-                    :queues [(indexer-config/index-queue-name)]}]
+  (let [rmq-config (merge (rmq-conf/default-config)
+                          {:ttls [1 1 1 1 1]
+                           :queues [(indexer-config/index-queue-name)]})]
     (-> (rmq/create-queue-broker rmq-config)
         wrapper/create-queue-broker-wrapper)))
 

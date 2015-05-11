@@ -13,8 +13,23 @@
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.system-trace.core :refer [deftracefn]])
-  (:import clojure.lang.ExceptionInfo))
+            [cmr.system-trace.core :refer [deftracefn]]
+            [clojure.java.io :as io]
+            [clojure.data.codec.base64 :as b64])
+  (:import clojure.lang.ExceptionInfo
+           java.util.zip.GZIPInputStream
+           java.util.zip.GZIPOutputStream
+           java.io.ByteArrayOutputStream))
+
+;; copied from metadatadb - move to cmr.common - This will be addressed in CMR-1400.
+(defn string->gzip-bytes
+  "Convert a string to an array of compressed bytes"
+  [input]
+  (let [output (ByteArrayOutputStream.)
+        gzip (GZIPOutputStream. output)]
+    (io/copy input gzip)
+    (.finish gzip)
+    (.toByteArray output)))
 
 ;; configured list of cmr concepts
 (def concept-types [:collection :granule])
@@ -145,9 +160,14 @@
   [context index-set]
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
                                              (:concepts (prune-index-set (:index-set index-set))))
+        encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
+                                               json/generate-string
+                                               string->gzip-bytes
+                                               b64/encode
+                                               (String. (java.nio.charset.Charset/forName "UTF-8")))
         es-doc {:index-set-id (get-in index-set [:index-set :id])
                 :index-set-name (get-in index-set [:index-set :name])
-                :index-set-request (json/generate-string index-set-w-es-index-names)}
+                :index-set-request encoded-index-set-w-es-index-names}
         doc-id (str (:index-set-id es-doc))
         {:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
@@ -160,9 +180,8 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
-        json-index-set-str (json/generate-string index-set)
         idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)
-        es-store (context->es-store context) ]
+        es-store (context->es-store context)]
 
     ;; rollback index-set creation if index creation fails
     (try
@@ -184,9 +203,8 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-cfg (-> context :system :index :config)
-        json-index-set-str (json/generate-string index-set)
         idx-name-of-index-sets (:index-name es-config/idx-cfg-for-index-sets)
-        es-store (context->es-store context) ]
+        es-store (context->es-store context)]
 
     (doseq [idx indices-w-config]
       (es/update-index es-store idx))

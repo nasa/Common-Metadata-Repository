@@ -54,9 +54,11 @@
     (if-let [not-cached-oits (seq (set/difference
                                     (set object-identity-types)
                                     (set (context->cached-object-identity-types context))))]
-      (errors/internal-error!
-        (str "The application is not configured to cache acls of object-identity-types: "
-             (pr-str not-cached-oits)))
+      (do
+        (info (str "The application is not configured to cache acls of the following"
+                   " object-identity-types so we will fetch them from ECHO each time they are needed. "
+                   (pr-str not-cached-oits)))
+        (echo-acls/get-acls-by-types context object-identity-types))
       ;; Fetch ACLs using a cache
       (->> (cache/get-value
              cache

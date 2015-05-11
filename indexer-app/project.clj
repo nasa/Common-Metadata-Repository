@@ -14,6 +14,9 @@
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
+
+  :jvm-opts  ["-XX:PermSize=256m" "-XX:MaxPermSize=1024m"]
+
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
                         [org.clojure/tools.namespace "0.2.10"]

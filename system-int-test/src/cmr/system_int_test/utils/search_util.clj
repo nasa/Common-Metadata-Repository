@@ -10,6 +10,7 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
@@ -185,10 +186,10 @@
   [params]
   (get-granule-timeline params {:method :post}))
 
-(defn find-grans-csv
+(defn find-concepts-csv
   "Returns the response of granule search in csv format"
   ([concept-type params]
-   (find-grans-csv concept-type params {}))
+   (find-concepts-csv concept-type params {}))
   ([concept-type params options]
    (get-search-failure-data
      (find-concepts-in-format "text/csv" concept-type params options))))
@@ -238,7 +239,7 @@
 
 (defn find-concepts-opendata
   "Returns the response of search in opendata format"
-   ([concept-type params]
+  ([concept-type params]
    (find-concepts-opendata concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
@@ -443,3 +444,12 @@
       {:status (:status response)
        :results (json/decode (:body response))}
       response)))
+
+(defn clear-caches
+  "Clears caches in the search application"
+  []
+  (client/post (url/search-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
+
+

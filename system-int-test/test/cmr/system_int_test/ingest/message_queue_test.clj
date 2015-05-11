@@ -209,11 +209,9 @@
   ;; 1.) Bring up the RabbitMQ VM
   ;; 2.) Configure dev-system to use external message queue
   ;; 3.) vagrant ssh to RabbitMQ VM
-  ;; 4.) Set the timeout interval for queueing messages to 10 seconds
-  (cmr.ingest.config/set-publish-queue-timeout-ms! 10000)
-  ;; 5.) Create a provider and give everyone permissions to ingest for that provider
+  ;; 4.) Create a provider and give everyone permissions to ingest for that provider
+  (cmr.system-int-test.utils.dev-system-util/reset)
   (ingest/create-provider "provguid1" "PROV1")
-  (cmr.mock-echo.client.echo-util/grant-all-ingest (s/context) "PROV1")
 
   ;; Memory Threshold Exceeded while queueing messages
 
