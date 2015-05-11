@@ -16,7 +16,8 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as tf]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -350,8 +351,9 @@
                     ["SpatialCoverage" "Geometries"]
                     ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is GEODETIC"])))
 
-;; TODO Uncomment when working CMR-1239
-#_(deftest duplicate-granule-ur-test
+(deftest duplicate-granule-ur-test
+  ;; Turn on enforcement of duplicate granule UR constraint
+  (cc/set-enforce-granule-ur-constraint! true)
   (testing "same granule-ur and native-id across providers is valid"
     (assert-valid
       {}
