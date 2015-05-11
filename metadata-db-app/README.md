@@ -289,6 +289,12 @@ Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":false}' http://localhost:3001/providers
 
+### Update provider
+
+Updates the attributes of a provider in Metadata DB.
+
+    curl -v -XPUT -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":true}' http://localhost:3001/providers/PROV1
+
 ### Delete provider
 
 Removes a provider from the CMR. Deletes all data for the provider.

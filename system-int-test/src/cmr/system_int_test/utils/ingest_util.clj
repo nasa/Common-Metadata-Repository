@@ -65,11 +65,22 @@
 (defn delete-ingest-provider
   "Delete the provider with the matching provider-id through the CMR ingest app."
   [provider-id]
-  (let [response (client/delete (url/ingest-delete-provider-url provider-id)
+  (let [response (client/delete (url/ingest-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
                                  :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
     (:status response)))
+
+(defn update-ingest-provider
+  "Updates the cmr-only attribute of an ingest provider."
+  [provider-id cmr-only]
+  (client/put (url/ingest-provider-url provider-id)
+              {:throw-exceptions false
+               :body (json/generate-string {:provider-id provider-id
+                                            :cmr-only cmr-only})
+               :content-type :json
+               :connection-manager (s/conn-mgr)
+               :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"

@@ -1,4 +1,7 @@
 (ns cmr.ingest.services.provider-service
+  "Functions for CRUD operations on providers. All functions return
+  the underlying Metadata DB API clj-http response which can be used
+  as a Ring response."
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.ingest.data.indexer :as indexer]))
 
@@ -6,6 +9,11 @@
   "Create a provider."
   [context provider]
   (mdb/create-provider-raw context provider))
+
+(defn update-provider
+  "Update an existing provider."
+  [context provider]
+  (mdb/update-provider-raw context provider))
 
 (defn delete-provider
   "Delete a provider and all its concepts."
