@@ -31,11 +31,19 @@
   ## Generating Documentation
 
   API documentation can be generated with the generate function in this namespace. You should add
-  an alias to generate the documentation in the project.clj
+  an alias to generate the documentation in the project.clj. Performance of running tasks in
+  project.clj has been a problem. If you define an empty docs profile it will run much faster than
+  in th default profile.
 
   Replace 'App Name' with the name of the application.
 
   ```
+  :profiles {
+   ;; This profile specifically here for generating documentation. It's faster than using the regular
+   ;; profile. We're not sure why though. There must be something hooking into the regular profile
+   ;; that's running at the end.
+   ;; Generate docs with: lein with-profile docs generate-docs
+   :docs {}}
   :aliases {\"generate-docs\" [\"exec\" \"-ep\" \"(do (use 'cmr.common-app.api-docs) (generate \"CMR App Name\"))\"}
   ```"
   (:require [compojure.handler :as handler]
@@ -43,9 +51,11 @@
             [compojure.core :refer :all]
             [ring.util.response :as r]
             [ring.util.request :as request]
-            [markdown.core :as md]
             [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [org.pegdown
+            PegDownProcessor
+            Extensions]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Routing Vars
@@ -102,6 +112,11 @@
            <link rel=\"stylesheet\" href=\"bootstrap.min.css\">
            <script src=\"jquery.min.js\"></script>
            <script src=\"bootstrap.min.js\"></script>
+           <script>
+            // Display markdown generated tables with bootstrap styling.
+            // see http://getbootstrap.com/css/#tables
+            $(function(){ $(\"table\").addClass(\"table table-bordered table-striped table-hover table-condensed table-responsive\"); });
+           </script>
        </head>
        <body lang=\"en-US\">
          <div class=\"container\">
@@ -125,6 +140,18 @@
   [page-title]
   (println "Generating" docs-target "from" docs-source)
   (io/make-parents docs-target)
-  (spit docs-target (str (header page-title) (md/md-to-html-string (slurp docs-source)) footer))
+  (let [processor (PegDownProcessor.
+                    (int (bit-or Extensions/AUTOLINKS
+                                 Extensions/HARDWRAPS
+                                 Extensions/TABLES
+                                 Extensions/FENCED_CODE_BLOCKS)))]
+    (spit docs-target (str (header page-title)
+                           (.markdownToHtml processor (slurp docs-source))
+                           footer)))
+
   (println "Done"))
+
+
+
+
 
