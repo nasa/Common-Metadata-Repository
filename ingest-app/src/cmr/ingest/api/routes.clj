@@ -22,7 +22,8 @@
             [cmr.ingest.services.jobs :as jobs]
             [cmr.ingest.api.provider :as provider-api]
             [cmr.ingest.services.messages :as msg]
-            [cmr.common-app.api.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.common-app.api-docs :as api-docs]))
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -158,6 +159,9 @@
                 context :update :provider-object provider-id)
               (info "Deleting granule" (pr-str concept-attribs))
               (r/response (ingest/delete-concept request-context concept-attribs))))))
+
+      ;; Add routes for API documentation
+      (api-docs/docs-routes (:relative-root-url system))
 
       ;; add routes for managing jobs
       (common-routes/job-api-routes

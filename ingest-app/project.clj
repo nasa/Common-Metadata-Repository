@@ -18,12 +18,11 @@
 
                  ;; Database related
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]
-                 [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
 
-                 ]
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.2"]
-            [lein-exec "0.3.2"]]
+            [lein-exec "0.3.4"]]
 
   :repl-options {:init-ns user}
   :profiles
@@ -31,11 +30,19 @@
                         [org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
+
+   ;; This profile specifically here for generating documentation. It's faster than using the regular
+   ;; profile. We're not sure why though. There must be something hooking into the regular profile
+   ;; that's running at the end.
+   ;; Generate docs with: lein with-profile docs generate-docs
+   :docs {}
+
    :uberjar {:main cmr.ingest.runner
              :aot :all}}
 
 
-  :aliases {;; Database migrations run by executing "lein migrate"
+  :aliases {"generate-docs" ["exec" "-ep" "(do (use 'cmr.common-app.api-docs) (generate \"CMR Ingest\"))"]
+            ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
             ;; Prints out documentation on configuration environment variables.

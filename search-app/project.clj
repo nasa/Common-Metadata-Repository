@@ -31,15 +31,21 @@
                         [pjstadig/humane-test-output "0.7.0"]
                         [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]
-                        [markdown-clj "0.9.63"]]
+                        [drift "1.5.2"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
-   :docs {:dependencies [[markdown-clj "0.9.63"]]}
+
+   ;; This profile specifically here for generating documentation. It's faster than using the regular
+   ;; profile. We're not sure why though. There must be something hooking into the regular profile
+   ;; that's running at the end.
+   ;; Generate docs with: lein with-profile docs generate-docs
+   :docs {}
+
    :uberjar {:main cmr.search.runner
              :aot :all}}
 
-  :aliases {"generate-docs" ["exec" "-p" "./support/generate_docs.clj"]
+  :aliases {"generate-docs"
+            ["exec" "-ep" "(do (use 'cmr.common-app.api-docs) (generate \"CMR Search\"))"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
