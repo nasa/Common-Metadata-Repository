@@ -35,4 +35,5 @@
    :port (rabbit-mq-port)
    :admin-port (rabbit-mq-admin-port)
    :username (rabbit-mq-user)
-   :password (rabbit-mq-password)})
+   :password (rabbit-mq-password)
+   :requested-heartbeat 120})
