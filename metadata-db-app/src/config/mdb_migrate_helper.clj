@@ -14,6 +14,12 @@
                      stmt-str
                      (- (System/currentTimeMillis) start-time)))))
 
+(defn query
+  "Perform a database query returning the result set."
+  [query-str]
+  (println "Executing query" query-str)
+  (j/query (config/db) query-str))
+
 (defn get-provider-ids
   "Gets a list of the provider ids in the database. Primarily for enabling migrations of existing
   provider tables."
