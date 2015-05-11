@@ -1351,7 +1351,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />
-            <xs:pattern value="[^\\/:\s]{1,80}"></xs:pattern>
+            <xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
           </xs:restriction>
         </xs:simpleType>
       </xs:element>

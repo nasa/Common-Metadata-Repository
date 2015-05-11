@@ -13,13 +13,23 @@
   (ext-gen/string-ascii 1 10))
 
 (def coll-refs-w-entry-title
-  (ext-gen/model-gen g/collection-ref c/entry-titles))
+  (ext-gen/model-gen
+    g/map->CollectionRef
+    (gen/hash-map :entry-title c/entry-titles)))
 
 (def coll-refs-w-short-name-version
-  (ext-gen/model-gen g/collection-ref c/short-names c/version-ids))
+  (ext-gen/model-gen
+    g/map->CollectionRef
+    (gen/hash-map :short-name c/short-names
+                  :version-id c/version-ids)))
+
+(def coll-refs-w-entry-id
+  (ext-gen/model-gen
+    g/map->CollectionRef
+    (gen/hash-map :entry-id c/entry-ids)))
 
 (def coll-refs
-  (gen/one-of [coll-refs-w-entry-title coll-refs-w-short-name-version]))
+  (gen/one-of [coll-refs-w-entry-title coll-refs-w-short-name-version coll-refs-w-entry-id]))
 
 (def product-specific-attribute-refs
   (ext-gen/model-gen g/->ProductSpecificAttributeRef psa/names (gen/vector psa/string-values 1 3)))

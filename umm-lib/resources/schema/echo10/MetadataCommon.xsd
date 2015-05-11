@@ -430,6 +430,20 @@
 					</xs:simpleType>
 				</xs:element>
 			</xs:sequence>
+      <xs:sequence>
+        <xs:element name="EntryId">
+          <xs:annotation>
+            <xs:documentation>The entry id of the
+              collection.</xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:maxLength value="255"></xs:maxLength>
+              <xs:minLength value="1"></xs:minLength>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
+      </xs:sequence>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="EmptyType">

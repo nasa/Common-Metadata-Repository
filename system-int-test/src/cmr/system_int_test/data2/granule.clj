@@ -116,8 +116,11 @@
    (granule collection {}))
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
-         {:keys [format-key entry-title] {:keys [short-name version-id]} :product} collection
-         coll-ref (g/collection-ref entry-title short-name version-id)
+         {:keys [format-key entry-title entry-id] {:keys [short-name version-id]} :product} collection
+         coll-ref (g/map->CollectionRef {:entry-title entry-title
+                                         :entry-id entry-id
+                                         :short-name short-name
+                                         :version-id version-id})
          minimal-gran {:granule-ur (d/unique-str "ur")
                        :collection-ref coll-ref
                        ;; Including the parent collection concept id so it's available later.

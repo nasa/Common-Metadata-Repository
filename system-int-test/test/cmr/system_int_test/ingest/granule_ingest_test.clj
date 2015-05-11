@@ -33,9 +33,9 @@
 
         ;; Create granules associated with the collection fields.
         gran1 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
-                                           dissoc :short-name :version-id))
+                                           dissoc :short-name :version-id :entry-id))
         gran2 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
-                                           dissoc :entry-title))]
+                                           dissoc :entry-title :entry-id))]
     (index/wait-until-indexed)
     ;; Make sure the granules reference the correct collection
     (is (= (:concept-id new-coll)

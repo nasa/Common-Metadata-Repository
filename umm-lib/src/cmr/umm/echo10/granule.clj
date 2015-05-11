@@ -52,11 +52,14 @@
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
   [granule-content-node]
-  (if-let [entry-title (cx/string-at-path granule-content-node [:Collection :DataSetId])]
-    (g/collection-ref entry-title)
-    (let [short-name (cx/string-at-path granule-content-node [:Collection :ShortName])
-          version-id (cx/string-at-path granule-content-node [:Collection :VersionId])]
-      (g/collection-ref short-name version-id))))
+  (let [entry-title (cx/string-at-path granule-content-node [:Collection :DataSetId])
+        short-name (cx/string-at-path granule-content-node [:Collection :ShortName])
+        version-id (cx/string-at-path granule-content-node [:Collection :VersionId])
+        entry-id (cx/string-at-path granule-content-node [:Collection :EntryId])]
+    (g/map->CollectionRef {:entry-title entry-title
+                           :short-name short-name
+                           :version-id version-id
+                           :entry-id entry-id})))
 
 (defn- xml-elem->DataGranule
   "Returns a UMM data-granule element from a parsed Granule XML structure"
@@ -121,7 +124,7 @@
     ([granule]
      (cmr.umm.echo10.core/umm->echo10-xml granule false))
     ([granule indent?]
-     (let [{{:keys [entry-title short-name version-id]} :collection-ref
+     (let [{{:keys [entry-title short-name version-id entry-id]} :collection-ref
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
@@ -137,6 +140,9 @@
                     (cond (not (nil? entry-title))
                           (x/element :Collection {}
                                      (x/element :DataSetId {} entry-title))
+                          (not (nil? entry-id))
+                          (x/element :Collection {}
+                                     (x/element :EntryId {} entry-id))
                           :else (x/element :Collection {}
                                            (x/element :ShortName {} short-name)
                                            (x/element :VersionId {} version-id)))
