@@ -25,7 +25,7 @@
         :Pages
         :ISBN
         ;; DIF 10 has two different types of identifiers DOI and ARK, UMM needs to be updated
-        ; [:doi [:Persistent_Identifier :Identifier]]
+        ;; [:doi [:Persistent_Identifier :Identifier]]. CMRIN-76
         [:related-url :Online_Resource]
         :Other_Reference_Details]))
 

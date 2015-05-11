@@ -22,17 +22,12 @@
 
 (defn xml-elem->Platform
   [platform-elem]
-  (let [short-name (cx/string-at-path platform-elem [:Short_Name])
-        long-name (cx/string-at-path platform-elem [:Long_Name])
-        type (cx/string-at-path platform-elem [:Type])
-        characteristics (char/xml-elem->Characteristics platform-elem)
-        instruments (inst/xml-elem->Instruments platform-elem)]
-    (c/map->Platform
-      {:short-name short-name
-       :long-name long-name
-       :type type
-       :instrument instruments
-       :characteristics characteristics})))
+  (c/map->Platform
+    {:short-name (cx/string-at-path platform-elem [:Short_Name])
+     :long-name (cx/string-at-path platform-elem [:Long_Name])
+     :type (cx/string-at-path platform-elem [:Type])
+     :instrument (inst/xml-elem->Instruments platform-elem)
+     :characteristics (char/xml-elem->Characteristics platform-elem)}))
 
 (defn xml-elem->Platforms
   [collection-element]
@@ -44,15 +39,14 @@
 (defn generate-platforms
   [platforms]
   (if (seq platforms)
-    (for [platform platforms]
-      (let [{:keys [short-name long-name type instruments characteristics]} platform]
-        (x/element :Platform {}
-                   (x/element :Type {} (or (PLATFORM_TYPES type) "Not provided"))
-                   (x/element :Short_Name {} short-name)
-                   (x/element :Long_Name {} long-name)
-                   (char/generate-characteristics characteristics)
-                   (inst/generate-instruments instruments))))
-    ;;Added since Platforms is a required field in DIF10
+    (for [{:keys [short-name long-name type instruments characteristics]} platforms]
+      (x/element :Platform {}
+                 (x/element :Type {} (or (PLATFORM_TYPES type) "Not provided"))
+                 (x/element :Short_Name {} short-name)
+                 (x/element :Long_Name {} long-name)
+                 (char/generate-characteristics characteristics)
+                 (inst/generate-instruments instruments)))
+    ;; Added since Platforms is a required field in DIF10. CMRIN-77 & CMRIN-79
     (x/element :Platform {}
                (x/element :Type {} "Not provided")
                (x/element :Short_Name {} "Not provided")

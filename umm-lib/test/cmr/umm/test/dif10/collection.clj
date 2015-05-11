@@ -21,9 +21,7 @@
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
-             (and
-               (seq xml)
-               (empty? (c/validate-xml xml))))))
+               (empty? (c/validate-xml xml)))))
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -73,7 +71,7 @@
       <Personnel>
         <Role>DATA CENTER CONTACT</Role>
         <Contact_Person>
-          <Last_Name>DummyLastName</Last_Name>
+          <Last_Name>Not provided</Last_Name>
         </Contact_Person>
       </Personnel>
     </Organization>

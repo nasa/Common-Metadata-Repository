@@ -75,14 +75,13 @@
                  (for [single-date-time single-date-times]
                    (x/element :Single_DateTime {} (str single-date-time)))
 
-                 (for [periodic-date-time periodic-date-times]
-                   (let [{:keys [name start-date end-date duration-unit duration-value
-                                 period-cycle-duration-unit period-cycle-duration-value]} periodic-date-time]
-                     (x/element :Periodic_DateTime {}
-                                (gu/optional-elem :Name name)
-                                (when start-date (x/element :Start_Date {} (str start-date)))
-                                (when end-date (x/element :End_Date {} (str end-date)))
-                                (gu/optional-elem :Duration_Unit duration-unit)
-                                (gu/optional-elem :Duration_Value duration-value)
-                                (gu/optional-elem :Period_Cycle_Duration_Unit period-cycle-duration-unit)
-                                (gu/optional-elem :Period_Cycle_Duration_Value period-cycle-duration-value))))))))
+                 (for [{:keys [name start-date end-date duration-unit duration-value
+                               period-cycle-duration-unit period-cycle-duration-value]} periodic-date-times]
+                   (x/element :Periodic_DateTime {}
+                              (gu/optional-elem :Name name)
+                              (when start-date (x/element :Start_Date {} (str start-date)))
+                              (when end-date (x/element :End_Date {} (str end-date)))
+                              (gu/optional-elem :Duration_Unit duration-unit)
+                              (gu/optional-elem :Duration_Value duration-value)
+                              (gu/optional-elem :Period_Cycle_Duration_Unit period-cycle-duration-unit)
+                              (gu/optional-elem :Period_Cycle_Duration_Value period-cycle-duration-value)))))))

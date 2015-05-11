@@ -26,17 +26,17 @@
 (defn generate-science-keywords
   [science-keywords]
   (if (seq science-keywords)
-    (for [science-keyword science-keywords]
-      (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]} science-keyword]
-        (x/element :Science_Keywords {}
-                   (x/element :Category {} category)
-                   (x/element :Topic {} topic)
-                   (x/element :Term {} term)
-                   (gu/optional-elem :Variable_Level_1 variable-level-1)
-                   (gu/optional-elem :Variable_Level_2 variable-level-2)
-                   (gu/optional-elem :Variable_Level_3 variable-level-3)
-                   (gu/optional-elem :Detailed_Variable detailed-variable))))
-    ;;Added since Science Keywords is a required field in DIF10
+    (for [{:keys [category topic term variable-level-1
+                  variable-level-2 variable-level-3 detailed-variable]} science-keywords]
+      (x/element :Science_Keywords {}
+                 (x/element :Category {} category)
+                 (x/element :Topic {} topic)
+                 (x/element :Term {} term)
+                 (gu/optional-elem :Variable_Level_1 variable-level-1)
+                 (gu/optional-elem :Variable_Level_2 variable-level-2)
+                 (gu/optional-elem :Variable_Level_3 variable-level-3)
+                 (gu/optional-elem :Detailed_Variable detailed-variable)))
+    ;; Added since Science Keywords is a required field in DIF10, CMRIN-79
     (x/element :Science_Keywords {}
                (x/element :Category {} "Not Provided")
                (x/element :Topic {} "Not Provided")

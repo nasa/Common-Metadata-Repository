@@ -39,8 +39,8 @@
                                    (set/map-invert dif10-umm-org-type-mapping)))))
                (x/element :Organization_Name {}
                           (x/element :Short_Name {} (:org-name org)))
-               ;; Added since Personnel is a required field in DIF10
+               ;; Added since Personnel is a required field in DIF10, CMRIN-79
                (x/element :Personnel {}
                           (x/element :Role {} "DATA CENTER CONTACT")
                           (x/element :Contact_Person {}
-                                     (x/element :Last_Name {} "DummyLastName"))))))
+                                     (x/element :Last_Name {} "Not provided"))))))

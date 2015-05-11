@@ -29,16 +29,15 @@
 (defn generate-related-urls
   [related-urls]
   (if (seq related-urls)
-    (for [related-url related-urls]
-      (let [{:keys [url type sub-type description]} related-url]
-        (x/element :Related_URL {}
-                   (when type
-                     (x/element :URL_Content_Type {}
-                                (x/element :Type {} type)
-                                (when sub-type (x/element :Subtype {} sub-type))))
-                   (x/element :URL {} url)
-                   (when description
-                     (x/element :Description {} description)))))
-    ;;Added since Related_URL is a required field in DIF10
+    (for [{:keys [url type sub-type description]} related-urls]
+      (x/element :Related_URL {}
+                 (when type
+                   (x/element :URL_Content_Type {}
+                              (x/element :Type {} type)
+                              (when sub-type (x/element :Subtype {} sub-type))))
+                 (x/element :URL {} url)
+                 (when description
+                   (x/element :Description {} description))))
+    ;; Added since Related_URL is a required field in DIF10. CMRIN-79
     (x/element :Related_URL {}
                (x/element :URL {} ""))))

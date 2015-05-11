@@ -24,11 +24,10 @@
 (defn generate-characteristics
   [characteristics]
   (when-not (empty? characteristics)
-      (for [characteristic characteristics]
-        (let [{:keys [name description data-type unit value]} characteristic]
-          (x/element :Characteristics {}
-                     (x/element :Name {} name)
-                     (x/element :Description {} description)
-                     (x/element :DataType {} data-type)
-                     (x/element :Unit {} unit)
-                     (x/element :Value {} value))))))
+    (for [{:keys [name description data-type unit value]} characteristics]
+      (x/element :Characteristics {}
+                 (x/element :Name {} name)
+                 (x/element :Description {} description)
+                 (x/element :DataType {} data-type)
+                 (x/element :Unit {} unit)
+                 (x/element :Value {} value)))))

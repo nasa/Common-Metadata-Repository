@@ -32,15 +32,15 @@
 (defn generate-instruments
   [instruments]
   (if (seq instruments)
-    (for [instrument instruments]
-      (let [{:keys [long-name short-name technique sensors characteristics operation-modes]} instrument]
-        (x/element :Instrument {}
-                   (x/element :Short_Name {} short-name)
-                   (when long-name (x/element :Long_Name {} long-name))
-                   (when technique (x/element :Technique {} technique))
-                   (ch/generate-characteristics characteristics)
-                   (generate-operation-modes operation-modes)
-                   (sensor/generate-sensors sensors))))
-    ;;Added since Instrument is a required field in DIF10
+    (for [{:keys [long-name short-name technique
+                  sensors characteristics operation-modes]} instruments]
+      (x/element :Instrument {}
+                 (x/element :Short_Name {} short-name)
+                 (when long-name (x/element :Long_Name {} long-name))
+                 (when technique (x/element :Technique {} technique))
+                 (ch/generate-characteristics characteristics)
+                 (generate-operation-modes operation-modes)
+                 (sensor/generate-sensors sensors)))
+    ;; Added since Instrument is a required field in DIF10. CMRIN-77
     (x/element :Instrument {}
                (x/element :Short_Name {} "Not provided"))))

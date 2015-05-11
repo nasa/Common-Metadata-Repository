@@ -20,12 +20,11 @@
 (defn generate-projects
   [projects]
   (if (seq projects)
-    (for [proj projects]
-      (let [{:keys [short-name long-name]} proj]
-        (x/element :Project {}
-                   (x/element :Short_Name {} short-name)
-                   (when long-name
-                     (x/element :Long_Name {} long-name)))))
-    ;;Added since Project is a required field in DIF10
+    (for [{:keys [short-name long-name]} projects]
+      (x/element :Project {}
+                 (x/element :Short_Name {} short-name)
+                 (when long-name
+                   (x/element :Long_Name {} long-name))))
+    ;; Added since Project is a required field in DIF10. CMRIN-78
     (x/element :Project {}
                (x/element :Short_Name {} "Not provided"))))

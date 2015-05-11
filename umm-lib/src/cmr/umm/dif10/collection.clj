@@ -112,16 +112,16 @@
                                (x/element :Metadata_Last_Revision {} (str update-time))
                                (when delete-time
                                  (x/element :Metadata_Delete {} (str delete-time)))
-                               ;;No equivalent UMM fields exist for the next two elements which are
-                               ;;required elements in DIF 10.1. Currently adding a dummy date. This
-                               ;;needs to be reviewed as and when DIF 10 is updated.
+                               ;; No equivalent UMM fields exist for the next two elements which are
+                               ;; required elements in DIF 10.1. Currently adding a dummy date. This
+                               ;; needs to be reviewed as and when DIF 10 is updated.CMRIN-79
                                (x/element :Data_Creation {} "1970-01-01T00:00:00")
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
-                    ;;The next element which is required in DIF 10.1 will be removed in the future
-                    ;;vesions of DIF 10. No equivalent UMM field exists in our code base. Currently
-                    ;;using a valid enum value as a place holder.
+                    ;; The next element which is required in DIF 10.1 will be removed in the future
+                    ;; vesions of DIF 10. No equivalent UMM field exists in our code base. Currently
+                    ;; using a valid enum value as a place holder.CMRIN-75
                     (x/element :Product_Flag {} "Not provided")))))))
 
 (defn validate-xml

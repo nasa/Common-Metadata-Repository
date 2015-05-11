@@ -95,9 +95,9 @@
              (map shape-to-xml
                   ;; Points must be specified in clockwise order and not closed.
                   (-> (:points ring)
-                      ; drop first point since last point will match
+                      ;; drop first point since last point will match
                       drop-last
-                      ; counter clocwise to clockwise
+                      ;; counter-clockwise to clockwise
                       reverse))))
 
 (extend-protocol ShapeToXml
@@ -176,13 +176,13 @@
                    (x/element :Granule_Spatial_Representation {} gsr)
                    (x/element :Geometry {}
                               (x/element :Coordinate_System {} sr)
-                              ;;We consider only the first geometry
-                              ;;since DIF 10.1 accepts only a single geometry
+                              ;; We consider only the first geometry
+                              ;; since DIF 10.1 accepts only a single geometry. CMRIN-79
                               (shape-to-xml (first geometries)))
                    (generate-orbit-parameters orbit-parameters))
         (x/element :Spatial_Coverage {}
                    (x/element :Granule_Spatial_Representation {} gsr)
                    (generate-orbit-parameters orbit-parameters))))
-    ;;Added since Spatial_Coverage is a required field in DIF10
+    ;; Added since Spatial_Coverage is a required field in DIF10. CMRIN-79
     (x/element :Spatial_Coverage {}
                (x/element :Granule_Spatial_Representation {} "CARTESIAN"))))
