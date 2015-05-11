@@ -11,6 +11,9 @@
             [cmr.ingest.api.multipart :as mp]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as cheshire]
+            [clojure.data.xml :as x]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.services.errors :as svc-errors]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
@@ -23,6 +26,68 @@
             [cmr.ingest.api.provider :as provider-api]
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]))
+
+(def valid-response-mime-types
+  "Supported ingest response formats"
+  #{"application/xml" "application/json"})
+
+(def mime-type->format
+  "A map of mime-types to supported response format"
+  {"application/echo10+xml" :xml
+   "application/iso19115+xml" :xml
+   "application/iso:smap+xml" :xml
+   "application/dif+xml" :xml
+   "application/xml" :xml
+   "application/json" :json})
+
+(defn- result-map->xml
+  "Converts all keys in a map to tags with values given by the map values to form a trivial
+  xml document"
+  [m]
+  (x/emit-str
+    (x/element :result {}
+               (reduce-kv (fn [memo k v]
+                            (conj memo (x/element (keyword k) {} v)))
+                          []
+                          m))))
+
+(defn- extract-header-mime-type
+  "Extracts the given header value from the headers and returns the first valid preferred mime type.
+  If validate? is true it will throw an error if the header was passed by the client but no mime type
+  in the header value was acceptable."
+  [valid-mime-types headers header validate?]
+  (when-let [header-value (get headers header)]
+    (if-let [mime-type (some valid-mime-types (mt/extract-mime-types header-value))]
+      mime-type
+      (when validate?
+        (svc-errors/throw-service-error
+          :bad-request (format "The mime types specified in the %s header [%s] are not supported."
+                               header header-value))))))
+
+(defn- get-ingest-result-format
+  "Returns the requested ingest result format parsed from headers"
+  ([headers default-format]
+   (get-ingest-result-format
+     headers (set (keys mime-type->format)) default-format))
+  ([headers valid-mime-types default-format]
+   (get mime-type->format
+        (or (extract-header-mime-type valid-response-mime-types headers "accept" true)
+            (extract-header-mime-type valid-mime-types headers "content-type" false))
+        default-format)))
+
+(defmulti body->response
+  "Convert a body to a proper response format"
+  (fn [headers body]
+    (get-ingest-result-format headers :json)))
+
+(defmethod body->response :xml
+  [headers body]
+  {:status 200 :body (result-map->xml body)})
+
+(defmethod body->response :default
+  [headers body]
+  ;; ring-json middleware will hande converting the body to json
+  {:status 200 :body body})
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -125,7 +190,7 @@
                 context :update :provider-object provider-id)
               (let [concept (body->concept :collection provider-id native-id body content-type headers)]
                 (info "Ingesting collection" (concept->loggable-string concept))
-                (r/response (ingest/save-concept request-context concept)))))
+                (body->response headers (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -186,6 +251,14 @@
 
     (route/not-found "Not Found")))
 
+(defn default-format-fn
+  "Determine the format that results should be returned in based on the request headers"
+  [{:keys [headers]}]
+  (case (get-ingest-result-format headers :json)
+    :xml "application/xml"
+    ;; default
+    "application/json"))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
@@ -194,5 +267,5 @@
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
-      api-errors/exception-handler))
+      (api-errors/exception-handler default-format-fn)))
 

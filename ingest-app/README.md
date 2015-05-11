@@ -134,6 +134,13 @@ Here's an example of validating a granule along with the parent collection using
     -F "collection=<collection.xml;type=application/echo10+xml" \
     "http://localhost:3002/providers/PROV1/validate/granule/ur4"
 
+### Response Format
+
+The response format will be XML if the context type is an XML format, JSON otherwise. The response
+format can be forced to either JSON or XML by setting the Accept header to applicaiton/json
+or application/xml.
+
+
 ### Error Messages
 
 #### General Errors

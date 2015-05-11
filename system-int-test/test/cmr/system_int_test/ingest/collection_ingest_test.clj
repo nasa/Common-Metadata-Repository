@@ -5,6 +5,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
+            [cheshire.core :as json]
             [clojure.string :as string]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
@@ -23,11 +24,16 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(comment
+  (cmr.common.dev.capture-reveal/reveal concept-id)
+  )
+
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (cmr.common.dev.capture-reveal/capture concept-id)
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
@@ -61,6 +67,45 @@
 (comment
   (cmr.metadata-db.int-test.utility/find-concepts :collection
                                                   {:provider-id "PROV1"}))
+
+;; Verify that the accept header for json works
+(deftest return-json-response-test
+  (let [concept (dc/collection-concept {})
+        response (ingest/ingest-concept concept {:accept-format :json :parse? false})
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :json response)]
+    (is (= "C1200000000-PROV1" concept-id))
+    (is (= 1 revision-id))))
+
+; Verify that the accept header for xml works
+(deftest return-xml-response-test
+  (let [concept (dc/collection-concept {})
+        response (ingest/ingest-concept concept {:accept-format :xml :parse? false})
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :xml response)]
+    (is (= "C1200000000-PROV1" concept-id))
+    (is (= 1 revision-id))))
+
+;; Verify that the accept header for json works with returned errors
+(deftest empty-collection-ingest-json-test
+  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+        response (ingest/ingest-concept concept-with-empty-body
+                                                       {:accept-format :json :parse? false})
+        {:keys [errors]} (ingest/parse-ingest-response-as :json response)]
+    (is (re-find #"XML content is too short." (first errors)))))
+
+(comment
+
+  (cmr.common.dev.capture-reveal/reveal response)
+
+  )
+
+;; Verify that the accept header for xml works with returned errors
+(deftest empty-collection-ingest-xml-test
+  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+        response (ingest/ingest-concept concept-with-empty-body
+                                                       {:accept-format :xml :parse? false})
+        _ (cmr.common.dev.capture-reveal/capture response)
+        {:keys [errors]} (ingest/parse-ingest-response-as :xml response)]
+    (is (re-find #"XML content is too short." (first errors)))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
@@ -296,7 +341,7 @@
   (let [project (dc/project "p1" (str "A long name longer than eighty characters should not result"
                                       " in a schema validation error"))
         concept (assoc (dc/collection-concept {:projects [project]})
-                  :format "application/echo10+xml; charset=utf-8")
+                       :format "application/echo10+xml; charset=utf-8")
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
     (is (= status 200))))

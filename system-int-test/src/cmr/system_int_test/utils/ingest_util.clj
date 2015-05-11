@@ -3,6 +3,8 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.system-int-test.data2.provider-holdings :as ph]
@@ -74,16 +76,16 @@
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   []
-   (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                               {:connection-manager (s/conn-mgr)})]
-     (is (= 200 (:status response)))))
+  (let [response (client/post (url/reindex-collection-permitted-groups-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
   []
-   (let [response (client/post (url/reindex-all-collections-url)
-                               {:connection-manager (s/conn-mgr)})]
-     (is (= 200 (:status response)))))
+  (let [response (client/post (url/reindex-all-collections-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"
@@ -92,14 +94,47 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
+(defmulti parse-ingest-response-as
+  "Parse the ingest response as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-ingest-response-as :xml
+  [response-format body]
+  (let [xml-elem (x/parse-str body)]
+    (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      {:errors errors}
+      (let [concept-id (cx/string-at-path xml-elem [:concept-id])
+            revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))]
+        {:concept-id concept-id :revision-id revision-id}))))
+
+(defmethod parse-ingest-response-as :json
+  [response-format body]
+  (json/decode body true))
+
+(defn parse-ingest-response
+  [body]
+  (try
+    (parse-ingest-response-as :json body)
+    (catch Exception e
+      (parse-ingest-response-as :xml body))))
+
+
+; TODO - 1. create a test for getting json response
+;        2. create a test that gets an error back in json
+;        3. create a test for getting xml response
+;        4. create a test for getting an error back in xml
+;        5. add documentation to README.md
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         token (:token options)
-         accept-format (get options :accept :json)
+         {:keys [token accept-format]} options
+         ;; added to allow testing of the raw response
+         parse? (get options :parse? true)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token})
@@ -112,8 +147,12 @@
                      :accept accept-format
                      :throw-exceptions false
                      :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+         body (:body response)]
+     (if parse?
+       (assoc (parse-ingest-response body)
+              :status
+              (:status response))
+       body))))
 
 (defn multipart-param-request
   "Submits a multipart parameter request to the given url with the multipart parameters indicated.
