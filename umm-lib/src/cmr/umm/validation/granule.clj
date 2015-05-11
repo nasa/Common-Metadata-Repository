@@ -210,6 +210,7 @@
   "Defines validations for granules"
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:entry-title])
+                     (matches-collection-identifier-validation :entry-id [:entry-id])
                      (matches-collection-identifier-validation :short-name [:product :short-name])
                      (matches-collection-identifier-validation :version-id [:product :version-id])]
     :spatial-coverage spatial-coverage-validations
