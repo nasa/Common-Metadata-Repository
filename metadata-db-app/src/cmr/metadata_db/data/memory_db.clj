@@ -49,6 +49,10 @@
        :existing-concept-id existing-concept-id
        :existing-native-id existing-native-id})))
 
+(defn- provider-not-found-error
+  [provider-id]
+  {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)})
+
 (defrecord MemoryDB
   [
    ;; A sequence of concepts stored in metadata db
@@ -264,11 +268,17 @@
     [db]
     (vals @providers-atom))
 
+  (update-provider
+    [db {:keys [provider-id] :as provider}]
+    (if (get @providers-atom provider-id)
+      (swap! providers-atom assoc provider-id provider)
+      (provider-not-found-error provider-id)))
+
   (delete-provider
     [db provider-id]
     (if (@providers-atom provider-id)
       (swap! providers-atom dissoc provider-id)
-      {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)}))
+      (provider-not-found-error provider-id)))
 
   (reset-providers
     [db]

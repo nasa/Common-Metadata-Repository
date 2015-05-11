@@ -39,6 +39,13 @@
     (map dbresult->provider
          (j/query db ["SELECT provider_id, cmr_only FROM providers"])))
 
+  (update-provider
+    [db {:keys [provider-id cmr-only]}]
+    (j/update! db
+               :providers
+               {:cmr_only (if cmr-only 1 0)}
+               ["provider_id = ?" provider-id]))
+
   (delete-provider
     [db provider-id]
     (if (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])

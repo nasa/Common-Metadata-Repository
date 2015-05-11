@@ -19,6 +19,26 @@
       (is (= 201 status))
       (is (= (ingest/get-providers) (ingest/get-ingest-providers))))))
 
+(deftest update-provider-test
+  (testing "creating a provider and changing attributes"
+    (ingest/create-ingest-provider "PROV3" true)
+    (ingest/create-ingest-provider "PROV4" false)
+    (ingest/update-ingest-provider "PROV4" true)
+    (is (= [{:provider-id "PROV4" :cmr-only true}
+            {:provider-id "PROV3" :cmr-only true}
+            {:provider-id "PROV2" :cmr-only false}
+            {:provider-id "PROV1" :cmr-only false}]
+           (ingest/get-ingest-providers))))
+  (testing "updating a non-existent provider fails"
+    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true))))))
+
+(deftest update-provider-without-permission-test
+  (let [response (client/put (url/ingest-provider-url "PROV1")
+                             {:throw-exceptions false
+                              :connection-manager (s/conn-mgr)
+                              :query-params {:token "dummy-token"}})]
+    (is (= 401 (:status response)))))
+
 (deftest delete-provider-test
   (let [coll1 (d/ingest "PROV1" (dc/collection))
         gran1 (d/ingest "PROV1" (dg/granule coll1))
@@ -71,7 +91,7 @@
   (is (= 404 (ingest/delete-ingest-provider "NON_EXIST"))))
 
 (deftest delete-provider-without-permission-test
-  (let [response (client/delete (url/ingest-delete-provider-url "PROV1")
+  (let [response (client/delete (url/ingest-provider-url "PROV1")
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
                                  :query-params {:token "dummy-token"}})]

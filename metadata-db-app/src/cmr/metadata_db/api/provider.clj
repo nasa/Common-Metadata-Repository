@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.api.provider
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.core :refer :all]
+  (:require [clojure.walk :as walk]
+            [compojure.core :refer :all]
             [cmr.acl.core :as acl]
             [cmr.metadata-db.api.route-helpers :as rh]
             [cmr.metadata-db.services.provider-service :as provider-service]
@@ -8,11 +9,19 @@
 
 (defn- save-provider
   "Save a provider."
-  [context params provider-id]
-  (let [saved-provider-id (provider-service/create-provider context provider-id)]
+  [context params provider]
+  (let [saved-provider-id (provider-service/create-provider context provider)]
     {:status 201
      :body (rh/to-json saved-provider-id params)
      :headers rh/json-header}))
+
+(defn- update-provider
+  "Update a provider"
+  [context params provider]
+  (provider-service/update-provider context provider)
+  {:status 200
+   :body (rh/to-json provider params)
+   :headers rh/json-header})
 
 (defn- delete-provider
   "Delete a provider and all its concepts."
@@ -30,12 +39,24 @@
 
 (def provider-api-routes
   (context "/providers" []
+
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
         (save-provider request-context params {:provider-id (get body "provider-id")
                                                :cmr-only (get body "cmr-only" false)})))
+
+    ;; update a provider
+    (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
+                          provider :body
+                          request-context :request-context
+                          headers :headers}
+      (let [provider (walk/keywordize-keys provider)
+            context (acl/add-authentication-to-context request-context params headers)]
+        (acl/verify-ingest-management-permission context :update)
+        (update-provider request-context params provider)))
+
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context
@@ -43,11 +64,7 @@
       (let [context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission context :update)
         (delete-provider request-context params provider-id)))
+
     ;; get a list of providers
     (GET "/" {:keys [request-context params]}
       (get-providers request-context params))))
-
-
-
-
-
