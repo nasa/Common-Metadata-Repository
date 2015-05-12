@@ -281,35 +281,64 @@
 
 (def valid-granule-xml-w-datasetid
   "<Granule>
-  <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
-  <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
-  <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
-  <Collection>
-  <DataSetId>AQUARIUS_L1A_SSS:1</DataSetId>
-  </Collection>
-  <RestrictionFlag>0.0</RestrictionFlag>
-  <Orderable>false</Orderable>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <DataSetId>AQUARIUS_L1A_SSS:1</DataSetId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>false</Orderable>
   </Granule>")
 
 (def valid-granule-xml-w-sn-ver
   "<Granule>
-  <GranuleUR>GranuleUR100</GranuleUR>
-  <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
-  <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
-  <Collection>
-  <ShortName>TESTCOLL-100</ShortName>
-  <VersionId>1.0</VersionId>
-  </Collection>
-  <RestrictionFlag>0.0</RestrictionFlag>
-  <Orderable>true</Orderable>
+    <GranuleUR>GranuleUR100</GranuleUR>
+    <InsertTime>2010-01-05T05:30:30.550-05:00</InsertTime>
+    <LastUpdate>2010-01-05T05:30:30.550-05:00</LastUpdate>
+    <Collection>
+      <ShortName>TESTCOLL-100</ShortName>
+      <VersionId>1.0</VersionId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>true</Orderable>
   </Granule>")
 
+(def valid-granule-xml-w-entryid
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS:1</EntryId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>false</Orderable>
+  </Granule>")
+
+(def invalid-collection-ref-granule-xml
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <DataSetId>AQUARIUS_L1A_SSS:1</DataSetId>
+      <EntryId>AQUARIUS_L1A_SSS:1</EntryId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>false</Orderable>
+  </Granule>")
 
 (deftest validate-xml
-  (testing "valid xml1"
+  (testing "valid granule collection ref with dataset id"
     (is (= 0 (count (g/validate-xml valid-granule-xml-w-datasetid)))))
-  (testing "valid xml2"
+  (testing "valid granule collection ref with short name and version id"
     (is (= 0 (count (g/validate-xml valid-granule-xml-w-sn-ver)))))
+  (testing "valid granule collection ref with entry id"
+    (is (= 0 (count (g/validate-xml valid-granule-xml-w-entryid)))))
+  (testing "invalid granule collection ref with multiple choice fields"
+    (is (= ["Line 7 - cvc-complex-type.2.4.d: Invalid content was found starting with element 'EntryId'. No child element is expected at this point."]
+           (g/validate-xml invalid-collection-ref-granule-xml))))
   (testing "invalid xml"
     (is (= ["Line 3 - cvc-datatype-valid.1.2.1: 'XXXX-01-05T05:30:30.550-05:00' is not a valid value for 'dateTime'."
             "Line 3 - cvc-type.3.1.3: The value 'XXXX-01-05T05:30:30.550-05:00' of element 'InsertTime' is not valid."

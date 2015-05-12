@@ -132,10 +132,10 @@
 (defn- collection-ref-required-fields-validation
   "Validates the granules collection ref has the required fields."
   [_ collection-ref]
-  (let [{:keys [short-name version-id entry-title]} collection-ref]
-    (when-not (or entry-title (and short-name version-id))
+  (let [{:keys [short-name version-id entry-title entry-id]} collection-ref]
+    (when-not (or entry-title entry-id (and short-name version-id))
       {[:collection-ref]
-       ["%s should have at least Entry Title or Short Name and Version Id."]})))
+       ["%s should have at least Entry Id, Entry Title or Short Name and Version Id."]})))
 
 (defn- temporal-error-message
   "Returns an error message for given pairs of granule and collection start and end dates."
@@ -210,6 +210,7 @@
   "Defines validations for granules"
   [{:collection-ref [collection-ref-required-fields-validation
                      (matches-collection-identifier-validation :entry-title [:entry-title])
+                     (matches-collection-identifier-validation :entry-id [:entry-id])
                      (matches-collection-identifier-validation :short-name [:product :short-name])
                      (matches-collection-identifier-validation :version-id [:product :version-id])]
     :spatial-coverage spatial-coverage-validations
