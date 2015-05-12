@@ -163,12 +163,9 @@
           extra-field-params (dissoc params :concept-type :provider-id :native-id)]
       (->> (filter (fn [{extra-fields :extra-fields
                          ct :concept-type
-                         pid :provider-id
-                         }]
-                         ; nid :native-id}]
+                         pid :provider-id}]
                      (and (= concept-type ct)
                           (= provider-id pid)
-                          ; (or (nil? :native-id) (= native-id nid))
                           (= extra-field-params (select-keys extra-fields
                                                              (keys extra-field-params)))))
                    @concepts-atom)

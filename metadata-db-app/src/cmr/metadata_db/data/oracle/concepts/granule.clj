@@ -14,6 +14,10 @@
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
                       (c/oracle-timestamp->str-time db (:delete_time result))))
+          ;; The granule_ur column was added after the granule records tables had been populated.
+          ;; All ingest going forward will populate the granule_ur, however any existing rows will
+          ;; have a null granule_ur. For any granule with a null granule_ur we assume the
+          ;; granule_ur is the same as the native_id.
           (assoc-in [:extra-fields :granule-ur] (or (:granule_ur result) (:native_id result)))))
 
 (defmethod c/concept->insert-args :granule
