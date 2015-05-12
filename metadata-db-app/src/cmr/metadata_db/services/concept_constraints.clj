@@ -12,29 +12,41 @@
   {:default false
    :type Boolean})
 
+(defn- find-matching-concepts
+  "Returns any concepts which match the concept-type, provider-id, and value for the given field
+  that matches the passed in concept"
+  [db concept field field-value]
+  (->> (c/find-latest-concepts db {:concept-type (:concept-type concept)
+                                   :provider-id (:provider-id concept)
+                                   field field-value})
+       ;; Remove tombstones from the list of concepts
+       (remove :deleted)))
+
+(defn- validate-num-concepts-found
+  "Validates that exactly one matching concept is found. Otherwise throw an error with an
+  appropriate error message."
+  [concepts concept field field-value]
+  (let [num-concepts (count concepts)]
+    (cond
+      (zero? num-concepts)
+      (errors/internal-error!
+        (format "Unable to find saved concept for provider [%s] and %s [%s]"
+                (:provider-id concept)
+                (name field)
+                field-value))
+      (> num-concepts 1)
+      [(msg/duplicate-field-msg
+         field
+         (remove #(= (:concept-id concept) (get % :concept-id)) concepts))])))
+
 (defn unique-field-constraint
   "Returns a function which verifies that there is only one non-deleted concept for a provider
   with the value for the given field."
   [field]
   (fn [db concept]
-    (let [field-value (get-in concept [:extra-fields field])]
-      (let [concepts (->> (c/find-latest-concepts db {:concept-type (:concept-type concept)
-                                                      :provider-id (:provider-id concept)
-                                                      field field-value})
-                          ;; Remove tombstones from the list of concepts
-                          (remove :deleted))
-            num-concepts (count concepts)]
-        (cond
-          (zero? num-concepts)
-          (errors/internal-error!
-            (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                    (:provider-id concept)
-                    (name field)
-                    field-value))
-          (> num-concepts 1)
-          [(msg/duplicate-field-msg
-             field
-             (remove #(= (:concept-id concept) (get % :concept-id)) concepts))])))))
+    (let [field-value (get-in concept [:extra-fields field])
+          concepts (find-matching-concepts db concept field field-value)]
+      (validate-num-concepts-found concepts concept field field-value))))
 
 (defn granule-ur-unique-constraint
   "Verifies that there is only one non-deleted concept for a provider
@@ -47,33 +59,12 @@
   one concept is found."
   [db concept]
   (let [granule-ur (get-in concept [:extra-fields :granule-ur])
-        granule-ur-concept-matches (->> (c/find-latest-concepts
-                                          db
-                                          {:concept-type (:concept-type concept)
-                                           :provider-id (:provider-id concept)
-                                           :granule-ur granule-ur})
-                                        (remove :deleted))
-        native-id-concept-matches (->> (c/find-latest-concepts
-                                         db
-                                         {:concept-type (:concept-type concept)
-                                          :provider-id (:provider-id concept)
-                                          :native-id granule-ur})
-                                       (remove :deleted))
+        granule-ur-concept-matches (find-matching-concepts db concept :granule-ur granule-ur)
+        native-id-concept-matches (find-matching-concepts db concept :native-id granule-ur)
         combined-matches (->> (set/union (set granule-ur-concept-matches)
                                          (set native-id-concept-matches))
-                              (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))
-        num-concepts (count combined-matches)]
-    (cond
-      (zero? num-concepts)
-      (errors/internal-error!
-        (format "Unable to find saved concept for provider [%s] and %s [%s]"
-                (:provider-id concept)
-                "granule-ur"
-                granule-ur))
-      (> num-concepts 1)
-      [(msg/duplicate-field-msg
-         :granule-ur
-         (remove #(= (:concept-id concept) (get % :concept-id)) combined-matches))])))
+                              (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
+    (validate-num-concepts-found combined-matches concept :granule-ur granule-ur)))
 
 ;; Note - change back to a var once the enforce-granule-ur-constraint configuration is no longer
 ;; needed. Using a function for now so that configuration can be changed in tests.
