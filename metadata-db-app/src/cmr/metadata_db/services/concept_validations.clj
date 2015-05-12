@@ -105,7 +105,8 @@
                  #{:provider-id :entry-title :version-id}
                  #{:provider-id :entry-title :short-name :version-id}
                  #{:provider-id}}
-   :granule #{#{:provider-id :granule-ur}}})
+   :granule #{#{:provider-id :granule-ur}
+              #{:provider-id :native-id}}})
 
 (defn supported-parameter-combinations-validation
   [{:keys [concept-type] :as params}]

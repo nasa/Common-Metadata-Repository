@@ -8,19 +8,22 @@
 
 (defn- make-concept
   "Returns a concept based on the provided parameters."
-  [concept-type provider-id concept-id revision-id extra-fields]
+  ([concept-type provider-id concept-id revision-id extra-fields]
+   (make-concept concept-type provider-id concept-id revision-id nil extra-fields))
+  ([concept-type provider-id concept-id revision-id native-id extra-fields]
    {:provider-id provider-id
     :concept-type concept-type
     :concept-id concept-id
     :revision-id revision-id
+    :native-id native-id
     :deleted false
-    :extra-fields extra-fields})
+    :extra-fields extra-fields}))
 
 (defn- make-tombstone
   "Returns a collection tombstone based on the provided parameters."
   [concept-type provider-id concept-id revision-id extra-fields]
-   (assoc (make-concept concept-type provider-id concept-id revision-id extra-fields)
-          :deleted true))
+  (assoc (make-concept concept-type provider-id concept-id revision-id extra-fields)
+         :deleted true))
 
 (defn- run-constraint
   "Populates the database with the provided existing-concepts then runs the provided constraint
@@ -164,6 +167,13 @@
         (let [other-concept (make-concept :granule "PROV1" "C2-PROV1" 1 {:granule-ur "G_UR-1"})]
           (not-valid
             (msg/duplicate-field-msg :granule-ur [other-concept])
+            [other-concept])))
+      (testing "native-id is checked for uniqueness when granule-ur is null"
+        (let [other-concept (make-concept :granule "PROV1" "C2-PROV1" 1 "G_UR-1" {})]
+          (not-valid
+            (msg/duplicate-field-msg :granule-ur
+                                     [(assoc-in other-concept [:extra-fields :granule-ur]
+                                                (get-in test-concept [:extra-fields :granule-ur]))])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
         (let [db (mem-db/create-db)]
