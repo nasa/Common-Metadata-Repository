@@ -45,142 +45,80 @@
   [constraint test-concept & existing-concepts]
   (is (nil? (apply run-constraint constraint test-concept existing-concepts))))
 
-(deftest entry-title-unique-constraint-test
-  (let [test-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})
-        is-valid (partial assert-valid (cc/unique-field-constraint :entry-title))
-        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-title) test-concept %2)]
+(defn- unique-constraint-test
+  "Runs the given unique constraint test. Takes the following parameters:
+  concept-type - :collection or :granule
+  constraint-fn - uniqueness constraint function being tested
+  field - name of the field which must be unique (e.g. :entry-title, :entry-id, or :granule-ur)"
+  [concept-type constraint-fn field]
+  (let [extra-fields {field "unique-field1"}
+        test-concept (make-concept concept-type "PROV1" "C1-PROV1" 5 extra-fields)
+        is-valid (partial assert-valid constraint-fn)
+        not-valid #(apply assert-invalid %1 constraint-fn test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
         (is-valid test-concept))
-      (testing "another collection with entry title that is deleted is valid"
-        (let [other-tombstone (make-tombstone :collection "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})]
+      (testing (format "another collection with %s that is deleted is valid" field)
+        (let [other-tombstone (make-tombstone concept-type "PROV1" "C2-PROV1" 2 extra-fields)]
           (is-valid test-concept other-tombstone)))
-      (testing "another provider with the same entry title is valid "
-        (let [other-concept (make-concept :collection "PROV2" "C1-PROV1" 5 {:entry-title "ET1"})]
+      (testing (format "another provider with the same %s is valid " field)
+        (let [other-concept (make-concept concept-type "PROV2" "C1-PROV1" 5 extra-fields)]
           (is-valid test-concept other-concept)))
       (testing "same concept id but earlier revision id is valid"
-        (let [other-concept (make-concept :collection "PROV1" "C1-PROV1" 4 {:entry-title "ET1"})]
+        (let [other-concept (make-concept concept-type "PROV1" "C1-PROV1" 4 extra-fields)]
           (is-valid test-concept other-concept)))
-      (testing "different entry titles are valid"
-        (let [other-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-title "ET2"})]
+      (testing (format "different values for %s are valid" field)
+        (let [other-concept (make-concept concept-type "PROV1" "C1-PROV1" 5 {field "unique-field2"})]
           (is-valid test-concept other-concept)))
       (testing "multiple valid concepts are still valid"
         (is-valid test-concept
-                  (make-concept :collection "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})
-                  (make-tombstone :collection "PROV1" "C2-PROV1" 2 {:entry-title "ET1"})
-                  (make-concept :collection "PROV2" "C1-PROV1" 5 {:entry-title "ET1"})
-                  (make-concept :collection "PROV1" "C1-PROV1" 4 {:entry-title "ET1"})
-                  (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-title "ET2"}))))
+                  (make-concept concept-type "PROV1" "C2-PROV1" 1 extra-fields)
+                  (make-tombstone concept-type "PROV1" "C2-PROV1" 2 extra-fields)
+                  (make-concept concept-type "PROV2" "C1-PROV1" 5 extra-fields)
+                  (make-concept concept-type "PROV1" "C1-PROV1" 4 extra-fields)
+                  (make-concept concept-type "PROV1" "C1-PROV1" 5 {field "unique-field2"}))))
 
     (testing "invalid cases"
-      (testing "same entry title"
-        (let [other-concept (make-concept :collection "PROV1" "C2-PROV1" 1 {:entry-title "ET1"})]
+      (testing (format "same %s" field)
+        (let [other-concept (make-concept concept-type "PROV1" "C2-PROV1" 1 extra-fields)]
           (not-valid
-            (msg/duplicate-field-msg :entry-title [other-concept])
+            (msg/duplicate-field-msg field [other-concept])
             [other-concept])))
       (testing "cannot find saved concept throws internal error"
-        (let [db (mem-db/create-db)]
+        (let [db (mem-db/create-db)
+              error-regex (java.util.regex.Pattern/compile
+                            (format "Unable to find saved concept for provider.*PROV1.*and %s .*unique-field1"
+                                    (name field)))]
           (is (thrown-with-msg?
                 java.lang.Exception
-                #"Unable to find saved concept for provider \[PROV1\] and entry-title \[ET1\]"
-                ((cc/unique-field-constraint :entry-title) db test-concept))))))))
+                error-regex
+                (constraint-fn db test-concept))))))))
 
-(deftest entry-id-unique-constraint-test
-  (let [test-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-id "EID-1"})
-        is-valid (partial assert-valid (cc/unique-field-constraint :entry-id))
-        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :entry-id) test-concept %2)]
+(deftest unique-constraint-tests
+  (unique-constraint-test :collection (cc/unique-field-constraint :entry-title) :entry-title)
+  (unique-constraint-test :collection (cc/unique-field-constraint :entry-id) :entry-id)
+  (unique-constraint-test :granule (cc/unique-field-constraint :granule-ur) :granule-ur)
+  (unique-constraint-test :granule cc/granule-ur-unique-constraint :granule-ur)
 
-    (testing "valid cases"
-      (testing "with empty database"
-        (is-valid test-concept))
-      (testing "another collection with entry id that is deleted is valid"
-        (let [other-tombstone (make-tombstone :collection "PROV1" "C2-PROV1" 2 {:entry-id "EID-1"})]
-          (is-valid test-concept other-tombstone)))
-      (testing "another provider with the same entry id is valid "
-        (let [other-concept (make-concept :collection "PROV2" "C1-PROV1" 5 {:entry-id "EID-1"})]
-          (is-valid test-concept other-concept)))
-      (testing "same concept id but earlier revision id is valid"
-        (let [other-concept (make-concept :collection "PROV1" "C1-PROV1" 4 {:entry-id "EID-1"})]
-          (is-valid test-concept other-concept)))
-      (testing "different entry ids are valid"
-        (let [other-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-id "EID-2"})]
-          (is-valid test-concept other-concept)))
-      (testing "multiple valid concepts are still valid"
-        (is-valid test-concept
-                  (make-concept :collection "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})
-                  (make-tombstone :collection "PROV1" "C2-PROV1" 2 {:entry-id "EID-1"})
-                  (make-concept :collection "PROV2" "C1-PROV1" 5 {:entry-id "EID-1"})
-                  (make-concept :collection "PROV1" "C1-PROV1" 4 {:entry-id "EID-1"})
-                  (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-id "EID-2"}))))
-
-    (testing "invalid cases"
-      (testing "same entry id"
-        (let [other-concept (make-concept :collection "PROV1" "C2-PROV1" 1 {:entry-id "EID-1"})]
-          (not-valid
-            (msg/duplicate-field-msg :entry-id [other-concept])
-            [other-concept])))
-      (testing "cannot find saved concept throws internal error"
-        (let [db (mem-db/create-db)]
-          (is (thrown-with-msg?
-                java.lang.Exception
-                #"Unable to find saved concept for provider \[PROV1\] and entry-id \[EID-1\]"
-                ((cc/unique-field-constraint :entry-id) db test-concept)))))
-
-      (testing "invalid field throws internal error"
-        (let [db (mem-db/create-db)]
-          (is (thrown-with-msg?
-                java.lang.Exception
-                #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
-                ((cc/unique-field-constraint :invalid-field) db test-concept))))))))
+  (testing "invalid field throws internal error"
+    (let [db (mem-db/create-db)
+          test-concept (make-concept :collection "PROV1" "C1-PROV1" 5 {:entry-title "ET1"})]
+      (is (thrown-with-msg?
+            java.lang.Exception
+            #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
+            ((cc/unique-field-constraint :invalid-field) db test-concept))))))
 
 (deftest granule-ur-unique-constraint-test
-  (let [test-concept (make-concept :granule "PROV1" "C1-PROV1" 5 {:granule-ur "G_UR-1"})
-        is-valid (partial assert-valid cc/granule-ur-unique-constraint)
-        not-valid #(apply assert-invalid %1 cc/granule-ur-unique-constraint test-concept %2)]
-
-    (testing "valid cases"
-      (testing "with empty database"
-        (is-valid test-concept))
-      (testing "another granule with granule-ur that is deleted is valid"
-        (let [other-tombstone (make-tombstone :granule "PROV1" "C2-PROV1" 2 {:granule-ur "G_UR-1"})]
-          (is-valid test-concept other-tombstone)))
-      (testing "another provider with the same granule-ur is valid "
-        (let [other-concept (make-concept :granule "PROV2" "C1-PROV1" 5 {:granule-ur "G_UR-1"})]
-          (is-valid test-concept other-concept)))
-      (testing "same concept id but earlier revision id is valid"
-        (let [other-concept (make-concept :granule "PROV1" "C1-PROV1" 4 {:granule-ur "G_UR-1"})]
-          (is-valid test-concept other-concept)))
-      (testing "different granule-urs are valid"
-        (let [other-concept (make-concept :granule "PROV1" "C1-PROV1" 5 {:granule-ur "G_UR-2"})]
-          (is-valid test-concept other-concept)))
-      (testing "multiple valid concepts are still valid"
-        (is-valid test-concept
-                  (make-concept :granule "PROV1" "C2-PROV1" 1 {:granule-ur "G_UR-1"})
-                  (make-tombstone :granule "PROV1" "C2-PROV1" 2 {:granule-ur "G_UR-1"})
-                  (make-concept :granule "PROV2" "C1-PROV1" 5 {:granule-ur "G_UR-1"})
-                  (make-concept :granule "PROV1" "C1-PROV1" 4 {:granule-ur "G_UR-1"})
-                  (make-concept :granule "PROV1" "C1-PROV1" 5 {:granule-ur "G_UR-2"}))))
-
-    (testing "invalid cases"
-      (testing "same granule-ur"
-        (let [other-concept (make-concept :granule "PROV1" "C2-PROV1" 1 {:granule-ur "G_UR-1"})]
-          (not-valid
-            (msg/duplicate-field-msg :granule-ur [other-concept])
-            [other-concept])))
-      (testing "native-id is checked for uniqueness when granule-ur is null"
-        (let [other-concept (make-concept :granule "PROV1" "C2-PROV1" 1 "G_UR-1" {})]
-          (not-valid
-            (msg/duplicate-field-msg :granule-ur
-                                     [(assoc-in other-concept [:extra-fields :granule-ur]
-                                                (get-in test-concept [:extra-fields :granule-ur]))])
-            [other-concept])))
-      (testing "cannot find saved concept throws internal error"
-        (let [db (mem-db/create-db)]
-          (is (thrown-with-msg?
-                java.lang.Exception
-                #"Unable to find saved concept for provider \[PROV1\] and granule-ur \[G_UR-1\]"
-                (cc/granule-ur-unique-constraint db test-concept))))))))
+  (testing "native-id is checked for uniqueness when granule-ur is null"
+    (let [test-concept (make-concept :granule "PROV1" "C1-PROV1" 5 {:granule-ur "G_UR-1"})
+          not-valid #(apply assert-invalid %1 cc/granule-ur-unique-constraint test-concept %2)
+          other-concept (make-concept :granule "PROV1" "C2-PROV1" 1 "G_UR-1" {})]
+      (not-valid
+        (msg/duplicate-field-msg :granule-ur
+                                 [(assoc-in other-concept [:extra-fields :granule-ur]
+                                            (get-in test-concept [:extra-fields :granule-ur]))])
+        [other-concept]))))
 
 
 (comment
