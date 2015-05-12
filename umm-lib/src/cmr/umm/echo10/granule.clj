@@ -137,10 +137,10 @@
                     (x/element :LastUpdate {} (str update-time))
                     (when delete-time
                       (x/element :DeleteTime {} (str delete-time)))
-                    (cond (not (nil? entry-title))
+                    (cond (some? entry-title)
                           (x/element :Collection {}
                                      (x/element :DataSetId {} entry-title))
-                          (not (nil? entry-id))
+                          (some? entry-id)
                           (x/element :Collection {}
                                      (x/element :EntryId {} entry-id))
                           :else (x/element :Collection {}
