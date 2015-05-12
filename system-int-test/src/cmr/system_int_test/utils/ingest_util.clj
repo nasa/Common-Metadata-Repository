@@ -133,22 +133,14 @@
       {:errors errors :path path})
     (first (:content elem))))
 
-(defmulti parse-xml-error-response-elem
+(defn- parse-xml-error-response-elem
   "Parse an xml error response element"
-  (fn [elem]
-    (type elem)))
-
-(defmethod parse-xml-error-response-elem clojure.data.xml.Element
   [elem]
   (let [{:keys [tag content]} elem
         expanded-content (map parse-xml-error-response-elem content)]
     (if (= :error tag)
       (parse-xml-error-elem elem)
       {tag expanded-content})))
-
-(defmethod parse-xml-error-response-elem java.lang.String
-  [elem]
-  elem)
 
 (defmulti parse-ingest-response-as
   "Parse the ingest response as a given format"
