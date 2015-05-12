@@ -5,7 +5,6 @@
             [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
             [clj-http.client :as client]
-            [cheshire.core :as json]
             [clojure.string :as string]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
@@ -83,7 +82,7 @@
 (deftest empty-collection-ingest-json-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
-                                                       {:accept-format :json :parse? false})
+                                        {:accept-format :json :parse? false})
         {:keys [errors]} (ingest/parse-ingest-response-as :json response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
@@ -91,7 +90,7 @@
 (deftest empty-collection-ingest-xml-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
-                                                       {:accept-format :xml :parse? false})
+                                        {:accept-format :xml :parse? false})
         {:keys [errors]} (ingest/parse-ingest-response-as :xml response)]
     (is (re-find #"XML content is too short." (first errors)))))
 

@@ -133,7 +133,6 @@
       {:errors errors :path path})
     (first (:content elem))))
 
-
 (defmulti parse-xml-error-response-elem
   "Parse an xml error response element"
   (fn [elem]
@@ -170,6 +169,7 @@
   (json/decode body true))
 
 (defn parse-ingest-response
+  "Attempt to parse the ingest response as json. Failing that, parse it as xml."
   [body]
   (try
     (parse-ingest-response-as :json body)
