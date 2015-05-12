@@ -133,8 +133,8 @@
 
 (deftest granule-ur-unique-constraint-test
   (let [test-concept (make-concept :granule "PROV1" "C1-PROV1" 5 {:granule-ur "G_UR-1"})
-        is-valid (partial assert-valid (cc/unique-field-constraint :granule-ur))
-        not-valid #(apply assert-invalid %1 (cc/unique-field-constraint :granule-ur) test-concept %2)]
+        is-valid (partial assert-valid cc/granule-ur-unique-constraint)
+        not-valid #(apply assert-invalid %1 cc/granule-ur-unique-constraint test-concept %2)]
 
     (testing "valid cases"
       (testing "with empty database"
@@ -170,7 +170,7 @@
           (is (thrown-with-msg?
                 java.lang.Exception
                 #"Unable to find saved concept for provider \[PROV1\] and granule-ur \[G_UR-1\]"
-                ((cc/unique-field-constraint :granule-ur) db test-concept))))))))
+                (cc/granule-ur-unique-constraint db test-concept))))))))
 
 
 (comment

@@ -14,7 +14,7 @@
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
                       (c/oracle-timestamp->str-time db (:delete_time result))))
-          (assoc-in [:extra-fields :granule-ur] (:granule_ur result))))
+          (assoc-in [:extra-fields :granule-ur] (or (:granule_ur result) (:native_id result)))))
 
 (defmethod c/concept->insert-args :granule
   [concept]
