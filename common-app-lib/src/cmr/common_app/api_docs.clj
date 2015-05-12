@@ -39,12 +39,17 @@
 
   ```
   :profiles {
-   ;; This profile specifically here for generating documentation. It's faster than using the regular
-   ;; profile. We're not sure why though. There must be something hooking into the regular profile
-   ;; that's running at the end.
-   ;; Generate docs with: lein with-profile docs generate-docs
-   :docs {}}
-  :aliases {\"generate-docs\" [\"exec\" \"-ep\" \"(do (use 'cmr.common-app.api-docs) (generate \"CMR App Name\"))\"}
+    ;; This profile specifically here for generating documentation. It's faster than using the regular
+    ;; profile. We're not sure why though. There must be something hooking into the regular profile
+    ;; that's running at the end.
+    ;; Generate docs with: lein with-profile docs generate-docs
+    :docs {}}
+  :aliases {\"generate-docs\" [\"exec\" \"-ep\" (pr-str '(do
+                                                    (use 'cmr.common-app.api-docs)
+                                                    (generate
+                                                      \"CMR Foo\"
+                                                      \"api_docs.md\"
+                                                      \"resources/public/site/foo_api_docs.html\")))]
   ```"
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
@@ -127,17 +132,14 @@
   "Defines the footer of the generated documentation page."
   "</div></body></html>")
 
-(def docs-source
-  "The file containing the markdown API documentation."
-  "api_docs.md")
-
-(def docs-target
-  "The file that will be generated with the API documentation."
-  "resources/public/site/api_docs.html")
-
 (defn generate
-  "Generates the API documentation HTML page from the markdown source."
-  [page-title]
+  "Generates the API documentation HTML page from the markdown source.
+  Args
+  * page-title - The title to use in the generated documentation page.
+  * docs-source - The file containing the markdown API documentation. Example: api_docs.md
+  * docs-target - The file that will be generated with the API documentation.
+  Examplae resources/public/site/api_docs.html"
+  [page-title docs-source docs-target]
   (println "Generating" docs-target "from" docs-source)
   (io/make-parents docs-target)
   (let [processor (PegDownProcessor.

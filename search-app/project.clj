@@ -46,6 +46,11 @@
              :aot :all}}
 
   :aliases {"generate-docs"
-            ["exec" "-ep" "(do (use 'cmr.common-app.api-docs) (generate \"CMR Search\"))"]
+            ["exec" "-ep" (pr-str '(do
+                                    (use 'cmr.common-app.api-docs)
+                                    (generate
+                                      "CMR Search"
+                                      "api_docs.md"
+                                      "resources/public/site/search_api_docs.html")))]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})

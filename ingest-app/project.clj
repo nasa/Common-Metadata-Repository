@@ -41,7 +41,12 @@
              :aot :all}}
 
 
-  :aliases {"generate-docs" ["exec" "-ep" "(do (use 'cmr.common-app.api-docs) (generate \"CMR Ingest\"))"]
+  :aliases {"generate-docs" ["exec" "-ep" (pr-str '(do
+                                                    (use 'cmr.common-app.api-docs)
+                                                    (generate
+                                                      "CMR Ingest"
+                                                      "api_docs.md"
+                                                      "resources/public/site/ingest_api_docs.html")))]
             ;; Database migrations run by executing "lein migrate"
             "create-user" ["exec" "-p" "./support/create_user.clj"]
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
