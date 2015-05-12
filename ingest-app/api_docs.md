@@ -1,41 +1,46 @@
+***
+
 ## API Overview
+
+TODO test all links
 
 ### Metadata Ingest API Overview
 
   * /providers/\<provider-id>/validate/collection/\<native-id>
-    * [POST](#validate-collection) - Validate collection metadata.
+    * [POST - Validate collection metadata.](#validate-collection)
   * /providers/\<provider-id>/collections/\<native-id>
-    * [PUT](#create-update-collection) - Create or update a collection.
-    * [DELETE](#delete-collection) - Delete a collection.
+    * [PUT - Create or update a collection.](#create-update-collection)
+    * [DELETE - Delete a collection.](#delete-collection)
   * /providers/\<provider-id>/validate/granule/\<native-id>
-    * [POST](#validate-granule) - Validate granule metadata.
+    * [POST - Validate granule metadata.](#validate-granule)
   * /providers/\<provider-id>/granules/\<native-id>
-    * [PUT](#create-update-granule) - Create or update a granule.
-    * [DELETE](#delete-granule) - Delete a granule.
+    * [PUT - Create or update a granule.](#create-update-granule)
+    * [DELETE - Delete a granule.](#delete-granule)
 
 ### Administrative API Overview
 
   * /providers
-    * [GET](#get-providers) - Get a list of providers.
-    * [POST](#create-provider) - Create provider.
+    * [GET - Get a list of providers.](#get-providers)
+    * [POST - Create provider.](#create-provider)
   * /providers/\<provider-id>
-    * [PUT](#update-provider) - Update Provider.
-    * [DELETE](#delete-provider) - Delete a provider.
+    * [PUT - Update Provider.](#update-provider)
+    * [DELETE - Delete a provider.](#delete-provider)
   * /jobs
-    * [POST /jobs/pause](#pause-jobs) - Pause all jobs
-    * [POST /jobs/resume](#resume-jobs) - Resumes all jobs
-    * [GET /jobs/status](#jobs-status) - Gets pause/resume state of jobs
-    * [POST /jobs/reindex-collection-permitted-groups](#reindex-collection-permitted-groups) - Runs the reindex collection permitted groups job.
-    * [POST /jobs/reindex-all-collections](#reindex-all-collections) - Runs to job to reindex all collections.
-    * [POST /jobs/cleanup-expired-collections](#cleanup-expired-collections) - Runs the job to remove expired collections.
+    * [POST /jobs/pause - Pause all jobs](#pause-jobs)
+    * [POST /jobs/resume - Resumes all jobs](#resume-jobs)
+    * [GET /jobs/status - Gets pause/resume state of jobs](#jobs-status)
+    * [POST /jobs/reindex-collection-permitted-groups - Runs the reindex collection permitted groups job.](#reindex-collection-permitted-groups)
+    * [POST /jobs/reindex-all-collections - Runs to job to reindex all collections.](#reindex-all-collections)
+    * [POST /jobs/cleanup-expired-collections - Runs the job to remove expired collections.](#cleanup-expired-collections)
   * /caches
-    * [GET /caches](#get-caches) - Gets a list of the caches in ingest.
-    * [GET /caches/\<cache-name>](#get-cache-keys) - Gets a list of the keys stored in the specific cache.
-    * [GET /caches/\<cache-name>/\<cache-key>](#get-cache-value) - Gets the value of the cache key in the specific cache
-    * [POST /caches/clear-cache](#clear-cache) - Clears the ingest caches.
+    * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
+    * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
+    * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-value)
+    * [POST /caches/clear-cache - Clears the ingest caches.](#clear-cache)
   * /health
-    * [GET](#health) - Gets the health of the ingest application.
+    * [GET - Gets the health of the ingest application.](#health)
 
+***
 
 ## <a name="api-conventions"></a> API Conventions
 
@@ -66,17 +71,28 @@ All Ingest API operations require specifying a token obtained from URS or ECHO. 
 
 The Accept header specifies the format of the response message. The Accept header will default to XML for the normal Ingest APIs. `application/json` can be specified if you prefer responses in JSON.
 
+#### <a name="revision-id-header"></a> Revision Id Header
+
+The revision id header allows specifying the [revision id](#revision-id) to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
+
+#### <a name="concept-id-header"></a> Concept Id Header
+
+The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id.
+
+***
+
 ### <a name="responses"></a> Responses
 
 #### <a name="http-status-codes"></a> HTTP Status Codes
 
-| Status Code |                                               Description                                                |
+| Status Code | Description                                                                                              |
 | ----------- | -------------------------------------------------------------------------------------------------------- |
-|         200 | Success                                                                                                  |
-|         201 | Success creating an entity                                                                               |
-|         400 | Bad request. The body will contain errors.                                                               |
-|         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found. |
-|         500 | Internal error. Contact CMR Operations if this occurs.                                                   |
+| 200         | Success                                                                                                  |
+| 201         | Success creating an entity                                                                               |
+| 400         | Bad request. The body will contain errors.                                                               |
+| 404         | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found. |
+| 409         | Conflict. This is returned when a revision id conflict occurred while saving the item.                   |
+| 500         | Internal error. Contact CMR Operations if this occurs.                                                   |
 
 #### <a name="successful-responses"></a> Successful Responses
 
@@ -139,34 +155,116 @@ Error messages can also be returned in JSON by setting the Accept header to appl
 }
 ```
 
+***
+
+
 ### <a name="cmr-ids"></a> CMR Ids
 
-#### <a name="concept-id"></a> Provider Id
+This documents different identifiers used in the CMR.
+
+#### <a name="provider-id"></a> Provider Id
+
+A provider id identifies a provider and is composed of a combination of upper case letters, digits, and underscores. Example: LPDAAC_ECS
 
 #### <a name="native-id"></a> Native Id
 
+The native id is the id that a provider client uses to refer to a granule or collection in the URL. For example a provider could create a new collection with native id "cloud_sat_5" in provider "PROV" by sending a HTTP PUT request to `/providers/PROV/collections/cloud_sat_5`. The native id must be unique within a provider. Two collections could not share a native id for example. The native id doesn't have to matche an id in the metadata but providers are encouraged to use something like entry id or entry title for their native ids.
+
 #### <a name="revision-id"></a> Revision Id
+
+Every update or deletion of a concept is stored separately as a separate revision in the CMR database. Deletion revisions are called tombstones. The CMR uses this to improve caching, synchronization, and to maintain an audit log of changes to concepts. Every revision is given a separate id starting with 1 for the first revision.
+
+##### Example Revision Ids
+
+Here's a table showing an example set of revisions for one collection.
+
+| Concept Id | Revision Id | Metadata | Deleted |
+| ---------- | ----------- | -------- | ------- |
+| C1-PROV1   |           1 | ...      | false   |
+| C1-PROV1   |           2 | ...      | false   |
+| C1-PROV1   |           3 | null     | true    |
+| C1-PROV1   |           4 | ...      | false   |
+
+The table shows one collection with 4 revisions. It was created and then updated. The third revision was a deletion. The last revision was when the collection was recreated.
 
 #### <a name="concept-id"></a> Concept Id
 
+A concept is any type of metadata that is managed by the CMR. Collections and granules are the current concept types the CMR manages. The concept id is the unique identifier of concepts in the CMR.
 
+The format of the concept id is:
+
+    <letter> <unique-number> "-" <provider-id>
+
+An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concept type. G is for granule. C is for collection. The [provider id](#provider-id) is the upper case unique identifier for a provider.
+
+***
 
 ## <a name="metadata-ingest"></a> Metadata Ingest
 
 ### <a name="validate-collection"></a> Validate Collection
 
-TODO
+Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+    curl -i -XPOST -H "Content-type: application/echo10+xml" %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 -d \
+    "<Collection>
+      <ShortName>ShortName_Larc</ShortName>
+      <VersionId>Version01</VersionId>
+      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+      <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+      <LongName>LarcLongName</LongName>
+      <DataSetId>LarcDatasetId</DataSetId>
+      <Description>A minimal valid collection</Description>
+      <Orderable>true</Orderable>
+      <Visible>true</Visible>
+    </Collection>"
+
 
 ### <a name="create-update-collection"></a> Create / Update a Collection
 
-Create and update is done through a PUT
+Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-TODO show sample output
+    curl -i -XPUT -H "Content-type: application/echo10+xml" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 -d \
+    "<Collection>
+      <ShortName>ShortName_Larc</ShortName>
+      <VersionId>Version01</VersionId>
+      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+      <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+      <LongName>LarcLongName</LongName>
+      <DataSetId>LarcDatasetId</DataSetId>
+      <Description>A minimal valid collection</Description>
+      <Orderable>true</Orderable>
+      <Visible>true</Visible>
+    </Collection>"
+
+#### Successful Response in XML
+
+TODO get example from James
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"C1200000000-PROV1","revision-id":1}
+```
 
 ### <a name="delete-collection"></a> Delete a Collection
 
-TODO
+Collection metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
+    curl -i -XDELETE %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
+
+#### Successful Response in XML
+
+TODO get example from James
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"C1200000000-PROV1","revision-id":1}
+```
+
+***
 
 ### <a name="validate-granule"></a> Validate Granule
 
