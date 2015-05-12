@@ -12,6 +12,9 @@
 
    ;;  maps to Granule/Collection/VersionId
    version-id
+
+   ;; maps to  Granule/Collection/EntryId in echo granule schema
+   entry-id
    ])
 
 (defrecord DataGranule
@@ -145,15 +148,6 @@
 
    two-d-coordinate-system
    ])
-
-(defn collection-ref
-  ([entry-title]
-   (map->CollectionRef {:entry-title entry-title}))
-  ([short-name version-id]
-   (map->CollectionRef {:short-name short-name :version-id version-id}))
-  ([entry-title short-name version-id]
-   (map->CollectionRef {:entry-title entry-title :short-name short-name :version-id version-id})))
-
 
 (record-pretty-printer/enable-record-pretty-printing
   CollectionRef

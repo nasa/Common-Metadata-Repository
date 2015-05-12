@@ -32,7 +32,9 @@
                      (cx/string-at-path elem [:code :CharacterString])))
         short-name (parse-fn "The ECS Short Name")
         version-id (parse-fn "The ECS Version ID")]
-    (g/collection-ref entry-title short-name version-id)))
+    (g/map->CollectionRef {:entry-title entry-title
+                           :short-name short-name
+                           :version-id version-id})))
 
 (defn- xml-elem->granule-ur
   "Returns a UMM granule ur from a parsed Granule XML structure"

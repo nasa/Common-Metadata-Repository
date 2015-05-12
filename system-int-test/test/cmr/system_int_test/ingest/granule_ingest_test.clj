@@ -21,7 +21,7 @@
 ;; but the shortname or dataset id did not) will reference the correct collection.
 ;; See CMR-1104
 (deftest granule-referencing-collection-with-changing-concept-id-test
-  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1"}
+  (let [common-fields {:entry-title "coll1" :short-name "short1" :version-id "V1" :entry-id "short1_V1" }
         orig-coll (dc/collection-concept (assoc common-fields :native-id "native1"))
         _ (ingest/ingest-concept orig-coll)
 
@@ -33,9 +33,11 @@
 
         ;; Create granules associated with the collection fields.
         gran1 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
-                                           dissoc :short-name :version-id))
+                                           dissoc :short-name :version-id :entry-id))
         gran2 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
-                                           dissoc :entry-title))]
+                                           dissoc :entry-title :entry-id))
+        gran3 (d/ingest "PROV1" (update-in (dg/granule new-coll) [:collection-ref]
+                                           dissoc :short-name :version-id :entry-title))]
     (index/wait-until-indexed)
     ;; Make sure the granules reference the correct collection
     (is (= (:concept-id new-coll)
@@ -44,6 +46,9 @@
 
     (is (= (:concept-id new-coll)
            (get-in (ingest/get-concept (:concept-id gran2) (:revision-id gran2))
+                   [:extra-fields :parent-collection-id])))
+    (is (= (:concept-id new-coll)
+           (get-in (ingest/get-concept (:concept-id gran3) (:revision-id gran3))
                    [:extra-fields :parent-collection-id])))))
 
 ;; Verify a new granule is ingested successfully.
@@ -221,16 +226,16 @@
              (= [400 expected-errors] [status errors]))
 
            {}
-           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
+           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
            {:entry-title "wrong"}
            ["Collection with Entry Title [wrong] referenced in granule [Gran1] provider [PROV1] does not exist."]
 
            {:short-name "S2"}
-           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
+           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
            {:version-id "V2"}
-           ["Collection Reference should have at least Entry Title or Short Name and Version Id."]
+           ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]
 
            {:short-name "S2" :version-id "V1"}
            ["Collection with Short Name [S2], Version Id [V1] referenced in granule [Gran1] provider [PROV1] does not exist."]

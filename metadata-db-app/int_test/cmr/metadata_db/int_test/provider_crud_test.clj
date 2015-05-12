@@ -29,6 +29,18 @@
       ;; cmr-only defaults to false
       (is (util/verify-provider-was-saved "PROV3" false)))))
 
+(deftest update-provider-test
+  (testing "basic update"
+    (util/save-provider "PROV1" false)
+    (is (util/verify-provider-was-saved "PROV1" false))
+    (util/update-provider "PROV1" true)
+    (is (util/verify-provider-was-saved "PROV1" true)))
+  (testing "update nonexistant provider"
+    (is (= 404 (:status (util/update-provider "PROV2" true)))))
+  (testing "bad parameters"
+    (is (= 400 (:status (util/update-provider nil true))))
+    (is (= 400 (:status (util/update-provider "PROV1" nil))))))
+
 (deftest get-providers-test
   (util/save-provider "PROV1")
   (util/save-provider "PROV2")

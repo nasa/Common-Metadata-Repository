@@ -139,6 +139,18 @@
                 (d/item->concept granule)
                 coll-concept)))
 
+          (testing "entry-id"
+            (let [collection (dc/collection-dif {:entry-id "correct"})
+                  coll-concept (d/item->concept collection :dif)
+                  granule (assoc (dg/granule collection)
+                                 :collection-ref
+                                 (umm-g/map->CollectionRef {:entry-id "wrong"}))]
+              (assert-validation-errors
+                [{:path ["CollectionRef"],
+                  :errors ["Collection Reference Entry Id [wrong] does not match the Entry Id of the parent collection [correct]"]}]
+                (d/item->concept granule)
+                coll-concept)))
+
           (let [collection (dc/collection {:short-name "S1" :version-id "V1"})
                 coll-concept (d/item->concept collection :echo10)]
             (testing "shortname"
@@ -208,7 +220,7 @@
                                                             :version-id "V1"}))]
               (assert-validation-errors
                 [{:path ["CollectionRef"],
-                  :errors ["Collection Reference should have at least Entry Title or Short Name and Version Id."]}]
+                  :errors ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]}]
                 (d/item->concept granule :iso-smap)
                 coll-concept))))))
 

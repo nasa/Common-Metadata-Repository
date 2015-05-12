@@ -183,7 +183,7 @@
   []
   (format "http://localhost:%s/providers" (transmit-config/ingest-port)))
 
-(defn ingest-delete-provider-url
+(defn ingest-provider-url
   [provider-id]
   (format "http://localhost:%s/providers/%s" (transmit-config/ingest-port) provider-id))
 

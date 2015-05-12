@@ -24,6 +24,7 @@
             [cmr.search.services.health-service :as hs]
             [cmr.acl.core :as acl]
             [cmr.common-app.api.routes :as common-routes]
+            [cmr.common-app.api-docs :as api-docs]
 
             ;; Result handlers
             ;; required here to avoid circular dependency in query service
@@ -260,39 +261,11 @@
      :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
      :body results}))
 
-(defmacro force-trailing-slash
-  "Given a ring request, if the request was made against a resource path with a trailing
-  slash, performs the body form (presumably returning a valid ring response).  Otherwise,
-  issues a 301 Moved Permanently redirect to the request's resource path with an appended
-  trailing slash."
-  [req body]
-  `(if (.endsWith (:uri ~req) "/")
-     ~body
-     (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
-
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
-
-      ;; CMR Welcome Page
-      (GET "/" req
-        (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-                              {:status 200
-                               :body (slurp (io/resource "public/index.html"))}))
-
-      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-      (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
-        (let [cmr-root (str (name scheme)  "://" (headers "host") (get-in system [:search-public-conf :relative-root-url]))]
-          {:status 200
-           :body (-> (str "public/site/" resource)
-                     (io/resource)
-                     (slurp)
-                     (str/replace "%CMR-ENDPOINT%" cmr-root))}))
-
-      ;; Other static resources (Javascript, CSS)
-      (GET "/site/:resource" [resource]
-        {:status 200
-         :body (slurp (io/resource (str "public/site/" resource)))})
+      ;; Add routes for API documentation
+      (api-docs/docs-routes (get-in system [:search-public-conf :relative-root-url]))
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]

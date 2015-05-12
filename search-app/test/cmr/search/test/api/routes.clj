@@ -24,7 +24,7 @@
         (is (substring? "The CMR Search API" (:body response)))))))
 
 (deftest cmr-api-documentation-page
-  (let [response (api (request :get "https://cmr.example.com/search/site/api_docs.html"))]
+  (let [response (api (request :get "https://cmr.example.com/search/site/search_api_docs.html"))]
     (testing "uses the incoming host and scheme for its documentation endpoints"
       (is (substring? "https://cmr.example.com/search/collections" (:body response))))))
 

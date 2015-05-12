@@ -63,11 +63,11 @@
 (defn- validate-granule-collection-ref
   "Throws bad request exception when collection-ref is missing required fields."
   [collection-ref]
-  (let [{:keys [short-name version-id entry-title]} collection-ref]
-    (when-not (or entry-title (and short-name version-id))
+  (let [{:keys [short-name version-id entry-title entry-id]} collection-ref]
+    (when-not (or entry-title entry-id (and short-name version-id))
       (errors/throw-service-error
         :bad-request
-        "Collection Reference should have at least Entry Title or Short Name and Version Id."))))
+        "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
 (defn- get-granule-parent-collection-and-concept
   "Returns the parent collection concept and parsed UMM record for a granule as a tuple. Finds the
