@@ -15,7 +15,8 @@
             [cmr.mock-echo.client.echo-util :as echo-util]
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
+  (:import [java.lang.NumberFormatException]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -105,6 +106,51 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
+(defn- fix-error-path
+  "Convert the error path string into a sequence with elment conversion to integers where possible"
+  [path]
+  (when path
+    (let [p (str/split path #"/")]
+      (map (fn [v]
+             (try
+               (Integer. v)
+               (catch NumberFormatException e
+                 v)))
+           p))))
+
+(comment
+
+  (fix-error-path "SpatialCoverage/Geometries/0")
+  (fix-error-path "SpatialCoverage/1/Geometries")
+  )
+
+(defn- parse-xml-error-elem
+  "Parse an xml error entry. If this contains a path then we need to return map with a :path
+  and an :errors tag. Otherwise, just return the list of error messages."
+  [elem]
+  (if-let [path (fix-error-path (cx/string-at-path elem [:path]))]
+    (let [errors (cx/strings-at-path elem [:errors :error])]
+      {:errors errors :path path})
+    (first (:content elem))))
+
+
+(defmulti parse-xml-error-response-elem
+  "Parse an xml error response element"
+  (fn [elem]
+    (type elem)))
+
+(defmethod parse-xml-error-response-elem clojure.data.xml.Element
+  [elem]
+  (let [{:keys [tag content]} elem
+        expanded-content (map parse-xml-error-response-elem content)]
+    (if (= :error tag)
+      (parse-xml-error-elem elem)
+      {tag expanded-content})))
+
+(defmethod parse-xml-error-response-elem java.lang.String
+  [elem]
+  elem)
+
 (defmulti parse-ingest-response-as
   "Parse the ingest response as a given format"
   (fn [response-format body]
@@ -114,7 +160,7 @@
   [response-format body]
   (let [xml-elem (x/parse-str body)]
     (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
-      {:errors errors}
+      (parse-xml-error-response-elem xml-elem)
       (let [concept-id (cx/string-at-path xml-elem [:concept-id])
             revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))]
         {:concept-id concept-id :revision-id revision-id}))))
@@ -129,13 +175,6 @@
     (parse-ingest-response-as :json body)
     (catch Exception e
       (parse-ingest-response-as :xml body))))
-
-
-; TODO - 1. create a test for getting json response
-;        2. create a test that gets an error back in json
-;        3. create a test for getting xml response
-;        4. create a test for getting an error back in xml
-;        5. add documentation to README.md
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
@@ -274,7 +313,6 @@
                      :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
-
 
 (defn ingest-concepts
   "Ingests all the given concepts assuming that they should all be successful."

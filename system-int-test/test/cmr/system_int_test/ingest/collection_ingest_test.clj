@@ -24,16 +24,11 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(comment
-  (cmr.common.dev.capture-reveal/reveal concept-id)
-  )
-
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
-      (cmr.common.dev.capture-reveal/capture concept-id)
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
@@ -92,18 +87,11 @@
         {:keys [errors]} (ingest/parse-ingest-response-as :json response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
-(comment
-
-  (cmr.common.dev.capture-reveal/reveal response)
-
-  )
-
 ;; Verify that the accept header for xml works with returned errors
 (deftest empty-collection-ingest-xml-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
                                                        {:accept-format :xml :parse? false})
-        _ (cmr.common.dev.capture-reveal/capture response)
         {:keys [errors]} (ingest/parse-ingest-response-as :xml response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
