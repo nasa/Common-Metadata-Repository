@@ -174,9 +174,10 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token accept-format]} options
+         {:keys [token]} options
+         accept-format (get options :accept-format :json)
          ;; added to allow testing of the raw response
-         parse? (get options :parse? true)
+         raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token})
@@ -190,11 +191,11 @@
                      :throw-exceptions false
                      :connection-manager (s/conn-mgr)})
          body (:body response)]
-     (if parse?
-       (assoc (parse-ingest-response body)
+     (if raw?
+       body
+       (assoc (parse-ingest-response-as accept-format body)
               :status
-              (:status response))
-       body))))
+              (:status response))))))
 
 (defn multipart-param-request
   "Submits a multipart parameter request to the given url with the multipart parameters indicated.

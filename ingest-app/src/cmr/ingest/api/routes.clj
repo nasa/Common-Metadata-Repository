@@ -31,7 +31,7 @@
   "Supported ingest response formats"
   #{"application/xml" "application/json"})
 
-(def mime-type->format
+(def content-type-mime-type->response-format
   "A map of mime-types to supported response format"
   {"application/echo10+xml" :xml
    "application/iso19115+xml" :xml
@@ -42,7 +42,15 @@
 
 (defn- result-map->xml
   "Converts all keys in a map to tags with values given by the map values to form a trivial
-  xml document"
+  xml document.
+  Example:
+  (result-map->xml {:concept-id \"C1-PROV1\", :revision-id 1})
+
+  <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+  <result>
+    <revision-id>1</revision-id>
+    <concept-id>C1-PROV1</concept-id>
+  </result>"
   [m]
   (x/emit-str
     (x/element :result {}
@@ -51,43 +59,49 @@
                           []
                           m))))
 
+(comment
+
+  (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
+
+  )
+
 (defn- extract-header-mime-type
   "Extracts the given header value from the headers and returns the first valid preferred mime type.
   If validate? is true it will throw an error if the header was passed by the client but no mime type
   in the header value was acceptable."
   [valid-mime-types headers header validate?]
   (when-let [header-value (get headers header)]
-    (if-let [mime-type (some valid-mime-types (mt/extract-mime-types header-value))]
-      mime-type
-      (when validate?
-        (svc-errors/throw-service-error
-          :bad-request (format "The mime types specified in the %s header [%s] are not supported."
-                               header header-value))))))
+    (or (some valid-mime-types (mt/extract-mime-types header-value))
+        (when validate?
+          (svc-errors/throw-service-error
+            :bad-request (format "The mime types specified in the %s header [%s] are not supported."
+                                 header header-value))))))
 
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from headers"
   ([headers default-format]
    (get-ingest-result-format
-     headers (set (keys mime-type->format)) default-format))
+     headers (set (keys content-type-mime-type->response-format)) default-format))
   ([headers valid-mime-types default-format]
-   (get mime-type->format
+   (get content-type-mime-type->response-format
         (or (extract-header-mime-type valid-response-mime-types headers "accept" true)
             (extract-header-mime-type valid-mime-types headers "content-type" false))
         default-format)))
 
-(defmulti body->response
-  "Convert a body to a proper response format"
-  (fn [headers body]
+(defmulti generate-response
+  "Convert a result to a proper response format"
+  (fn [headers result]
     (get-ingest-result-format headers :json)))
 
-(defmethod body->response :xml
-  [headers body]
-  {:status 200 :body (result-map->xml body)})
+(defmethod generate-response :json
+  [headers result]
+  ;; ring-json middleware will handle converting the body to json
+  {:status 200 :body result})
 
-(defmethod body->response :default
-  [headers body]
-  ;; ring-json middleware will hande converting the body to json
-  {:status 200 :body body})
+;; default to xml generation
+(defmethod generate-response :default
+  [headers result]
+  {:status 200 :body (result-map->xml result)})
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -180,7 +194,7 @@
           (POST "/" {:keys [body content-type headers request-context]}
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info "Validating Collection" (concept->loggable-string concept))
-              (ingest/validate-concept request-context concept)
+              (generate-response headers (ingest/validate-concept request-context concept))
               {:status 200})))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
@@ -190,7 +204,7 @@
                 context :update :provider-object provider-id)
               (let [concept (body->concept :collection provider-id native-id body content-type headers)]
                 (info "Ingesting collection" (concept->loggable-string concept))
-                (body->response headers (ingest/save-concept request-context concept)))))
+                (generate-response headers (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -254,10 +268,7 @@
 (defn default-format-fn
   "Determine the format that results should be returned in based on the request headers"
   [{:keys [headers]}]
-  (case (get-ingest-result-format headers :json)
-    :xml "application/xml"
-    ;; default
-    "application/json"))
+  (mt/format->mime-type (get-ingest-result-format headers :json)))
 
 (defn make-api [system]
   (-> (build-routes system)

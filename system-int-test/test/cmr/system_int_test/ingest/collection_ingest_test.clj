@@ -65,7 +65,7 @@
 ;; Verify that the accept header for json works
 (deftest return-json-response-test
   (let [concept (dc/collection-concept {})
-        response (ingest/ingest-concept concept {:accept-format :json :parse? false})
+        response (ingest/ingest-concept concept {:accept-format :json :raw? true})
         {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :json response)]
     (is (= "C1200000000-PROV1" concept-id))
     (is (= 1 revision-id))))
@@ -73,7 +73,7 @@
 ; Verify that the accept header for xml works
 (deftest return-xml-response-test
   (let [concept (dc/collection-concept {})
-        response (ingest/ingest-concept concept {:accept-format :xml :parse? false})
+        response (ingest/ingest-concept concept {:accept-format :xml :raw? true})
         {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :xml response)]
     (is (= "C1200000000-PROV1" concept-id))
     (is (= 1 revision-id))))
@@ -82,7 +82,7 @@
 (deftest empty-collection-ingest-json-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
-                                        {:accept-format :json :parse? false})
+                                        {:accept-format :json :raw? true})
         {:keys [errors]} (ingest/parse-ingest-response-as :json response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
@@ -90,7 +90,7 @@
 (deftest empty-collection-ingest-xml-test
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
-                                        {:accept-format :xml :parse? false})
+                                        {:accept-format :xml :raw? true})
         {:keys [errors]} (ingest/parse-ingest-response-as :xml response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
