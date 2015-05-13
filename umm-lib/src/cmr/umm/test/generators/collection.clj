@@ -254,6 +254,9 @@
              :related-url optional-short-string
              :other-reference-details optional-short-string)))
 
+(def collection-progress
+  (ext-gen/optional (gen/elements c/collection-progress-states)))
+
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
               (let [product (:product attribs)]
@@ -285,7 +288,8 @@
                 :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages)
                 :publication-references (ext-gen/nil-if-empty (gen/vector publication-references 0 3))
-                :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3)))
+                :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3))
+                :collection-progress collection-progress)
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)
               (gen/vector distribution-center-organizations 1 3))))
