@@ -66,7 +66,7 @@
 (deftest return-json-response-test
   (let [concept (dc/collection-concept {})
         response (ingest/ingest-concept concept {:accept-format :json :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :json response)]
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
     (is (= "C1200000000-PROV1" concept-id))
     (is (= 1 revision-id))))
 
@@ -74,7 +74,7 @@
 (deftest return-xml-response-test
   (let [concept (dc/collection-concept {})
         response (ingest/ingest-concept concept {:accept-format :xml :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :xml response)]
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
     (is (= "C1200000000-PROV1" concept-id))
     (is (= 1 revision-id))))
 
@@ -83,7 +83,7 @@
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
                                         {:accept-format :json :raw? true})
-        {:keys [errors]} (ingest/parse-ingest-response-as :json response)]
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
 ;; Verify that the accept header for xml works with returned errors
@@ -91,7 +91,7 @@
   (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
         response (ingest/ingest-concept concept-with-empty-body
                                         {:accept-format :xml :raw? true})
-        {:keys [errors]} (ingest/parse-ingest-response-as :xml response)]
+        {:keys [errors]} (ingest/parse-ingest-response :xml response)]
     (is (re-find #"XML content is too short." (first errors)))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
@@ -236,7 +236,7 @@
         _ (index/wait-until-indexed)
         response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
                                                                      :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :json response)]
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
      (is (= "C1200000000-PROV1" concept-id))
     (is (= 2 revision-id))))
 
@@ -245,7 +245,7 @@
         _ (index/wait-until-indexed)
         response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
                                                                      :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :xml response)]
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
      (is (= "C1200000000-PROV1" concept-id))
     (is (= 2 revision-id))))
 

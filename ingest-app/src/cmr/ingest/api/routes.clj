@@ -19,6 +19,7 @@
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
+            [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
@@ -65,18 +66,6 @@
 
   )
 
-(defn- extract-header-mime-type
-  "Extracts the given header value from the headers and returns the first valid preferred mime type.
-  If validate? is true it will throw an error if the header was passed by the client but no mime type
-  in the header value was acceptable."
-  [valid-mime-types headers header validate?]
-  (when-let [header-value (get headers header)]
-    (or (some valid-mime-types (mt/extract-mime-types header-value))
-        (when validate?
-          (svc-errors/throw-service-error
-            :bad-request (format "The mime types specified in the %s header [%s] are not supported."
-                                 header header-value))))))
-
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from headers"
   ([headers default-format]
@@ -84,8 +73,8 @@
      headers (set (keys content-type-mime-type->response-format)) default-format))
   ([headers valid-mime-types default-format]
    (get content-type-mime-type->response-format
-        (or (extract-header-mime-type valid-response-mime-types headers "accept" true)
-            (extract-header-mime-type valid-mime-types headers "content-type" false))
+        (or (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
+            (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
         default-format)))
 
 (defmulti generate-response
@@ -216,8 +205,7 @@
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" request
-            (generate-response (:headers request) (validate-granule provider-id native-id request))
-            {:status 200}))
+            (generate-response (:headers request) (validate-granule provider-id native-id request))))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -235,7 +223,7 @@
               (acl/verify-ingest-management-permission
                 context :update :provider-object provider-id)
               (info "Deleting granule" (pr-str concept-attribs))
-              (r/response (ingest/delete-concept request-context concept-attribs))))))
+              (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; add routes for managing jobs
       (common-routes/job-api-routes
@@ -264,11 +252,6 @@
 
     (route/not-found "Not Found")))
 
-(defn default-format-fn
-  "Determine the format that results should be returned in based on the request headers"
-  [{:keys [headers]}]
-  (mt/format->mime-type (get-ingest-result-format headers :json)))
-
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
@@ -277,5 +260,5 @@
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
-      (api-errors/exception-handler default-format-fn)))
+      api-errors/exception-handler))
 

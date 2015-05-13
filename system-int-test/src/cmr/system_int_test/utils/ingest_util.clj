@@ -142,12 +142,12 @@
       (parse-xml-error-elem elem)
       {tag expanded-content})))
 
-(defmulti parse-ingest-response-as
+(defmulti parse-ingest-response
   "Parse the ingest response as a given format"
   (fn [response-format body]
     response-format))
 
-(defmethod parse-ingest-response-as :xml
+(defmethod parse-ingest-response :xml
   [response-format body]
   (let [xml-elem (x/parse-str body)]
     (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
@@ -156,17 +156,9 @@
             revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))]
         {:concept-id concept-id :revision-id revision-id}))))
 
-(defmethod parse-ingest-response-as :json
+(defmethod parse-ingest-response :json
   [response-format body]
   (json/decode body true))
-
-(defn parse-ingest-response
-  "Attempt to parse the ingest response as json. Failing that, parse it as xml."
-  [body]
-  (try
-    (parse-ingest-response-as :json body)
-    (catch Exception e
-      (parse-ingest-response-as :xml body))))
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
@@ -193,7 +185,7 @@
          body (:body response)]
      (if raw?
        body
-       (assoc (parse-ingest-response-as accept-format body)
+       (assoc (parse-ingest-response accept-format body)
               :status
               (:status response))))))
 
@@ -239,7 +231,7 @@
          body (:body response)]
      (if raw?
        body
-       (assoc (parse-ingest-response-as accept-format body)
+       (assoc (parse-ingest-response accept-format body)
               :status
               (:status response))))))
 
@@ -322,7 +314,7 @@
          body (:body response)]
      (if raw?
        body
-       (assoc (parse-ingest-response-as accept-format body)
+       (assoc (parse-ingest-response accept-format body)
               :status
               (:status response))))))
 
