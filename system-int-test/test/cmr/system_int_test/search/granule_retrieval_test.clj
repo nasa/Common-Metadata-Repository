@@ -24,6 +24,7 @@
         umm-gran (-> umm-gran
                      (assoc-in [:collection-ref :short-name] nil)
                      (assoc-in [:collection-ref :version-id] nil)
+                     (assoc-in [:collection-ref :entry-id] nil)
                      (dissoc :collection-concept-id))]
     (ingest/delete-concept (d/item->concept del-gran :echo10))
     (index/wait-until-indexed)

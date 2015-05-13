@@ -55,6 +55,8 @@
   so certain fields are removed for comparison of the parsed record"
   [gran]
   (-> gran
+      ;; SMAP ISO collection-ref does not have entry-id
+      (assoc-in [:collection-ref :entry-id] nil)
       ;; There is no delete-time in SMAP ISO
       (assoc-in [:data-provider-timestamps :delete-time] nil)
       ;; SMAP ISO data-granule does not have day-night or size
