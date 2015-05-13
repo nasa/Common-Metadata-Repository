@@ -12,6 +12,7 @@
             [cmr.umm.dif.collection.related-url :as ru]
             [cmr.umm.dif.collection.science-keyword :as sk]
             [cmr.umm.dif.collection.org :as org]
+            [cmr.umm.dif.collection.progress :as progress]
             [cmr.umm.dif.collection.temporal :as t]
             [cmr.umm.dif.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.collection-association :as ca]
@@ -108,7 +109,8 @@
      :spatial-coverage (sc/xml-elem->SpatialCoverage xml-struct)
      :organizations (org/xml-elem->Organizations xml-struct)
      :personnel (personnel/xml-elem->personnel xml-struct)
-     :publication-references (seq (parse-publication-references xml-struct))}))
+     :publication-references (seq (parse-publication-references xml-struct))
+     :collection-progress (progress/parse xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -158,6 +160,7 @@
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
+                    (progress/generate collection)
                     (sc/generate-spatial-coverage spatial-coverage)
                     (for [tk temporal-keywords]
                       (x/element :Data_Resolution {} (x/element :Temporal_Resolution {} tk)))
