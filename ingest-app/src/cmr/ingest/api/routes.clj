@@ -46,20 +46,21 @@
   "Converts all keys in a map to tags with values given by the map values to form a trivial
   xml document.
   Example:
-  (result-map->xml {:concept-id \"C1-PROV1\", :revision-id 1})
+  (result-map->xml {:concept-id \"C1-PROV1\", :revision-id 1} true)
 
   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <result>
-    <revision-id>1</revision-id>
-    <concept-id>C1-PROV1</concept-id>
+  <revision-id>1</revision-id>
+  <concept-id>C1-PROV1</concept-id>
   </result>"
-  [m]
-  (x/emit-str
-    (x/element :result {}
-               (reduce-kv (fn [memo k v]
-                            (conj memo (x/element (keyword k) {} v)))
-                          []
-                          m))))
+  [m pretty?]
+  (let [emit-fn (if pretty? x/indent-str x/emit-str)]
+    (emit-fn
+      (x/element :result {}
+                 (reduce-kv (fn [memo k v]
+                              (conj memo (x/element (keyword k) {} v)))
+                            []
+                            m)))))
 
 (comment
 
@@ -89,9 +90,10 @@
   {:status 200 :body result})
 
 ;; default to xml generation
-(defmethod generate-response :default
+(defmethod generate-response :xml
   [headers result]
-  {:status 200 :body (result-map->xml result)})
+  (let [pretty? (api/pretty-request? nil headers)]
+    {:status 200 :body (result-map->xml result pretty?)}))
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
