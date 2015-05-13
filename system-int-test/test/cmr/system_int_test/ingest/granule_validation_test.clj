@@ -16,8 +16,7 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as tf]
-            [clj-time.core :as t]
-            [cmr.metadata-db.services.concept-constraints :as cc]))
+            [clj-time.core :as t]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -365,7 +364,8 @@
 
 (deftest duplicate-granule-ur-test
   ;; Turn on enforcement of duplicate granule UR constraint
-  (cc/set-enforce-granule-ur-constraint! true)
+  (dev-sys-util/eval-in-dev-sys
+    `(cmr.metadata-db.services.concept-constraints/set-enforce-granule-ur-constraint! true))
   (testing "same granule-ur and native-id across providers is valid"
     (assert-valid
       {}
