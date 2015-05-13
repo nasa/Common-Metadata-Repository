@@ -67,12 +67,12 @@
 
     (testing "ingest granule delete permissions"
       (are [token]
-           (ingest-succeeded? (ingest/delete-concept granule token))
+           (ingest-succeeded? (ingest/delete-concept granule {:token token}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (ingest/delete-concept granule token)))
+           (not (ingest-succeeded? (ingest/delete-concept granule {:token token})))
            guest-token
            user-token
            super-admin-token
@@ -95,12 +95,12 @@
 
     (testing "ingest collection delete permissions"
       (are [token]
-           (ingest-succeeded? (ingest/delete-concept ingested-concept token))
+           (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (ingest/delete-concept ingested-concept token)))
+           (not (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token})))
            guest-token
            user-token
            super-admin-token

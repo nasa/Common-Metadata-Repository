@@ -219,19 +219,29 @@
 
 (defn validate-concept
   "Validate a concept and return a map with status and error messages if applicable."
-  [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
-  (let [headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
-        response (client/request
-                   {:method :post
-                    :url (url/validate-url provider-id concept-type native-id)
-                    :body  metadata
-                    :content-type format
-                    :headers headers
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([concept]
+   (validate-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+         accept-format (get options :accept-format :json)
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
+         headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
+         response (client/request
+                    {:method :post
+                     :url (url/validate-url provider-id concept-type native-id)
+                     :body  metadata
+                     :content-type format
+                     :headers headers
+                     :accept accept-format
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})
+         body (:body response)]
+     (if raw?
+       body
+       (assoc (parse-ingest-response-as accept-format body)
+              :status
+              (:status response))))))
 
 (defn validate-granule
   "Validates a granule concept by sending it and optionally its parent collection to the validation
@@ -295,17 +305,26 @@
 (defn delete-concept
   "Delete a given concept."
   ([concept]
-   (delete-concept concept nil))
-  ([{:keys [provider-id concept-type native-id] :as concept} token]
-   (let [response (client/request
+   (delete-concept concept {}))
+  ([concept options]
+   (let [{:keys [provider-id concept-type native-id]} concept
+         {:keys [token] :as options} options
+         accept-format (get options :accept-format :json)
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
+         response (client/request
                     {:method :delete
                      :url (url/ingest-url provider-id concept-type native-id)
                      :headers (merge {} (when token {"Echo-Token" token}))
-                     :accept :json
+                     :accept accept-format
                      :throw-exceptions false
                      :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+         body (:body response)]
+     (if raw?
+       body
+       (assoc (parse-ingest-response-as accept-format body)
+              :status
+              (:status response))))))
 
 (defn ingest-concepts
   "Ingests all the given concepts assuming that they should all be successful."

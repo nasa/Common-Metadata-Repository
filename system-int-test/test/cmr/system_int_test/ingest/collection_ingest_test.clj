@@ -231,6 +231,23 @@
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
+(deftest delete-collection-with-json-response-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        _ (index/wait-until-indexed)
+        response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
+                                                                     :raw? true})
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :json response)]
+     (is (= "C1200000000-PROV1" concept-id))
+    (is (= 2 revision-id))))
+
+(deftest delete-collection-with-xml-response-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        _ (index/wait-until-indexed)
+        response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
+                                                                     :raw? true})
+        {:keys [concept-id revision-id]} (ingest/parse-ingest-response-as :xml response)]
+     (is (= "C1200000000-PROV1" concept-id))
+    (is (= 2 revision-id))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test

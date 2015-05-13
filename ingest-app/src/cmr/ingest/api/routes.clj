@@ -194,8 +194,7 @@
           (POST "/" {:keys [body content-type headers request-context]}
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info "Validating Collection" (concept->loggable-string concept))
-              (generate-response headers (ingest/validate-concept request-context concept))
-              {:status 200})))
+              (generate-response headers (ingest/validate-concept request-context concept)))))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -213,11 +212,11 @@
               (acl/verify-ingest-management-permission
                 context :update :provider-object provider-id)
               (info "Deleting collection" (pr-str concept-attribs))
-              (r/response (ingest/delete-concept request-context concept-attribs)))))
+              (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" request
-            (validate-granule provider-id native-id request)
+            (generate-response (:headers request) (validate-granule provider-id native-id request))
             {:status 200}))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
@@ -227,7 +226,7 @@
                 context :update :provider-object provider-id)
               (let [concept (body->concept :granule provider-id native-id body content-type headers)]
                 (info "Ingesting granule" (concept->loggable-string concept))
-                (r/response (ingest/save-concept request-context concept)))))
+                (generate-response headers (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
