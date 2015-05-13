@@ -26,7 +26,7 @@
     {:short-name (cx/string-at-path platform-elem [:Short_Name])
      :long-name (cx/string-at-path platform-elem [:Long_Name])
      :type (cx/string-at-path platform-elem [:Type])
-     :instrument (inst/xml-elem->Instruments platform-elem)
+     :instruments (inst/xml-elem->Instruments platform-elem)
      :characteristics (char/xml-elem->Characteristics platform-elem)}))
 
 (defn xml-elem->Platforms

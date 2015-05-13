@@ -15,13 +15,111 @@
             [cmr.umm.collection :as umm-c]
             [cmr.umm.dif10.core :as dif10]
             [cmr.spatial.mbr :as m]
+            [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
+
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
                (empty? (c/validate-xml xml)))))
+
+(defn- related-urls->expected-parsed
+  [related-urls]
+  (if (empty? related-urls)
+    [(umm-c/map->RelatedURL {:url "Not provided"})]
+    (seq (map #(umm-c/map->RelatedURL (dissoc % :mime-type :size)) related-urls))))
+
+(defn- publication-references->expected-parsed
+  [publication-references]
+  (seq (map #(umm-c/map->PublicationReference (dissoc % :doi)) publication-references)))
+
+(defn- spatial-coverage->expected-parsed
+  [spatial-coverage]
+  (if (nil? spatial-coverage)
+    (umm-c/map->SpatialCoverage {:granule-spatial-representation :cartesian})
+    (update-in spatial-coverage [:geometries] #(when (some? %) [(first %)]))))
+
+(defn- product->expected-parsed
+  [short-name long-name]
+    (fn [product]
+      (-> product
+          (assoc-in [:short-name] short-name)
+          (assoc-in [:long-name] long-name)
+          (dissoc :processing-level-id)
+          (dissoc :version-description)
+          umm-c/map->Product)))
+
+(defn- science-keywords->expected-parsed
+  [science-keywords]
+  (if (empty? science-keywords)
+    [(umm-c/map->ScienceKeyword {:category "Not provided"
+                                 :topic    "Not provided"
+                                 :term     "Not provided"})]
+    science-keywords))
+
+(defn- platform-type->expected-parsed
+  [type]
+  (if (platform/PLATFORM_TYPES type) type "Not provided"))
+
+(defn- instrument->expected-parsed
+  [instruments]
+  (if (empty? instruments)
+    [(umm-c/map->Instrument {:short-name "Not provided"})]
+    instruments))
+
+(defn- platforms->expected-parsed
+  [platforms]
+  (if (empty? platforms)
+    [(umm-c/map->Platform
+       {:type "Not provided"
+        :short-name "Not provided"
+        :instruments [(umm-c/map->Instrument {:short-name "Not provided"})]})]
+    (for [platform platforms]
+      (-> platform
+          (update-in [:type] platform-type->expected-parsed)
+          (update-in [:instruments] instrument->expected-parsed)))))
+
+(defn- projects->expected-parsed
+  [projects]
+  (if (empty? projects)
+    [(umm-c/map->Project {:short-name "Not provided"})]
+    projects))
+
+(defn- umm->expected-parsed-dif10
+  "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record"
+  [coll]
+  (let [short-name (:entry-id coll)
+        long-name (:entry-title coll)]
+    (-> coll
+        (update-in [:science-keywords] science-keywords->expected-parsed)
+        (update-in [:platforms] platforms->expected-parsed)
+        (update-in [:projects] projects->expected-parsed)
+        (update-in  [:product] (product->expected-parsed short-name long-name))
+        (dissoc :spatial-keywords)
+        (dissoc :associated-difs)
+        (dissoc :access-value)
+
+        (update-in [:related-urls] related-urls->expected-parsed)
+        (dissoc :metadata-language)
+        (dissoc :collection-associations)
+        (dissoc :personnel)
+        (dissoc :quality)
+        (dissoc :temporal-keywords)
+        (dissoc :two-d-coordinate-systems)
+        (update-in [:publication-references] publication-references->expected-parsed)
+        (dissoc :product-specific-attributes)
+        (dissoc :use-constraints)
+        (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+        umm-c/map->UmmCollection)))
+
+(defspec generate-and-parse-collection-test 100
+  (for-all [collection coll-gen/collections]
+           (let [expected (umm->expected-parsed-dif10 collection)
+                 xml (dif10/umm->dif10-xml collection)
+                 actual (c/parse-collection xml)]
+             (= expected actual))))
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -112,7 +210,7 @@
 
 (deftest parse-collection-test
   (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "minimal_dif_dataset_001"
+                   {:entry-id "minimal_dif_dataset"
                     :entry-title "A minimal dif dataset"
                     :summary "summary of the dataset"
                     :purpose "A grand purpose"
@@ -143,7 +241,7 @@
                                   {:short-name "Short Name"
                                    :long-name "Long Name"
                                    :type "In Situ Land-based Platforms"
-                                   :instrument [(umm-c/map->Instrument
+                                   :instruments [(umm-c/map->Instrument
                                                   {:short-name "Short Name"})]})]
                     :projects [(umm-c/map->Project
                                  {:short-name "short name"})]

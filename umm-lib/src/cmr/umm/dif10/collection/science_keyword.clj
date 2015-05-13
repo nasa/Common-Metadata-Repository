@@ -36,8 +36,8 @@
                  (gu/optional-elem :Variable_Level_2 variable-level-2)
                  (gu/optional-elem :Variable_Level_3 variable-level-3)
                  (gu/optional-elem :Detailed_Variable detailed-variable)))
-    ;; Added since Science Keywords is a required field in DIF10, CMRIN-79
+    ;; Added since Science Keywords is a required field in DIF10. CMRIN-79
     (x/element :Science_Keywords {}
-               (x/element :Category {} "Not Provided")
-               (x/element :Topic {} "Not Provided")
-               (x/element :Term {} "Not Provided"))))
+               (x/element :Category {} "Not provided")
+               (x/element :Topic {} "Not provided")
+               (x/element :Term {} "Not provided"))))

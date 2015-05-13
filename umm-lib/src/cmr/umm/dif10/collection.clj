@@ -48,7 +48,7 @@
   [xml-struct]
   (let [product (xml-elem->Product xml-struct)]
     (c/map->UmmCollection
-      {:entry-id (str (:short-name product) "_" (:version-id product))
+      {:entry-id (:short-name product)
        :entry-title (cx/string-at-path xml-struct [:Entry_Title])
        :summary (cx/string-at-path xml-struct [:Summary :Abstract])
        :purpose (cx/string-at-path xml-struct [:Summary :Purpose])

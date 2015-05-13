@@ -48,7 +48,7 @@
        :precision-of-seconds (cx/long-at-path temporal-element [:Precision_Of_Seconds])
        :ends-at-present-flag (cx/bool-at-path temporal-element [:Ends_At_Present_Flag])
        :range-date-times (xml-elem->RangeDateTimes temporal-element)
-       :single-date-times (cx/datetimes-at-path temporal-element [:Single_Date_Time])
+       :single-date-times (cx/datetimes-at-path temporal-element [:Single_DateTime])
        :periodic-date-times (xml-elem->PeriodicDateTimes temporal-element)})))
 
 (defn generate-temporal
