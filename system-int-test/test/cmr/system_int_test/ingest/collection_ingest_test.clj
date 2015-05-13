@@ -62,37 +62,54 @@
   (cmr.metadata-db.int-test.utility/find-concepts :collection
                                                   {:provider-id "PROV1"}))
 
-;; Verify that the accept header for json works
-(deftest return-json-response-test
-  (let [concept (dc/collection-concept {})
-        response (ingest/ingest-concept concept {:accept-format :json :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-    (is (= "C1200000000-PROV1" concept-id))
-    (is (= 1 revision-id))))
+;; Verify that the accept header works
+(deftest collection-ingest-accept-header-response-test
+  (testing "json response"
+    (let [concept (dc/collection-concept {})
+          response (ingest/ingest-concept concept {:accept-format :json :raw? true})
+          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
+      (is (= "C1200000000-PROV1" concept-id))
+      (is (= 1 revision-id))))
+  (testing "xml response"
+    (let [concept (dc/collection-concept {})
+          response (ingest/ingest-concept concept {:accept-format :xml :raw? true})
+          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
+      (is (= "C1200000001-PROV1" concept-id))
+      (is (= 1 revision-id)))))
 
-; Verify that the accept header for xml works
-(deftest return-xml-response-test
-  (let [concept (dc/collection-concept {})
-        response (ingest/ingest-concept concept {:accept-format :xml :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-    (is (= "C1200000000-PROV1" concept-id))
-    (is (= 1 revision-id))))
+;; Verify that the accept header works with returned errors
+(deftest collection-ingest-with-errors-accept-header-test
+  (testing "json response"
+    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+          response (ingest/ingest-concept concept-with-empty-body
+                                          {:accept-format :json :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-response :json response)]
+      (is (re-find #"XML content is too short." (first errors)))))
+  (testing "xml response"
+    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+          response (ingest/ingest-concept concept-with-empty-body
+                                          {:accept-format :xml :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-response :xml response)]
+      (is (re-find #"XML content is too short." (first errors))))))
 
-;; Verify that the accept header for json works with returned errors
-(deftest empty-collection-ingest-json-test
-  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
-        response (ingest/ingest-concept concept-with-empty-body
-                                        {:accept-format :json :raw? true})
-        {:keys [errors]} (ingest/parse-ingest-response :json response)]
-    (is (re-find #"XML content is too short." (first errors)))))
-
-;; Verify that the accept header for xml works with returned errors
-(deftest empty-collection-ingest-xml-test
-  (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
-        response (ingest/ingest-concept concept-with-empty-body
-                                        {:accept-format :xml :raw? true})
-        {:keys [errors]} (ingest/parse-ingest-response :xml response)]
-    (is (re-find #"XML content is too short." (first errors)))))
+;; Verify that the accept header works with deletions
+(deftest delete-collection-with-accept-header-test
+  (testing "json response"
+    (let [coll1 (d/ingest "PROV1" (dc/collection))
+          _ (index/wait-until-indexed)
+          response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
+                                                                           :raw? true})
+          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
+      (is (= "C1200000000-PROV1" concept-id))
+      (is (= 2 revision-id))))
+  (testing "xml response"
+    (let [coll1 (d/ingest "PROV1" (dc/collection))
+          _ (index/wait-until-indexed)
+          response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
+                                                                           :raw? true})
+          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
+      (is (= "C1200000001-PROV1" concept-id))
+      (is (= 2 revision-id)))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
@@ -230,24 +247,6 @@
     (is (d/refs-match?
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
-
-(deftest delete-collection-with-json-response-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        _ (index/wait-until-indexed)
-        response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
-                                                                     :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-     (is (= "C1200000000-PROV1" concept-id))
-    (is (= 2 revision-id))))
-
-(deftest delete-collection-with-xml-response-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection))
-        _ (index/wait-until-indexed)
-        response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
-                                                                     :raw? true})
-        {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-     (is (= "C1200000000-PROV1" concept-id))
-    (is (= 2 revision-id))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test

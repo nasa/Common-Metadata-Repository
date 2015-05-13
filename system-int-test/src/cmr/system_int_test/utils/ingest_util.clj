@@ -148,8 +148,8 @@
     response-format))
 
 (defmethod parse-ingest-response :xml
-  [response-format body]
-  (let [xml-elem (x/parse-str body)]
+  [response-format response]
+  (let [xml-elem (x/parse-str (:body response))]
     (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
       (parse-xml-error-response-elem xml-elem)
       (let [concept-id (cx/string-at-path xml-elem [:concept-id])
@@ -157,8 +157,8 @@
         {:concept-id concept-id :revision-id revision-id}))))
 
 (defmethod parse-ingest-response :json
-  [response-format body]
-  (json/decode body true))
+  [response-format response]
+  (json/decode (:body response) true))
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
@@ -181,11 +181,10 @@
                      :headers headers
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (:body response)]
+                     :connection-manager (s/conn-mgr)})]
      (if raw?
-       body
-       (assoc (parse-ingest-response accept-format body)
+       response
+       (assoc (parse-ingest-response accept-format response)
               :status
               (:status response))))))
 
@@ -227,11 +226,10 @@
                      :headers headers
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (:body response)]
+                     :connection-manager (s/conn-mgr)})]
      (if raw?
-       body
-       (assoc (parse-ingest-response accept-format body)
+       response
+       (assoc (parse-ingest-response accept-format response)
               :status
               (:status response))))))
 
@@ -310,11 +308,10 @@
                      :headers (merge {} (when token {"Echo-Token" token}))
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (:body response)]
+                     :connection-manager (s/conn-mgr)})]
      (if raw?
-       body
-       (assoc (parse-ingest-response accept-format body)
+       response
+       (assoc (parse-ingest-response accept-format response)
               :status
               (:status response))))))
 
