@@ -278,6 +278,9 @@
      other-reference-details
      ])
 
+(def collection-progress-states
+  [:planned :in-work :complete])
+
 (defrecord UmmCollection
   [
    ;; A combination of shortname and version id with an underscore.
@@ -345,6 +348,8 @@
    ;; pertaining to the data.
    publication-references
 
+   ;; keyword; one of the values defined in collection-progress-states
+   collection-progress
    ])
 
 
