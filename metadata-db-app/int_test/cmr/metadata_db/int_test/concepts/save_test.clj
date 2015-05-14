@@ -3,12 +3,12 @@
   checking for proper error handling."
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
-            [cheshire.core :as cheshire]
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
             [cmr.metadata-db.int-test.utility :as util]
-            [cmr.metadata-db.services.messages :as msg]))
+            [cmr.metadata-db.services.messages :as msg]
+            [cmr.metadata-db.services.concept-constraints :as cc]))
 
 
 ;;; fixtures
@@ -150,7 +150,7 @@
                (select-keys response [:status :errors])))))
 
     (testing "with incorrect concept id matching another concept"
-      (let [granule2 (util/granule-concept "PROV1" parent-collection-id 1
+      (let [granule2 (util/granule-concept "PROV1" parent-collection-id 2
                                            {:concept-id "G11-PROV1"
                                             :native-id "native2"})
             _ (is (= 201 (:status (util/save-concept granule2))))
@@ -205,9 +205,10 @@
         (is (= [existing-collection]
                (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
 
-;; TODO Uncomment this test when implementing CMR-1239
-#_(deftest save-granule-post-commit-constraint-violations
+(deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
+    ;; Turn on enforcement of duplicate granule UR constraint
+    (cc/set-enforce-granule-ur-constraint! true)
     (let [collection (util/collection-concept "PROV1" 1)
           parent-collection-id (:concept-id (util/save-concept collection))
           existing-granule (util/granule-concept "PROV1" parent-collection-id 1
@@ -232,5 +233,11 @@
       (let [found-concepts (util/find-concepts :granule
                                                {:granule-ur "GR-UR1" :provider-id "PROV1"})]
         (is (= [existing-granule]
-               (map #(dissoc % :revision-date) (:concepts found-concepts))))))))
-
+               (map #(dissoc % :revision-date) (:concepts found-concepts)))))
+      (testing "duplicate granule URs are allowed when the constraint is configured as off"
+        (cc/set-enforce-granule-ur-constraint! false)
+        (is (= {:status 201
+                :revision-id (:revision-id test-granule)
+                :concept-id (:concept-id test-granule)
+                :errors nil}
+               (util/save-concept test-granule)))))))

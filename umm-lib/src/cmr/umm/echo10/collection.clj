@@ -2,12 +2,14 @@
   "Contains functions for parsing and generating the ECHO10 dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
+            [clojure.string :as string]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.personnel :as pe]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
+            [cmr.umm.echo10.collection.progress :as progress]
             [cmr.umm.echo10.collection.platform :as platform]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.collection-association :as ca]
@@ -19,6 +21,8 @@
             [cmr.umm.echo10.core]
             [camel-snake-kebab.core :as csk])
   (:import cmr.umm.collection.UmmCollection))
+
+;; Parsing XML Structures
 
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
@@ -126,12 +130,15 @@
        :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
-       :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))})))
+       :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))
+       :collection-progress (progress/parse xml-struct)})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
+
+;; Generating XML
 
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmCollection
@@ -173,6 +180,7 @@
                     (org/generate-archive-center organizations)
                     (when version-description
                       (x/element :VersionDescription {} version-description))
+                    (progress/generate collection)
                     (when restriction-flag
                       (x/element :RestrictionFlag {} restriction-flag))
                     (when spatial-keywords

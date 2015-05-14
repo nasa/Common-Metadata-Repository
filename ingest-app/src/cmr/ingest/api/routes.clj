@@ -233,7 +233,7 @@
               (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; Add routes for API documentation
-      (api-docs/docs-routes (:relative-root-url system))
+      (api-docs/docs-routes (:relative-root-url system) "public/ingest_index.html")
 
       ;; add routes for managing jobs
       (common-routes/job-api-routes

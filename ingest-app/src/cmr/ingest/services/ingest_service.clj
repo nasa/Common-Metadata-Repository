@@ -90,11 +90,12 @@
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
   [context concept granule collection-concept]
-  (let [{:keys [collection-ref granule-ur]
+  (let [{:keys [granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
         parent-collection-id (:concept-id collection-concept)]
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
-                                  :delete-time (when delete-time (str delete-time))})))
+                                  :delete-time (when delete-time (str delete-time))
+                                  :granule-ur granule-ur})))
 
 (defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.

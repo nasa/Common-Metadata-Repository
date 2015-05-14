@@ -11,6 +11,8 @@
 
 (def optional-short-string (ext-gen/optional (ext-gen/string-ascii 1 10)))
 
+(def optional-url (ext-gen/optional ext-gen/file-url-string))
+
 (def optional-number (ext-gen/optional (gen/choose 1 1000)))
 
 (def short-names
@@ -238,21 +240,24 @@
   (gen/fmap (fn [ref-map]
               (c/map->PublicationReference ref-map))
             (gen/hash-map
-             :author optional-short-string
-             :publication-date optional-short-string
-             :title optional-short-string
-             :series optional-short-string
-             :edition optional-short-string
-             :volume optional-short-string
-             :issue optional-short-string
-             :report-number optional-short-string
-             :publication-place optional-short-string
-             :publisher optional-short-string
-             :pages optional-short-string
-             :isbn optional-short-string
-             :doi optional-short-string
-             :related-url optional-short-string
-             :other-reference-details optional-short-string)))
+              :author optional-short-string
+              :publication-date optional-short-string
+              :title optional-short-string
+              :series optional-short-string
+              :edition optional-short-string
+              :volume optional-short-string
+              :issue optional-short-string
+              :report-number optional-short-string
+              :publication-place optional-short-string
+              :publisher optional-short-string
+              :pages optional-short-string
+              :isbn optional-short-string
+              :doi optional-short-string
+              :related-url optional-url
+              :other-reference-details optional-short-string)))
+
+(def collection-progress
+  (ext-gen/optional (gen/elements c/collection-progress-states)))
 
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
@@ -285,7 +290,8 @@
                 :associated-difs (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :spatial-coverage (ext-gen/optional spatial-coverages)
                 :publication-references (ext-gen/nil-if-empty (gen/vector publication-references 0 3))
-                :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3)))
+                :personnel (ext-gen/nil-if-empty (gen/vector personnels 0 3))
+                :collection-progress collection-progress)
               (ext-gen/optional processing-center-organizations)
               (ext-gen/optional archive-center-organizations)
               (gen/vector distribution-center-organizations 1 3))))
