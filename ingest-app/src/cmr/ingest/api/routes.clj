@@ -31,7 +31,7 @@
 
 (def valid-response-mime-types
   "Supported ingest response formats"
-  #{"application/xml" "application/json"})
+  #{"*/*" "application/xml" "application/json"})
 
 (def content-type-mime-type->response-format
   "A map of mime-types to supported response format"
@@ -50,8 +50,8 @@
 
   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <result>
-  <revision-id>1</revision-id>
-  <concept-id>C1-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <concept-id>C1-PROV1</concept-id>
   </result>"
   [m pretty?]
   (let [emit-fn (if pretty? x/indent-str x/emit-str)]
@@ -65,7 +65,6 @@
 (comment
 
   (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
-
   )
 
 (defn- get-ingest-result-format
@@ -74,10 +73,15 @@
    (get-ingest-result-format
      headers (set (keys content-type-mime-type->response-format)) default-format))
   ([headers valid-mime-types default-format]
-   (get content-type-mime-type->response-format
-        (or (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
-            (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
-        default-format)))
+   (let [accept-mime-type (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
+         content-mime-type (mt/extract-header-mime-type valid-mime-types headers "content-type" false)
+         ;; Use the accept-mime-type if available, but prefer the content-mime-type if the
+         ;; accept-mime-type is "*/*"
+         preferred-mime-type (if (= "*/*" accept-mime-type)
+                               (or content-mime-type accept-mime-type)
+                               (or accept-mime-type content-mime-type))]
+
+     (get content-type-mime-type->response-format preferred-mime-type default-format))))
 
 (defmulti generate-response
   "Convert a result to a proper response format"

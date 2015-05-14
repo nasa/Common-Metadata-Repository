@@ -103,14 +103,12 @@
       (let [granule (d/item->concept (dg/granule collection))
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})
             {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-        (index/wait-until-indexed)
         (is (= "G1200000001-PROV1" concept-id))
         (is (= 1 revision-id))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection))
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
             {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-        (index/wait-until-indexed)
         (is (= "G1200000002-PROV1" concept-id))
         (is (= 1 revision-id))))))
 
@@ -182,7 +180,9 @@
 (deftest missing-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept (dg/granule collection))
-        {:keys [status errors]} (ingest/ingest-concept (assoc granule :format ""))]
+        response (ingest/ingest-concept (assoc granule :format "") {:accept-format :json :raw? true})
+         status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
@@ -191,7 +191,9 @@
 (deftest invalid-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept (dg/granule collection))
-        {:keys [status errors]} (ingest/ingest-concept (assoc granule :format "blah"))]
+        response (ingest/ingest-concept (assoc granule :format "blah") {:accept-format :json :raw? true})
+        status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))

@@ -111,6 +111,25 @@
       (is (= "C1200000001-PROV1" concept-id))
       (is (= 2 revision-id)))))
 
+;; Verify that xml response is returned for ingests of xml content type
+(deftest collection-ingest-with-reponse-format-from-content-type
+  (testing "echo10"
+    (let [concept (dc/collection-concept {:concept-id "C1-PROV1"} :echo10)
+          response (ingest/ingest-concept concept {:raw? true})]
+      (is (= {:concept-id "C1-PROV1" :revision-id 1}
+             (ingest/parse-ingest-response :xml response)))))
+  (testing "dif"
+    (let [concept (d/item->concept (assoc (dc/collection-dif {:concept-id "C2-PROV1"})
+                         :provider-id "PROV1") :dif)
+          response (ingest/ingest-concept concept {:raw? true})]
+      (is (= {:concept-id "C2-PROV1" :revision-id 1}
+            (ingest/parse-ingest-response :xml response)))))
+  (testing "iso"
+    (let [concept (dc/collection-concept {:concept-id "C3-PROV1"} :iso-smap)
+          response (ingest/ingest-concept concept {:raw? true})]
+      (is (= {:concept-id "C3-PROV1" :revision-id 1}
+            (ingest/parse-ingest-response :xml response))))))
+
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
@@ -259,17 +278,21 @@
 ;; Verify ingest behaves properly if request is missing content type.
 (deftest missing-content-type-ingest-test
   (let [concept-with-no-content-type  (assoc (dc/collection-concept {}) :format "")
-        {:keys [status errors]} (ingest/ingest-concept concept-with-no-content-type)]
+        response (ingest/ingest-concept concept-with-no-content-type {:accept-format :json :raw? true})
+        status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
-    (is (= status 400))
+    (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
 (deftest invalid-content-type-ingest-test
   (let [concept (assoc (dc/collection-concept {}) :format "blah")
-        {:keys [status errors]} (ingest/ingest-concept concept)]
+        response (ingest/ingest-concept concept {:accept-format :json :raw? true})
+        status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
-    (is (= status 400))
+    (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.

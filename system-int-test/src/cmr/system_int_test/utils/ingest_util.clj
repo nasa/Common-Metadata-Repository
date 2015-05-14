@@ -107,7 +107,7 @@
     (is (= 200 (:status response)))))
 
 (defn- fix-error-path
-  "Convert the error path string into a sequence with elment conversion to integers where possible"
+  "Convert the error path string into a sequence with element conversion to integers where possible"
   [path]
   (when path
     (let [p (str/split path #"/")]
@@ -167,24 +167,48 @@
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token]} options
-         accept-format (get options :accept-format :json)
+         accept-format (get options :accept-format)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token})
-         response (client/request
-                    {:method :put
+         params {:method :put
                      :url (url/ingest-url provider-id concept-type native-id)
                      :body  metadata
                      :content-type format
                      :headers headers
-                     :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})]
+                     :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))
+         response (client/request params)]
      (if raw?
        response
-       (assoc (parse-ingest-response accept-format response)
+       (assoc (parse-ingest-response (or accept-format :xml) response)
+              :status
+              (:status response))))))
+
+(defn delete-concept
+  "Delete a given concept."
+  ([concept]
+   (delete-concept concept {}))
+  ([concept options]
+   (let [{:keys [provider-id concept-type native-id]} concept
+         {:keys [token] :as options} options
+         accept-format (get options :accept-format)
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
+         params {:method :delete
+                     :url (url/ingest-url provider-id concept-type native-id)
+                     :headers (merge {} (when token {"Echo-Token" token}))
+                     :accept accept-format
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))
+         response (client/request params)]
+     (if raw?
+       response
+       (assoc (parse-ingest-response (or accept-format :json) response)
               :status
               (:status response))))))
 
@@ -291,29 +315,6 @@
                     :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
-
-(defn delete-concept
-  "Delete a given concept."
-  ([concept]
-   (delete-concept concept {}))
-  ([concept options]
-   (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token] :as options} options
-         accept-format (get options :accept-format :json)
-         ;; added to allow testing of the raw response
-         raw? (get options :raw? false)
-         response (client/request
-                    {:method :delete
-                     :url (url/ingest-url provider-id concept-type native-id)
-                     :headers (merge {} (when token {"Echo-Token" token}))
-                     :accept accept-format
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})]
-     (if raw?
-       response
-       (assoc (parse-ingest-response accept-format response)
-              :status
-              (:status response))))))
 
 (defn ingest-concepts
   "Ingests all the given concepts assuming that they should all be successful."
