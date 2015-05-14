@@ -15,6 +15,7 @@
             [cmr.umm.dif10.collection.spatial :as s]
             [cmr.umm.dif10.collection.org :as org]
             [cmr.umm.dif10.collection.platform :as platform]
+            [cmr.umm.dif10.collection.progress :as progress]
             [cmr.umm.dif10.collection.related-url :as ru]
             [cmr.umm.dif10.collection.reference :as ref])
   (:import cmr.umm.collection.UmmCollection))
@@ -63,7 +64,8 @@
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
-       :publication-references (ref/xml-elem->References xml-struct)})))
+       :publication-references (ref/xml-elem->References xml-struct)
+       :collection-progress (progress/parse xml-struct)})))
 
 (defn parse-collection
   "Parses DIF 10 XML into a UMM Collection record."
@@ -97,6 +99,7 @@
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
+                    (progress/generate collection)
                     (s/generate-spatial-coverage spatial-coverage)
                     (pj/generate-projects projects)
                     (org/generate-organizations organizations)
