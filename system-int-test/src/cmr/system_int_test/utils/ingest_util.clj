@@ -3,6 +3,8 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.system-int-test.data2.provider-holdings :as ph]
@@ -13,7 +15,8 @@
             [cmr.mock-echo.client.echo-util :as echo-util]
             [cmr.common.util :as util]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util])
+  (:import [java.lang.NumberFormatException]))
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
@@ -103,6 +106,60 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
+(defn- fix-error-path
+  "Convert the error path string into a sequence with element conversion to integers where possible"
+  [path]
+  (when path
+    (let [p (str/split path #"/")]
+      (map (fn [v]
+             (try
+               (Integer. v)
+               (catch NumberFormatException e
+                 v)))
+           p))))
+
+(comment
+
+  (fix-error-path "SpatialCoverage/Geometries/0")
+  (fix-error-path "SpatialCoverage/1/Geometries")
+  )
+
+(defn- parse-xml-error-elem
+  "Parse an xml error entry. If this contains a path then we need to return map with a :path
+  and an :errors tag. Otherwise, just return the list of error messages."
+  [elem]
+  (if-let [path (fix-error-path (cx/string-at-path elem [:path]))]
+    (let [errors (cx/strings-at-path elem [:errors :error])]
+      {:errors errors :path path})
+    (first (:content elem))))
+
+(defn- parse-xml-error-response-elem
+  "Parse an xml error response element"
+  [elem]
+  (let [{:keys [tag content]} elem
+        expanded-content (map parse-xml-error-response-elem content)]
+    (if (= :error tag)
+      (parse-xml-error-elem elem)
+      {tag expanded-content})))
+
+(defmulti parse-ingest-response
+  "Parse the ingest response as a given format"
+  (fn [response-format body]
+    response-format))
+
+(defmethod parse-ingest-response :xml
+  [response-format response]
+  (let [xml-elem (x/parse-str (:body response))]
+    (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      (parse-xml-error-response-elem xml-elem)
+      (let [concept-id (cx/string-at-path xml-elem [:concept-id])
+            revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))]
+        {:concept-id concept-id :revision-id revision-id}))))
+
+(defmethod parse-ingest-response :json
+  [response-format response]
+  (json/decode (:body response) true))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]
@@ -110,22 +167,52 @@
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id]} options
-         accept-format (get options :accept :json)
+         accept-format (get options :accept-format)
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token
                                         "Client-Id" client-id})
-         response (client/request
-                    {:method :put
-                     :url (url/ingest-url provider-id concept-type native-id)
-                     :body  metadata
-                     :content-type format
-                     :headers headers
-                     :accept accept-format
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+         params {:method :put
+                 :url (url/ingest-url provider-id concept-type native-id)
+                 :body  metadata
+                 :content-type format
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))
+         response (client/request params)]
+     (if raw?
+       response
+       (assoc (parse-ingest-response (or accept-format :xml) response)
+              :status
+              (:status response))))))
+
+(defn delete-concept
+  "Delete a given concept."
+  ([concept]
+   (delete-concept concept {}))
+  ([concept options]
+   (let [{:keys [provider-id concept-type native-id]} concept
+         {:keys [token client-id accept-format]} options
+         headers (util/remove-nil-keys {"Echo-Token" token
+                                        "Client-Id" client-id})
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
+         params {:method :delete
+                 :url (url/ingest-url provider-id concept-type native-id)
+                 :headers headers
+                 :accept accept-format
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))
+         response (client/request params)]
+     (if raw?
+       response
+       (assoc (parse-ingest-response (or accept-format :json) response)
+              :status
+              (:status response))))))
 
 (defn multipart-param-request
   "Submits a multipart parameter request to the given url with the multipart parameters indicated.
@@ -153,10 +240,12 @@
    (validate-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id]} options
+         {:keys [client-id]} options
+         accept-format (get options :accept-format :json)
+         ;; added to allow testing of the raw response
+         raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
-                                        "Echo-Token" token
                                         "Client-Id" client-id})
          response (client/request
                     {:method :post
@@ -164,11 +253,14 @@
                      :body  metadata
                      :content-type format
                      :headers headers
-                     :accept :json
+                     :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
+                     :connection-manager (s/conn-mgr)})]
+     (if raw?
+       response
+       (assoc (parse-ingest-response accept-format response)
+              :status
+              (:status response))))))
 
 (defn validate-granule
   "Validates a granule concept by sending it and optionally its parent collection to the validation
@@ -228,26 +320,6 @@
                     :connection-manager (s/conn-mgr)})
         body (json/decode (:body response) true)]
     (assoc body :status (:status response))))
-
-(defn delete-concept
-  "Delete a given concept."
-  ([concept]
-   (delete-concept concept {}))
-  ([concept options]
-   (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token client-id]} options
-         headers (util/remove-nil-keys {"Echo-Token" token
-                                        "Client-Id" client-id})
-         response (client/request
-                    {:method :delete
-                     :url (url/ingest-url provider-id concept-type native-id)
-                     :headers headers
-                     :accept :json
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
-
 
 (defn ingest-concepts
   "Ingests all the given concepts assuming that they should all be successful."

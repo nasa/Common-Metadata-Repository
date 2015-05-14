@@ -2,6 +2,7 @@
   "Provides functions for handling mime types."
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
+            [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
 (def base-mime-type-to-format
@@ -82,6 +83,18 @@
   [search-path-w-extension]
   (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
     (format->mime-type (keyword extension))))
+
+(defn extract-header-mime-type
+  "Extracts the given header value from the headers and returns the first valid preferred mime type.
+  If validate? is true it will throw an error if the header was passed by the client but no mime type
+  in the header value was acceptable."
+  [valid-mime-types headers header validate?]
+  (when-let [header-value (get headers header)]
+    (or (some valid-mime-types (extract-mime-types header-value))
+        (when validate?
+          (svc-errors/throw-service-error
+            :bad-request (format "The mime types specified in the %s header [%s] are not supported."
+                                 header header-value))))))
 
 (defn get-results-format
   "Returns the requested results format parsed from the URL extension.  If the URL extension does

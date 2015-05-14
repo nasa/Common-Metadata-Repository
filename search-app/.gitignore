@@ -13,4 +13,4 @@ pom.xml.asc
 .lein-repl-history
 .nrepl-port
 testreports.xml
-/resources/public/site/search_api_docs.html
+/resources/public/site
