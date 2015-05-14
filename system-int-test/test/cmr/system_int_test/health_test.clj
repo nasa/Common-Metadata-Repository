@@ -43,7 +43,10 @@
     (is (= [200 {:elastic_search {:ok? true}
                  :echo {:ok? true}
                  :metadata-db good-metadata-db-health
-                 :index-set good-index-set-db-health}]
+                 :index-set good-index-set-db-health
+                 :cubby {:ok? true,
+                         :dependencies
+                         {:elastic_search {:ok? true}, :echo {:ok? true}}}}]
            (get-app-health (url/indexer-health-url))))))
 
 (deftest ingest-health-test
@@ -54,6 +57,9 @@
                  :indexer {:ok? true
                            :dependencies {:elastic_search {:ok? true}
                                           :echo {:ok? true}
+                                          :cubby {:ok? true,
+                                                  :dependencies
+                                                  {:elastic_search {:ok? true}, :echo {:ok? true}}}
                                           :metadata-db good-metadata-db-health
                                           :index-set good-index-set-db-health}}}]
            (get-app-health (url/ingest-health-url))))))
@@ -72,6 +78,9 @@
                  :indexer {:ok? true
                            :dependencies {:elastic_search {:ok? true}
                                           :echo {:ok? true}
+                                          :cubby {:ok? true,
+                                                  :dependencies
+                                                  {:elastic_search {:ok? true}, :echo {:ok? true}}}
                                           :metadata-db good-metadata-db-health
                                           :index-set good-index-set-db-health}}}]
            (get-app-health (url/bootstrap-health-url))))))
