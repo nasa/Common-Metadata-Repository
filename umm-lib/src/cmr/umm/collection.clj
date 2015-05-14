@@ -144,7 +144,11 @@
    coordinate-2
    ])
 
-(def organization-types [:archive-center :processing-center :distribution-center])
+;; Note:archive-center is roughly equivalent to Custodian in ISO Role code list on which UMM relies
+(def organization-types [:archive-center
+                         :processing-center
+                         :distribution-center
+                         :originating-center])
 
 ;; See CMR-202 issue description
 (defrecord Organization

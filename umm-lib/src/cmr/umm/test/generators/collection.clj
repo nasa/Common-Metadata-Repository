@@ -11,6 +11,8 @@
 
 (def optional-short-string (ext-gen/optional (ext-gen/string-ascii 1 10)))
 
+(def optional-url (ext-gen/optional ext-gen/file-url-string))
+
 (def optional-number (ext-gen/optional (gen/choose 1 1000)))
 
 (def short-names
@@ -238,21 +240,21 @@
   (gen/fmap (fn [ref-map]
               (c/map->PublicationReference ref-map))
             (gen/hash-map
-             :author optional-short-string
-             :publication-date optional-short-string
-             :title optional-short-string
-             :series optional-short-string
-             :edition optional-short-string
-             :volume optional-short-string
-             :issue optional-short-string
-             :report-number optional-short-string
-             :publication-place optional-short-string
-             :publisher optional-short-string
-             :pages optional-short-string
-             :isbn optional-short-string
-             :doi optional-short-string
-             :related-url optional-short-string
-             :other-reference-details optional-short-string)))
+              :author optional-short-string
+              :publication-date optional-short-string
+              :title optional-short-string
+              :series optional-short-string
+              :edition optional-short-string
+              :volume optional-short-string
+              :issue optional-short-string
+              :report-number optional-short-string
+              :publication-place optional-short-string
+              :publisher optional-short-string
+              :pages optional-short-string
+              :isbn optional-short-string
+              :doi optional-short-string
+              :related-url optional-url
+              :other-reference-details optional-short-string)))
 
 (def collection-progress
   (ext-gen/optional (gen/elements c/collection-progress-states)))
