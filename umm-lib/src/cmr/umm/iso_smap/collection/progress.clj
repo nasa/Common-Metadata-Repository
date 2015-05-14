@@ -5,13 +5,13 @@
             [clojure.string :as string]
             [cmr.common.xml :as cx]))
 
-(def code-list-value-map
+(def umm->iso
   {:planned "planned"
    :in-work "ongoing"
    :complete "completed"})
 
-(def lookup-by-code-value
-  (zipmap (map string/lower-case (vals code-list-value-map))
+(def iso->umm
+  (zipmap (vals code-list-value-map)
           (keys code-list-value-map)))
 
 (defn parse
@@ -23,7 +23,7 @@
                                :MD_DataIdentification :status :MD_ProgressCode])
           (get-in [:attrs :codeListValue])
           string/lower-case
-          lookup-by-code-value))
+          iso->umm))
 
 (def code-list-url
   "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode")
@@ -32,8 +32,8 @@
   "Returns SMAP XML elements representing the collection progress of
   the given collection."
   [{:keys [collection-progress]}]
-  (when-let [value (code-list-value-map collection-progress)]
+  (when-let [value (umm->iso collection-progress)]
     (x/element :gmd:status {}
                (x/element :gmd:MD_ProgressCode {:codeList code-list-url
                                                 :codeListValue value}
-                          (string/upper-case value)))))
+                          value))))
