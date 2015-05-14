@@ -26,3 +26,13 @@
     [db]
     "Delete all providers from the database including their concept tables.  USE WITH CAUTION."))
 
+(defn provider-not-found-error
+  "Error message indicating that the given provider-id does not exist."
+  [provider-id]
+  {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)})
+
+ (defn multiple-matching-providers-error
+   "Error message indicating that multiple providers were found with the same provider id."
+   [provider-id]
+   {:error :internal-server-error
+    :error-message (format "Multiple providers found with id [%s]." provider-id)})
