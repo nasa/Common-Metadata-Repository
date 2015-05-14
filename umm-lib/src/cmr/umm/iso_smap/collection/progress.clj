@@ -11,8 +11,8 @@
    :complete "completed"})
 
 (def iso->umm
-  (zipmap (vals code-list-value-map)
-          (keys code-list-value-map)))
+  (zipmap (vals umm->iso)
+          (keys umm->iso)))
 
 (defn parse
   "Returns a collection progress value parsed from an ISO SMAP
