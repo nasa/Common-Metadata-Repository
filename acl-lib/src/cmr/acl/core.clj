@@ -31,12 +31,17 @@
           CURL_CLIENT_ID))
       UNKNOWN_CLIENT_ID))
 
+(defn add-client-id-to-context
+  "Adds client id to the context"
+  [context headers]
+  (assoc context :client-id (get-client-id headers)))
+
 (defn add-authentication-to-context
   "Adds information to the context including the current token and the client id"
   [context params headers]
   (-> context
       (assoc :token (get-token params headers))
-      (assoc :client-id (get-client-id headers))))
+      (add-client-id-to-context headers)))
 
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified

@@ -85,16 +85,16 @@
 (defn reindex-collection-permitted-groups
   "Tells ingest to run the reindex-collection-permitted-groups job"
   []
-   (let [response (client/post (url/reindex-collection-permitted-groups-url)
-                               {:connection-manager (s/conn-mgr)})]
-     (is (= 200 (:status response)))))
+  (let [response (client/post (url/reindex-collection-permitted-groups-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
 
 (defn reindex-all-collections
   "Tells ingest to run the reindex all collections job"
   []
-   (let [response (client/post (url/reindex-all-collections-url)
-                               {:connection-manager (s/conn-mgr)})]
-     (is (= 200 (:status response)))))
+  (let [response (client/post (url/reindex-all-collections-url)
+                              {:connection-manager (s/conn-mgr)})]
+    (is (= 200 (:status response)))))
 
 (defn cleanup-expired-collections
   "Tells ingest to run the cleanup-expired-collections job"
@@ -109,11 +109,12 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         token (:token options)
+         {:keys [token client-id]} options
          accept-format (get options :accept :json)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
-                                        "Echo-Token" token})
+                                        "Echo-Token" token
+                                        "Client-Id" client-id})
          response (client/request
                     {:method :put
                      :url (url/ingest-url provider-id concept-type native-id)
@@ -148,19 +149,26 @@
 
 (defn validate-concept
   "Validate a concept and return a map with status and error messages if applicable."
-  [{:keys [metadata format concept-type concept-id revision-id provider-id native-id] :as concept}]
-  (let [headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
-        response (client/request
-                   {:method :post
-                    :url (url/validate-url provider-id concept-type native-id)
-                    :body  metadata
-                    :content-type format
-                    :headers headers
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
+  ([concept]
+   (validate-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+         {:keys [token client-id]} options
+         headers (util/remove-nil-keys {"concept-id" concept-id
+                                        "revision-id" revision-id
+                                        "Echo-Token" token
+                                        "Client-Id" client-id})
+         response (client/request
+                    {:method :post
+                     :url (url/validate-url provider-id concept-type native-id)
+                     :body  metadata
+                     :content-type format
+                     :headers headers
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
+     (assoc body :status (:status response)))))
 
 (defn validate-granule
   "Validates a granule concept by sending it and optionally its parent collection to the validation
@@ -224,12 +232,16 @@
 (defn delete-concept
   "Delete a given concept."
   ([concept]
-   (delete-concept concept nil))
-  ([{:keys [provider-id concept-type native-id] :as concept} token]
-   (let [response (client/request
+   (delete-concept concept {}))
+  ([concept options]
+   (let [{:keys [provider-id concept-type native-id]} concept
+         {:keys [token client-id]} options
+         headers (util/remove-nil-keys {"Echo-Token" token
+                                        "Client-Id" client-id})
+         response (client/request
                     {:method :delete
                      :url (url/ingest-url provider-id concept-type native-id)
-                     :headers (merge {} (when token {"Echo-Token" token}))
+                     :headers headers
                      :accept :json
                      :throw-exceptions false
                      :connection-manager (s/conn-mgr)})
@@ -281,7 +293,7 @@
   ([provider-guid provider-id options]
    (let [grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
-         cmr-only (get options :cmr-only false)]
+         cmr-only (get options :cmr-only true)]
 
      (create-mdb-provider provider-id cmr-only)
      (echo-util/create-providers (s/context) {provider-guid provider-id})
@@ -313,3 +325,10 @@
        (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
                                                    :grant-all-ingest? grant-all-ingest?}))
      (f))))
+
+(defn clear-caches
+  "Clears caches in the ingest application"
+  []
+  (client/post (url/ingest-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))

@@ -18,7 +18,8 @@
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.ingest.providers-cache :as pc]))
 
 (def
   ^{:doc "Defines the order to start the components."
@@ -42,6 +43,7 @@
                            `system-holder :db
                            (conj ingest-jobs/jobs (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
+                       pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-acl-cache
                                           (stl-cache/create-single-thread-lookup-cache)
                                           [:system-object :provider-object])}

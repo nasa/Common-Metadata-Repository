@@ -74,7 +74,7 @@
            (url/indexer-read-caches-url) ["acls" "general" "token-imp"]
            (url/index-set-read-caches-url) ["token-imp"]
            (url/mdb-read-caches-url) ["token-imp"]
-           (url/ingest-read-caches-url) ["token-imp" "acls"]
+           (url/ingest-read-caches-url) ["token-imp" "providers" "acls"]
            (url/search-read-caches-url) ["acls"
                                          "collections-for-gran-acls"
                                          "has-granules-map"
