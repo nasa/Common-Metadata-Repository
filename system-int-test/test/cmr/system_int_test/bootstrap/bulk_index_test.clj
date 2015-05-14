@@ -58,7 +58,8 @@
                                       :native-id "gran1"
                                       :format "application/echo10+xml"
                                       :metadata xmlg1
-                                      :extra-fields {:parent-collection-id (:concept-id umm1)}})]
+                                      :extra-fields {:parent-collection-id (:concept-id umm1)
+                                                     :granule-ur "ur1"}})]
       (ingest/tombstone-concept coll2-tombstone)
 
       ;; Verify that all of the ingest requests completed successfully

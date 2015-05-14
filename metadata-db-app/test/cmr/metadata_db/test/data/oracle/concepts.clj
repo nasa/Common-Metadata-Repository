@@ -93,7 +93,8 @@
                           :revision_id 2
                           :deleted 0
                           :parent_collection_id "C5-PROV1"
-                          :delete_time oracle-timestamp}]
+                          :delete_time oracle-timestamp
+                          :granule_ur "foo-ur"}]
               (is (= {:concept-type :granule
                       :native-id "foo"
                       :concept-id "G7-PROV1"
@@ -104,7 +105,8 @@
                       :revision-date "1986-10-14T04:03:27.456Z"
                       :deleted false
                       :extra-fields {:parent-collection-id "C5-PROV1"
-                                     :delete-time "1986-10-14T04:03:27.456Z"}}
+                                     :delete-time "1986-10-14T04:03:27.456Z"
+                                     :granule-ur "foo-ur"}}
                      (c/db-result->concept-map :granule db "PROV1" result)))))))
       (finally
         (lifecycle/stop db nil)))))
@@ -143,7 +145,9 @@
                    :revision-id 2
                    :deleted false
                    :extra-fields {:parent-collection-id "C5-PROV1"
-                                  :delete-time "1986-10-14T04:03:27.456Z"}}]
-      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted" "parent_collection_id" "delete_time"]
-              ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp]]
+                                  :delete-time "1986-10-14T04:03:27.456Z"
+                                  :granule-ur "foo-ur"}}]
+      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
+               "parent_collection_id" "delete_time" "granule_ur"]
+              ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp "foo-ur"]]
              (fix-result (c/concept->insert-args concept)))))))

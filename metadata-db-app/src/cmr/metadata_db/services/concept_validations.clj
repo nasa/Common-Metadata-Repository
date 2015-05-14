@@ -24,7 +24,7 @@
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
   {:collection #{:short-name :version-id :entry-id :entry-title}
-   :granule #{:parent-collection-id}})
+   :granule #{:parent-collection-id :granule-ur}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."
@@ -96,32 +96,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for concept find
 
-(defn concept-types-supported
-  [{:keys [concept-type] :as params}]
-  (when-not (= :collection concept-type)
-    [(msg/find-not-supported concept-type (keys (dissoc params :concept-type)))]))
-
-(def supported-parameter-combinations
-  #{#{:provider-id :entry-id}
-    #{:provider-id :entry-title}
-    #{:provider-id :short-name :version-id}
-    #{:provider-id :entry-title :short-name}
-    #{:provider-id :entry-title :version-id}
-    #{:provider-id :entry-title :short-name :version-id}
-    ;; Metadata db needs to support retrieving all collections in a provider for reindexing.
-    #{:provider-id}})
+(def concept-type->supported-parameter-combinations
+  "Map of concept types to supported parameter combination sets."
+  {:collection #{#{:provider-id :entry-id}
+                 #{:provider-id :entry-title}
+                 #{:provider-id :short-name :version-id}
+                 #{:provider-id :entry-title :short-name}
+                 #{:provider-id :entry-title :version-id}
+                 #{:provider-id :entry-title :short-name :version-id}
+                 #{:provider-id}}
+   :granule #{#{:provider-id :granule-ur}
+              #{:provider-id :native-id}}})
 
 (defn supported-parameter-combinations-validation
   [{:keys [concept-type] :as params}]
   (let [params (dissoc params :concept-type)]
-    (when-not (supported-parameter-combinations
+    (when-not (contains?
+                (get concept-type->supported-parameter-combinations concept-type)
                 (set (keys params)))
       [(msg/find-not-supported concept-type (keys params))])))
 
 (def find-params-validation
   "Validates parameters for finding a concept"
-  (util/compose-validations [concept-types-supported
-                             supported-parameter-combinations-validation]))
+  (util/compose-validations [supported-parameter-combinations-validation]))
 
 (def validate-find-params
   "Validates find parameters. Throws an eror if invalid."

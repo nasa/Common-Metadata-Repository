@@ -13,12 +13,19 @@
           (assoc-in [:extra-fields :parent-collection-id] (:parent_collection_id result))
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
-                      (c/oracle-timestamp->str-time db (:delete_time result))))))
+                      (c/oracle-timestamp->str-time db (:delete_time result))))
+          ;; The granule_ur column was added after the granule records tables had been populated.
+          ;; All ingest going forward will populate the granule_ur, however any existing rows will
+          ;; have a null granule_ur. For any granule with a null granule_ur we assume the
+          ;; granule_ur is the same as the native_id. This is a safe assumption to make as any
+          ;; granule ingested before was ingested via Catalog REST which uses granule ur as the
+          ;; native id.
+          (assoc-in [:extra-fields :granule-ur] (or (:granule_ur result) (:native_id result)))))
 
 (defmethod c/concept->insert-args :granule
   [concept]
-  (let [{{:keys [parent-collection-id delete-time]} :extra-fields} concept
+  (let [{{:keys [parent-collection-id delete-time granule-ur]} :extra-fields} concept
         [cols values] (c/concept->insert-args (assoc concept :concept-type :default))
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime  delete-time)))]
-    [(concat cols ["parent_collection_id" "delete_time"])
-     (concat values [parent-collection-id delete-time])]))
+    [(concat cols ["parent_collection_id" "delete_time" "granule_ur"])
+     (concat values [parent-collection-id delete-time granule-ur])]))

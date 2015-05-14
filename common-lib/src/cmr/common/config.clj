@@ -161,7 +161,7 @@
                       String)]
     (when-not doc-string
       (throw (Exception. "defconfig doc-string is required")))
-    (when-not default
+    (when (nil? default)
       (throw (Exception. "defconfig default is required")))
     (when (and (nil? parser) config-type (nil? (type->parser config-type)))
       (throw (Exception. (str "Unrecognized defconfig type: " config-type))))

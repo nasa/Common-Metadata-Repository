@@ -18,7 +18,8 @@
    :native-id "foo"
    :provider-id "PROV1"
    :concept-type :granule
-   :extra-fields {:parent-collection-id "C1-PROV1"}})
+   :extra-fields {:parent-collection-id "C1-PROV1"
+                  :granule-ur "GR-UR"}})
 
 
 (deftest find-params-validation-test
@@ -108,6 +109,8 @@
     (is (= [(msg/missing-extra-fields)]
            (v/concept-validation (dissoc valid-granule :extra-fields))))
     (is (= [(msg/missing-extra-field :parent-collection-id)]
-           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))))
+           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
+    (is (= [(msg/missing-extra-field :granule-ur)]
+           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
 
 

@@ -27,9 +27,14 @@
   {:default 0.75
    :type Double})
 
-(defconfig test-bool
-  "This is a test bool configuration parameter"
+(defconfig test-bool-true
+  "This is a test bool configuration parameter defaulting to true"
   {:default true
+   :type Boolean})
+
+(defconfig test-bool-false
+  "This is a test bool configuration parameter defaulting to false"
+  {:default false
    :type Boolean})
 
 (defconfig test-custom-parser
@@ -87,16 +92,18 @@
           (is (= 12.2 (test-double)))))))
 
   (testing "Boolean configs"
-    (testing "default value"
-      (is (= true (test-bool))))
+    (testing "default value true"
+      (is (= true (test-bool-true))))
+    (testing "default value false"
+      (is (= false (test-bool-false))))
 
     (testing "Overriding the value"
-      (set-test-bool! true)
-      (is (= true (test-bool)))
+      (set-test-bool-true! true)
+      (is (= true (test-bool-true)))
       (testing "env variable value"
         (with-env-vars
-          {"CMR_TEST_BOOL" "false"}
-          (is (= false (test-bool)))))))
+          {"CMR_TEST_BOOL_TRUE" "false"}
+          (is (= false (test-bool-true)))))))
 
   (testing "Custom parser configs"
     (testing "default value"
