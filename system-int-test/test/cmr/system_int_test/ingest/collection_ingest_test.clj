@@ -279,6 +279,17 @@
                   "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Discipline, "
                   "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Parameters}' is expected.")]
 
+       :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
+               "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."
+               (str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'Summary'."
+                    " One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Project,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Quality,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Access_Constraints,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Use_Constraints,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Dataset_Language,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Organization}' is expected.")]
+
        :iso19115 [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
                        "starting with element 'gmd:XXXX'. One of "
                        "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
