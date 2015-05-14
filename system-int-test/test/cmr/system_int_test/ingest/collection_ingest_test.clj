@@ -111,7 +111,7 @@
 
 (deftest update-collection-with-different-formats-test
   (testing "update collection in different formats ..."
-    (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :iso19115 :iso-smap])]
+    (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
                            (dc/collection {:entry-id "S1"
                                            :short-name "S1"
@@ -123,7 +123,10 @@
                                            :science-keywords [(dc/science-keyword {:category "upcase"
                                                                                    :topic "Cool"
                                                                                    :term "Mild"})]
-                                           :organizations [(dc/org :distribution-center "Larc")]})
+                                           :organizations [(dc/org :distribution-center "Larc")]
+                                           ;; The following fields are needed for DIF10 to pass xml validation
+                                           :beginning-date-time "1965-12-12T12:00:00Z"
+                                           :ending-date-time "1967-12-12T12:00:00Z"})
                            coll-format)]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
