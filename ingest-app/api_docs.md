@@ -2,8 +2,6 @@
 
 ## API Overview
 
-TODO test all links
-
 ### Metadata Ingest API Overview
 
   * /providers/\<provider-id>/validate/collection/\<native-id>
@@ -35,7 +33,7 @@ TODO test all links
   * /caches
     * [GET /caches - Gets a list of the caches in ingest.](#get-caches)
     * [GET /caches/\<cache-name> - Gets a list of the keys stored in the specific cache.](#get-cache-keys)
-    * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-value)
+    * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-ialue)
     * [POST /caches/clear-cache - Clears the ingest caches.](#clear-cache)
   * /health
     * [GET - Gets the health of the ingest application.](#health)
@@ -85,14 +83,15 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 #### <a name="http-status-codes"></a> HTTP Status Codes
 
-| Status Code | Description                                                                                              |
+| Status Code |                                               Description                                                |
 | ----------- | -------------------------------------------------------------------------------------------------------- |
-| 200         | Success                                                                                                  |
-| 201         | Success creating an entity                                                                               |
-| 400         | Bad request. The body will contain errors.                                                               |
-| 404         | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found. |
-| 409         | Conflict. This is returned when a revision id conflict occurred while saving the item.                   |
-| 500         | Internal error. Contact CMR Operations if this occurs.                                                   |
+|         200 | Success                                                                                                  |
+|         201 | Success creating an entity                                                                               |
+|         400 | Bad request. The body will contain errors.                                                               |
+|         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found. |
+|         409 | Conflict. This is returned when a revision id conflict occurred while saving the item.                   |
+|         500 | Internal error. Contact CMR Operations if this occurs.                                                   |
+|         503 | Internal error because a service dependency is not available.                                            |
 
 #### <a name="successful-responses"></a> Successful Responses
 
@@ -114,7 +113,7 @@ Ingest validation errors can take one of two shapes. General error messages will
 </errors>
 ```
 
-##### <a name="umm-validation-errors"></a> UMM Validation Errors
+##### <a name="umm-ialidation-errors"></a> UMM Validation Errors
 
 UMM Validation errors will be returned with a path within the metadata to the failed item. For example the following errors would be returned if the first and second spatial areas were invalid. The path is a set of UMM fields in camel case separated by a `/`. Numeric indices are used to indicate the index of an item within a list that failed.
 
@@ -205,42 +204,52 @@ An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concep
 
 Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
-    curl -i -XPOST -H "Content-type: application/echo10+xml" %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 -d \
-    "<Collection>
-      <ShortName>ShortName_Larc</ShortName>
-      <VersionId>Version01</VersionId>
-      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-      <DeleteTime>2015-05-23T22:30:59</DeleteTime>
-      <LongName>LarcLongName</LongName>
-      <DataSetId>LarcDatasetId</DataSetId>
-      <Description>A minimal valid collection</Description>
-      <Orderable>true</Orderable>
-      <Visible>true</Visible>
-    </Collection>"
+```
+curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 -d \
+"<Collection>
+  <ShortName>ShortName_Larc</ShortName>
+  <VersionId>Version01</VersionId>
+  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+  <LongName>LarcLongName</LongName>
+  <DataSetId>LarcDatasetId</DataSetId>
+  <Description>A minimal valid collection</Description>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Collection>"
+```
 
 
 ### <a name="create-update-collection"></a> Create / Update a Collection
 
 Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
-    curl -i -XPUT -H "Content-type: application/echo10+xml" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 -d \
-    "<Collection>
-      <ShortName>ShortName_Larc</ShortName>
-      <VersionId>Version01</VersionId>
-      <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
-      <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
-      <DeleteTime>2015-05-23T22:30:59</DeleteTime>
-      <LongName>LarcLongName</LongName>
-      <DataSetId>LarcDatasetId</DataSetId>
-      <Description>A minimal valid collection</Description>
-      <Orderable>true</Orderable>
-      <Visible>true</Visible>
-    </Collection>"
+```
+curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 -d \
+"<Collection>
+  <ShortName>ShortName_Larc</ShortName>
+  <VersionId>Version01</VersionId>
+  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+  <LongName>LarcLongName</LongName>
+  <DataSetId>LarcDatasetId</DataSetId>
+  <Description>A minimal valid collection</Description>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Collection>"
+```
 
 #### Successful Response in XML
 
-TODO get example from James
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>C1200000000-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
 
 #### Successful Response in JSON
 
@@ -252,54 +261,334 @@ TODO get example from James
 
 Collection metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
-    curl -i -XDELETE %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
+    curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
 #### Successful Response in XML
 
-TODO get example from James
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>C1200000000-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
 
 #### Successful Response in JSON
 
 ```
-{"concept-id":"C1200000000-PROV1","revision-id":1}
+{"concept-id":"C1200000000-PROV1","revision-id":2}
 ```
 
 ***
 
 ### <a name="validate-granule"></a> Validate Granule
 
-TODO
+Granule metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+A collection is required when validating the granule. The granule being validated can either refer to an existing collection in the CMR or the collection can be sent in a multipart HTTP request.
+
+#### Validate Granule Referencing Existing Collection
+
+This shows how to validate a granule that references an existing collection in the database.
+
+```
+curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/validate/granule/sampleGranuleNativeId33 -d \
+"<Granule>
+   <GranuleUR>SC:AE_5DSno.002:30500511</GranuleUR>
+   <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
+   <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate>
+   <Collection>
+     <DataSetId>LarcDatasetId</DataSetId>
+   </Collection>
+   <Orderable>true</Orderable>
+</Granule>"
+```
+
+#### Validate Granule With Parent Collection
+
+Granule validation also allows the parent collection to be sent along with the granule as well. This allows validation of a granule that may not have a parent collection ingested. The granule and collection XML are sent over HTTP using form multipart parameters. The collection and granule XML are specified with the parameter names "collection" and "granule".
+
+Here's an example of validating a granule along with the parent collection using curl. The granule is in the granule.xml file and collection is in collection.xml.
+
+    curl -i -XPOST -H "Echo-Token: XXXX" \
+    -F "granule=<granule.xml;type=application/echo10+xml" \
+    -F "collection=<collection.xml;type=application/echo10+xml" \
+    "%CMR-ENDPOINT%/providers/PROV1/validate/granule/sampleGranuleNativeId33"
 
 ### <a name="create-update-granule"></a> Create / Update a Granule
 
-TODO show sample output
+Granule metadata can be created or updated by sending an HTTP PUT with the metadata to the url `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
+    curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33 -d \
+    "<Granule>
+       <GranuleUR>SC:AE_5DSno.002:30500511</GranuleUR>
+       <InsertTime>2009-05-11T20:09:16.340Z</InsertTime>
+       <LastUpdate>2014-03-19T09:59:12.207Z</LastUpdate>
+       <Collection>
+         <DataSetId>LarcDatasetId</DataSetId>
+       </Collection>
+       <Orderable>true</Orderable>
+    </Granule>"
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>G1200000001-PROV1</concept-id>
+  <revision-id>1</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"G1200000001-PROV1","revision-id":1}
+```
 ### <a name="delete-granule"></a> Delete a Granule
 
-TODO
+Granule metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
+    curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33
+
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+  <concept-id>G1200000001-PROV1</concept-id>
+  <revision-id>2</revision-id>
+</result>
+```
+
+#### Successful Response in JSON
+
+```
+{"concept-id":"G1200000001-PROV1","revision-id":2}
+```
+
+***
 
 ## <a name="administrative-api"></a> Administrative API
 
 ### <a name="providers"></a> Providers
 
+The providers that exist in the CMR are administered through the Ingest API. A provider consists of the following fields
+
+ * `provider-id` - The alpha numeric upper case string identifying the provider. See [provider id](#provider-id).
+ * `cmr-only` - True or false value that indicates if this is a provider that ingests directly through the CMR Ingest API or the legacy ECHO Catalog REST Ingest API. A CMR Only provider will still have ACLs configured in ECHO and support ordering through ECHO. A CMR Only provider may even still have data in Catalog REST but it will not be kept in sync with the CMR. `cmr-only` defaults to false.
+
+The provider API only supports requests and responses in JSON.
+
 #### <a name="get-providers"></a> Get Providers
+
+Returns a list of the configured providers in the CMR.
+
+```
+curl %CMR-ENDPOINT%/providers
+
+[{"provider-id":"PROV2","cmr-only":true},{"provider-id":"PROV1","cmr-only":false}]
+```
 
 #### <a name="create-provider"></a> Create Provider
 
+Creates a provider in the CMR. The provider id specified should match that of a provider configured in ECHO.
+
+```
+curl -i -XPOST -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT/providers -d \
+'{"provider-id": "PROV1", "cmr-only": false}'
+```
+
 #### <a name="update-provider"></a> Update Provider
+
+Updates the attributes of a provider in the CMR.
+
+```
+curl -i -XPUT -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1 -d \
+'{"provider-id": "PROV1", "cmr-only":true}'
+```
 
 #### <a name="delete-provider"></a> Delete Provider
 
+Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch
 
-TODO
+curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1
+
+***
 
 ### <a name="caches"></a> Caches
 
-TODO
+The caches of the ingest application can be queries to help debug caches issues in the system. Endpoints are provided for querying the contents of the various caches used by the application.
+
+The following curl will return the list of caches:
+
+    curl -i %CMR-ENDPOINT/caches
+
+The following curl will return the keys for a specific cache:
+
+    curl -i %CMR-ENDPOINT/caches/<cache-name>
+
+This curl will return the value for a specific key in the named cache:
+
+    curl -i %CMR-ENDPOINT/caches/<cache-name>/<cache-key>
+
+***
 
 ### <a name="application-health"></a> Application Health
 
-TODO
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+
+Example healthy response body:
+
+```
+{
+  "oracle" : {
+    "ok?" : true
+  },
+  "echo" : {
+    "ok?" : true
+  },
+  "metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "indexer" : {
+    "ok?" : true,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      },
+      "metadata-db" : {
+        "ok?" : true,
+        "dependencies" : {
+          "oracle" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      },
+      "index-set" : {
+        "ok?" : true,
+        "dependencies" : {
+          "elastic_search" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Example unhealthy response body:
+
+```
+{
+  "oracle" : {
+    "ok?" : false,
+    "problem" : "Exception occurred while getting connection: oracle.ucp.UniversalConnectionPoolException: Cannot get Connection from Datasource: java.sql.SQLRecoverableException: IO Error: The Network Adapter could not establish the connection"
+  },
+  "echo" : {
+    "ok?" : true
+  },
+  "metadata-db" : {
+    "ok?" : true,
+    "dependencies" : {
+      "oracle" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      }
+    }
+  },
+  "indexer" : {
+    "ok?" : true,
+    "dependencies" : {
+      "elastic_search" : {
+        "ok?" : true
+      },
+      "echo" : {
+        "ok?" : true
+      },
+      "metadata-db" : {
+        "ok?" : true,
+        "dependencies" : {
+          "oracle" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      },
+      "index-set" : {
+        "ok?" : true,
+        "dependencies" : {
+          "elastic_search" : {
+            "ok?" : true
+          },
+          "echo" : {
+            "ok?" : true
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+***
 
 ### <a name="jobs"></a> Jobs
+
+Ingest has internal jobs that run. They can be run manually and controlled through the Jobs API.
+
+#### <a name="pause-jobs"></a> Pause Jobs
+
+
+    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/pause
+
+### <a name="resume-jobs"></a> Resume ingest scheduled jobs
+
+
+    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/resume
+
+### <a name="reindex-collection-permitted-groups"></a> Run Reindex Collections Permitted Groups Job
+
+Collections which ACLs have changed can be reindexed by sending the following request.
+
+    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-collection-permitted-groups
+
+### <a name="reindex-all-collections"></a> Run Reindex All Collections Job
+
+Reindexes every collection in every provider.
+
+    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/reindex-all-collections
+
+### <a name="cleanup-expired-collections"></a> Run Cleanup Expired Collections Job
+
+Looks for collections that have a delete date in the past and removes them.
+
+    curl -i -XPOST -H "Echo-Token: XXXX" %CMR-ENDPOINT%/jobs/cleanup-expired-collections
+
+
+
