@@ -223,7 +223,7 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %
 
 ### <a name="create-update-collection"></a> Create / Update a Collection
 
-Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 ```
 curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 -d \
@@ -259,7 +259,7 @@ curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %C
 
 ### <a name="delete-collection"></a> Delete a Collection
 
-Collection metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
     curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
@@ -285,7 +285,7 @@ Collection metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPO
 
 Granule metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
-A collection is required when validating the granule. The granule being validated can either refer to an existing collection in the CMR or the collection can be sent in a multipart HTTP request.
+A collection is required when validating the granule. The granule being validated can either refer to an existing collection in the CMR or the collection can be sent in a multi-part HTTP request.
 
 #### Validate Granule Referencing Existing Collection
 
@@ -306,7 +306,7 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %
 
 #### Validate Granule With Parent Collection
 
-Granule validation also allows the parent collection to be sent along with the granule as well. This allows validation of a granule that may not have a parent collection ingested. The granule and collection XML are sent over HTTP using form multipart parameters. The collection and granule XML are specified with the parameter names "collection" and "granule".
+Granule validation also allows the parent collection to be sent along with the granule as well. This allows validation of a granule that may not have a parent collection ingested. The granule and collection XML are sent over HTTP using form multi-part parameters. The collection and granule XML are specified with the parameter names "collection" and "granule".
 
 Here's an example of validating a granule along with the parent collection using curl. The granule is in the granule.xml file and collection is in collection.xml.
 
@@ -317,7 +317,7 @@ Here's an example of validating a granule along with the parent collection using
 
 ### <a name="create-update-granule"></a> Create / Update a Granule
 
-Granule metadata can be created or updated by sending an HTTP PUT with the metadata to the url `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Granule metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
     curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33 -d \
     "<Granule>
@@ -347,7 +347,7 @@ Granule metadata can be created or updated by sending an HTTP PUT with the metad
 ```
 ### <a name="delete-granule"></a> Delete a Granule
 
-Granule metadata can be deleted by sending an HTTP DELETE the url `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
     curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33
 
@@ -410,7 +410,7 @@ curl -i -XPUT -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-END
 
 #### <a name="delete-provider"></a> Delete Provider
 
-Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch
+Removes a provider from the CMR. Deletes all data for the provider in Metadata DB and unindexes all data in Elasticsearch.
 
 curl -i -XDELETE -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1
 
