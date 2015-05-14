@@ -76,14 +76,15 @@
      (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
 
 (defn docs-routes
-  "Defines routes for returning API documentation."
-  [relative-root-url]
+  "Defines routes for returning API documentation. Takes the relative-root-url of the application
+  and the location of the welcome page within the classpath."
+  [relative-root-url welcome-page-location]
   (routes
     ;; CMR Application Welcome Page
     (GET "/" req
       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
                             {:status 200
-                             :body (slurp (io/resource "public/index.html"))}))
+                             :body (slurp (io/resource welcome-page-location))}))
 
     ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
     (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
