@@ -12,8 +12,9 @@
             [cmr.umm.iso-smap.collection.personnel :as pe]
             [cmr.umm.iso-smap.collection.org :as org]
             [cmr.umm.iso-smap.collection.keyword :as kw]
-            [cmr.umm.iso-smap.collection.temporal :as t]
+            [cmr.umm.iso-smap.collection.progress :as progress]
             [cmr.umm.iso-smap.collection.spatial :as spatial]
+            [cmr.umm.iso-smap.collection.temporal :as t]
             [cmr.umm.iso-smap.helper :as h])
   (:import cmr.umm.collection.UmmCollection))
 
@@ -94,7 +95,8 @@
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations id-elems)
        :associated-difs (xml-elem->associated-difs id-elems)
-       :personnel (pe/xml-elem->personnel xml-struct)})))
+       :personnel (pe/xml-elem->personnel xml-struct)
+       :collection-progress (progress/parse xml-struct)})))
 
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."
@@ -103,16 +105,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
-
-(def iso-status-element
-  "Defines the iso-status element"
-  (x/element
-    :gmd:status {}
-    (x/element
-      :gmd:MD_ProgressCode
-      {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-       :codeListValue "ongoing"}
-      "ongoing")))
 
 (defn- iso-aggregation-info-element
   "Defines the iso-aggregation-info element"
@@ -225,7 +217,7 @@
                    (h/iso-string-element :gmd:abstract summary)
                    (h/iso-string-element :gmd:purpose purpose)
                    (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
-                   iso-status-element
+                   (progress/generate collection)
                    (org/generate-archive-center organizations)
                    (kw/generate-keywords science-keywords)
                    (kw/generate-keywords instruments)
