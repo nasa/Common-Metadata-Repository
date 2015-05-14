@@ -109,6 +109,8 @@
     (is (= [(msg/missing-extra-fields)]
            (v/concept-validation (dissoc valid-granule :extra-fields))))
     (is (= [(msg/missing-extra-field :parent-collection-id)]
-           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))))
+           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
+    (is (= [(msg/missing-extra-field :granule-ur)]
+           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
 
 

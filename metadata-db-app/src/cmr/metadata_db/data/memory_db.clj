@@ -161,21 +161,19 @@
     [db params]
     (let [{:keys [concept-type provider-id native-id]} params
           extra-field-params (dissoc params :concept-type :provider-id :native-id)]
-      (->> (filter (fn [{extra-fields :extra-fields
-                         ct :concept-type
-                         pid :provider-id}]
-                     (and (= concept-type ct)
-                          (= provider-id pid)
-                          (= extra-field-params (select-keys extra-fields
-                                                             (keys extra-field-params)))))
-                   @concepts-atom)
-           ;; Match the Oracle behavior, if the granule-ur is nil return the native-id as the
-           ;; granule-ur
-           (map (fn [concept] (if (or (not= :granule concept-type)
-                                      (get-in concept [:extra-fields :granule-ur]))
-                                concept
-                                (assoc-in concept [:extra-fields :granule-ur]
-                                          (:native-id concept))))))))
+      (keep (fn [{extra-fields :extra-fields
+                  ct :concept-type
+                  pid :provider-id :as concept}]
+              (when (and (= concept-type ct)
+                         (= provider-id pid)
+                         (= extra-field-params (select-keys extra-fields
+                                                            (keys extra-field-params))))
+                (if (and (= :granule concept-type)
+                         (nil? (get-in concept [:extra-fields :granule-ur])))
+                  (assoc-in concept [:extra-fields :granule-ur]
+                            (:native-id concept))
+                  concept)))
+            @concepts-atom)))
 
   (save-concept
     [this concept]

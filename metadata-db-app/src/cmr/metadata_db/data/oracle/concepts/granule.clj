@@ -17,7 +17,9 @@
           ;; The granule_ur column was added after the granule records tables had been populated.
           ;; All ingest going forward will populate the granule_ur, however any existing rows will
           ;; have a null granule_ur. For any granule with a null granule_ur we assume the
-          ;; granule_ur is the same as the native_id.
+          ;; granule_ur is the same as the native_id. This is a safe assumption to make as any
+          ;; granule ingested before was ingested via Catalog REST which uses granule ur as the
+          ;; native id.
           (assoc-in [:extra-fields :granule-ur] (or (:granule_ur result) (:native_id result)))))
 
 (defmethod c/concept->insert-args :granule

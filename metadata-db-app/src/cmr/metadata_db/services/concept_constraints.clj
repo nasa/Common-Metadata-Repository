@@ -12,7 +12,7 @@
   {:default false
    :type Boolean})
 
-(defn- find-matching-concepts
+(defn- find-latest-matching-concepts
   "Returns any concepts which match the concept-type, provider-id, and value for the given field
   that matches the passed in concept"
   [db concept field field-value]
@@ -45,7 +45,7 @@
   [field]
   (fn [db concept]
     (let [field-value (get-in concept [:extra-fields field])
-          concepts (find-matching-concepts db concept field field-value)]
+          concepts (find-latest-matching-concepts db concept field field-value)]
       (validate-num-concepts-found concepts concept field field-value))))
 
 (defn granule-ur-unique-constraint
@@ -59,8 +59,8 @@
   one concept is found."
   [db concept]
   (let [granule-ur (get-in concept [:extra-fields :granule-ur])
-        granule-ur-concept-matches (find-matching-concepts db concept :granule-ur granule-ur)
-        native-id-concept-matches (find-matching-concepts db concept :native-id granule-ur)
+        granule-ur-concept-matches (find-latest-matching-concepts db concept :granule-ur granule-ur)
+        native-id-concept-matches (find-latest-matching-concepts db concept :native-id granule-ur)
         combined-matches (->> (set/union (set granule-ur-concept-matches)
                                          (set native-id-concept-matches))
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]

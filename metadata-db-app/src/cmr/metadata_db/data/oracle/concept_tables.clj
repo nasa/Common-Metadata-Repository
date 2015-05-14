@@ -94,8 +94,13 @@
                                    revision_id INTEGER DEFAULT 1 NOT NULL,
                                    revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
                                    deleted INTEGER DEFAULT 0 NOT NULL,
-                                   delete_time TIMESTAMP WITH TIME ZONE,
-                                   granule_ur VARCHAR(250) NOT NULL,
+                                   delete_time TIMESTAMP WITH TIME ZONE,"
+
+                                   ;; Note that the granule_ur column allows NULL because we do not
+                                   ;; populate the granule_ur column as part of the initial
+                                   ;; migration. We should change the column to NOT NULL once it is
+                                   ;; fully populated.
+                                   "granule_ur VARCHAR(250),
                                    CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                                    ;; Unique constraint on native id and revision id
