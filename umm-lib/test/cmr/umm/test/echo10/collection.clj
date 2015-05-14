@@ -113,6 +113,7 @@
     <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
     <VersionDescription>Sample Version Description</VersionDescription>
+    <CollectionState>COMPLETED</CollectionState>
     <SpatialKeywords>
       <Keyword>Word-2</Keyword>
       <Keyword>Word-1</Keyword>
@@ -511,7 +512,8 @@
                                                               :last-name "COMISO"
                                                               :roles ["INVESTIGATOR"]
                                                               :contacts (#cmr.umm.collection.Contact{:type :email
-                                                                                                     :value "josefino.c.comiso@nasa.gov"})}]})
+                                                                                                     :value "josefino.c.comiso@nasa.gov"})}]
+                    :collection-progress :complete})
         actual (c/parse-collection all-fields-collection-xml)]
     (is (= expected actual))))
 
