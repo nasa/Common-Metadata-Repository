@@ -130,6 +130,7 @@
         (assoc :personnel personnel)
         ;; publication-reference will be added later
         (dissoc :publication-references)
+        (dissoc :collection-progress)
         umm-c/map->UmmCollection)))
 
 (defn derive-geometries

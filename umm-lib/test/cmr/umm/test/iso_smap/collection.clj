@@ -242,7 +242,8 @@
                                    :middle-name nil
                                    :last-name "Alaska Satellite Facility"
                                    :roles ["distributor"]
-                                   :contacts nil})]})
+                                   :contacts nil})]
+                    :collection-progress :in-work})
         actual (c/parse-collection sample-collection-xml)]
     (is (= expected actual))))
 
