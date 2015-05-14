@@ -11,11 +11,15 @@
             [cmr.ingest.api.multipart :as mp]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as cheshire]
+            [clojure.data.xml :as x]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.services.errors :as svc-errors]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
+            [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
@@ -24,6 +28,76 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]))
+
+(def valid-response-mime-types
+  "Supported ingest response formats"
+  #{"*/*" "application/xml" "application/json"})
+
+(def content-type-mime-type->response-format
+  "A map of mime-types to supported response format"
+  {"application/echo10+xml" :xml
+   "application/iso19115+xml" :xml
+   "application/iso:smap+xml" :xml
+   "application/dif+xml" :xml
+   "application/xml" :xml
+   "application/json" :json})
+
+(defn- result-map->xml
+  "Converts all keys in a map to tags with values given by the map values to form a trivial
+  xml document.
+  Example:
+  (result-map->xml {:concept-id \"C1-PROV1\", :revision-id 1} true)
+
+  <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+  <result>
+    <revision-id>1</revision-id>
+    <concept-id>C1-PROV1</concept-id>
+  </result>"
+  [m pretty?]
+  (let [emit-fn (if pretty? x/indent-str x/emit-str)]
+    (emit-fn
+      (x/element :result {}
+                 (reduce-kv (fn [memo k v]
+                              (conj memo (x/element (keyword k) {} v)))
+                            []
+                            m)))))
+
+(comment
+
+  (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
+  )
+
+(defn- get-ingest-result-format
+  "Returns the requested ingest result format parsed from headers"
+  ([headers default-format]
+   (get-ingest-result-format
+     headers (set (keys content-type-mime-type->response-format)) default-format))
+  ([headers valid-mime-types default-format]
+   (let [accept-mime-type (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
+         content-mime-type (mt/extract-header-mime-type valid-mime-types headers "content-type" false)
+         ;; Use the accept-mime-type if available, but prefer the content-mime-type if the
+         ;; accept-mime-type is "*/*"
+         preferred-mime-type (if (= "*/*" accept-mime-type)
+                               (or content-mime-type accept-mime-type)
+                               (or accept-mime-type content-mime-type))]
+
+     (get content-type-mime-type->response-format preferred-mime-type default-format))))
+
+(defmulti generate-response
+  "Convert a result to a proper response format"
+  (fn [headers result]
+    (get-ingest-result-format headers :json)))
+
+(defmethod generate-response :json
+  [headers result]
+  ;; ring-json middleware will handle converting the body to json
+  {:status 200 :body result})
+
+;; default to xml generation
+(defmethod generate-response :xml
+  [headers result]
+  (let [pretty? (api/pretty-request? nil headers)]
+    {:status 200 :body (result-map->xml result pretty?)}))
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -116,8 +190,7 @@
           (POST "/" {:keys [body content-type headers request-context]}
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info "Validating Collection" (concept->loggable-string concept))
-              (ingest/validate-concept request-context concept)
-              {:status 200})))
+              (generate-response headers (ingest/validate-concept request-context concept)))))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -126,7 +199,7 @@
                 context :update :provider-object provider-id)
               (let [concept (body->concept :collection provider-id native-id body content-type headers)]
                 (info "Ingesting collection" (concept->loggable-string concept))
-                (r/response (ingest/save-concept request-context concept)))))
+                (generate-response headers (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -135,12 +208,11 @@
               (acl/verify-ingest-management-permission
                 context :update :provider-object provider-id)
               (info "Deleting collection" (pr-str concept-attribs))
-              (r/response (ingest/delete-concept request-context concept-attribs)))))
+              (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" request
-            (validate-granule provider-id native-id request)
-            {:status 200}))
+            (generate-response (:headers request) (validate-granule provider-id native-id request))))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -149,7 +221,7 @@
                 context :update :provider-object provider-id)
               (let [concept (body->concept :granule provider-id native-id body content-type headers)]
                 (info "Ingesting granule" (concept->loggable-string concept))
-                (r/response (ingest/save-concept request-context concept)))))
+                (generate-response headers (ingest/save-concept request-context concept)))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -158,7 +230,7 @@
               (acl/verify-ingest-management-permission
                 context :update :provider-object provider-id)
               (info "Deleting granule" (pr-str concept-attribs))
-              (r/response (ingest/delete-concept request-context concept-attribs))))))
+              (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; Add routes for API documentation
       (api-docs/docs-routes (:relative-root-url system) "public/ingest_index.html")

@@ -96,6 +96,64 @@
     (is (= 400 status))
     (is (re-find #"XML content is too short." (first errors)))))
 
+;; Verify that the accept header works
+(deftest granule-ingest-accept-header-response-test
+  (let [collection (d/ingest "PROV1" (dc/collection {}))]
+    (testing "json response"
+      (let [granule (d/item->concept (dg/granule collection))
+            response (ingest/ingest-concept granule {:accept-format :json :raw? true})
+            {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
+        (is (= "G1200000001-PROV1" concept-id))
+        (is (= 1 revision-id))))
+    (testing "xml response"
+      (let [granule (d/item->concept (dg/granule collection))
+            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
+            {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
+        (is (= "G1200000002-PROV1" concept-id))
+        (is (= 1 revision-id))))))
+
+;; Verify that the accept header works with returned errors
+(deftest granule-ingest-with-errors-accept-header-test
+  (let [collection (d/ingest "PROV1" (dc/collection {:entry-title "Coll1"}))]
+    (testing "json response"
+      (let [umm-granule (dg/granule collection {:concept-id "G1-PROV1"
+                                                :granule-ur "Gran1"})
+            granule (d/item->concept umm-granule)
+            _ (ingest/delete-concept (d/item->concept collection :echo10))
+            response (ingest/ingest-concept granule {:accept-format :json :raw? true})
+            status (:status response)
+            {:keys [errors]} (ingest/parse-ingest-response :json response)]
+        (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+               [status errors]))))
+    (testing "xml response"
+      (let [umm-granule (dg/granule collection {:concept-id "G1-PROV1"
+                                                :granule-ur "Gran1"})
+            granule (d/item->concept umm-granule)
+            _ (ingest/delete-concept (d/item->concept collection :echo10))
+            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
+            status (:status response)
+            {:keys [errors]} (ingest/parse-ingest-response :xml response)]
+        (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+               [status errors]))))))
+
+;; Verify that the accept header works with deletions
+(deftest delete-granule-with-accept-header-test
+  (let [collection (d/ingest "PROV1" (dc/collection {}))]
+    (testing "json response"
+      (let [granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
+            ingest-result (ingest/ingest-concept granule)
+            ingest-revision-id (:revision-id ingest-result)
+            delete-response (ingest/delete-concept granule {:accept-format :json :raw? true})
+            {:keys [revision-id]} (ingest/parse-ingest-response :json delete-response)]
+        (is (= 1 (- revision-id ingest-revision-id)))))
+    (testing "xml response"
+      (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
+            ingest-result (ingest/ingest-concept granule)
+            ingest-revision-id (:revision-id ingest-result)
+            delete-response (ingest/delete-concept granule {:accept-format :xml :raw? true})
+            {:keys [revision-id]} (ingest/parse-ingest-response :xml delete-response)]
+        (is (= 1 (- revision-id ingest-revision-id)))))))
+
 ;; Verify existing granule can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the granule prior to the delete
 (deftest delete-granule-test
@@ -122,7 +180,9 @@
 (deftest missing-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept (dg/granule collection))
-        {:keys [status errors]} (ingest/ingest-concept (assoc granule :format ""))]
+        response (ingest/ingest-concept (assoc granule :format "") {:accept-format :json :raw? true})
+         status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
@@ -131,7 +191,9 @@
 (deftest invalid-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept (dg/granule collection))
-        {:keys [status errors]} (ingest/ingest-concept (assoc granule :format "blah"))]
+        response (ingest/ingest-concept (assoc granule :format "blah") {:accept-format :json :raw? true})
+        status (:status response)
+        {:keys [errors]} (ingest/parse-ingest-response :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
