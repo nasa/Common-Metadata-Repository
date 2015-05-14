@@ -45,12 +45,8 @@
                               :providers
                               {:cmr_only (if cmr-only 1 0)}
                               ["provider_id = ?" provider-id])]
-      ;; We expect exactly one row to be updated
-      (case (first response)
-        0 (p/provider-not-found-error provider-id)
-        1 response
-        ;; else
-        (p/multiple-matching-providers-error provider-id))))
+      ;; We expect one row to be updated
+      (when (zero? (first response)) (p/provider-not-found-error provider-id))))
 
   (delete-provider
     [db provider-id]

@@ -15,7 +15,6 @@
    :unauthorized 401
    :invalid-data 422
    :conflict 409
-   :internal-server-error 500
    :service-unavailable 503})
 
 (def CONTENT_TYPE_HEADER "Content-Type")
