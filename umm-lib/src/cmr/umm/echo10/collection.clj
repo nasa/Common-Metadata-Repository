@@ -9,6 +9,7 @@
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.personnel :as pe]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
+            [cmr.umm.echo10.collection.progress :as progress]
             [cmr.umm.echo10.collection.platform :as platform]
             [cmr.umm.echo10.collection.campaign :as cmpgn]
             [cmr.umm.echo10.collection.collection-association :as ca]
@@ -66,14 +67,6 @@
         (c/map->SpatialCoverage
           {:granule-spatial-representation gsr
            :orbit-parameters (xml-elem->OrbitParameters orbit-params)})))))
-
-(defn- parse-collection-progress
-  [echo-xml-doc]
-  (when-let [state-str (cx/string-at-path echo-xml-doc [:CollectionState])]
-    (condp = (string/lower-case state-str)
-      "planned"   :planned
-      "in work"   :in-work
-      "completed" :complete)))
 
 (defn generate-orbit-parameters
   "Generates the OrbitParameters element from orbit-params"
@@ -138,7 +131,7 @@
        :organizations (org/xml-elem->Organizations xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
        :associated-difs (seq (cx/strings-at-path xml-struct [:AssociatedDIFs :DIF :EntryId]))
-       :collection-progress (parse-collection-progress xml-struct)})))
+       :collection-progress (progress/parse xml-struct)})))
 
 (defn parse-collection
   "Parses ECHO10 XML into a UMM Collection record."
@@ -146,16 +139,6 @@
   (xml-elem->Collection (x/parse-str xml)))
 
 ;; Generating XML
-
-(defn generate-collection-progress
-  [collection-progress]
-  (when collection-progress
-    (x/element :CollectionState {}
-               (condp = collection-progress
-                 :planned "Planned"
-                 :in-work "In Work"
-                 :complete "Completed"
-                 nil))))
 
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmCollection
@@ -171,7 +154,7 @@
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel collection-progress]} collection
+                   personnel]} collection
            emit-fn (if indent? x/indent-str x/emit-str)]
        (emit-fn
          (x/element :Collection {}
@@ -197,7 +180,7 @@
                     (org/generate-archive-center organizations)
                     (when version-description
                       (x/element :VersionDescription {} version-description))
-                    (generate-collection-progress collection-progress)
+                    (progress/generate collection)
                     (when restriction-flag
                       (x/element :RestrictionFlag {} restriction-flag))
                     (when spatial-keywords

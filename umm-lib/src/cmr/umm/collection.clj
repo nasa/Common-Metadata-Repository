@@ -344,7 +344,7 @@
    ;; pertaining to the data.
    publication-references
 
-   ;; either :planned :in-work or :complete
+   ;; keyword; one of the values defined in collection-progress-states
    collection-progress
    ])
 
