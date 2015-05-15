@@ -166,13 +166,14 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token]} options
+         {:keys [token client-id]} options
          accept-format (:accept-format options)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
-                                        "Echo-Token" token})
+                                        "Echo-Token" token
+                                        "Client-Id" client-id})
          params {:method :put
                  :url (url/ingest-url provider-id concept-type native-id)
                  :body  metadata
@@ -193,16 +194,17 @@
    (delete-concept concept {}))
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token] :as options} options
-         accept-format (:accept-format options)
+         {:keys [token client-id accept-format]} options
+         headers (util/remove-nil-keys {"Echo-Token" token
+                                        "Client-Id" client-id})
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          params {:method :delete
-                     :url (url/ingest-url provider-id concept-type native-id)
-                     :headers (merge {} (when token {"Echo-Token" token}))
-                     :accept accept-format
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)}
+                 :url (url/ingest-url provider-id concept-type native-id)
+                 :headers headers
+                 :accept accept-format
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))
          response (client/request params)]
      (if raw?
@@ -237,10 +239,13 @@
    (validate-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         accept-format (:accept-format options)
+         {:keys [client-id]} options
+         accept-format (get options :accept-format :json)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
-         headers (util/remove-nil-keys {"concept-id" concept-id "revision-id" revision-id})
+         headers (util/remove-nil-keys {"concept-id" concept-id
+                                        "revision-id" revision-id
+                                        "Client-Id" client-id})
          response (client/request
                     {:method :post
                      :url (url/validate-url provider-id concept-type native-id)
@@ -362,7 +367,7 @@
   ([provider-guid provider-id options]
    (let [grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
-         cmr-only (get options :cmr-only false)]
+         cmr-only (get options :cmr-only true)]
 
      (create-mdb-provider provider-id cmr-only)
      (echo-util/create-providers (s/context) {provider-guid provider-id})
@@ -394,3 +399,10 @@
        (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
                                                    :grant-all-ingest? grant-all-ingest?}))
      (f))))
+
+(defn clear-caches
+  "Clears caches in the ingest application"
+  []
+  (client/post (url/ingest-clear-cache-url)
+               {:connection-manager (s/conn-mgr)
+                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))

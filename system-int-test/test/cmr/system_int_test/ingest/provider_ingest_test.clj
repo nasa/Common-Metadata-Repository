@@ -21,13 +21,13 @@
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
-    (ingest/create-ingest-provider "PROV3" true)
-    (ingest/create-ingest-provider "PROV4" false)
-    (ingest/update-ingest-provider "PROV4" true)
-    (is (= #{{:provider-id "PROV4" :cmr-only true}
-             {:provider-id "PROV3" :cmr-only true}
-             {:provider-id "PROV2" :cmr-only false}
-             {:provider-id "PROV1" :cmr-only false}}
+    (ingest/create-ingest-provider "PROV3" false)
+    (ingest/create-ingest-provider "PROV4" true)
+    (ingest/update-ingest-provider "PROV4" false)
+    (is (= #{{:provider-id "PROV4" :cmr-only false}
+             {:provider-id "PROV3" :cmr-only false}
+             {:provider-id "PROV2" :cmr-only true}
+             {:provider-id "PROV1" :cmr-only true}}
            (set (ingest/get-ingest-providers)))))
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true))))))
