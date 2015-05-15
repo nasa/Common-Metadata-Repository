@@ -54,7 +54,6 @@
     <concept-id>C1-PROV1</concept-id>
   </result>"
   [m pretty?]
-  (cmr.common.dev.capture-reveal/capture m)
   (let [emit-fn (if pretty? x/indent-str x/emit-str)]
     (emit-fn
       (x/element :result {}
@@ -62,10 +61,6 @@
                               (conj memo (x/element (keyword k) {} v)))
                             []
                             m)))))
-
-(comment
-  (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
-  )
 
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from headers"
