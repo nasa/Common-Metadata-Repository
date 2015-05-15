@@ -19,7 +19,7 @@
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
             [cmr.common.config :as cfg]
-            [cmr.ingest.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc]))
 
 (def
   ^{:doc "Defines the order to start the components."

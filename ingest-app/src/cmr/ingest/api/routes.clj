@@ -28,7 +28,7 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.ingest.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc]))
 
 (def ECHO_CLIENT_ID "Echo")
 
@@ -43,10 +43,15 @@
   (when (or (and cmr-only (= ECHO_CLIENT_ID client-id))
             (and (not cmr-only) (not= ECHO_CLIENT_ID client-id)))
     (let [msg (if cmr-only
-                (format "Provider %s was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."
-                        provider-id)
-                (format "Provider %s was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [%s] that ingest was not sent from ECHO."
-                        provider-id client-id))]
+                (format
+                  (str "Provider %s was configured as CMR Only which only allows ingest directly "
+                       "through the CMR. It appears from the client id that it was sent from ECHO.")
+                  provider-id)
+                (format
+                  (str "Provider %s was configured as false for CMR Only which only allows "
+                       "ingest indirectly through ECHO. It appears from the client id [%s] "
+                       "that ingest was not sent from ECHO.")
+                  provider-id client-id))]
       (srvc-errors/throw-service-error :bad-request msg))))
 
 (defn verify-provider-against-client-id
@@ -210,13 +215,14 @@
       provider-api/provider-api-routes
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [body content-type headers request-context]}
-            (let [context (acl/add-client-id-to-context request-context headers)
+          (POST "/" {:keys [body content-type params headers request-context]}
+            (let [context (acl/add-authentication-to-context request-context params headers)
                   concept (body->concept :collection provider-id native-id body content-type headers)]
               (verify-provider-against-client-id context provider-id)
               (info (format "Validating Collection %s from client %s"
                             (concept->loggable-string concept) (:client-id context)))
-              (generate-response headers (ingest/validate-concept context concept)))))
+              (ingest/validate-concept context concept)
+              {:status 200})))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -239,10 +245,11 @@
               (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [headers request-context] :as request}
-            (let [context (acl/add-client-id-to-context request-context headers)]
+          (POST "/" {:keys [params headers request-context] :as request}
+            (let [context (acl/add-authentication-to-context request-context params headers)]
               (verify-provider-against-client-id context provider-id)
-              (generate-response headers (validate-granule context provider-id native-id request)))))
+              (validate-granule context provider-id native-id request)
+              {:status 200})))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
