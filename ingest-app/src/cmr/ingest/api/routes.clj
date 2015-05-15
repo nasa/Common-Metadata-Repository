@@ -54,6 +54,7 @@
     <concept-id>C1-PROV1</concept-id>
   </result>"
   [m pretty?]
+  (cmr.common.dev.capture-reveal/capture m)
   (let [emit-fn (if pretty? x/indent-str x/emit-str)]
     (emit-fn
       (x/element :result {}
@@ -63,7 +64,6 @@
                             m)))))
 
 (comment
-
   (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
   )
 
@@ -190,7 +190,8 @@
           (POST "/" {:keys [body content-type headers request-context]}
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info "Validating Collection" (concept->loggable-string concept))
-              (generate-response headers (ingest/validate-concept request-context concept)))))
+              (ingest/validate-concept request-context concept)
+              {:status 200})))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
@@ -212,7 +213,8 @@
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" request
-            (generate-response (:headers request) (validate-granule provider-id native-id request))))
+            (validate-granule provider-id native-id request)
+            {:status 200}))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
