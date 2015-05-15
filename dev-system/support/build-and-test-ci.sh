@@ -12,8 +12,14 @@ if [ $? -ne 0 ] ; then
   echo "Failed to install apps" >&2
   exit 1
 fi
-date && echo "Generating search API documentation" &&
+date && echo "Generating Search API documentation" &&
 (cd search-app && lein with-profile docs generate-docs)
+if [ $? -ne 0 ] ; then
+  echo "Failed to generate docs" >&2
+  exit 1
+fi
+date && echo "Generating Ingest API documentation" &&
+(cd ingest-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
   echo "Failed to generate docs" >&2
   exit 1
