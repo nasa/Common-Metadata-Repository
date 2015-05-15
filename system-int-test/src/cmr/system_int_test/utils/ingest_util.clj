@@ -106,31 +106,29 @@
                               {:connection-manager (s/conn-mgr)})]
     (is (= 200 (:status response)))))
 
-(defn- fix-error-path
+(defn- parse-error-path
   "Convert the error path string into a sequence with element conversion to integers where possible"
   [path]
   (when path
-    (let [p (str/split path #"/")]
-      (map (fn [v]
-             (try
-               (Integer. v)
-               (catch NumberFormatException e
-                 v)))
-           p))))
+    (map (fn [v]
+           (try
+             (Integer. v)
+             (catch NumberFormatException _
+               v)))
+         (str/split path #"/"))))
 
 (comment
 
-  (fix-error-path "SpatialCoverage/Geometries/0")
-  (fix-error-path "SpatialCoverage/1/Geometries")
+  (parse-error-path "SpatialCoverage/Geometries/0")
+  (parse-error-path "SpatialCoverage/1/Geometries")
   )
 
 (defn- parse-xml-error-elem
   "Parse an xml error entry. If this contains a path then we need to return map with a :path
   and an :errors tag. Otherwise, just return the list of error messages."
   [elem]
-  (if-let [path (fix-error-path (cx/string-at-path elem [:path]))]
-    (let [errors (cx/strings-at-path elem [:errors :error])]
-      {:errors errors :path path})
+  (if-let [path (parse-error-path (cx/string-at-path elem [:path]))]
+    {:errors (cx/strings-at-path elem [:errors :error]) :path path}
     (first (:content elem))))
 
 (defn- parse-xml-error-response-elem
@@ -199,18 +197,17 @@
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          params {:method :delete
-                     :url (url/ingest-url provider-id concept-type native-id)
-                     :headers (merge {} (when token {"Echo-Token" token}))
-                     :accept accept-format
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)}
+                 :url (url/ingest-url provider-id concept-type native-id)
+                 :headers (merge {} (when token {"Echo-Token" token}))
+                 :accept accept-format
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
          params (merge params (when accept-format {:accept accept-format}))
          response (client/request params)]
      (if raw?
        response
        (assoc (parse-ingest-response (or accept-format :json) response)
-              :status
-              (:status response))))))
+              :status (:status response))))))
 
 (defn multipart-param-request
   "Submits a multipart parameter request to the given url with the multipart parameters indicated.

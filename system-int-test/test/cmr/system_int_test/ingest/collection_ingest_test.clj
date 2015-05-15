@@ -65,17 +65,15 @@
 ;; Verify that the accept header works
 (deftest collection-ingest-accept-header-response-test
   (testing "json response"
-    (let [concept (dc/collection-concept {})
-          response (ingest/ingest-concept concept {:accept-format :json :raw? true})
-          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-      (is (= "C1200000000-PROV1" concept-id))
-      (is (= 1 revision-id))))
+    (let [concept (dc/collection-concept {:concept-id "C1200000000-PROV1"})
+          response (ingest/ingest-concept concept {:accept-format :json :raw? true})]
+      (is (= {:concept-id (:concept-id concept) :revision-id 1}
+             (ingest/parse-ingest-response :json response)))))
   (testing "xml response"
-    (let [concept (dc/collection-concept {})
-          response (ingest/ingest-concept concept {:accept-format :xml :raw? true})
-          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-      (is (= "C1200000001-PROV1" concept-id))
-      (is (= 1 revision-id)))))
+    (let [concept (dc/collection-concept {:concept-id "C1200000001-PROV1"})
+          response (ingest/ingest-concept concept {:accept-format :xml :raw? true})]
+      (is (= {:concept-id (:concept-id concept) :revision-id 1}
+             (ingest/parse-ingest-response :xml response))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest collection-ingest-with-errors-accept-header-test
@@ -96,20 +94,17 @@
 (deftest delete-collection-with-accept-header-test
   (testing "json response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
-          _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
-                                                                           :raw? true})
-          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-      (is (= "C1200000000-PROV1" concept-id))
-      (is (= 2 revision-id))))
+                                                                           :raw? true})]
+      (is (= {:concept-id (:concept-id coll1) :revision-id 2}
+             (ingest/parse-ingest-response :json response)))))
   (testing "xml response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
-                                                                           :raw? true})
-          {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-      (is (= "C1200000001-PROV1" concept-id))
-      (is (= 2 revision-id)))))
+                                                                           :raw? true})]
+      (is (= {:concept-id (:concept-id coll1) :revision-id 2}
+             (ingest/parse-ingest-response :xml response))))))
 
 ;; Verify that xml response is returned for ingests of xml content type
 (deftest collection-ingest-with-reponse-format-from-content-type

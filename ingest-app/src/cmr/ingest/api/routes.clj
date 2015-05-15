@@ -78,7 +78,7 @@
          ;; Use the accept-mime-type if available, but prefer the content-mime-type if the
          ;; accept-mime-type is "*/*"
          preferred-mime-type (if (= "*/*" accept-mime-type)
-                               (or content-mime-type accept-mime-type)
+                               content-mime-type
                                (or accept-mime-type content-mime-type))]
 
      (get content-type-mime-type->response-format preferred-mime-type default-format))))

@@ -101,16 +101,14 @@
   (let [collection (d/ingest "PROV1" (dc/collection {}))]
     (testing "json response"
       (let [granule (d/item->concept (dg/granule collection))
-            response (ingest/ingest-concept granule {:accept-format :json :raw? true})
-            {:keys [concept-id revision-id]} (ingest/parse-ingest-response :json response)]
-        (is (= "G1200000001-PROV1" concept-id))
-        (is (= 1 revision-id))))
+            response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
+        (is (= {:concept-id "G1200000001-PROV1" :revision-id 1}
+               (ingest/parse-ingest-response :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection))
-            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
-            {:keys [concept-id revision-id]} (ingest/parse-ingest-response :xml response)]
-        (is (= "G1200000002-PROV1" concept-id))
-        (is (= 1 revision-id))))))
+            response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
+        (is (= {:concept-id "G1200000002-PROV1" :revision-id 1}
+               (ingest/parse-ingest-response :xml response)))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest granule-ingest-with-errors-accept-header-test
@@ -141,18 +139,16 @@
   (let [collection (d/ingest "PROV1" (dc/collection {}))]
     (testing "json response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
-            ingest-result (ingest/ingest-concept granule)
-            ingest-revision-id (:revision-id ingest-result)
-            delete-response (ingest/delete-concept granule {:accept-format :json :raw? true})
-            {:keys [revision-id]} (ingest/parse-ingest-response :json delete-response)]
-        (is (= 1 (- revision-id ingest-revision-id)))))
+            _ (ingest/ingest-concept granule)
+            response (ingest/delete-concept granule {:accept-format :json :raw? true})]
+         (is (= {:concept-id "G1-PROV1" :revision-id 2}
+             (ingest/parse-ingest-response :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
-            ingest-result (ingest/ingest-concept granule)
-            ingest-revision-id (:revision-id ingest-result)
-            delete-response (ingest/delete-concept granule {:accept-format :xml :raw? true})
-            {:keys [revision-id]} (ingest/parse-ingest-response :xml delete-response)]
-        (is (= 1 (- revision-id ingest-revision-id)))))))
+            _ (ingest/ingest-concept granule)
+            response (ingest/delete-concept granule {:accept-format :xml :raw? true})]
+        (is (= {:concept-id "G2-PROV1" :revision-id 2}
+             (ingest/parse-ingest-response :xml response)))))))
 
 ;; Verify existing granule can be deleted and operation results in revision id 1 greater than
 ;; max revision id of the granule prior to the delete
