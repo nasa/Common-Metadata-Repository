@@ -28,6 +28,19 @@
                    "Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
              [status errors])))))
 
+;; Verify that successful validation requests do not get an xml or json response body
+(deftest successful-validation-with-accept-header-test
+  (testing "json"
+    (let [concept (dc/collection-concept {})
+          response-map (select-keys (ingest/validate-concept concept {:accept-format :json :raw? true})
+                                   [:status :body])]
+      (is (= {:status 200 :body ""} response-map))))
+  (testing "xml"
+    (let [concept (dc/collection-concept {})
+          response-map (select-keys (ingest/validate-concept concept {:accept-format :json :raw? true})
+                                   [:status :body])]
+      (is (= {:status 200 :body ""} response-map)))))
+
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]
