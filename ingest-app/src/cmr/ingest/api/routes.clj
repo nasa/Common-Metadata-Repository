@@ -32,23 +32,31 @@
 
 (def ECHO_CLIENT_ID "Echo")
 
-(defn verify-provider-against-client-id
+(defn- verify-provider-cmr-only-against-client-id
   "Verifies provider CMR-ONLY flag matches the client-id in the request.
   Throws bad request error if the client-id is Echo when the provider is CMR-ONLY
   or the client id is not Echo when the provider is not CMR-ONLY."
+  [provider-id cmr-only client-id]
+  (when (nil? cmr-only)
+    (srvc-errors/internal-error!
+      (format "CMR Only should not be nil, but is for Provider %s." provider-id)))
+  (when (or (and cmr-only (= ECHO_CLIENT_ID client-id))
+            (and (not cmr-only) (not= ECHO_CLIENT_ID client-id)))
+    (let [msg (if cmr-only
+                (format "Provider %s was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."
+                        provider-id)
+                (format "Provider %s was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [%s] that ingest was not sent from ECHO."
+                        provider-id client-id))]
+      (srvc-errors/throw-service-error :bad-request msg))))
+
+(defn verify-provider-against-client-id
+  "Verifies the given provider's CMR-ONLY flag matches the client-id in the request."
   [context provider-id]
   (let [cmr-only (->> (pc/get-providers-from-cache context)
                       (some #(when (= provider-id (:provider-id %)) %))
                       :cmr-only)
         client-id (:client-id context)]
-    (when (or (and cmr-only (= ECHO_CLIENT_ID client-id))
-              (and (not cmr-only) (not= ECHO_CLIENT_ID client-id)))
-      (let [msg (if cmr-only
-                  (format "Provider [%s] is CMR-ONLY which requires the request to not have client id of [Echo], but was."
-                          provider-id)
-                  (format "Provider [%s] is not CMR-ONLY which requires the request to have client id of [Echo], but was [%s]."
-                          provider-id client-id))]
-        (srvc-errors/throw-service-error :bad-request msg)))))
+    (verify-provider-cmr-only-against-client-id provider-id cmr-only client-id)))
 
 (def valid-response-mime-types
   "Supported ingest response formats"

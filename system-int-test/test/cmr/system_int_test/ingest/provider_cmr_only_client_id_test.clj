@@ -2,20 +2,9 @@
   "CMR provider CMR-ONLY flag and client id integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
-            [cmr.system-int-test.utils.index-util :as index]
-            [ring.util.io :as io]
-            [clj-http.client :as client]
-            [clojure.string :as string]
-            [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]
-            [clj-time.core :as t]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
-
+            [cmr.system-int-test.data2.core :as d]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -26,7 +15,7 @@
                {:keys [status errors]} (ingest/validate-concept concept {:client-id client-id})]
            (= [expected-status expected-errors] [status errors]))
 
-         "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+         "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
          "any" 200 nil))
   (testing "validation on non CMR-ONLY provider must be submitted by client Echo"
     (ingest/update-ingest-provider "PROV1" false)
@@ -36,7 +25,7 @@
                {:keys [status errors]} (ingest/validate-concept concept {:client-id client-id})]
            (= [expected-status expected-errors] [status errors]))
 
-         "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+         "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
          "Echo" 200 nil)))
 
 (deftest ingest-collection-cmr-only-client-id-test
@@ -45,7 +34,7 @@
          (let [concept (dc/collection-concept {})
                {:keys [status errors]} (ingest/ingest-concept concept {:client-id client-id})]
            (= [expected-status expected-errors] [status errors]))
-         "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+         "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
          "any" 200 nil))
   (testing "ingest on non CMR-ONLY provider must be submitted by client Echo"
     (ingest/update-ingest-provider "PROV1" false)
@@ -55,7 +44,7 @@
                {:keys [status errors]} (ingest/ingest-concept concept {:client-id client-id})]
            (= [expected-status expected-errors] [status errors]))
 
-         "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+         "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
          "Echo" 200 nil)))
 
 
@@ -66,7 +55,7 @@
                {:keys [status errors]} (ingest/delete-concept (d/item->concept coll1) {:client-id client-id})]
            (= [expected-status expected-errors] [status errors]))
 
-         "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+         "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
          "any" 200 nil))
   (testing "delete on non CMR-ONLY provider must be submitted by client Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))]
@@ -76,7 +65,7 @@
            (let [{:keys [status errors]} (ingest/delete-concept (d/item->concept coll1) {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+           "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
            "Echo" 200 nil))))
 
 (deftest validate-granule-cmr-only-client-id-test
@@ -87,7 +76,7 @@
            (let [{:keys [status errors]} (ingest/validate-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+           "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
            "any" 200 nil)))
   (testing "validation on non CMR-ONLY provider must be submitted by client Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))]
@@ -98,7 +87,7 @@
                  {:keys [status errors]} (ingest/validate-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+           "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
            "Echo" 200 nil))))
 
 (deftest ingest-granule-cmr-only-client-id-test
@@ -108,7 +97,7 @@
       (are [client-id expected-status expected-errors]
            (let [{:keys [status errors]} (ingest/ingest-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
-           "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+           "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
            "any" 200 nil)))
   (testing "ingest on non CMR-ONLY provider must be submitted by client Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))]
@@ -119,7 +108,7 @@
                  {:keys [status errors]} (ingest/ingest-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+           "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
            "Echo" 200 nil))))
 
 
@@ -132,7 +121,7 @@
            (let [{:keys [status errors]} (ingest/delete-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "Echo" 400 ["Provider [PROV1] is CMR-ONLY which requires the request to not have client id of [Echo], but was."]
+           "Echo" 400 ["Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."]
            "any" 200 nil)))
   (testing "delete on non CMR-ONLY provider must be submitted by client Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
@@ -144,6 +133,6 @@
            (let [{:keys [status errors]} (ingest/delete-concept granule {:client-id client-id})]
              (= [expected-status expected-errors] [status errors]))
 
-           "bad" 400 ["Provider [PROV1] is not CMR-ONLY which requires the request to have client id of [Echo], but was [bad]."]
+           "bad" 400 ["Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id [bad] that ingest was not sent from ECHO."]
            "Echo" 200 nil))))
 
