@@ -12,7 +12,7 @@
         description (cx/string-at-path related-url-elem [:Description])
         type (cx/string-at-path related-url-elem [:URL_Content_Type :Type])
         sub-type (cx/string-at-path related-url-elem [:URL_Content_Type :Subtype])
-        mime-type (cx/string-at-path related-url-elem [:URL_Content_Type :Mime_Type])]
+        mime-type (cx/string-at-path related-url-elem [:Mime_Type])]
     (map (fn [url]
            (c/map->RelatedURL
              {:url url
