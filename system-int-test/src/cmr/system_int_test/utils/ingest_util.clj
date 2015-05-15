@@ -167,7 +167,7 @@
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id]} options
-         accept-format (get options :accept-format)
+         accept-format (:accept-format options)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
@@ -186,8 +186,7 @@
      (if raw?
        response
        (assoc (parse-ingest-response (or accept-format :xml) response)
-              :status
-              (:status response))))))
+              :status (:status response))))))
 
 (defn delete-concept
   "Delete a given concept."
@@ -255,12 +254,15 @@
                      :headers headers
                      :accept accept-format
                      :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})]
+                     :connection-manager (s/conn-mgr)})
+         status (:status response)]
      (if raw?
        response
-       (assoc (parse-ingest-response accept-format response)
-              :status
-              (:status response))))))
+       (if (not= status 200)
+         ;; Validation only returns a response body if there are errors.
+         (assoc (parse-ingest-response (or accept-format :xml) response)
+                :status (:status response))
+         {:status 200})))))
 
 (defn validate-granule
   "Validates a granule concept by sending it and optionally its parent collection to the validation

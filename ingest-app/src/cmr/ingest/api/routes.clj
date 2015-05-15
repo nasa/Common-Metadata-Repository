@@ -91,11 +91,6 @@
                             []
                             m)))))
 
-(comment
-
-  (result-map->xml {:concept-id "C1-PROV1" :revision-id 1})
-  )
-
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from headers"
   ([headers default-format]
