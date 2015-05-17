@@ -30,7 +30,7 @@
             [cmr.common-app.api-docs :as api-docs]
             [cmr.ingest.services.providers-cache :as pc]))
 
-(def ECHO_CLIENT_ID "Echo")
+(def ECHO_CLIENT_ID "ECHO")
 
 (defn- verify-provider-cmr-only-against-client-id
   "Verifies provider CMR-ONLY flag matches the client-id in the request.

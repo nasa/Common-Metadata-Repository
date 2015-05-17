@@ -18,7 +18,7 @@
                true "any"
 
                "CMR Only false, client id is Echo is OK"
-               false "Echo"))
+               false "ECHO"))
 
   (testing "CMR Only flag and client id do not match"
     (util/are2 [cmr-only client-id msg]
@@ -27,11 +27,11 @@
                  msg
                  (#'r/verify-provider-cmr-only-against-client-id "PROV1" cmr-only client-id))
 
-               "CMR Only, client id is Echo is not OK"
-               true "Echo"
+               "CMR Only, client id is ECHO is not OK"
+               true "ECHO"
                #"Provider PROV1 was configured as CMR Only which only allows ingest directly through the CMR. It appears from the client id that it was sent from ECHO."
 
-               "CMR Only false, client id is not Echo is not OK"
+               "CMR Only false, client id is not ECHO is not OK"
                false "any"
                #"Provider PROV1 was configured as false for CMR Only which only allows ingest indirectly through ECHO. It appears from the client id \[any\] that ingest was not sent from ECHO.")))
 
