@@ -16,9 +16,9 @@
 
     ;; update an existing provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
-                             request-context :request-context
-                             provider :body
-                             headers :headers}
+                          request-context :request-context
+                          provider :body
+                          headers :headers}
       (let [request-context (acl/add-authentication-to-context request-context params headers)]
         (acl/verify-ingest-management-permission request-context :update)
         (ps/update-provider request-context (walk/keywordize-keys provider))))
@@ -33,4 +33,4 @@
 
     ;; get a list of providers
     (GET "/" {:keys [request-context]}
-      (ps/get-providers request-context))))
+      (ps/get-providers-raw request-context))))

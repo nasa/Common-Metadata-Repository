@@ -24,7 +24,12 @@
       (indexer/delete-provider-from-index context provider-id)
       response)))
 
+(defn get-providers-raw
+  "Get a list of provider ids in raw http response."
+  [context]
+  (mdb/get-providers-raw context))
+
 (defn get-providers
   "Get a list of provider ids"
   [context]
-  (mdb/get-providers-raw context))
+  (mdb/get-providers context))
