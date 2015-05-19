@@ -42,3 +42,7 @@
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
   {:default 10000 :type Long})
+
+(defconfig ingest-nrepl-port
+  "Port to listen for nREPL connections."
+  {:default nil :parser (fn [x] (when x (Long. x)))})

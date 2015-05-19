@@ -5,6 +5,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
+            [cmr.common.nrepl :as nrepl]
             [cmr.system-trace.context :as context]
             [cmr.ingest.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
@@ -24,7 +25,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :db :queue-broker :scheduler :web])
+  component-order [:log :caches :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -37,6 +38,7 @@
   ([connection-pool-name]
    (let [sys {:log (log/create-logger)
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
+              :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :zipkin (context/zipkin-config "Ingest" false)
               :scheduler (jobs/create-clustered-scheduler
