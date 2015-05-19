@@ -18,7 +18,7 @@
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.ingest.services.providers-cache :as pc]))
 
 (def
@@ -29,6 +29,15 @@
 (def system-holder
   "Required for jobs"
   (atom nil))
+
+(defconfig ingest-public-protocol
+  "The protocol to use in documentation examples for the ingest application."
+  {:default "http"})
+
+(def ingest-public-conf
+  "Public ingest configuration used for generating example requests in documentation"
+  {:protocol (ingest-public-protocol)
+   :relative-root-url (transmit-config/ingest-relative-root-url)})
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -47,7 +56,7 @@
                        af/acl-cache-key (af/create-acl-cache
                                           (stl-cache/create-single-thread-lookup-cache)
                                           [:system-object :provider-object])}
-              :relative-root-url (transmit-config/ingest-relative-root-url)
+              :ingest-public-conf ingest-public-conf
               :queue-broker (when (config/use-index-queue?)
                               (rmq/create-queue-broker (assoc (rmq-conf/default-config)
                                                               :queues [(config/index-queue-name)])))}]

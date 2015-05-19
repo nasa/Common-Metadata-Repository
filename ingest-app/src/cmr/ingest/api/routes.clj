@@ -211,7 +211,7 @@
 
 (defn- build-routes [system]
   (routes
-    (context (:relative-root-url system) []
+    (context (get-in system [:ingest-public-conf :relative-root-url]) []
       provider-api/provider-api-routes
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
@@ -272,7 +272,9 @@
               (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; Add routes for API documentation
-      (api-docs/docs-routes (:relative-root-url system) "public/ingest_index.html")
+      (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
+                            (get-in system [:ingest-public-conf :relative-root-url])
+                            "public/ingest_index.html")
 
       ;; add routes for managing jobs
       (common-routes/job-api-routes

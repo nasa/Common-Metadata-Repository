@@ -3,7 +3,8 @@
             [cmr.search.api.routes :as r])
   (:use ring.mock.request))
 
-(def ^:private api (#'cmr.search.api.routes/build-routes {:search-public-conf {:relative-root-url "/search"}}))
+(def ^:private api (#'cmr.search.api.routes/build-routes
+                     {:search-public-conf {:protocol "https" :relative-root-url "/search"}}))
 
 (defn- substring?
   [test-value string]

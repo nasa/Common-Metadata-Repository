@@ -76,9 +76,9 @@
      (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
 
 (defn docs-routes
-  "Defines routes for returning API documentation. Takes the relative-root-url of the application
-  and the location of the welcome page within the classpath."
-  [relative-root-url welcome-page-location]
+  "Defines routes for returning API documentation. Takes the public-protocol (http or https),
+  relative-root-url of the application, and the location of the welcome page within the classpath."
+  [public-protocol relative-root-url welcome-page-location]
   (routes
     ;; CMR Application Welcome Page
     (GET "/" req
@@ -87,8 +87,8 @@
                              :body (slurp (io/resource welcome-page-location))}))
 
     ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-    (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
-      (let [cmr-root (str (name scheme)  "://" (headers "host") relative-root-url)]
+    (GET ["/site/:resource", :resource #".*\.html$"] {headers :headers {resource :resource} :params}
+      (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
         {:status 200
          :body (-> (str "public/site/" resource)
                    (io/resource)

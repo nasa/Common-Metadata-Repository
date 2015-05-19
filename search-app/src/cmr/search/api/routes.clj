@@ -252,7 +252,10 @@
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
       ;; Add routes for API documentation
-      (api-docs/docs-routes (get-in system [:search-public-conf :relative-root-url]) "public/index.html")
+      (api-docs/docs-routes
+        (get-in system [:search-public-conf :protocol])
+        (get-in system [:search-public-conf :relative-root-url])
+        "public/index.html")
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
