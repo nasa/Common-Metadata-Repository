@@ -148,6 +148,7 @@
            (map :metadata search-items)))))
 
 (defn- remove-metadata-ids
+  "Remove random uuid strings that are added to iso mends xmls during its creation so that the xmls can be compared as strings"
   [item]
   (update-in item [:metadata]
              (fn [metadata]
