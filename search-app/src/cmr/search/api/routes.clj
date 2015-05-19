@@ -164,9 +164,7 @@
     (if (or (nil? content-type-header)
             (= "application/x-www-form-urlencoded" content-type-header))
       (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-            context (-> context
-                        (acl/add-authentication-to-context params headers)
-                        (assoc :query-string query-string))
+            context (assoc context :query-string query-string)
             params (process-params params path-w-extension headers "application/xml")
             result-format (:result-format params)
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
@@ -183,8 +181,7 @@
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
   [context path-w-extension params headers query-string]
-  (let [context (acl/add-authentication-to-context context params headers)
-        params (process-params params path-w-extension headers "application/json")
+  (let [params (process-params params path-w-extension headers "application/json")
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id context) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
@@ -196,8 +193,7 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [context path-w-extension params headers aql]
-  (let [context (acl/add-authentication-to-context context params headers)
-        params (process-params params path-w-extension headers "application/xml")
+  (let [params (process-params params path-w-extension headers "application/xml")
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id context) (:result-format params) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
@@ -206,8 +202,7 @@
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
-  (let [context (acl/add-authentication-to-context context params headers)
-        result-format (get-search-results-format path-w-extension headers
+  (let [result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
                                                  "application/xml")
         concept-id (path-w-extension->concept-id path-w-extension)
@@ -225,8 +220,7 @@
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
-  (let [context (acl/add-authentication-to-context context params headers)
-        params (process-params params path-w-extension headers "application/json")
+  (let [params (process-params params path-w-extension headers "application/json")
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id context) (:result-format params) (pr-str params)))
         [provider-holdings provider-holdings-formatted]
@@ -296,8 +290,7 @@
 
       ;; Resets the application back to it's initial state.
       (POST "/reset" {:keys [request-context params headers]}
-        (acl/verify-ingest-management-permission
-          (acl/add-authentication-to-context request-context params headers))
+        (acl/verify-ingest-management-permission request-context)
         (cache/reset-caches request-context)
         {:status 204})
 
@@ -360,6 +353,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       handler/site
       errors/invalid-url-encoding-handler

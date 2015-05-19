@@ -12,41 +12,36 @@
   (context "/caches" []
     ;; Get the list of caches
     (GET "/" {:keys [params request-context headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [caches (map name (keys (get-in context [:system :caches])))]
-          (acl/verify-ingest-management-permission context :read)
-          {:status 200
-           :body (json/generate-string caches)})))
+      (acl/verify-ingest-management-permission request-context :read)
+      (let [caches (map name (keys (get-in request-context [:system :caches])))]
+        {:status 200
+         :body (json/generate-string caches)}))
     ;; Get the keys for the given cache
     (GET "/:cache-name" {{:keys [cache-name] :as params} :params
                          request-context :request-context
                          headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache (cache/context->cache context (keyword cache-name))]
-          (when cache
-            (let [result (cache/get-keys cache)]
-              {:status 200
-               :body (json/generate-string result)})))))
+      (acl/verify-ingest-management-permission request-context :read)
+      (let [cache (cache/context->cache request-context (keyword cache-name))]
+        (when cache
+          (let [result (cache/get-keys cache)]
+            {:status 200
+             :body (json/generate-string result)}))))
 
     ;; Get the value for the given key for the given cache
     (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
                                     request-context :request-context
                                     headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :read)
-        (let [cache-key (keyword cache-key)
-              cache (cache/context->cache context (keyword cache-name))
-              result (cache/get-value cache cache-key)]
-          (when result
-            {:status 200
-             :body (json/generate-string result)}))))
+      (acl/verify-ingest-management-permission request-context :read)
+      (let [cache-key (keyword cache-key)
+            cache (cache/context->cache request-context (keyword cache-name))
+            result (cache/get-value cache cache-key)]
+        (when result
+          {:status 200
+           :body (json/generate-string result)})))
 
     (POST "/clear-cache" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (cache/reset-caches context))
+      (acl/verify-ingest-management-permission request-context :update)
+      (cache/reset-caches request-context)
       {:status 200})))
 
 (defn job-api-routes
@@ -58,25 +53,22 @@
    (context "/jobs" []
      ;; Pause all jobs
      (POST "/pause" {:keys [request-context params headers]}
-       (let [context (acl/add-authentication-to-context request-context params headers)]
-         (acl/verify-ingest-management-permission context :update)
-         (jobs/pause-jobs (get-in context [:system :scheduler]))
-         {:status 204}))
+       (acl/verify-ingest-management-permission request-context :update)
+       (jobs/pause-jobs (get-in request-context [:system :scheduler]))
+       {:status 204})
 
      ;; Resume all jobs
      (POST "/resume" {:keys [request-context params headers]}
-       (let [context (acl/add-authentication-to-context request-context params headers)]
-         (acl/verify-ingest-management-permission context :update)
-         (jobs/resume-jobs (get-in context [:system :scheduler]))
-         {:status 204}))
+       (acl/verify-ingest-management-permission request-context :update)
+       (jobs/resume-jobs (get-in request-context [:system :scheduler]))
+       {:status 204})
 
      ;; Retrieve status of jobs - whether they are paused or active
      (GET "/status" {:keys [request-context params headers]}
-       (let [context (acl/add-authentication-to-context request-context params headers)]
-         (acl/verify-ingest-management-permission context :update)
-         (let [paused? (jobs/paused? (get-in context [:system :scheduler]))]
-           {:status 200
-            :body (json/generate-string {:paused paused?})})))
+       (acl/verify-ingest-management-permission request-context :update)
+       (let [paused? (jobs/paused? (get-in request-context [:system :scheduler]))]
+         {:status 200
+          :body (json/generate-string {:paused paused?})}))
 
      additional-job-routes)))
 
