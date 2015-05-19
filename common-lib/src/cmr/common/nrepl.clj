@@ -8,9 +8,12 @@
 (defrecord nREPLComponent [port server]
   lifecycle/Lifecycle
   (start [component system]
-    (let [server (nrepl/start-server :port port)]
-      (info "Started nREPL on port" port)
-      (->nREPLComponent port server)))
+    (let [server (nrepl/start-server :port port)
+          ;; if the component was specified with a port of 0, a port
+          ;; will be automatically chosen by the nREPL
+          new-port (:port server)]
+      (info "Started nREPL on port" new-port)
+      (->nREPLComponent new-port server)))
   (stop [component system]
     (when server
       (nrepl/stop-server server)
