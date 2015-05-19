@@ -40,6 +40,7 @@
          [] :granule :json
          [] :granule :echo10
          ["The mime type [application/dif+xml] is not supported for granules."] :granule :dif
+         ["The mime type [application/dif10+xml] is not supported for granules."] :granule :dif10
          [] :granule :atom
          [] :granule :iso19115
          ["The mime type [application/opendata+json] is not supported for granules."] :granule :opendata

@@ -215,7 +215,7 @@
         attribs (-> {}
                     (add-attribs :inherited inherited)
                     (add-attribs :size size)
-                    (add-attribs :rel (resource-type->link-type-uri type))
+                    (add-attribs :rel (resource-type->link-type-uri type "http://esipfed.org/ns/fedsearch/1.1/metadata#"))
                     (add-attribs :type mime-type)
                     (add-attribs :title title)
                     (add-attribs :hreflang "en-US")
@@ -255,7 +255,7 @@
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         ;; DIF collections have special cases on short-name and associated-difs
-        short-name (if (= :dif format-key) entry-id short-name)
+        short-name (if (or (= :dif format-key) (= :dif10 format-key)) entry-id short-name)
         associated-difs (if (= :dif format-key) [entry-title] associated-difs)]
     (util/remove-nil-keys
       {:id concept-id

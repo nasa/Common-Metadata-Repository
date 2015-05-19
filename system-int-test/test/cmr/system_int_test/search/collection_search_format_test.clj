@@ -42,7 +42,8 @@
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
-  (let [c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
+  (let [
+        c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   :entry-title "ET1"})
                           :echo10)
@@ -71,7 +72,19 @@
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
                                                   :version-id "V7"})
                           :iso-smap)
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap]]
+        c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-id "S8"
+                                                         :short-name "S8"
+                                                         :version-id "V8"
+                                                         :entry-title "ET8"
+                                                         :long-name "ET8"})
+                           :dif10)
+        c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-id "S9"
+                                                         :short-name "S9"
+                                                         :version-id "V9"
+                                                         :entry-title "ET9"
+                                                         :long-name "ET9"})
+                           :dif10)
+        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
     (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
@@ -86,7 +99,9 @@
            {:version "V5"} [c5-iso]
            {:version ["V5" "V6"]} [c5-iso c6-iso]
            {:short-name "S7"} [c7-smap]
-           {:version "V7"} [c7-smap]))
+           {:version "V7"} [c7-smap]
+           {:short-name "S8"} [c8-dif10]
+           {:version "V9"} [c9-dif10]))
 
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
@@ -107,7 +122,6 @@
           (search/find-metadata :collection :dif {} {:url-extension "dif"}))))
 
     (testing "Retrieving results in MENDS ISO and its aliases"
-
       (d/assert-metadata-results-match
         :iso19115 all-colls
         (search/find-metadata :collection :iso19115 {}))
@@ -131,6 +145,15 @@
                  (search/find-concepts-in-format
                    nil :collection {} {:url-extension "iso_smap"}))))))
 
+    (testing "Retrieving results in dif10"
+      (d/assert-metadata-results-match
+        :dif10 all-colls
+        (search/find-metadata :collection :dif10 {}))
+      (testing "as extension"
+        (d/assert-metadata-results-match
+          :dif10 all-colls
+          (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
+
     (testing "Get by concept id in formats"
       (testing "supported formats"
         (are [concept mime-type format-key url-extension]
@@ -148,7 +171,9 @@
              c5-iso nil :iso19115 "iso19115"
              c5-iso nil :iso19115 "iso"
              c7-smap "application/iso:smap+xml" :iso-smap nil
-             c7-smap nil :iso-smap "iso_smap"))
+             c7-smap nil :iso-smap "iso_smap"
+             c8-dif10 "application/dif10+xml" :dif10 nil
+             c8-dif10 nil :dif10 "dif10"))
 
       (testing "native format"
         ;; Native format can be specified using application/xml or not specifying any format
@@ -375,14 +400,16 @@
                                         (dc/spatial {:sr :cartesian
                                                      :gsr :cartesian
                                                      :geometries [(m/mbr -180 90 180 -90)
-                                                                  (m/mbr -10 20 30 -40)]})}))]
+                                                                  (m/mbr -10 20 30 -40)]})}))
+        coll9 (d/ingest "PROV1"
+                        (dc/collection-dif10 {:entry-title "Dataset9"}) :dif10)]
 
     (index/wait-until-indexed)
 
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
         (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                 coll8] results)))
+                                                 coll8 coll9] results)))
 
     (testing "csv is not supported"
       (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
@@ -396,11 +423,11 @@
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]
         (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                      coll8] results))
+                                                      coll8 coll9] results))
       (testing "as extension"
         (let [results (search/find-concepts-opendata :collection {} {:url-extension "opendata"})]
           (od/assert-collection-opendata-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                        coll8] results)))
+                                                        coll8 coll9] results)))
       (testing "no opendata support for granules"
         (is (= {:errors ["The mime type [application/opendata+json] is not supported for granules."],
                 :status 400}
@@ -413,7 +440,7 @@
         (is (= [200 coll-atom] [status results])))
 
       (let [coll-atom (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                      coll8] "collections.atom")
+                                                      coll8 coll9] "collections.atom")
             response (search/find-concepts-atom :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-atom] [status results])))
@@ -440,7 +467,7 @@
         (is (= [200 coll-json] [status results])))
 
       (let [coll-json (da/collections->expected-atom [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                      coll8] "collections.json")
+                                                      coll8 coll9] "collections.json")
             response (search/find-concepts-json :collection {})
             {:keys [status results]} response]
         (is (= [200 coll-json] [status results])))

@@ -126,9 +126,7 @@
   ([platform-sn]
    (platform platform-sn (d/unique-str "long-name")))
   ([platform-sn long-name]
-   (platform platform-sn long-name nil nil))
-  ([platform-sn long-name characteristics]
-   (platform platform-sn long-name characteristics nil))
+   (platform platform-sn long-name nil))
   ([platform-sn long-name characteristics & instruments]
    (c/map->Platform
      {:short-name platform-sn
@@ -136,6 +134,13 @@
       :type (d/unique-str "Type")
       :characteristics characteristics
       :instruments (if (= [nil] instruments) nil instruments)})))
+
+(defn platform-with-type
+  [platform-sn type & instruments]
+  (c/map->Platform
+    {:short-name platform-sn
+     :type type
+     :instruments instruments}))
 
 (defn projects
   "Return a sequence of projects with the given short names"
@@ -222,6 +227,25 @@
                                                                          :term "Mild"})]
                                     :organizations [(org :distribution-center "Larc")]}
          attribs (merge required-extra-dif-fields attribs)]
+     (collection attribs))))
+
+(defn collection-dif10
+  "Creates a dif collection"
+  ([]
+   (collection-dif10 {}))
+  ([attribs]
+   (let [;; The following fields are needed for DIF10 to pass xml validation
+         required-extra-dif10-fields {:organizations [(org :distribution-center "Larc")]
+                                      :science-keywords [(science-keyword {:category "upcase"
+                                                                         :topic "Cool"
+                                                                         :term "Mild"})]
+                                      :platforms [(platform-with-type "plat" "Aircraft" (instrument "inst"))]
+                                      :projects (projects "proj")
+                                      :spatial-coverage (spatial {:gsr :cartesian})
+                                      :related-urls [(related-url "type" "htt://www.foo.com")]
+                                      :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                                      :ending-date-time "1967-12-12T07:00:00.000-05:00"}
+         attribs (merge required-extra-dif10-fields attribs)]
      (collection attribs))))
 
 (defn collection-concept

@@ -112,6 +112,11 @@
   ;; DIF doesn't support restriction flag yet.
   nil)
 
+(defmethod extract-access-value "application/dif10+xml"
+  [concept]
+  ;; DIF 10 doesn't support restriction flag.
+  nil)
+
 (defmethod extract-access-value "application/iso19115+xml"
   [concept]
   (get-iso-access-value concept))

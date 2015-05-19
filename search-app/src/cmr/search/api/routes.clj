@@ -69,6 +69,7 @@
     "application/json"
     "application/echo10+xml"
     "application/dif+xml"
+    "application/dif10+xml"
     "application/atom+xml"
     "application/iso19115+xml"
     "application/opendata+json"
@@ -87,7 +88,8 @@
     "application/echo10+xml"
     "application/iso19115+xml"
     "application/iso:smap+xml"
-    "application/dif+xml"})
+    "application/dif+xml"
+    "application/dif10+xml"})
 
 (defn- search-response-headers
   "Generate headers for search response."
