@@ -121,6 +121,11 @@
     (= s "false") false
     :else (throw (Exception. (str "Unexpected value [" (pr-str s) "] for parsing a boolean.")))))
 
+(defn maybe-long
+  [s]
+  (when s
+    (Long. s)))
+
 (def type->parser
   "Maps config types to value parser functions"
   {String identity

@@ -45,4 +45,4 @@
 
 (defconfig ingest-nrepl-port
   "Port to listen for nREPL connections."
-  {:default nil :parser (fn [x] (when x (Long. x)))})
+  {:default nil :parser cfg/maybe-long})
