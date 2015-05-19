@@ -1,6 +1,7 @@
 (ns cmr.common.test.joda-time
   "Tests the joda time "
   (:require [clojure.test :refer :all]
+            [cmr.common.joda-time]
             [clj-time.core :as t]))
 
 (deftest printing-and-parsing-joda-time
