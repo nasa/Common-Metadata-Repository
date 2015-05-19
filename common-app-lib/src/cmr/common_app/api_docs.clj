@@ -87,7 +87,7 @@
                              :body (slurp (io/resource welcome-page-location))}))
 
     ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-    (GET ["/site/:resource", :resource #".*\.html$"] {scheme :scheme headers :headers {resource :resource} :params}
+    (GET ["/site/:resource", :resource #".*\.html$"] {headers :headers {resource :resource} :params}
       (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
         {:status 200
          :body (-> (str "public/site/" resource)
