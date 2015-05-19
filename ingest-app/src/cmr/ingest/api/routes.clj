@@ -216,59 +216,53 @@
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [body content-type params headers request-context]}
-            (let [context (acl/add-authentication-to-context request-context params headers)
-                  concept (body->concept :collection provider-id native-id body content-type headers)]
-              (verify-provider-against-client-id context provider-id)
+            (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+              (verify-provider-against-client-id request-context provider-id)
               (info (format "Validating Collection %s from client %s"
-                            (concept->loggable-string concept) (:client-id context)))
-              (ingest/validate-concept context concept)
+                            (concept->loggable-string concept) (:client-id request-context)))
+              (ingest/validate-concept request-context concept)
               {:status 200})))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update :provider-object provider-id)
-              (verify-provider-against-client-id context provider-id)
-              (let [concept (body->concept :collection provider-id native-id body content-type headers)]
-                (info (format "Ingesting collection %s from client %s"
-                              (concept->loggable-string concept) (:client-id context)))
-                (generate-response headers (ingest/save-concept request-context concept)))))
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+            (verify-provider-against-client-id request-context provider-id)
+            (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+              (info (format "Ingesting collection %s from client %s"
+                            (concept->loggable-string concept) (:client-id request-context)))
+              (generate-response headers (ingest/save-concept request-context concept))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :collection}
-                  context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update :provider-object provider-id)
-              (verify-provider-against-client-id context provider-id)
+                                   :concept-type :collection}]
+              (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+              (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting collection %s from client %s"
-                            (pr-str concept-attribs) (:client-id context)))
+                            (pr-str concept-attribs) (:client-id request-context)))
               (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [params headers request-context] :as request}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (verify-provider-against-client-id context provider-id)
-              (validate-granule context provider-id native-id request)
-              {:status 200})))
+            (verify-provider-against-client-id request-context provider-id)
+            (validate-granule request-context provider-id native-id request)
+            {:status 200}))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
           (PUT "/" {:keys [body content-type headers request-context params]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update :provider-object provider-id)
-              (verify-provider-against-client-id context provider-id)
-              (let [concept (body->concept :granule provider-id native-id body content-type headers)]
-                (info (format "Ingesting granule %s from client %s"
-                              (concept->loggable-string concept) (:client-id context)))
-                (generate-response headers (ingest/save-concept request-context concept)))))
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+            (verify-provider-against-client-id request-context provider-id)
+            (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+              (info (format "Ingesting granule %s from client %s"
+                            (concept->loggable-string concept) (:client-id request-context)))
+              (generate-response headers (ingest/save-concept request-context concept))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
-                                   :concept-type :granule}
-                  context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update :provider-object provider-id)
-              (verify-provider-against-client-id context provider-id)
+                                   :concept-type :granule}]
+              (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+              (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting granule %s from client %s"
-                            (pr-str concept-attribs) (:client-id context)))
+                            (pr-str concept-attribs) (:client-id request-context)))
               (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; Add routes for API documentation
@@ -278,20 +272,17 @@
       (common-routes/job-api-routes
         (routes
           (POST "/reindex-collection-permitted-groups" {:keys [headers params request-context]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
-              (jobs/reindex-collection-permitted-groups context)
-              {:status 200}))
+            (acl/verify-ingest-management-permission request-context :update)
+            (jobs/reindex-collection-permitted-groups request-context)
+            {:status 200})
           (POST "/reindex-all-collections" {:keys [headers params request-context]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
-              (jobs/reindex-all-collections context)
-              {:status 200}))
+            (acl/verify-ingest-management-permission request-context :update)
+            (jobs/reindex-all-collections request-context)
+            {:status 200})
           (POST "/cleanup-expired-collections" {:keys [headers params request-context]}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
-              (jobs/cleanup-expired-collections request-context)
-              {:status 200}))))
+            (acl/verify-ingest-management-permission request-context :update)
+            (jobs/cleanup-expired-collections request-context)
+            {:status 200})))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
@@ -303,6 +294,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       handler/site
       api-errors/invalid-url-encoding-handler

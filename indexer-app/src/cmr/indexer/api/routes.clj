@@ -36,55 +36,46 @@
       ;; Index a concept
       (POST "/" {body :body context :request-context params :params headers :headers}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-              ignore-conflict (ignore-conflict? params)
-              context (acl/add-authentication-to-context context params headers)]
+              ignore-conflict (ignore-conflict? params)]
           (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
 
       ;; reset operation available just for development purposes
       ;; delete configured elastic indexes and create them back
       (POST "/reset" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (cache/reset-caches request-context)
-          (index-svc/reset context))
+        (acl/verify-ingest-management-permission request-context :update)
+        (cache/reset-caches request-context)
+        (index-svc/reset request-context)
         {:status 204})
 
       ;; Sends an update to the index set to update mappings and index settings.
       (POST "/update-indexes" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (index-svc/update-indexes context))
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-svc/update-indexes request-context)
         {:status 200})
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
-      (POST "/reindex-provider-collections"
-        {context :request-context params :params headers :headers body :body}
-        (let [context (acl/add-authentication-to-context context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (index-svc/reindex-provider-collections
-            context
-            body))
+      (POST "/reindex-provider-collections" {:keys [request-context params headers body]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-svc/reindex-provider-collections request-context body)
         {:status 200})
 
       ;; Unindex all concepts within a provider
       (context "/provider/:provider-id" [provider-id]
-        (DELETE "/" {context :request-context params :params headers :headers}
-          (let [context (acl/add-authentication-to-context context params headers)]
-            (acl/verify-ingest-management-permission context :update)
-            (index-svc/delete-provider context provider-id)
-            {:status 200})))
+        (DELETE "/" {:keys [request-context params headers]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (index-svc/delete-provider request-context provider-id)
+          {:status 200}))
 
       ;; Unindex a concept
       (context "/:concept-id/:revision-id" [concept-id revision-id]
-        (DELETE "/" {context :request-context params :params headers :headers}
-          (let [ignore-conflict (ignore-conflict? params)
-                context (acl/add-authentication-to-context context params headers)]
-            (index-svc/delete-concept context concept-id revision-id ignore-conflict)
+        (DELETE "/" {:keys [request-context params headers]}
+          (let [ignore-conflict (ignore-conflict? params)]
+            (index-svc/delete-concept request-context concept-id revision-id ignore-conflict)
             {:status 204})))
 
-      (GET "/health" {request-context :request-context params :params}
+      (GET "/health" {:keys [request-context params]}
         (let [{pretty? :pretty} params
               {:keys [ok? dependencies]} (index-svc/health request-context)]
           {:status (if ok? 200 503)
@@ -95,6 +86,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler

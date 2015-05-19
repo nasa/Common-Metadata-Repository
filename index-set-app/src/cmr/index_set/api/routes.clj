@@ -22,35 +22,30 @@
     (context (:relative-root-url system) []
       (context "/index-sets" []
         (POST "/" {body :body request-context :request-context params :params headers :headers}
-          (let [index-set (walk/keywordize-keys body)
-                context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :update)
+          (let [index-set (walk/keywordize-keys body)]
+            (acl/verify-ingest-management-permission request-context :update)
             (r/created (index-svc/create-index-set request-context index-set))))
 
         ;; respond with index-sets in elastic
         (GET "/" {request-context :request-context params :params headers :headers}
-          (let [context (acl/add-authentication-to-context request-context params headers)]
-            (acl/verify-ingest-management-permission context :read)
-            (r/response (index-svc/get-index-sets request-context))))
+          (acl/verify-ingest-management-permission request-context :read)
+          (r/response (index-svc/get-index-sets request-context)))
 
         (context "/:id" [id]
           (GET "/" {request-context :request-context params :params headers :headers}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :read)
-              (r/response (index-svc/get-index-set request-context id))))
+            (acl/verify-ingest-management-permission request-context :read)
+            (r/response (index-svc/get-index-set request-context id)))
 
           (PUT "/" {request-context :request-context body :body params :params headers :headers}
-            (let [index-set (walk/keywordize-keys body)
-                  context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
+            (let [index-set (walk/keywordize-keys body)]
+              (acl/verify-ingest-management-permission request-context :update)
               (index-svc/update-index-set request-context index-set)
               {:status 200}))
 
           (DELETE "/" {request-context :request-context params :params headers :headers}
-            (let [context (acl/add-authentication-to-context request-context params headers)]
-              (acl/verify-ingest-management-permission context :update)
-              (index-svc/delete-index-set request-context id)
-              {:status 204}))))
+            (acl/verify-ingest-management-permission request-context :update)
+            (index-svc/delete-index-set request-context id)
+            {:status 204})))
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes
@@ -60,16 +55,16 @@
 
       ;; delete all of the indices associated with index-sets and index-set docs in elastic
       (POST "/reset" {request-context :request-context params :params headers :headers}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (cache/reset-caches request-context)
-          (index-svc/reset request-context)
-          {:status 204})))
+        (acl/verify-ingest-management-permission request-context :update)
+        (cache/reset-caches request-context)
+        (index-svc/reset request-context)
+        {:status 204}))
 
     (route/not-found "Not Found")))
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler

@@ -24,27 +24,24 @@
   (routes
     ;; delete the entire database
     (POST "/reset" {:keys [request-context params headers]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (cache/reset-caches request-context)
-        (concept-service/reset context)
-        {:status 204}))))
+      (acl/verify-ingest-management-permission request-context :update)
+      (cache/reset-caches request-context)
+      (concept-service/reset request-context)
+      {:status 204})))
 
 (def job-api-routes
   (common-routes/job-api-routes
     (routes
       ;; Trigger the old revision concept cleanup
       (POST "/old-revision-concept-cleanup" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (mdb-jobs/old-revision-concept-cleanup context)
-          {:status 204}))
+        (acl/verify-ingest-management-permission request-context :update)
+        (mdb-jobs/old-revision-concept-cleanup request-context)
+        {:status 204})
 
       (POST "/expired-concept-cleanup" {:keys [request-context params headers]}
-        (let [context (acl/add-authentication-to-context request-context params headers)]
-          (acl/verify-ingest-management-permission context :update)
-          (mdb-jobs/expired-concept-cleanup context)
-          {:status 204})))))
+        (acl/verify-ingest-management-permission request-context :update)
+        (mdb-jobs/expired-concept-cleanup request-context)
+        {:status 204}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -63,6 +60,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler

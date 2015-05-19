@@ -42,28 +42,25 @@
 
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (save-provider request-context params {:provider-id (get body "provider-id")
-                                               :cmr-only (get body "cmr-only" false)})))
+      (acl/verify-ingest-management-permission request-context :update)
+      (save-provider request-context params {:provider-id (get body "provider-id")
+                                             :cmr-only (get body "cmr-only" false)}))
 
     ;; update a provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
                           provider :body
                           request-context :request-context
                           headers :headers}
-      (let [provider (walk/keywordize-keys provider)
-            context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
+      (let [provider (walk/keywordize-keys provider)]
+        (acl/verify-ingest-management-permission request-context :update)
         (update-provider request-context params provider)))
 
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params
                              request-context :request-context
                              headers :headers}
-      (let [context (acl/add-authentication-to-context request-context params headers)]
-        (acl/verify-ingest-management-permission context :update)
-        (delete-provider request-context params provider-id)))
+      (acl/verify-ingest-management-permission request-context :update)
+      (delete-provider request-context params provider-id))
 
     ;; get a list of providers
     (GET "/" {:keys [request-context params]}

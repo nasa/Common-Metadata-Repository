@@ -38,6 +38,14 @@
       (assoc :token (get-token params headers))
       (assoc :client-id (get-client-id headers))))
 
+(defn add-authentication-handler
+  "This is a ring handler that adds the authentication token and client id to the request context."
+  [f]
+  (fn [request]
+    (let [{:keys [request-context params headers]} request
+          context (add-authentication-to-context request-context params headers)]
+      (f (assoc request :request-context context)))))
+
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified
   by the token in the context."
