@@ -35,3 +35,8 @@
 (def result-set-fetch-size
   "Gets the setting for query fetch-size (number of rows to fetch at once)"
   (cfg/config-value-fn :result-set-fetch-size "200" #(Integer/parseInt ^String %)))
+
+(defconfig metadata-db-nrepl-port
+  "Port to listen for nREPL connections"
+  {:default nil
+   :parser cfg/maybe-long})
