@@ -68,7 +68,7 @@
                  :stop mdb-system/stop}
    :index-set {:start index-set-system/start
                :stop index-set-system/stop}
-   :indexer {:start indexer-system/start
+   :indexer {:start indexer-system/dev-start
              :stop indexer-system/stop}
    :ingest {:start ingest-system/start
             :stop ingest-system/stop}
@@ -76,7 +76,7 @@
             :stop search-system/stop}
    :bootstrap {:start bootstrap-system/start
                :stop bootstrap-system/stop}
-   :cubby {:start cubby-system/start
+   :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}})
 
 (def app-startup-order

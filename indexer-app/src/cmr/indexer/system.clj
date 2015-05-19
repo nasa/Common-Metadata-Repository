@@ -73,27 +73,38 @@
 (defn start
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
-  [this]
+  [system]
   (info "System starting")
   (let [started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(when % (lifecycle/start % system))))
-                               this
+                               system
                                component-order)]
 
     (info "System started")
+    started-system))
+
+(defn dev-start
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  [system]
+  (let [started-system (start system)
+        context {:system started-system}]
+    ;; The indexes will not be created if they already exist.
+    (es/create-indexes context)
+    (when (es/requires-update? context)
+      (es/update-indexes context))
     started-system))
 
 
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  [this]
+  [system]
   (info "System shutting down")
   (let [stopped-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(when % (lifecycle/stop % system))))
-                               this
+                               system
                                (reverse component-order))]
     (info "System stopped")
     stopped-system))
