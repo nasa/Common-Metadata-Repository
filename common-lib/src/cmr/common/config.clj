@@ -122,6 +122,7 @@
     :else (throw (Exception. (str "Unexpected value [" (pr-str s) "] for parsing a boolean.")))))
 
 (defn maybe-long
+  "Returns a Long parsed from s when s is not nil, otherwise nil."
   [s]
   (when s
     (Long. s)))
