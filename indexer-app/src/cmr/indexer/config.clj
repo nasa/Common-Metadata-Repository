@@ -19,3 +19,8 @@
   "Returns true if indexer is configured to use the message queue for indexing and false otherwise."
   []
   (= "queue" (indexing-communication-method)))
+
+(defconfig indexer-nrepl-port
+  "Port to listen for nREPL connections"
+  {:default nil
+   :parser cfg/maybe-long})
