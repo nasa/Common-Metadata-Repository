@@ -102,7 +102,7 @@
   (info "System starting")
   (let [started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/start % system)))
+                                            #(when % (lifecycle/start % system))))
                                (update-in this [:metadata-db] mdb-system/start)
                                component-order)]
     (info "System started")
@@ -116,7 +116,7 @@
   (info "System shutting down")
   (let [stopped-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/stop % system)))
+                                            #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))
         stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)]

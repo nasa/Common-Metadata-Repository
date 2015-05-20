@@ -50,60 +50,60 @@
 
         granule (d/item->concept (dg/granule collection))]
 
-    ; (testing "ingest granule update permissions"
-    ;   (are [token]
-    ;        (ingest-succeeded? (ingest/ingest-concept granule {:token token}))
-    ;        provider-admin-update-token
-    ;        provider-admin-read-update-token
-    ;        provider-admin-update-delete-token)
+    (testing "ingest granule update permissions"
+      (are [token]
+           (ingest-succeeded? (ingest/ingest-concept granule {:token token}))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
 
-    ;   (are [token]
-    ;        (not (ingest-succeeded? (ingest/ingest-concept granule {:token token})))
-    ;        guest-token
-    ;        user-token
-    ;        super-admin-token
-    ;        another-prov-admin-token
-    ;        provider-admin-read-token))
+      (are [token]
+           (not (ingest-succeeded? (ingest/ingest-concept granule {:token token})))
+           guest-token
+           user-token
+           super-admin-token
+           another-prov-admin-token
+           provider-admin-read-token))
 
     (testing "ingest granule delete permissions"
-      ; (are [token]
-      ;      (ingest-succeeded? (ingest/delete-concept granule {:token token}))
-      ;      provider-admin-update-token
-      ;      provider-admin-read-update-token
-      ;      provider-admin-update-delete-token)
+      (are [token]
+           (ingest-succeeded? (ingest/delete-concept granule {:token token}))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
       (are [token]
            (not (ingest-succeeded? (ingest/delete-concept granule {:token token})))
-           ; guest-token
-           ; user-token
-           ; super-admin-token
-           ; another-prov-admin-token
+           guest-token
+           user-token
+           super-admin-token
+           another-prov-admin-token
+           provider-admin-read-token))
+
+    (testing "ingest collection update permissions"
+      (are [token]
+           (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
+      (are [token]
+           (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token)))
+           guest-token
+           user-token
+           super-admin-token
+           another-prov-admin-token
+           provider-admin-read-token))
+
+    (testing "ingest collection delete permissions"
+      (are [token]
+           (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token}))
+           provider-admin-update-token
+           provider-admin-read-update-token
+           provider-admin-update-delete-token)
+      (are [token]
+           (not (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token})))
+           guest-token
+           user-token
+           super-admin-token
+           another-prov-admin-token
            provider-admin-read-token))))
-
-    ; (testing "ingest collection update permissions"
-    ;   (are [token]
-    ;        (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token))
-    ;        provider-admin-update-token
-    ;        provider-admin-read-update-token
-    ;        provider-admin-update-delete-token)
-    ;   (are [token]
-    ;        (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token)))
-    ;        guest-token
-    ;        user-token
-    ;        super-admin-token
-    ;        another-prov-admin-token
-    ;        provider-admin-read-token))
-
-    ; (testing "ingest collection delete permissions"
-    ;   (are [token]
-    ;        (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token}))
-    ;        provider-admin-update-token
-    ;        provider-admin-read-update-token
-    ;        provider-admin-update-delete-token)
-    ;   (are [token]
-    ;        (not (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token})))
-    ;        guest-token
-    ;        user-token
-    ;        super-admin-token
-    ;        another-prov-admin-token
-    ;        provider-admin-read-token))))
 
