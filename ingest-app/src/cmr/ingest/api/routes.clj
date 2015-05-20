@@ -289,7 +289,8 @@
     (route/not-found "Not Found")))
 
 (defn default-format-fn
-  "Determine the format that results should be returned in based on the request URI."
+  "Determine the format that results should be returned in based on the request URI and http
+  actions."
   [{:keys [uri request-method]}]
   (if (or (re-find #"validate" uri)
           (some #{request-method} #{:put :delete}))
