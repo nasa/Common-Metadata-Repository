@@ -4,6 +4,7 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.nrepl :as nrepl]
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
@@ -32,7 +33,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :jobs-db :db :scheduler :web])
+  component-order [:log :jobs-db :db :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -76,6 +77,7 @@
              :jobs-db (oracle/create-db (bootstrap-config/db-spec "db-sync-pool"))
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :scheduler (jobs/create-clustered-scheduler `system-holder :jobs-db bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)

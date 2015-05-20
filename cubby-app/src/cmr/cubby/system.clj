@@ -4,6 +4,7 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.nrepl :as nrepl]
             [cmr.cubby.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
@@ -23,9 +24,14 @@
   application is deployed in an environment where it is accessed through a VIP."
   {:default ""})
 
+(defconfig cubby-nrepl-port
+  "Port to listen for nREPL connections"
+  {:default nil
+   :parser cfg/maybe-long})
+
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :db :web])
+  [:log :db :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -33,6 +39,7 @@
   (let [sys {:log (log/create-logger)
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (cubby-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
              :relative-root-url (cubby-relative-root-url)
              :zipkin (context/zipkin-config "cubby" false)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
@@ -50,6 +57,12 @@
     (info "cubby System started")
     started-system))
 
+(defn dev-start
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  [system]
+  (let [started-system (start system)]
+    (elastic-cache-store/create-index-or-update-mappings (:db started-system))
+    started-system))
 
 (defn stop
   "Performs side effects to shut down the system and release its

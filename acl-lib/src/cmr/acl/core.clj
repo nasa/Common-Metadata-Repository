@@ -31,12 +31,20 @@
           CURL_CLIENT_ID))
       UNKNOWN_CLIENT_ID))
 
-(defn add-authentication-to-context
+(defn- add-authentication-to-context
   "Adds information to the context including the current token and the client id"
   [context params headers]
   (-> context
       (assoc :token (get-token params headers))
       (assoc :client-id (get-client-id headers))))
+
+(defn add-authentication-handler
+  "This is a ring handler that adds the authentication token and client id to the request context.
+  It expects the request context is already associated with the request."
+  [f]
+  (fn [request]
+    (let [{:keys [request-context params headers]} request]
+      (f (update-in request [:request-context] add-authentication-to-context params headers)))))
 
 (defn context->sids
   "Returns the security identifiers (group guids and :guest or :registered) of the user identified

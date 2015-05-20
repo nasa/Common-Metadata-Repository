@@ -5,6 +5,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
+            [cmr.common.nrepl :as nrepl]
             [cmr.system-trace.context :as context]
             [cmr.ingest.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
@@ -18,17 +19,26 @@
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.config :as rmq-conf]
-            [cmr.common.config :as cfg]
+            [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.ingest.services.providers-cache :as pc]))
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :db :queue-broker :scheduler :web])
+  component-order [:log :caches :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
   (atom nil))
+
+(defconfig ingest-public-protocol
+  "The protocol to use in documentation examples for the ingest application."
+  {:default "http"})
+
+(def ingest-public-conf
+  "Public ingest configuration used for generating example requests in documentation"
+  {:protocol (ingest-public-protocol)
+   :relative-root-url (transmit-config/ingest-relative-root-url)})
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -37,6 +47,7 @@
   ([connection-pool-name]
    (let [sys {:log (log/create-logger)
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
+              :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))
               :zipkin (context/zipkin-config "Ingest" false)
               :scheduler (jobs/create-clustered-scheduler
@@ -47,7 +58,7 @@
                        af/acl-cache-key (af/create-acl-cache
                                           (stl-cache/create-single-thread-lookup-cache)
                                           [:system-object :provider-object])}
-              :relative-root-url (transmit-config/ingest-relative-root-url)
+              :ingest-public-conf ingest-public-conf
               :queue-broker (when (config/use-index-queue?)
                               (rmq/create-queue-broker (assoc (rmq-conf/default-config)
                                                               :queues [(config/index-queue-name)])))}]

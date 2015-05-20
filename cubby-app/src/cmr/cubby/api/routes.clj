@@ -82,9 +82,8 @@
 
 (def admin-routes
   (POST "/reset" {:keys [request-context params headers]}
-    (let [context (acl/add-authentication-to-context request-context params headers)]
-      (acl/verify-ingest-management-permission context :update)
-      (reset context))))
+    (acl/verify-ingest-management-permission request-context :update)
+    (reset request-context)))
 
 (defn- build-routes [system]
   (routes
@@ -96,6 +95,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler

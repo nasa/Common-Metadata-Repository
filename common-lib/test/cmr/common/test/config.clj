@@ -120,3 +120,6 @@
   (testing "default using a function call"
     (is (= 3 (test-default-fn-call)))))
 
+(deftest test-maybe-long
+  (is (= 99 (c/maybe-long "99")))
+  (is (nil? (c/maybe-long nil))))

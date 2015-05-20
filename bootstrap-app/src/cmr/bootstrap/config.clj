@@ -22,3 +22,8 @@
     (oracle-config/db-ons-config)
     (bootstrap-username)
     (bootstrap-password)))
+
+(defconfig bootstrap-nrepl-port
+  "Port to listen for nREPL connections"
+  {:default nil
+   :parser cfg/maybe-long})
