@@ -179,7 +179,7 @@
 
 (deftest update-collection-with-different-formats-test
   (testing "update collection in different formats ..."
-    (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :iso19115 :iso-smap])]
+    (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
                            (dc/collection {:entry-id "S1"
                                            :short-name "S1"
@@ -191,7 +191,10 @@
                                            :science-keywords [(dc/science-keyword {:category "upcase"
                                                                                    :topic "Cool"
                                                                                    :term "Mild"})]
-                                           :organizations [(dc/org :distribution-center "Larc")]})
+                                           :organizations [(dc/org :distribution-center "Larc")]
+                                           ;; The following fields are needed for DIF10 to pass xml validation
+                                           :beginning-date-time "1965-12-12T12:00:00Z"
+                                           :ending-date-time "1967-12-12T12:00:00Z"})
                            coll-format)]
         (index/wait-until-indexed)
         (is (= expected-rev (:revision-id coll)))
@@ -349,6 +352,17 @@
                   "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel, "
                   "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Discipline, "
                   "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Parameters}' is expected.")]
+
+       :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
+               "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."
+               (str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'Summary'."
+                    " One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Project,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Quality,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Access_Constraints,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Use_Constraints,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Dataset_Language,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center,"
+                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Organization}' is expected.")]
 
        :iso19115 [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
                        "starting with element 'gmd:XXXX'. One of "

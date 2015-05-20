@@ -13,6 +13,7 @@
    "application/iso:smap+xml" :iso-smap
    "application/iso19115+xml" :iso19115
    "application/dif+xml" :dif
+   "application/dif10+xml" :dif10
    "text/csv" :csv
    "application/atom+xml" :atom
    "application/vnd.google-earth.kml+xml" :kml
@@ -28,6 +29,7 @@
    :iso "application/iso19115+xml"
    :iso19115 "application/iso19115+xml"
    :dif "application/dif+xml"
+   :dif10 "application/dif10+xml"
    :csv "text/csv"
    :atom "application/atom+xml"
    :kml "application/vnd.google-earth.kml+xml"

@@ -23,19 +23,16 @@
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
-               (empty? (c/validate-xml xml)))))
+             (empty? (c/validate-xml xml)))))
 
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
     [(umm-c/map->RelatedURL {:url "Not provided"})]
-    (seq (map #(umm-c/map->RelatedURL (dissoc % :mime-type :size)) related-urls))))
-
-(defn- publication-references->expected-parsed
-  [publication-references]
-  (seq (map #(umm-c/map->PublicationReference (dissoc % :doi)) publication-references)))
+    related-urls))
 
 (defn- spatial-coverage->expected-parsed
+  "DIF10 requires spatial coverage and it accepts only a single geometry"
   [spatial-coverage]
   (if (nil? spatial-coverage)
     (umm-c/map->SpatialCoverage {:granule-spatial-representation :cartesian})
@@ -43,13 +40,11 @@
 
 (defn- product->expected-parsed
   [short-name long-name]
-    (fn [product]
-      (-> product
-          (assoc-in [:short-name] short-name)
-          (assoc-in [:long-name] long-name)
-          (dissoc :processing-level-id)
-          (dissoc :version-description)
-          umm-c/map->Product)))
+  (fn [product]
+    (-> product
+        (assoc-in [:short-name] short-name)
+        (assoc-in [:long-name] long-name)
+        umm-c/map->Product)))
 
 (defn- science-keywords->expected-parsed
   [science-keywords]
@@ -59,9 +54,6 @@
                                  :term     "Not provided"})]
     science-keywords))
 
-(defn- platform-type->expected-parsed
-  [type]
-  (if (platform/PLATFORM_TYPES type) type "Not provided"))
 
 (defn- instrument->expected-parsed
   [instruments]
@@ -78,7 +70,7 @@
         :instruments [(umm-c/map->Instrument {:short-name "Not provided"})]})]
     (for [platform platforms]
       (-> platform
-          (update-in [:type] platform-type->expected-parsed)
+          (update-in [:type] (fn [type] (if (platform/PLATFORM_TYPES type) type "Not provided")))
           (update-in [:instruments] instrument->expected-parsed)))))
 
 (defn- projects->expected-parsed
@@ -87,31 +79,43 @@
     [(umm-c/map->Project {:short-name "Not provided"})]
     projects))
 
+(defn- remove-field-from-records
+  [records field]
+  (seq (map #(assoc % field nil) records)))
+
+(defn- remove-unsupported-fields
+  "Remove fields unsupported and not yet supported in DIF10"
+  [coll]
+  (-> coll
+      (dissoc :spatial-keywords :associated-difs :access-value :metadata-language :personnel
+              :collection-associations  :quality :temporal-keywords :two-d-coordinate-systems
+              :product-specific-attributes :use-constraints)
+      (assoc-in  [:product :processing-level-id] nil)
+      (assoc-in [:product :version-description] nil)
+      (update-in [:publication-references] remove-field-from-records :doi)
+      (update-in [:related-urls] remove-field-from-records :size)
+      umm-c/map->UmmCollection))
+
+(defn- add-required-placeholder-fields
+  "Add placeholders for fields which are empty but are marked as required in DIF10 schema"
+  [coll]
+  (-> coll
+      (update-in [:science-keywords] science-keywords->expected-parsed)
+      (update-in [:platforms] platforms->expected-parsed)
+      (update-in [:projects] projects->expected-parsed)
+      (update-in [:related-urls] related-urls->expected-parsed)
+      (update-in [:spatial-coverage] spatial-coverage->expected-parsed)))
+
 (defn- umm->expected-parsed-dif10
-  "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record"
+  "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record and
+  fields which are required by DIF 10 are added."
   [coll]
   (let [short-name (:entry-id coll)
         long-name (:entry-title coll)]
     (-> coll
-        (update-in [:science-keywords] science-keywords->expected-parsed)
-        (update-in [:platforms] platforms->expected-parsed)
-        (update-in [:projects] projects->expected-parsed)
-        (update-in  [:product] (product->expected-parsed short-name long-name))
-        (dissoc :spatial-keywords)
-        (dissoc :associated-difs)
-        (dissoc :access-value)
-
-        (update-in [:related-urls] related-urls->expected-parsed)
-        (dissoc :metadata-language)
-        (dissoc :collection-associations)
-        (dissoc :personnel)
-        (dissoc :quality)
-        (dissoc :temporal-keywords)
-        (dissoc :two-d-coordinate-systems)
-        (update-in [:publication-references] publication-references->expected-parsed)
-        (dissoc :product-specific-attributes)
-        (dissoc :use-constraints)
-        (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+        remove-unsupported-fields
+        add-required-placeholder-fields
+        (update-in [:product] (product->expected-parsed short-name long-name))
         umm-c/map->UmmCollection)))
 
 (defspec generate-and-parse-collection-test 100
@@ -120,6 +124,81 @@
                  xml (dif10/umm->dif10-xml collection)
                  actual (c/parse-collection xml)]
              (= expected actual))))
+
+(defn- remove-not-provided
+  [values sub-key]
+  (seq (remove #(= (sub-key %) "Not provided") values)))
+
+(defn remove-dif10-place-holder-fields
+  "Remove dummy fields from a UMM record which would come in when a generated UMM is converted to
+  DIF 10 XML and parsed back to the UMM record. The dummy fields are added during the the creation
+  of DIF 10 XML to satisfy the DIF 10 schema constraints. The fields which are maked as Not provided will
+  be removed by this function."
+  [coll]
+  (-> coll
+      (update-in [:related-urls] remove-not-provided :url)
+      (update-in [:platforms] remove-not-provided :short-name)
+      (update-in [:platforms] (fn [platforms]
+                                (for [platform platforms]
+                                  (update-in platform [:instruments]
+                                             remove-not-provided :short-name))))
+      (update-in [:projects] remove-not-provided :short-name)
+      (update-in [:science-keywords] remove-not-provided :category)))
+
+(defn- revert-spatial-coverage
+  "The spatial coverage is removed if spatial coverage in the original UMM collection is absent.
+  The geometries in the spatial coverge are reverted to original since DIF 10 only reads the first
+  geometry"
+  [spatial-coverage orig-spatial-coverage]
+  (when orig-spatial-coverage
+    (assoc spatial-coverage :geometries (:geometries orig-spatial-coverage))))
+
+(defn- revert-platform-type
+  "The platform types are reverted to original types since DIF 10 uses enumeration types which
+  in general would not match with types in UMM which are simple strings and so will be marked as
+  Not provided during the transformation process."
+  [platforms orig-platforms]
+  (seq (for [[platform orig-platform]
+             (map list platforms orig-platforms)]
+         (assoc platform :type (:type orig-platform)))))
+
+(defn- revert-product
+  "DIF 10 does not have short name and long name, Short name and long name are ignored during the
+  creation of DIF10 XML from UMM. This restores the short name and long name in the parsed XML
+  from the original collection"
+  [product orig-product]
+  (let [{:keys [short-name long-name]} orig-product]
+    (assoc product :short-name short-name :long-name long-name)))
+
+(defn rectify-dif10-fields
+  "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
+  parsed back to UMM. The fields are modified during the creation of the XML to satisfy the schema
+  constraints of DIF 10."
+  [coll original-coll]
+  (let [{:keys [platforms spatial-coverage product]} original-coll]
+    (-> coll
+        (update-in [:platforms] revert-platform-type platforms)
+        (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
+        (update-in [:product] revert-product product))))
+
+(defn restore-modified-fields
+  "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
+  and back are reverted using the earlier record for testing purposes."
+  [dif10-umm orig-umm]
+  (-> dif10-umm
+      remove-dif10-place-holder-fields
+      (rectify-dif10-fields orig-umm)))
+
+(defspec generate-and-parse-collection-between-formats-test 100
+  (for-all [collection coll-gen/collections]
+           (let [xml (dif10/umm->dif10-xml collection)
+                 parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
+                 echo10-xml (echo10/umm->echo10-xml parsed-dif10)
+                 parsed-echo10 (echo10-c/parse-collection echo10-xml)
+                 expected-parsed (test-echo10/umm->expected-parsed-echo10
+                                   (remove-unsupported-fields collection))]
+             (and  (= expected-parsed parsed-echo10)
+                  (empty? (echo10-c/validate-xml echo10-xml))))))
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
