@@ -129,7 +129,10 @@
          :metadata (umm/umm->xml item format-key)}))))
 
 (defn- items-match?
-  "Returns true if the search result items match the expected items"
+  "Returns true if the search result items match the expected items. The argument echo-compatible?
+  when set to true converts the expected items to echo compatible format before comparing with the
+  result items. format-item is a function which can be used to do additional formatting on the data
+  before the comparison. Default is to not do any additional formatting."
   ([format-key items result-items & {:keys [echo-compatible? format-item]
                                      :or {echo-compatible? false
                                           format-item identity}}]

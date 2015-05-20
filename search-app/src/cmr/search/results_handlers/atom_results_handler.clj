@@ -120,7 +120,7 @@
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
-        associated-difs (if (some #{metadata-format} ["dif" "dif10"])
+        associated-difs (if (#{"dif" "dif10"} metadata-format)
                           [entry-title] associated-difs)]
     {:id concept-id
      :score (r/normalize-score score)

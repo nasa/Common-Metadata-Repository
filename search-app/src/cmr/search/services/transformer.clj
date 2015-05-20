@@ -114,7 +114,7 @@
 
 (defmethod extract-access-value "application/dif10+xml"
   [concept]
-  ;; DIF 10 doesn't support restriction flag.
+  ;; TODO: Add support for Access Constraints, CMR-1574
   nil)
 
 (defmethod extract-access-value "application/iso19115+xml"

@@ -255,8 +255,8 @@
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         ;; DIF collections have special cases on short-name and associated-difs
-        short-name (if (some #{format-key} [:dif :dif10]) entry-id short-name)
-        associated-difs (if (some #{format-key} [:dif :dif10]) [entry-title] associated-difs)]
+        short-name (if (#{:dif :dif10} format-key) entry-id short-name)
+        associated-difs (if (#{:dif :dif10} format-key) [entry-title] associated-difs)]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title

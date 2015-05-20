@@ -80,13 +80,9 @@
     [(umm-c/map->Project {:short-name "Not provided"})]
     projects))
 
-(defn- remove-unsupported-related-url-size
-  [related-urls]
-  (seq (map #(umm-c/map->RelatedURL (dissoc % :size)) related-urls)))
-
-(defn- remove-unsupported-doi
-  [publication-references]
-  (seq (map #(umm-c/map->PublicationReference (dissoc % :doi)) publication-references)))
+(defn- remove-field-from-records
+  [records field]
+  (seq (map #(assoc % field nil) records)))
 
 (defn- remove-unsupported-fields
   "Remove fields unsupported and not yet supported in DIF10"
@@ -97,8 +93,8 @@
               :product-specific-attributes :use-constraints)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:product :version-description] nil)
-      (update-in [:publication-references] remove-unsupported-doi)
-      (update-in [:related-urls] remove-unsupported-related-url-size)
+      (update-in [:publication-references] remove-field-from-records :doi)
+      (update-in [:related-urls] remove-field-from-records :size)
       umm-c/map->UmmCollection))
 
 (defn- add-required-placeholder-fields
@@ -131,9 +127,8 @@
              (= expected actual))))
 
 (defn- remove-not-provided
-  [sub-key]
-  (fn [field]
-    (seq (remove #(= (sub-key %) "Not provided") field))))
+  [values sub-key]
+  (seq (remove #(= (sub-key %) "Not provided") values)))
 
 (defn remove-dif10-place-holder-fields
   "Remove dummy fields from a UMM record which would come in when a generated UMM is converted to
@@ -142,42 +137,39 @@
   be removed by this function."
   [coll]
   (-> coll
-      (update-in [:related-urls] (remove-not-provided :url))
-      (update-in [:platforms] (remove-not-provided :short-name))
+      (update-in [:related-urls] remove-not-provided :url)
+      (update-in [:platforms] remove-not-provided :short-name)
       (update-in [:platforms] (fn [platforms]
                                 (for [platform platforms]
                                   (update-in platform [:instruments]
-                                             (remove-not-provided :short-name)))))
-      (update-in [:projects] (remove-not-provided :short-name))
-      (update-in [:science-keywords] (remove-not-provided :category))))
+                                             remove-not-provided :short-name))))
+      (update-in [:projects] remove-not-provided :short-name)
+      (update-in [:science-keywords] remove-not-provided :category)))
 
 (defn- revert-spatial-coverage
   "The spatial coverage is removed if spatial coverage in the original UMM collection is absent.
   The geometries in the spatial coverge are reverted to original since DIF 10 only reads the first
   geometry"
-  [orig-spatial-coverage]
-  (fn [spatial-coverage]
-    (when orig-spatial-coverage
-      (assoc spatial-coverage :geometries (:geometries orig-spatial-coverage)))))
+  [spatial-coverage orig-spatial-coverage]
+  (when orig-spatial-coverage
+    (assoc spatial-coverage :geometries (:geometries orig-spatial-coverage))))
 
 (defn- revert-platform-type
   "The platform types are reverted to original types since DIF 10 uses enumeration types which
-  in general would not match with types in UMM which are simple strings."
-  [orig-platforms]
-  (let [platform-types (map #(:type %) orig-platforms)]
-    (fn [platforms]
-      (seq (for [[platform type]
-                 (map list platforms platform-types)]
-             (assoc platform :type type))))))
+  in general would not match with types in UMM which are simple strings and so will be marked as
+  Not provided during the transformation process."
+  [platforms orig-platforms]
+  (seq (for [[platform orig-platform]
+             (map list platforms orig-platforms)]
+         (assoc platform :type (:type orig-platform)))))
 
 (defn- revert-product
   "DIF 10 does not have short name and long name, Short name and long name are ignored during the
   creation of DIF10 XML from UMM. This restores the short name and long name in the parsed XML
   from the original collection"
-  [orig-product]
+  [product orig-product]
   (let [{:keys [short-name long-name]} orig-product]
-    (fn [product]
-      (assoc product :short-name short-name :long-name long-name))))
+    (assoc product :short-name short-name :long-name long-name)))
 
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
@@ -186,9 +178,9 @@
   [coll original-coll]
   (let [{:keys [platforms spatial-coverage product]} original-coll]
     (-> coll
-        (update-in [:platforms] (revert-platform-type platforms))
-        (update-in [:spatial-coverage] (revert-spatial-coverage spatial-coverage))
-        (update-in [:product] (revert-product product)))))
+        (update-in [:platforms] revert-platform-type platforms)
+        (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
+        (update-in [:product] revert-product product))))
 
 (defn restore-modified-fields
   "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
