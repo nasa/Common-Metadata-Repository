@@ -6,8 +6,9 @@
             [clojure.set :as set]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
-(def ^:private runtime-config-values
-  "An atom containing a map of explicitly set config values."
+(defonce ^{:private true
+           :doc "An atom containing a map of explicitly set config values."}
+  runtime-config-values
   (atom {}))
 
 (defn set-config-value!
@@ -68,10 +69,12 @@
            env-value
            parsed-default)))))
 
-(def configs-atom
-  "This contains information about all of the configuration parameters that have been added using
-  defconfig. It is used for allowing documentation generation of configuration parameters. It's a map
-  of namespaces to configuration keys to options maps."
+(defonce ^{:doc "This contains information about all of the
+                 configuration parameters that have been added using
+                 defconfig. It is used for allowing documentation
+                 generation of configuration parameters. It's a map of
+                 namespaces to configuration keys to options maps."}
+  configs-atom
   (atom {}))
 
 (defn register-config
@@ -118,6 +121,12 @@
     (= s "false") false
     :else (throw (Exception. (str "Unexpected value [" (pr-str s) "] for parsing a boolean.")))))
 
+(defn maybe-long
+  "Returns a Long parsed from s when s is not nil, otherwise nil."
+  [s]
+  (when s
+    (Long. s)))
+
 (def type->parser
   "Maps config types to value parser functions"
   {String identity
@@ -160,9 +169,9 @@
                       (resolve config-type)
                       String)]
     (when-not doc-string
-      (throw (Exception. "defconfig doc-string is required")))
-    (when (nil? default)
-      (throw (Exception. "defconfig default is required")))
+      (throw (Exception. "defconfig :doc-string is required")))
+    (when (not (contains? options :default))
+      (throw (Exception. "defconfig :default is required")))
     (when (and (nil? parser) config-type (nil? (type->parser config-type)))
       (throw (Exception. (str "Unrecognized defconfig type: " config-type))))
 

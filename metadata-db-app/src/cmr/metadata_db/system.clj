@@ -5,6 +5,7 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [clojure.string :as string]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.nrepl :as nrepl]
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.oracle.connection :as oracle]
@@ -22,7 +23,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:db :log :scheduler :web])
+  component-order [:db :log :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -38,6 +39,7 @@
                          (config/result-set-fetch-size))
               :log (log/create-logger)
               :web (web/create-web-server (config/metadata-db-port) routes/make-api)
+              :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
               :zipkin (context/zipkin-config "Metadata DB" false)
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}

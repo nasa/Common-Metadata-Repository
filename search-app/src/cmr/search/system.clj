@@ -1,6 +1,7 @@
 (ns cmr.search.system
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.nrepl :as nrepl]
             [cmr.common.api.web-server :as web]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
@@ -40,6 +41,11 @@
   {:default 3003
    :type Long})
 
+(defconfig search-nrepl-port
+  "Port to listen for nREPL connections"
+  {:default nil
+   :parser cfg/maybe-long})
+
 (def search-public-conf
   {:protocol (search-public-protocol)
    :host (search-public-host)
@@ -49,7 +55,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :search-index :scheduler :web])
+  component-order [:log :caches :search-index :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -67,6 +73,7 @@
              :metadata-db metadata-db
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache

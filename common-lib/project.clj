@@ -13,6 +13,7 @@
                  [camel-snake-kebab "0.3.0" :exclusions [org.clojure/clojure]]
                  [org.clojure/core.cache "0.6.4"]
                  [org.clojure/data.codec "0.1.0"]
+                 [org.clojure/tools.nrepl "0.2.10"]
                  [clojurewerkz/quartzite "2.0.0"]
                  [clj-time "0.9.0"]
                  [cheshire "5.4.0"]
