@@ -50,6 +50,12 @@
     (info "cubby System started")
     started-system))
 
+(defn dev-start
+  "Starts the system but performs extra calls to make sure all indexes are created in elastic."
+  [system]
+  (let [started-system (start system)]
+    (elastic-cache-store/create-index-or-update-mappings (:db started-system))
+    started-system))
 
 (defn stop
   "Performs side effects to shut down the system and release its

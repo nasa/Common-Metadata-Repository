@@ -53,7 +53,8 @@
       (do
         (info "Creating cubby index")
         (esi/create conn index-name :settings index-settings :mappings mappings)
-        (esc/wait-for-healthy-elastic elastic-store)))))
+        (esc/wait-for-healthy-elastic elastic-store)))
+    (esi/refresh conn index-name)))
 
 (comment
 
@@ -171,8 +172,7 @@
     (when (esi/exists? conn index-name)
       (info "Deleting the cubby index")
       (esi/delete conn index-name))
-    (create-index-or-update-mappings this)
-    (esi/refresh conn index-name)))
+    (create-index-or-update-mappings this)))
 
 (defn create-elastic-cache-store
   [config]
