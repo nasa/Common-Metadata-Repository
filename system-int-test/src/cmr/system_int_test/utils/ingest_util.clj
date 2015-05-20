@@ -158,7 +158,7 @@
   (json/decode (:body response) true))
 
 (defn parse-ingest-response
-  "Parse an ingest repsonse (if required) and append a status"
+  "Parse an ingest response (if required) and append a status"
   [response options]
   (if (get options :raw? false)
     response

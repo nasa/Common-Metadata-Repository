@@ -90,6 +90,15 @@
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"XML content is too short." (first errors))))))
 
+;; Verify that XML is returned for ingest errros when the headers aren't set
+(deftest collection-ingest-with-errors-no-accept-header-test
+  (testing "xml response"
+    (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
+          response (ingest/ingest-concept concept-with-empty-body
+                                          {:raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (re-find #"XML content is too short." (first errors))))))
+
 ;; Verify that the accept header works with deletions
 (deftest delete-collection-with-accept-header-test
   (testing "json response"
@@ -105,6 +114,15 @@
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (ingest/parse-ingest-body :xml response))))))
+
+;; Verify that XML is returned for deletion errros when the accept header isn't set
+(deftest collection-deletion-with-errors-no-accept-header-test
+  (testing "xml response"
+    (let [concept (dc/collection-concept {})
+          response (ingest/delete-concept concept {:raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (re-find #"concept-type: :collection provider-id: PROV1 native-id: .* does not exist"
+                   (first errors))))))
 
 ;; Verify that xml response is returned for ingests of xml content type
 (deftest collection-ingest-with-reponse-format-from-content-type
@@ -280,7 +298,7 @@
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
-;; Verify ingest behaves properly if request contains invalid  content type.
+;; Verify ingest behaves properly if request contains invalid content type.
 (deftest invalid-content-type-ingest-test
   (let [concept (assoc (dc/collection-concept {}) :format "blah")
         response (ingest/ingest-concept concept {:accept-format :json :raw? true})

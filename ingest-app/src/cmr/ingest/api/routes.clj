@@ -107,17 +107,17 @@
         (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
         default-format)))
 
-(defmulti generate-response
+(defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers result]
     (get-ingest-result-format headers :xml)))
 
-(defmethod generate-response :json
+(defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
   {:status 200 :body result})
 
-(defmethod generate-response :xml
+(defmethod generate-ingest-response :xml
   [headers result]
   (let [pretty? (api/pretty-request? nil headers)]
     {:status 200 :body (result-map->xml result pretty?)}))
@@ -224,7 +224,7 @@
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info (format "Ingesting collection %s from client %s"
                             (concept->loggable-string concept) (:client-id request-context)))
-              (generate-response headers (ingest/save-concept request-context concept))))
+              (generate-ingest-response headers (ingest/save-concept request-context concept))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -233,7 +233,7 @@
               (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting collection %s from client %s"
                             (pr-str concept-attribs) (:client-id request-context)))
-              (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
+              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
           (POST "/" {:keys [params headers request-context] :as request}
@@ -248,7 +248,7 @@
             (let [concept (body->concept :granule provider-id native-id body content-type headers)]
               (info (format "Ingesting granule %s from client %s"
                             (concept->loggable-string concept) (:client-id request-context)))
-              (generate-response headers (ingest/save-concept request-context concept))))
+              (generate-ingest-response headers (ingest/save-concept request-context concept))))
           (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
@@ -257,7 +257,7 @@
               (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting granule %s from client %s"
                             (pr-str concept-attribs) (:client-id request-context)))
-              (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
+              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))))
 
       ;; Add routes for API documentation
       (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
@@ -289,11 +289,10 @@
     (route/not-found "Not Found")))
 
 (defn default-format-fn
-  "Determine the format that results should be returned in based on the request URI and http
+  "Determine the format that errors should be returned in based on the request URI and http
   actions."
-  [{:keys [uri request-method]}]
-  (if (or (re-find #"validate" uri)
-          (some #{request-method} #{:put :delete}))
+  [{:keys [uri]}]
+  (if (re-find #"/providers/.*/[validate|collections|granules].*" uri)
     "application/xml"
     "application/json"))
 
