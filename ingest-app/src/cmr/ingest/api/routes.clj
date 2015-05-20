@@ -97,32 +97,26 @@
                             m)))))
 
 (defn- get-ingest-result-format
-  "Returns the requested ingest result format parsed from headers"
+  "Returns the requested ingest result format parsed from the Accept header or :xml
+  if no Accept header is given"
   ([headers default-format]
    (get-ingest-result-format
      headers (set (keys content-type-mime-type->response-format)) default-format))
   ([headers valid-mime-types default-format]
-   (let [accept-mime-type (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
-         content-mime-type (mt/extract-header-mime-type valid-mime-types headers "content-type" false)
-         ;; Use the accept-mime-type if available, but prefer the content-mime-type if the
-         ;; accept-mime-type is "*/*"
-         preferred-mime-type (if (= "*/*" accept-mime-type)
-                               content-mime-type
-                               (or accept-mime-type content-mime-type))]
-
-     (get content-type-mime-type->response-format preferred-mime-type default-format))))
+   (get content-type-mime-type->response-format
+        (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
+        default-format)))
 
 (defmulti generate-response
   "Convert a result to a proper response format"
   (fn [headers result]
-    (get-ingest-result-format headers :json)))
+    (get-ingest-result-format headers :xml)))
 
 (defmethod generate-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
   {:status 200 :body result})
 
-;; default to xml generation
 (defmethod generate-response :xml
   [headers result]
   (let [pretty? (api/pretty-request? nil headers)]
@@ -301,6 +295,14 @@
 
     (route/not-found "Not Found")))
 
+(defn default-format-fn
+  "Determine the format that results should be returned in based on the request URI."
+  [{:keys [uri request-method]}]
+  (if (or (re-find #"validate" uri)
+          (some #{request-method} #{:put :delete}))
+    "application/xml"
+    "application/json"))
+
 (defn make-api [system]
   (-> (build-routes system)
       (http-trace/build-request-context-handler system)
@@ -309,5 +311,6 @@
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
-      api-errors/exception-handler))
+      ; api-errors/exception-handler
+      (api-errors/exception-handler default-format-fn)))
 

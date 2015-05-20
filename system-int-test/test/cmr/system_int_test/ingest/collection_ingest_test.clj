@@ -68,12 +68,12 @@
     (let [concept (dc/collection-concept {:concept-id "C1200000000-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :json :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
-             (ingest/parse-ingest-response :json response)))))
+             (ingest/parse-ingest-body :json response)))))
   (testing "xml response"
     (let [concept (dc/collection-concept {:concept-id "C1200000001-PROV1"})
           response (ingest/ingest-concept concept {:accept-format :xml :raw? true})]
       (is (= {:concept-id (:concept-id concept) :revision-id 1}
-             (ingest/parse-ingest-response :xml response))))))
+             (ingest/parse-ingest-body :xml response))))))
 
 ;; Verify that the accept header works with returned errors
 (deftest collection-ingest-with-errors-accept-header-test
@@ -81,13 +81,13 @@
     (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :json :raw? true})
-          {:keys [errors]} (ingest/parse-ingest-response :json response)]
+          {:keys [errors]} (ingest/parse-ingest-body :json response)]
       (is (re-find #"XML content is too short." (first errors)))))
   (testing "xml response"
     (let [concept-with-empty-body  (assoc (dc/collection-concept {}) :metadata "")
           response (ingest/ingest-concept concept-with-empty-body
                                           {:accept-format :xml :raw? true})
-          {:keys [errors]} (ingest/parse-ingest-response :xml response)]
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"XML content is too short." (first errors))))))
 
 ;; Verify that the accept header works with deletions
@@ -97,14 +97,14 @@
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
-             (ingest/parse-ingest-response :json response)))))
+             (ingest/parse-ingest-body :json response)))))
   (testing "xml response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
-             (ingest/parse-ingest-response :xml response))))))
+             (ingest/parse-ingest-body :xml response))))))
 
 ;; Verify that xml response is returned for ingests of xml content type
 (deftest collection-ingest-with-reponse-format-from-content-type
@@ -112,18 +112,18 @@
     (let [concept (dc/collection-concept {:concept-id "C1-PROV1"} :echo10)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C1-PROV1" :revision-id 1}
-             (ingest/parse-ingest-response :xml response)))))
+             (ingest/parse-ingest-body :xml response)))))
   (testing "dif"
     (let [concept (d/item->concept (assoc (dc/collection-dif {:concept-id "C2-PROV1"})
                          :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
-            (ingest/parse-ingest-response :xml response)))))
+            (ingest/parse-ingest-body :xml response)))))
   (testing "iso"
     (let [concept (dc/collection-concept {:concept-id "C3-PROV1"} :iso-smap)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C3-PROV1" :revision-id 1}
-            (ingest/parse-ingest-response :xml response))))))
+            (ingest/parse-ingest-body :xml response))))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
@@ -275,7 +275,7 @@
   (let [concept-with-no-content-type  (assoc (dc/collection-concept {}) :format "")
         response (ingest/ingest-concept concept-with-no-content-type {:accept-format :json :raw? true})
         status (:status response)
-        {:keys [errors]} (ingest/parse-ingest-response :json response)]
+        {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))
@@ -285,7 +285,7 @@
   (let [concept (assoc (dc/collection-concept {}) :format "blah")
         response (ingest/ingest-concept concept {:accept-format :json :raw? true})
         status (:status response)
-        {:keys [errors]} (ingest/parse-ingest-response :json response)]
+        {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
     (is (= 400 status))
     (is (re-find #"Invalid content-type" (first errors)))))

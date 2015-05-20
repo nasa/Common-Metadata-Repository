@@ -140,23 +140,30 @@
       (parse-xml-error-elem elem)
       {tag expanded-content})))
 
-(defmulti parse-ingest-response
-  "Parse the ingest response as a given format"
+(defmulti parse-ingest-body
+  "Parse the ingest response body as a given format"
   (fn [response-format body]
     response-format))
 
-(defmethod parse-ingest-response :xml
+(defmethod parse-ingest-body :xml
   [response-format response]
   (let [xml-elem (x/parse-str (:body response))]
     (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
       (parse-xml-error-response-elem xml-elem)
-      (let [concept-id (cx/string-at-path xml-elem [:concept-id])
-            revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))]
-        {:concept-id concept-id :revision-id revision-id}))))
+      {:concept-id (cx/string-at-path xml-elem [:concept-id])
+       :revision-id (Integer. (cx/string-at-path xml-elem [:revision-id]))})))
 
-(defmethod parse-ingest-response :json
+(defmethod parse-ingest-body :json
   [response-format response]
   (json/decode (:body response) true))
+
+(defn parse-ingest-response
+  "Parse an ingest repsonse (if required) and append a status"
+  [response options]
+  (if (get options :raw? false)
+    response
+    (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
+           :status (:status response))))
 
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
@@ -166,8 +173,6 @@
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id]} options
          accept-format (:accept-format options)
-         ;; added to allow testing of the raw response
-         raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
                                         "revision-id" revision-id
                                         "Echo-Token" token
@@ -179,12 +184,8 @@
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (s/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))
-         response (client/request params)]
-     (if raw?
-       response
-       (assoc (parse-ingest-response (or accept-format :xml) response)
-              :status (:status response))))))
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
 
 (defn delete-concept
   "Delete a given concept."
@@ -195,20 +196,14 @@
          {:keys [token client-id accept-format]} options
          headers (util/remove-nil-keys {"Echo-Token" token
                                         "Client-Id" client-id})
-         ;; added to allow testing of the raw response
-         raw? (get options :raw? false)
          params {:method :delete
                  :url (url/ingest-url provider-id concept-type native-id)
                  :headers headers
                  :accept accept-format
                  :throw-exceptions false
                  :connection-manager (s/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))
-         response (client/request params)]
-     (if raw?
-       response
-       (assoc (parse-ingest-response (or accept-format :json) response)
-              :status (:status response))))))
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
 
 (defn multipart-param-request
   "Submits a multipart parameter request to the given url with the multipart parameters indicated.
@@ -237,7 +232,7 @@
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [client-id]} options
-         accept-format (get options :accept-format :json)
+         accept-format (get options :accept-format :xml)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          headers (util/remove-nil-keys {"concept-id" concept-id
@@ -257,8 +252,7 @@
        response
        (if (not= status 200)
          ;; Validation only returns a response body if there are errors.
-         (assoc (parse-ingest-response (or accept-format :xml) response)
-                :status (:status response))
+         (parse-ingest-response response options)
          {:status 200})))))
 
 (defn validate-granule
