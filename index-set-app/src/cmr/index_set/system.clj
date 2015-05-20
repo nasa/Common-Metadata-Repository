@@ -47,7 +47,7 @@
   (info "index-set System starting")
   (let [started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/start % system)))
+                                            #(when % (lifecycle/start % system))))
                                this
                                component-order)]
     (info "index-set System started")
@@ -61,7 +61,7 @@
   (info "index-set System shutting down")
   (let [stopped-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
-                                            #(lifecycle/stop % system)))
+                                            #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))]
     (info "index-set System stopped")
