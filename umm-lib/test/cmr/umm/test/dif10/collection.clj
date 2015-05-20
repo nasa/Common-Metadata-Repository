@@ -5,7 +5,6 @@
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
-            [clojure.core.incubator :as incubator]
             [cmr.common.joda-time]
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]

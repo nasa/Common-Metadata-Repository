@@ -31,6 +31,7 @@
          [] :collection :json
          [] :collection :echo10
          [] :collection :dif
+         [] :collection :dif10
          [] :collection :atom
          [] :collection :iso19115
          [] :collection :opendata
