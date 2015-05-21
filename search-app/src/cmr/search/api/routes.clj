@@ -262,7 +262,7 @@
           (find-concept-by-cmr-concept-id context
                                           ;; According to CMR-1405, a '.native' extension with
                                           ;; direct retrieval should behave the same as no
-                                          ;; extension, so we just strip off '.native' here
+                                          ;; extension, so we just strip off '.native' here.
                                           (str/replace path-w-extension #"\.native" "")
                                           params
                                           headers)))
