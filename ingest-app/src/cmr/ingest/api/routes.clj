@@ -317,7 +317,7 @@
 
   )
 
-(defn default-format-fn
+(defn default-error-format-fn
   "Determine the format that errors should be returned in based on the default-format
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
   the default format has not been set to :xml."
@@ -335,5 +335,5 @@
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
-      (api-errors/exception-handler default-format-fn)))
+      (api-errors/exception-handler default-error-format-fn)))
 

@@ -344,7 +344,7 @@
         [(msg/mixed-arity-parameter-msg mixed-param)]))
     (f request)))
 
-(defn default-format-fn
+(defn default-error-format-fn
   "Determine the format that errors should be returned in based on the request URI."
   [{:keys [uri]} _e]
   (if (re-find #"caches" uri)
@@ -359,5 +359,5 @@
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       copy-of-body-handler
-      (errors/exception-handler default-format-fn)
+      (errors/exception-handler default-error-format-fn)
       ring-json/wrap-json-response))
