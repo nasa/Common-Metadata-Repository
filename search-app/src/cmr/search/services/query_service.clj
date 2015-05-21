@@ -211,6 +211,7 @@
          results (qe/execute-query context query)]
      (:items results))))
 
+
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]

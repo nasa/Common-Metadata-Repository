@@ -84,7 +84,13 @@
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            "end_date" [c5 c1 c2 c6 c7 c3 c4 c8 c9 c10 c11]
-           "-end_date" [c8 c4 c3 c7 c6 c2 c1 c5 c9 c10 c11]))))
+           "-end_date" [c8 c4 c3 c7 c6 c2 c1 c5 c9 c10 c11]))
+
+    (testing "revision date"
+      (are [sort-key items]
+           (sort-order-correct? items sort-key)
+           "revision_date" [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11]
+           "-revision_date" [c11 c10 c9 c8 c7 c6 c5 c4 c3 c2 c1]))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)

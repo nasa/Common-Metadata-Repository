@@ -20,6 +20,7 @@
   [interval-granularity]
   {:by-collection
    {:terms {:field :collection-concept-id
+            ;; See CMR-1577
             :size 10000}
     :aggregations {:start-date-intervals {:date_histogram {:field :start-date
                                                            :interval interval-granularity}}

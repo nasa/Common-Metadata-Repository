@@ -73,6 +73,7 @@
    "application/iso19115+xml" :xml
    "application/iso:smap+xml" :xml
    "application/dif+xml" :xml
+   "application/dif10+xml" :xml
    "application/xml" :xml
    "application/json" :json})
 

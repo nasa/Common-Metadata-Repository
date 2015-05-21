@@ -7,6 +7,9 @@
 
 (defn terms-facet
   [field]
+  ;; We shouldn't try to handle this many different values.
+  ;; We should have a limit and if that's exceeded in the elastic response we should note that in the values returned.
+  ;; This can be handled as a part of CMR-1101
   {:terms {:field field :size 10000}})
 
 (def facet-aggregations

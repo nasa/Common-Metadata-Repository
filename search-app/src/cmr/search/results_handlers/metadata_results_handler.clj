@@ -28,6 +28,10 @@
   [concept-type query]
   [])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :dif10]
+  [concept-type query]
+  [])
+
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso19115]
   [concept-type query]
   [])
@@ -68,6 +72,10 @@
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
+(defmethod elastic-results/elastic-results->query-results :dif10
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
+
 (defmethod elastic-results/elastic-results->query-results :iso19115
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
@@ -83,6 +91,12 @@
        (map :concept-id)))
 
 (defmethod gcrf/query-results->concept-ids :dif
+  [results]
+  (->> results
+       :items
+       (map :concept-id)))
+
+(defmethod gcrf/query-results->concept-ids :dif10
   [results]
   (->> results
        :items
@@ -181,6 +195,10 @@
   (search-results->metadata-response context query results))
 
 (defmethod qs/search-results->response :dif
+  [context query results]
+  (search-results->metadata-response context query results))
+
+(defmethod qs/search-results->response :dif10
   [context query results]
   (search-results->metadata-response context query results))
 

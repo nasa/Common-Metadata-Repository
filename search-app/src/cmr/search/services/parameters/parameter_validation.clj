@@ -205,6 +205,7 @@
                  :platform
                  :instrument
                  :sensor
+                 :revision-date
                  :score}
    :granule #{:granule-ur
               :producer-granule-id
