@@ -28,7 +28,8 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.ingest.services.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc])
+  (:import clojure.lang.ExceptionInfo))
 
 (def ECHO_CLIENT_ID "ECHO")
 
@@ -204,10 +205,22 @@
                        provider-id native-id :granule (get multipart-params "granule"))]
     (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
 
+(defn set-default-error-format [default-response-format handler]
+  "Ring middleware to add a default format to the exception-info created during exceptions. This
+  is used to determine the default format for each route."
+  (fn [request]
+    (try
+      (handler request)
+      (catch ExceptionInfo e
+        (let [{:keys[type errors]} (ex-data e)]
+          (throw (ex-info (.getMessage e)
+                          {:type type
+                           :errors errors
+                           :default-format default-response-format})))))))
 (defn ingest-routes
   "Create the routes for ingest, validate, and delete operations"
   []
-  (api-errors/set-default-error-format
+  (set-default-error-format
     :xml
     (context "/providers/:provider-id" [provider-id]
 

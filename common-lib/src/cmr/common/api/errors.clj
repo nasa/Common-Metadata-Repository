@@ -7,8 +7,7 @@
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [cmr.common.mime-types :as mt]
-            [cmr.common.config :as cfg])
-  (:import clojure.lang.ExceptionInfo))
+            [cmr.common.config :as cfg]))
 
 (def type->http-status-code
   {:not-found 404
@@ -142,16 +141,3 @@
           :bad-request
           (str "Invalid URL encoding: " (str/replace (.getMessage e) #"URLDecoder: " "")))))
     (f request)))
-
-(defn set-default-error-format [default-response-format handler]
-  "Ring middleware to add a default format to the exception-info created during exceptions. This
-  is used to determine the default format for each route."
-  (fn [request]
-    (try
-      (handler request)
-      (catch ExceptionInfo e
-        (let [{:keys[type errors]} (ex-data e)]
-          (throw (ex-info (.getMessage e)
-                          {:type type
-                           :errors errors
-                           :default-format default-response-format})))))))
