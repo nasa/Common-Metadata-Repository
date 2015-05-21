@@ -310,13 +310,6 @@
 
     (route/not-found "Not Found")))
 
-(comment
-
-  (cmr.common.dev.capture-reveal/reveal data)
-
-
-  )
-
 (defn default-error-format-fn
   "Determine the format that errors should be returned in based on the default-format
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
