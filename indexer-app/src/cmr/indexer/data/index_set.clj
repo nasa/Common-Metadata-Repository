@@ -392,24 +392,6 @@
                                       granule-indices))
                            :mapping granule-mapping}}}))
 
-(comment
-  (index-set {:system (get-in user/system [:apps :indexer])})
-
-
-  (def colls-w-separate-indexes ["a" "b"])
-
-
-  [{:name "a"
-    :settings nil}
-   {:name "b"
-    :settings nil}]
-
-  (map (fn [collection]
-         {:name collection
-          :settings granule-settings-for-individual-indexes})
-       colls-w-separate-indexes))
-
-
 (defn reset
   "Reset configured elastic indexes"
   [context]
