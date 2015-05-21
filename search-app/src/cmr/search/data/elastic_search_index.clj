@@ -117,22 +117,23 @@
   [context]
   (get-in context [:system :search-index :conn]))
 
-(deftracefn send-query-to-elastic
+(defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
+  (fn [context query]
+    (:page-size query)))
+
+(defmethod send-query-to-elastic :default
   [context query]
   (let [{:keys [page-size page-num concept-type result-format aggregations]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         fields (concept-type+result-format->fields concept-type query)
-        [from size] (if (= (:page-size query) :unlimited)
-                      [0 10000]
-                      [(* (dec page-num) page-size) page-size])]
+        from (* (dec page-num) page-size)]
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)
            "and aggregations" (pr-str aggregations))
-    ;; I couldn't figure out how to reduce the duplication here.
     (if aggregations
       (esd/search (context->conn context)
                   (:index-name index-info)
@@ -140,7 +141,7 @@
                   :query elastic-query
                   :version true
                   :sort sort-params
-                  :size size
+                  :size page-size
                   :from from
                   :fields fields
                   :aggs aggregations)
@@ -150,12 +151,51 @@
                   :query elastic-query
                   :version true
                   :sort sort-params
-                  :size size
+                  :size page-size
                   :from from
                   :fields fields))))
 
+(def unlimited-page-size
+  "This is the number of items we will request at a time when the page size is set to unlimited"
+  10000)
+
+(def max-unlimited-hits
+  "This is the maximum number of hits we can fetch if the page size is set to unlimited. We need to
+  support fetching fields on every single collection in the CMR. This is set to a number safely above
+  what we'll need to support with GCMD (~35K) and ECHO (~5k) collections."
+  100000)
+
+;; Implements querying against elasticsearch when the page size is set to :unlimited. It works by
+;; calling the default implementation multiple times until all results have been found. It uses
+;; the constants defined above to control how many are requested at a time and the maximum number
+;; of hits that can be retrieved.
+(defmethod send-query-to-elastic :unlimited
+  [context query]
+  (when (:aggregations query)
+    (e/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
+
+  (loop [page-num 1 prev-items [] took-total 0]
+    (let [results (send-query-to-elastic
+                    context (assoc query :page-num page-num :page-size unlimited-page-size))
+          total-hits (get-in results [:hits :total])
+          current-items (get-in results [:hits :hits])]
+
+      (when (> total-hits max-unlimited-hits)
+        (e/internal-error!
+          (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
+                  total-hits max-unlimited-hits (pr-str query))))
+
+      (if (>= (+ (count prev-items) (count current-items)) total-hits)
+        ;; We've got enough results now. We'll return the query like we got all of them back in one request
+        (-> results
+            (update-in [:took] + took-total)
+            (update-in [:hits :hits] concat prev-items))
+        ;; We need to keep searching subsequent pages
+        (recur (inc page-num) (concat prev-items current-items) (+ took-total (:took results)))))))
+
 (defn get-collection-permitted-groups
-  "Useful for debugging only. Gets collections along with their currently permitted groups"
+  "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
+  won't work if more than 10,000 collections exist in the CMR."
   [context]
   (let [index-info (concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)
@@ -163,7 +203,10 @@
                             [(:type-name index-info)]
                             :query (q/match-all)
                             :size 10000
-                            :fields ["permitted-group-ids"])]
+                            :fields ["permitted-group-ids"])
+        hits (get-in results [:hits :total])]
+    (when (> hits (count (get-in results [:hits :hits])))
+      (e/internal-error! "Failed to retrieve all hits."))
     (into {} (for [hit (get-in results [:hits :hits])]
                [(:_id hit) (get-in hit [:fields :permitted-group-ids])]))))
 
@@ -199,12 +242,28 @@
                                          :aggs {:by-collection-id
                                                 {:terms {:field :collection-concept-seq-id
                                                          :size 10000}}}}}})
-        results (execute-query context query)]
+        results (execute-query context query)
+        extra-provider-count (get-in results [:aggregations :by-provider :sum_other_doc_count])]
+    ;; It's possible that there are more providers with granules than we expected.
+    ;; :sum_other_doc_count will be greater than 0 in that case.
+    (when (> extra-provider-count 0)
+      (e/internal-error! "There were [%s] more providers with granules than we ever expected to see."))
+
+
     (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
-                   coll-bucket (get-in provider-bucket [:by-collection-id :buckets])]
-               (let [provider-id (:key provider-bucket)
-                     coll-seq-id (:key coll-bucket)
-                     num-granules (:doc_count coll-bucket)]
+                   :let [extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])]
+                   coll-bucket (get-in provider-bucket [:by-collection-id :buckets])
+                   :let [provider-id (:key provider-bucket)
+                         coll-seq-id (:key coll-bucket)
+                         num-granules (:doc_count coll-bucket)]]
+               (do
+                 ;; It's possible that there are more collections in the provider than we expected.
+                 ;; :sum_other_doc_count will be greater than 0 in that case.
+                 (when (> extra-collection-count 0)
+                   (e/internal-error!
+                     (format "Provider %s has more collections ([%s]) with granules than we support"
+                             provider-id extra-collection-count)))
+
                  [(concepts/build-concept-id {:sequence-number coll-seq-id
                                               :provider-id provider-id
                                               :concept-type :collection})

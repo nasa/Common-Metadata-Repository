@@ -20,17 +20,8 @@
 (def cache-key
   :collections-for-gran-acls)
 
-(comment
-
-  (def context {:system (get-in user/system [:apps :search])})
-  (get-collection context "PROV2" "coll3")
-  (get-collection context "C1200000006-PROV2")
-  (cache/context->cache context cache-key)
-  (refresh-cache context)
-
-  )
-
-(defn fetch-collections
+(defn- fetch-collections
+  "Executes a query that will fetch all of the collection information needed for caching."
   [context]
   (let [query (q/query {:concept-type :collection
                         :condition q/match-all
@@ -41,7 +32,7 @@
     (:items (qe/execute-query context query))))
 
 (defn- fetch-collections-map
-  "Retrieve collections from search and return a map by concpet-id and provider-id"
+  "Retrieve collections from search and return a map by concept-id and provider-id"
   [context]
   (let [collections (fetch-collections context)
         by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
@@ -50,9 +41,10 @@
                                          (for [{:keys [provider-id entry-title] :as coll}
                                                collections]
                                            [[provider-id entry-title] coll]))]
+    ;; We could reduce the amount of memory here if needed by only fetching the collections that
+    ;; have granules.
     {:by-concept-id by-concept-id
      :by-provider-id-entry-title by-provider-id-entry-title}))
-
 
 (defn refresh-cache
   "Refreshes the collections stored in the cache. This should be called from a background job on a timer
@@ -63,7 +55,7 @@
         collections-map (fetch-collections-map context)]
     (cache/set-value cache :collections collections-map)))
 
-(defn get-collections-map
+(defn- get-collections-map
   "Gets the cached value."
   [context]
   (let [coll-cache (cache/context->cache context cache-key)

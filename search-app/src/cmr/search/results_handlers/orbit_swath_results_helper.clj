@@ -24,7 +24,7 @@
   (get-in elastic-result [:fields :collection-concept-id 0]))
 
 (defn get-orbits-by-collection
-  "Gets a may of collection concept id to collection orbit parameters. It takes all of the
+  "Gets a map of collection concept id to collection orbit parameters. It takes all of the
   granule elastic matches that were found so that the collections retrieved can be limited
   only to the ones that are required. This map is needed when converting the elastic result
   to swatch shapes."
