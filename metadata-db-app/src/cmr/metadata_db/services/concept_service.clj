@@ -430,7 +430,7 @@
   "Gets provider holdings within Metadata DB"
   [context]
   (let [db (util/context->db context)
-        ;; Create a map of provider to collection concept-id
+        ;; Create a map of provider to collection concepts
         provider-to-collections (get-provider-to-collection-map context)
         ;; Get a map of provider id to counts of granules per collection concept id
         provider-to-count-maps (into {} (pmap (fn [{:keys [provider-id]}]

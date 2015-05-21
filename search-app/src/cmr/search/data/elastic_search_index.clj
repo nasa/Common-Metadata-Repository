@@ -194,7 +194,8 @@
         (recur (inc page-num) (concat prev-items current-items) (+ took-total (:took results)))))))
 
 (defn get-collection-permitted-groups
-  "Useful for debugging only. Gets collections along with their currently permitted groups"
+  "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
+  won't work if more than 10,000 collections exist in the CMR."
   [context]
   (let [index-info (concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)
