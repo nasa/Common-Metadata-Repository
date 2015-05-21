@@ -187,8 +187,8 @@
              "DIF no extension" c3-dif :dif nil
              "ISO MENDS no extension" c5-iso :iso19115 nil
              "SMAP ISO no extension" c7-smap :iso-smap nil
-             "ECHO10 .native extension"c1-echo :echo10 "native"
-             "DIF .native extension"c3-dif :dif "native"
+             "ECHO10 .native extension" c1-echo :echo10 "native"
+             "DIF .native extension" c3-dif :dif "native"
              "ISO MENDS .native extension" c5-iso :iso19115 "native"
              "SMAP ISO .native extension" c7-smap :iso-smap "native"))
 
