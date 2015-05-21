@@ -259,9 +259,10 @@
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
-          ;; According to the CMR-1405, a '.native' extension with direct retrieval should behave
-          ;; the same as no extension, so we just strip off '.native' here
           (find-concept-by-cmr-concept-id context
+                                          ;; According to CMR-1405, a '.native' extension with
+                                          ;; direct retrieval should behave the same as no
+                                          ;; extension, so we just strip off '.native' here
                                           (str/replace path-w-extension #"\.native" "")
                                           params
                                           headers)))
