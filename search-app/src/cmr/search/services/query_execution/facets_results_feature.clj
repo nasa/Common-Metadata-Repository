@@ -5,12 +5,47 @@
             [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
 
-(defn terms-facet
+(comment
+  (cheshire.core/encode {:archive-center {:terms {:field :archive-center, :size 10000}}, :project {:terms {:field :project-sn, :size 10000}}, :platform {:terms {:field :platform-sn, :size 10000}}, :instrument {:terms {:field :instrument-sn, :size 10000}}, :sensor {:terms {:field :sensor-sn, :size 10000}}, :two-d-coordinate-system-name {:terms {:field :two-d-coord-name, :size 10000}}, :processing-level-id {:terms {:field :processing-level-id, :size 10000}}, :science-keywords {:nested {:path :science-keywords}, :aggs {:category {:terms {:field "science-keywords.category"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :topic {:terms {:field "science-keywords.topic"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :term {:terms {:field "science-keywords.term"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :variable-level-1 {:terms {:field "science-keywords.variable-level-1"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :variable-level-2 {:terms {:field "science-keywords.variable-level-2"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :variable-level-3 {:terms {:field "science-keywords.variable-level-3"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}, :detailed-variable {:terms {:field "science-keywords.detailed-variable"}, :aggs {:coll-count {:reverse_nested {}, :aggs {:concept-id {:terms {:field :concept-id, :size 1}}}}}}}}}}}}}}}}}}}}})
+; {"archive-center":{"terms":{"field":"archive-center","size":10000}},"project":{"terms":{"field":"project-sn","size":10000}},"platform":{"terms":{"field":"platform-sn","size":10000}},"instrument":{"terms":{"field":"instrument-sn","size":10000}},"sensor":{"terms":{"field":"sensor-sn","size":10000}},"two-d-coordinate-system-name":{"terms":{"field":"two-d-coord-name","size":10000}},"processing-level-id":{"terms":{"field":"processing-level-id","size":10000}},"science-keywords":{"nested":{"path":"science-keywords"},"aggs":{"category":{"terms":{"field":"science-keywords.category"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"topic":{"terms":{"field":"science-keywords.topic"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"term":{"terms":{"field":"science-keywords.term"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"variable-level-1":{"terms":{"field":"science-keywords.variable-level-1"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"variable-level-2":{"terms":{"field":"science-keywords.variable-level-2"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"variable-level-3":{"terms":{"field":"science-keywords.variable-level-3"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}},"detailed-variable":{"terms":{"field":"science-keywords.detailed-variable"},"aggs":{"coll-count":{"reverse_nested":{},"aggs":{"concept-id":{"terms":{"field":"concept-id","size":1}}}}}}}}}}}}}}}}}}}}}}
+)
+
+
+(defn- terms-facet
   [field]
   ;; We shouldn't try to handle this many different values.
   ;; We should have a limit and if that's exceeded in the elastic response we should note that in the values returned.
   ;; This can be handled as a part of CMR-1101
   {:terms {:field field :size 10000}})
+
+(def ^:private collection-count-aggregation
+  "Used to build an aggregation to get a count of unique concepts included in the current nested
+  aggregation."
+  {:reverse_nested {}
+   :aggs {:concept-id {:terms {:field :concept-id :size 1}}}})
+
+(def ^:private science-keyword-hierarchy
+  "List containing the elements within the science keyword hierarchy from top to bottom."
+  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])
+
+(defn- science-keyword-aggregations-helper
+  "Build the science keyword aggregations query. "
+  [field-hierarchy]
+  (when-let [field (first field-hierarchy)]
+    (let [remaining-fields (rest field-hierarchy)
+          next-field (first remaining-fields)
+          terms {:field (str "science-keywords." (name field))}
+          aggs (if next-field
+                 {:coll-count collection-count-aggregation
+                  next-field (science-keyword-aggregations-helper remaining-fields)}
+                 {:coll-count collection-count-aggregation})]
+      {:terms terms
+       :aggs aggs})))
+
+(def ^:private science-keyword-aggregations
+  "Builds a nested aggregation query for science-keyword-aggregations in a hierarchical fashion"
+  {:nested {:path :science-keywords}
+   :aggs {:category (science-keyword-aggregations-helper science-keyword-hierarchy)}})
 
 (def facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
@@ -29,6 +64,20 @@
    :variable-level-2 (terms-facet :variable-level-2)
    :variable-level-3 (terms-facet :variable-level-3)
    :detailed-variable (terms-facet :detailed-variable)})
+
+(def new-facet-aggregations
+  "This is the aggregations map that will be passed to elasticsearch to request facetted results
+  from a collection search."
+  ; {:archive-center (terms-facet :archive-center)
+  ;  :project (terms-facet :project-sn)
+  ;  :platform (terms-facet :platform-sn)
+  ;  :instrument (terms-facet :instrument-sn)
+  ;  :sensor (terms-facet :sensor-sn)
+  ;  :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
+  ;  :processing-level-id (terms-facet :processing-level-id)
+  {
+   :science-keywords science-keyword-aggregations})
+
 
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
@@ -51,10 +100,56 @@
       {:field (csk/->snake_case_string field-name)
        :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
 
+
+;; Sample
+(comment
+  {:doc_count 1,
+   :category {:doc_count_error_upper_bound 0,
+              :sum_other_doc_count 0,
+              :buckets [{:key Hurricane,
+                         :doc_count 1,
+                         :topic {:doc_count_error_upper_bound 0,
+                                 :sum_other_doc_count 0,
+                                 :buckets [{:key Popular,
+                                            :doc_count 1,
+                                            :coll-count {:doc_count 1,
+                                                         :concept-id {:doc_count_error_upper_bound 0,
+                                                                      :sum_other_doc_count 0,
+                                                                      :buckets [{:key C1200000003-PROV1,
+                                                                                 :doc_count 1}]}},
+                                            :term {:doc_count_error_upper_bound 0,
+                                                   :sum_other_doc_count 0,
+                                                   :buckets [{:key UNIVERSAL,
+                                                              :doc_count 1,
+                                                              :coll-count {:doc_count 1,
+                                                                           :concept-id {:doc_count_error_upper_bound 0,
+                                                                                        :sum_other_doc_count 0,
+                                                                                        :buckets [{:key C1200000003-PROV1,
+                                                                                                   :doc_count 1}]}},
+                                                              :variable-level-1 {:doc_count_error_upper_bound 0,
+                                                                                 :sum_other_doc_count 0,
+                                                                                 :buckets []}}]}}]},
+                         :coll-count {:doc_count 1,
+                                      :concept-id {:doc_count_error_upper_bound 0,
+                                                   :sum_other_doc_count 0,
+                                                   :buckets [{:key C1200000003-PROV1,
+                                                              :doc_count 1}]}}}]}}
+  )
+
+(defn- science-keywords-bucket->facets
+  "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
+  map of science keywords."
+  [bucket-map]
+  (for [field-name science-keyword-hierarchy]
+    (r/map->Facet
+      {:field (csk/->snake_case_string field-name)
+       :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
+
 (defmethod query-execution/post-process-query-result-feature :facets
   [context query elastic-results query-results feature]
   (let [aggs (:aggregations elastic-results)
-        science-keyword-buckets (:science-keywords aggs)
+        science-keywords-bucket (:science-keywords aggs)
+        science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)
         facets (bucket-map->facets
                  aggs
                  ;; Specified here so that order will be consistent with results
