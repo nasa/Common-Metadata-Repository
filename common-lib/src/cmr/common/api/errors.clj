@@ -98,7 +98,7 @@
   (let [results-format (mt/get-results-format
                          (:uri request)
                          (:headers request)
-                         (default-format-fn request))
+                         (default-format-fn request e))
         status-code (type->http-status-code type)
         [content-type response-body] (response-type-body errors results-format
                                                          (api/pretty-request? request))]
@@ -113,7 +113,8 @@
 (defn exception-handler
   "A ring exception handler that will handle errors thrown by the cmr.common.services.errors
   functions. The default-format-fn is a function which determines in what format to return an error
-  if the request does not explicitly set a format.  It takes the request as an argument."
+  if the request does not explicitly set a format.  It takes the request and the ExceptionInfo
+  as arguments."
   ([f]
    (exception-handler f (constantly "application/json")))
   ([f default-format-fn]

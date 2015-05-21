@@ -28,6 +28,26 @@
                    "Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected."]]
              [status errors])))))
 
+;; Verify that successful validation requests do not get an xml or json response body
+(deftest successful-validation-with-accept-header-test
+  (testing "json"
+    (let [concept (dc/collection-concept {})
+          response-map (select-keys (ingest/validate-concept concept {:accept-format :xml :raw? true})
+                                   [:status :body])]
+      (is (= {:status 200 :body ""} response-map))))
+  (testing "xml"
+    (let [concept (dc/collection-concept {})
+          response-map (select-keys (ingest/validate-concept concept {:accept-format :xml :raw? true})
+                                   [:status :body])]
+      (is (= {:status 200 :body ""} response-map)))))
+
+;; Verify that failed validations with no accept or content-type header return xml
+(deftest failed-validation-without-headers-returns-xml
+  (let [concept (assoc (dc/collection-concept {}) :metadata "<Collection>invalid xml</Collection>")
+        {:keys [status body]} (ingest/validate-concept concept {:raw? true})]
+    (is (= [400 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>Line 1 - cvc-complex-type.2.3: Element 'Collection' cannot have character [children], because the type's content type is element-only.</error><error>Line 1 - cvc-complex-type.2.4.b: The content of element 'Collection' is not complete. One of '{ShortName}' is expected.</error></errors>"]
+           [status body]))))
+
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order."
   [& ords]

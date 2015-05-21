@@ -28,7 +28,8 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.ingest.services.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc])
+  (:import clojure.lang.ExceptionInfo))
 
 (def ECHO_CLIENT_ID "ECHO")
 
@@ -85,8 +86,8 @@
 
   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <result>
-  <revision-id>1</revision-id>
-  <concept-id>C1-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <concept-id>C1-PROV1</concept-id>
   </result>"
   [m pretty?]
   (let [emit-fn (if pretty? x/indent-str x/emit-str)]
@@ -98,33 +99,27 @@
                             m)))))
 
 (defn- get-ingest-result-format
-  "Returns the requested ingest result format parsed from headers"
+  "Returns the requested ingest result format parsed from the Accept header or :xml
+  if no Accept header is given"
   ([headers default-format]
    (get-ingest-result-format
      headers (set (keys content-type-mime-type->response-format)) default-format))
   ([headers valid-mime-types default-format]
-   (let [accept-mime-type (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
-         content-mime-type (mt/extract-header-mime-type valid-mime-types headers "content-type" false)
-         ;; Use the accept-mime-type if available, but prefer the content-mime-type if the
-         ;; accept-mime-type is "*/*"
-         preferred-mime-type (if (= "*/*" accept-mime-type)
-                               (or content-mime-type accept-mime-type)
-                               (or accept-mime-type content-mime-type))]
+   (get content-type-mime-type->response-format
+        (mt/extract-header-mime-type valid-response-mime-types headers "accept" true)
+        default-format)))
 
-     (get content-type-mime-type->response-format preferred-mime-type default-format))))
-
-(defmulti generate-response
+(defmulti generate-ingest-response
   "Convert a result to a proper response format"
   (fn [headers result]
-    (get-ingest-result-format headers :json)))
+    (get-ingest-result-format headers :xml)))
 
-(defmethod generate-response :json
+(defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
   {:status 200 :body result})
 
-;; default to xml generation
-(defmethod generate-response :xml
+(defmethod generate-ingest-response :xml
   [headers result]
   (let [pretty? (api/pretty-request? nil headers)]
     {:status 200 :body (result-map->xml result pretty?)}))
@@ -210,61 +205,84 @@
                        provider-id native-id :granule (get multipart-params "granule"))]
     (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
 
+(defn set-default-error-format [default-response-format handler]
+  "Ring middleware to add a default format to the exception-info created during exceptions. This
+  is used to determine the default format for each route."
+  (fn [request]
+    (try
+      (handler request)
+      (catch ExceptionInfo e
+        (let [{:keys[type errors]} (ex-data e)]
+          (throw (ex-info (.getMessage e)
+                          {:type type
+                           :errors errors
+                           :default-format default-response-format})))))))
+(defn ingest-routes
+  "Create the routes for ingest, validate, and delete operations"
+  []
+  (set-default-error-format
+    :xml
+    (context "/providers/:provider-id" [provider-id]
+
+      (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
+
+        (POST "/" {:keys [body content-type params headers request-context]}
+          (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+            (verify-provider-against-client-id request-context provider-id)
+            (info (format "Validating Collection %s from client %s"
+                          (concept->loggable-string concept) (:client-id request-context)))
+            (ingest/validate-concept request-context concept)
+            {:status 200})))
+      (context ["/collections/:native-id" :native-id #".*$"] [native-id]
+        (PUT "/" {:keys [body content-type headers request-context params]}
+          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+          (verify-provider-against-client-id request-context provider-id)
+          (let [concept (body->concept :collection provider-id native-id body content-type headers)]
+            (info (format "Ingesting collection %s from client %s"
+                          (concept->loggable-string concept) (:client-id request-context)))
+            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+        (DELETE "/" {:keys [request-context params headers]}
+          (let [concept-attribs {:provider-id provider-id
+                                 :native-id native-id
+                                 :concept-type :collection}]
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+            (verify-provider-against-client-id request-context provider-id)
+            (info (format "Deleting collection %s from client %s"
+                          (pr-str concept-attribs) (:client-id request-context)))
+            (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
+
+      (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
+        (POST "/" {:keys [params headers request-context] :as request}
+          (verify-provider-against-client-id request-context provider-id)
+          (validate-granule request-context provider-id native-id request)
+          {:status 200}))
+
+      (context ["/granules/:native-id" :native-id #".*$"] [native-id]
+        (PUT "/" {:keys [body content-type headers request-context params]}
+          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+          (verify-provider-against-client-id request-context provider-id)
+          (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+            (info (format "Ingesting granule %s from client %s"
+                          (concept->loggable-string concept) (:client-id request-context)))
+            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+        (DELETE "/" {:keys [request-context params headers]}
+          (let [concept-attribs {:provider-id provider-id
+                                 :native-id native-id
+                                 :concept-type :granule}]
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+            (verify-provider-against-client-id request-context provider-id)
+            (info (format "Deleting granule %s from client %s"
+                          (pr-str concept-attribs) (:client-id request-context)))
+            (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))))))
+
+
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
       provider-api/provider-api-routes
-      (context "/providers/:provider-id" [provider-id]
-        (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [body content-type params headers request-context]}
-            (let [concept (body->concept :collection provider-id native-id body content-type headers)]
-              (verify-provider-against-client-id request-context provider-id)
-              (info (format "Validating Collection %s from client %s"
-                            (concept->loggable-string concept) (:client-id request-context)))
-              (ingest/validate-concept request-context concept)
-              {:status 200})))
 
-        (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context params]}
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-            (verify-provider-against-client-id request-context provider-id)
-            (let [concept (body->concept :collection provider-id native-id body content-type headers)]
-              (info (format "Ingesting collection %s from client %s"
-                            (concept->loggable-string concept) (:client-id request-context)))
-              (generate-response headers (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context params headers]}
-            (let [concept-attribs {:provider-id provider-id
-                                   :native-id native-id
-                                   :concept-type :collection}]
-              (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-              (verify-provider-against-client-id request-context provider-id)
-              (info (format "Deleting collection %s from client %s"
-                            (pr-str concept-attribs) (:client-id request-context)))
-              (generate-response headers (ingest/delete-concept request-context concept-attribs)))))
-
-        (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [params headers request-context] :as request}
-            (verify-provider-against-client-id request-context provider-id)
-            (validate-granule request-context provider-id native-id request)
-            {:status 200}))
-
-        (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context params]}
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-            (verify-provider-against-client-id request-context provider-id)
-            (let [concept (body->concept :granule provider-id native-id body content-type headers)]
-              (info (format "Ingesting granule %s from client %s"
-                            (concept->loggable-string concept) (:client-id request-context)))
-              (generate-response headers (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context params headers]}
-            (let [concept-attribs {:provider-id provider-id
-                                   :native-id native-id
-                                   :concept-type :granule}]
-              (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-              (verify-provider-against-client-id request-context provider-id)
-              (info (format "Deleting granule %s from client %s"
-                            (pr-str concept-attribs) (:client-id request-context)))
-              (generate-response headers (ingest/delete-concept request-context concept-attribs))))))
+      ;; Add routes to create, update, delete, validate concepts
+      (ingest-routes)
 
       ;; Add routes for API documentation
       (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
@@ -295,6 +313,13 @@
 
     (route/not-found "Not Found")))
 
+(defn default-error-format-fn
+  "Determine the format that errors should be returned in based on the default-format
+  key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
+  the default format has not been set to :xml."
+  [_request e]
+  (get mt/format->mime-type (:default-format (ex-data e)) "application/json"))
+
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
@@ -304,5 +329,5 @@
       mp/wrap-multipart-params
       ring-json/wrap-json-body
       ring-json/wrap-json-response
-      api-errors/exception-handler))
+      (api-errors/exception-handler default-error-format-fn)))
 
