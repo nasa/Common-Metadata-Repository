@@ -31,28 +31,6 @@
   (fn [context concept umm-concept]
     (cs/concept-id->type (:concept-id concept))))
 
-(defn index-set->index-names
-  "Returns the names of the indexes assigned to each concept type of an index set."
-  [index-set]
-  {:collection (get-in index-set [:index-set :collection :index-names])
-   :granule (get-in index-set [:index-set :granule :index-names])})
-
-(defn validate-index-names-not-changing
-  "Takes an existing index set and an index set to update. Validates that the index names are not
-  different than what was expected. Throws an error if they are different."
-  [context existing update]
-  (let [existing-index-names (index-set->index-names existing)
-        update-index-names (index-set->index-names update)]
-    (when-not (= existing-index-names update-index-names)
-      (error "Detected index name change."
-             "Existing index names" (pr-str existing-index-names)
-             "Expected index names" (pr-str update-index-names))
-      (error "System environment variables:" (pr-str (System/getenv)))
-      (error "Configured collections with separate granule indexes:"
-             (pr-str ((get-in context [:system :colls-with-separate-indexes-fn]))))
-      (errors/throw-service-error :bad-request
-        "Discovered existing index set with index names different than expected."))))
-
 (defn requires-update?
   "Returns true if the existing index set does not match the configured index set and requires
   update. Takes either the context which will be used to request index sets or the existing
@@ -101,9 +79,8 @@
       (info "New index set:" (pr-str new-index-set))
       (errors/throw-service-error :bad-request "It appears the existing index set and the new index set are the same."))
 
-      (validate-index-names-not-changing context existing-index-set new-index-set)
-      (info "Updating the index set to " (pr-str new-index-set))
-      (idx-set/update context new-index-set)))
+    (info "Updating the index set to " (pr-str new-index-set))
+    (idx-set/update context new-index-set)))
 
 (defn reset-es-store
   "Delete elasticsearch indexes and re-create them via index-set app. A nuclear option just for the development team."
