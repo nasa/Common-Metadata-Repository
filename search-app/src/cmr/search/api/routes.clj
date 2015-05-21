@@ -259,7 +259,10 @@
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context path-w-extension params headers)))
+          (find-concept-by-cmr-concept-id context
+                                          (str/replace path-w-extension #"\.native" "")
+                                          params
+                                          headers)))
 
       ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]

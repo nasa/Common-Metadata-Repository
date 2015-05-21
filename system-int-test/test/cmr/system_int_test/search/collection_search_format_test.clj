@@ -22,6 +22,7 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]
@@ -175,15 +176,21 @@
              c8-dif10 "application/dif10+xml" :dif10 nil
              c8-dif10 nil :dif10 "dif10"))
 
-      (testing "native format"
-        ;; Native format can be specified using application/xml or not specifying any format
-        (are [concept format-key]
-             (let [response (search/get-concept-by-concept-id (:concept-id concept) {:accept nil})]
+      (testing "native format direct retrieval"
+        ;; Native format can be specified using application/xml, .native extension,
+        ;; or not specifying any format
+        (util/are2 [concept format-key extension]
+             (let [options (merge {:accept nil} (when extension {:url-extension extension}))
+                   response (search/get-concept-by-concept-id (:concept-id concept) options)]
                (is (= (umm/umm->xml concept format-key) (:body response))))
-             c1-echo :echo10
-             c3-dif :dif
-             c5-iso :iso19115
-             c7-smap :iso-smap))
+             "ECHO10 no extension" c1-echo :echo10 nil
+             "DIF no extension" c3-dif :dif nil
+             "ISO MENDS no extension" c5-iso :iso19115 nil
+             "SMAP ISO no extension" c7-smap :iso-smap nil
+             "ECHO10 .native extension"c1-echo :echo10 "native"
+             "DIF .native extension"c3-dif :dif "native"
+             "ISO MENDS .native extension" c5-iso :iso19115 "native"
+             "SMAP ISO .native extension" c7-smap :iso-smap "native"))
 
       (testing "unsupported formats"
         (are [mime-type xml?]
