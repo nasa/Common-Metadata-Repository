@@ -147,6 +147,8 @@
 
 (defmethod parse-ingest-body :xml
   [response-format response]
+  (println "RESPONSE....")
+  (println response)
   (let [xml-elem (x/parse-str (:body response))]
     (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
       (parse-xml-error-response-elem xml-elem)

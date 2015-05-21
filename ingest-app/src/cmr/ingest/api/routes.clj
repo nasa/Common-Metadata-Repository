@@ -28,7 +28,8 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
-            [cmr.ingest.services.providers-cache :as pc]))
+            [cmr.ingest.services.providers-cache :as pc])
+  (:import clojure.lang.ExceptionInfo))
 
 (def ECHO_CLIENT_ID "ECHO")
 
@@ -203,29 +204,47 @@
                        provider-id native-id :granule (get multipart-params "granule"))]
     (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
 
+(defn set-default-error-format [handler def-format]
+  "Ring middleware to add a default format to the exception-info created during exceptions. This
+  is used to determine the default format for each route."
+  (fn [request]
+    (try
+      (handler request)
+      (catch ExceptionInfo e
+        (let [{:keys[type errors]} (ex-data e)]
+          (throw (ex-info (.getMessage e)
+                          {:type type
+                           :errors errors
+                           :default-format def-format})))))))
+
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
       provider-api/provider-api-routes
       (context "/providers/:provider-id" [provider-id]
         (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [body content-type params headers request-context]}
+          (set-default-error-format
+            (POST "/" {:keys [body content-type params headers request-context]}
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (verify-provider-against-client-id request-context provider-id)
               (info (format "Validating Collection %s from client %s"
                             (concept->loggable-string concept) (:client-id request-context)))
               (ingest/validate-concept request-context concept)
-              {:status 200})))
+              {:status 200}))
+          :xml))
 
         (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context params]}
+          (set-default-error-format
+            (PUT "/" {:keys [body content-type headers request-context params]}
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
             (let [concept (body->concept :collection provider-id native-id body content-type headers)]
               (info (format "Ingesting collection %s from client %s"
                             (concept->loggable-string concept) (:client-id request-context)))
               (generate-ingest-response headers (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context params headers]}
+            :xml)
+          (set-default-error-format
+            (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
                                    :concept-type :collection}]
@@ -233,23 +252,29 @@
               (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting collection %s from client %s"
                             (pr-str concept-attribs) (:client-id request-context)))
-              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
+              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+                                         :xml))
 
         (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
-          (POST "/" {:keys [params headers request-context] :as request}
+          (set-default-error-format
+            (POST "/" {:keys [params headers request-context] :as request}
             (verify-provider-against-client-id request-context provider-id)
             (validate-granule request-context provider-id native-id request)
-            {:status 200}))
+            {:status 200})
+            :xml))
 
         (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-          (PUT "/" {:keys [body content-type headers request-context params]}
+          (set-default-error-format
+            (PUT "/" {:keys [body content-type headers request-context params]}
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
             (let [concept (body->concept :granule provider-id native-id body content-type headers)]
               (info (format "Ingesting granule %s from client %s"
                             (concept->loggable-string concept) (:client-id request-context)))
               (generate-ingest-response headers (ingest/save-concept request-context concept))))
-          (DELETE "/" {:keys [request-context params headers]}
+            :xml)
+          (set-default-error-format
+            (DELETE "/" {:keys [request-context params headers]}
             (let [concept-attribs {:provider-id provider-id
                                    :native-id native-id
                                    :concept-type :granule}]
@@ -257,7 +282,8 @@
               (verify-provider-against-client-id request-context provider-id)
               (info (format "Deleting granule %s from client %s"
                             (pr-str concept-attribs) (:client-id request-context)))
-              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))))
+              (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+            :xml)))
 
       ;; Add routes for API documentation
       (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
@@ -288,11 +314,19 @@
 
     (route/not-found "Not Found")))
 
+(comment
+
+  (cmr.common.dev.capture-reveal/reveal data)
+
+
+  )
+
 (defn default-format-fn
-  "Determine the format that errors should be returned in based on the request URI and http
-  actions."
-  [{:keys [uri]}]
-  (if (re-find #"/providers/.*/[validate|collections|granules].*" uri)
+  "Determine the format that errors should be returned in based on the default-format
+  key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
+  the default format has not been set to :xml."
+  [_request e]
+  (if (= :xml (:default-format (ex-data e)))
     "application/xml"
     "application/json"))
 

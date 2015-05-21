@@ -346,7 +346,7 @@
 
 (defn default-format-fn
   "Determine the format that errors should be returned in based on the request URI."
-  [{:keys [uri]}]
+  [{:keys [uri]} _e]
   (if (re-find #"caches" uri)
     "application/json"
     "application/xml"))

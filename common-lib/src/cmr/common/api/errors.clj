@@ -98,7 +98,7 @@
   (let [results-format (mt/get-results-format
                          (:uri request)
                          (:headers request)
-                         (default-format-fn request))
+                         (default-format-fn request e))
         status-code (type->http-status-code type)
         [content-type response-body] (response-type-body errors results-format
                                                          (api/pretty-request? request))]
