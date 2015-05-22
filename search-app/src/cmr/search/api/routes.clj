@@ -74,7 +74,8 @@
     "application/iso19115+xml"
     "application/opendata+json"
     "text/csv"
-    "application/vnd.google-earth.kml+xml"})
+    "application/vnd.google-earth.kml+xml"
+    "application/metadata+xml"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -85,6 +86,7 @@
 (def supported-concept-id-retrieval-mime-types
   #{"*/*"
     "application/xml" ; allows retrieving native format
+    "application/metadata+xml" ; retrieve in native format
     "application/echo10+xml"
     "application/iso19115+xml"
     "application/iso:smap+xml"
@@ -259,13 +261,7 @@
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context
-                                          ;; According to CMR-1405, a '.native' extension with
-                                          ;; direct retrieval should behave the same as no
-                                          ;; extension, so we just strip off '.native' here.
-                                          (str/replace path-w-extension #"\.native" "")
-                                          params
-                                          headers)))
+          (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
       (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections))(?:\..+)?"] [path-w-extension]

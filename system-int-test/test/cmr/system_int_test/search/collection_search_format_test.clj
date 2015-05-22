@@ -177,20 +177,30 @@
              c8-dif10 nil :dif10 "dif10"))
 
       (testing "native format direct retrieval"
-        ;; Native format can be specified using application/xml, .native extension,
-        ;; or not specifying any format
-        (util/are2 [concept format-key extension]
-             (let [options (merge {:accept nil} (when extension {:url-extension extension}))
+        ;; Native format can be specified using application/xml, application/metadata+xml,
+        ;; .native extension, or not specifying any format.
+        (util/are2 [concept format-key extension accept]
+             (let [options (-> {:accept nil}
+                             (merge (when extension {:url-extension extension}))
+                             (merge (when accept {:accept accept})))
                    response (search/get-concept-by-concept-id (:concept-id concept) options)]
                (is (= (umm/umm->xml concept format-key) (:body response))))
-             "ECHO10 no extension" c1-echo :echo10 nil
-             "DIF no extension" c3-dif :dif nil
-             "ISO MENDS no extension" c5-iso :iso19115 nil
-             "SMAP ISO no extension" c7-smap :iso-smap nil
-             "ECHO10 .native extension" c1-echo :echo10 "native"
-             "DIF .native extension" c3-dif :dif "native"
-             "ISO MENDS .native extension" c5-iso :iso19115 "native"
-             "SMAP ISO .native extension" c7-smap :iso-smap "native"))
+             "ECHO10 no extension" c1-echo :echo10 nil nil
+             "DIF no extension" c3-dif :dif nil nil
+             "ISO MENDS no extension" c5-iso :iso19115 nil nil
+             "SMAP ISO no extension" c7-smap :iso-smap nil nil
+             "ECHO10 .native extension" c1-echo :echo10 "native" nil
+             "DIF .native extension" c3-dif :dif "native" nil
+             "ISO MENDS .native extension" c5-iso :iso19115 "native" nil
+             "SMAP ISO .native extension" c7-smap :iso-smap "native" nil
+             "ECHO10 accept application/xml" c1-echo :echo10 nil "application/xml"
+             "DIF accept application/xml" c3-dif :dif nil "application/xml"
+             "ISO MENDS accept application/xml" c5-iso :iso19115 nil "application/xml"
+             "SMAP ISO accept application/xml" c7-smap :iso-smap nil "application/xml"
+             "ECHO10 accept application/metadata+xml" c1-echo :echo10 nil "application/metadata+xml"
+             "DIF accept application/metadata+xml" c3-dif :dif nil "application/metadata+xml"
+             "ISO MENDS accept application/metadata+xml" c5-iso :iso19115 nil "application/metadata+xml"
+             "SMAP ISO accept application/metadata+xml" c7-smap :iso-smap nil "application/metadata+xml"))
 
       (testing "unsupported formats"
         (are [mime-type xml?]

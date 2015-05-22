@@ -62,16 +62,22 @@
            {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
 
     (testing "native format direct retrieval"
-        ;; Native format can be specified using application/xml, .native extension,
-        ;; or not specifying any format
-        (util/are2 [concept format-key extension]
-             (let [options (merge {:accept nil} (when extension {:url-extension extension}))
+        ;; Native format can be specified using application/xml, application/metadata+xml,
+        ;; .native extension, or not specifying any format.
+        (util/are2 [concept format-key extension accept]
+             (let [options (-> {:accept nil}
+                               (merge (when extension {:url-extension extension}))
+                               (merge (when accept {:accept accept})))
                    response (search/get-concept-by-concept-id (:concept-id concept) options)]
                (is (= (umm/umm->xml concept format-key) (:body response))))
-             "ECHO10 no extension" g1-echo :echo10 nil
-             "SMAP ISO no extension" g1-smap :iso-smap nil
-             "ECHO10 .native extension" g1-echo :echo10 "native"
-             "SMAP ISO .native extension" g1-smap :iso-smap "native"))
+             "ECHO10 no extension" g1-echo :echo10 nil nil
+             "SMAP ISO no extension" g1-smap :iso-smap nil nil
+             "ECHO10 .native extension" g1-echo :echo10 "native" nil
+             "SMAP ISO .native extension" g1-smap :iso-smap "native" nil
+             "ECHO10 accept application/xml" g1-echo :echo10 nil "application/xml"
+             "SMAP ISO accept application/xml" g1-smap :iso-smap nil "application/xml"
+             "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
+             "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
 
     (testing "Retrieving results in echo10"
       (are [search expected]
