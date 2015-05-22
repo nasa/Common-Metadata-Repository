@@ -3,6 +3,7 @@
   (:require [cmr.common.api :as api]
             [cmr.common.cache :as cache]
             [cmr.common.jobs :as jobs]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
             [compojure.core :refer :all]))
@@ -80,6 +81,8 @@
   (GET "/health" {request-context :request-context :as request}
     (let [pretty? (api/pretty-request? request)
           {:keys [ok? dependencies]} (health-fn request-context)]
+      (when-not ok?
+        (warn "Health check failed" (pr-str dependencies)))
       {:status (if ok? 200 503)
        :headers {"Content-Type" "application/json; charset=utf-8"}
        :body (json/generate-string dependencies {:pretty pretty?})})))
