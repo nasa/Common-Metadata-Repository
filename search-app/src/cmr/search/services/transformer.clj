@@ -13,10 +13,6 @@
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
 
-(def native-format
-  "This format is used to indicate the metadata is in it's native format."
-  :xml)
-
 (def types->xsl
   "Defines the [metadata-format target-format] to xsl mapping"
   {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})
@@ -59,8 +55,7 @@
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
-        value-map (if (or (= format native-format)
-                          (= format :native)
+        value-map (if (or (some #{:xml :native} [format]) ;; xml is also a native format
                           (= format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
                     (let [metadata (transform-metadata context concept format)]

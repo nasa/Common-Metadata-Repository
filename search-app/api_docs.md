@@ -712,6 +712,12 @@ This allows retrieving the metadata for a single concept. If no format is specif
 
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
 
+The native format can also be retrieved using either 'application/xml' or 'application/metadata+xml' in
+the Accept header or by using the '.native' extension
+
+    curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H 'Accept: application/metadat+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.native"
 
 ### Search with POST
 
