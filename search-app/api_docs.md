@@ -700,6 +700,7 @@ Granule results are sorted by ascending provider and start date by default. One 
   * `online_only`
   * `browsable` (legacy key browse_only is supported as well)
   * `cloud_cover`
+  * `revision_date`
 
 Example of sorting by start_date in descending order: (Most recent data first)
 
