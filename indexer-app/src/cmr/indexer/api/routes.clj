@@ -75,12 +75,7 @@
             (index-svc/delete-concept request-context concept-id revision-id ignore-conflict)
             {:status 204})))
 
-      (GET "/health" {:keys [request-context params]}
-        (let [{pretty? :pretty} params
-              {:keys [ok? dependencies]} (index-svc/health request-context)]
-          {:status (if ok? 200 503)
-           :headers {"Content-Type" "application/json; charset=utf-8"}
-           :body (json/generate-string dependencies {:pretty pretty?})})))
+      (common-routes/health-api-routes index-svc/health))
 
     (route/not-found "Not Found")))
 
