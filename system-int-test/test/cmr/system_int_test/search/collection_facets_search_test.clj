@@ -45,10 +45,11 @@
       (apply dc/platform platform-name platform-name nil
              (for [in (range 0 num-instruments)
                    :let [instrument-name (str platform-name "-i" in)]]
-               (apply dc/instrument instrument-name nil nil
-                      (for [sn (range 0 num-sensors)
+               (dc/instrument
+                 {:short-name instrument-name
+                  :sensors (for [sn (range 0 num-sensors)
                             :let [sensor-name (str instrument-name "-s" sn)]]
-                        (dc/sensor sensor-name))))))}))
+                        (dc/sensor {:short-name sensor-name}))}))))}))
 
 (defn twod-coords
   [& names]

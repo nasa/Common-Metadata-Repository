@@ -209,7 +209,7 @@
                                        "platform"
                                        "dummy"
                                        nil
-                                       (map dc/instrument
+                                       (map #(dc/instrument {:short-name %})
                                             ["c10" "c41" "c20" "c51" "c30" "c40" "c50"]))]}))
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
@@ -238,8 +238,10 @@
                  {:platforms
                   [(dc/platform
                      "platform" "dummy" nil
-                     (apply dc/instrument "instrument" "dummy" nil
-                            (map dg/sensor-ref ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])))]}))
+                     (dc/instrument {:short-name "instrument"
+                                     :long-name "dummy"
+                                     :sensors (map #(dc/sensor {:short-name %})
+                                                   ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))]}))
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"
                               (dg/granule

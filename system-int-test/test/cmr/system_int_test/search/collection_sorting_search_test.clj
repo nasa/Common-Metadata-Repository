@@ -159,7 +159,8 @@
                                       {:platforms [(apply dc/platform (d/unique-str "platform")
                                                           "long-name"
                                                           nil
-                                                          (map dc/instrument instruments))]})))
+                                                          (map #(dc/instrument {:short-name %})
+                                                               instruments))]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -176,16 +177,16 @@
 
 (deftest collection-sensor-sorting-test
   (let [make-collection (fn [& sensors]
-                          (d/ingest "PROV1"
-                                    (dc/collection
-                                      {:platforms [(dc/platform
-                                                     (d/unique-str "platform")
-                                                     "long-name"
-                                                     nil
-                                                     (apply dc/instrument (d/unique-str "instrument")
-                                                            nil
-                                                            nil
-                                                            (map dc/sensor sensors)))]})))
+                          (d/ingest
+                            "PROV1"
+                            (dc/collection
+                              {:platforms [(dc/platform
+                                             (d/unique-str "platform")
+                                             "long-name"
+                                             nil
+                                             (dc/instrument
+                                               {:short-name (d/unique-str "instrument")
+                                                :sensors (map #(dc/sensor {:short-name %}) sensors)}))]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")

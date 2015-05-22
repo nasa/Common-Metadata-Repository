@@ -110,7 +110,7 @@
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
-      {:platforms [(dc/platform "P1" "none" nil (dc/instrument "I1") (dc/instrument "I1"))]}
+      {:platforms [(dc/platform "P1" "none" nil (dc/instrument {:short-name "I1"}) (dc/instrument {:short-name "I1"}))]}
       ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
   (testing "Spatial validation"
