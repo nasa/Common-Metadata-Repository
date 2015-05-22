@@ -300,6 +300,40 @@ Keyword searches are case insensitive and support wild cards ? and *.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
 
+The following fields are indexed for keyword search:
+
+    * concept_id
+    * provider_id
+    * entry_title
+    * collection_data_type
+    * short_name
+    * long_name
+    * summary
+    * version_id
+    * version_description
+    * processing_level_id
+    * science_keywords
+    * attrib_keywords
+    * spatial_keywords
+    * temporal_keywords
+    * associated_difs
+    * project short names
+    * project long names
+    * plaftorm short names
+    * platform long names
+    * instrument short names
+    * instrument long names
+    * instrument techniques
+    * sensor short names
+    * sensor long names
+    * sensor techniques
+    * characteristic names
+    * characteristic descriptions
+    * coordinate system names
+    * archive centers
+    * science keywords
+    * attrib keywords
+
 #### Find collections by provider
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
