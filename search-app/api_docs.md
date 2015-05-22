@@ -319,7 +319,7 @@ The following fields are indexed for keyword search:
     * associated_difs
     * project short names
     * project long names
-    * plaftorm short names
+    * platform short names
     * platform long names
     * instrument short names
     * instrument long names
