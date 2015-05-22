@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.messages.common-messages :as msg]))
+            [cmr.search.services.messages.common-messages :as msg]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -183,7 +184,8 @@
   (let [coll (d/ingest
                "PROV1"
                (dc/collection {:platforms
-                               (map dc/platform ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
+                               (map #(dc/platform {:short-name %})
+                                    ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
                               (dg/granule coll
@@ -205,12 +207,10 @@
   (let [coll (d/ingest
                "PROV1"
                (dc/collection {:platforms
-                               [(apply dc/platform
-                                       "platform"
-                                       "dummy"
-                                       nil
-                                       (map #(dc/instrument {:short-name %})
-                                            ["c10" "c41" "c20" "c51" "c30" "c40" "c50"]))]}))
+                               [(dc/platform
+                                  {:short-name "platform"
+                                   :instruments (map #(dc/instrument {:short-name %})
+                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]}))
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
                               (dg/granule
@@ -222,6 +222,7 @@
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
+
     (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
@@ -237,11 +238,11 @@
                (dc/collection
                  {:platforms
                   [(dc/platform
-                     "platform" "dummy" nil
-                     (dc/instrument {:short-name "instrument"
-                                     :long-name "dummy"
-                                     :sensors (map #(dc/sensor {:short-name %})
-                                                   ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))]}))
+                     {:short-name "platform"
+                      :instruments [(dc/instrument
+                                      {:short-name "instrument"
+                                       :sensors (map #(dc/sensor {:short-name %})
+                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})]}))
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"
                               (dg/granule

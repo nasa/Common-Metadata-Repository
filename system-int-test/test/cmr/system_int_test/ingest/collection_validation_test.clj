@@ -57,7 +57,8 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors :echo10))
   ([coll-attributes field-path errors metadata-format]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)]
+   (let [response (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format
+                            nil {:allow-failure? true})]
      (is (= {:status 400
              :errors [{:path field-path
                        :errors errors}]}
@@ -92,7 +93,7 @@
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection)]
+        response (d/ingest "PROV1" collection :echo10 nil {:allow-failure? true})]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
@@ -110,7 +111,8 @@
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"
     (assert-invalid
-      {:platforms [(dc/platform "P1" "none" nil (dc/instrument {:short-name "I1"}) (dc/instrument {:short-name "I1"}))]}
+      {:platforms [(dc/platform {:instruments [(dc/instrument {:short-name "I1"})
+                                               (dc/instrument {:short-name "I1"})]})]}
       ["Platforms" 0 "Instruments"]
       ["Instruments must be unique. This contains duplicates named [I1]."]))
   (testing "Spatial validation"

@@ -42,14 +42,17 @@
    {:platforms
     (for [pn (range 0 num-platforms)
           :let [platform-name (str prefix "-p" pn)]]
-      (apply dc/platform platform-name platform-name nil
-             (for [in (range 0 num-instruments)
-                   :let [instrument-name (str platform-name "-i" in)]]
-               (dc/instrument
-                 {:short-name instrument-name
-                  :sensors (for [sn (range 0 num-sensors)
-                            :let [sensor-name (str instrument-name "-s" sn)]]
-                        (dc/sensor {:short-name sensor-name}))}))))}))
+      (dc/platform
+        {:short-name platform-name
+         :long-name platform-name
+         :instruments
+         (for [in (range 0 num-instruments)
+               :let [instrument-name (str platform-name "-i" in)]]
+           (dc/instrument
+             {:short-name instrument-name
+              :sensors (for [sn (range 0 num-sensors)
+                             :let [sensor-name (str instrument-name "-s" sn)]]
+                         (dc/sensor {:short-name sensor-name}))}))}))}))
 
 (defn twod-coords
   [& names]

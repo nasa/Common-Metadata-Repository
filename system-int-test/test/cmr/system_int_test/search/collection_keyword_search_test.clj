@@ -17,18 +17,22 @@
         psa4 (dc/psa "case" :string "up")
         psa5 (assoc (dc/psa "novalue" :string) :description "description")
         p1 (dc/platform
-             "platform_SnB" "platform_Ln B" nil
-             (dc/instrument {:short-name "isnA" :long-name "ilnA" :technique "itechniqueA"
-                             :sensors [(dc/sensor {:short-name "ssnA" :long-name "slnA"})
-                                       (dc/sensor {:short-name "ssnD" :long-name "slnD" :technique "techniqueD"})]}))
+             {:short-name "platform_SnB"
+              :long-name "platform_Ln B"
+              :instruments
+              [(dc/instrument {:short-name "isnA" :long-name "ilnA" :technique "itechniqueA"
+                               :sensors [(dc/sensor {:short-name "ssnA" :long-name "slnA"})
+                                         (dc/sensor {:short-name "ssnD" :long-name "slnD" :technique "techniqueD"})]})]})
         p2 (dc/platform
-             "platform_SnA spoonA" "platform_LnA"
-             [(dc/characteristic {:name "char1" :description "char1desc"})
-              (dc/characteristic {:name "char2" :description "char2desc"})]
-             (dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
-                             :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
-                                       (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]}))
-        p3 (dc/platform "spoonA")
+             {:short-name "platform_SnA spoonA"
+              :long-name "platform_LnA"
+              :characteristics [(dc/characteristic {:name "char1" :description "char1desc"})
+                                (dc/characteristic {:name "char2" :description "char2desc"})]
+              :instruments
+              [(dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
+                               :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
+                                         (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]})]})
+        p3 (dc/platform {:short-name "spoonA"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"

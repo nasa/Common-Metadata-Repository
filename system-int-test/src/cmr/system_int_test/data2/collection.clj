@@ -89,35 +89,31 @@
 (defn sensor
   "Return an sensor based on sensor short-name"
   [attribs]
-  (c/map->Sensor attribs))
+  (c/map->Sensor (merge {:short-name (d/unique-str "short-name")}
+                        attribs)))
 
 (defn instrument
   "Return an instrument based on instrument attribs"
   [attribs]
-  (c/map->Instrument attribs))
+  (c/map->Instrument (merge {:short-name (d/unique-str "short-name")}
+                            attribs)))
 
 (defn characteristic
   "Returns a platform characteristic"
   [attribs]
-  (c/map->Characteristic (merge {:description "dummy"
+  (c/map->Characteristic (merge {:name (d/unique-str "name")
+                                 :description "dummy"
                                  :data-type "dummy"
                                  :unit "dummy"
                                  :value "dummy"}
                                 attribs)))
-
 (defn platform
   "Return a platform based on platform attribs"
-  ([platform-sn]
-   (platform platform-sn (d/unique-str "long-name")))
-  ([platform-sn long-name]
-   (platform platform-sn long-name nil))
-  ([platform-sn long-name characteristics & instruments]
-   (c/map->Platform
-     {:short-name platform-sn
-      :long-name long-name
-      :type (d/unique-str "Type")
-      :characteristics characteristics
-      :instruments (if (= [nil] instruments) nil instruments)})))
+  [attribs]
+  (c/map->Platform (merge {:short-name (d/unique-str "short-name")
+                           :long-name (d/unique-str "long-name")
+                           :type (d/unique-str "Type")}
+                          attribs)))
 
 (defn platform-with-type
   [platform-sn type & instruments]

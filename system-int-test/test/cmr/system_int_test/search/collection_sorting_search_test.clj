@@ -137,7 +137,7 @@
   (let [make-collection (fn [& platforms]
                           (d/ingest "PROV1"
                                     (dc/collection
-                                      {:platforms (map dc/platform platforms)})))
+                                      {:platforms (map #(dc/platform {:short-name %}) platforms)})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -154,13 +154,12 @@
 
 (deftest collection-instrument-sorting-test
   (let [make-collection (fn [& instruments]
-                          (d/ingest "PROV1"
-                                    (dc/collection
-                                      {:platforms [(apply dc/platform (d/unique-str "platform")
-                                                          "long-name"
-                                                          nil
-                                                          (map #(dc/instrument {:short-name %})
-                                                               instruments))]})))
+                          (d/ingest
+                            "PROV1"
+                            (dc/collection
+                              {:platforms [(dc/platform
+                                             {:instruments (map #(dc/instrument {:short-name %})
+                                                                instruments)})]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")
@@ -181,12 +180,10 @@
                             "PROV1"
                             (dc/collection
                               {:platforms [(dc/platform
-                                             (d/unique-str "platform")
-                                             "long-name"
-                                             nil
-                                             (dc/instrument
-                                               {:short-name (d/unique-str "instrument")
-                                                :sensors (map #(dc/sensor {:short-name %}) sensors)}))]})))
+                                             {:instruments
+                                              [(dc/instrument
+                                                 {:short-name (d/unique-str "instrument")
+                                                  :sensors (map #(dc/sensor {:short-name %}) sensors)})]})]})))
         c1 (make-collection "c10" "c41")
         c2 (make-collection "c20" "c51")
         c3 (make-collection "c30")

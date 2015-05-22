@@ -58,6 +58,8 @@
             (when (:revision-id item)
               {:revision-id (:revision-id item)})))))
 
+;; TODO move everything other than provider id and item into the options map.
+;; Document the options
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
   ([provider-id item]
@@ -65,12 +67,22 @@
   ([provider-id item format-key]
    (ingest provider-id item format-key nil))
   ([provider-id item format-key token]
+   (ingest provider-id item format-key token {}))
+  ([provider-id item format-key token options]
    (let [response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token})]
-     (if (= 200 (:status response))
+                    {:token token})
+         status (:status response)]
+
+     ;; This allows this to be used from many places were we don't expect a failure but if there is
+     ;; one we'll be alerted immediately instead of through a side effect like searches failing.
+     (when (and (not (:allow-failure? options)) (not= status 200))
+       (throw (Exception. (str "Ingest failed when expected to succeed: "
+                               (pr-str response)))))
+
+     (if (= 200 status)
        (assoc item
-              :status (:status response)
+              :status status
               :provider-id provider-id
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)

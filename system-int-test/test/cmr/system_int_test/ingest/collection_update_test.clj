@@ -94,7 +94,8 @@
         [additional-attributes expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
-                                            :product-specific-attributes additional-attributes}))
+                                            :product-specific-attributes additional-attributes})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
@@ -162,7 +163,8 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "int" :int range)]}))
+                                    :product-specific-attributes [(apply dc/psa "int" :int range)]})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -208,7 +210,8 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "float" :float range)]}))
+                                    :product-specific-attributes [(apply dc/psa "float" :float range)]})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -259,7 +262,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
+                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -308,7 +312,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "date" :date (map parse-fn range))]}))
+                                    [(apply dc/psa "date" :date (map parse-fn range))]})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -357,7 +362,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "time" :time (map parse-fn range))]}))
+                                    [(apply dc/psa "time" :time (map parse-fn range))]})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -402,7 +408,8 @@
         [projects expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
-                                            :projects (apply dc/projects projects)}))
+                                            :projects (apply dc/projects projects)})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
@@ -449,7 +456,7 @@
                                   updated-coll (assoc updated-coll
                                                       :spatial-coverage (when new-spatial-params
                                                                           (dc/spatial new-spatial-params)))]
-                              (d/ingest "PROV1" updated-coll)))]
+                              (d/ingest "PROV1" updated-coll :echo10 nil {:allow-failure? true})))]
 
     (index/wait-until-indexed)
     (testing "Updates allowed with no granules"
@@ -556,7 +563,8 @@
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title entry-title
                                             :beginning-date-time beginning-date-time
-                                            :ending-date-time ending-date-time}))
+                                            :ending-date-time ending-date-time})
+                                 :echo10 nil {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
