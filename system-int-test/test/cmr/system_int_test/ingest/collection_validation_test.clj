@@ -57,8 +57,8 @@
   ([coll-attributes field-path errors]
    (assert-invalid coll-attributes field-path errors :echo10))
   ([coll-attributes field-path errors metadata-format]
-   (let [response (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format
-                            nil {:allow-failure? true})]
+   (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
+                            {:format metadata-format :allow-failure? true})]
      (is (= {:status 400
              :errors [{:path field-path
                        :errors errors}]}
@@ -93,7 +93,7 @@
 (defn assert-conflict
   [coll-attributes errors]
   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        response (d/ingest "PROV1" collection :echo10 nil {:allow-failure? true})]
+        response (d/ingest "PROV1" collection {:allow-failure? true})]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))

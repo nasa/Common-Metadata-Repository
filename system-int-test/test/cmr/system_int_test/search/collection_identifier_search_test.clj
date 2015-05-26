@@ -426,10 +426,10 @@
 (deftest dif-entry-id-search-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                 :version-id "V1"}))
-        coll2 (d/ingest "PROV1" (dc/collection-dif {:entry-id "S2"}) :dif)
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:entry-id "S2"}) {:format :dif})
         coll3 (d/ingest "PROV2" (dc/collection {:associated-difs ["S3"]}))
         coll4 (d/ingest "PROV2" (dc/collection {:associated-difs ["SL4" "DIF-1"]}))
-        coll5 (d/ingest "PROV2" (dc/collection-dif {:entry-id "T2"}) :dif)]
+        coll5 (d/ingest "PROV2" (dc/collection-dif {:entry-id "T2"}) {:format :dif})]
     (index/wait-until-indexed)
     (testing "dif entry id search"
       (are [items id options]

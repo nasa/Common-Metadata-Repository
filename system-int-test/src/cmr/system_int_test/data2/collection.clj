@@ -219,7 +219,7 @@
                                       :science-keywords [(science-keyword {:category "upcase"
                                                                          :topic "Cool"
                                                                          :term "Mild"})]
-                                      :platforms [(platform-with-type "plat" "Aircraft" (instrument "inst"))]
+                                      :platforms [(platform-with-type "plat" "Aircraft" (instrument {:short-name "inst"}))]
                                       :projects (projects "proj")
                                       :spatial-coverage (spatial {:gsr :cartesian})
                                       :related-urls [(related-url "type" "htt://www.foo.com")]

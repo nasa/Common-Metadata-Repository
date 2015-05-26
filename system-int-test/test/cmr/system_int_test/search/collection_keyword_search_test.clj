@@ -58,7 +58,10 @@
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
+
         coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+
+
         coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
         coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]
                                                  :product-specific-attributes [psa5]}))
@@ -68,7 +71,7 @@
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                  :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
                                                  :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "PROV2" (dc/collection-dif {:entry-id "entryid4"}) :dif)
+        coll16 (d/ingest "PROV2" (dc/collection-dif {:entry-id "entryid4"}) {:format :dif})
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
@@ -204,7 +207,6 @@
            "Level2-3" [coll9]
            ;; - detailed-variable
            "SUPER" [coll9]))
-
     (testing "Boost on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
