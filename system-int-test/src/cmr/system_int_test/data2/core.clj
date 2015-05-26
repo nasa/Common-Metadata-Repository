@@ -58,10 +58,15 @@
             (when (:revision-id item)
               {:revision-id (:revision-id item)})))))
 
-;; TODO move everything other than provider id and item into the options map.
-;; Document the options
 (defn ingest
-  "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
+  "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it.
+  Accepts a map of some optional arguments. The options are:
+
+  * :format - The XML Metadata format to use.
+  * :token - The token to use.
+  * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
+  for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
+  Setting it to true will skip this check. Set it true when testing ingest failure cases."
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
