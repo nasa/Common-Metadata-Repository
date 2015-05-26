@@ -139,6 +139,7 @@
 (def string-param-options #{:pattern :ignore-case})
 (def pattern-option #{:pattern})
 (def or-option #{:or})
+(def and-option #{:and})
 (def and-or-option #{:and :or})
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
@@ -174,7 +175,8 @@
    :dif-entry-id string-plus-and-options
    :provider string-param-options
    :attribute exclude-plus-or-option
-   :temporal exclude-plus-and-or-option})
+   :temporal exclude-plus-and-or-option
+   :revision-date and-option})
 
 (defn parameter-options-validation
   [concept-type params]
@@ -314,6 +316,22 @@
       [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
         (validate-date-time "updated_since" updated-since-val)))
+    []))
+
+(defn revision-date-validation
+  "Validates that revision date parameter conforms to the :date-time-no-ms format"
+  [concept-type params]
+  (if-let [revision-date (:revision-date params)]
+    (let [revision-date (if (sequential? revision-date)
+                          revision-date
+                          [revision-date])]
+      (mapcat
+        (fn [value]
+          (let [[start-date end-date] (map s/trim (s/split value #","))]
+            (concat
+              (validate-date-time "revision-date start" start-date)
+              (validate-date-time "revision-date end" end-date))))
+        revision-date))
     []))
 
 (defn attribute-validation
@@ -525,10 +543,10 @@
   "Validates that the parameter value found by following keys is a map or null.  Dissocs the
   parameter from params if it is invalid, returning [valid-params error-strings].
   Examples:
-    => (validate-map [:parent :child] {:parent {:child {:gchild 0}}})
-    [{:parent {:child {:gchild 0}}} []]
-    => (validate-map [:parent :child] {:parent {:child 0}})
-    [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
+  => (validate-map [:parent :child] {:parent {:child {:gchild 0}}})
+  [{:parent {:child {:gchild 0}}} []]
+  => (validate-map [:parent :child] {:parent {:child 0}})
+  [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
   [keys params]
   (let [value (get-in params keys)]
     (if (or (nil? value) (map? value))
@@ -575,6 +593,7 @@
    parameter-options-validation
    temporal-format-validation
    updated-since-validation
+   revision-date-validation
    orbit-number-validation
    equator-crossing-longitude-validation
    equator-crossing-date-validation
@@ -666,16 +685,16 @@
 
 (def valid-tile-search-params
   "Valid parameters for tile search"
-   #{:bounding-box
-     :line
-     :point
-     :polygon})
+  #{:bounding-box
+    :line
+    :point
+    :polygon})
 
 (defn unrecognized-tile-params-validation
   "Validates that no invalid parameters were supplied to tile search"
   [params]
   (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
-         (set/difference (set (keys params)) valid-tile-search-params)))
+       (set/difference (set (keys params)) valid-tile-search-params)))
 
 (defn validate-tile-parameters
   "Validates the query parameters passed in with a tile search. Throws exceptions to send

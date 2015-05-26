@@ -13,6 +13,7 @@
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
+            [cmr.common.date-time-parser :as parser]
             [cmr.elastic-utils.connect :as elastic-conn]
 
             ;; Services for reseting
@@ -133,6 +134,9 @@
         {:status 200})
       (POST "/freeze-time" []
         (tk/freeze-time!)
+        {:status 200})
+      (PUT "/freeze-time/:date-time" [date-time]
+        (tk/set-time-override! (parser/parse-datetime date-time))
         {:status 200})
       (POST "/advance-time/:num-secs" [num-secs]
         (tk/advance-time! (Long. num-secs))
