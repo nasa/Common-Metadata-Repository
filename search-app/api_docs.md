@@ -717,7 +717,7 @@ The native format can also be retrieved using either 'application/xml' or 'appli
 the Accept header or by using the '.native' extension
 
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i -H 'Accept: application/metadat+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H 'Accept: application/metadata+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.native"
 
 ### Search with POST
