@@ -36,16 +36,16 @@
   )
 
 (deftest search-granules-in-xml-metadata
-  (let [c1-echo (d/ingest "PROV1" (dc/collection) :echo10)
-        c2-smap (d/ingest "PROV2" (dc/collection) :iso-smap)
+  (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
+        c2-smap (d/ingest "PROV2" (dc/collection) {:format :iso-smap})
         g1-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g1"
-                                                       :producer-gran-id "p1"}) :echo10)
+                                                       :producer-gran-id "p1"}) {:format :echo10})
         g2-echo (d/ingest "PROV1" (dg/granule c1-echo {:granule-ur "g2"
-                                                       :producer-gran-id "p2"}) :echo10)
+                                                       :producer-gran-id "p2"}) {:format :echo10})
         g1-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g3"
-                                                       :producer-gran-id "p3"}) :iso-smap)
+                                                       :producer-gran-id "p3"}) {:format :iso-smap})
         g2-smap (d/ingest "PROV2" (dg/granule c2-smap {:granule-ur "g4"
-                                                       :producer-gran-id "p2"}) :iso-smap)
+                                                       :producer-gran-id "p2"}) {:format :iso-smap})
         all-granules [g1-echo g2-echo g1-smap g2-smap]]
     (index/wait-until-indexed)
 
@@ -227,9 +227,9 @@
 
 
 (deftest search-granule-csv
-  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV1" (dc/collection {}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -285,11 +285,11 @@
                           [:status :body]))))))
 
 (deftest search-granule-atom-and-json-and-kml
-  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
-        ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
-        ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
+        ru4 (dc/related-url {:type "ALGORITHM INFO" :url "http://inherited.com"})
+        ru5 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://inherited.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
@@ -365,7 +365,8 @@
                                   :equator-crossing-longitude -45.0
                                   :equator-crossing-date-time "2011-01-01T12:00:00.000Z"}]})
         gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
-                                                   :spatial-coverage (dg/spatial (p/point 1 2))}) :iso-smap)
+                                                   :spatial-coverage (dg/spatial (p/point 1 2))})
+                        {:format :iso-smap})
         ;; Granule #5 is added for CMR-1115, where a granule with orbit spatial but no
         ;; OrbitCalculatedSpatialDomains will not have polygon info in its atom/json representation.
         gran5 (make-gran coll3 {:granule-ur "OrbitGranuleWithoutOrbitCalculatedSpatialDomains"

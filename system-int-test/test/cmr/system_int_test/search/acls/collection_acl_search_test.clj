@@ -69,7 +69,8 @@
                                    :entry-id "S8"
                                    :short-name "S8"
                                    :version-id "V8"
-                                   :long-name "coll8"}) :dif)
+                                   :long-name "coll8"})
+                        {:format :dif})
         ;; added for atom results
         coll8 (assoc coll8 :original-format "DIF")
 

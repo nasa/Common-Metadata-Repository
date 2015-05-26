@@ -260,8 +260,9 @@
               (select-keys response [:status :errors])))))
 
    (testing "through ingest API"
-     (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) metadata-format)
-           response (d/ingest "PROV1" (dg/granule coll gran-attributes) metadata-format)]
+     (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) {:format metadata-format})
+           response (d/ingest "PROV1" (dg/granule coll gran-attributes) {:format metadata-format
+                                                                         :allow-failure? true})]
        (is (= {:status 400
                :errors [{:path field-path
                          :errors errors}]}
@@ -304,7 +305,7 @@
 (defn assert-conflict
   [gran-attributes errors]
   (let [collection (d/ingest "PROV1" (dc/collection))
-        response (d/ingest "PROV1" (dg/granule collection gran-attributes))]
+        response (d/ingest "PROV1" (dg/granule collection gran-attributes) {:allow-failure? true})]
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))

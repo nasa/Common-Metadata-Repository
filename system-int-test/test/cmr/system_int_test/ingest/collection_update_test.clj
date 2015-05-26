@@ -26,21 +26,21 @@
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
-        gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "string" ["alpha"])]}))
-        gran2 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "boolean" ["true"])]}))
-        gran3 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "int" ["2"])]}))
-        gran4 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "float" ["2.0"])]}))
-        gran5 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "datetime" ["2012-01-01T01:02:03Z"])]}))
-        gran6 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "date" ["2012-01-02Z"])]}))
-        gran7 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "time" ["01:02:03Z"])]}))
-        gran8 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
+        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
         ;; The following collection and granule are added to verify that the validation is using
         ;; the collection concept id for searching granules. If we don't use the collection concept
@@ -49,7 +49,7 @@
         coll1 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "parent-collection-1"
                                    :product-specific-attributes [a3]}))
-        gran9 (d/ingest "PROV1"(dg/granule coll1 {:product-specific-attributes
+        gran9 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                   [(dg/psa "int" ["20"])]}))]
     (index/wait-until-indexed)
 
@@ -94,7 +94,8 @@
         [additional-attributes expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
-                                            :product-specific-attributes additional-attributes}))
+                                            :product-specific-attributes additional-attributes})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
@@ -162,7 +163,8 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "int" :int range)]}))
+                                    :product-specific-attributes [(apply dc/psa "int" :int range)]})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -208,7 +210,8 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "float" :float range)]}))
+                                    :product-specific-attributes [(apply dc/psa "float" :float range)]})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -259,7 +262,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
+                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -308,7 +312,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "date" :date (map parse-fn range))]}))
+                                    [(apply dc/psa "date" :date (map parse-fn range))]})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -357,7 +362,8 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "time" :time (map parse-fn range))]}))
+                                    [(apply dc/psa "time" :time (map parse-fn range))]})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
              [status errors]))
@@ -402,7 +408,8 @@
         [projects expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
-                                            :projects (apply dc/projects projects)}))
+                                            :projects (apply dc/projects projects)})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
@@ -449,7 +456,7 @@
                                   updated-coll (assoc updated-coll
                                                       :spatial-coverage (when new-spatial-params
                                                                           (dc/spatial new-spatial-params)))]
-                              (d/ingest "PROV1" updated-coll)))]
+                              (d/ingest "PROV1" updated-coll {:allow-failure? true})))]
 
     (index/wait-until-indexed)
     (testing "Updates allowed with no granules"
@@ -556,7 +563,8 @@
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title entry-title
                                             :beginning-date-time beginning-date-time
-                                            :ending-date-time ending-date-time}))
+                                            :ending-date-time ending-date-time})
+                                 {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 expected-errors] [status errors]))
 
