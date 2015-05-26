@@ -5,7 +5,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
-            [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.util :as u]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.common.concepts :as cc]
@@ -20,6 +19,7 @@
                 :short-name :string
                 :version :string
                 :updated-since :updated-since
+                :revision-date :revision-date
                 :processing-level-id :string
                 :collection-data-type :collection-data-type
                 :temporal :temporal
@@ -56,6 +56,7 @@
              :equator-crossing-date :equator-crossing-date
              :version :collection-query
              :updated-since :updated-since
+             :revision-date :revision-date
              :temporal :temporal
              :platform :inheritance
              :instrument :inheritance
@@ -171,9 +172,23 @@
   [concept-type param value options]
   (qm/map->DateRangeCondition
     {:field param
-     :start-date (dt-parser/parse-datetime
+     :start-date (parser/parse-datetime
                    (if (sequential? value) (first value) value))
      :end-date nil}))
+
+(defmethod parameter->condition :revision-date
+  [concept-type param value options]
+  (if (sequential? value)
+    (if (= "true" (get-in options [:revision-date :and]))
+      (gc/and-conds
+        (map #(parameter->condition concept-type param % options) value))
+      (gc/or-conds
+        (map #(parameter->condition concept-type param % options) value)))
+    (let [[start-date end-date] (map str/trim (str/split value #","))]
+      (qm/map->DateRangeCondition
+        {:field param
+         :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
+         :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
 
 (defmethod parameter->condition :boolean
   [concept-type param value options]
@@ -307,7 +322,7 @@
   (let [options (u/map-keys->kebab-case (get params :options {}))
         query-attribs (standard-params->query-attribs concept-type params)
         keywords (when (:keyword params)
-                  (str/split (str/lower-case (:keyword params)) #" "))
+                   (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
                        :include-granule-counts :include-has-granules :include-facets
@@ -320,8 +335,8 @@
                               (parameter->condition concept-type param value options))
                             params)]
         (qm/query (assoc query-attribs
-                    :condition (gc/and-conds conditions)
-                    :keywords keywords))))))
+                         :condition (gc/and-conds conditions)
+                         :keywords keywords))))))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."
