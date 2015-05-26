@@ -80,7 +80,7 @@
                     {:token token})
          status (:status response)]
 
-     ;; This allows this to be used from many places were we don't expect a failure but if there is
+     ;; This allows this to be used from many places where we don't expect a failure but if there is
      ;; one we'll be alerted immediately instead of through a side effect like searches failing.
      (when (and (not (:allow-failure? options)) (not= status 200))
        (throw (Exception. (str "Ingest failed when expected to succeed: "

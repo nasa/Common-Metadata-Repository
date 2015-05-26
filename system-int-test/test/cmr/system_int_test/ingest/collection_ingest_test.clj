@@ -155,7 +155,7 @@
 
     (testing "update the collection with a different entry-id is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest "PROV1" (assoc collection :entry-id "EID-2") {:format :dif :allow-failure? true})]
+            (d/ingest "PROV1" (assoc collection :entry-id "EID-2") {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection within the same provider is invalid"
