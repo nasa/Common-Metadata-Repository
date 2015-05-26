@@ -226,7 +226,8 @@
               :project
               :day-night
               :downloadable
-              :browsable}})
+              :browsable
+              :revision-date}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"

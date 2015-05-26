@@ -34,7 +34,7 @@
       (search/find-refs-with-aql :granule [] {}
                                  {:query-params {:page-size 20 :sort-key sort-key}}))))
 
-(deftest granule-identifier-sorting-test
+(deftest granule-identifier-revision-date-sorting-test
   (let [coll (d/ingest "PROV1" (dc/collection {}))
         make-gran (fn [granule-ur producer-gran-id]
                     (d/ingest "PROV1" (dg/granule coll {:granule-ur granule-ur
@@ -45,7 +45,7 @@
         g4 (make-gran "gur40" "pg30")
         g5 (make-gran "gur50" nil)]
     (index/wait-until-indexed)
-    (testing "parameter search and aql search"
+    (testing "granule identifiers sorting"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            "granule_ur" [g1 g2 g3 g4 g5]
@@ -55,7 +55,12 @@
            "-producer_granule_id" [g2 g3 g4 g1 g5]
 
            "readable_granule_name" [g1 g5 g4 g3 g2]
-           "-readable_granule_name" (reverse [g1 g5 g4 g3 g2])))))
+           "-readable_granule_name" (reverse [g1 g5 g4 g3 g2])))
+    (testing "granule revision date sorting"
+      (are [sort-key items]
+           (sort-order-correct? items sort-key)
+           "revision_date" [g1 g2 g3 g4 g5]
+           "-revision_date" (reverse [g1 g2 g3 g4 g5])))))
 
 (deftest granule-campaign-sorting-test
   (let [coll (d/ingest "PROV1"
@@ -69,7 +74,7 @@
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
     (index/wait-until-indexed)
-    (testing "parameter search and aql search"
+    (testing "granule campaign sorting"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
 
@@ -92,7 +97,7 @@
         g5 (make-gran 25)]
     (index/wait-until-indexed)
 
-    (testing "parameter search and aql search"
+    (testing "granule numeric field sorting"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            "data_size" [g3 g1 g5 g2 g4]
@@ -117,7 +122,7 @@
         g8 (make-gran "PROV2" "ET45" "sn10" "v45")]
     (index/wait-until-indexed)
 
-    (testing "parameter search and aql search"
+    (testing "granule sorting by collection identifiers"
       (are [sort-key items]
            (sort-order-correct? items sort-key)
            "entry_title" [g1 g5 g2 g6 g3 g7 g4 g8]
