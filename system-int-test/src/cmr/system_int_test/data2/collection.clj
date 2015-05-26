@@ -115,13 +115,6 @@
                            :type (d/unique-str "Type")}
                           attribs)))
 
-(defn platform-with-type
-  [platform-sn type & instruments]
-  (c/map->Platform
-    {:short-name platform-sn
-     :type type
-     :instruments instruments}))
-
 (defn projects
   "Return a sequence of projects with the given short names"
   [& short-names]
@@ -146,18 +139,14 @@
 
 (defn related-url
   "Creates related url for online_only test"
-  ([type]
-   (related-url type (d/unique-str "http://example.com/file")))
-  ([type url]
-   (related-url type nil url))
-  ([type mime-type url]
+  ([]
+   (related-url nil))
+  ([attribs]
    (let [description (d/unique-str "description")]
-     (c/map->RelatedURL {:type type
-                         :url url
-                         :description description
-                         :title description
-                         :mime-type mime-type}))))
-
+     (c/map->RelatedURL (merge {:url (d/unique-str "http://example.com/file")
+                                :description description
+                                :title description}
+                               attribs)))))
 (defn spatial
   [attributes]
   (let [{:keys [gsr sr orbit geometries]} attributes
@@ -219,10 +208,12 @@
                                       :science-keywords [(science-keyword {:category "upcase"
                                                                          :topic "Cool"
                                                                          :term "Mild"})]
-                                      :platforms [(platform-with-type "plat" "Aircraft" (instrument {:short-name "inst"}))]
+                                      :platforms [(platform {:short-name "plat"
+                                                             :type "Aircraft"
+                                                             :instruments [(instrument {:short-name "inst"})]})]
                                       :projects (projects "proj")
                                       :spatial-coverage (spatial {:gsr :cartesian})
-                                      :related-urls [(related-url "type" "htt://www.foo.com")]
+                                      :related-urls [(related-url {:type "type" :url "htt://www.foo.com"})]
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]

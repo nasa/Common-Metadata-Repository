@@ -193,9 +193,9 @@
 
 
 (deftest search-granule-csv
-  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {}))
         coll2 (d/ingest "PROV1" (dc/collection {}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
@@ -251,11 +251,11 @@
                           [:status :body]))))))
 
 (deftest search-granule-atom-and-json-and-kml
-  (let [ru1 (dc/related-url "GET DATA" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "http://example.com/browse")
-        ru4 (dc/related-url "ALGORITHM INFO" "http://inherited.com")
-        ru5 (dc/related-url "GET RELATED VISUALIZATION" "http://inherited.com/browse")
+  (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
+        ru4 (dc/related-url {:type "ALGORITHM INFO" :url "http://inherited.com"})
+        ru5 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://inherited.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"

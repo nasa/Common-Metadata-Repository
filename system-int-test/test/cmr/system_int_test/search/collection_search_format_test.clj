@@ -275,10 +275,10 @@
            [-180 90 0 -90] [g2 g3]))))
 
 (deftest search-collection-various-formats
-  (let [ru1 (dc/related-url "GET DATA" "application/json" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "text/xml" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
-        ru4 (dc/related-url "VIEW PROJECT HOME PAGE" "http://example.com")
+  (let [ru1 (dc/related-url {:type "GET DATA" :mime-type "application/json" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :mime-type "text/xml" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :mime-type "application/xml" :url "http://example.com/browse"})
+        ru4 (dc/related-url {:type "VIEW PROJECT HOME PAGE" :url "http://example.com"})
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
         p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")
         p2 (dc/personnel "Jane" "Doe" nil)

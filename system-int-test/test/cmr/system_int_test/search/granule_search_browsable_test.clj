@@ -11,9 +11,9 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-granule-by-browsable-or-browse-only
-  (let [ru1 (dc/related-url "GET DATA")
-        ru2 (dc/related-url "GET RELATED VISUALIZATION")
-        ru3 (dc/related-url nil)
+  (let [ru1 (dc/related-url {:type "GET DATA"})
+        ru2 (dc/related-url {:type "GET RELATED VISUALIZATION"})
+        ru3 (dc/related-url)
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru2]}))

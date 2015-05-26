@@ -279,7 +279,7 @@
          "-day_night_flag" [g4 g2 g1 g3])))
 
 (deftest granule-downloadable-sorting-test
-  (let [ru1 (dc/related-url "GET DATA")
+  (let [ru1 (dc/related-url {:type "GET DATA"})
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
@@ -293,7 +293,7 @@
          "-online_only" [g1 g2])))
 
 (deftest granule-browse-only-sorting-test
-  (let [ru1 (dc/related-url "GET RELATED VISUALIZATION")
+  (let [ru1 (dc/related-url {:type "GET RELATED VISUALIZATION"})
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
