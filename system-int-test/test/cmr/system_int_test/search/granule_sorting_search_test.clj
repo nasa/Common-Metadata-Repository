@@ -194,7 +194,8 @@
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
                               (dg/granule coll
-                                          {:platform-refs (map dg/platform-ref platforms)})))
+                                          {:platform-refs (map #(dg/platform-ref {:short-name %})
+                                                               platforms)})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -220,8 +221,11 @@
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
-                                {:platform-refs [(apply dg/platform-ref "platform"
-                                                        (map dg/instrument-ref instruments))]})))
+                                {:platform-refs
+                                 [(dg/platform-ref
+                                    {:short-name "platform"
+                                     :instrument-refs (map #(dg/instrument-ref {:short-name %})
+                                                           instruments)})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -252,10 +256,13 @@
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
-                                {:platform-refs [(dg/platform-ref
-                                                   "platform"
-                                                   (apply dg/instrument-ref "instrument"
-                                                          (map dg/sensor-ref sensors)))]})))
+                                {:platform-refs
+                                 [(dg/platform-ref
+                                    {:short-name "platform"
+                                     :instrument-refs [(dg/instrument-ref
+                                                         {:short-name "instrument"
+                                                          :sensor-refs (map #(dg/sensor-ref {:short-name %})
+                                                                            sensors)})]})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
