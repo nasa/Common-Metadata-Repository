@@ -36,6 +36,7 @@
 (def-app-conn-config index-set 3005)
 (def-app-conn-config bootstrap 3006)
 (def-app-conn-config cubby 3007)
+(def-app-conn-config virtual-product 3009)
 
 (defconfig echo-rest-protocol
   "The protocol to use when contructing ECHO Rest URLs."
@@ -86,6 +87,9 @@
    :cubby {:host (cubby-host)
            :port (cubby-port)
            :context (cubby-relative-root-url)}
+   :virtual-product {:host (virtual-product-host)
+                     :port (virtual-product-port)
+                     :context (virtual-product-relative-root-url)}
    :echo-rest {:protocol (echo-rest-protocol)
                :host (echo-rest-host)
                :port (echo-rest-port)
