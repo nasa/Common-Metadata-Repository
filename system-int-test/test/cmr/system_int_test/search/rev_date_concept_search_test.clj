@@ -16,6 +16,9 @@
                        (dev-sys-util/freeze-resume-time-fixture)]))
 
 (deftest search-collections-by-revision-date
+  ;; We only test in memory mode here as this test uses time-keeper to freeze time. This will not
+  ;; work for external db mode since the revision date would be set automatically by oracle
+  ;; when concepts are saved and would not depend on the current time in time-keeper.
   (s/only-with-in-memory-database
     (let [_ (dev-sys-util/freeze-time! "2000-01-01T10:00:00Z")
           coll1 (d/ingest "PROV1" (dc/collection {}))
@@ -57,7 +60,7 @@
                 [] "2000-01-01T11:00:00Z,2000-02-01T09:00:00Z" {}
                 "find a single value"
                 [coll1] "2000-01-01T10:00:00Z,2000-01-01T10:00:00Z" {}
-                "multiple ranges without options"
+                "multiple ranges without options, should default to AND false"
                 [coll3 coll4 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {}
                 "multiple ranges with option and false"
                 [coll3 coll4 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
@@ -69,6 +72,21 @@
                (d/refs-match? colls references))
              [coll1 coll2] "revision_date[]" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
              [coll3 coll4 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+      (testing "search collections with invalid revision date"
+        (u/are2 [value err-pattern]
+                (let [{:keys [status errors]} (search/find-refs :collection {"revision_date" value})
+                      err (first errors)]
+                  (and (= 400 status)
+                       (re-find err-pattern err)))
+                "invalid date time"
+                "2000-01-01T10:00:99Z" #"datetime is invalid:.*"
+
+                "too many datetimes"
+                "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z,2008-04-01T10:00:00Z"
+                #"Too many commas in revision-date.*"
+
+                "too many commas"
+                "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z," #"Too many commas in revision-date.*"))
 
       (testing "search collections with updated_since"
         (are [colls param value]
@@ -133,7 +151,7 @@
                 [] "2000-01-01T11:00:00Z,2000-02-01T09:00:00Z" {}
                 "find a single value"
                 [gran1] "2000-01-01T10:00:00Z,2000-01-01T10:00:00Z" {}
-                "multiple ranges without options"
+                "multiple ranges without options, should default to AND false"
                 [gran3 gran4 gran5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {}
                 "multiple ranges with option and false"
                 [gran3 gran4 gran5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
@@ -145,6 +163,21 @@
                (d/refs-match? grans references))
              [gran1 gran2] "revision_date" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
              [gran3 gran4 gran5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+      (testing "search granules with invalid revision date"
+        (u/are2 [value err-pattern]
+                (let [{:keys [status errors]} (search/find-refs :granule {"revision_date" value})
+                      err (first errors)]
+                  (and (= 400 status)
+                       (re-find err-pattern err)))
+                "invalid date time"
+                "2000-01-01T10:00:99Z" #"datetime is invalid:.*"
+
+                "too many datetimes"
+                "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z,2008-04-01T10:00:00Z"
+                #"Too many commas in revision-date.*"
+
+                "too many commas"
+                "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z," #"Too many commas in revision-date.*"))
 
       (testing "search granules with updated_since"
         (are [grans param value]

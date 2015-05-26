@@ -319,7 +319,7 @@
     []))
 
 (defn revision-date-validation
-  "Validates that revision date parameter conforms to the :date-time-no-ms format"
+  "Validates that revision date parameter contains valid date time strings."
   [concept-type params]
   (if-let [revision-date (:revision-date params)]
     (let [revision-date (if (sequential? revision-date)
@@ -327,10 +327,13 @@
                           [revision-date])]
       (mapcat
         (fn [value]
-          (let [[start-date end-date] (map s/trim (s/split value #","))]
-            (concat
-              (validate-date-time "revision-date start" start-date)
-              (validate-date-time "revision-date end" end-date))))
+          (let [parts (map s/trim (s/split value #"," -1))
+                [start-date end-date] parts]
+            (if (> (count parts) 2)
+              [(format "Too many commas in revision-date %s" value)]
+              (concat
+                (validate-date-time "revision-date start" start-date)
+                (validate-date-time "revision-date end" end-date)))))
         revision-date))
     []))
 
