@@ -88,59 +88,32 @@
 
 (defn sensor
   "Return an sensor based on sensor short-name"
-  ([sensor-sn]
-   (sensor sensor-sn nil nil))
-  ([sensor-sn long-name]
-   (c/map->Sensor {:short-name sensor-sn
-                   :long-name long-name}))
-  ([sensor-sn long-name technique]
-   (c/map->Sensor {:short-name sensor-sn
-                   :long-name long-name
-                   :technique technique})))
+  [attribs]
+  (c/map->Sensor (merge {:short-name (d/unique-str "short-name")}
+                        attribs)))
 
 (defn instrument
   "Return an instrument based on instrument attribs"
-  ([instrument-sn]
-   (instrument instrument-sn nil nil))
-  ([instrument-sn instrument-ln]
-   (instrument instrument-sn instrument-ln nil))
-  ([instrument-sn long-name technique & sensors]
-   (c/map->Instrument
-     {:short-name instrument-sn
-      :long-name long-name
-      :technique technique
-      :sensors sensors})))
+  [attribs]
+  (c/map->Instrument (merge {:short-name (d/unique-str "short-name")}
+                            attribs)))
 
 (defn characteristic
   "Returns a platform characteristic"
-  ([name]
-   (characteristic name nil))
-  ([name description]
-   (c/map->Characteristic {:name name :description description
-                           :data-type "dummy"
-                           :unit "dummy"
-                           :value "dummy"})))
-
+  [attribs]
+  (c/map->Characteristic (merge {:name (d/unique-str "name")
+                                 :description "dummy"
+                                 :data-type "dummy"
+                                 :unit "dummy"
+                                 :value "dummy"}
+                                attribs)))
 (defn platform
   "Return a platform based on platform attribs"
-  ([platform-sn]
-   (platform platform-sn (d/unique-str "long-name")))
-  ([platform-sn long-name]
-   (platform platform-sn long-name nil))
-  ([platform-sn long-name characteristics & instruments]
-   (c/map->Platform
-     {:short-name platform-sn
-      :long-name long-name
-      :type (d/unique-str "Type")
-      :characteristics characteristics
-      :instruments (if (= [nil] instruments) nil instruments)})))
-
-(defn platform-with-type
-  [platform-sn type & instruments]
-  (c/map->Platform
-    {:short-name platform-sn
-     :type type
-     :instruments instruments}))
+  [attribs]
+  (c/map->Platform (merge {:short-name (d/unique-str "short-name")
+                           :long-name (d/unique-str "long-name")
+                           :type (d/unique-str "Type")}
+                          attribs)))
 
 (defn projects
   "Return a sequence of projects with the given short names"
@@ -166,18 +139,14 @@
 
 (defn related-url
   "Creates related url for online_only test"
-  ([type]
-   (related-url type (d/unique-str "http://example.com/file")))
-  ([type url]
-   (related-url type nil url))
-  ([type mime-type url]
+  ([]
+   (related-url nil))
+  ([attribs]
    (let [description (d/unique-str "description")]
-     (c/map->RelatedURL {:type type
-                         :url url
-                         :description description
-                         :title description
-                         :mime-type mime-type}))))
-
+     (c/map->RelatedURL (merge {:url (d/unique-str "http://example.com/file")
+                                :description description
+                                :title description}
+                               attribs)))))
 (defn spatial
   [attributes]
   (let [{:keys [gsr sr orbit geometries]} attributes
@@ -239,10 +208,12 @@
                                       :science-keywords [(science-keyword {:category "upcase"
                                                                          :topic "Cool"
                                                                          :term "Mild"})]
-                                      :platforms [(platform-with-type "plat" "Aircraft" (instrument "inst"))]
+                                      :platforms [(platform {:short-name "plat"
+                                                             :type "Aircraft"
+                                                             :instruments [(instrument {:short-name "inst"})]})]
                                       :projects (projects "proj")
                                       :spatial-coverage (spatial {:gsr :cartesian})
-                                      :related-urls [(related-url "type" "htt://www.foo.com")]
+                                      :related-urls [(related-url {:type "type" :url "htt://www.foo.com"})]
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]

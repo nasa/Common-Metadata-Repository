@@ -31,29 +31,19 @@
       (gt/temporal {:single-date-time single}))))
 
 (defn sensor-ref
-  "Return a sensor-ref based on sensor short-name"
-  [sensor-sn]
-  (g/map->SensorRef {:short-name sensor-sn}))
+  "Return a sensor-ref based on sensor attribs."
+  [attribs]
+  (g/map->SensorRef attribs))
 
 (defn instrument-ref
   "Return an instrument-ref based on instrument attribs"
-  ([instrument-sn]
-   (g/map->InstrumentRef
-     {:short-name instrument-sn}))
-  ([instrument-sn & sensor-refs]
-   (g/map->InstrumentRef
-     {:short-name instrument-sn
-      :sensor-refs sensor-refs})))
+  [attribs]
+  (g/map->InstrumentRef attribs))
 
 (defn platform-ref
   "Return a platform-ref based on platform attribs"
-  ([platform-sn]
-   (g/map->PlatformRef
-     {:short-name platform-sn}))
-  ([platform-sn & instrument-refs]
-   (g/map->PlatformRef
-     {:short-name platform-sn
-      :instrument-refs instrument-refs})))
+  [attribs]
+  (g/map->PlatformRef attribs))
 
 (defn data-granule
   "Returns a data-granule with the given attributes"

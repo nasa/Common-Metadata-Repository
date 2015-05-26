@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.messages.common-messages :as msg]))
+            [cmr.search.services.messages.common-messages :as msg]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -188,11 +189,13 @@
   (let [coll (d/ingest
                "PROV1"
                (dc/collection {:platforms
-                               (map dc/platform ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
+                               (map #(dc/platform {:short-name %})
+                                    ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])}))
         make-gran (fn [& platforms]
                     (d/ingest "PROV1"
                               (dg/granule coll
-                                          {:platform-refs (map dg/platform-ref platforms)})))
+                                          {:platform-refs (map #(dg/platform-ref {:short-name %})
+                                                               platforms)})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -210,23 +213,25 @@
   (let [coll (d/ingest
                "PROV1"
                (dc/collection {:platforms
-                               [(apply dc/platform
-                                       "platform"
-                                       "dummy"
-                                       nil
-                                       (map dc/instrument
-                                            ["c10" "c41" "c20" "c51" "c30" "c40" "c50"]))]}))
+                               [(dc/platform
+                                  {:short-name "platform"
+                                   :instruments (map #(dc/instrument {:short-name %})
+                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]}))
         make-gran (fn [& instruments]
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
-                                {:platform-refs [(apply dg/platform-ref "platform"
-                                                        (map dg/instrument-ref instruments))]})))
+                                {:platform-refs
+                                 [(dg/platform-ref
+                                    {:short-name "platform"
+                                     :instrument-refs (map #(dg/instrument-ref {:short-name %})
+                                                           instruments)})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
         g4 (make-gran "c40")
         g5 (make-gran "c50")]
+
     (index/wait-until-indexed)
     (are [sort-key items]
          (sort-order-correct? items sort-key)
@@ -242,17 +247,22 @@
                (dc/collection
                  {:platforms
                   [(dc/platform
-                     "platform" "dummy" nil
-                     (apply dc/instrument "instrument" "dummy" nil
-                            (map dg/sensor-ref ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])))]}))
+                     {:short-name "platform"
+                      :instruments [(dc/instrument
+                                      {:short-name "instrument"
+                                       :sensors (map #(dc/sensor {:short-name %})
+                                                     ["c10" "c41" "c20" "c51" "c30" "c40" "c50"])})]})]}))
         make-gran (fn [& sensors]
                     (d/ingest "PROV1"
                               (dg/granule
                                 coll
-                                {:platform-refs [(dg/platform-ref
-                                                   "platform"
-                                                   (apply dg/instrument-ref "instrument"
-                                                          (map dg/sensor-ref sensors)))]})))
+                                {:platform-refs
+                                 [(dg/platform-ref
+                                    {:short-name "platform"
+                                     :instrument-refs [(dg/instrument-ref
+                                                         {:short-name "instrument"
+                                                          :sensor-refs (map #(dg/sensor-ref {:short-name %})
+                                                                            sensors)})]})]})))
         g1 (make-gran "c10" "c41")
         g2 (make-gran "c20" "c51")
         g3 (make-gran "c30")
@@ -281,7 +291,7 @@
          "-day_night_flag" [g4 g2 g1 g3])))
 
 (deftest granule-downloadable-sorting-test
-  (let [ru1 (dc/related-url "GET DATA")
+  (let [ru1 (dc/related-url {:type "GET DATA"})
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
@@ -295,7 +305,7 @@
          "-online_only" [g1 g2])))
 
 (deftest granule-browse-only-sorting-test
-  (let [ru1 (dc/related-url "GET RELATED VISUALIZATION")
+  (let [ru1 (dc/related-url {:type "GET RELATED VISUALIZATION"})
         coll (d/ingest "PROV1" (dc/collection {}))
         g1 (d/ingest "PROV1" (dg/granule coll {:related-urls [ru1]}))
         g2 (d/ingest "PROV1" (dg/granule coll {}))]
