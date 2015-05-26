@@ -73,6 +73,7 @@
 
 (def facet-aggregations
   "TODO: Temp to switch easily"
+  ; new-facet-aggregations)
   old-facet-aggregations)
 
 
@@ -97,138 +98,47 @@
       {:field (csk/->snake_case_string field-name)
        :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
 
-
-;; Sample
-(comment
-  (def science-keywords-bucket-map
-    {:doc_count 1
-     :category {:doc_count_error_upper_bound 0
-                :sum_other_doc_count 0
-                :buckets [{:key "Hurricane"
-                           :doc_count 1
-                           :topic {:doc_count_error_upper_bound 0
-                                   :sum_other_doc_count 0
-                                   :buckets [{:key "Popular"
-                                              :doc_count 1
-                                              :coll-count {:doc_count 1
-                                                           :concept-id {:doc_count_error_upper_bound 0
-                                                                        :sum_other_doc_count 0
-                                                                        :buckets [{:key "C1200000003-PROV1"
-                                                                                   :doc_count 1}]}}
-                                              :term {:doc_count_error_upper_bound 0
-                                                     :sum_other_doc_count 0
-                                                     :buckets [{:key "UNIVERSAL"
-                                                                :doc_count 1
-                                                                :coll-count {:doc_count 1
-                                                                             :concept-id {:doc_count_error_upper_bound 0
-                                                                                          :sum_other_doc_count 0
-                                                                                          :buckets [{:key "C1200000003-PROV1"
-                                                                                                     :doc_count 1}]}}
-                                                                :variable-level-1 {:doc_count_error_upper_bound 0
-                                                                                   :sum_other_doc_count 0
-                                                                                   :buckets []}}]}}]}
-                           :coll-count {:doc_count 1
-                                        :concept-id {:doc_count_error_upper_bound 0
-                                                     :sum_other_doc_count 0
-                                                     :buckets [{:key "C1200000003-PROV1"
-                                                                :doc_count 1}]}}}]}})
-
-
-
-  ;; Test this function - initially just pull out the collection count for all of the category keys
-  (let [category-facets (get science-keywords-bucket-map :category)
-        category-buckets (get category-facets :buckets)
-        map-key-to-collection-count (for [bucket category-buckets
-                                          :let [category-key (get bucket :key)
-                                                coll-count (get-in bucket [:coll-count :doc_count])
-                                                sub-field-bucket (get bucket :topic)]]
-                                      [category-key {:count coll-count
-                                                     :sub-field sub-field-bucket}])]
-    (into {} map-key-to-collection-count))
-
-  (defn- example-with-recursion
-    "Build the science keyword aggregations query."
-    [field-hierarchy]
-    (when-let [field (first field-hierarchy)]
-      (let [remaining-fields (rest field-hierarchy)
-            next-field (first remaining-fields)
-            terms {:field (str "science-keywords." (name field))}
-            aggs (if next-field
-                   {:coll-count collection-count-aggregation
-                    next-field (science-keyword-aggregations-helper remaining-fields)}
-                   {:coll-count collection-count-aggregation})]
-        {:terms terms
-         :aggs aggs})))
-  (into)
-  )
-
 (defn- science-keywords-bucket-helper
   "Helper to parse the elasticsearch aggregations response for science-keywords."
-  [field-hierarchy aggregations-for-field ^java.util.Map facet-map-response]
+  [field-hierarchy aggregations-for-field]
   (when-let [field (first field-hierarchy)]
     (let [remaining-fields (rest field-hierarchy)
           next-field (first remaining-fields)
-          buckets (get aggregations-for-field :buckets)]
-      (for [bucket buckets
-            :let [field-key (get bucket :key)
-                  coll-count (get-in bucket [:coll-count :doc_count])
-                  sub-aggregations-for-field (when next-field (select-keys (get bucket next-field) [:coll-count :buckets]))]]
-        (let [new-response (into facet-map-response {field-key coll-count})]
-          ; (println "CDD: response " field-key coll-count)
-          (when (= field :category)
-            (println "Category: " field-key)
-            (println "Coll-count: " coll-count)
-            (println "Sub-aggs: " sub-aggregations-for-field)
-            (println "New response: " new-response))
-          (if (and sub-aggregations-for-field (seq (get sub-aggregations-for-field :buckets)))
-            (science-keywords-bucket-helper remaining-fields
-                                            sub-aggregations-for-field new-response)
-            new-response))))))
+          buckets (get aggregations-for-field :buckets)
+          response {:field field
+                    :value-count-maps []}]
+      (->> (for [bucket buckets
+                 :let [field-key (get bucket :key)
+                       coll-count (get-in bucket [:coll-count :doc_count])
+                       sub-aggregations-for-field (when next-field
+                                                    (select-keys (get bucket next-field)
+                                                                 [:coll-count :buckets]))]]
+             (if (seq (get sub-aggregations-for-field :buckets))
+               {:value field-key
+                :count coll-count
+                :facets (science-keywords-bucket-helper
+                          remaining-fields
+                          sub-aggregations-for-field)}
+               {:value field-key
+                :count coll-count}))
+             (into [])
+             (assoc response :value-count-maps)))))
 
-(comment
-  (def the-result (cmr.common.dev.capture-reveal/reveal result))
-  (def sci-key-bucket (cmr.common.dev.capture-reveal/reveal science-keywords-bucket))
-  (science-keywords-bucket->facets sci-key-bucket)
-  (second the-result )
-  (seq the-result)
-  (flatten the-result)
-  (doseq [one-result the-result]
-    (when (seq one-result) (println "Result" one-result)))
-(pr-str)
-  )
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
   map of science keywords."
   [bucket-map]
-  (let [result (flatten (science-keywords-bucket-helper science-keyword-hierarchy
-                                                        (get bucket-map (first science-keyword-hierarchy))
-                                                        {}))]
-    (cmr.common.dev.capture-reveal/capture result)
-    result))
-
-; (defn- science-keywords-bucket->facets
-;   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
-;   map of science keywords."
-;   [bucket-map]
-;   (let [sub-field-bucket (get bucket-map (first science-keyword-hierarchy))]
-;   (for [field-name science-keyword-hierarchy
-;         :let [field-buckets (get sub-field-bucket :buckets)]]
-;     (for [bucket field-buckets
-;           :let [field-key (get bucket :key)
-;                 coll-count (get-in bucket [:coll-count :doc_count])
-;                 sub-field-bucket]])
-;     (r/map->Facet
-;       {:field (csk/->snake_case_string field-name)
-;        :value-counts (buckets->value-count-pairs (get bucket-map field-name))}))))
+  (science-keywords-bucket-helper science-keyword-hierarchy
+                                  (get bucket-map (first science-keyword-hierarchy))))
 
 (defmethod query-execution/post-process-query-result-feature :facets
   [context query elastic-results query-results feature]
   (let [aggs (:aggregations elastic-results)
         science-keywords-bucket (:science-keywords aggs)
         science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)
-        ; _ (println "CDD - this is the bucket:" science-keywords-bucket)
-        _(cmr.common.dev.capture-reveal/capture science-keywords-bucket)
+        ; _ (cmr.common.dev.capture-reveal/capture science-keywords-bucket)
+        _ (cmr.common.dev.capture-reveal/capture science-keywords-facets)
         facets (bucket-map->facets
                  aggs
                  ;; Specified here so that order will be consistent with results
