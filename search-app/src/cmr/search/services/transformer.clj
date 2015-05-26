@@ -55,7 +55,7 @@
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
-        value-map (if (or (some #{:xml :native} [format]) ;; xml is also a native format
+        value-map (if (or (contains? #{:xml :native} format) ;; xml is also a native format
                           (= format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
                     (let [metadata (transform-metadata context concept format)]

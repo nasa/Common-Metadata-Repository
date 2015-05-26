@@ -70,9 +70,13 @@
   (client/post (url/dev-system-clear-cache-url) (admin-connect-options)))
 
 (defn freeze-time!
-  "Sets the current time to whatever the real time is now."
-  []
-  (client/post (url/dev-system-freeze-time-url) (admin-connect-options)))
+  "Sets the current time to the time represented by the given datetime string or
+  whatever the real time is now if no datetime string is given."
+  ([]
+   (client/post (url/dev-system-freeze-time-url) (admin-connect-options)))
+  ([date-time-str]
+   (client/put (format "%s/%s" (url/dev-system-freeze-time-url) date-time-str)
+               (admin-connect-options))))
 
 (defn advance-time!
   "Increases the time override by a number of seconds"

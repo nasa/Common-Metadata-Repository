@@ -181,6 +181,14 @@ Find collections that match all of the 'project' param values
 
      curl "%CMR-ENDPOINT%/collections?updated_since=2014-05-08T20:06:38.331Z"
 
+#### Find collections by revision_date
+
+  This supports option `and`.
+
+  Find collections which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+    curl "%CMR-ENDPOINT%/collections?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
+
 #### Find collections by processing\_level\_id
 
 This supports `pattern` and `ignore_case`.
@@ -300,6 +308,40 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 Keyword searches are case insensitive and support wild cards ? and *.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
+
+The following fields are indexed for keyword search:
+
+    * concept_id
+    * provider_id
+    * entry_title
+    * collection_data_type
+    * short_name
+    * long_name
+    * summary
+    * version_id
+    * version_description
+    * processing_level_id
+    * science_keywords
+    * attrib_keywords
+    * spatial_keywords
+    * temporal_keywords
+    * associated_difs
+    * project short names
+    * project long names
+    * platform short names
+    * platform long names
+    * instrument short names
+    * instrument long names
+    * instrument techniques
+    * sensor short names
+    * sensor long names
+    * sensor techniques
+    * characteristic names
+    * characteristic descriptions
+    * coordinate system names
+    * archive centers
+    * science keywords
+    * attrib keywords
 
 #### Find collections by provider
 
@@ -506,6 +548,14 @@ The parameters used for searching granules by spatial are the same as the spatia
   Find granules which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
+
+#### Find granules by revision_date
+
+  This supports option `and`.
+
+  Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+
+    curl "%CMR-ENDPOINT%/granules?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
 
 #### Find granules by cloud_cover
 
@@ -718,7 +768,7 @@ The native format can also be retrieved using either 'application/xml' or 'appli
 the Accept header or by using the '.native' extension
 
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i -H 'Accept: application/metadat+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
+    curl -i -H 'Accept: application/metadata+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.native"
 
 ### Search with POST
