@@ -302,37 +302,28 @@ Keyword searches are case insensitive and support wild cards ? and *.
 
 The following fields are indexed for keyword search:
 
-    * concept_id
-    * provider_id
-    * entry_title
-    * collection_data_type
-    * short_name
-    * long_name
-    * summary
-    * version_id
-    * version_description
-    * processing_level_id
-    * science_keywords
-    * attrib_keywords
-    * spatial_keywords
-    * temporal_keywords
-    * associated_difs
-    * project short names
-    * project long names
-    * platform short names
-    * platform long names
-    * instrument short names
-    * instrument long names
-    * instrument techniques
-    * sensor short names
-    * sensor long names
-    * sensor techniques
-    * characteristic names
-    * characteristic descriptions
-    * coordinate system names
-    * archive centers
-    * science keywords
-    * attrib keywords
+    * Concept ID
+    * Provider ID
+    * Entry title
+    * Data type
+    * Short name
+    * Long name
+    * Summary
+    * Version ID
+    * Version description
+    * Processing level ID
+    * Science keywords
+    * Archive centers
+    * Product-specific attribute names, data types, parsed values, and descriptions
+    * Spatial keywords
+    * Temporal keywords
+    * Associated DIFs
+    * Project short and long Names
+    * Platform short and long Names
+    * Instrument short names, long names, and techniques
+    * Sensor short names, long names, and techniques
+    * Characteristic names and descriptions
+    * Coordinate system names
 
 #### Find collections by provider
 
