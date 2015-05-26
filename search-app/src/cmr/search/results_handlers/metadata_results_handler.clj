@@ -48,6 +48,14 @@
   [concept-type result-format]
   [])
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :native]
+  [concept-type result-format]
+  [])
+
+(defmethod elastic-search-index/concept-type+result-format->fields [:granule :native]
+  [concept-type result-format]
+  [])
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
@@ -81,6 +89,10 @@
   (elastic-results->query-metadata-results context query elastic-results))
 
 (defmethod elastic-results/elastic-results->query-results :iso-smap
+  [context query elastic-results]
+  (elastic-results->query-metadata-results context query elastic-results))
+
+(defmethod elastic-results/elastic-results->query-results :native
   [context query elastic-results]
   (elastic-results->query-metadata-results context query elastic-results))
 
@@ -207,5 +219,9 @@
   (search-results->metadata-response context query results))
 
 (defmethod qs/search-results->response :iso-smap
+  [context query results]
+  (search-results->metadata-response context query results))
+
+(defmethod qs/search-results->response :native
   [context query results]
   (search-results->metadata-response context query results))

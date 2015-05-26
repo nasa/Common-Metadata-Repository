@@ -71,6 +71,7 @@ Here is a list of supported extensions and their corresponding MimeTypes:
   * `atom`      "application/atom+xml"
   * `opendata`  "application/opendata+json" (only supported for collections)
   * `kml`       "application/vnd.google-earth.kml+xml"
+  * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
 
 iso is an alias for iso\_mends.
 
