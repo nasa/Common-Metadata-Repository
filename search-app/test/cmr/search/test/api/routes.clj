@@ -1,7 +1,6 @@
 (ns cmr.search.test.api.routes
   (:require [clojure.test :refer :all]
-            [cmr.search.api.routes :as r]
-            [cmr.common.util :as util])
+            [cmr.search.api.routes :as r])
   (:use ring.mock.request))
 
 (def ^:private api (#'cmr.search.api.routes/build-routes
