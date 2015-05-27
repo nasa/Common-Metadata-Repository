@@ -322,16 +322,16 @@ The following fields are indexed for keyword search:
     * Processing level ID
     * Science keywords
     * Archive centers
-    * Product-specific attribute names, data types, parsed values, and descriptions
+    * Additional attribute names, data types, values, and descriptions
     * Spatial keywords
     * Temporal keywords
     * Associated DIFs
-    * Project short and long Names
-    * Platform short and long Names
+    * Project short and long names
+    * Platform short and long names
     * Instrument short names, long names, and techniques
     * Sensor short names, long names, and techniques
     * Characteristic names and descriptions
-    * Coordinate system names
+    * TwoD coordinate system names
 
 #### Find collections by provider
 
