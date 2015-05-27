@@ -166,9 +166,9 @@
       {:ok? false :problem (.getMessage e)})))
 
 (defn- publish
-  "Publishes a message to the given exchange queue combination. Most of the time one or the other
-  will be an empty string."
-  [queue-broker exchange-name queue-name msg]
+  "Publishes a message to the given exchange/queue combination. When publishing to a queue set the
+  exchange name to an empty string and the routing-key to the queue name."
+  [queue-broker exchange-name routing-key msg]
   (let [payload (json/generate-string msg)
           metadata {:content-type "application/json" :persistent true}]
       (with-channel
@@ -177,7 +177,7 @@
         (lcf/select pub-ch)
 
         ;; publish the message
-        (lb/publish pub-ch exchange-name queue-name payload metadata)
+        (lb/publish pub-ch exchange-name routing-key payload metadata)
         ;; block until the confirm arrives or return false if queue nacks the message
         (lcf/wait-for-confirms pub-ch))))
 

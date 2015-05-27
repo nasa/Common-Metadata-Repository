@@ -54,7 +54,8 @@ CMR_DB_URL=thin:@localhost:1521:orcl CMR_INGEST_PASSWORD=****** java -cp target/
 
 ### Message queues
 
-The ingest application will publish messages for the indexer application to consume.  The messages will be to index or delete concepts from elasticsearch.  Messaging is handled using the message-queue-lib which uses RabbitMQ.
+The ingest application will publish messages to a fanout exchange for the indexer application and other consumers. Other applications setup their own
+queues and bind to the ingest exchange.
 
 #### Ingest unable to queue a message
 

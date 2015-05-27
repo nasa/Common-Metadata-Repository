@@ -33,7 +33,7 @@
     successfully enqueued. Otherwise returns false.")
 
   (publish-to-exchange
-    [this queue-name msg]
+    [this exchange-name msg]
     "Publishes a message on the exchange with the given exchange name. Returns true if the message was
     successfully enqueued. Otherwise returns false.")
 
