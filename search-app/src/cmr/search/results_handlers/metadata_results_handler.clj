@@ -142,7 +142,7 @@
       response)))
 
 
-(doseq [format (:collection result-formats)]
+(doseq [format (distinct (flatten (vals result-formats)))]
   ;; define transformations from elastic results to query results for each format
   (defmethod elastic-results/elastic-results->query-results format
     [context query elastic-results]
