@@ -1,9 +1,14 @@
 (ns cmr.indexer.config
-  (:require [cmr.common.config :as cfg :refer [defconfig]]))
+  (:require [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig index-queue-name
   "Queue used for requesting indexing of concepts"
   {:default "cmr_index.queue"})
+
+(defconfig ingest-exchange-name
+  "The ingest exchange to which messages are published."
+  {:default "cmr_ingest.exchange"})
 
 (defconfig queue-listener-count
   "Number of worker threads to use for the queue listener"
@@ -19,6 +24,15 @@
   "Returns true if indexer is configured to use the message queue for indexing and false otherwise."
   []
   (= "queue" (indexing-communication-method)))
+
+(defn rabbit-mq-config
+  "Returns the rabbit mq configuration for the indexer application."
+  []
+  (assoc (rmq-conf/default-config)
+         :queues [(index-queue-name)]
+         :exchanges [(ingest-exchange-name)]
+         :queues-to-exchanges {(index-queue-name)
+                               (ingest-exchange-name)}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"

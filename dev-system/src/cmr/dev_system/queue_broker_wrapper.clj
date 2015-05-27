@@ -106,6 +106,27 @@
                          ms-to-wait
                          (current-messages broker-wrapper)))))))))
 
+
+(defn- publish
+  "Publishes a message using the given publish-fn which should map to queue/publish-to-queue or
+  queue/publish-to-exchange."
+  [broker publish-fn exchange-or-queue-name msg]
+  ;; record the message
+  (let [{:keys [id-sequence-atom timeout-atom queue-broker]} broker
+        msg-id (swap! id-sequence-atom inc)
+        tagged-msg (assoc msg :id msg-id)]
+
+    ;; Set the initial state of the message to :initial
+    (update-message-queue-history broker :enqueue tagged-msg :initial)
+
+    ;; Mark the enqueue as failed if we are timing things out or it fails
+    (if (or @timeout-atom (not (publish-fn queue-broker exchange-or-queue-name tagged-msg)))
+      (do
+        (update-message-queue-history broker :enqueue tagged-msg :failure)
+        false)
+      true)))
+
+
 (defrecord BrokerWrapper
   [
    ;; The broker that does the actual work
@@ -155,21 +176,23 @@
     ;; defer to wrapped broker
     (queue/create-queue queue-broker queue-name))
 
-  (publish
+  (create-exchange
+    [this exchange-name]
+    ;; defer to wrapped broker
+    (queue/create-exchange queue-broker exchange-name))
+
+  (bind-queue-to-exchange
+    [this queue-name exchange-name]
+    ;; defer to wrapped broker
+    (queue/bind-queue-to-exchange queue-broker queue-name exchange-name))
+
+  (publish-to-queue
     [this queue-name msg]
-    ;; record the message
-    (let [msg-id (swap! id-sequence-atom inc)
-          tagged-msg (assoc msg :id msg-id)]
+    (publish this queue/publish-to-queue queue-name msg))
 
-      ;; Set the initial state of the message to :initial
-      (update-message-queue-history this :enqueue tagged-msg :initial)
-
-      ;; Mark the enqueue as failed if we are timing things out or it fails
-      (if (or @timeout-atom (not (queue/publish queue-broker queue-name tagged-msg)))
-        (do
-          (update-message-queue-history this :enqueue tagged-msg :failure)
-          false)
-        true)))
+  (publish-to-exchange
+    [this exchange-name msg]
+    (publish this queue/publish-to-exchange exchange-name msg))
 
   (subscribe
     [this queue-name handler params]

@@ -18,7 +18,6 @@
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.message-queue.config :as rmq-conf]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.ingest.services.providers-cache :as pc]))
 
@@ -60,8 +59,7 @@
                                           [:system-object :provider-object])}
               :ingest-public-conf ingest-public-conf
               :queue-broker (when (config/use-index-queue?)
-                              (rmq/create-queue-broker (assoc (rmq-conf/default-config)
-                                                              :queues [(config/index-queue-name)])))}]
+                              (rmq/create-queue-broker (config/rabbit-mq-config)))}]
      (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest :search]))))
 
 (defn start

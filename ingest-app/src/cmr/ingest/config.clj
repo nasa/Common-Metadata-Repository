@@ -2,7 +2,8 @@
   "Contains functions to retrieve metadata db specific configuration"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.oracle.config :as oracle-config]
-            [cmr.oracle.connection :as conn]))
+            [cmr.oracle.connection :as conn]
+            [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig ingest-username
   "Ingest database username"
@@ -23,9 +24,15 @@
     (ingest-username)
     (ingest-password)))
 
-(defconfig index-queue-name
-  "Queue used for requesting indexing of concepts"
-  {:default "cmr_index.queue"})
+(defconfig ingest-exchange-name
+  "The ingest exchange to which messages are published."
+  {:default "cmr_ingest.exchange"})
+
+(defn rabbit-mq-config
+  "Returns the rabbit mq configuration for the ingest application."
+  []
+  (assoc (rmq-conf/default-config)
+         :exchanges [(ingest-exchange-name)]))
 
 (defconfig indexing-communication-method
   "Used to determine whether the ingest will queue messages asynchronously for the indexer, or will

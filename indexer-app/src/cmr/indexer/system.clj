@@ -22,7 +22,7 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
-            [cmr.message-queue.config :as rmq-conf]
+
             [cmr.indexer.services.queue-listener :as ql]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]))
 
@@ -62,8 +62,7 @@
                           :db
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (when (config/use-index-queue?)
-                             (rmq/create-queue-broker (assoc (rmq-conf/default-config)
-                                                             :queues [(config/index-queue-name)])))
+                             (rmq/create-queue-broker (config/rabbit-mq-config)))
              :queue-listener (when (config/use-index-queue?)
                                (queue/create-queue-listener {:num-workers (config/queue-listener-count)
                                                              :start-function #(ql/start-queue-message-handler
