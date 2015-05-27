@@ -132,7 +132,7 @@
    (mt/mime-type->format
      (or (path-w-extension->mime-type path-w-extension valid-mime-types)
          (mt/extract-header-mime-type valid-mime-types headers "accept" true)
-         (mt/extract-header-mime-type valid-mime-types headers "concept-type" false))
+         (mt/extract-header-mime-type valid-mime-types headers "content-type" false))
      default-mime-type)))
 
 (defn process-params
