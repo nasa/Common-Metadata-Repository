@@ -10,6 +10,8 @@
 
             [cmr.cubby.system :as cubby-system]
 
+            [cmr.virtual-product.system :as virtual-product-system]
+
             [cmr.metadata-db.system :as mdb-system]
             [cmr.metadata-db.data.memory-db :as memory]
 
@@ -77,11 +79,13 @@
    :bootstrap {:start bootstrap-system/start
                :stop bootstrap-system/stop}
    :cubby {:start cubby-system/dev-start
-           :stop cubby-system/stop}})
+           :stop cubby-system/stop}
+   :virtual-product {:start virtual-product-system/start
+                     :stop virtual-product-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
-  [:mock-echo :cubby :metadata-db :index-set :indexer :ingest :search :bootstrap])
+  [:mock-echo :cubby :metadata-db :index-set :indexer :ingest :search :virtual-product :bootstrap])
 
 (def use-compression?
   "Indicates whether the servers will use gzip compression. Disable this to make tcpmon usable"
@@ -288,7 +292,8 @@
               :indexer (create-indexer-app queue-broker queue-listener)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
-              :search (create-search-app db-component)})
+              :search (create-search-app db-component)
+              :virtual-product (virtual-product-system/create-system)})
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})

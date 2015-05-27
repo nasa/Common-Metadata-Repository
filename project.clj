@@ -25,5 +25,6 @@
                      "ingest-app"
                      "metadata-db-app"
                      "search-app"
+                     "virtual-product-app"
                      "es-spatial-plugin"]}}})
 
