@@ -61,6 +61,7 @@
                  [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
