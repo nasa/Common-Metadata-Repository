@@ -256,7 +256,7 @@
                     (get-in collection [:spatial-coverage :geometries]))
         ;; DIF collections have special cases on short-name and associated-difs
         short-name (if (#{:dif :dif10} format-key) entry-id short-name)
-        associated-difs (if (#{:dif :dif10} format-key) [entry-title] associated-difs)]
+        associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)]
     (util/remove-nil-keys
       {:id concept-id
        :title entry-title
