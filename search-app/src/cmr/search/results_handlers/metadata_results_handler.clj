@@ -16,45 +16,17 @@
             [cmr.common.util :as u]
             [cmr.common.log :refer (debug info warn error)]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :echo10]
-  [concept-type query]
-  [])
+(def result-formats
+  "Supported search result formats by concept-types"
+  {:granule [:echo10 :iso19115 :iso-smap :native]
+   :collection [:echo10 :dif :dif10 :iso19115 :iso-smap :native]})
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :echo10]
-  [concept-type query]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :dif]
-  [concept-type query]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :dif10]
-  [concept-type query]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso19115]
-  [concept-type query]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :iso19115]
-  [concept-type result-format]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :iso-smap]
-  [concept-type result-format]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :iso-smap]
-  [concept-type result-format]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :native]
-  [concept-type result-format]
-  [])
-
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :native]
-  [concept-type result-format]
-  [])
+;; define functions to return fields for each concept type
+(doseq [concept-type [:collection :granule]
+        format (concept-type result-formats)]
+  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type format]
+    [concept-type result-format]
+    []))
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
@@ -72,47 +44,14 @@
     (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
-(defmethod elastic-results/elastic-results->query-results :echo10
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
 
-(defmethod elastic-results/elastic-results->query-results :dif
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
-
-(defmethod elastic-results/elastic-results->query-results :dif10
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
-
-(defmethod elastic-results/elastic-results->query-results :iso19115
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
-
-(defmethod elastic-results/elastic-results->query-results :iso-smap
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
-
-(defmethod elastic-results/elastic-results->query-results :native
-  [context query elastic-results]
-  (elastic-results->query-metadata-results context query elastic-results))
-
-(defmethod gcrf/query-results->concept-ids :echo10
-  [results]
-  (->> results
-       :items
-       (map :concept-id)))
-
-(defmethod gcrf/query-results->concept-ids :dif
-  [results]
-  (->> results
-       :items
-       (map :concept-id)))
-
-(defmethod gcrf/query-results->concept-ids :dif10
-  [results]
-  (->> results
-       :items
-       (map :concept-id)))
+;; Define transormations methods from query results to concept-ids
+(doseq [format [:echo10 :dif :dif10]]
+  (defmethod gcrf/query-results->concept-ids format
+    [results]
+    (->> results
+        :items
+        (map :concept-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
@@ -202,26 +141,14 @@
       (cx/pretty-print-xml response)
       response)))
 
-(defmethod qs/search-results->response :echo10
-  [context query results]
-  (search-results->metadata-response context query results))
 
-(defmethod qs/search-results->response :dif
-  [context query results]
-  (search-results->metadata-response context query results))
+(doseq [format (:collection result-formats)]
+  ;; define transformations from elastic results to query results for each format
+  (defmethod elastic-results/elastic-results->query-results format
+    [context query elastic-results]
+    (elastic-results->query-metadata-results context query elastic-results))
 
-(defmethod qs/search-results->response :dif10
-  [context query results]
-  (search-results->metadata-response context query results))
-
-(defmethod qs/search-results->response :iso19115
-  [context query results]
-  (search-results->metadata-response context query results))
-
-(defmethod qs/search-results->response :iso-smap
-  [context query results]
-  (search-results->metadata-response context query results))
-
-(defmethod qs/search-results->response :native
-  [context query results]
-  (search-results->metadata-response context query results))
+  ;; define tranformations from search results to response for each format
+  (defmethod qs/search-results->response format
+    [context query results]
+    (search-results->metadata-response context query results)))
