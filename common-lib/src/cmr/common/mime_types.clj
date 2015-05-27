@@ -17,7 +17,8 @@
    "text/csv" :csv
    "application/atom+xml" :atom
    "application/vnd.google-earth.kml+xml" :kml
-   "application/opendata+json" :opendata})
+   "application/opendata+json" :opendata
+   "application/metadata+xml" :native})
 
 (def format->mime-type
   "A map of format symbols to their mime type."
@@ -33,7 +34,8 @@
    :csv "text/csv"
    :atom "application/atom+xml"
    :kml "application/vnd.google-earth.kml+xml"
-   :opendata "application/opendata+json"})
+   :opendata "application/opendata+json"
+   :native "application/metadata+xml"})
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."

@@ -16,17 +16,23 @@
         psa3 (dc/psa "charlie" :string "foo")
         psa4 (dc/psa "case" :string "up")
         psa5 (assoc (dc/psa "novalue" :string) :description "description")
-        p1 (dc/platform "platform_SnB" "platform_Ln B" nil
-                        (dc/instrument "isnA" "ilnA" "itechniqueA"
-                                       (dc/sensor "ssnA" "slnA")
-                                       (dc/sensor "ssnD" "slnD" "techniqueD")))
-        p2 (dc/platform "platform_SnA spoonA" "platform_LnA"
-                        [(dc/characteristic "char1" "char1desc")
-                         (dc/characteristic "char2" "char2desc")]
-                        (dc/instrument "isnB" "ilnB" "itechniqueB"
-                                       (dc/sensor "ssnB" "slnB" "techniqueB")
-                                       (dc/sensor "ssnC" "slnC" "techniqueC")))
-        p3 (dc/platform "spoonA")
+        p1 (dc/platform
+             {:short-name "platform_SnB"
+              :long-name "platform_Ln B"
+              :instruments
+              [(dc/instrument {:short-name "isnA" :long-name "ilnA" :technique "itechniqueA"
+                               :sensors [(dc/sensor {:short-name "ssnA" :long-name "slnA"})
+                                         (dc/sensor {:short-name "ssnD" :long-name "slnD" :technique "techniqueD"})]})]})
+        p2 (dc/platform
+             {:short-name "platform_SnA spoonA"
+              :long-name "platform_LnA"
+              :characteristics [(dc/characteristic {:name "char1" :description "char1desc"})
+                                (dc/characteristic {:name "char2" :description "char2desc"})]
+              :instruments
+              [(dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
+                               :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
+                                         (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]})]})
+        p3 (dc/platform {:short-name "spoonA"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -52,7 +58,10 @@
         coll6 (d/ingest "PROV2" (dc/collection {:entry-title "coll6" :organizations [(dc/org :archive-center "Some&Place")]}))
         coll7 (d/ingest "PROV2" (dc/collection {:entry-title "coll7" :version-id "Laser"}))
         coll8 (d/ingest "PROV2" (dc/collection {:entry-title "coll8" :processing-level-id "PDQ123"}))
+
         coll9 (d/ingest "PROV2" (dc/collection {:entry-title "coll9" :science-keywords [sk1 sk2]}))
+
+
         coll10 (d/ingest "PROV2" (dc/collection {:entry-title "coll10" :spatial-keywords ["in out"]}))
         coll11 (d/ingest "PROV2" (dc/collection {:entry-title "coll11" :platforms [p2 p3]
                                                  :product-specific-attributes [psa5]}))
@@ -62,7 +71,7 @@
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                  :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
                                                  :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "PROV2" (dc/collection-dif {:entry-id "entryid4"}) :dif)
+        coll16 (d/ingest "PROV2" (dc/collection-dif {:entry-id "entryid4"}) {:format :dif})
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))
@@ -198,7 +207,6 @@
            "Level2-3" [coll9]
            ;; - detailed-variable
            "SUPER" [coll9]))
-
     (testing "Boost on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection

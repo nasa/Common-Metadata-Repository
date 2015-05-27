@@ -45,20 +45,22 @@
                                                                             "plain-group-guid3"])
         super-admin-token (e/login (s/context) "super-admin" ["ingest-super-admin-group-guid"])
         non-existant-token "not-exist"
-        collection (d/ingest "PROV1" (dc/collection {}) :echo10 provider-admin-update-token)
+        collection (d/ingest "PROV1" (dc/collection {})  {:token provider-admin-update-token})
         ingested-concept (ingest/get-concept (:concept-id collection))
 
         granule (d/item->concept (dg/granule collection))]
 
     (testing "ingest granule update permissions"
       (are [token]
-           (ingest-succeeded? (ingest/ingest-concept granule {:token token}))
+           (ingest-succeeded? (ingest/ingest-concept granule {:token token
+                                                              :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
 
       (are [token]
-           (not (ingest-succeeded? (ingest/ingest-concept granule {:token token})))
+           (not (ingest-succeeded? (ingest/ingest-concept granule {:token token
+                                                                   :allow-failure? true})))
            guest-token
            user-token
            super-admin-token
@@ -67,12 +69,14 @@
 
     (testing "ingest granule delete permissions"
       (are [token]
-           (ingest-succeeded? (ingest/delete-concept granule {:token token}))
+           (ingest-succeeded? (ingest/delete-concept granule {:token token
+                                                              :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (ingest/delete-concept granule {:token token})))
+           (not (ingest-succeeded? (ingest/delete-concept granule {:token token
+                                                                   :allow-failure? true})))
            guest-token
            user-token
            super-admin-token
@@ -81,12 +85,14 @@
 
     (testing "ingest collection update permissions"
       (are [token]
-           (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token))
+           (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) {:token token
+                                                                    :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) :echo10 token)))
+           (not (ingest-succeeded? (d/ingest "PROV1" (dc/collection {}) {:token token
+                                                                         :allow-failure? true})))
            guest-token
            user-token
            super-admin-token
@@ -95,12 +101,14 @@
 
     (testing "ingest collection delete permissions"
       (are [token]
-           (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token}))
+           (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token
+                                                                       :allow-failure? true}))
            provider-admin-update-token
            provider-admin-read-update-token
            provider-admin-update-delete-token)
       (are [token]
-           (not (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token})))
+           (not (ingest-succeeded? (ingest/delete-concept ingested-concept {:token token
+                                                                            :allow-failure? true})))
            guest-token
            user-token
            super-admin-token

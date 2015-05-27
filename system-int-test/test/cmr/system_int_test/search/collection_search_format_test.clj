@@ -22,6 +22,7 @@
             [cmr.umm.spatial :as umm-s]
             [clojure.data.xml :as x]
             [cmr.system-int-test.utils.fast-xml :as fx]
+            [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.system-int-test.data2.kml :as dk]
             [cmr.system-int-test.data2.opendata :as od]
@@ -46,44 +47,44 @@
         c1-echo (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                   :version-id "V1"
                                                   :entry-title "ET1"})
-                          :echo10)
+                          {:format :echo10})
         c2-echo (d/ingest "PROV2" (dc/collection {:short-name "S2"
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
-                          :echo10)
+                          {:format :echo10})
         c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-id "S3"
                                                      :short-name "S3"
                                                      :version-id "V3"
                                                      :entry-title "ET3"
                                                      :long-name "ET3"})
-                         :dif)
+                         {:format :dif})
         c4-dif (d/ingest "PROV2" (dc/collection-dif {:entry-id "S4"
                                                      :short-name "S4"
                                                      :version-id "V4"
                                                      :entry-title "ET4"
                                                      :long-name "ET4"})
-                         :dif)
+                         {:format :dif})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :version-id "V5"})
-                         :iso19115)
+                         {:format :iso19115})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :version-id "V6"})
-                         :iso19115)
+                         {:format :iso19115})
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
                                                   :version-id "V7"})
-                          :iso-smap)
+                          {:format :iso-smap})
         c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-id "S8"
                                                          :short-name "S8"
                                                          :version-id "V8"
                                                          :entry-title "ET8"
                                                          :long-name "ET8"})
-                           :dif10)
+                           {:format :dif10})
         c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-id "S9"
                                                          :short-name "S9"
                                                          :version-id "V9"
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
-                           :dif10)
+                           {:format :dif10})
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
     (index/wait-until-indexed)
 
@@ -175,15 +176,31 @@
              c8-dif10 "application/dif10+xml" :dif10 nil
              c8-dif10 nil :dif10 "dif10"))
 
-      (testing "native format"
-        ;; Native format can be specified using application/xml or not specifying any format
-        (are [concept format-key]
-             (let [response (search/get-concept-by-concept-id (:concept-id concept) {:accept nil})]
+      (testing "native format direct retrieval"
+        ;; Native format can be specified using application/xml, application/metadata+xml,
+        ;; .native extension, or not specifying any format.
+        (util/are2 [concept format-key extension accept]
+             (let [options (-> {:accept nil}
+                             (merge (when extension {:url-extension extension}))
+                             (merge (when accept {:accept accept})))
+                   response (search/get-concept-by-concept-id (:concept-id concept) options)]
                (is (= (umm/umm->xml concept format-key) (:body response))))
-             c1-echo :echo10
-             c3-dif :dif
-             c5-iso :iso19115
-             c7-smap :iso-smap))
+             "ECHO10 no extension" c1-echo :echo10 nil nil
+             "DIF no extension" c3-dif :dif nil nil
+             "ISO MENDS no extension" c5-iso :iso19115 nil nil
+             "SMAP ISO no extension" c7-smap :iso-smap nil nil
+             "ECHO10 .native extension" c1-echo :echo10 "native" nil
+             "DIF .native extension" c3-dif :dif "native" nil
+             "ISO MENDS .native extension" c5-iso :iso19115 "native" nil
+             "SMAP ISO .native extension" c7-smap :iso-smap "native" nil
+             "ECHO10 accept application/xml" c1-echo :echo10 nil "application/xml"
+             "DIF accept application/xml" c3-dif :dif nil "application/xml"
+             "ISO MENDS accept application/xml" c5-iso :iso19115 nil "application/xml"
+             "SMAP ISO accept application/xml" c7-smap :iso-smap nil "application/xml"
+             "ECHO10 accept application/metadata+xml" c1-echo :echo10 nil "application/metadata+xml"
+             "DIF accept application/metadata+xml" c3-dif :dif nil "application/metadata+xml"
+             "ISO MENDS accept application/metadata+xml" c5-iso :iso19115 nil "application/metadata+xml"
+             "SMAP ISO accept application/metadata+xml" c7-smap :iso-smap nil "application/metadata+xml"))
 
       (testing "unsupported formats"
         (are [mime-type xml?]
@@ -229,11 +246,12 @@
 ; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
 ; ingested and found
 (deftest dif-with-spatial
-  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) :dif)
+  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif})
         g1 (d/ingest "PROV1" (dg/granule c1))
 
         ;; A collection with a granule spatial representation
-        c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})}) :dif)
+        c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})})
+                     {:format :dif})
         g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
 
 
@@ -243,8 +261,8 @@
                        {:spatial-coverage (dc/spatial {:gsr :geodetic
                                                        :sr :geodetic
                                                        :geometries [(m/mbr -10 9 0 -10)]})})
-                     :dif)
-        g3 (d/ingest "PROV1" (dg/granule c3))]
+                     {:format :dif})
+        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}))]
     (index/wait-until-indexed)
 
     (testing "spatial search for dif collections"
@@ -269,15 +287,15 @@
                (println "Actual:" (->> found :refs (map :name) pr-str)))
              matches?)
            ;; whole world
-           [-180 90 180 -90] [g2]
-           [0 90 180 -90] []
-           [-180 90 0 -90] [g2]))))
+           [-180 90 180 -90] [g2 g3]
+           [0 90 180 -90] [g3]
+           [-180 90 0 -90] [g2 g3]))))
 
 (deftest search-collection-various-formats
-  (let [ru1 (dc/related-url "GET DATA" "application/json" "http://example.com")
-        ru2 (dc/related-url "GET DATA" "text/xml" "http://example2.com")
-        ru3 (dc/related-url "GET RELATED VISUALIZATION" "application/xml" "http://example.com/browse")
-        ru4 (dc/related-url "VIEW PROJECT HOME PAGE" "http://example.com")
+  (let [ru1 (dc/related-url {:type "GET DATA" :mime-type "application/json" :url "http://example.com"})
+        ru2 (dc/related-url {:type "GET DATA" :mime-type "text/xml" :url "http://example2.com"})
+        ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :mime-type "application/xml" :url "http://example.com/browse"})
+        ru4 (dc/related-url {:type "VIEW PROJECT HOME PAGE" :url "http://example.com"})
         pr1 (dc/projects "project-short-name1" "project-short-name2" "project-short-name3")
         p1 (dc/personnel "John" "Smith" "jsmith@nasa.gov")
         p2 (dc/personnel "Jane" "Doe" nil)
@@ -355,54 +373,50 @@
                            :personnel [p3]
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op1})}))
-        coll4 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset4"}) :iso-smap)
-        coll5 (d/ingest "PROV1"
-                        (dc/collection-dif {:entry-title "Dataset5"}) :dif)
-        coll6 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset6"
-                                        :short-name "ShortName#6"
-                                        :version-id "Version6"
-                                        :summary "Summary of coll6"
-                                        :organizations [(dc/org :archive-center "Larc")]
-                                        :projects pr1
-                                        :related-urls [ru4]
-                                        :beginning-date-time "2010-01-01T12:00:00Z"
-                                        :ending-date-time "2010-01-11T12:00:00Z"
-                                        :spatial-coverage
-                                        (dc/spatial {:sr :cartesian
-                                                     :gsr :cartesian
-                                                     :geometries [(p/point 1 2)
-                                                                  (p/point -179.9 89.4)]})}))
-        coll7 (d/ingest "PROV1"
-                        (dc/collection {:entry-title "Dataset7"
-                                        :short-name "ShortName#7"
-                                        :version-id "Version7"
-                                        :summary "Summary of coll7"
-                                        :organizations [(dc/org :archive-center "Larc")]
-                                        :personnel [p4]
-                                        :beginning-date-time "2010-01-01T12:00:00Z"
-                                        :ending-date-time "2010-01-11T12:00:00Z"
-                                        :spatial-coverage
-                                        (dc/spatial {:sr :cartesian
-                                                     :gsr :cartesian
-                                                     :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                                  (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
-        coll8 (d/ingest "USGS_EROS"
-                        (dc/collection {:entry-title "Dataset8"
-                                        :short-name "ShortName#8"
-                                        :version-id "Version8"
-                                        :summary "Summary of coll8"
-                                        :organizations [(dc/org :archive-center "Landsat")]
-                                        :beginning-date-time "2010-01-01T12:00:00Z"
-                                        :ending-date-time "2010-01-11T12:00:00Z"
-                                        :spatial-coverage
-                                        (dc/spatial {:sr :cartesian
-                                                     :gsr :cartesian
-                                                     :geometries [(m/mbr -180 90 180 -90)
-                                                                  (m/mbr -10 20 30 -40)]})}))
+        coll4 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset4"}) {:format :iso-smap})
+        coll5 (d/ingest "PROV1" (dc/collection-dif {:entry-title "Dataset5"}) {:format :dif})
+        coll6 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset6"
+                                                :short-name "ShortName#6"
+                                                :version-id "Version6"
+                                                :summary "Summary of coll6"
+                                                :organizations [(dc/org :archive-center "Larc")]
+                                                :projects pr1
+                                                :related-urls [ru4]
+                                                :beginning-date-time "2010-01-01T12:00:00Z"
+                                                :ending-date-time "2010-01-11T12:00:00Z"
+                                                :spatial-coverage
+                                                (dc/spatial {:sr :cartesian
+                                                             :gsr :cartesian
+                                                             :geometries [(p/point 1 2)
+                                                                          (p/point -179.9 89.4)]})}))
+        coll7 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset7"
+                                                :short-name "ShortName#7"
+                                                :version-id "Version7"
+                                                :summary "Summary of coll7"
+                                                :organizations [(dc/org :archive-center "Larc")]
+                                                :personnel [p4]
+                                                :beginning-date-time "2010-01-01T12:00:00Z"
+                                                :ending-date-time "2010-01-11T12:00:00Z"
+                                                :spatial-coverage
+                                                (dc/spatial {:sr :cartesian
+                                                             :gsr :cartesian
+                                                             :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
+                                                                          (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
+        coll8 (d/ingest "USGS_EROS" (dc/collection {:entry-title "Dataset8"
+                                                    :short-name "ShortName#8"
+                                                    :version-id "Version8"
+                                                    :summary "Summary of coll8"
+                                                    :organizations [(dc/org :archive-center "Landsat")]
+                                                    :beginning-date-time "2010-01-01T12:00:00Z"
+                                                    :ending-date-time "2010-01-11T12:00:00Z"
+                                                    :spatial-coverage
+                                                    (dc/spatial {:sr :cartesian
+                                                                 :gsr :cartesian
+                                                                 :geometries [(m/mbr -180 90 180 -90)
+                                                                              (m/mbr -10 20 30 -40)]})}))
         coll9 (d/ingest "PROV1"
-                        (dc/collection-dif10 {:entry-title "Dataset9"}) :dif10)]
+                        (dc/collection-dif10 {:entry-title "Dataset9"})
+                        {:format :dif10})]
 
     (index/wait-until-indexed)
 
@@ -413,12 +427,12 @@
 
     (testing "csv is not supported"
       (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
-                :status 400}
+              :status 400}
              (search/find-concepts-csv :collection {})))
       (testing "as csv extension"
         (is (= {:errors ["The mime type [text/csv] is not supported for collections."],
                 :status 400}
-             (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
+               (search/find-concepts-csv :collection {} {:url-extension "csv"})))))
 
     (testing "opendata"
       (let [results (search/find-concepts-opendata :collection {})]

@@ -59,18 +59,36 @@
               {:revision-id (:revision-id item)})))))
 
 (defn ingest
-  "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it."
+  "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it.
+  Accepts a map of some optional arguments. The options are:
+
+  * :format - The XML Metadata format to use.
+  * :token - The token to use.
+  * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
+  for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
+  Setting it to true will skip this check. Set it true when testing ingest failure cases."
   ([provider-id item]
-   (ingest provider-id item :echo10 nil))
-  ([provider-id item format-key]
-   (ingest provider-id item format-key nil))
-  ([provider-id item format-key token]
-   (let [response (ingest/ingest-concept
+   (ingest provider-id item nil))
+  ([provider-id item options]
+   (let [{:keys [token alllow-failure?]
+          format-key :format} (merge {:format :echo10
+                                      :token nil
+                                      :allow-failure? false}
+                                     options)
+         response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token})]
-     (if (= 200 (:status response))
+                    {:token token})
+         status (:status response)]
+
+     ;; This allows this to be used from many places where we don't expect a failure but if there is
+     ;; one we'll be alerted immediately instead of through a side effect like searches failing.
+     (when (and (not (:allow-failure? options)) (not= status 200))
+       (throw (Exception. (str "Ingest failed when expected to succeed: "
+                               (pr-str response)))))
+
+     (if (= 200 status)
        (assoc item
-              :status (:status response)
+              :status status
               :provider-id provider-id
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)

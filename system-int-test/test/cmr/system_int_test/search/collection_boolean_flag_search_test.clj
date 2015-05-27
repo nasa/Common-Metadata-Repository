@@ -10,9 +10,9 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-collection-by-downloadable
-  (let [ru1 (dc/related-url "GET DATA")
-        ru2 (dc/related-url "GET RELATED VISUALIZATION")
-        ru3 (dc/related-url "VIEW RELATED INFORMATION")
+  (let [ru1 (dc/related-url {:type "GET DATA"})
+        ru2 (dc/related-url {:type "GET RELATED VISUALIZATION"})
+        ru3 (dc/related-url {:type "VIEW RELATED INFORMATION"})
         coll1 (d/ingest "PROV1" (dc/collection {:related-urls [ru1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:related-urls [ru2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:related-urls [ru3]}))

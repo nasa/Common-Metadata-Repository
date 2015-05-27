@@ -74,7 +74,8 @@
     "application/iso19115+xml"
     "application/opendata+json"
     "text/csv"
-    "application/vnd.google-earth.kml+xml"})
+    "application/vnd.google-earth.kml+xml"
+    "application/metadata+xml"})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
@@ -85,6 +86,7 @@
 (def supported-concept-id-retrieval-mime-types
   #{"*/*"
     "application/xml" ; allows retrieving native format
+    "application/metadata+xml" ; retrieve in native format
     "application/echo10+xml"
     "application/iso19115+xml"
     "application/iso:smap+xml"
