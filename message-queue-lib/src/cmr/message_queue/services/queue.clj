@@ -19,9 +19,22 @@
     [this queue-name]
     "Creates a queue with the given queue name")
 
-  (publish
+  (create-exchange
+    [this exchange-name]
+    "Creates an exchange with the given name.")
+
+  (bind-queue-to-exchange
+    [this queue-name exchange-name]
+    "Binds the queue with the given name to the exchange.")
+
+  (publish-to-queue
     [this queue-name msg]
     "Publishes a message on the queue with the given queue name. Returns true if the message was
+    successfully enqueued. Otherwise returns false.")
+
+  (publish-to-exchange
+    [this queue-name msg]
+    "Publishes a message on the exchange with the given exchange name. Returns true if the message was
     successfully enqueued. Otherwise returns false.")
 
   (subscribe

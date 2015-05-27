@@ -40,7 +40,7 @@
     response))
 
 (defn- try-to-publish
-  "Attempts to enqueue a message on the message queue.
+  "Attempts to publish messages to the given exchange.
 
   When the RabbitMQ server is down or unreachable, calls to publish will throw an exception. Rather
   than raise an error to the caller immediately, the publication will be retried indefinitely.
@@ -48,15 +48,15 @@
   ingest errors returned to the provider.
 
   Returns true if the message was successfully enqueued and false otherwise."
-  [queue-broker queue-name msg]
+  [queue-broker exchange-name msg]
   (when-not (try
-              (queue/publish queue-broker queue-name msg)
+              (queue/publish-to-exchange queue-broker exchange-name msg)
               (catch Exception e
                 (error e)
                 false))
     (warn "Attempt to queue messaged failed. Retrying: " msg)
     (Thread/sleep 2000)
-    (recur queue-broker queue-name msg)))
+    (recur queue-broker exchange-name msg)))
 
 (defn- put-message-on-queue
   "Put an index operation on the message queue. Throws a service unavailable error if the message
@@ -68,10 +68,10 @@
    (put-message-on-queue context msg (config/publish-queue-timeout-ms)))
   ([context msg timeout-ms]
    (let [queue-broker (get-in context [:system :queue-broker])
-         queue-name (config/index-queue-name)
+         exchange-name (config/ingest-exchange-name)
          start-time (System/currentTimeMillis)]
      (try
-       (timeout/thunk-timeout #(try-to-publish queue-broker queue-name msg) timeout-ms)
+       (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg) timeout-ms)
        (catch java.util.concurrent.TimeoutException e
          (errors/throw-service-error
            :service-unavailable
