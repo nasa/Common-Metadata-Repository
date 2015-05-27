@@ -104,6 +104,25 @@
            {:short-name "S8"} [c8-dif10]
            {:version "V9"} [c9-dif10]))
 
+    (testing "Retrieving results in native format"
+      ;; Native format for search can be specified using Accept header application/metadata+xml
+      ;; or the .native extension.
+      (util/are2 [concepts format-key extension accept]
+                 (let [params {:concept-id (map :concept-id concepts)}
+                       options (-> {:accept nil}
+                                   (merge (when extension {:url-extension extension}))
+                                   (merge (when accept {:accept accept})))
+                       response (search/find-metadata :collection format-key params options)]
+                   (d/assert-metadata-results-match format-key concepts response))
+                 "ECHO10 .native extension" [c1-echo c2-echo] :echo10 "native" nil
+                 "DIF .native extension" [c3-dif c4-dif] :dif "native" nil
+                 "ISO MENDS .native extension" [c5-iso c6-iso] :iso19115 "native" nil
+                 "SMAP ISO .native extension" [c7-smap] :iso-smap "native" nil
+                 "ECHO10 accept application/metadata+xml" [c1-echo c2-echo] :echo10 nil "application/metadata+xml"
+                 "DIF accept application/metadata+xml" [c3-dif c4-dif] :dif nil "application/metadata+xml"
+                 "ISO MENDS accept application/metadata+xml" [c5-iso c6-iso] :iso19115 nil "application/metadata+xml"
+                 "SMAP ISO accept application/metadata+xml" [c7-smap] :iso-smap nil "application/metadata+xml"))
+
     (testing "Retrieving results in echo10"
       (d/assert-metadata-results-match
         :echo10 all-colls

@@ -124,7 +124,7 @@
                   params)
          [url accept] (if url-extension
                         [(str (url/search-url concept-type) "." url-extension)]
-                        [(url/search-url concept-type) format])
+                        [(url/search-url concept-type) (or (:accept options) format)])
          response (client/get url {:accept accept
                                    :headers headers
                                    :query-params params

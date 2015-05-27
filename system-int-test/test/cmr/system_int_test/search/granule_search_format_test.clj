@@ -61,6 +61,21 @@
            {:granule-ur ["g1" "g4"]} [g1-echo g2-smap]
            {:producer-granule-id ["p1" "p3"]} [g1-echo g1-smap]))
 
+    (testing "Retrieving results in native format"
+      ;; Native format for search can be specified using Accept header application/metadata+xml
+      ;; or the .native extension.
+      (util/are2 [concepts format-key extension accept]
+                 (let [params {:concept-id (map :concept-id concepts)}
+                       options (-> {:accept nil}
+                                   (merge (when extension {:url-extension extension}))
+                                   (merge (when accept {:accept accept})))
+                       response (search/find-metadata :granule format-key params options)]
+                   (d/assert-metadata-results-match format-key concepts response))
+                 "ECHO10 .native extension" [g1-echo g2-echo] :echo10 "native" nil
+                 "SMAP ISO .native extension" [g1-smap g2-smap] :iso-smap "native" nil
+                 "ECHO10 accept application/metadata+xml" [g1-echo g2-echo] :echo10 nil "application/metadata+xml"
+                 "SMAP ISO accept application/metadata+xml" [g1-smap g2-smap] :iso-smap nil "application/metadata+xml"))
+
     (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
         ;; .native extension, or not specifying any format.
