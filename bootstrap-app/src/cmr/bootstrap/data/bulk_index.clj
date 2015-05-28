@@ -13,7 +13,7 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
             [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.helper :as helper]))
+            [cmr.bootstrap.embedded-system-helper :as helper]))
 
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount

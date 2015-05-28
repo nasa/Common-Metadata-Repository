@@ -4,7 +4,7 @@
             [cmr.transmit.metadata-db :as mdb]
             [cmr.metadata-db.services.health-service :as hs]
             [cmr.indexer.services.index-service :as indexer]
-            [cmr.bootstrap.helper :as helper]))
+            [cmr.bootstrap.embedded-system-helper :as helper]))
 
 (deftracefn health
   "Returns the health state of the app."

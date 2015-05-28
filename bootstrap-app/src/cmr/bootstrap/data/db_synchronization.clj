@@ -20,7 +20,7 @@
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]
-            [cmr.bootstrap.helper :as helper]))
+            [cmr.bootstrap.embedded-system-helper :as helper]))
 
 (defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"

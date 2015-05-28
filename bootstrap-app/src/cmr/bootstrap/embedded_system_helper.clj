@@ -1,4 +1,4 @@
-(ns cmr.bootstrap.helper
+(ns cmr.bootstrap.embedded-system-helper
   "Contains general helper functions")
 
 (defn get-metadata-db
