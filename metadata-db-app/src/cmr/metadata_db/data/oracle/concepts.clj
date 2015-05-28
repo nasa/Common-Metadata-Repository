@@ -144,7 +144,6 @@
 
 (defmethod concept->insert-args :default
   [concept]
-  (cmr.common.dev.capture-reveal/capture concept)
   (let [{:keys [concept-type
                 native-id
                 concept-id
