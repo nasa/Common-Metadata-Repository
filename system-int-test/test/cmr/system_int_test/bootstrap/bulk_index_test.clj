@@ -117,7 +117,7 @@
                                                             :provider-id "PROV1"
                                                             :native-id (str "gran-" pid "-" x)
                                                             :extra-fields {:parent-collection-id pid
-                                                                           :granule-ur (str "ur" x)}
+                                                                           :granule-ur (str "gran-" pid "-" x)}
                                                             :format "application/echo10+xml"
                                                             :metadata xml}
                                                {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
