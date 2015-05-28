@@ -17,7 +17,8 @@
             [cmr.spatial.mbr :as m]
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.test.echo10.collection :as test-echo10])
+            [cmr.umm.test.echo10.collection :as test-echo10]
+            [cmr.umm.collection.product-specific-attribute :as psa])
   (:import cmr.spatial.mbr.Mbr))
 
 
@@ -97,6 +98,16 @@
     [(umm-c/map->Project {:short-name "Not provided"})]
     projects))
 
+(defn- product-specific-attributes->expected-parsed
+  [psas]
+  (seq (for [psa psas]
+         (if (nil? (:parameter-range-begin psa))
+           (-> psa
+               (assoc :parameter-range-begin "Not provided")
+               (assoc :parsed-parameter-range-begin
+                 (psa/safe-parse-value (:data-type psa) "Not provided")))
+           psa))))
+
 (defn- remove-field-from-records
   [records field]
   (seq (map #(assoc % field nil) records)))
@@ -106,8 +117,7 @@
   [coll]
   (-> coll
       (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
-              :collection-associations  :quality :temporal-keywords :two-d-coordinate-systems
-              :product-specific-attributes :use-constraints)
+              :collection-associations  :quality :temporal-keywords :two-d-coordinate-systems :use-constraints)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:product :version-description] nil)
       (update-in [:publication-references] remove-field-from-records :doi)
@@ -123,6 +133,7 @@
       (update-in [:personnel] personnel->expected-parsed)
       (update-in [:projects] projects->expected-parsed)
       (update-in [:related-urls] related-urls->expected-parsed)
+      (update-in [:product-specific-attributes] product-specific-attributes->expected-parsed)
       (update-in [:spatial-coverage] spatial-coverage->expected-parsed)))
 
 (defn- umm->expected-parsed-dif10
@@ -198,17 +209,28 @@
             (map list personnel orig-personnel)]
          (assoc person :roles (:roles orig-person)))))
 
+(defn- revert-psas
+  "parameter-range-begin is a required field in DIF 10 Additional_Attributes"
+  [psas orig-psas]
+  (seq (for [[psa orig-psa]
+             (map list psas orig-psas)]
+         (-> psa
+               (assoc :parameter-range-begin (:parameter-range-begin orig-psa))
+               (assoc :parsed-parameter-range-begin
+                 (:parsed-parameter-range-begin orig-psa))))))
+
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
   parsed back to UMM. The fields are modified during the creation of the XML to satisfy the schema
   constraints of DIF 10."
   [coll original-coll]
-  (let [{:keys [platforms spatial-coverage product personnel]} original-coll]
+  (let [{:keys [platforms spatial-coverage product personnel product-specific-attributes]} original-coll]
     (-> coll
         (update-in [:platforms] revert-platform-type platforms)
         (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
         (update-in [:product] revert-product product)
-        (update-in [:personnel] revert-personnel personnel))))
+        (update-in [:personnel] revert-personnel personnel)
+        (update-in [:product-specific-attributes] revert-psas product-specific-attributes))))
 
 (defn restore-modified-fields
   "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
@@ -217,7 +239,6 @@
   (-> dif10-umm
       remove-dif10-place-holder-fields
       (rectify-dif10-fields orig-umm)))
-
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -322,6 +343,22 @@
       <Data_Creation>1970-01-01T00:00:00</Data_Creation>
       <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
     </Metadata_Dates>
+    <Additional_Attributes>
+      <Name>String add attrib</Name>
+      <DataType>STRING</DataType>
+      <Description>something string</Description>
+      <ParameterRangeBegin>alpha</ParameterRangeBegin>
+      <ParameterRangeEnd>bravo</ParameterRangeEnd>
+      <Value>alpha1</Value>
+    </Additional_Attributes>
+    <Additional_Attributes>
+      <Name>Float add attrib</Name>
+      <DataType>FLOAT</DataType>
+      <Description>something float</Description>
+      <ParameterRangeBegin>0.1</ParameterRangeBegin>
+      <ParameterRangeEnd>100.43</ParameterRangeEnd>
+      <Value>12.3</Value>
+    </Additional_Attributes>
     <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
     <Product_Flag>Not provided</Product_Flag>
    </DIF>")
@@ -390,7 +427,27 @@
                                   :roles ["TECHNICAL CONTACT"]
                                   :contacts [(umm-c/map->Contact
                                                {:type :email
-                                                :value "dssweb@ucar.edu"})]})]})
+                                                :value "dssweb@ucar.edu"})]})]
+                    :product-specific-attributes [(umm-c/map->ProductSpecificAttribute
+                                                    {:name "String add attrib"
+                                                     :description "something string"
+                                                     :data-type :string
+                                                     :parameter-range-begin "alpha"
+                                                     :parameter-range-end "bravo"
+                                                     :value "alpha1"
+                                                     :parsed-parameter-range-begin "alpha"
+                                                     :parsed-parameter-range-end "bravo"
+                                                     :parsed-value "alpha1"})
+                                                  (umm-c/map->ProductSpecificAttribute
+                                                    {:name "Float add attrib"
+                                                     :description "something float"
+                                                     :data-type :float
+                                                     :parameter-range-begin "0.1"
+                                                     :parameter-range-end "100.43"
+                                                     :value "12.3"
+                                                     :parsed-parameter-range-begin 0.1
+                                                     :parsed-parameter-range-end 100.43
+                                                     :parsed-value 12.3})]})
         actual (c/parse-collection dif10-collection-xml)]
     (is (= expected actual))))
 
