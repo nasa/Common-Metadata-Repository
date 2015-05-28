@@ -2,9 +2,11 @@
   "Provides functions to parse and generate DIF 10 Personnel elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
+            [cmr.umm.generator-util :as gu]
             [cmr.umm.collection :as c]))
 
-(def PERSONNEL_ROLES
+(def personnel-roles
+  "DIF 10 schema allows the following strings for personnel roles"
   #{"INVESTIGATOR"
     "INVESTIGATOR, TECHNICAL CONTACT"
     "METADATA AUTHOR"
@@ -43,7 +45,7 @@
 
 
 (defn- generate-emails
-  "Generte the XML entriesfor the emails associated with a person."
+  "Generte the XML entries for the emails associated with a person."
   [contacts]
   (for [contact contacts
         :when (= :email (:type contact))]
@@ -54,7 +56,7 @@
   "Generates the XML entries for the roles associated with a person."
   [roles]
   (or (seq (for [role roles
-                 :when (get PERSONNEL_ROLES role)]
+                 :when (get personnel-roles role)]
              (x/element :Role {} role)))
       ;; If non of the roles match with one of the enumeraion types suppored by DIF10,
       ;; a role of "TECHNICAL CONTACT" is given since role is required field in DIF10.
@@ -63,14 +65,11 @@
 (defn generate-personnel
   "Generates the XML entries for a collection's personnel field."
   [personnel]
-  (if (seq personnel)
-    (for [{:keys [first-name middle-name last-name contacts roles]} personnel]
-      (x/element :Personnel {}
-                 (generate-roles roles)
-                 (x/element :Contact_Person {}
-                            (when first-name
-                              (x/element :First_Name {} first-name))
-                            (when middle-name
-                              (x/element :Middle_Name {} middle-name))
-                            (x/element :Last_Name {} last-name)
-                            (generate-emails contacts))))))
+  (for [{:keys [first-name middle-name last-name contacts roles]} personnel]
+    (x/element :Personnel {}
+               (generate-roles roles)
+               (x/element :Contact_Person {}
+                          (gu/optional-elem :First_Name first-name)
+                          (gu/optional-elem :Middle_Name middle-name)
+                          (x/element :Last_Name {} last-name)
+                          (generate-emails contacts)))))

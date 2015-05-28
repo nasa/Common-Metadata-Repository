@@ -86,9 +86,7 @@
          (-> person
          (update-in [:roles]
                     (fn [roles]
-                      (or (seq (for [role roles
-                                     :when (get personnel/PERSONNEL_ROLES role)]
-                                 role))
+                      (or (seq (filter personnel/personnel-roles roles))
                           ["TECHNICAL CONTACT"])))
          (update-in [:contacts] umm-contacts->expected-contacts)))))
 
@@ -102,10 +100,10 @@
   [psas]
   (seq (for [psa psas]
          (if (nil? (:parameter-range-begin psa))
-           (-> psa
-               (assoc :parameter-range-begin "Not provided")
-               (assoc :parsed-parameter-range-begin
-                 (psa/safe-parse-value (:data-type psa) "Not provided")))
+           (assoc psa
+             :parameter-range-begin "Not provided"
+             :parsed-parameter-range-begin
+             (psa/safe-parse-value (:data-type psa) "Not provided"))
            psa))))
 
 (defn- remove-field-from-records
@@ -189,7 +187,7 @@
   Not provided during the transformation process."
   [platforms orig-platforms]
   (seq (for [[platform orig-platform]
-             (map list platforms orig-platforms)]
+             (map vector platforms orig-platforms)]
          (assoc platform :type (:type orig-platform)))))
 
 (defn- revert-product
@@ -205,19 +203,16 @@
   in general would not match with types in UMM which are simple strings and so will be marked as
   TECHNICAL CONTACT, one of the enumeraion types, during the transformation process."
   [personnel orig-personnel]
-  (seq (for[[person orig-person]
-            (map list personnel orig-personnel)]
+  (seq (for [[person orig-person] (map vector personnel orig-personnel)]
          (assoc person :roles (:roles orig-person)))))
 
 (defn- revert-psas
   "parameter-range-begin is a required field in DIF 10 Additional_Attributes"
   [psas orig-psas]
-  (seq (for [[psa orig-psa]
-             (map list psas orig-psas)]
-         (-> psa
-               (assoc :parameter-range-begin (:parameter-range-begin orig-psa))
-               (assoc :parsed-parameter-range-begin
-                 (:parsed-parameter-range-begin orig-psa))))))
+  (seq (for [[psa orig-psa] (map vector psas orig-psas)]
+             (assoc psa
+               :parameter-range-begin (:parameter-range-begin orig-psa)
+               :parsed-parameter-range-begin (:parsed-parameter-range-begin orig-psa)))))
 
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and

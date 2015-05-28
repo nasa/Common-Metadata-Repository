@@ -32,14 +32,13 @@
 
 (defn generate-product-specific-attributes
   [psas]
-  (when (seq psas)
-    (for [psa psas]
-      (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa]
-        (x/element :Additional_Attributes {}
-                   (x/element :Name {} name)
-                   (x/element :DataType {} (psa/gen-data-type data-type))
-                   (x/element :Description {} description)
-                   ;; ParameterRangeBegin is a required field in DIF 10
-                   (x/element :ParameterRangeBegin {} (or parameter-range-begin "Not provided"))
-                   (gu/optional-elem :ParameterRangeEnd parameter-range-end)
-                   (gu/optional-elem :Value value))))))
+  (for [psa psas]
+    (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa]
+      (x/element :Additional_Attributes {}
+                 (x/element :Name {} name)
+                 (x/element :DataType {} (psa/gen-data-type data-type))
+                 (x/element :Description {} description)
+                 ;; ParameterRangeBegin is a required field in DIF 10
+                 (x/element :ParameterRangeBegin {} (or parameter-range-begin "Not provided"))
+                 (gu/optional-elem :ParameterRangeEnd parameter-range-end)
+                 (gu/optional-elem :Value value)))))
