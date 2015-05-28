@@ -13,6 +13,20 @@
    value-counts
    ])
 
+(defrecord HierarchicalFacet
+  [
+   ;; TODO Figure out if this is actually the structure we want and then document
+  field
+  value-count-maps
+  ])
+
+(defrecord ValueCountMaps
+  [
+   ;; TODO Figure out if this is actually the structure we want and then document
+   value
+   count
+   facets
+   ])
 
 (defrecord Results
   [
@@ -44,6 +58,8 @@
 
 (record-pretty-printer/enable-record-pretty-printing
   Facet
+  HierarchicalFacet
+  ValueCountMaps
   Results)
 
 (defn normalize-score

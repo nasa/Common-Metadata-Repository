@@ -301,6 +301,7 @@
                       (when (:keyword params) [{:order :desc :field :score}]))
         pretty? (= "true" (:pretty params))
         echo-compatible? (= "true" (:echo-compatible params))
+        nested-science-keywords? (= "true" (:nested-science-keywords params))
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
@@ -314,7 +315,8 @@
      :result-format (:result-format params)
      :result-features (seq result-features)
      :pretty? pretty?
-     :echo-compatible? echo-compatible?}))
+     :echo-compatible? echo-compatible?
+     :nested-science-keywords? nested-science-keywords?}))
 
 (defn parameters->query
   "Converts parameters into a query model."
@@ -326,7 +328,7 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
                        :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible)]
+                       :echo-compatible :nested-science-keywords)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

@@ -26,7 +26,7 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
-    :include-granule-counts :include-has-granules :include-facets})
+    :include-granule-counts :include-has-granules :include-facets :nested-science-keywords})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -249,10 +249,12 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :echo-compatible)
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty
+                       :echo-compatible)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
-                 (dissoc params :include-granule-counts :include-has-granules :include-facets)
+                 (dissoc params :include-granule-counts :include-has-granules :include-facets
+                         :nested-science-keywords)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -451,7 +453,8 @@
 (defn boolean-value-validation
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
-                                         :include-has-granules :include-facets])]
+                                         :include-has-granules :include-facets
+                                         :nested-science-keywords])]
     (mapcat
       (fn [[param value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
@@ -488,7 +491,7 @@
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :pretty :options
                              :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible]))))
+                             :echo-compatible :nested-science-keywords]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
