@@ -236,7 +236,7 @@
   [db-component]
   (if db-component
     (assoc-in (search-system/create-system)
-              [:metadata-db :db]
+              [:embedded-systems :metadata-db :db]
               db-component)
     (search-system/create-system)))
 

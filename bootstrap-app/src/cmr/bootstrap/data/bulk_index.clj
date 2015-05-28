@@ -12,7 +12,8 @@
             [cmr.oracle.connection :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
-            [cmr.bootstrap.data.bulk-migration :as bm]))
+            [cmr.bootstrap.data.bulk-migration :as bm]
+            [cmr.bootstrap.helper :as helper]))
 
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
@@ -38,7 +39,7 @@
 (defn get-provider-collection-list
   "Get the list of collecitons belonging to the given provider."
   [system provider-id]
-  (let [db (get-in system [:metadata-db :db])
+  (let [db (helper/get-metadata-db-db system)
         params {:concept-type :collection
                 :provider-id provider-id}
         collections (db/find-concepts db params)]
@@ -53,18 +54,18 @@
 (defn get-collection
   "Get specified collection from cmr."
   [context provider-id collection-id]
-  (db/get-concept (get-in (:system context) [:metadata-db :db]) :collection provider-id collection-id))
+  (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider-id collection-id))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id]
   (info "Indexing granule data for collection" collection-id)
-  (let [db (get-in system [:metadata-db :db])
+  (let [db (helper/get-metadata-db-db system)
         params {:concept-type :granule
                 :provider-id provider-id
                 :parent-collection-id collection-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
-        num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     num-granules))
 
@@ -72,22 +73,22 @@
   "Index the granule data for every collection for a given provider."
   [system provider-id start-index]
   (info "Indexing granule data for provider" provider-id)
-  (let [db (get-in system [:metadata-db :db])
+  (let [db (helper/get-metadata-db-db system)
         params {:concept-type :granule
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system) start-index)
-        num-granules (index/bulk-index {:system (:indexer system)} concept-batches)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
 (defn- index-provider-collections
   "Index all the collections concepts for a given provider."
   [system provider-id]
-  (let [db (get-in system [:metadata-db :db])
+  (let [db (helper/get-metadata-db-db system)
         params {:concept-type :collection
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
-        num-collections (index/bulk-index {:system (:indexer system)} concept-batches)]
+        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
 

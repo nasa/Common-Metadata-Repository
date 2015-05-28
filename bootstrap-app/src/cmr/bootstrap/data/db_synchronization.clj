@@ -19,7 +19,8 @@
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.indexer.services.index-service :as index-service]))
+            [cmr.indexer.services.index-service :as index-service]
+            [cmr.bootstrap.helper :as helper]))
 
 (defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"
@@ -282,8 +283,8 @@
   ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete
   ;; and Catalog REST would ignore it. This would end up saving the item in Metadata DB making them
   ;; out of sync. The delete processing should happen after this step and put it back in sync.
-  (let [mdb-context {:system (:metadata-db system)}
-        indexer-context {:system (:indexer system)}
+  (let [mdb-context {:system (helper/get-metadata-db system)}
+        indexer-context {:system (helper/get-indexer system)}
         {:keys [concept-id revision-id]} concept]
     (try
       (concept-service/save-concept mdb-context concept)
@@ -528,8 +529,8 @@
   "Creates a tombstone with the given concept id and revision id and unindexes the concept."
   [system concept-id revision-id]
   (try
-    (let [mdb-context {:system (:metadata-db system)}
-          indexer-context {:system (:indexer system)}]
+    (let [mdb-context {:system (helper/get-metadata-db system)}
+          indexer-context {:system (helper/get-indexer system)}]
       (concept-service/delete-concept mdb-context concept-id revision-id nil)
       (index-service/delete-concept indexer-context concept-id revision-id true))
     (catch clojure.lang.ExceptionInfo e
