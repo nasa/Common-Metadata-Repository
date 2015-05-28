@@ -70,7 +70,7 @@
 
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
-             :metadata-db metadata-db
+             :embedded-systems {:metadata-db metadata-db}
              :search-index (idx/create-elastic-search-index (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/search-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
@@ -103,7 +103,7 @@
   (let [started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(when % (lifecycle/start % system))))
-                               (update-in this [:metadata-db] mdb-system/start)
+                               (update-in this [:embedded-systems :metadata-db] mdb-system/start)
                                component-order)]
     (info "System started")
     started-system))
@@ -119,6 +119,6 @@
                                             #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))
-        stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)]
+        stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)]
     (info "System stopped")
     stopped-system))

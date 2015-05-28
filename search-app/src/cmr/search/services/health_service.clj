@@ -10,7 +10,8 @@
   [context]
   (let [echo-rest-health (rest/health context)
         index-set-health (index-set/get-index-set-health context)
-        metadata-db-context (assoc context :system (get-in context [:system :metadata-db]))
+        metadata-db-context (assoc context :system
+                                   (get-in context [:system :embedded-systems :metadata-db]))
         metadata-db-health (meta-db/health metadata-db-context)
         ok? (every? :ok? [echo-rest-health metadata-db-health index-set-health])]
     {:ok? ok?

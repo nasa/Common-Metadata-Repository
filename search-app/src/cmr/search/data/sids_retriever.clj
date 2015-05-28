@@ -16,7 +16,7 @@
 (defn- context->db
   "Returns the metadata db database instance."
   [context]
-  (get-in context [:system :metadata-db :db]))
+  (get-in context [:system :embedded-systems :metadata-db :db]))
 
 (defn- in-the-future?
   "Returns true if the time is in the future."

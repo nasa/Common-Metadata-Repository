@@ -33,9 +33,12 @@
     "Associates the value in the cache with the given key."))
 
 (defn reset-caches
-  "Clear all caches found in the system."
+  "Clear all caches found in the system, this includes the caches of embedded systems."
   [context]
-  (doseq [[k v] (get-in context [:system :caches])]
-    (reset v)))
+  (doseq [[_ v] (get-in context [:system :caches])]
+    (reset v))
+  ;; reset embedded systems caches
+  (doseq [[_ v] (get-in context [:system :embedded-systems])]
+    (reset-caches {:system v})))
 
 

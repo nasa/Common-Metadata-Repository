@@ -11,6 +11,7 @@
             [cmr.common.util :as util]
             [cmr.common.jobs :as jobs]
             [cmr.common.services.errors :as srv-errors]
+            [cmr.acl.core :as acl]
             [cmr.system-trace.http :as http-trace]
             [cmr.bootstrap.services.bootstrap-service :as bs]
             [cmr.bootstrap.services.health-service :as hs]
@@ -138,6 +139,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
