@@ -17,7 +17,9 @@
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.progress :as progress]
             [cmr.umm.dif10.collection.related-url :as ru]
-            [cmr.umm.dif10.collection.reference :as ref])
+            [cmr.umm.dif10.collection.reference :as ref]
+            [cmr.umm.dif10.collection.personnel :as personnel]
+            [cmr.umm.dif10.collection.product-specific-attribute :as psa])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -60,10 +62,12 @@
        :temporal (t/xml-elem->Temporal xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :projects (pj/xml-elem->Projects xml-struct)
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
+       :personnel (personnel/xml-elem->personnel xml-struct)
        :publication-references (ref/xml-elem->References xml-struct)
        :collection-progress (progress/parse xml-struct)})))
 
@@ -96,6 +100,7 @@
                     (x/element :Entry_ID {} entry-id)
                     (x/element :Version {} version-id)
                     (x/element :Entry_Title {} entry-title)
+                    (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
@@ -120,6 +125,7 @@
                                ;; needs to be reviewed as and when DIF 10 is updated.CMRIN-79
                                (x/element :Data_Creation {} "1970-01-01T00:00:00")
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
+                    (psa/generate-product-specific-attributes product-specific-attributes)
                     (when collection-data-type
                       (x/element :Collection_Data_Type {} collection-data-type))
                     ;; The next element which is required in DIF 10.1 will be removed in the future
