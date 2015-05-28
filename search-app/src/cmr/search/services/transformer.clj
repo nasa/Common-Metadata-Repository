@@ -26,7 +26,7 @@
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
   [context]
-  (assoc context :system (get-in context [:system :metadata-db])))
+  (assoc context :system (get-in context [:system :embedded-systems :metadata-db])))
 
 (defn- get-template
   "Returns a XSLT template from the filename, using the context cache."

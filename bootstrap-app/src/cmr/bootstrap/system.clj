@@ -53,8 +53,8 @@
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         sys {:log (log/create-logger)
-             :metadata-db metadata-db
-             :indexer indexer
+             :embedded-systems {:metadata-db metadata-db
+                                :indexer indexer}
              :db-batch-size (db-batch-size)
 
              ;; Channel for requesting full provider migration - provider/collections/granules.
@@ -91,8 +91,8 @@
   (info "bootstrap System starting")
   (let [;; Need to start indexer first so the connection will be in the context of synchronous
         ;; bulk index requests
-        started-system (update-in this [:indexer] idx-system/start)
-        started-system (update-in started-system [:metadata-db] mdb-system/start)
+        started-system (update-in this [:embedded-systems :indexer] idx-system/start)
+        started-system (update-in started-system [:embedded-systems :metadata-db] mdb-system/start)
         started-system (reduce (fn [system component-name]
                                  (update-in system [component-name]
                                             #(when % (lifecycle/start % system))))
@@ -115,7 +115,7 @@
                                             #(when % (lifecycle/stop % system))))
                                this
                                (reverse component-order))
-        stopped-system (update-in stopped-system [:metadata-db] mdb-system/stop)
-        stopped-system (update-in stopped-system [:indexer] idx-system/stop)]
+        stopped-system (update-in stopped-system [:embedded-systems :metadata-db] mdb-system/stop)
+        stopped-system (update-in stopped-system [:embedded-systems :indexer] idx-system/stop)]
     (info "bootstrap System stopped")
     stopped-system))
