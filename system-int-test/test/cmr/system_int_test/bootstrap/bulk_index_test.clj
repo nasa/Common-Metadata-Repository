@@ -100,6 +100,7 @@
                                            :metadata xml
                                            :extra-fields {:short-name (str "short-name" x)
                                                           :entry-title (str "title" x)
+                                                          :entry-id (str "entry-id" x)
                                                           :version-id "v1"}
                                            :provider-id "PROV1"
                                            :native-id (str "coll" x)
@@ -107,20 +108,21 @@
                               {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
                           (assoc umm :concept-id concept-id :revision-id revision-id)))
           granules1 (mapcat (fn [collection]
-                              (doall
-                                (for [x (range 1 4)]
-                                  (let [pid (:concept-id collection)
-                                        umm (dg/granule collection)
-                                        xml (echo10/umm->echo10-xml umm)
-                                        concept-map {:concept-type :granule
-                                                     :provider-id "PROV1"
-                                                     :native-id (str "gran-" pid "-" x)
-                                                     :extra-fields {:parent-collection-id pid}
-                                                     :format "application/echo10+xml"
-                                                     :metadata xml}
-                                        {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
-                                    (assoc umm :concept-id concept-id :revision-id revision-id)))))
-                            collections)
+                                     (doall
+                                       (for [x (range 1 4)]
+                                         (let [pid (:concept-id collection)
+                                               umm (dg/granule collection)
+                                               xml (echo10/umm->echo10-xml umm)
+                                               concept-map {:concept-type :granule
+                                                            :provider-id "PROV1"
+                                                            :native-id (str "gran-" pid "-" x)
+                                                            :extra-fields {:parent-collection-id pid
+                                                                           :granule-ur (str "ur" x)}
+                                                            :format "application/echo10+xml"
+                                                            :metadata xml}
+                                               {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
+                                           (assoc umm :concept-id concept-id :revision-id revision-id)))))
+                                   collections)
           ;; granules2 and f (the future) are used to ingest ten granules five times each in
           ;; a separate thread to verify that bulk indexing with concurrent ingest does the right
           ;; thing.
@@ -150,12 +152,12 @@
           (let [{:keys [concept-id revision-id]} granule
                 response (search/find-refs :granule {:concept-id concept-id})
                 es-revision-id (:revision-id (first (:refs response)))]
-            (is (= es-revision-id revision-id))))
+            (is (= es-revision-id revision-id) (str "Failure for granule " concept-id))))
         (doseq [granule (last @f)]
           (let [{:keys [concept-id]} granule
                 response (search/find-refs :granule {:concept-id concept-id})
                 es-revision-id (:revision-id (first (:refs response)))]
-            (is (= 5 es-revision-id))))))))
+            (is (= 5 es-revision-id) (str "Failure for granule " concept-id))))))))
 
 (deftest invalid-provider-bulk-index-validation-test
   (s/only-with-real-database
