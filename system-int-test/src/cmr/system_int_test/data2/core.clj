@@ -70,7 +70,7 @@
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
-   (let [{:keys [token alllow-failure?]
+   (let [{:keys [token]
           format-key :format} (merge {:format :echo10
                                       :token nil
                                       :allow-failure? false}

@@ -40,7 +40,8 @@
   {"application/echo10+xml" "ECHO10"
    "application/iso:smap+xml" "ISO_SMAP"
    "application/iso19115+xml" "ISO19115"
-   "application/dif+xml" "DIF"})
+   "application/dif+xml" "DIF"
+   "application/dif10+xml" "DIF10"})
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
@@ -143,6 +144,7 @@
 
 (defmethod concept->insert-args :default
   [concept]
+  (cmr.common.dev.capture-reveal/capture concept)
   (let [{:keys [concept-type
                 native-id
                 concept-id
