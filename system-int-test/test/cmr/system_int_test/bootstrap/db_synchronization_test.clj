@@ -16,15 +16,28 @@
             [cmr.oracle.connection :as oracle]
             [cmr.common.mime-types :as mime-types]))
 
+(def provider-id-to-cmr-only
+  "A map of the providers that will be created to their CMR only flags"
+  {"CPROV1" false
+   "CPROV2" false
+   ;; This provider will be CMR Only
+   "CPROV3" true})
 
-(use-fixtures :each (bootstrap/db-fixture {"CPROV1" false
-                                           "CPROV2" false
-                                           ;; This provider will be CMR Only
-                                           "CPROV3" true}))
+(defn provider-id->client-id
+  "Returns the client id to use when ingesting based on the provider-id"
+  [provider-id]
+  (if (provider-id-to-cmr-only provider-id)
+    "CMRTest"
+    "ECHO"))
+
+(use-fixtures :each (bootstrap/db-fixture provider-id-to-cmr-only))
 
 (comment
   (do
-    (bootstrap/db-fixture-setup "CPROV1" "CPROV2")
+    (bootstrap/db-fixture-setup {"CPROV1" false
+                                 "CPROV2" false
+                                 ;; This provider will be CMR Only
+                                 "CPROV3" true})
 
     (def concept-counter (atom 0))
     (def coll1-1 (coll-concept concept-counter "CPROV1" "coll1"))
@@ -45,7 +58,10 @@
 
   (assert-concepts-in-mdb [coll1-2 (assoc coll2-1 :revision-id 2)])
 
-  (bootstrap/db-fixture-tear-down "CPROV1"  "CPROV2")
+  (bootstrap/db-fixture-tear-down {"CPROV1" false
+                                   "CPROV2" false
+                                   ;; This provider will be CMR Only
+                                   "CPROV3" true})
 
   )
 
@@ -372,7 +388,7 @@
       (assert-concepts-indexed orig-colls)
 
       ;; Create a tombstone for concept 5
-      (ingest/delete-concept coll5-1)
+      (ingest/delete-concept coll5-1 {:client-id "ECHO"})
 
       ;; Insert/Update the concepts in catalog rest.
       (cat-rest/update-concepts system [coll1-2 coll5-3])
@@ -591,7 +607,7 @@
       (assert-concepts-indexed orig-grans)
 
       ;; Create a tombstone for concept 5
-      (ingest/delete-concept gran5-1)
+      (ingest/delete-concept gran5-1 {:client-id "ECHO"})
 
       ;; Insert/Update the concepts in catalog rest.
       (cat-rest/update-concepts system [gran1-2 gran5-3])
@@ -835,7 +851,8 @@
                                (coll-concept concept-counter provider-id
                                              (str "coll" (inc (+ num-existing n)))))]
                 (cat-rest/insert-concepts system concepts)
-                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (when modify-mdb? (ingest/ingest-concepts
+                                    concepts {:client-id (provider-id->client-id provider-id)}))
                 (holdings-append-concepts holdings provider-id concept-type concepts)))
             holdings
             (keys holdings))))
@@ -852,7 +869,8 @@
                                   (cycle (remove :deleted
                                                  (first-n-holdings holdings provider-id :collection))))]
                 (cat-rest/insert-concepts system concepts)
-                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (when modify-mdb? (ingest/ingest-concepts
+                                    concepts {:client-id (provider-id->client-id provider-id)}))
                 (holdings-append-concepts holdings provider-id concept-type concepts)))
             holdings
             (keys holdings))))
@@ -866,7 +884,8 @@
               (let [concepts (map updated-concept
                                   (first-n-holdings holdings provider-id concept-type num-updates))]
                 (cat-rest/update-concepts system concepts)
-                (when modify-mdb? (ingest/ingest-concepts concepts))
+                (when modify-mdb? (ingest/ingest-concepts
+                                    concepts {:client-id (provider-id->client-id provider-id)}))
                 (holdings-append-concepts holdings provider-id concept-type concepts)))
             holdings
             (keys holdings))))
@@ -882,7 +901,8 @@
                                             (last-n-holdings
                                               holdings provider-id concept-type num-deletes)))]
                 (cat-rest/delete-concepts system tombstones)
-                (when modify-mdb? (ingest/delete-concepts tombstones))
+                (when modify-mdb? (ingest/delete-concepts
+                                    tombstones {:client-id (provider-id->client-id provider-id)}))
                 (holdings-append-concepts holdings provider-id concept-type tombstones)))
             holdings
             (keys holdings))))
