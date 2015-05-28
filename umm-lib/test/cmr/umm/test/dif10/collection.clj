@@ -115,7 +115,7 @@
   [coll]
   (-> coll
       (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
-              :collection-associations  :quality :temporal-keywords :two-d-coordinate-systems :use-constraints)
+              :quality :temporal-keywords :two-d-coordinate-systems :use-constraints)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:product :version-description] nil)
       (update-in [:publication-references] remove-field-from-records :doi)
@@ -330,6 +330,24 @@
     <Related_URL>
       <URL>http://www.foo.com</URL>
     </Related_URL>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-237</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-238</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-239</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
     <Metadata_Name>CEOS IDN DIF</Metadata_Name>
     <Metadata_Version>VERSION 10.1</Metadata_Version>
     <Metadata_Dates>
@@ -442,7 +460,16 @@
                                                      :value "12.3"
                                                      :parsed-parameter-range-begin 0.1
                                                      :parsed-parameter-range-end 100.43
-                                                     :parsed-value 12.3})]})
+                                                     :parsed-value 12.3})]
+                    :collection-associations [(umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-237"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-238"
+                                                 :version-id "1"})
+                                              (umm-c/map->CollectionAssociation
+                                                {:short-name "COLLOTHER-239"
+                                                 :version-id "1"})]})
         actual (c/parse-collection dif10-collection-xml)]
     (is (= expected actual))))
 

@@ -19,7 +19,8 @@
             [cmr.umm.dif10.collection.related-url :as ru]
             [cmr.umm.dif10.collection.reference :as ref]
             [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.dif10.collection.product-specific-attribute :as psa])
+            [cmr.umm.dif10.collection.product-specific-attribute :as psa]
+            [cmr.umm.dif10.collection.metadata-association :as ma])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -63,6 +64,7 @@
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :collection-associations (ma/xml-elem->MetadataAssociations xml-struct)
        :projects (pj/xml-elem->Projects xml-struct)
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
@@ -113,6 +115,7 @@
                                (x/element :Abstract {} summary)
                                (x/element :Purpose {} purpose))
                     (ru/generate-related-urls related-urls)
+                    (ma/generate-metadata-associations collection-associations)
                     (x/element :Metadata_Name {} "CEOS IDN DIF")
                     (x/element :Metadata_Version {} "VERSION 10.1")
                     (x/element :Metadata_Dates {}
