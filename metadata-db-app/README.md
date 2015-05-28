@@ -205,7 +205,8 @@ returns: list of concept ids for collections that have a latest revision with an
 
 ### DELETE /concepts/#concept-id/#revision-id
 
-params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly for testing deletion of old tombstones. The revision-id must be greater than the highest revision-id of
+params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly
+for testing deletion of old tombstones. The revision-id must be greater than the highest revision-id of
 the stored concept.
 returns: the revision id of the tombstone generated for the concept
 
