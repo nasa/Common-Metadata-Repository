@@ -17,7 +17,8 @@
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.progress :as progress]
             [cmr.umm.dif10.collection.related-url :as ru]
-            [cmr.umm.dif10.collection.reference :as ref])
+            [cmr.umm.dif10.collection.reference :as ref]
+            [cmr.umm.dif10.collection.personnel :as personnel])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -64,6 +65,7 @@
        :related-urls (ru/xml-elem->RelatedURLs xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
        :organizations (org/xml-elem->Organizations xml-struct)
+       :personnel (personnel/xml-elem->personnel xml-struct)
        :publication-references (ref/xml-elem->References xml-struct)
        :collection-progress (progress/parse xml-struct)})))
 
@@ -96,6 +98,7 @@
                     (x/element :Entry_ID {} entry-id)
                     (x/element :Version {} version-id)
                     (x/element :Entry_Title {} entry-title)
+                    (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)

@@ -16,6 +16,7 @@
             [cmr.umm.dif10.core :as dif10]
             [cmr.spatial.mbr :as m]
             [cmr.umm.dif10.collection.platform :as platform]
+            [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.test.echo10.collection :as test-echo10])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -70,8 +71,25 @@
         :instruments [(umm-c/map->Instrument {:short-name "Not provided"})]})]
     (for [platform platforms]
       (-> platform
-          (update-in [:type] (fn [type] (if (platform/PLATFORM_TYPES type) type "Not provided")))
+          (update-in [:type] (fn [type] (get platform/PLATFORM_TYPES type "Not provided")))
           (update-in [:instruments] instrument->expected-parsed)))))
+
+(defn- umm-contacts->expected-contacts
+  "Removes non-email contacts since we don't use those yet and don't generate them in the XML."
+  [contacts]
+  (filter #(= :email (:type %)) contacts))
+
+(defn- personnel->expected-parsed
+  [personnel]
+  (seq (for [person personnel]
+         (-> person
+         (update-in [:roles]
+                    (fn [roles]
+                      (or (seq (for [role roles
+                                     :when (get personnel/PERSONNEL_ROLES role)]
+                                 role))
+                          ["TECHNICAL CONTACT"])))
+         (update-in [:contacts] umm-contacts->expected-contacts)))))
 
 (defn- projects->expected-parsed
   [projects]
@@ -87,7 +105,7 @@
   "Remove fields unsupported and not yet supported in DIF10"
   [coll]
   (-> coll
-      (dissoc :spatial-keywords :associated-difs :access-value :metadata-language :personnel
+      (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
               :collection-associations  :quality :temporal-keywords :two-d-coordinate-systems
               :product-specific-attributes :use-constraints)
       (assoc-in  [:product :processing-level-id] nil)
@@ -102,6 +120,7 @@
   (-> coll
       (update-in [:science-keywords] science-keywords->expected-parsed)
       (update-in [:platforms] platforms->expected-parsed)
+      (update-in [:personnel] personnel->expected-parsed)
       (update-in [:projects] projects->expected-parsed)
       (update-in [:related-urls] related-urls->expected-parsed)
       (update-in [:spatial-coverage] spatial-coverage->expected-parsed)))
@@ -170,16 +189,26 @@
   (let [{:keys [short-name long-name]} orig-product]
     (assoc product :short-name short-name :long-name long-name)))
 
+(defn- revert-personnel
+  "The personnel roles are reverted to original types since DIF 10 uses enumeration types which
+  in general would not match with types in UMM which are simple strings and so will be marked as
+  TECHNICAL CONTACT, one of the enumeraion types, during the transformation process."
+  [personnel orig-personnel]
+  (seq (for[[person orig-person]
+            (map list personnel orig-personnel)]
+         (assoc person :roles (:roles orig-person)))))
+
 (defn rectify-dif10-fields
   "Revert the UMM fields which are modified when a generated UMM is converted to DIF 10 XML and
   parsed back to UMM. The fields are modified during the creation of the XML to satisfy the schema
   constraints of DIF 10."
   [coll original-coll]
-  (let [{:keys [platforms spatial-coverage product]} original-coll]
+  (let [{:keys [platforms spatial-coverage product personnel]} original-coll]
     (-> coll
         (update-in [:platforms] revert-platform-type platforms)
         (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
-        (update-in [:product] revert-product product))))
+        (update-in [:product] revert-product product)
+        (update-in [:personnel] revert-personnel personnel))))
 
 (defn restore-modified-fields
   "Some of the UMM fields which are lost/modified/added during translation from UMM to DIF 10 XML
@@ -189,6 +218,7 @@
       remove-dif10-place-holder-fields
       (rectify-dif10-fields orig-umm)))
 
+
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)
@@ -197,7 +227,7 @@
                  parsed-echo10 (echo10-c/parse-collection echo10-xml)
                  expected-parsed (test-echo10/umm->expected-parsed-echo10
                                    (remove-unsupported-fields collection))]
-             (and  (= expected-parsed parsed-echo10)
+             (and (= expected-parsed parsed-echo10)
                   (empty? (echo10-c/validate-xml echo10-xml))))))
 
 (def dif10-collection-xml
@@ -205,6 +235,15 @@
     <Entry_ID>minimal_dif_dataset</Entry_ID>
     <Version>001</Version>
     <Entry_Title>A minimal dif dataset</Entry_Title>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <First_Name>first name</First_Name>
+      <Middle_Name>middle name</Middle_Name>
+      <Last_Name>last name</Last_Name>
+      <Email>dssweb@ucar.edu</Email>
+    </Contact_Person>
+  </Personnel>
     <Science_Keywords>
       <Category>EARTH SCIENCE</Category>
       <Topic>CRYOSPHERE</Topic>
@@ -343,7 +382,15 @@
                     :spatial-coverage (umm-c/map->SpatialCoverage
                                         {:granule-spatial-representation :geodetic
                                          :spatial-representation :cartesian,
-                                         :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})})
+                                         :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
+                    :personnel [(umm-c/map->Personnel
+                                 {:first-name "first name"
+                                  :last-name "last name"
+                                  :middle-name "middle name"
+                                  :roles ["TECHNICAL CONTACT"]
+                                  :contacts [(umm-c/map->Contact
+                                               {:type :email
+                                                :value "dssweb@ucar.edu"})]})]})
         actual (c/parse-collection dif10-collection-xml)]
     (is (= expected actual))))
 
@@ -351,7 +398,7 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Line 10 - cvc-complex-type.2.4.a: Invalid content"
+    (is (= [(str "Line 19 - cvc-complex-type.2.4.a: Invalid content"
                  " was found starting with element 'XXXX'. One of"
                  " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
