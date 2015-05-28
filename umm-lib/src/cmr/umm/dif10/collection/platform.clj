@@ -6,7 +6,8 @@
             [cmr.umm.dif10.collection.instrument :as inst]
             [cmr.umm.dif10.collection.characteristic :as char]))
 
-(def PLATFORM_TYPES
+(def platform-types
+  "The set of values that DIF 10 defines for platform types as enumerations in its schema"
   #{"Not provided"
     "Aircraft"
     "Balloons/Rockets"
@@ -41,7 +42,7 @@
   (if (seq platforms)
     (for [{:keys [short-name long-name type instruments characteristics]} platforms]
       (x/element :Platform {}
-                 (x/element :Type {} (or (PLATFORM_TYPES type) "Not provided"))
+                 (x/element :Type {} (or (platform-types type) "Not provided"))
                  (x/element :Short_Name {} short-name)
                  (x/element :Long_Name {} long-name)
                  (char/generate-characteristics characteristics)
