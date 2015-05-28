@@ -72,7 +72,7 @@
         :instruments [(umm-c/map->Instrument {:short-name "Not provided"})]})]
     (for [platform platforms]
       (-> platform
-          (update-in [:type] (fn [type] (get platform/PLATFORM_TYPES type "Not provided")))
+          (update-in [:type] (fn [type] (get platform/platform-types type "Not provided")))
           (update-in [:instruments] instrument->expected-parsed)))))
 
 (defn- umm-contacts->expected-contacts
