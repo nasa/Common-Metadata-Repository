@@ -71,9 +71,15 @@
     (is (= status 200))
     (is (= revision-id 4))))
 
+(deftest delete-concept-with-skipped-revisions-test
+  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+        {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 100)]
+    (is (= status 200))
+    (is (= revision-id 100))))
+
 (deftest delete-concept-with-invalid-revision
   (let [coll1 (util/create-and-save-collection "PROV1" 1)
-        {:keys [status]} (util/delete-concept (:concept-id coll1) 3)]
+        {:keys [status]} (util/delete-concept (:concept-id coll1) 0)]
     (is (= status 409))))
 
 (deftest fail-to-delete-missing-concept

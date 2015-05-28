@@ -144,7 +144,7 @@ returns: new or existing concept-id
 
 params: [concept] - revision-id optionally in concept
 returns: revision-id.  revision-id begins at 0.
-throws error if revision-id does not match what it will be when saved
+throws error if revision-id is less than or equal to the current highest saved revision-id (if any).
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
