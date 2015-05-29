@@ -49,6 +49,10 @@
       (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 2)]
         (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
+    (testing "skipped revision-id"
+      (let [db (memory/create-db [example-concept])
+            concept (assoc previous-concept :revision-id 100)]
+        (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
     (testing "invalid revision-id - low"
       (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 0)
