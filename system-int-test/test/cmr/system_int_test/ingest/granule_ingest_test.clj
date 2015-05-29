@@ -161,13 +161,14 @@
     (is (= 1 (- delete-revision-id ingest-revision-id)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
-(deftest delete-non-existing-granule-gives-good-error-message-test
-  (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
-        response (ingest/delete-concept granule {:raw? true})
+(deftest delete-non-existing-concept-gives-good-error-message-test
+  (testing "granule"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
+          response (ingest/delete-concept granule {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
       (is (re-find #"Granule with native id \[.*?\] in provider \[PROV1\] does not exist"
-                   (first errors)))))
+                   (first errors))))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
