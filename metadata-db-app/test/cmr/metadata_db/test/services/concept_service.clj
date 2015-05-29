@@ -49,12 +49,10 @@
       (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 2)]
         (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
-    (testing "invalid revision-id - high"
+    (testing "skipped revision-id"
       (let [db (memory/create-db [example-concept])
-            concept (assoc previous-concept :revision-id 3)
-            result (cs/check-concept-revision-id db concept previous-concept)]
-        (is (= (:status result) :fail))
-        (is (= (:expected result) 2))))
+            concept (assoc previous-concept :revision-id 100)]
+        (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
     (testing "invalid revision-id - low"
       (let [db (memory/create-db [example-concept])
             concept (assoc previous-concept :revision-id 0)
@@ -69,10 +67,10 @@
       (let [concept (assoc previous-concept :revision-id 2)]
         (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
     (testing "invalid concept revision-id"
-      (let [concept (assoc previous-concept :revision-id 3)]
+      (let [concept (assoc previous-concept :revision-id 1)]
         (tu/assert-exception-thrown-with-errors
           :conflict
-          [(messages/invalid-revision-id (:concept-id concept) 2 3)]
+          [(messages/invalid-revision-id (:concept-id concept) 2 1)]
           (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]

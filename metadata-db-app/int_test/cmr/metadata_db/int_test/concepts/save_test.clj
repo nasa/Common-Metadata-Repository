@@ -72,25 +72,32 @@
         (is (t/after? revision-date-1 revision-date-0))
         (is (util/verify-concept-was-saved updated-concept))))))
 
-(deftest save-concept-with-bad-revision-test
+(deftest save-concept-with-skipped-revisions-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)
-        concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 3)
-        {:keys [status]} (util/save-concept concept-with-bad-revision)
-        {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
-        retrieved-revision (:revision-id retrieved-concept)]
-    (is (= 409 status))
-    (is (nil? retrieved-revision))))
+        concept-with-skipped-revisions (assoc concept :concept-id concept-id :revision-id 100)
+        {:keys [status revision-id]} (util/save-concept concept-with-skipped-revisions)
+        {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
+    (is (= 201 status))
+    (is (= 100 revision-id (:revision-id retrieved-concept)))))
+
+(deftest auto-increment-of-revision-id-works-with-skipped-revisions-test
+  (let [concept (util/collection-concept "PROV1" 1)
+        {:keys [concept-id]} (util/save-concept concept)
+        concept-with-concept-id (assoc concept :concept-id concept-id)
+        _ (util/save-concept (assoc concept-with-concept-id :revision-id 100))
+        {:keys [status revision-id]} (util/save-concept concept-with-concept-id)
+        {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
+    (is (= 201 status))
+    (is (= 101 revision-id (:revision-id retrieved-concept)))))
 
 (deftest save-concept-with-low-revision-test
   (let [concept (util/collection-concept "PROV1" 1)
         {:keys [concept-id]} (util/save-concept concept)
         concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 0)
-        {:keys [status]} (util/save-concept concept-with-bad-revision)
-        {:keys [retrieved-concept]} (util/get-concept-by-id (:concept-id concept))
-        retrieved-revision (:revision-id retrieved-concept)]
+        {:keys [status revision-id]} (util/save-concept concept-with-bad-revision)]
     (is (= 409 status))
-    (is (nil? retrieved-revision))))
+    (is (nil? revision-id))))
 
 (deftest save-concept-with-revision-id-0
   (let [concept-with-bad-revision (util/collection-concept "PROV1" 1 {:revision-id 0})

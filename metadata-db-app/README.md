@@ -143,8 +143,8 @@ returns: new or existing concept-id
 ### POST /concepts
 
 params: [concept] - revision-id optionally in concept
-returns: revision-id.  revision-id begins at 0.
-throws error if revision-id does not match what it will be when saved
+returns: revision-id.  revision-id begins at 1.
+throws error if revision-id is less than or equal to the current highest saved revision-id (if any).
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
@@ -205,7 +205,9 @@ returns: list of concept ids for collections that have a latest revision with an
 
 ### DELETE /concepts/#concept-id/#revision-id
 
-params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly for testing deletion of old tombstones.
+params: revision-date - Optionally sets the revision date of the tombstone that is created. This is mainly
+for testing deletion of old tombstones. The revision-id must be greater than the highest revision-id of
+the stored concept.
 returns: the revision id of the tombstone generated for the concept
 
     curl -v -XDELETE localhost:3001/concepts/C1-PROV1/1

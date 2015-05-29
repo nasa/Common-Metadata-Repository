@@ -84,7 +84,7 @@
       (assoc concept :revision-id revision-id))))
 
 (defn check-concept-revision-id
-  "Checks that the revision-id for a concept is one greater than
+  "Checks that the revision-id for a concept is greater than
   the current maximum revision-id for this concept."
   [db concept previous-revision]
   (let [{:keys [concept-id concept-type provider-id revision-id]} concept
@@ -92,14 +92,14 @@
                             (c/get-concept db concept-type provider-id concept-id)
                             ;; or it doesn't exist and the next should be 1
                             {:revision-id 0})
-        expected-revision-id (inc (:revision-id latest-revision))]
-    (if (= revision-id expected-revision-id)
+        minimum-revision-id (inc (:revision-id latest-revision))]
+    (if (>= revision-id minimum-revision-id)
       {:status :pass}
       {:status :fail
-       :expected expected-revision-id})))
+       :expected minimum-revision-id})))
 
 (defn validate-concept-revision-id
-  "Validate that the revision-id for a concept (if given) is one greater than the current maximum
+  "Validate that the revision-id for a concept (if given) is greater than the current maximum
   revision-id for this concept. A third argument of the previous revision of the concept can be
   provided to avoid looking up the concept again."
   ([db concept]
