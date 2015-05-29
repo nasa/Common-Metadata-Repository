@@ -93,6 +93,7 @@
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
     (context "/site" []
+      ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
       (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
@@ -100,8 +101,7 @@
              :body (-> resource
                        slurp
                        (str/replace "%CMR-ENDPOINT%" cmr-root))})))
-      ;; Static HTML resources, typically API documentation which
-      ;; needs endpoint URLs replaced
+      ;; Other static resources (Javascript, CSS)
       (route/resources "/" {:root resource-root})
       (route/not-found (site-resource "404.html")))))
 
