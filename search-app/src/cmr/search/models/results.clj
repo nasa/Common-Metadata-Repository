@@ -20,12 +20,19 @@
   value-count-maps
   ])
 
+(defrecord ScienceKeywordsFacet
+  [
+   ;; TODO Figure out if this is actually the structure we want and then document
+   field
+   sub-facets
+   ])
+
 (defrecord ValueCountMaps
   [
    ;; TODO Figure out if this is actually the structure we want and then document
    value
    count
-   facets
+   sub-facets
    ])
 
 (defrecord Results
@@ -59,6 +66,7 @@
 (record-pretty-printer/enable-record-pretty-printing
   Facet
   HierarchicalFacet
+  ScienceKeywordsFacet
   ValueCountMaps
   Results)
 

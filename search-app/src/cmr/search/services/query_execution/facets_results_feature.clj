@@ -41,7 +41,7 @@
   {:nested {:path :science-keywords}
    :aggs {:category (science-keyword-aggregations-helper science-keyword-hierarchy)}})
 
-(def old-facet-aggregations
+(def flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
@@ -59,7 +59,7 @@
    :variable-level-3 (terms-facet :variable-level-3)
    :detailed-variable (terms-facet :detailed-variable)})
 
-(def new-facet-aggregations
+(def hierarchical-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
@@ -74,7 +74,7 @@
 (defn- facet-aggregations
   "Return facet aggregations to use depending on whether science keywords are flat or hierarchical"
   [nested-science-keywords?]
-  (if nested-science-keywords? new-facet-aggregations old-facet-aggregations))
+  (if nested-science-keywords? hierarchical-facet-aggregations flat-facet-aggregations))
 
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
@@ -116,15 +116,13 @@
                (r/map->ValueCountMaps
                  {:value field-key
                   :count coll-count
-                  :facets (science-keywords-bucket-helper
-                            remaining-fields
-                            sub-aggregations-for-field)})
+                  :sub-facets (science-keywords-bucket-helper remaining-fields
+                                                              sub-aggregations-for-field)})
                (r/map->ValueCountMaps
                  {:value field-key
                   :count coll-count})))
            (into [])
            (assoc response :value-count-maps)))))
-
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
@@ -139,12 +137,13 @@
     (if (:nested-science-keywords? query)
       (let [science-keywords-bucket (:science-keywords aggs)
             science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)]
-        ; (cmr.common.dev.capture-reveal/capture science-keywords-bucket)
-        ; (cmr.common.dev.capture-reveal/capture science-keywords-facets)
-        ;; TODO fix this to be real facets
-        (assoc query-results :facets [science-keywords-facets])
-        #_(assoc query-results :facets [{:field :science-keywords
-                                       :value-count-maps science-keywords-facets}]))
+        (assoc query-results
+               :facets (concat (bucket-map->facets
+                                 (dissoc aggs :science-keywords)
+                                 [:archive-center :project :platform :instrument :sensor
+                                  :two-d-coordinate-system-name :processing-level-id])
+                               [(r/map->ScienceKeywordsFacet {:field :science-keywords
+                                                              :sub-facets science-keywords-facets})])))
       (let [facets (bucket-map->facets
                      aggs
                      ;; Specified here so that order will be consistent with results
@@ -172,7 +171,7 @@
                    (x/element (with-prefix :count) (:count value-count-maps))
                    (when-let [sub-facets (:facets value-count-maps)]
                      (println "*** CDD: sub-facets are:" sub-facets)
-                         (cmr.common.dev.capture-reveal/capture sub-facets)
+                     ; (cmr.common.dev.capture-reveal/capture sub-facets)
                      #_(x/element (key-with-prefix ns-prefix :facets) {} (map (partial facet->xml-element ns-prefix) sub-facets))))
                  (for [[value value-count] value-counts]
                    (x/element (with-prefix :value) {:count value-count} value))))))
@@ -183,7 +182,6 @@
    (facets->xml-element nil facets))
   ([ns-prefix facets]
    (when facets
-     (cmr.common.dev.capture-reveal/capture facets)
      (x/element (key-with-prefix ns-prefix :facets) {}
                 (map (partial facet->xml-element ns-prefix) facets)))))
 

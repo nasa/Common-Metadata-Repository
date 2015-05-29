@@ -114,45 +114,141 @@
   (e/grant-guest (s/context)
                  (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
 
+;; Cases to test
+;; Keywords at each level - Category, Topic, Term, Variable1..3
+;; Collections which have multiple science keywords with the same lower level nested value,
+;; but different higher level nested value (e.g. Hurricane>>Wind and Earth Science>>Wind) - make
+;; sure counts are correct (just one collection)
+;; multiple collections with the same keywords show a count of 2
+
 
 (deftest all-science-keywords-fields-hierarchy
   (grant-permissions)
-  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk2))
-        expected-facets [{:field "category",
-                          :value-count-maps
-                          [{:value "Hurricane",
-                            :count 1,
-                            :facets
-                            {:field "topic",
-                             :value-count-maps
-                             [{:value "Popular",
-                               :count 1,
-                               :facets
-                               {:field "term",
-                                :value-count-maps
-                                [{:value "Extreme",
-                                  :count 1,
-                                  :facets
-                                  {:field "variable-level-1",
-                                   :value-count-maps
-                                   [{:value "Level2-1",
-                                     :count 1,
-                                     :facets
-                                     {:field "variable-level-2",
-                                      :value-count-maps
-                                      [{:value "Level2-2",
-                                        :count 1,
-                                        :facets
-                                        {:field "variable-level-3",
-                                         :value-count-maps
-                                         [{:value "Level2-3",
-                                           :count 1,
-                                           :facets
-                                           {:field "detailed-variable",
-                                            :value-count-maps
-                                            [{:value "UNIVERSAL",
-                                              :count 1,
-                                              :facets nil}]}}]}}]}}]}}]}}]}}]}]
+  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7))
+        expected-facets [{:field "archive_center", :value-counts []}
+                         {:field "project", :value-counts []}
+                         {:field "platform", :value-counts []}
+                         {:field "instrument", :value-counts []}
+                         {:field "sensor", :value-counts []}
+                         {:field "two_d_coordinate_system_name", :value-counts []}
+                         {:field "processing_level_id", :value-counts []}
+                         {:field "science-keywords",
+                          :sub-facets
+                          {:field "category",
+                           :value-count-maps
+                           [{:value "Hurricane",
+                             :count 1,
+                             :sub-facets
+                             {:field "topic",
+                              :value-count-maps
+                              [{:value "Popular",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Extreme",
+                                   :count 1,
+                                   :sub-facets
+                                   {:field "variable-level-1",
+                                    :value-count-maps
+                                    [{:value "Level2-1",
+                                      :count 1,
+                                      :sub-facets
+                                      {:field "variable-level-2",
+                                       :value-count-maps
+                                       [{:value "Level2-2",
+                                         :count 1,
+                                         :sub-facets
+                                         {:field "variable-level-3",
+                                          :value-count-maps
+                                          [{:value "Level2-3",
+                                            :count 1,
+                                            :sub-facets
+                                            {:field "detailed-variable",
+                                             :value-count-maps
+                                             [{:value "UNIVERSAL",
+                                               :count 1,
+                                               :sub-facets nil}]}}]}}]}}]}}
+                                  {:value "UNIVERSAL", :count 1, :sub-facets nil}]}}
+                               {:value "Cool",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Term4",
+                                   :count 1,
+                                   :sub-facets
+                                   {:field "variable-level-1",
+                                    :value-count-maps
+                                    [{:value "UNIVERSAL",
+                                      :count 1,
+                                      :sub-facets nil}]}}]}}]}}
+                            {:value "Cat1",
+                             :count 1,
+                             :sub-facets
+                             {:field "topic",
+                              :value-count-maps
+                              [{:value "Topic1",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Term1",
+                                   :count 1,
+                                   :sub-facets
+                                   {:field "variable-level-1",
+                                    :value-count-maps
+                                    [{:value "Level1-1",
+                                      :count 1,
+                                      :sub-facets
+                                      {:field "variable-level-2",
+                                       :value-count-maps
+                                       [{:value "Level1-2",
+                                         :count 1,
+                                         :sub-facets
+                                         {:field "variable-level-3",
+                                          :value-count-maps
+                                          [{:value "Level1-3",
+                                            :count 1,
+                                            :sub-facets
+                                            {:field "detailed-variable",
+                                             :value-count-maps
+                                             [{:value "Detail1",
+                                               :count 1,
+                                               :sub-facets nil}]}}]}}]}}]}}]}}]}}
+                            {:value "Tornado",
+                             :count 1,
+                             :sub-facets
+                             {:field "topic",
+                              :value-count-maps
+                              [{:value "Popular",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Extreme", :count 1, :sub-facets nil}]}}]}}
+                            {:value "UPCASE",
+                             :count 1,
+                             :sub-facets
+                             {:field "topic",
+                              :value-count-maps
+                              [{:value "Popular",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Mild", :count 1, :sub-facets nil}]}}]}}
+                            {:value "upcase",
+                             :count 1,
+                             :sub-facets
+                             {:field "topic",
+                              :value-count-maps
+                              [{:value "Cool",
+                                :count 1,
+                                :sub-facets
+                                {:field "term",
+                                 :value-count-maps
+                                 [{:value "Mild", :count 1, :sub-facets nil}]}}]}}]}}]
         _ (index/wait-until-indexed)
         search-results (search/find-concepts-json :collection  {:page-size 0
                                                                 :include-facets true
