@@ -75,6 +75,13 @@
      ~body
      (assoc (r/redirect (str (request/request-url ~req) "/")) :status 301)))
 
+(def ^:private resource-root "public/site/")
+
+(defn- site-resource
+  "Returns a URL for a resource in resource-root, or nil if it does not exist."
+  [resource-name]
+  (io/resource (str resource-root resource-name)))
+
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
   relative-root-url of the application, and the location of the welcome page within the classpath."
@@ -85,20 +92,18 @@
       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
-
-    ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-    (GET ["/site/:resource", :resource #".*\.html$"] {headers :headers {resource :resource} :params}
-      (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
-        {:status 200
-         :body (-> (str "public/site/" resource)
-                   (io/resource)
-                   (slurp)
-                   (str/replace "%CMR-ENDPOINT%" cmr-root))}))
-
-    ;; Other static resources (Javascript, CSS)
-    (GET "/site/:resource" [resource]
-      {:status 200
-       :body (slurp (io/resource (str "public/site/" resource)))})))
+    (context "/site" []
+      (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
+        (when-let [resource (site-resource page)]
+          (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)]
+            {:status 200
+             :body (-> resource
+                       slurp
+                       (str/replace "%CMR-ENDPOINT%" cmr-root))})))
+      ;; Static HTML resources, typically API documentation which
+      ;; needs endpoint URLs replaced
+      (route/resources "/" {:root resource-root})
+      (route/not-found (site-resource "404.html")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Documentation Generation Vars
