@@ -71,7 +71,7 @@
                                    concept-type
                                    "Concept")]
              (format "%s with native id [%s] in provider [%s] does not exist."
-                   concept-type native-id provider-id))))
+                     concept-type native-id provider-id))))
 
        200
        (get body "concept-id")
