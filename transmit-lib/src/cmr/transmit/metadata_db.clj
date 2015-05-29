@@ -67,8 +67,11 @@
        (when throw-service-error?
          (errors/throw-service-error
            :not-found
-           (format "concept-type: %s provider-id: %s native-id: %s does not exist"
-                   concept-type provider-id native-id)))
+           (let [concept-type (get {:collection "Collection" :granule "Granule"}
+                                   concept-type
+                                   "Concept")]
+             (format "%s with native id [%s] in provider [%s] does not exist."
+                   concept-type native-id provider-id))))
 
        200
        (get body "concept-id")
