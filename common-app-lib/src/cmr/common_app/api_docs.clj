@@ -78,7 +78,7 @@
 (def ^:private resource-root "public/site/")
 
 (defn- site-resource
-  "Returns a resource URL for a resource in public/site/."
+  "Returns a URL for a resource in resource-root, or nil if it does not exist."
   [resource-name]
   (io/resource (str resource-root resource-name)))
 

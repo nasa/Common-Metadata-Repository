@@ -24,6 +24,10 @@
       (testing "returns the welcome page HTML"
         (is (substring? "The CMR Search API" (:body response)))))))
 
+(deftest test-404
+  (testing "a 404 is returned for a missing document"
+    (is (= 404 (:status (api (request :get "https://cmr.example.com/search/site/NOT-A-PAGE.html")))))))
+
 (deftest cmr-api-documentation-page
   (let [response (api (request :get "https://cmr.example.com/search/site/search_api_docs.html"))]
     (testing "uses the incoming host and scheme for its documentation endpoints"
