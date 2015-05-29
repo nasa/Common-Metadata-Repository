@@ -92,7 +92,7 @@
       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
                             {:status 200
                              :body (slurp (io/resource welcome-page-location))}))
-    ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
+    (route/resources "/")
     (context "/site" []
       (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
         (when-let [resource (site-resource page)]
@@ -101,8 +101,7 @@
              :body (-> resource
                        slurp
                        (str/replace "%CMR-ENDPOINT%" cmr-root))})))
-      (route/resources "/" {:root resource-root})
-      (route/not-found (slurp (site-resource "404.html"))))))
+      (route/not-found (site-resource "404.html")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Documentation Generation Vars
