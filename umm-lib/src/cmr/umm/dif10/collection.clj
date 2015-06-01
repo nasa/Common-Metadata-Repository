@@ -71,7 +71,8 @@
        :organizations (org/xml-elem->Organizations xml-struct)
        :personnel (personnel/xml-elem->personnel xml-struct)
        :publication-references (ref/xml-elem->References xml-struct)
-       :collection-progress (progress/parse xml-struct)})))
+       :collection-progress (progress/parse xml-struct)
+       :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])})))
 
 (defn parse-collection
   "Parses DIF 10 XML into a UMM Collection record."
@@ -109,6 +110,8 @@
                     (progress/generate collection)
                     (s/generate-spatial-coverage spatial-coverage)
                     (pj/generate-projects projects)
+                    (x/element :Quality {} quality)
+                    (x/element :Use_Constraints {} use-constraints)
                     (org/generate-organizations organizations)
                     (ref/generate-references publication-references)
                     (x/element :Summary {}

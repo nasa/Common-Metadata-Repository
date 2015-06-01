@@ -1,6 +1,6 @@
 (ns cmr.umm.dif10.collection.progress
   "Functions for parsing and generating the UMM Collection Progress
-  information from and to DIF XML."
+  information from and to DIF 10 XML."
   (:require [clojure.data.xml :as x]
             [clojure.string :as string]
             [clojure.set :refer [map-invert]]
@@ -19,7 +19,7 @@
     (get (map-invert state-map) (string/upper-case prog-str))))
 
 (defn generate
-  "Returns DIF XML element structures for the collection's progress
+  "Returns DIF 10 XML element structures for the collection's progress
   value."
   [collection]
   (when-let [state (:collection-progress collection)]
