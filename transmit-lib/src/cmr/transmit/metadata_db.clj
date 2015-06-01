@@ -10,7 +10,8 @@
             [ring.util.codec :as codec]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util :refer [defn-timed]]))
+            [cmr.common.util :as util :refer [defn-timed]]
+            [camel-snake-kebab.core :as csk]))
 
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -67,11 +68,8 @@
        (when throw-service-error?
          (errors/throw-service-error
            :not-found
-           (let [concept-type-str (get {:collection "Collection" :granule "Granule"}
-                                       concept-type
-                                       "Concept")]
-             (format "%s with native id [%s] in provider [%s] does not exist."
-                     concept-type-str native-id provider-id))))
+           (format "%s with native id [%s] in provider [%s] does not exist."
+                   (csk/->PascalCaseString concept-type) native-id provider-id)))
 
        200
        (get body "concept-id")
