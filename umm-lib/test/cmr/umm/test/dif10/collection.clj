@@ -115,7 +115,7 @@
   [coll]
   (-> coll
       (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
-              :quality :temporal-keywords :two-d-coordinate-systems :use-constraints)
+              :temporal-keywords :two-d-coordinate-systems)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:product :version-description] nil)
       (update-in [:publication-references] remove-field-from-records :doi)
@@ -279,6 +279,7 @@
         <Ending_Date_Time>1999-03-24T22:20:41-05:00</Ending_Date_Time>
       </Range_DateTime>
     </Temporal_Coverage>
+    <Dataset_Progress>IN WORK</Dataset_Progress>
     <Spatial_Coverage>
       <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
       <Geometry>
@@ -294,6 +295,8 @@
     <Project>
       <Short_Name>short name</Short_Name>
     </Project>
+    <Quality>Good quality</Quality>
+    <Use_Constraints>No Constraints</Use_Constraints>
     <Organization>
       <Organization_Type>ARCHIVER</Organization_Type>
       <Organization_Name>
@@ -469,7 +472,10 @@
                                                  :version-id "1"})
                                               (umm-c/map->CollectionAssociation
                                                 {:short-name "COLLOTHER-239"
-                                                 :version-id "1"})]})
+                                                 :version-id "1"})]
+                    :collection-progress :in-work
+                    :quality "Good quality"
+                    :use-constraints "No Constraints"})
         actual (c/parse-collection dif10-collection-xml)]
     (is (= expected actual))))
 
