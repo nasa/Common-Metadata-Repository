@@ -101,3 +101,26 @@
       [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
       (cs/try-to-save (memory/create-db [example-concept])
                       (assoc example-concept :revision-id 1)))))
+
+(deftest delete-expired-concepts-test
+  (testing "basic case"
+    (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
+          db (memory/create-db [expired])]
+      (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+      (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))
+  (testing "with a conflict"
+    (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
+          db (memory/create-db [expired])
+          orig-save cs/try-to-save
+          saved (atom false)
+          fake-save (fn [& args]
+                      (when-not @saved
+                        ;; insert one revision on the first save attempt
+                        (orig-save db (-> expired
+                                          (assoc :revision-id 2)
+                                          (update-in [:extra-fields] dissoc :delete-time)))
+                        (reset! saved true))
+                      (apply orig-save args))]
+      (with-redefs [cs/try-to-save fake-save]
+        (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+        (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))))
