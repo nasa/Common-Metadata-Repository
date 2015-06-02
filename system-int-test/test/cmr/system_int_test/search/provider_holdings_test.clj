@@ -134,7 +134,7 @@
                (set (:results response))))))
 
     (testing "Retrieving provider holdings from the search application in various formats"
-      (for [format [:xml :json :csv]]
+      (doseq [format [:xml :json :csv]]
         (testing (str (name format) " Response")
           (testing "Retrieve all provider holdings"
             (let [response (search/provider-holdings-in-format format {:token user-token})]
