@@ -121,7 +121,7 @@
   (let [{:keys [result-format pretty? skip-acls?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
-        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)
+        items (map #(select-keys % results/result-item-fields) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (post-process-query-result-features context query nil results)))
 

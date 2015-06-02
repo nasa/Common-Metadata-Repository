@@ -26,7 +26,7 @@
         format (concept-type result-formats)]
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type format]
     [concept-type result-format]
-    []))
+    ["metadata-format"]))
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
@@ -40,7 +40,7 @@
         tuples (map #(vector (:_id %) (:_version %)) (get-in elastic-results [:hits :hits]))
         [req-time tresults] (u/time-execution
                               (t/get-formatted-concept-revisions context tuples (:result-format query) false))
-        items (map #(select-keys % [:concept-id :revision-id :collection-concept-id :metadata]) tresults)]
+        items (map #(select-keys % results/result-item-fields) tresults)]
     (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
@@ -50,8 +50,8 @@
   (defmethod gcrf/query-results->concept-ids format
     [results]
     (->> results
-        :items
-        (map :concept-id))))
+         :items
+         (map :concept-id))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search results handling
@@ -65,13 +65,15 @@
 
 (defmethod metadata-item->result-string [:granule false]
   [concept-type echo-compatible? results metadata-item]
-  (let [{:keys [concept-id collection-concept-id revision-id metadata]} metadata-item]
+  (let [{:keys [concept-id collection-concept-id revision-id format metadata]} metadata-item]
     ["<result concept-id=\""
      concept-id
      "\" collection-concept-id=\""
      collection-concept-id
      "\" revision-id=\""
      revision-id
+     "\" format=\""
+     format
      "\">"
      (cx/remove-xml-processing-instructions metadata)
      "</result>"]))
@@ -79,9 +81,10 @@
 (defmethod metadata-item->result-string [:collection false]
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [concept-id revision-id metadata]} metadata-item
+        {:keys [concept-id revision-id format metadata]} metadata-item
         attribs (concat [[:concept-id concept-id]
-                         [:revision-id revision-id]]
+                         [:revision-id revision-id]
+                         [:format format]]
                         (when has-granules-map
                           [[:has-granules (get has-granules-map concept-id false)]])
                         (when granule-counts-map

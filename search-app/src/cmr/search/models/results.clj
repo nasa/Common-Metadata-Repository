@@ -13,6 +13,9 @@
    value-counts
    ])
 
+(def result-item-fields
+  "Fields of a result item"
+  [:concept-id :revision-id :collection-concept-id :format :metadata])
 
 (defrecord Results
   [
@@ -40,7 +43,7 @@
 
    facets
 
-  ])
+   ])
 
 (record-pretty-printer/enable-record-pretty-printing
   Facet
