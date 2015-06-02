@@ -3,7 +3,6 @@
   (:require [clojure.set :as set]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [clojure.string :as str]
             [cheshire.core :as json]
             [clojure.data.csv :as csv])
   (:import

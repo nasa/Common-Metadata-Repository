@@ -4,7 +4,6 @@
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cheshire.core :as json]
-            [clojure.string :as str]
             [clojure.data.csv :as csv]
             [clojure.set :as set]))
 
