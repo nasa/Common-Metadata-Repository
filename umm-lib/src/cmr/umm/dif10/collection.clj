@@ -54,24 +54,25 @@
     (c/map->UmmCollection
       {:entry-id (:short-name product)
        :entry-title (cx/string-at-path xml-struct [:Entry_Title])
-       :summary (cx/string-at-path xml-struct [:Summary :Abstract])
-       :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
-       :product product
-       :quality (cx/string-at-path xml-struct [:Quality])
-       :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
-       :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
-       :temporal (t/xml-elem->Temporal xml-struct)
+       :personnel (personnel/xml-elem->personnel xml-struct)
        :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
        :platforms (platform/xml-elem->Platforms xml-struct)
-       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
-       :collection-associations (ma/xml-elem->MetadataAssociations xml-struct)
-       :projects (pj/xml-elem->Projects xml-struct)
-       :related-urls (ru/xml-elem->RelatedURLs xml-struct)
+       :temporal (t/xml-elem->Temporal xml-struct)
+       :collection-progress (progress/parse xml-struct)
        :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
+       :projects (pj/xml-elem->Projects xml-struct)
+       :quality (cx/string-at-path xml-struct [:Quality])
+       :use-constraints (cx/string-at-path xml-struct [:Use_Constraints])
        :organizations (org/xml-elem->Organizations xml-struct)
-       :personnel (personnel/xml-elem->personnel xml-struct)
        :publication-references (ref/xml-elem->References xml-struct)
-       :collection-progress (progress/parse xml-struct)})))
+       :summary (cx/string-at-path xml-struct [:Summary :Abstract])
+       :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
+       :related-urls (ru/xml-elem->RelatedURLs xml-struct)
+       :collection-associations (ma/xml-elem->MetadataAssociations xml-struct)
+       :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
+       :product product
+       :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
+       :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))})))
 
 (defn parse-collection
   "Parses DIF 10 XML into a UMM Collection record."
@@ -109,6 +110,8 @@
                     (progress/generate collection)
                     (s/generate-spatial-coverage spatial-coverage)
                     (pj/generate-projects projects)
+                    (x/element :Quality {} quality)
+                    (x/element :Use_Constraints {} use-constraints)
                     (org/generate-organizations organizations)
                     (ref/generate-references publication-references)
                     (x/element :Summary {}

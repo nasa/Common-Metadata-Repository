@@ -32,6 +32,15 @@
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id)))))
 
+;; Verify deleting non-existent concepts returns good error messages
+(deftest deletion-of-non-existent-concept-error-message-test
+  (testing "collection"
+    (let [concept (dc/collection-concept {})
+          response (ingest/delete-concept concept {:raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :xml response)]
+      (is (re-find #"Collection with native id \[.*?\] in provider \[PROV1\] does not exist"
+                   (first errors))))))
+
 ;; Collection with concept-id ingest and update scenarios.
 (deftest collection-w-concept-id-ingest-test
   (let [supplied-concept-id "C1000-PROV1"
@@ -121,7 +130,7 @@
     (let [concept (dc/collection-concept {})
           response (ingest/delete-concept concept {:raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (re-find #"concept-type: :collection provider-id: PROV1 native-id: .* does not exist"
+      (is (re-find #"Collection with native id \[.*?\] in provider \[PROV1\] does not exist"
                    (first errors))))))
 
 ;; Verify that xml response is returned for ingests of xml content type
@@ -375,11 +384,7 @@
        :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
                "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."
                (str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'Summary'."
-                    " One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Project,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Quality,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Access_Constraints,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Use_Constraints,"
-                    " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Dataset_Language,"
+                    " One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Dataset_Language,"
                     " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center,"
                     " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Organization}' is expected.")]
 
