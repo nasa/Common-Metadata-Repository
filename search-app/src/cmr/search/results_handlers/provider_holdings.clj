@@ -3,7 +3,11 @@
   (:require [clojure.set :as set]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cheshire.core :as json]))
+            [clojure.string :as str]
+            [cheshire.core :as json]
+            [clojure.data.csv :as csv])
+  (:import
+    [java.io StringWriter]))
 
 (defmulti provider-holdings->string
   "Returns the string representation of the given provider-holdings"
@@ -40,6 +44,21 @@
     (xml-fn
       (x/element :provider-holdings {:type "array"}
                  (map (partial provider-holding->xml-elem echo-compatible?) provider-holdings)))))
+
+(def CSV_HEADER
+  ["Provider Id", "Entry Title", "Concept Id", "Granule Count"])
+
+(defn- provider-holding->csv
+  [provider-holding]
+  (map provider-holding [:provider-id :entry-title :concept-id :granule-count]))
+
+(defmethod provider-holdings->string :csv
+  [result-format provider-holdings options]
+  (let [rows (cons CSV_HEADER
+                   (map provider-holding->csv provider-holdings))
+        string-writer (StringWriter.)]
+    (csv/write-csv string-writer rows)
+    (str string-writer)))
 
 (defn- cmr-provider-holding->echo-provider-holding
   "Returns the given provider holding in ECHO format"

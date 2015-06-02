@@ -140,6 +140,12 @@
             (is (= 200 (:status response)))
             (is (= expected-all-holdings
                    (set (:results response))))))
+        (testing "CSV response"
+          (testing "Retrieve all provider holdings"
+            (let [response (search/provider-holdings-in-format :csv {:token user-token})]
+            (is (= 200 (:status response)))
+            (is (= expected-all-holdings
+                   (set (:results response)))))))
         (testing "Retrieve provider holdings for list of providers"
           (let [response (search/provider-holdings-in-format :xml {:provider_id "PROV1"
                                                                    :token user-token})]
