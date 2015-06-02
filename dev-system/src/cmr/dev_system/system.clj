@@ -191,7 +191,7 @@
   [type queue-broker]
   (let [listener-start-fn #(ql/start-queue-message-handler
                              %
-                             (wrapper/handler-wrapper queue-broker ql/handle-index-action))]
+                             (wrapper/handler-wrapper queue-broker ql/handle-ingest-event))]
     (queue/create-queue-listener
       {:num-workers (indexer-config/queue-listener-count)
        :start-function listener-start-fn})))

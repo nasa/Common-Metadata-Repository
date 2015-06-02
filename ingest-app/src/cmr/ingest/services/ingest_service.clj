@@ -3,6 +3,7 @@
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
             [cmr.ingest.data.indexer :as indexer]
+            [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.ingest.services.validation :as v]
@@ -153,7 +154,7 @@
   [context concept]
   (let [concept (validate-concept context concept)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      (indexer/index-concept context concept-id revision-id)
+      (ingest-events/publish-event context (ingest-events/concept-update-event concept-id revision-id))
       {:concept-id concept-id, :revision-id revision-id})))
 
 (defn-timed delete-concept
@@ -162,7 +163,7 @@
   (let [{:keys [concept-type provider-id native-id]}  concept-attribs
         concept-id (mdb/get-concept-id context concept-type provider-id native-id)
         revision-id (mdb/delete-concept context concept-id)]
-    (indexer/delete-concept-from-index context concept-id revision-id)
+    (ingest-events/publish-event context (ingest-events/concept-delete-event concept-id revision-id))
     {:concept-id concept-id, :revision-id revision-id}))
 
 (deftracefn reset

@@ -67,7 +67,7 @@
                                (queue/create-queue-listener {:num-workers (config/queue-listener-count)
                                                              :start-function #(ql/start-queue-message-handler
                                                                                 %
-                                                                                ql/handle-index-action)}))}]
+                                                                                ql/handle-ingest-event)}))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
 
