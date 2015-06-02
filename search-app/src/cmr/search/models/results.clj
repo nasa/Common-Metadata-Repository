@@ -24,7 +24,7 @@
   [
    ;; TODO Figure out if this is actually the structure we want and then document
    field
-   sub-facets
+   facets
    ])
 
 (defrecord ValueCountMaps
@@ -32,7 +32,7 @@
    ;; TODO Figure out if this is actually the structure we want and then document
    value
    count
-   sub-facets
+   facets
    ])
 
 (defrecord Results
