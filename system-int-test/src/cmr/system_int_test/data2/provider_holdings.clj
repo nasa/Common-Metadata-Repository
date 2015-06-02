@@ -57,9 +57,8 @@
   [format echo-compatible? csv-str]
   (set (let [csv-holdings (rest (csv/read-csv csv-str))]
          (for [[provider-id entry-title concept-id granule-count] csv-holdings]
-           (assoc {}
-             :provider-id provider-id
-             :entry-title entry-title
-             :concept-id concept-id
-             :granule-count (read-string granule-count))))))
+           {:provider-id provider-id
+            :entry-title entry-title
+            :concept-id concept-id
+            :granule-count (read-string granule-count)}))))
 
