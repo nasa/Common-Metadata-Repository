@@ -14,6 +14,7 @@
       "metadata": "xml here",
       "format": "application/echo10+xml",
       "revision-id": 1, //(optional field)
+      "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
         "short-name": "short",
         "version-id": "V01",
@@ -32,6 +33,7 @@
       "metadata": "xml here",
       "format": "application/echo10+xml",
       "revision-id": 1, //(optional field)
+      "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
         "parent-collection-id": "C5-PROV1"
       }
