@@ -452,10 +452,9 @@
   "Delete concepts that have not been deleted and have a delete-time before now"
   [context provider concept-type]
   (let [db (util/context->db context)
-        ;; atom to store state of concepts to skip on subsequent
-        ;; recursions of the loop bleow
+        ;; atom to store concepts to skip on subsequent recursions
         failed-concept-ids (atom #{})
-        ;; get only expired concepts which have not failed before
+        ;; return expired concepts which have not previously failed
         get-expired (fn []
                       (remove
                        #(contains? @failed-concept-ids (:concept-id %))
@@ -467,12 +466,16 @@
           (let [tombstone (-> c
                               (update-in [:revision-id] inc)
                               (assoc :deleted true :metadata ""))]
-            (info tombstone)
             (try
               (try-to-save db tombstone)
               (catch clojure.lang.ExceptionInfo e
+                ;; re-throw anything other than a simple conflict
                 (when-not (-> e ex-data :type (= :conflict))
                   (throw e))
+                ;; if an update comes in while we are running this job
+                ;; it will result in a conflict, in that case we just
+                ;; want to log a warning and store the failed concept
+                ;; id in order avoid an infinite loop
                 (warn e "Conflict when saving expired concept tombstone")
                 (swap! failed-concept-ids conj (:concept-id c))))))
         (recur)))))
