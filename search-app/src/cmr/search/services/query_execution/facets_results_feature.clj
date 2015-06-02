@@ -41,7 +41,7 @@
   {:nested {:path :science-keywords}
    :aggs {:category (science-keyword-aggregations-helper science-keyword-hierarchy)}})
 
-(def flat-facet-aggregations
+(def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
@@ -59,7 +59,7 @@
    :variable-level-3 (terms-facet :variable-level-3)
    :detailed-variable (terms-facet :detailed-variable)})
 
-(def hierarchical-facet-aggregations
+(def ^:private hierarchical-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
@@ -131,123 +131,129 @@
   (science-keywords-bucket-helper science-keyword-hierarchy
                                   (get bucket-map (first science-keyword-hierarchy))))
 
-(defmethod query-execution/post-process-query-result-feature :facets
-  [context query elastic-results query-results feature]
-  (let [aggs (:aggregations elastic-results)]
-    (if (:nested-science-keywords? query)
-      (let [science-keywords-bucket (:science-keywords aggs)
-            science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)]
-        (assoc query-results
-               :facets (concat (bucket-map->facets
-                                 (dissoc aggs :science-keywords)
-                                 [:archive-center :project :platform :instrument :sensor
-                                  :two-d-coordinate-system-name :processing-level-id])
-                               ;; TODO Refactor out to have a create hierarchical facet function
-                               [(r/map->ScienceKeywordsFacet {:field (csk/->snake_case_string :science-keywords)
-                                                              :facets science-keywords-facets})])))
-      (let [facets (bucket-map->facets
-                     aggs
-                     ;; Specified here so that order will be consistent with results
-                     [:archive-center :project :platform :instrument :sensor
-                      :two-d-coordinate-system-name :processing-level-id :category :topic :term
-                      :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])]
-        (assoc query-results :facets facets)))))
+(defn- create-hierarchical-facets
+  "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
+  returns the facets."
+  [elastic-aggregations]
+  (let [science-keywords-bucket (:science-keywords elastic-aggregations)
+        science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)]
+    (concat (bucket-map->facets
+              (dissoc elastic-aggregations :science-keywords)
+              [:archive-center :project :platform :instrument :sensor
+               :two-d-coordinate-system-name :processing-level-id])
+            [(r/map->ScienceKeywordsFacet {:field "science_keywords"
+                                           :facets science-keywords-facets})])))
 
-(defn key-with-prefix
+(defn- create-flat-facets
+  "Create the facets response with flat facets. Takes an elastic aggregations result and returns
+  the facets."
+  [elastic-aggregations]
+  (bucket-map->facets
+    elastic-aggregations
+    ;; Specified here so that order will be consistent with results
+    [:archive-center :project :platform :instrument :sensor
+     :two-d-coordinate-system-name :processing-level-id :category :topic :term
+     :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable]))
+
+(defmethod query-execution/post-process-query-result-feature :facets
+  [_ {:keys [nested-science-keywords?]} {:keys [aggregations]} query-results _]
+  (let [facets (if nested-science-keywords?
+                 (create-hierarchical-facets aggregations)
+                 (create-flat-facets aggregations))]
+    (assoc query-results :facets facets)))
+
+(defn- key-with-prefix
   [prefix k]
   (if prefix
     (symbol (str prefix ":" (name k)))
     k))
 
-(defn facet->xml-element
-  [ns-prefix facet]
-  (let [{:keys [field value-counts value-count-maps facets]} facet
-        with-prefix (partial key-with-prefix ns-prefix)]
-    (println "****** CDD: Facet is" facet)
-    (x/element (with-prefix :facet) {:field (name field)}
-               (cond value-count-maps
-                     (do
-                       (println "CDD : value-count-maps are:" value-count-maps)
-                       (for [value-count-map value-count-maps
-                         :let [xml-element (x/element (with-prefix :value-count-maps) {}
-                                                      (x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map)))]]
-                         (do
-                           (println "CDD: XML element is:" xml-element)
-                           (when-let [facets (:facets value-count-map)]
-                             (println "*** CDD: facets are:" facets)
-                             ; (cmr.common.dev.capture-reveal/capture facets)
-                             (let [child-facets (x/element (key-with-prefix ns-prefix :facets) {} (facet->xml-element ns-prefix facets))]
-                               ; (cmr.common.dev.capture-reveal/capture-all)
-                               (x/element (with-prefix :value-count-maps) {}
-                                                      [(x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map))
-                                                      child-facets]))))))
-                       facets
-                       (x/element (key-with-prefix ns-prefix :facets) {} (facet->xml-element ns-prefix facets))
-                       :else
-                       (for [[value value-count] value-counts]
-                         (x/element (with-prefix :value) {:count value-count} value))))))
+(defn- value-count-maps->xml-element
+  "Converts a list of value-count-maps into an XML element."
+  [ns-prefix with-prefix value-count-maps]
+  (for [value-count-map value-count-maps
+        :let [xml-element (x/element (with-prefix :value-count-maps) {}
+                                     (x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map)))]]
+    (do
+      (when-let [facets (:facets value-count-map)]
+        (let [child-facets (x/element (key-with-prefix ns-prefix :facets) {} (facet->xml-element ns-prefix facets))]
+          (x/element (with-prefix :value-count-maps) {}
+                     [(x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map))
+                      child-facets]))))))
+
+(defn- facet->xml-element
+  [ns-prefix {:keys [field value-counts value-count-maps facets]}]
+  (let [with-prefix (partial key-with-prefix ns-prefix)
+        xml-element-content
+        (cond value-count-maps (value-count-maps->xml-element ns-prefix with-prefix value-count-maps)
+              facets (x/element (key-with-prefix ns-prefix :facets) {}
+                                (facet->xml-element ns-prefix facets))
+              :else
+              (for [[value value-count] value-counts]
+                (x/element (with-prefix :value) {:count value-count} value)))]
+    (x/element (with-prefix :facet) {:field (name field)} xml-element-content)))
 
 
-  (defn facets->xml-element
-    "Helper function for converting a facet result into an XML element"
-    ([facets]
-     (facets->xml-element nil facets))
-    ([ns-prefix facets]
-     (when facets
-       (x/element (key-with-prefix ns-prefix :facets) {}
-                  (map (partial facet->xml-element ns-prefix) facets)))))
+(defn facets->xml-element
+  "Helper function for converting a facet result into an XML element"
+  ([facets]
+   (facets->xml-element nil facets))
+  ([ns-prefix facets]
+   (when facets
+     (x/element (key-with-prefix ns-prefix :facets) {}
+                (map (partial facet->xml-element ns-prefix) facets)))))
 
-  (def cmr-facet-name->echo-facet-keyword
-    "A mapping of CMR facet names to ECHO facet keywords"
-    {"archive_center" :archive-center
-     "project" :campaign-sn
-     "platform" :platform-sn
-     "instrument" :instrument-sn
-     "sensor" :sensor-sn
-     "two_d_coordinate_system_name" :twod-coord-name
-     "processing_level_id" :processing-level
-     "category" :category-keyword
-     "topic" :topic-keyword
-     "term" :term-keyword
-     "variable_level_1" :variable-level-1-keyword
-     "variable_level_2" :variable-level-2-keyword
-     "variable_level_3" :variable-level-3-keyword
-     "detailed_variable" :detailed-variable-keyword
-     "science_keywords" :science-keywords})
+(def cmr-facet-name->echo-facet-keyword
+  "A mapping of CMR facet names to ECHO facet keywords"
+  {"archive_center" :archive-center
+   "project" :campaign-sn
+   "platform" :platform-sn
+   "instrument" :instrument-sn
+   "sensor" :sensor-sn
+   "two_d_coordinate_system_name" :twod-coord-name
+   "processing_level_id" :processing-level
+   "category" :category-keyword
+   "topic" :topic-keyword
+   "term" :term-keyword
+   "variable_level_1" :variable-level-1-keyword
+   "variable_level_2" :variable-level-2-keyword
+   "variable_level_3" :variable-level-3-keyword
+   "detailed_variable" :detailed-variable-keyword
+   "science_keywords" :science-keywords})
 
-  (defn facet->echo-xml-element
-    [facet]
-    (let [{:keys [field value-counts]} facet
-          field-key (cmr-facet-name->echo-facet-keyword field)]
-      (x/element field-key {:type "array"}
-                 (for [[value value-count] value-counts]
-                   (x/element field-key {}
-                              (x/element :term {} value)
-                              (x/element :count {:type "integer"} value-count))))))
+(defn- facet->echo-xml-element
+  [facet]
+  (let [{:keys [field value-counts]} facet
+        field-key (cmr-facet-name->echo-facet-keyword field)]
+    (x/element field-key {:type "array"}
+               (for [[value value-count] value-counts]
+                 (x/element field-key {}
+                            (x/element :term {} value)
+                            (x/element :count {:type "integer"} value-count))))))
 
-  (defn facets->echo-xml-element
-    "Helper function for converting facets into an XML element in echo format"
-    [facets]
-    (when facets
-      (x/element :hash {}
-                 (map facet->echo-xml-element facets))))
+(defn facets->echo-xml-element
+  "Helper function for converting facets into an XML element in echo format"
+  [facets]
+  (when facets
+    (x/element :hash {}
+               (map facet->echo-xml-element facets))))
 
-  (defn- value-count->echo-json
-    "Returns value count in echo json format"
-    [value-count]
-    (let [[value value-count] value-count]
-      {:count value-count
-       :term value}))
+(defn value-count->echo-json
+  "Returns value count in echo json format"
+  [value-count]
+  (let [[value value-count] value-count]
+    {:count value-count
+     :term value}))
 
-  (defn facet->echo-json
-    [facet]
-    (let [{:keys [field value-counts]} facet
-          field-key (csk/->snake_case_string (cmr-facet-name->echo-facet-keyword field))]
-      [field-key (map value-count->echo-json value-counts)]))
+(defn- facet->echo-json
+  [facet]
+  (let [{:keys [field value-counts]} facet
+        field-key (csk/->snake_case_string (cmr-facet-name->echo-facet-keyword field))]
+    [field-key (map value-count->echo-json value-counts)]))
 
-  (defn facets->echo-json
-    "Helper function for converting facets into an XML element in echo format"
-    [facets]
-    (when facets
-      (into {} (map facet->echo-json facets))))
+(defn facets->echo-json
+  "Helper function for converting facets into an XML element in echo format"
+  [facets]
+  (when facets
+    (into {} (map facet->echo-json facets))))
 
