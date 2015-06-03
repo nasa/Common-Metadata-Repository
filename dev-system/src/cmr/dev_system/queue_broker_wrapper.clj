@@ -10,7 +10,8 @@
             [cmr.message-queue.config :as iconfig]
             [cmr.common.log :as log :refer (debug info warn error)]
             [clojure.set :as set]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (def ^:const ^:private valid-action-types
   "A set of the valid action types for a message queue:
@@ -53,10 +54,6 @@
   [broker-wrapper action-type data resulting-state]
   (swap! (:message-queue-history-atom broker-wrapper)
          append-to-message-queue-history action-type data resulting-state))
-
-(comment
-  (update-message-queue-history (create-queue-broker-wrapper nil)
-                                :enqueue {:concept-id "C1-PROV1" :revision-id 1 :id 1} :initial))
 
 (def ^:const ^:private valid-message-states
   "Set of valid message states:
@@ -126,6 +123,57 @@
         false)
       true)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Handler wrapper functions
+
+(defn- queue-response->message-state
+  "Converts the response of a message queue action to the appropriate message state. If a message
+  has a retry status and has exceeded the max retries then return failure."
+  [response msg]
+  {:pre [(valid-message-states (:status response))]}
+  (let [{:keys [:status]} response]
+    (if (and (= :retry status)
+             (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
+      :failure
+      status)))
+
+(defn- fail-message-on-reset
+  "Mark message as failed due to reset being called on the queue"
+  [broker-wrapper msg]
+  (update-message-queue-history broker-wrapper :process msg :failure)
+  {:status :failure :message "Forced failure on reset"})
+
+(defn- simulate-retry-message
+  "Mark message as retrying. If retries are exhausted we mark the message as failed"
+  [broker-wrapper msg]
+  (let [message-state (queue-response->message-state {:status :retry} msg)]
+    (update-message-queue-history broker-wrapper :process msg message-state)
+    {:status message-state :message "Simulating retry on message queue"}))
+
+(defn- handler-wrapper
+  "Wraps handler function to count acks, retries, fails. In addition this wrapper allows for
+  a message to be marked as retrying or failed based on the queue configuration for the
+  num-retries-atom and the number of times the message has already been retried."
+  [broker-wrapper handler]
+  (fn [msg]
+    (cond
+      ;; Resetting
+      @(:resetting?-atom broker-wrapper)
+      (fail-message-on-reset broker-wrapper msg)
+
+      ;; Queue set to retry actions N times and this message has not been retried N times
+      (< (get msg :retry-count 0) @(:num-retries-atom broker-wrapper))
+      (simulate-retry-message broker-wrapper msg)
+
+      :else
+      ;; Process the message as normal
+      (let [response (handler msg)
+            message-state (queue-response->message-state response msg)]
+        (update-message-queue-history broker-wrapper :process msg message-state)
+        response))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Record Definition
 
 (defrecord BrokerWrapper
   [
@@ -171,21 +219,6 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
 
-  (create-queue
-    [this queue-name]
-    ;; defer to wrapped broker
-    (queue/create-queue queue-broker queue-name))
-
-  (create-exchange
-    [this exchange-name]
-    ;; defer to wrapped broker
-    (queue/create-exchange queue-broker exchange-name))
-
-  (bind-queue-to-exchange
-    [this queue-name exchange-name]
-    ;; defer to wrapped broker
-    (queue/bind-queue-to-exchange queue-broker queue-name exchange-name))
-
   (publish-to-queue
     [this queue-name msg]
     (publish this queue/publish-to-queue queue-name msg))
@@ -195,8 +228,9 @@
     (publish this queue/publish-to-exchange exchange-name msg))
 
   (subscribe
-    [this queue-name handler params]
-    (queue/subscribe queue-broker queue-name handler params))
+    [this queue-name handler]
+    ;; Wrap the handler with another function to allow counting retries etc.
+    (queue/subscribe queue-broker queue-name (handler-wrapper this handler)))
 
   (message-count
     [this queue-name]
@@ -222,6 +256,16 @@
   (health
     [this]
     (queue/health (:queue-broker this))))
+
+(record-pretty-printer/enable-record-pretty-printing BrokerWrapper)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public API
+
+(defn create-queue-broker-wrapper
+  "Create a BrokerWrapper"
+  [broker]
+  (->BrokerWrapper broker (atom 0) (atom false) (atom []) (atom 0) (atom false)))
 
 (defn wait-for-indexing
   "Wait for all messages to be marked as processed or failed."
@@ -249,54 +293,3 @@
   [broker-wrapper timeout?]
   ;; Use an atom to set state?
   (reset! (:timeout-atom broker-wrapper) timeout?))
-
-(defn- queue-response->message-state
-  "Converts the response of a message queue action to the appropriate message state. If a message
-  has a retry status and has exceeded the max retries then return failure."
-  [response msg]
-  {:pre [(valid-message-states (:status response))]}
-  (let [{:keys [:status]} response]
-    (if (and (= :retry status)
-             (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
-      :failure
-      status)))
-
-(defn- fail-message-on-reset
-  "Mark message as failed due to reset being called on the queue"
-  [broker-wrapper msg]
-  (update-message-queue-history broker-wrapper :process msg :failure)
-  {:status :failure :message "Forced failure on reset"})
-
-(defn- simulate-retry-message
-  "Mark message as retrying. If retries are exhausted we mark the message as failed"
-  [broker-wrapper msg]
-  (let [message-state (queue-response->message-state {:status :retry} msg)]
-    (update-message-queue-history broker-wrapper :process msg message-state)
-    {:status message-state :message "Simulating retry on message queue"}))
-
-(defn handler-wrapper
-  "Wraps handler function to count acks, retries, fails. In addition this wrapper allows for
-  a message to be marked as retrying or failed based on the queue configuration for the
-  num-retries-atom and the number of times the message has already been retried."
-  [broker-wrapper handler]
-  (fn [context msg]
-    (cond
-      ;; Resetting
-      @(:resetting?-atom broker-wrapper)
-      (fail-message-on-reset broker-wrapper msg)
-
-      ;; Queue set to retry actions N times and this message has not been retried N times
-      (< (get msg :retry-count 0) @(:num-retries-atom broker-wrapper))
-      (simulate-retry-message broker-wrapper msg)
-
-      :else
-      ;; Process the message as normal
-      (let [response (handler context msg)
-            message-state (queue-response->message-state response msg)]
-        (update-message-queue-history broker-wrapper :process msg message-state)
-        response))))
-
-(defn create-queue-broker-wrapper
-  "Create a BrokerWrapper"
-  [broker]
-  (->BrokerWrapper broker (atom 0) (atom false) (atom []) (atom 0) (atom false)))

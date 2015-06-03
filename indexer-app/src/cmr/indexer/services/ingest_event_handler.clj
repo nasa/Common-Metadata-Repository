@@ -1,4 +1,4 @@
-(ns cmr.indexer.services.queue-listener
+(ns cmr.indexer.services.ingest-event-handler
   "Provides functions related to subscribing to the indexing queue. Creates
   separate subscriber threads to listen on the indexing queue for index requests
   with start-queue-message-handler and provides a multi-method, handle-ingest-event,
@@ -54,12 +54,11 @@
   [context {:keys [provider-id]}]
   (handle-event (indexer/delete-provider context provider-id)))
 
-(defn start-queue-message-handler
+(defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."
-  [context message-handler]
+  [context]
   (let [queue-broker (get-in context [:system :queue-broker])
         queue-name (config/index-queue-name)]
-
-    (queue/subscribe queue-broker queue-name #(message-handler context %) {})))
-
+    (dotimes [n (config/queue-listener-count)]
+      (queue/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
 

@@ -17,7 +17,7 @@
 
             [cmr.indexer.system :as indexer-system]
             [cmr.indexer.config :as indexer-config]
-            [cmr.indexer.services.queue-listener :as ql]
+            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]
 
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -178,24 +178,6 @@
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
 
-(defmulti create-queue-listener
-  "Returns an instance of the message queue listener component to use if using a message queue."
-  (fn [type queue-broker]
-    type))
-
-(defmethod create-queue-listener :in-memory
-  [type queue-broker]
-  nil)
-
-(defmethod create-queue-listener :external
-  [type queue-broker]
-  (let [listener-start-fn #(ql/start-queue-message-handler
-                             %
-                             (wrapper/handler-wrapper queue-broker ql/handle-ingest-event))]
-    (queue/create-queue-listener
-      {:num-workers (indexer-config/queue-listener-count)
-       :start-function listener-start-fn})))
-
 (defn create-metadata-db-app
   "Create an instance of the metadata-db application."
   [db-component]
@@ -207,11 +189,9 @@
 
 (defn create-indexer-app
   "Create an instance of the indexer application."
-  [queue-broker queue-listener]
+  [queue-broker]
   (if queue-broker
-    (-> (indexer-system/create-system)
-        (assoc :queue-broker queue-broker
-               :queue-listener queue-listener))
+    (assoc (indexer-system/create-system) :queue-broker queue-broker)
     (indexer-system/create-system)))
 
 (defmulti create-ingest-app
@@ -281,7 +261,6 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        queue-listener (create-queue-listener message-queue queue-broker)
         elastic-server (create-elastic elastic)
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
@@ -289,7 +268,7 @@
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
-              :indexer (create-indexer-app queue-broker queue-listener)
+              :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component)
