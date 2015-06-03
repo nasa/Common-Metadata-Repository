@@ -142,3 +142,9 @@
         response-results (results->json
                            context echo-compatible? include-facets? concept-type results)]
     (json/generate-string response-results {:pretty pretty?})))
+
+(defmethod qs/single-result->response :json
+  [context query results]
+  (json/generate-string (atom-reference->json results
+                                              (:concept-type query)
+                                              (first (:items results)))))

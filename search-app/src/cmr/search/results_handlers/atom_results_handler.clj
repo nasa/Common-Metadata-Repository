@@ -462,3 +462,7 @@
                  (x/element :title {:type "text"} (concept-type->atom-title concept-type))
                  (map (partial atom-reference->xml-element results concept-type) items)
                  (frf/facets->xml-element "echo" facets)))))
+
+(defmethod qs/single-result->response :atom
+  [context query results]
+  (qs/search-results->response context query (update-in results [:items] (partial take 1))))

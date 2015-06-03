@@ -10,6 +10,7 @@
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
+            [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
@@ -205,35 +206,21 @@
         results (query-svc/find-concepts-by-aql context params aql)]
     (search-response params results)))
 
-(defn- get-feed-concept-by-id
-  "Returns search results for a concept id"
-  [context params result-format concept-id]
-  (search-response params (query-svc/find-concepts-by-parameters context :collection {:result-format result-format
-                                                                                      :concept-id concept-id})))
-
-(defn- get-transformed-concept-by-id
-  [context params headers result-format concept-id]
-  (let [concept (query-svc/find-concept-by-id context result-format concept-id)
-        {:keys [metadata]} concept
-        body (if (api/pretty-request? params headers)
-               (cx/pretty-print-xml metadata)
-               metadata)]
-    {:status 200
-     :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")
-               CORS_ORIGIN_HEADER "*"}
-     :body body}))
-
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
   [context path-w-extension params headers]
   (let [result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
                                                  "application/xml")
+        params (assoc params :result-format result-format)
         concept-id (path-w-extension->concept-id path-w-extension)
-        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))]
-    (if (contains? #{:atom :json} result-format)
-      (get-feed-concept-by-id context params result-format concept-id)
-      (get-transformed-concept-by-id context params headers result-format concept-id))))
+        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+        {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)
+        results (cond
+                  results results
+                  (api/pretty-request? params headers) (cx/pretty-print-xml metadata)
+                  :else metadata)]
+    (search-response params {:results results})))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"

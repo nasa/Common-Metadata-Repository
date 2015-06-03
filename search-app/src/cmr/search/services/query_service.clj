@@ -88,6 +88,12 @@
   (fn [context query results]
     (:result-format query)))
 
+(defmulti single-result->response
+  "Returns a string representation of a single concept in the format
+  specified in the query."
+  (fn [context query results]
+    (:result-format query)))
+
 (defn- sanitize-sort-key
   "Sanitizes a single sort key preserving the direction character."
   [sort-key]
@@ -173,12 +179,25 @@
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
-  (let [concepts (t/get-latest-formatted-concepts context [concept-id] result-format)]
-    (when-not (seq concepts)
-      (err/throw-service-error
-        :not-found
-        (format "Concept with concept-id: %s could not be found" concept-id)))
-    (first concepts)))
+  (if (contains? #{:atom :json} result-format)
+    ;; do a query and use single-result->response
+    (let [query (qm/query {:concept-id concept-id
+                           :concept-type (cmr.common.concepts/concept-id->type concept-id)
+                           :result-format result-format
+                           :page-size 1
+                           :page-num 1})
+          results (qe/execute-query context query)]
+      (when (zero? (:hits results))
+        (err/throw-service-error :not-found
+                                 (format "Concept with concept-id: %s could not be found" concept-id)))
+      {:results (single-result->response context query results)})
+    ;; else
+    (let [concepts (t/get-latest-formatted-concepts context [concept-id] result-format)]
+      (when-not (seq concepts)
+        (err/throw-service-error
+         :not-found
+         (format "Concept with concept-id: %s could not be found" concept-id)))
+      (first concepts))))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
