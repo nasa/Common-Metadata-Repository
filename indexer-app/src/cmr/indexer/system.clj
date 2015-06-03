@@ -60,8 +60,7 @@
                           `system-holder
                           :db
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
-             :queue-broker (when (config/use-index-queue?)
-                             (rmq/create-queue-broker (config/rabbit-mq-config)))}]
+             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
 

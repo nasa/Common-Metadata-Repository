@@ -37,10 +37,6 @@
     :retry - message could not be processed and should be re-queued
     :fail  - the message cannot be processed and should not be re-queued")
 
-  (message-count
-    [this queue-name]
-    "Returns the number of messages on the given queue")
-
   (reset
     [this]
     "Reset the broker, deleting any queues and any queued messages")

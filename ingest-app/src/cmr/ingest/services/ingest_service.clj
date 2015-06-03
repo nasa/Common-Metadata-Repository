@@ -169,26 +169,22 @@
 (deftracefn reset
   "Resets the queue broker"
   [context]
-  (when (config/use-index-queue?)
-    (let [queue-broker (get-in context [:system :queue-broker])]
-      (queue/reset queue-broker)))
+  (let [queue-broker (get-in context [:system :queue-broker])]
+    (queue/reset queue-broker))
   (cache/reset-caches context))
 
-(defn- health-check-fns
+(def health-check-fns
   "A map of keywords to functions to be called for health checks"
-  []
-  (let [default-fns {:oracle #(conn/health (pah/context->db %))
-                     :echo rest/health
-                     :metadata-db mdb/get-metadata-db-health
-                     :indexer indexer/get-indexer-health}]
-    (merge default-fns
-           (when (config/use-index-queue?)
-             {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))))
+  {:oracle #(conn/health (pah/context->db %))
+   :echo rest/health
+   :metadata-db mdb/get-metadata-db-health
+   :indexer indexer/get-indexer-health
+   :rabbit-mq #(queue/health (get-in % [:system :queue-broker]))})
 
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [dep-health (util/map-values #(% context) (health-check-fns))
+  (let [dep-health (util/map-values #(% context) health-check-fns)
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))

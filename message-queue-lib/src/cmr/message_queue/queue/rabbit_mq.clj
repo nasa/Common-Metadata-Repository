@@ -243,9 +243,6 @@
 
    ;; A map of queue name to exchange name bindings to create
    bindings
-
-   ;; true or false to indicate it's running
-   running?
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,10 +251,8 @@
   (start
     [this system]
     (info "Starting RabbitMQ connection")
-    (when (:running? this)
-      (errors/internal-error! "Already connected"))
     (let [conn (rmq/connect {:host host :port port :username username :password password})
-          this (assoc this :conn conn :running? true)]
+          this (assoc this :conn conn)]
       (info "RabbitMQ connection opened")
       (doseq [queue-name persistent-queues]
         (create-queue this queue-name))
@@ -266,16 +261,13 @@
         (create-exchange this exchange-name))
 
       (doseq [[queue-name exchange-name] bindings]
-        (bind-queue-to-exchange this queue-name exchange-name))
-
-      (assoc this :running? true)))
+        (bind-queue-to-exchange this queue-name exchange-name))))
 
   (stop
     [this system]
-    (when (:running? this)
-      ;; Close the connection. This will close all channels as well.
-      (rmq/close (:conn this))
-      (assoc this :running? false)))
+    ;; Close the connection. This will close all channels as well.
+    (when (:conn this) (rmq/close (:conn this)))
+    (assoc this :conn nil))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
@@ -291,11 +283,6 @@
   (subscribe
     [this queue-name handler]
     (start-consumer this queue-name handler))
-
-  (message-count
-    [this queue-name]
-    (with-channel [ch conn]
-                  (lq/message-count ch queue-name)))
 
   (reset
     [this]
@@ -317,7 +304,7 @@
   [{:keys [host port admin-port username password
            queues exchanges queues-to-exchanges]}]
   (->RabbitMQBroker host port admin-port username password nil
-                    queues exchanges queues-to-exchanges false))
+                    queues exchanges queues-to-exchanges))
 
 
 (comment
@@ -373,8 +360,6 @@
 
 
   (queue/create-queue q "cmr_index.queue")
-
-  (queue/message-count q "test.simple")
 
   (delete-queue q "test.simple")
 

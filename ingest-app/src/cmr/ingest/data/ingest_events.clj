@@ -8,8 +8,6 @@
             [cmr.common.util :as util :refer [defn-timed]]
             [clojail.core :as timeout]))
 
-;; TODO add way to directly connect things via dev system.
-
 (defn- try-to-publish
   "Attempts to publish messages to the given exchange.
 

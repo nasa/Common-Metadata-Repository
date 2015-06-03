@@ -39,6 +39,7 @@
             [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.services.queue :as queue]
+            [cmr.message-queue.queue.memory-queue :as mem-queue]
 
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
@@ -164,12 +165,12 @@
 
 (defmethod create-queue-broker :in-memory
   [type]
-  (indexer-config/set-indexing-communication-method! "http")
-  nil)
+  (-> (indexer-config/rabbit-mq-config)
+      mem-queue/create-memory-queue-broker
+      wrapper/create-queue-broker-wrapper))
 
 (defmethod create-queue-broker :external
   [type]
-  (indexer-config/set-indexing-communication-method! "queue")
   ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
   (let [ttls [1 1 1 1 1]]
     (rmq-conf/set-rabbit-mq-ttls! ttls)

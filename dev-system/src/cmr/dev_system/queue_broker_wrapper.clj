@@ -232,16 +232,6 @@
     ;; Wrap the handler with another function to allow counting retries etc.
     (queue/subscribe queue-broker queue-name (handler-wrapper this handler)))
 
-  (message-count
-    [this queue-name]
-    (let [qcount (queue/message-count queue-broker queue-name)
-          unprocessed-count (count (remove :processed (current-message-states)))]
-      (when (not= qcount unprocessed-count)
-        (warn (format "Message count [%d] for Rabbit MQ did not match internal count [%d]"
-                      qcount
-                      unprocessed-count)))
-      qcount))
-
   (reset
     [this]
     (reset! (:resetting?-atom this) true)
