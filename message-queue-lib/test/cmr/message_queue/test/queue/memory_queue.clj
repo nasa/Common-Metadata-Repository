@@ -11,7 +11,8 @@
          max-wait-time# 2000]
      (loop [num-tries# 0]
        (when (>= (* sleep-time# num-tries#) max-wait-time#)
-         (is ~test-code "Exceeded max wait time waiting for queue to acquiesce."))
+         (is ~test-code)
+         (throw (Exception. "Exceeded max wait time waiting for queue to acquiesce.")))
 
        (if ~test-code
          (is ~test-code)
