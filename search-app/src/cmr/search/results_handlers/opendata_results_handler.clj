@@ -154,8 +154,8 @@
 
 (defn spatial
   "Get the spatial field from the spatial elements of the collection."
-  [spatial pretty?]
-  (opendata-spatial/shapes->json spatial pretty?))
+  [spatial]
+  (opendata-spatial/shapes->json spatial))
 
 (defn distribution
   "Creates the distribution field for the collection with the given related-urls.  If a URL is
@@ -203,7 +203,7 @@
 
 (defn- result->opendata
   "Converts a search result item to opendata."
-  [context concept-type pretty? item]
+  [context concept-type item]
   (let [{:keys [id summary short-name project-sn update-time insert-time provider-id
                 science-keywords-flat entry-title opendata-format start-date end-date
                 related-urls personnel shapes archive-center]} item]
@@ -217,7 +217,7 @@
                            :accessLevel ACCESS_LEVEL
                            :bureauCode [BUREAU_CODE]
                            :programCode [PROGRAM_CODE]
-                           :spatial (spatial shapes pretty?)
+                           :spatial (spatial shapes)
                            :temporal (temporal start-date end-date)
                            :theme (theme project-sn)
                            :distribution (distribution related-urls)
@@ -228,14 +228,14 @@
 
 (defn- results->opendata
   "Convert search results to opendata."
-  [context concept-type pretty? results]
+  [context concept-type results]
   (let [{:keys [items]} results]
     {:conformsTo OPENDATA_SCHEMA
-     :dataset (map (partial result->opendata context concept-type pretty?) items)}))
+     :dataset (map (partial result->opendata context concept-type) items)}))
 
 (defmethod qs/search-results->response :opendata
   [context query results]
-  (let [{:keys [concept-type pretty? result-features]} query
+  (let [{:keys [concept-type result-features]} query
         response-results (results->opendata
-                           context concept-type pretty? results)]
-    (json/generate-string response-results {:pretty pretty?})))
+                           context concept-type results)]
+    (json/generate-string response-results)))

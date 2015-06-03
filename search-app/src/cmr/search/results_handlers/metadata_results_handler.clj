@@ -125,7 +125,7 @@
 (defn search-results->metadata-response
   [context query results]
   (let [{:keys [hits took items facets]} results
-        {:keys [result-format pretty? concept-type echo-compatible?]} query
+        {:keys [result-format concept-type echo-compatible?]} query
         result-strings (apply concat (map (partial metadata-item->result-string
                                                    concept-type echo-compatible? results)
                                           items))
@@ -135,11 +135,8 @@
                    hits "</hits><took>" took "</took>"])
         ;; Facet response is not in ECHO response.
         facets-strs (when-not echo-compatible? [(facets->xml-string facets)])
-        footers ["</results>"]
-        response (apply str (concat headers result-strings facets-strs footers))]
-    (if pretty?
-      (cx/pretty-print-xml response)
-      response)))
+        footers ["</results>"]]
+    (apply str (concat headers result-strings facets-strs footers))))
 
 
 (doseq [format (distinct (flatten (vals result-formats)))]

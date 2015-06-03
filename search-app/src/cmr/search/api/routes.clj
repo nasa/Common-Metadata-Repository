@@ -365,4 +365,5 @@
       mixed-arity-param-handler
       copy-of-body-handler
       (errors/exception-handler default-error-format-fn)
-      ring-json/wrap-json-response))
+      ring-json/wrap-json-response
+      common-routes/pretty-print-response-handler))
