@@ -25,6 +25,10 @@
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
   #{:json :atom :csv :opendata})
 
+(def metadata-result-item-fields
+  "Fields of a metadata search result item"
+  [:concept-id :revision-id :collection-concept-id :format :metadata])
+
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
   [{:keys [condition concept-type page-num page-size sort-keys] :as query}]
@@ -121,7 +125,7 @@
   (let [{:keys [result-format pretty? skip-acls?]} query
         concept-ids (query->concept-ids query)
         tresults (t/get-latest-formatted-concepts context concept-ids result-format skip-acls?)
-        items (map #(select-keys % results/result-item-fields) tresults)
+        items (map #(select-keys % metadata-result-item-fields) tresults)
         results (results/map->Results {:hits (count items) :items items :result-format result-format})]
     (post-process-query-result-features context query nil results)))
 

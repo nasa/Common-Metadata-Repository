@@ -3,6 +3,7 @@
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
+            [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [cmr.search.models.results :as results]
@@ -40,7 +41,7 @@
         tuples (map #(vector (:_id %) (:_version %)) (get-in elastic-results [:hits :hits]))
         [req-time tresults] (u/time-execution
                               (t/get-formatted-concept-revisions context tuples (:result-format query) false))
-        items (map #(select-keys % results/result-item-fields) tresults)]
+        items (map #(select-keys % qe/metadata-result-item-fields) tresults)]
     (debug "Transformer metadata request time was" req-time "ms.")
     (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
 

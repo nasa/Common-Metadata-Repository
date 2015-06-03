@@ -13,10 +13,6 @@
    value-counts
    ])
 
-(def result-item-fields
-  "Fields of a result item"
-  [:concept-id :revision-id :collection-concept-id :format :metadata])
-
 (defrecord Results
   [
    ;; The number of hits
