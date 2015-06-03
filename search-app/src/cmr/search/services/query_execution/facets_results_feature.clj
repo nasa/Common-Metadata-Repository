@@ -8,8 +8,8 @@
 (defn- terms-facet
   [field]
   ;; We shouldn't try to handle this many different values.
-  ;; We should have a limit and if that's exceeded in the elastic response we should note that in the values returned.
-  ;; This can be handled as a part of CMR-1101
+  ;; We should have a limit and if that's exceeded in the elastic response we should note that in
+  ;; the values returned. This can be handled as a part of CMR-1101.
   {:terms {:field field :size 10000}})
 
 (def ^:private collection-count-aggregation
@@ -81,7 +81,8 @@
   (assoc query :aggregations (facet-aggregations (:nested-science-keywords? query))))
 
 (defn- buckets->value-count-pairs
-  "Processes an elasticsearch aggregation response of buckets to a sequence of value and count tuples"
+  "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
+  tuples"
   [bucket-map]
   (->> bucket-map
        :buckets
@@ -104,8 +105,7 @@
     (let [remaining-fields (rest field-hierarchy)
           next-field (first remaining-fields)
           buckets (get aggregations-for-field :buckets)
-          response (r/map->HierarchicalFacet {:field field
-                                              :value-count-maps []})]
+          response (r/map->HierarchicalFacet {:field field})]
       (->> (for [bucket buckets
                  :let [field-key (get bucket :key)
                        coll-count (get-in bucket [:coll-count :doc_count])
@@ -121,7 +121,6 @@
                (r/map->ValueCountMaps
                  {:value field-key
                   :count coll-count})))
-           (into [])
            (assoc response :value-count-maps)))))
 
 (defn- science-keywords-bucket->facets
@@ -168,31 +167,39 @@
     (symbol (str prefix ":" (name k)))
     k))
 
+;; Forward declaration to handle circular dependency within value-count-maps->xml-element and
+;; facet->xml-element functions
+(declare facet->xml-element)
+
 (defn- value-count-maps->xml-element
   "Converts a list of value-count-maps into an XML element."
-  [ns-prefix with-prefix value-count-maps]
-  (for [value-count-map value-count-maps
-        :let [xml-element (x/element (with-prefix :value-count-maps) {}
-                                     (x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map)))]]
-    (do
+  [ns-prefix value-count-maps]
+  (let [with-prefix (partial key-with-prefix ns-prefix)]
+    (for [value-count-map value-count-maps
+          :let [xml-element (x/element (with-prefix :value-count-maps) {}
+                                       (x/element (with-prefix :value)
+                                                  {:count (:count value-count-map)}
+                                                  (:value value-count-map)))]]
       (when-let [facets (:facets value-count-map)]
-        (let [child-facets (x/element (key-with-prefix ns-prefix :facets) {} (facet->xml-element ns-prefix facets))]
+        (let [child-facets (x/element (with-prefix :facets) {}
+                                      (facet->xml-element ns-prefix facets))]
           (x/element (with-prefix :value-count-maps) {}
-                     [(x/element (with-prefix :value) {:count (:count value-count-map)} (:value value-count-map))
+                     [(x/element (with-prefix :value)
+                                 {:count (:count value-count-map)}
+                                 (:value value-count-map))
                       child-facets]))))))
 
 (defn- facet->xml-element
   [ns-prefix {:keys [field value-counts value-count-maps facets]}]
   (let [with-prefix (partial key-with-prefix ns-prefix)
         xml-element-content
-        (cond value-count-maps (value-count-maps->xml-element ns-prefix with-prefix value-count-maps)
-              facets (x/element (key-with-prefix ns-prefix :facets) {}
+        (cond value-count-maps (value-count-maps->xml-element ns-prefix value-count-maps)
+              facets (x/element (with-prefix :facets) {}
                                 (facet->xml-element ns-prefix facets))
               :else
               (for [[value value-count] value-counts]
                 (x/element (with-prefix :value) {:count value-count} value)))]
     (x/element (with-prefix :facet) {:field (name field)} xml-element-content)))
-
 
 (defn facets->xml-element
   "Helper function for converting a facet result into an XML element"
