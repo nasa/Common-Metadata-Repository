@@ -127,6 +127,7 @@
       ;; replace cs/try-to-save with our overridden function for this test
       (with-redefs [cs/try-to-save fake-save]
         (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+        (is @saved)
 
         ;; ensure that the cleanup failed and our concurrent update
         ;; went through

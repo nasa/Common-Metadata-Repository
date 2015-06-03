@@ -469,13 +469,13 @@
             (try
               (try-to-save db tombstone)
               (catch clojure.lang.ExceptionInfo e
-                ;; re-throw anything other than a simple conflict
+                ;; Re-throw anything other than a simple conflict.
                 (when-not (-> e ex-data :type (= :conflict))
                   (throw e))
-                ;; if an update comes in while we are running this job
-                ;; it will result in a conflict, in that case we just
-                ;; want to log a warning and store the failed concept
-                ;; id in order avoid an infinite loop
+                ;; If an update comes in for one of the items we are
+                ;; deleting, it will result in a conflict, in that
+                ;; case we just want to log a warning and store the
+                ;; failed concept-id in order avoid an infinite loop.
                 (warn e "Conflict when saving expired concept tombstone")
                 (swap! failed-concept-ids conj (:concept-id c))))))
         (recur)))))
