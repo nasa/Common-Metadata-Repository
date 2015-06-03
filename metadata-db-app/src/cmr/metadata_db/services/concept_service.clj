@@ -451,16 +451,34 @@
 (defn delete-expired-concepts
   "Delete concepts that have not been deleted and have a delete-time before now"
   [context provider concept-type]
-  (let [db (util/context->db context)]
+  (let [db (util/context->db context)
+        ;; atom to store concepts to skip on subsequent recursions
+        failed-concept-ids (atom #{})
+        ;; return expired concepts which have not previously failed
+        get-expired (fn []
+                      (remove
+                       #(contains? @failed-concept-ids (:concept-id %))
+                       (c/get-expired-concepts db provider concept-type)))]
     (loop []
-      (let [expired-concepts (c/get-expired-concepts db provider concept-type)]
-        (when (seq expired-concepts)
-          (info "Deleting expired" (name concept-type) "concepts: " (map :concept-id expired-concepts))
-          (doseq [coll expired-concepts]
-            (let [revision-id (inc (:revision-id coll))
-                  tombstone (merge coll {:revision-id revision-id :deleted true :metadata ""})]
-              (try-to-save db tombstone)))
-          (recur))))))
+      (when-let [expired-concepts (seq (get-expired))]
+        (info "Deleting expired" (name concept-type) "concepts:" (map :concept-id expired-concepts))
+        (doseq [c expired-concepts]
+          (let [tombstone (-> c
+                              (update-in [:revision-id] inc)
+                              (assoc :deleted true :metadata ""))]
+            (try
+              (try-to-save db tombstone)
+              (catch clojure.lang.ExceptionInfo e
+                ;; Re-throw anything other than a simple conflict.
+                (when-not (-> e ex-data :type (= :conflict))
+                  (throw e))
+                ;; If an update comes in for one of the items we are
+                ;; deleting, it will result in a conflict, in that
+                ;; case we just want to log a warning and store the
+                ;; failed concept-id in order avoid an infinite loop.
+                (warn e "Conflict when saving expired concept tombstone")
+                (swap! failed-concept-ids conj (:concept-id c))))))
+        (recur)))))
 
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
