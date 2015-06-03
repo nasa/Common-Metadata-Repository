@@ -82,7 +82,8 @@
   "The mime types supported by search."
   #{"*/*"
     "application/xml"
-    "application/json"})
+    "application/json"
+    "text/csv"})
 
 (def supported-concept-id-retrieval-mime-types
   #{"*/*"

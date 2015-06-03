@@ -101,3 +101,40 @@
       [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
       (cs/try-to-save (memory/create-db [example-concept])
                       (assoc example-concept :revision-id 1)))))
+
+(deftest delete-expired-concepts-test
+  (testing "basic case"
+    (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
+          db (memory/create-db [expired])]
+      (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+      (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))
+  (testing "with a conflict"
+    (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
+          db (memory/create-db [expired])
+          ;; create a mock save function that, the first time it is
+          ;; called, updates our expired concept before calling the
+          ;; original save functio so that a conflict occurs when
+          ;; delete-expired-concepts runs
+          expired-2 (-> expired (assoc :revision-id 2))
+          orig-save cs/try-to-save
+          saved (atom false)
+
+          fake-save (fn [& args]
+                      (when-not @saved
+                        (orig-save db expired-2)
+                        (reset! saved true))
+                      (apply orig-save args))]
+      ;; replace cs/try-to-save with our overridden function for this test
+      (with-redefs [cs/try-to-save fake-save]
+        (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+        (is @saved)
+
+        ;; ensure that the cleanup failed and our concurrent update
+        ;; went through
+        (is (= [expired-2]
+               (for [concept (c/get-expired-concepts db "PROV1" :collection)]
+                 (dissoc concept :revision-date))))
+
+        ;; run it again, this time without the conflict...
+        (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+        (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))))
