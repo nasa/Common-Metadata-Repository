@@ -313,7 +313,7 @@
   [concept-type params]
   (if-let [param-value (:updated-since params)]
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
-      [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
+      ["Search not allowed with multiple updated_since values"]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
         (validate-date-time "updated_since" updated-since-val)))
     []))
