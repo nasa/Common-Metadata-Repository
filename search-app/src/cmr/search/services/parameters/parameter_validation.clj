@@ -25,7 +25,7 @@
 
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
-  #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
+  #{:keyword :page-size :page-num :result-format :echo-compatible
     :include-granule-counts :include-has-granules :include-facets})
 
 (def multiple-value-params
@@ -249,7 +249,7 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :echo-compatible)
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :echo-compatible)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets)
@@ -486,7 +486,7 @@
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
-                       (set [:page-size :page-num :sort-key :result-format :pretty :options
+                       (set [:page-size :page-num :sort-key :result-format :options
                              :include-granule-counts :include-has-granules :include-facets
                              :echo-compatible]))))
 

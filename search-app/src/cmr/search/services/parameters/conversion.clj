@@ -322,7 +322,7 @@
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
-        params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
+        params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible)]
     (if (empty? params)

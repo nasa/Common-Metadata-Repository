@@ -203,15 +203,12 @@
   UmmGranule
   (umm->iso-smap-xml
     ([granule]
-     (cmr.umm.iso-smap.core/umm->iso-smap-xml granule false))
-    ([granule indent?]
      (let [{{:keys [entry-title short-name version-id]} :collection-ref
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value
                    temporal related-urls spatial-coverage]} granule
-           {:keys [producer-gran-id production-date-time]} data-granule
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+           {:keys [producer-gran-id production-date-time]} data-granule]
+       (x/emit-str
          (x/element
            :gmd:DS_Series h/iso-header-attributes
            (x/element

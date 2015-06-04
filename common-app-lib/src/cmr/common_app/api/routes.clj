@@ -83,45 +83,46 @@
   working as expected."
   [health-fn]
   (GET "/health" {request-context :request-context :as request}
-    (let [pretty? (api/pretty-request? request)
-          {:keys [ok? dependencies]} (health-fn request-context)]
+    (let [{:keys [ok? dependencies]} (health-fn request-context)]
       (when-not ok?
         (warn "Health check failed" (pr-str dependencies)))
       {:status (if ok? 200 503)
        :headers {"Content-Type" "application/json; charset=utf-8"}
-       :body (json/generate-string dependencies {:pretty pretty?})})))
+       :body (json/generate-string dependencies)})))
 
 (defn pretty-request?
   "Returns true if the request indicates the response should be returned in a human readable
   fashion. This can be specified either through a pretty=true in the URL query parameters or through
   a Cmr-Pretty HTTP header."
   ([request]
-   (let [{:keys [headers query-string]} request
-         pretty-param (some-> query-string
-                              rc/url-decode
-                              (str/replace #"\s" "")
-                              ((partial re-find #"pretty=true")))]
-     (or (some? pretty-param)
-         (= "true" (get headers "cmr-pretty"))))))
+   (let [{:keys [headers query-string]} request]
+     (or
+       (-> request :params (get "pretty") (= "true"))
+       (= "true" (get headers "cmr-pretty"))))))
 
 (defn- pretty-print-body
   "Update the body of the response to a pretty printed string based on the content type"
   [response]
-  (case (mt/mime-type->format  (mt/mime-type-from-headers (:headers response)))
-    (:xml :echo10 :iso-smap :iso19115 :dif :dif10 :atom :kml :native)
-    (update-in response [:body] cx/pretty-print-xml)
-    (:json :opendata)
-    (update-in response [:body] (fn [json-str]
-                                  (-> json-str
-                                      json/parse-string
-                                      (json/generate-string {:pretty true}))))
-    response))
+  (let [mime-type (mt/mime-type-from-headers (:headers response))
+        find-re (fn [re] (re-find re mime-type))]
+    (cond (find-re #"application/.*xml")
+          (update-in response [:body] cx/pretty-print-xml)
+          (find-re #"application/.*json")
+          (update-in response [:body] (fn [json-str]
+                                        (-> json-str
+                                            json/parse-string
+                                            (json/generate-string {:pretty true}))))
+          :else response)))
 
 (defn pretty-print-response-handler
   "Middleware which pretty prints the response if the parameter pretty in the URL query is set
   to true of if the header Cmr-Pretty is set to true."
   [f]
   (fn [request]
-    (if (pretty-request? request)
-      (pretty-print-body (f request))
-      (f request))))
+    (let [pretty? (pretty-request? request)
+          request (-> request
+                      (update-in [:params] dissoc "pretty")
+                      (update-in [:query-params] dissoc "pretty"))]
+      (if pretty?
+        (pretty-print-body (f request))
+        (f request)))))

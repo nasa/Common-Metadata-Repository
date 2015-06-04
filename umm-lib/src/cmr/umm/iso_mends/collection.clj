@@ -229,8 +229,6 @@
   UmmCollection
   (umm->iso-mends-xml
     ([collection]
-     (cmr.umm.iso-mends.core/umm->iso-mends-xml collection false))
-    ([collection indent?]
      (let [{{:keys [short-name long-name version-id processing-level-id]} :product
             dataset-id :entry-title
             restriction-flag :access-value
@@ -240,9 +238,8 @@
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
                    personnel metadata-language use-constraints]} collection
            archive-center (org/get-organization-name :archive-center organizations)
-           platforms (platform/platforms-with-id platforms)
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+           platforms (platform/platforms-with-id platforms)]
+       (x/emit-str
          (x/element :gmi:MI_Metadata iso-header-attributes
                     (h/iso-string-element :gmd:fileIdentifier dataset-id)
                     (h/iso-string-element :gmd:language metadata-language)

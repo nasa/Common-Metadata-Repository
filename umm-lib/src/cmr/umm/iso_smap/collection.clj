@@ -170,8 +170,6 @@
   UmmCollection
   (umm->iso-smap-xml
     ([collection]
-     (cmr.umm.iso-smap.core/umm->iso-smap-xml collection false))
-    ([collection indent?]
      (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
             {:keys [insert-time update-time]} :data-provider-timestamps
@@ -181,9 +179,8 @@
            ;; but there is no nested relationship between instruments and platforms in SMAP ISO xml.
            ;; To work around this problem, we list all instruments under each platform.
            ;; In other words, all platforms will have the same instruments.
-           instruments (when (first platforms) (:instruments (first platforms)))
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+           instruments (when (first platforms) (:instruments (first platforms)))]
+       (x/emit-str
          (x/element
            :gmd:DS_Series h/iso-header-attributes
            (x/element :gmd:composedOf {:gco:nilReason "inapplicable"})

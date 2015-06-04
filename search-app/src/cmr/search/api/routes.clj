@@ -9,6 +9,9 @@
             [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
@@ -213,14 +216,11 @@
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)
-        {:keys [metadata]} concept
-        body (if (api/pretty-request? params headers)
-               (cx/pretty-print-xml metadata)
-               metadata)]
+        {:keys [metadata]} concept]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")
                CORS_ORIGIN_HEADER "*"}
-     :body body}))
+     :body metadata}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -360,10 +360,12 @@
   (-> (build-routes system)
       acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       copy-of-body-handler
       (errors/exception-handler default-error-format-fn)
       ring-json/wrap-json-response
-      common-routes/pretty-print-response-handler))
+      common-routes/pretty-print-response-handler
+      params/wrap-params))
