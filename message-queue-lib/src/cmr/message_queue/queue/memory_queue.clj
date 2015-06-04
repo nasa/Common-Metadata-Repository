@@ -36,13 +36,7 @@
         (u/while-let
           [msg (a/<! queue-ch)]
           (try
-            (let [resp (handler msg)]
-              (case (:status resp)
-                :success nil
-                :retry (attempt-retry queue-broker queue-name msg resp)
-                :failure (error (format (str "Message failed processing with error '%s', it has been "
-                                             "removed from the message queue. Message details: %s")
-                                        (:message resp) msg))))
+            (handler msg)
             (catch Throwable e
               (error "Message processing failed for message" (pr-str msg) "with error:"
                      (.getMessage e))

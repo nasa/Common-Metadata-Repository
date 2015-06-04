@@ -30,12 +30,7 @@
     "Subscribes to the given queue using the given handler function.
 
     'handler-fn' is a function that takes a single parameter (the message) and attempts to
-    process it. This function should respond with a map of the of the follwing form:
-    {:status status :message message}
-    where status is one of (:ok, :retry, :fail) and message is optional.
-    :ok    - message was processed successfully
-    :retry - message could not be processed and should be re-queued
-    :fail  - the message cannot be processed and should not be re-queued")
+    process it. If the function throws an exception the delivery will be retried.")
 
   (reset
     [this]

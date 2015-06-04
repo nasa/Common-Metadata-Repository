@@ -109,7 +109,7 @@
   queue/publish-to-exchange."
   [broker publish-fn exchange-or-queue-name msg]
   ;; record the message
-  (let [{:keys [id-sequence-atom timeout-atom queue-broker]} broker
+  (let [{:keys [id-sequence-atom timeout?-atom queue-broker]} broker
         msg-id (swap! id-sequence-atom inc)
         tagged-msg (assoc msg :id msg-id)]
 
@@ -117,7 +117,7 @@
     (update-message-queue-history broker :enqueue tagged-msg :initial)
 
     ;; Mark the enqueue as failed if we are timing things out or it fails
-    (if (or @timeout-atom (not (publish-fn queue-broker exchange-or-queue-name tagged-msg)))
+    (if (or @timeout?-atom (not (publish-fn queue-broker exchange-or-queue-name tagged-msg)))
       (do
         (update-message-queue-history broker :enqueue tagged-msg :failure)
         false)
@@ -129,26 +129,25 @@
 (defn- queue-response->message-state
   "Converts the response of a message queue action to the appropriate message state. If a message
   has a retry status and has exceeded the max retries then return failure."
-  [response msg]
-  {:pre [(valid-message-states (:status response))]}
-  (let [{:keys [:status]} response]
-    (if (and (= :retry status)
-             (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
-      :failure
-      status)))
+  [status msg]
+  {:pre [(valid-message-states status)]}
+  (if (and (= :retry status)
+           (queue/retry-limit-met? msg (count (iconfig/rabbit-mq-ttls))))
+    :failure
+    status))
 
 (defn- fail-message-on-reset
   "Mark message as failed due to reset being called on the queue"
   [broker-wrapper msg]
   (update-message-queue-history broker-wrapper :process msg :failure)
-  {:status :failure :message "Forced failure on reset"})
+  (throw (Exception. "Forced failure on reset")))
 
 (defn- simulate-retry-message
   "Mark message as retrying. If retries are exhausted we mark the message as failed"
   [broker-wrapper msg]
-  (let [message-state (queue-response->message-state {:status :retry} msg)]
+  (let [message-state (queue-response->message-state :retry msg)]
     (update-message-queue-history broker-wrapper :process msg message-state)
-    {:status message-state :message "Simulating retry on message queue"}))
+    (throw (Exception. "Simulating retry on message queue"))))
 
 (defn- handler-wrapper
   "Wraps handler function to count acks, retries, fails. In addition this wrapper allows for
@@ -167,10 +166,12 @@
 
       :else
       ;; Process the message as normal
-      (let [response (handler msg)
-            message-state (queue-response->message-state response msg)]
-        (update-message-queue-history broker-wrapper :process msg message-state)
-        response))))
+      (try
+        (handler msg)
+        (update-message-queue-history broker-wrapper :process msg :success)
+        (catch Exception e
+          (update-message-queue-history broker-wrapper :process msg :retry)
+          (throw e))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Record Definition
@@ -201,7 +202,7 @@
    num-retries-atom
 
    ;; Tracks whether enqueuing messages will fail with a timeout error.
-   timeout-atom
+   timeout?-atom
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -234,7 +235,7 @@
 
   (reset
     [this]
-    (reset! (:resetting?-atom this) true)
+    (reset! resetting?-atom true)
     (try
       (wait-for-terminal-states this)
       (queue/reset queue-broker)
@@ -245,7 +246,7 @@
 
   (health
     [this]
-    (queue/health (:queue-broker this))))
+    (queue/health queue-broker)))
 
 (record-pretty-printer/enable-record-pretty-printing BrokerWrapper)
 
@@ -282,4 +283,4 @@
   result in a timeout."
   [broker-wrapper timeout?]
   ;; Use an atom to set state?
-  (reset! (:timeout-atom broker-wrapper) timeout?))
+  (reset! (:timeout?-atom broker-wrapper) timeout?))

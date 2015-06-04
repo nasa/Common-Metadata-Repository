@@ -29,24 +29,13 @@
 (defmethod handle-ingest-event :default
   [_ _]
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
-  {:status :success})
-
-(defmacro handle-event
-  "Wraps the body in a try catch that will log an error and return correct status if failed. Returns
-  a successful status if it succeeds"
-  [& body]
-  `(try
-     ~@body
-     {:status :success}
-     (catch Exception e#
-       (error e# (.getMessage e#))
-       {:status :retry :message (.getMessage e#)})))
+  )
 
 (defn- handle-concept-create-or-update
   "Handles a concept create or update message. They are both handled the same way by indexing the
   concept."
   [context {:keys [concept-id revision-id]}]
-  (handle-event (indexer/index-concept context concept-id revision-id true)))
+  (indexer/index-concept context concept-id revision-id true))
 
 (defmethod handle-ingest-event :concept-update
   [context msg]
@@ -58,11 +47,11 @@
 
 (defmethod handle-ingest-event :concept-delete
   [context {:keys [concept-id revision-id]}]
-  (handle-event (indexer/delete-concept context concept-id revision-id true)))
+  (indexer/delete-concept context concept-id revision-id true))
 
 (defmethod handle-ingest-event :provider-delete
   [context {:keys [provider-id]}]
-  (handle-event (indexer/delete-provider context provider-id)))
+  (indexer/delete-provider context provider-id))
 
 (defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."
