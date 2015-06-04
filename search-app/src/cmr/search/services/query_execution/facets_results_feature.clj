@@ -73,12 +73,12 @@
 
 (defn- facet-aggregations
   "Return facet aggregations to use depending on whether science keywords are flat or hierarchical"
-  [nested-science-keywords?]
-  (if nested-science-keywords? hierarchical-facet-aggregations flat-facet-aggregations))
+  [hierarchical-facets?]
+  (if hierarchical-facets? hierarchical-facet-aggregations flat-facet-aggregations))
 
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
-  (assoc query :aggregations (facet-aggregations (:nested-science-keywords? query))))
+  (assoc query :aggregations (facet-aggregations (:hierarchical-facets? query))))
 
 (defn- buckets->value-count-pairs
   "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
@@ -155,8 +155,8 @@
      :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable]))
 
 (defmethod query-execution/post-process-query-result-feature :facets
-  [_ {:keys [nested-science-keywords?]} {:keys [aggregations]} query-results _]
-  (let [facets (if nested-science-keywords?
+  [_ {:keys [hierarchical-facets?]} {:keys [aggregations]} query-results _]
+  (let [facets (if hierarchical-facets?
                  (create-hierarchical-facets aggregations)
                  (create-flat-facets aggregations))]
     (assoc query-results :facets facets)))

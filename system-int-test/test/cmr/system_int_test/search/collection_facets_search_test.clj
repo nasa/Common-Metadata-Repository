@@ -268,10 +268,10 @@
         _ (index/wait-until-indexed)
         _ (search/find-refs :collection {:page-size 0
                                          :include-facets true
-                                         :nested-science-keywords true})
+                                         :hierarchical-facets true})
         search-results (search/find-concepts-json :collection  {:page-size 0
                                                                 :include-facets true
-                                                                :nested-science-keywords true})]
+                                                                :hierarchical-facets true})]
     (is (= expected-facets (get-in search-results [:results :facets])))))
 
 

@@ -26,7 +26,7 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
-    :include-granule-counts :include-has-granules :include-facets :nested-science-keywords})
+    :include-granule-counts :include-has-granules :include-facets :hierarchical-facets})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -254,7 +254,7 @@
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :nested-science-keywords)
+                         :hierarchical-facets)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -454,7 +454,7 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :include-facets
-                                         :nested-science-keywords])]
+                                         :hierarchical-facets])]
     (mapcat
       (fn [[param value]]
         (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
@@ -491,7 +491,7 @@
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :pretty :options
                              :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible :nested-science-keywords]))))
+                             :echo-compatible :hierarchical-facets]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
