@@ -102,7 +102,7 @@
   the identifier used to create the queue with the create-queue function.
 
   'client-handler' is a function that takes a single parameter (the message) and attempts to
-  process it. This function should respond with a map of the of the follwing form:
+  process it. This function should respond with a map of the of the following form:
   {:status status :message message}
   where status is one of (:success, :retry, :failure) and message is optional."
   [queue-broker queue-name client-handler]
@@ -261,7 +261,8 @@
         (create-exchange this exchange-name))
 
       (doseq [[queue-name exchange-name] bindings]
-        (bind-queue-to-exchange this queue-name exchange-name))))
+        (bind-queue-to-exchange this queue-name exchange-name))
+      this))
 
   (stop
     [this system]

@@ -3,7 +3,7 @@
             [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig index-queue-name
-  "Queue used for requesting indexing of concepts"
+  "The queue containing ingest events for the indexer"
   {:default "cmr_index.queue"})
 
 (defconfig ingest-exchange-name

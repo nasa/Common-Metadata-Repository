@@ -161,7 +161,9 @@
                  {:action "process", :result "failure"}]}
                (index-util/get-concept-message-queue-history)))))))
 
-(deftest publish-messages-failure-test
+;; This test isn't reliable as sometimes the item is able to be queued
+;; See CMR-1717
+#_(deftest publish-messages-failure-test
   (s/only-with-real-message-queue
     (testing "When unable to publish a message on the queue the ingest fails."
       (testing "Update concept"

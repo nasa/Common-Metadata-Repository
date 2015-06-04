@@ -28,7 +28,7 @@
 
 (defmethod handle-ingest-event :default
   [_ _]
-  ;; Default ignores the ingest event
+  ;; Default ignores the ingest event. There may be ingest events we don't care about.
   {:status :success})
 
 (defmacro handle-event
@@ -42,9 +42,19 @@
        (error e# (.getMessage e#))
        {:status :retry :message (.getMessage e#)})))
 
-(defmethod handle-ingest-event :concept-update
+(defn- handle-concept-create-or-update
+  "Handles a concept create or update message. They are both handled the same way by indexing the
+  concept."
   [context {:keys [concept-id revision-id]}]
   (handle-event (indexer/index-concept context concept-id revision-id true)))
+
+(defmethod handle-ingest-event :concept-update
+  [context msg]
+  (handle-concept-create-or-update context msg))
+
+(defmethod handle-ingest-event :concept-create
+  [context msg]
+  (handle-concept-create-or-update context msg))
 
 (defmethod handle-ingest-event :concept-delete
   [context {:keys [concept-id revision-id]}]

@@ -75,7 +75,9 @@
                                system
                                component-order)]
 
-    (ingest-event-handler/subscribe-to-ingest-events {:system started-system})
+    ;; When the indexer is used as an embedded system it won't be allowed to subscribe to events
+    (when (:queue-broker started-system)
+      (ingest-event-handler/subscribe-to-ingest-events {:system started-system}))
 
     (info "System started")
     started-system))

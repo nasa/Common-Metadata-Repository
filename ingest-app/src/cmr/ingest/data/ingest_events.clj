@@ -48,10 +48,10 @@
            e))))))
 
 (defn concept-update-event
-  "Creates an event representing concept being updated or created. The listener can tell the
-  difference by examining the revision-id. revision-id of 1 indicates creation."
+  "Creates an event representing concept being updated or created. The function determines whether it
+  is a create or update based on the revision id."
   [concept-id revision-id]
-  {:action :concept-update
+  {:action (if (= revision-id 1) :concept-create :concept-update)
    :concept-id concept-id
    :revision-id revision-id})
 
@@ -71,7 +71,7 @@
 (defn provider-update-event
   "Creates an event representing a provider being updated."
   [provider-id]
-  {:action :provider-create
+  {:action :provider-update
    :provider-id provider-id})
 
 (defn provider-delete-event
