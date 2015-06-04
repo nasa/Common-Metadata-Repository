@@ -125,7 +125,7 @@
 
 ;; TODOs
 ;; TODO Fix null pointer exception when nested_science_keywords without a value
-;; TODO get rid of nils in JSON response
+;; TODO change nested_science_keywords to something like hierarchical_facets
 ;; TODO get rid of leaf level in XML response when there is no value
 ;; TODO sub-facets should be nested inside of the counts for a category
 ;; TODO Figure out how make detailed variable and variable level 2 both under detailed variable
@@ -188,9 +188,8 @@
                                             {:field "detailed-variable",
                                              :value-count-maps
                                              [{:value "UNIVERSAL",
-                                               :count 1,
-                                               :facets nil}]}}]}}]}}]}}
-                                  {:value "UNIVERSAL", :count 1, :facets nil}]}}
+                                               :count 1}]}}]}}]}}]}}
+                                  {:value "UNIVERSAL", :count 1}]}}
                                {:value "Cool",
                                 :count 1,
                                 :facets
@@ -201,9 +200,7 @@
                                    :facets
                                    {:field "variable-level-1",
                                     :value-count-maps
-                                    [{:value "UNIVERSAL",
-                                      :count 1,
-                                      :facets nil}]}}]}}]}}
+                                    [{:value "UNIVERSAL", :count 1}]}}]}}]}}
                             {:value "Cat1",
                              :count 1,
                              :facets
@@ -235,8 +232,7 @@
                                             {:field "detailed-variable",
                                              :value-count-maps
                                              [{:value "Detail1",
-                                               :count 1,
-                                               :facets nil}]}}]}}]}}]}}]}}]}}
+                                               :count 1}]}}]}}]}}]}}]}}]}}
                             {:value "Tornado",
                              :count 1,
                              :facets
@@ -247,7 +243,7 @@
                                 :facets
                                 {:field "term",
                                  :value-count-maps
-                                 [{:value "Extreme", :count 1, :facets nil}]}}]}}
+                                 [{:value "Extreme", :count 1}]}}]}}
                             {:value "UPCASE",
                              :count 1,
                              :facets
@@ -257,8 +253,7 @@
                                 :count 1,
                                 :facets
                                 {:field "term",
-                                 :value-count-maps
-                                 [{:value "Mild", :count 1, :facets nil}]}}]}}
+                                 :value-count-maps [{:value "Mild", :count 1}]}}]}}
                             {:value "upcase",
                              :count 1,
                              :facets
@@ -269,7 +264,7 @@
                                 :facets
                                 {:field "term",
                                  :value-count-maps
-                                 [{:value "Mild", :count 1, :facets nil}]}}]}}]}}]
+                                 [{:value "Mild", :count 1}]}}]}}]}}]
         _ (index/wait-until-indexed)
         _ (search/find-refs :collection {:page-size 0
                                          :include-facets true
@@ -380,9 +375,6 @@
         (testing "refs"
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true})))))
-        ; ))))
-
-
 
         (testing "refs echo-compatible true"
           (is (= expected-facets

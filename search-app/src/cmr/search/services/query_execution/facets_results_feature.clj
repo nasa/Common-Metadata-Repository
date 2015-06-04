@@ -245,7 +245,7 @@
     (x/element :hash {}
                (map facet->echo-xml-element facets))))
 
-(defn value-count->echo-json
+(defn- value-count->echo-json
   "Returns value count in echo json format"
   [value-count]
   (let [[value value-count] value-count]
