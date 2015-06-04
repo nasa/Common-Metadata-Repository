@@ -22,9 +22,8 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
-
-            [cmr.indexer.services.queue-listener :as ql]
-            [cmr.common-app.cache.consistent-cache :as consistent-cache]))
+            [cmr.common-app.cache.consistent-cache :as consistent-cache]
+            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]))
 
 (defconfig colls-with-separate-indexes
   "Configuration value that contains a list of collections with separate indexes for their
@@ -34,7 +33,7 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :caches :db :scheduler :queue-broker :queue-listener :web :nrepl])
+  component-order [:log :caches :db :scheduler :queue-broker :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -61,13 +60,7 @@
                           `system-holder
                           :db
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
-             :queue-broker (when (config/use-index-queue?)
-                             (rmq/create-queue-broker (config/rabbit-mq-config)))
-             :queue-listener (when (config/use-index-queue?)
-                               (queue/create-queue-listener {:num-workers (config/queue-listener-count)
-                                                             :start-function #(ql/start-queue-message-handler
-                                                                                %
-                                                                                ql/handle-index-action)}))}]
+             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
 
@@ -81,6 +74,10 @@
                                             #(when % (lifecycle/start % system))))
                                system
                                component-order)]
+
+    ;; When the indexer is used as an embedded system it won't be allowed to subscribe to events
+    (when (:queue-broker started-system)
+      (ingest-event-handler/subscribe-to-ingest-events {:system started-system}))
 
     (info "System started")
     started-system))

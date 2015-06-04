@@ -34,17 +34,6 @@
   (assoc (rmq-conf/default-config)
          :exchanges [(ingest-exchange-name)]))
 
-(defconfig indexing-communication-method
-  "Used to determine whether the ingest will queue messages asynchronously for the indexer, or will
-  synchronously send http requests to the indexer to index concepts. Valid values are \"queue\"
-  and \"http\"."
-  {:default "http"})
-
-(defn use-index-queue?
-  "Returns true if ingest is configured to use the message queue for indexing and false otherwise."
-  []
-  (= "queue" (indexing-communication-method)))
-
 (defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
