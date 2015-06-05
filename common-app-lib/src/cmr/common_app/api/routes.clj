@@ -3,6 +3,7 @@
   (:require [cmr.common.api :as api]
             [cmr.common.cache :as cache]
             [cmr.common.jobs :as jobs]
+            [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
@@ -104,15 +105,18 @@
   "Update the body of the response to a pretty printed string based on the content type"
   [response]
   (let [mime-type (mt/mime-type-from-headers (:headers response))
-        find-re (fn [re] (re-find re mime-type))]
-    (cond (find-re #"application/.*xml")
-          (update-in response [:body] cx/pretty-print-xml)
-          (find-re #"application/.*json")
-          (update-in response [:body] (fn [json-str]
-                                        (-> json-str
-                                            json/parse-string
-                                            (json/generate-string {:pretty true}))))
-          :else response)))
+        find-re (fn [re] (and mime-type (re-find re mime-type)))]
+    (if (string? (:body response))
+      (cond (find-re #"application/.*json.*")
+            (update-in response [:body]
+                       (fn [json-str]
+                         (-> json-str
+                             json/parse-string
+                             (json/generate-string {:pretty true}))))
+            (find-re #"application/.*xml.*")
+            (update-in response [:body] cx/pretty-print-xml)
+            :else response)
+      ((ring-json/wrap-json-response identity {:pretty true}) response))))
 
 (defn pretty-print-response-handler
   "Middleware which pretty prints the response if the parameter pretty in the URL query is set
@@ -125,4 +129,4 @@
                       (update-in [:query-params] dissoc "pretty"))]
       (if pretty?
         (pretty-print-body (f request))
-        (f request)))))
+        ((ring-json/wrap-json-response f) request)))))
