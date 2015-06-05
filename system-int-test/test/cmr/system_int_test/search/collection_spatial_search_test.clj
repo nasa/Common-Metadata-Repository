@@ -490,8 +490,8 @@
     (u/are2 [ords-vectors tiles]
             (assert-tiles-found (reduce add-param {} ords-vectors) tiles)
 
-            ; "Empty parameters"
-            ; [] all-tiles
+            "Empty parameters"
+            [] all-tiles
 
             "Two bounding boxes"
             [[:bounding-box [-5 5 5 -5]]
@@ -499,13 +499,12 @@
             [[19 6] [19 9] [17 6] [18 7] [19 7] [18 9] [18 6]
              [18 8][20 8] [20 9] [19 8] [17 9] [17 8] [17 7]]
 
-            ; "Two bounding boxes, a point & a line"
-            ; [[:bounding-box [-180 90 180 -90]]
-            ;  [:bounding-box [-20 20 20 -20]]
-            ;  [:point [0 0]]
-            ;  [:line [0 10 20 20]]]
-            ; all-tiles
-            )))
+            "Two bounding boxes, a point & a line"
+            [[:bounding-box [-180 90 180 -90]]
+             [:bounding-box [-20 20 20 -20]]
+             [:point [0 0]]
+             [:line [0 10 20 20]]]
+            all-tiles)))
 
 (deftest multi-valued-spatial-parameter-validation
   (testing "multi valued spatial parameter validation with invalid parameters"

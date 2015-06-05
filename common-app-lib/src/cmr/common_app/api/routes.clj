@@ -92,8 +92,8 @@
 
 (defn pretty-request?
   "Returns true if the request indicates the response should be returned in a human readable
-  fashion. This can be specified either through a pretty=true in the URL query parameters or through
-  a Cmr-Pretty HTTP header."
+  fashion. This can be specified either through a pretty=true in the URL query parameters or
+  through a Cmr-Pretty HTTP header."
   ([request]
    (let [{:keys [headers query-string]} request]
      (or
@@ -118,8 +118,8 @@
       ((ring-json/wrap-json-response identity {:pretty true}) response))))
 
 (defn pretty-print-response-handler
-  "Middleware which pretty prints the response if the parameter pretty in the URL query is set
-  to true of if the header Cmr-Pretty is set to true."
+  "Middleware which pretty prints the response if the parameter pretty in the
+  URL query is set to true of if the header Cmr-Pretty is set to true."
   [f]
   (fn [request]
     (let [pretty? (pretty-request? request)
