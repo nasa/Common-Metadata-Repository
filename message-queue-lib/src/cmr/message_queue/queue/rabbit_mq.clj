@@ -15,7 +15,8 @@
             [langohr.exchange :as le]
             [clj-http.client :as client]
             [cheshire.core :as json]
-            [cmr.common.services.health-helper :as hh])
+            [cmr.common.services.health-helper :as hh]
+            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import java.io.IOException))
 
 (defmacro with-channel
@@ -101,23 +102,18 @@
   the identifier used to create the queue with the create-queue function.
 
   'client-handler' is a function that takes a single parameter (the message) and attempts to
-  process it. This function should respond with a map of the of the follwing form:
+  process it. This function should respond with a map of the of the following form:
   {:status status :message message}
-  where status is one of (:success, :retry, :failure) and message is optional.
-
-  'params' is a map containing queue implementation specific settings, if necessary. Currently the
-  only supported setting for RabbitMQ is :prefetch, which corresponds to the number of messages
-  a consumer should pull off the queue at one time."
-  [queue-broker queue-name client-handler params]
-  (let [{:keys [prefetch]} params
-        conn (:conn queue-broker)
+  where status is one of (:success, :retry, :failure) and message is optional."
+  [queue-broker queue-name client-handler]
+  (let [conn (:conn queue-broker)
         ;; don't want this channel to close automatically, so no with-channel here
         sub-ch (lch/open conn)
         handler (partial message-handler queue-broker queue-name client-handler)]
     ;; By default, RabbitMQ uses a round-robin approach to send messages to listeners. This can
     ;; lead to stalls as workers wait for other workers to complete. Setting QoS (prefetch) to 1
     ;; prevents this.
-    (lb/qos sub-ch (or prefetch 1))
+    (lb/qos sub-ch 1)
     (lc/subscribe sub-ch queue-name handler {:auto-ack false})))
 
 (defn purge-queue
@@ -170,16 +166,54 @@
   exchange name to an empty string and the routing-key to the queue name."
   [queue-broker exchange-name routing-key msg]
   (let [payload (json/generate-string msg)
-          metadata {:content-type "application/json" :persistent true}]
-      (with-channel
-        [pub-ch (:conn queue-broker)]
-        ;; put channel into confirmation mode
-        (lcf/select pub-ch)
+        metadata {:content-type "application/json" :persistent true}]
+    (with-channel
+      [pub-ch (:conn queue-broker)]
+      ;; put channel into confirmation mode
+      (lcf/select pub-ch)
 
-        ;; publish the message
-        (lb/publish pub-ch exchange-name routing-key payload metadata)
-        ;; block until the confirm arrives or return false if queue nacks the message
-        (lcf/wait-for-confirms pub-ch))))
+      ;; publish the message
+      (lb/publish pub-ch exchange-name routing-key payload metadata)
+      ;; block until the confirm arrives or return false if queue nacks the message
+      (lcf/wait-for-confirms pub-ch))))
+
+(defn- create-queue
+  [broker queue-name]
+  (let [{:keys [conn]} broker]
+    (with-channel
+      [ch conn]
+      ;; create the queue
+      ;; see http://reference.clojurerabbitmq.info/langohr.queue.html
+      (info "Creating queue" queue-name)
+      (lq/declare ch queue-name {:exclusive false :auto-delete false :durable true})
+      ;; create wait queues to use with the primary queue
+      (info "Creating wait queues")
+      (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
+              :let [ttl (wait-queue-ttl wait-queue-num)
+                    wq (wait-queue-name queue-name wait-queue-num)]]
+        (lq/declare ch
+                    wq
+                    {:exclusive false
+                     :auto-delete false
+                     :durable true
+                     :arguments {"x-dead-letter-exchange" default-exchange-name
+                                 "x-dead-letter-routing-key" queue-name
+                                 "x-message-ttl" ttl}})))))
+(defn- create-exchange
+  [broker exchange-name]
+  (let [{:keys [conn]} broker]
+    (with-channel
+      [ch conn]
+      (info "Creating exchange" exchange-name)
+      (le/declare ch exchange-name "fanout" {:durable true}))))
+
+(defn- bind-queue-to-exchange
+  [broker queue-name exchange-name]
+  (let [{:keys [conn]} broker]
+    (with-channel
+      [ch conn]
+      (info "Binding queue" queue-name "to exchange" exchange-name)
+      (lq/bind ch queue-name exchange-name))))
 
 (defrecord RabbitMQBroker
   [
@@ -209,9 +243,6 @@
 
    ;; A map of queue name to exchange name bindings to create
    bindings
-
-   ;; true or false to indicate it's running
-   running?
    ]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -220,67 +251,27 @@
   (start
     [this system]
     (info "Starting RabbitMQ connection")
-    (when (:running? this)
-      (errors/internal-error! "Already connected"))
     (let [conn (rmq/connect {:host host :port port :username username :password password})
-          this (assoc this :conn conn :running? true)]
+          this (assoc this :conn conn)]
       (info "RabbitMQ connection opened")
       (doseq [queue-name persistent-queues]
-        (queue/create-queue this queue-name))
+        (create-queue this queue-name))
 
       (doseq [exchange-name persistent-exchanges]
-        (queue/create-exchange this exchange-name))
+        (create-exchange this exchange-name))
 
       (doseq [[queue-name exchange-name] bindings]
-        (queue/bind-queue-to-exchange this queue-name exchange-name))
-
+        (bind-queue-to-exchange this queue-name exchange-name))
       this))
 
   (stop
     [this system]
-    (when (:running? this)
-      ;; Close the connection. This will close all channels as well.
-      (rmq/close (:conn this))
-      (assoc this :running? false)))
+    ;; Close the connection. This will close all channels as well.
+    (when (:conn this) (rmq/close (:conn this)))
+    (assoc this :conn nil))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue/Queue
-
-  (create-queue
-    [this queue-name]
-    (with-channel
-      [ch conn]
-      ;; create the queue
-      ;; see http://reference.clojurerabbitmq.info/langohr.queue.html
-      (info "Creating queue" queue-name)
-      (lq/declare ch queue-name {:exclusive false :auto-delete false :durable true})
-      ;; create wait queues to use with the primary queue
-      (info "Creating wait queues")
-      (doseq [wait-queue-num (range 1 (inc (count (config/rabbit-mq-ttls))))
-              :let [ttl (wait-queue-ttl wait-queue-num)
-                    wq (wait-queue-name queue-name wait-queue-num)]]
-        (lq/declare ch
-                    wq
-                    {:exclusive false
-                     :auto-delete false
-                     :durable true
-                     :arguments {"x-dead-letter-exchange" default-exchange-name
-                                 "x-dead-letter-routing-key" queue-name
-                                 "x-message-ttl" ttl}}))))
-
-  (create-exchange
-    [this exchange-name]
-    (with-channel
-      [ch conn]
-      (info "Creating exchange" exchange-name)
-      (le/declare ch exchange-name "fanout" {:durable true})))
-
-  (bind-queue-to-exchange
-    [this queue-name exchange-name]
-    (with-channel
-      [ch conn]
-      (info "Binding queue" queue-name "to exchange" exchange-name)
-      (lq/bind ch queue-name exchange-name)))
 
   (publish-to-queue
     [this queue-name msg]
@@ -291,13 +282,8 @@
     (publish this exchange-name "" msg))
 
   (subscribe
-    [this queue-name handler params]
-    (start-consumer this queue-name handler params))
-
-  (message-count
-    [this queue-name]
-    (with-channel [ch conn]
-                  (lq/message-count ch queue-name)))
+    [this queue-name handler]
+    (start-consumer this queue-name handler))
 
   (reset
     [this]
@@ -310,15 +296,16 @@
     (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
       (hh/get-health #(health-fn this) timeout-ms))))
 
+(record-pretty-printer/enable-record-pretty-printing RabbitMQBroker)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-queue-broker
-  "Create a RabbitMQBroker. Takes a param map. Params include host, port, admin port,
-  username, and password as connection information. Params also allow declaring "
+  "Create a RabbitMQBroker with the given parameters. See RabbitMQBroker comments for information"
   [{:keys [host port admin-port username password
            queues exchanges queues-to-exchanges]}]
   (->RabbitMQBroker host port admin-port username password nil
-                    queues exchanges queues-to-exchanges false))
+                    queues exchanges queues-to-exchanges))
 
 
 (comment
@@ -358,8 +345,8 @@
         (info "Test handler - finished sleeping")
         {:status :success}))
 
-    ; (queue/subscribe q "test.simple" sleep-success-message-handler {})
-    (queue/subscribe q "test.simple" random-message-handler {})
+    ; (queue/subscribe q "test.simple" sleep-success-message-handler)
+    (queue/subscribe q "test.simple" random-message-handler)
 
 
     (doseq [n (range 0 2)
@@ -374,8 +361,6 @@
 
 
   (queue/create-queue q "cmr_index.queue")
-
-  (queue/message-count q "test.simple")
 
   (delete-queue q "test.simple")
 

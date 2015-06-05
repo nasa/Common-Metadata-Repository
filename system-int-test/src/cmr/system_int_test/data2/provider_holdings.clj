@@ -4,6 +4,7 @@
             [cmr.system-int-test.utils.fast-xml :as fx]
             [cmr.common.xml :as cx]
             [cheshire.core :as json]
+            [clojure.data.csv :as csv]
             [clojure.set :as set]))
 
 (defmulti parse-provider-holdings
@@ -50,4 +51,13 @@
     (if echo-compatible?
       (map echo-provider-holding->cmr-provider-holding parsed-json)
       parsed-json)))
+
+(defmethod parse-provider-holdings :csv
+  [format echo-compatible? csv-str]
+  (set (let [csv-holdings (rest (csv/read-csv csv-str))]
+         (for [[provider-id entry-title concept-id granule-count] csv-holdings]
+           {:provider-id provider-id
+            :entry-title entry-title
+            :concept-id concept-id
+            :granule-count (read-string granule-count)}))))
 

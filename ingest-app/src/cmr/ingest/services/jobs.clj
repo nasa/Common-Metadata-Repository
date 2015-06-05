@@ -5,6 +5,7 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.data.indexer :as indexer]
+            [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.common.log :refer (debug info warn error)]))
 
 (def REINDEX_COLLECTION_PERMITTED_GROUPS_INTERVAL
@@ -80,7 +81,8 @@
       (info "Removing expired collections:" (pr-str concept-ids))
       (doseq [concept-id concept-ids]
         (let [revision-id (mdb/delete-concept context concept-id)]
-          (indexer/delete-concept-from-index context concept-id revision-id))))))
+          (ingest-events/publish-event
+            context (ingest-events/concept-delete-event concept-id revision-id)))))))
 
 (def-stateful-job CleanupExpiredCollections
   [ctx system]

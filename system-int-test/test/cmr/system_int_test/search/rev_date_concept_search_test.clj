@@ -105,7 +105,12 @@
                        (re-find #"datetime is invalid:.*" err)))
                 "range without begin" ",2000-01-01T10:00:00Z"
                 "range without end" "2000-01-01T10:00:00Z,"
-                "range" "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z")))))
+                "range" "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z"))
+      (testing "search collections with multiple updated_since values is invalid"
+        (let [value ["2000-01-01T10:00:00Z" "2009-01-01T10:00:00Z"]
+              {:keys [status errors]} (search/find-refs :collection {"updated_since" value})]
+                  (is (= [400 ["Search not allowed with multiple updated_since values"]]
+                        [status errors])))))))
 
 
 (deftest search-granules-by-revision-date
@@ -196,4 +201,9 @@
                        (re-find #"datetime is invalid:.*" err)))
                 "range without begin" ",2000-01-01T10:00:00Z"
                 "range without end" "2000-01-01T10:00:00Z,"
-                "range" "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z")))))
+                "range" "2000-01-01T10:00:00Z,2000-04-01T10:00:00Z"))
+      (testing "search granules with multiple updated_since values is invalid"
+        (let [value ["2000-01-01T10:00:00Z" "2009-01-01T10:00:00Z"]
+              {:keys [status errors]} (search/find-refs :granule {"updated_since" value})]
+                  (is (= [400 ["Search not allowed with multiple updated_since values"]]
+                        [status errors])))))))

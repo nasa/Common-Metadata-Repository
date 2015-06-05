@@ -264,12 +264,17 @@
            metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                        (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
            items (map (fn [result metadata]
-                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count has-granules
-                                       echo_dataset_id echo_granule_id]} :attrs} result]
+                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count format
+                                       has-granules echo_dataset_id echo_granule_id]} :attrs} result
+                              ;; For echo compatible result, there is no format attribute on the result.
+                              ;; So we simply set the format to the input format-key.
+                              metadata-format (if (:echo-compatible params)
+                                                format-key
+                                                (mime-types/mime-type->format format))]
                           (util/remove-nil-keys
                             {:concept-id concept-id
                              :revision-id (when revision-id (Long. ^String revision-id))
-                             :format format-key
+                             :format metadata-format
                              :collection-concept-id collection-concept-id
                              :echo_dataset_id echo_dataset_id
                              :echo_granule_id echo_granule_id

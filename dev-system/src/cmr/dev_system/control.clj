@@ -146,8 +146,7 @@
       (POST "/wait-for-indexing" []
         (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
           (debug "dev system /wait-for-indexing")
-          (when (iconfig/use-index-queue?)
-            (wrapper/wait-for-indexing broker-wrapper))
+          (wrapper/wait-for-indexing broker-wrapper)
           (debug "indexing complete")
           {:status 200}))
 

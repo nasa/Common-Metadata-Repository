@@ -42,6 +42,7 @@
   (s/only-with-real-database
     (is (= [200 {:elastic_search {:ok? true}
                  :echo {:ok? true}
+                 :rabbit-mq {:ok? true}
                  :metadata-db good-metadata-db-health
                  :index-set good-index-set-db-health
                  :cubby {:ok? true,
@@ -54,12 +55,14 @@
     (is (= [200 {:oracle {:ok? true}
                  :echo {:ok? true}
                  :metadata-db good-metadata-db-health
+                 :rabbit-mq {:ok? true}
                  :indexer {:ok? true
                            :dependencies {:elastic_search {:ok? true}
                                           :echo {:ok? true}
                                           :cubby {:ok? true,
                                                   :dependencies
                                                   {:elastic_search {:ok? true}, :echo {:ok? true}}}
+                                          :rabbit-mq {:ok? true}
                                           :metadata-db good-metadata-db-health
                                           :index-set good-index-set-db-health}}}]
            (get-app-health (url/ingest-health-url))))))

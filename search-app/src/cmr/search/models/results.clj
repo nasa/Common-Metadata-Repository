@@ -61,7 +61,7 @@
 
    facets
 
-  ])
+   ])
 
 (record-pretty-printer/enable-record-pretty-printing
   Facet

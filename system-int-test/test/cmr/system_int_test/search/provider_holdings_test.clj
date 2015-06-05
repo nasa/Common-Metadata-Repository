@@ -133,89 +133,57 @@
         (is (= expected-all-holdings
                (set (:results response))))))
 
-    (testing "Retrieving provider holdings from the search application"
-      (testing "XML response"
-        (testing "Retrieve all provider holdings"
-          (let [response (search/provider-holdings-in-format :xml {:token user-token})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "Retrieve provider holdings for list of providers"
-          (let [response (search/provider-holdings-in-format :xml {:provider_id "PROV1"
-                                                                   :token user-token})]
-            (is (= 200 (:status response)))
-            (is (= (set (get all-holdings "PROV1"))
-                   (set (:results response)))))
-          (let [response (search/provider-holdings-in-format :xml {:provider_id ["PROV1" "PROV2" "PROV3"]
-                                                                   :token user-token})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "Retrieve provider holdings applies acls"
-          ;; Guests only have access to provider 1
-          (let [response (search/provider-holdings-in-format :xml {:token guest-token})]
-            (is (= 200 (:status response)))
-            (is (= (set (get all-holdings "PROV1"))
-                   (set (:results response))))))
-        (testing "Retrieve provider holdings in xml with echo-compatible true"
-          (let [response (search/provider-holdings-in-format
-                           :xml {:token user-token :echo-compatible? true})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "As extension"
-          (is (= (select-keys
-                   (search/provider-holdings-in-format :xml {:provider_id "PROV1"
-                                                             :token user-token})
-                   [:status :results])
-                 (select-keys
-                   (search/provider-holdings-in-format :xml
-                                                       {:provider_id "PROV1"
-                                                        :token user-token}
-                                                       {:url-extension "xml"})
-                   [:status :results])))))
-      (testing "JSON response"
-        (testing "Retrieve all provider holdings"
-          (let [response (search/provider-holdings-in-format :json {:token user-token})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "Retrieve provider holdings for list of providers"
-          (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"
-                                                                    :token user-token})]
-            (is (= 200 (:status response)))
-            (is (= (set (get all-holdings "PROV1"))
-                   (set (:results response)))))
-          (let [response (search/provider-holdings-in-format :json {:provider_id ["PROV1" "PROV2" "PROV3"]
-                                                                    :token user-token})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "Retrieve provider holdings with echo-compatible true"
-          (let [response (search/provider-holdings-in-format
-                           :json {:token user-token :echo-compatible? true})]
-            (is (= 200 (:status response)))
-            (is (= expected-all-holdings
-                   (set (:results response))))))
-        (testing "As extension"
-          (is (= (select-keys
-                   (search/provider-holdings-in-format :json {:provider_id "PROV1"
-                                                              :token user-token})
-                   [:status :results])
-                 (select-keys
-                   (search/provider-holdings-in-format :json
-                                                       {:provider_id "PROV1"
-                                                        :token user-token}
-                                                       {:url-extension "json"})
-                   [:status :results]))))
-        (testing "Retrieve provider holdings with count summaries in headers"
-          (let [response (search/provider-holdings-in-format :json {:provider_id "PROV1"
-                                                                    :token user-token})
-                headers (:headers response)
-                header-granule-count (headers sr/CMR_GRANULE_COUNT_HEADER)
-                header-collection-count (headers sr/CMR_COLLECTION_COUNT_HEADER)
-                granule-count (reduce + (map :granule-count (all-holdings "PROV1")))]
-            (is (= 200 (:status response)))
-            (is (and (= (str prov1-collection-count) header-collection-count)
-                     (= (str granule-count) header-granule-count)))))))))
-
+    (testing "Retrieving provider holdings from the search application in various formats"
+      (doseq [format [:xml :json :csv]]
+        (testing (str (name format) " Response")
+          (testing "Retrieve all provider holdings"
+            (let [response (search/provider-holdings-in-format format {:token user-token})]
+              (is (= 200 (:status response)))
+              (is (= expected-all-holdings
+                     (set (:results response))))))
+          (testing "Retrieve provider holdings for list of providers"
+            (let [response (search/provider-holdings-in-format format {:provider_id "PROV1"
+                                                                       :token user-token})]
+              (is (= 200 (:status response)))
+              (is (= (set (get all-holdings "PROV1"))
+                     (set (:results response)))))
+            (let [response (search/provider-holdings-in-format
+                             format
+                             {:provider_id ["PROV1" "PROV2" "PROV3"]
+                              :token user-token})]
+              (is (= 200 (:status response)))
+              (is (= expected-all-holdings
+                     (set (:results response))))))
+          (testing "Retrieve provider holdings applies acls"
+            ;; Guests only have access to provider 1
+            (let [response (search/provider-holdings-in-format format {:token guest-token})]
+              (is (= 200 (:status response)))
+              (is (= (set (get all-holdings "PROV1"))
+                     (set (:results response))))))
+          (testing "Retrieve provider holdings with echo-compatible true"
+            (let [response (search/provider-holdings-in-format
+                             format {:token user-token :echo-compatible? true})]
+              (is (= 200 (:status response)))
+              (is (= expected-all-holdings
+                     (set (:results response))))))
+          (testing "As extension"
+            (is (= (select-keys
+                     (search/provider-holdings-in-format format {:provider_id "PROV1"
+                                                                 :token user-token})
+                     [:status :results])
+                   (select-keys
+                     (search/provider-holdings-in-format format
+                                                         {:provider_id "PROV1"
+                                                          :token user-token}
+                                                         {:url-extension (name format)})
+                     [:status :results]))))
+          (testing "Retrieve provider holdings with count summaries in headers"
+            (let [response (search/provider-holdings-in-format format {:provider_id "PROV1"
+                                                                        :token user-token})
+                  headers (:headers response)
+                  header-granule-count (headers sr/CMR_GRANULE_COUNT_HEADER)
+                  header-collection-count (headers sr/CMR_COLLECTION_COUNT_HEADER)
+                  granule-count (reduce + (map :granule-count (all-holdings "PROV1")))]
+              (is (= 200 (:status response)))
+              (is (and (= (str prov1-collection-count) header-collection-count)
+                       (= (str granule-count) header-granule-count))))))))))

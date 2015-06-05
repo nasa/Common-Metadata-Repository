@@ -49,6 +49,26 @@
        :existing-concept-id existing-concept-id
        :existing-native-id existing-native-id})))
 
+(defn- delete-time
+  "Returns the parsed delete-time extra field of a concept."
+  [concept]
+  (some-> concept
+          (get-in [:extra-fields :delete-time])
+          p/parse-datetime))
+
+(defn- expired?
+  "Returns true if the concept is expired (delete-time in the past)"
+  [concept]
+  (when-let [t (delete-time concept)]
+    (t/before? t (tk/now))))
+
+(defn- latest-revisions
+  "Returns only the latest revisions of each concept in a seq of concepts."
+  [concepts]
+  (map last
+       (map (partial sort-by :revision-id)
+            (vals (group-by :concept-id concepts)))))
+
 (defrecord MemoryDB
   [
    ;; A sequence of concepts stored in metadata db
@@ -222,16 +242,13 @@
     (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM)))
 
   (get-expired-concepts
-    [db provider concept-type]
-    (filter
-      (fn [c]
-        (let [delete-time (get-in c [:extra-fields :delete-time])
-              delete-time (when delete-time (p/parse-datetime  delete-time))]
-          (and (= provider (:provider-id c))
-               (= concept-type (:concept-type c))
-               (some? delete-time)
-               (t/before? delete-time (tk/now)))))
-      @concepts-atom))
+    [db provider-id concept-type]
+    (->> @concepts-atom
+         (filter #(= provider-id (:provider-id %)))
+         (filter #(= concept-type (:concept-type %)))
+         latest-revisions
+         (filter expired?)
+         (remove :deleted)))
 
   (get-tombstoned-concept-revisions
     [db provider concept-type tombstone-cut-off-date limit]
