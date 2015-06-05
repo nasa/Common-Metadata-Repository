@@ -39,6 +39,7 @@ These are query parameters specific to collections
   * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata.
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
+  * TODO: document hierarchical_facets
 
 #### Headers
 
@@ -847,6 +848,8 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 ### Facets
 
 Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in xml or json format.
+
+TODO: Document hierarchical facets
 
 #### Facets in XML Responses
 

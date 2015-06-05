@@ -20,7 +20,7 @@
 
 (def ^:private science-keyword-hierarchy
   "List containing the elements within the science keyword hierarchy from top to bottom."
-  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable])
+  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
 
 (defn- science-keyword-aggregations-helper
   "Build the science keyword aggregations query."
@@ -69,10 +69,14 @@
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
    :processing-level-id (terms-facet :processing-level-id)
-   :science-keywords science-keyword-aggregations})
+   :science-keywords science-keyword-aggregations
+   ;; Detailed variable is technically part of the science keyword hierarchy directly below
+   ;; variable level 1 (at the same level as variable level 2.) Opened ticket TBD to address.
+   :detailed-variable (terms-facet :detailed-variable)})
 
 (defn- facet-aggregations
-  "Return facet aggregations to use depending on whether science keywords are flat or hierarchical"
+  "Return facet aggregations to use depending on whether a flat or hierarchical facet response is
+  requested."
   [hierarchical-facets?]
   (if hierarchical-facets? hierarchical-facet-aggregations flat-facet-aggregations))
 
@@ -139,9 +143,10 @@
     (concat (bucket-map->facets
               (dissoc elastic-aggregations :science-keywords)
               [:archive-center :project :platform :instrument :sensor
-               :two-d-coordinate-system-name :processing-level-id])
+               :two-d-coordinate-system-name :processing-level-id :detailed-variable])
             [(r/map->ScienceKeywordsFacet {:field "science_keywords"
-                                           :facets science-keywords-facets})])))
+                                           :facets science-keywords-facets})]
+            )))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns

@@ -115,17 +115,20 @@
                  (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
 
 ;; Cases to test
-;; 1) Keywords at each level - Category, Topic, Term, Variable1..3
+;; 1) DONE - Keywords at each level - Category, Topic, Term, Variable1..3
 ;; 2) Collections which have multiple science keywords with the same lower level nested value,
 ;; but different higher level nested value (e.g. Hurricane>>Wind and Earth Science>>Wind) - make
 ;; sure counts are correct (just one collection)
-;; 3) multiple collections with the same keywords show a count of 2
+;; 3) Multiple collections with the same keywords show a count of 2
 ;; 4) Has a detailed variable but not a variable level 2 or 3
 
 
 ;; TODOs
+;; TODO Add remaining tests
+;; TODO Document hierarchical facets in README
 ;; TODO Fix parsing of XML facet results in test code
-;; TODO Figure out how make detailed variable and variable level 2 both under variable level 1
+;; TODO Figure out how make detailed variable and variable level 2 both under variable level 1 (Note:
+;; Do not believe that GCMD needs this immediately, will write new ticket to address)
 (deftest all-science-keywords-fields-hierarchy
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
@@ -150,6 +153,8 @@
                          {:field "two_d_coordinate_system_name",
                           :value-counts [["Alpha" 1]]}
                          {:field "processing_level_id", :value-counts [["PL1" 1]]}
+                         {:field "detailed_variable",
+                          :value-counts [["Detail1" 1] ["UNIVERSAL" 1]]}
                          {:field "science_keywords",
                           :facets
                           {:field "category",
@@ -180,12 +185,7 @@
                                              [{:field "variable-level-3",
                                                :value-count-maps
                                                [{:value "Level2-3",
-                                                 :count 1,
-                                                 :facets
-                                                 [{:field "detailed-variable",
-                                                   :value-count-maps
-                                                   [{:value "UNIVERSAL",
-                                                     :count 1}]}]}]}]}]}]}]}]}
+                                                 :count 1}]}]}]}]}]}]}
                                     {:value "UNIVERSAL", :count 1}]}]}
                                 {:value "Cool",
                                  :count 1,
@@ -224,13 +224,7 @@
                                              [{:field "variable-level-3",
                                                :value-count-maps
                                                [{:value "Level1-3",
-                                                 :count 1,
-                                                 :facets
-                                                 [{:field "detailed-variable",
-                                                   :value-count-maps
-                                                   [{:value "Detail1",
-                                                     :count
-                                                     1}]}]}]}]}]}]}]}]}]}]}]}]}
+                                                 :count 1}]}]}]}]}]}]}]}]}]}]}
                             {:value "Tornado",
                              :count 1,
                              :facets
@@ -268,11 +262,11 @@
         ref-results (search/find-refs :collection {:page-size 0
                                                    :include-facets true
                                                    :hierarchical-facets true})
-        ; _ (cmr.common.dev.capture-reveal/capture ref-results)
-        search-results (search/find-concepts-json :collection  {:page-size 0
+        json-results (search/find-concepts-json :collection  {:page-size 0
                                                                 :include-facets true
                                                                 :hierarchical-facets true})]
-    (is (= expected-facets (get-in search-results [:results :facets])))
+    (is (= expected-facets (get-in json-results [:results :facets])))
+    ;; TODO Fix test code parsing of XML facets
     ; (is (= expected-facets (:facets ref-results)))
     ))
 
