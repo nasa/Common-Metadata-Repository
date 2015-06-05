@@ -1,6 +1,5 @@
 (ns cmr.search.api.routes
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]

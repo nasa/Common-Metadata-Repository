@@ -1,7 +1,6 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
             [ring.middleware.params :as params]
