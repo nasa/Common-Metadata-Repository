@@ -116,8 +116,8 @@
                (r/map->ValueCountMaps
                  {:value field-key
                   :count coll-count
-                  :facets (science-keywords-bucket-helper remaining-fields
-                                                          sub-aggregations-for-field)})
+                  :facets [(science-keywords-bucket-helper remaining-fields
+                                                           sub-aggregations-for-field)]})
                (r/map->ValueCountMaps
                  {:value field-key
                   :count coll-count})))
@@ -178,17 +178,21 @@
     (x/element (with-prefix :value-count-maps) {}
                (for [value-count-map value-count-maps]
                  (if-let [facets (:facets value-count-map)]
-                   (let [child-facets (x/element (with-prefix :facets) {}
-                                                 (facet->xml-element ns-prefix facets))]
+
+                   (for [facet facets]
+
+
+                     (let [child-facets (x/element (with-prefix :facets) {}
+                                                   (facet->xml-element ns-prefix facet))]
+                       (x/element (with-prefix :value-count-map) {}
+                                  [(x/element (with-prefix :value)
+                                              {:count (:count value-count-map)}
+                                              (:value value-count-map))
+                                   child-facets])))
                      (x/element (with-prefix :value-count-map) {}
-                                [(x/element (with-prefix :value)
-                                            {:count (:count value-count-map)}
-                                            (:value value-count-map))
-                                 child-facets]))
-                   (x/element (with-prefix :value-count-map) {}
-                              (x/element (with-prefix :value)
-                                         {:count (:count value-count-map)}
-                                         (:value value-count-map))))))))
+                                (x/element (with-prefix :value)
+                                           {:count (:count value-count-map)}
+                                           (:value value-count-map))))))))
 
 (defn- facet->xml-element
   [ns-prefix {:keys [field value-counts value-count-maps facets]}]

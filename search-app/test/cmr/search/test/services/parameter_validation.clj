@@ -22,7 +22,7 @@
                                                     :echo-compatible "true"
                                                     :foo 1
                                                     :bar 2})))))
-    (is (= ["Parameter [page_size] was not recognized."] 
+    (is (= ["Parameter [page_size] was not recognized."]
            (pv/unrecognized-tile-params-validation {:page-size 1
                                                     :point "50, 50"})))
   (testing "invalid options param names"
@@ -132,14 +132,27 @@
   (testing "Non-numeric equator-crossing-longitude"
     (is (= [(com-msg/invalid-msg java.lang.Double "A")]
            (pv/equator-crossing-longitude-validation :granule (assoc valid-params :equator-crossing-longitude "10,A")))))
-  
+
   ;; Point, Line, Polygon and Bounding-Box
   (testing "a spatial parameter can be a multi-valued parameter"
     (is (empty?
           (pv/bounding-box-validation :granule {:bounding-box ["-180,-90,180,90","-20,-20,20,20"]}))))
   (testing "a geometry parameter which is invalid returns a parsing error"
     (is (= ["[10.0,-.3] is not a valid URL encoded point"]
-           (pv/point-validation :granule {:point "10.0,-.3"})))))
+           (pv/point-validation :granule {:point "10.0,-.3"}))))
+
+  ;; Boolean parameter validations
+  (testing "valid boolean parameters do not return an error"
+    (is (= []
+           (pv/boolean-value-validation :collection {:include-facets "false"
+                                                     :hierarchical-facets "true"
+                                                     :downloadable "uNSet"}))))
+  (testing "boolean parameters with an invalid value return an error"
+    (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was not-right" "Parameter include_facets must take value of true, false, or unset, but was TRUE"]
+           (pv/boolean-value-validation :collection {:include-facets "TRUE"
+                                                     :hierarchical-facets "not-right"}))))
+
+  )
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"

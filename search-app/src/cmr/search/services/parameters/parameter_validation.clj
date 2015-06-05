@@ -457,7 +457,7 @@
                                          :hierarchical-facets])]
     (mapcat
       (fn [[param value]]
-        (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
+        (if (or (= "true" value) (= "false" value) (= "unset" (when value (s/lower-case value))))
           []
           [(format "Parameter %s must take value of true, false, or unset, but was %s"
                    (csk/->snake_case_string param) value)]))

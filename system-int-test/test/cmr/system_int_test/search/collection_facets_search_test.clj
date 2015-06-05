@@ -124,8 +124,6 @@
 
 
 ;; TODOs
-;; TODO JSON representation should have facets->facet
-;; TODO Fix null pointer exception when nested_science_keywords without a value
 ;; TODO Fix parsing of XML facet results in test code
 ;; TODO Figure out how make detailed variable and variable level 2 both under variable level 1
 (deftest all-science-keywords-fields-hierarchy
@@ -159,111 +157,113 @@
                            [{:value "Hurricane",
                              :count 1,
                              :facets
-                             {:field "topic",
-                              :value-count-maps
-                              [{:value "Popular",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps
-                                 [{:value "Extreme",
-                                   :count 1,
-                                   :facets
-                                   {:field "variable-level-1",
-                                    :value-count-maps
-                                    [{:value "Level2-1",
-                                      :count 1,
-                                      :facets
-                                      {:field "variable-level-2",
+                             [{:field "topic",
+                               :value-count-maps
+                               [{:value "Popular",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Extreme",
+                                     :count 1,
+                                     :facets
+                                     [{:field "variable-level-1",
                                        :value-count-maps
-                                       [{:value "Level2-2",
+                                       [{:value "Level2-1",
                                          :count 1,
                                          :facets
-                                         {:field "variable-level-3",
-                                          :value-count-maps
-                                          [{:value "Level2-3",
-                                            :count 1,
-                                            :facets
-                                            {:field "detailed-variable",
-                                             :value-count-maps
-                                             [{:value "UNIVERSAL",
-                                               :count 1}]}}]}}]}}]}}
-                                  {:value "UNIVERSAL", :count 1}]}}
-                               {:value "Cool",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps
-                                 [{:value "Term4",
-                                   :count 1,
-                                   :facets
-                                   {:field "variable-level-1",
-                                    :value-count-maps
-                                    [{:value "UNIVERSAL", :count 1}]}}]}}]}}
+                                         [{:field "variable-level-2",
+                                           :value-count-maps
+                                           [{:value "Level2-2",
+                                             :count 1,
+                                             :facets
+                                             [{:field "variable-level-3",
+                                               :value-count-maps
+                                               [{:value "Level2-3",
+                                                 :count 1,
+                                                 :facets
+                                                 [{:field "detailed-variable",
+                                                   :value-count-maps
+                                                   [{:value "UNIVERSAL",
+                                                     :count 1}]}]}]}]}]}]}]}]}
+                                    {:value "UNIVERSAL", :count 1}]}]}
+                                {:value "Cool",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Term4",
+                                     :count 1,
+                                     :facets
+                                     [{:field "variable-level-1",
+                                       :value-count-maps
+                                       [{:value "UNIVERSAL", :count 1}]}]}]}]}]}]}
                             {:value "Cat1",
                              :count 1,
                              :facets
-                             {:field "topic",
-                              :value-count-maps
-                              [{:value "Topic1",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps
-                                 [{:value "Term1",
-                                   :count 1,
-                                   :facets
-                                   {:field "variable-level-1",
-                                    :value-count-maps
-                                    [{:value "Level1-1",
-                                      :count 1,
-                                      :facets
-                                      {:field "variable-level-2",
+                             [{:field "topic",
+                               :value-count-maps
+                               [{:value "Topic1",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Term1",
+                                     :count 1,
+                                     :facets
+                                     [{:field "variable-level-1",
                                        :value-count-maps
-                                       [{:value "Level1-2",
+                                       [{:value "Level1-1",
                                          :count 1,
                                          :facets
-                                         {:field "variable-level-3",
-                                          :value-count-maps
-                                          [{:value "Level1-3",
-                                            :count 1,
-                                            :facets
-                                            {:field "detailed-variable",
-                                             :value-count-maps
-                                             [{:value "Detail1",
-                                               :count 1}]}}]}}]}}]}}]}}]}}
+                                         [{:field "variable-level-2",
+                                           :value-count-maps
+                                           [{:value "Level1-2",
+                                             :count 1,
+                                             :facets
+                                             [{:field "variable-level-3",
+                                               :value-count-maps
+                                               [{:value "Level1-3",
+                                                 :count 1,
+                                                 :facets
+                                                 [{:field "detailed-variable",
+                                                   :value-count-maps
+                                                   [{:value "Detail1",
+                                                     :count
+                                                     1}]}]}]}]}]}]}]}]}]}]}]}]}
                             {:value "Tornado",
                              :count 1,
                              :facets
-                             {:field "topic",
-                              :value-count-maps
-                              [{:value "Popular",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps
-                                 [{:value "Extreme", :count 1}]}}]}}
+                             [{:field "topic",
+                               :value-count-maps
+                               [{:value "Popular",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Extreme", :count 1}]}]}]}]}
                             {:value "UPCASE",
                              :count 1,
                              :facets
-                             {:field "topic",
-                              :value-count-maps
-                              [{:value "Popular",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps [{:value "Mild", :count 1}]}}]}}
+                             [{:field "topic",
+                               :value-count-maps
+                               [{:value "Popular",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Mild", :count 1}]}]}]}]}
                             {:value "upcase",
                              :count 1,
                              :facets
-                             {:field "topic",
-                              :value-count-maps
-                              [{:value "Cool",
-                                :count 1,
-                                :facets
-                                {:field "term",
-                                 :value-count-maps
-                                 [{:value "Mild", :count 1}]}}]}}]}}]
+                             [{:field "topic",
+                               :value-count-maps
+                               [{:value "Cool",
+                                 :count 1,
+                                 :facets
+                                 [{:field "term",
+                                   :value-count-maps
+                                   [{:value "Mild", :count 1}]}]}]}]}]}}]
         _ (index/wait-until-indexed)
         ref-results (search/find-refs :collection {:page-size 0
                                                    :include-facets true
