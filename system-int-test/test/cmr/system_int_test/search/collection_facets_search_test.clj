@@ -124,11 +124,10 @@
 
 
 ;; TODOs
+;; TODO JSON representation should have facets->facet
 ;; TODO Fix null pointer exception when nested_science_keywords without a value
-;; TODO change nested_science_keywords to something like hierarchical_facets
-;; TODO get rid of leaf level in XML response when there is no value
-;; TODO sub-facets should be nested inside of the counts for a category
-;; TODO Figure out how make detailed variable and variable level 2 both under detailed variable
+;; TODO Fix parsing of XML facet results in test code
+;; TODO Figure out how make detailed variable and variable level 2 both under variable level 1
 (deftest all-science-keywords-fields-hierarchy
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
@@ -266,13 +265,16 @@
                                  :value-count-maps
                                  [{:value "Mild", :count 1}]}}]}}]}}]
         _ (index/wait-until-indexed)
-        _ (search/find-refs :collection {:page-size 0
-                                         :include-facets true
-                                         :hierarchical-facets true})
+        ref-results (search/find-refs :collection {:page-size 0
+                                                   :include-facets true
+                                                   :hierarchical-facets true})
+        ; _ (cmr.common.dev.capture-reveal/capture ref-results)
         search-results (search/find-concepts-json :collection  {:page-size 0
                                                                 :include-facets true
                                                                 :hierarchical-facets true})]
-    (is (= expected-facets (get-in search-results [:results :facets])))))
+    (is (= expected-facets (get-in search-results [:results :facets])))
+    ; (is (= expected-facets (:facets ref-results)))
+    ))
 
 
 

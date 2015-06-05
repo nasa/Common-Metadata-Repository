@@ -4,6 +4,8 @@
             [clojure.set :as set]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
+
+;; TODO Fix parsing to handle hierarchical facets
 (defn parse-facets-xml
   "Converts an xml element into a sequence of facet maps containing field and value counts"
   [facets-elem]

@@ -175,19 +175,20 @@
   "Converts a list of value-count-maps into an XML element."
   [ns-prefix value-count-maps]
   (let [with-prefix (partial key-with-prefix ns-prefix)]
-    (for [value-count-map value-count-maps
-          :let [xml-element (x/element (with-prefix :value-count-maps) {}
-                                       (x/element (with-prefix :value)
-                                                  {:count (:count value-count-map)}
-                                                  (:value value-count-map)))]]
-      (when-let [facets (:facets value-count-map)]
-        (let [child-facets (x/element (with-prefix :facets) {}
-                                      (facet->xml-element ns-prefix facets))]
-          (x/element (with-prefix :value-count-maps) {}
-                     [(x/element (with-prefix :value)
-                                 {:count (:count value-count-map)}
-                                 (:value value-count-map))
-                      child-facets]))))))
+    (x/element (with-prefix :value-count-maps) {}
+               (for [value-count-map value-count-maps]
+                 (if-let [facets (:facets value-count-map)]
+                   (let [child-facets (x/element (with-prefix :facets) {}
+                                                 (facet->xml-element ns-prefix facets))]
+                     (x/element (with-prefix :value-count-map) {}
+                                [(x/element (with-prefix :value)
+                                            {:count (:count value-count-map)}
+                                            (:value value-count-map))
+                                 child-facets]))
+                   (x/element (with-prefix :value-count-map) {}
+                              (x/element (with-prefix :value)
+                                         {:count (:count value-count-map)}
+                                         (:value value-count-map))))))))
 
 (defn- facet->xml-element
   [ns-prefix {:keys [field value-counts value-count-maps facets]}]
