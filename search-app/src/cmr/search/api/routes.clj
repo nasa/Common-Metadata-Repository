@@ -363,7 +363,7 @@
       nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
-      copy-of-body-handler
       (errors/exception-handler default-error-format-fn)
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      copy-of-body-handler))
