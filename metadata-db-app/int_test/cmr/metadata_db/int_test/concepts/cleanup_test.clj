@@ -13,15 +13,6 @@
                       [(util/reset-database-fixture "PROV1" "PROV2")
                        (tk/freeze-resume-time-fixture)]))
 
-(comment
-
-  (do
-    (util/reset-database)
-    (util/save-provider "PROV1")
-    (util/save-provider "PROV2"))
-
-  )
-
 (defn concept-revision-exists?
   "Returns true if the revision of the concept exists"
   [concept revision]

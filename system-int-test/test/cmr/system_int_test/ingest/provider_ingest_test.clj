@@ -2,6 +2,7 @@
   "CMR provider ingest integration test"
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
+            [cmr.common.util :as u]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
@@ -15,22 +16,59 @@
 
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
-    (let [{:keys [status]} (ingest/create-ingest-provider "PROV3")]
-      (is (= 201 status))
-      (is (= (ingest/get-providers) (ingest/get-ingest-providers))))))
+    (are [provider-id cmr-only small]
+         (let [{:keys [status]} (ingest/create-ingest-provider {:provider-id provider-id
+                                                                :cmr-only cmr-only
+                                                                :small small})]
+           (and (= 201 status))
+           (= (ingest/get-providers) (ingest/get-ingest-providers)))
+         "PROV3" false false
+         "PROV4" true false
+         "PROV5" false true
+         "PROV6" true true))
+  (testing "create provider invalid value"
+    (u/are2
+      [provider error]
+      (let [response (ingest/create-ingest-provider provider)
+            {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
+        (= [400 [error]] [status errors]))
+
+      "without cmr-only"
+      {:provider-id "PROV8" :small false} "Cmr Only is required."
+
+      "cmr-only invalid value"
+      {:provider-id "PROV8" :cmr-only "" :small false} "Cmr Only must be either true or false but was [\"\"]"
+
+      "without small"
+      {:provider-id "PROV8" :cmr-only false} "Small is required."
+
+      "small invalid value"
+      {:provider-id "PROV8" :cmr-only false :small ""} "Small must be either true or false but was [\"\"]")))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
-    (ingest/create-ingest-provider "PROV3" false)
-    (ingest/create-ingest-provider "PROV4" true)
-    (ingest/update-ingest-provider "PROV4" false)
-    (is (= #{{:provider-id "PROV4" :cmr-only false}
-             {:provider-id "PROV3" :cmr-only false}
-             {:provider-id "PROV2" :cmr-only true}
-             {:provider-id "PROV1" :cmr-only true}}
+    (ingest/create-ingest-provider {:provider-id "PROV3"
+                                    :cmr-only false
+                                    :small false})
+    (ingest/create-ingest-provider {:provider-id "PROV4"
+                                    :cmr-only true
+                                    :small true})
+    (ingest/update-ingest-provider "PROV4" false true)
+    (is (= #{{:provider-id "PROV4" :cmr-only false :small true}
+             {:provider-id "PROV3" :cmr-only false :small false}
+             {:provider-id "PROV2" :cmr-only true :small false}
+             {:provider-id "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
   (testing "updating a non-existent provider fails"
-    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true))))))
+    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true false)))))
+  (testing "update provider with a different small value is invalid"
+    (ingest/create-ingest-provider {:provider-id "PROV5"
+                                    :cmr-only true
+                                    :small true})
+    (let [response (ingest/update-ingest-provider "PROV5" true false)
+          {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
+      (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
+             [status errors])))))
 
 (deftest update-provider-without-permission-test
   (let [response (client/put (url/ingest-provider-url "PROV1")

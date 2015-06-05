@@ -11,9 +11,10 @@
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
-  [{:keys [provider_id cmr_only]}]
+  [{:keys [provider_id cmr_only small]}]
   {:provider-id provider_id
-   :cmr-only (== 1 cmr_only)})
+   :cmr-only (== 1 cmr_only)
+   :small (== 1 small) })
 
 (extend-protocol p/ProvidersStore
   OracleStore
@@ -21,11 +22,11 @@
   (save-provider
     [db provider]
     (try
-      (let [{:keys [provider-id cmr-only]} provider]
+      (let [{:keys [provider-id cmr-only small]} provider]
         (j/insert! db
                    :providers
-                   ["provider_id" "cmr_only"]
-                   [provider-id (if cmr-only 1 0)])
+                   ["provider_id" "cmr_only" "small"]
+                   [provider-id (if cmr-only 1 0) (if small 1 0)])
         (ct/create-provider-concept-tables db provider-id))
       (catch java.sql.BatchUpdateException e
         (let [error-message (.getMessage e)]
@@ -37,16 +38,26 @@
   (get-providers
     [db]
     (map dbresult->provider
-         (j/query db ["SELECT provider_id, cmr_only FROM providers"])))
+         (j/query db ["SELECT provider_id, cmr_only, small FROM providers"])))
+
+  (get-provider
+    [db provider-id]
+    (first (map dbresult->provider
+                (j/query db
+                         ["SELECT provider_id, cmr_only, small FROM providers where provider_id = ?"
+                          provider-id]))))
 
   (update-provider
-    [db {:keys [provider-id cmr-only]}]
-    (let [response (j/update! db
-                              :providers
-                              {:cmr_only (if cmr-only 1 0)}
-                              ["provider_id = ?" provider-id])]
-      ;; We expect one row to be updated
-      (when (zero? (first response)) (p/provider-not-found-error provider-id))))
+    [db {:keys [provider-id cmr-only small]}]
+    (if-let [existing-provider (p/get-provider db provider-id)]
+      (if (= small (:small existing-provider))
+        (j/update! db
+                   :providers
+                   {:cmr_only (if cmr-only 1 0)
+                    :small (if small 1 0)}
+                   ["provider_id = ?" provider-id])
+        (p/small-field-cannot-be-modified provider-id))
+      (p/provider-not-found-error provider-id)))
 
   (delete-provider
     [db provider-id]
@@ -74,7 +85,7 @@
   (p/delete-provider db "FOO")
 
   (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
-             first vals first (== 0))
+       first vals first (== 0))
 
 
 

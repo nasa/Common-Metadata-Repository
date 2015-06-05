@@ -288,10 +288,16 @@
     [db]
     (vals @providers-atom))
 
+  (get-provider
+    [db provider-id]
+    (@providers-atom provider-id))
+
   (update-provider
-    [db {:keys [provider-id] :as provider}]
-    (if (get @providers-atom provider-id)
-      (swap! providers-atom assoc provider-id provider)
+    [db {:keys [provider-id small] :as provider}]
+    (if-let [existing-provider (@providers-atom provider-id)]
+      (if (= small (:small existing-provider))
+        (swap! providers-atom assoc provider-id provider)
+        (providers/small-field-cannot-be-modified provider-id))
       (providers/provider-not-found-error provider-id)))
 
   (delete-provider

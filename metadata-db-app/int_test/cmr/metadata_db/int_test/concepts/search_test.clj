@@ -12,15 +12,6 @@
 
 (use-fixtures :each (util/reset-database-fixture "PROV1" "PROV2"))
 
-(comment
-
-  (do
-    (util/reset-database)
-    (util/save-provider "PROV1")
-    (util/save-provider "PROV2"))
-
-  )
-
 (defn concepts-for-comparison
   "Removes revision-date from concepts so they can be compared."
   [concepts]

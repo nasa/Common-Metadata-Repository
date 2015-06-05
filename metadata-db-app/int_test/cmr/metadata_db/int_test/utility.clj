@@ -9,6 +9,7 @@
             [clj-time.local :as l]
             [clj-time.coerce :as cr]
             [inflections.core :as inf]
+            [cmr.common.util :as util]
             [cmr.metadata-db.config :as config]
             [clj-http.conn-mgr :as conn-mgr]
             [cmr.transmit.config :as transmit-config]))
@@ -314,22 +315,20 @@
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
   status and a list of error messages."
-  ([provider-id]
-   (save-provider provider-id nil))
-  ([provider-id cmr-only]
-   (let [response (client/post providers-url
-                               {:body (json/generate-string
-                                        (merge {:provider-id provider-id}
-                                               (when (some? cmr-only)
-                                                 {:cmr-only cmr-only})))
-                                :content-type :json
-                                :accept :json
-                                :throw-exceptions false
-                                :connection-manager (conn-mgr)
-                                :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-         status (:status response)
-         {:keys [errors provider-id]} (json/decode (:body response) true)]
-     {:status status :errors errors :provider-id provider-id})))
+  [provider-id cmr-only small]
+  (let [response (client/post providers-url
+                              {:body (json/generate-string
+                                       (util/remove-nil-keys {:provider-id provider-id
+                                                              :cmr-only cmr-only
+                                                              :small small}))
+                               :content-type :json
+                               :accept :json
+                               :throw-exceptions false
+                               :connection-manager (conn-mgr)
+                               :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+        status (:status response)
+        {:keys [errors provider-id]} (json/decode (:body response) true)]
+    {:status status :errors errors :provider-id provider-id}))
 
 (defn get-providers
   "Make a GET request to retrieve the list of providers."
@@ -345,10 +344,11 @@
      :providers (when (= status 200) body)}))
 
 (defn update-provider
-  [provider-id cmr-only]
+  [provider-id cmr-only small]
   (client/put (format "%s/%s" providers-url provider-id)
               {:body (json/generate-string {:provider-id provider-id
-                                            :cmr-only cmr-only})
+                                            :cmr-only cmr-only
+                                            :small small})
                :content-type :json
                :accept :json
                :as :json
@@ -371,12 +371,11 @@
 
 (defn verify-provider-was-saved
   "Verify that the given provider-id is in the list of providers."
-  ([provider-id]
-   (verify-provider-was-saved provider-id false))
-  ([provider-id cmr-only]
-   (some #{{:provider-id provider-id
-            :cmr-only cmr-only}}
-         (:providers (get-providers)))))
+  [provider-id cmr-only small]
+  (some #{{:provider-id provider-id
+           :cmr-only cmr-only
+           :small small}}
+        (:providers (get-providers))))
 
 ;;; miscellaneous
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -414,6 +413,6 @@
   [& provider-ids]
   (fn [f]
     (reset-database)
-    (doseq [pid provider-ids] (save-provider pid))
+    (doseq [pid provider-ids] (save-provider pid false false))
     (f)))
 

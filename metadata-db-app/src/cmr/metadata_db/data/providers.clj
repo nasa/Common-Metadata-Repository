@@ -13,6 +13,10 @@
     [db]
     "Get a sequence of all the providers.")
 
+  (get-provider
+    [db provider-id]
+    "Get the provider with given id.")
+
   (update-provider
     [db provider]
     "Updates an existing provider in the database based on the
@@ -30,3 +34,8 @@
   "Error message indicating that the given provider-id does not exist."
   [provider-id]
   {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)})
+
+(defn small-field-cannot-be-modified
+  "Error message indicating that the small field of a provider cannot be modified."
+  [provider-id]
+  {:error :bad-request :error-message (format "Provider [%s] small field cannot be modified." provider-id)})

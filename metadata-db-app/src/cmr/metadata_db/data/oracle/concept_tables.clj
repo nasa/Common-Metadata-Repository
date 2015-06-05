@@ -14,7 +14,7 @@
   "Get the name for the table for a given provider-id and concept-type"
   [provider-id concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
-  (provider-service/validate-provider {:provider-id provider-id :cmr-only false})
+  (provider-service/validate-provider {:provider-id provider-id :cmr-only false :small false})
   (format "%s_%s" (string/lower-case provider-id) (inf/plural (name concept-type))))
 
 (defn create-concept-table-id-sequence

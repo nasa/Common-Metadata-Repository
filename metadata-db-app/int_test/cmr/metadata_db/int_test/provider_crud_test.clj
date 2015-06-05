@@ -3,6 +3,7 @@
   checking for proper error handling."
   (:require [clojure.test :refer :all]
             [cmr.metadata-db.int-test.utility :as util]
+            [cmr.common.util :as u]
             [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
@@ -13,50 +14,52 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
-  (testing "with cmr-only false"
-    (let [{:keys [status]} (util/save-provider "PROV1" false)]
-      (is (= status 201))
-      (is (util/verify-provider-was-saved "PROV1" false))))
+  (testing "successful saves"
+    (u/are2
+      [provider-id cmr-only small]
+      (let [{:keys [status]} (util/save-provider provider-id cmr-only small)]
+        (and (= status 201)
+             (util/verify-provider-was-saved provider-id
+                                             (if cmr-only true false)
+                                             (if small true false))))
+      "cmr-only false small false" "PROV1" false false
+      "cmr-only true small false" "PROV2" true false
+      "cmr-only false small true" "PROV3" false true
+      "cmr-only true small true" "PROV4" true true
+      "cmr-only and small default to false" "PROV5" nil nil))
   (testing "save provider twice"
-    (is (= 409 (:status (util/save-provider "PROV1")))))
-  (testing "with cmr-only true"
-    (let [{:keys [status]} (util/save-provider "PROV2" true)]
-      (is (= status 201))
-      (is (util/verify-provider-was-saved "PROV2" true))))
-  (testing "without cmr-only"
-    (let [{:keys [status]} (util/save-provider "PROV3" nil)]
-      (is (= status 201))
-      ;; cmr-only defaults to false
-      (is (util/verify-provider-was-saved "PROV3" false)))))
+    (is (= 409 (:status (util/save-provider "PROV1" false false))))))
 
 (deftest update-provider-test
   (testing "basic update"
-    (util/save-provider "PROV1" false)
-    (is (util/verify-provider-was-saved "PROV1" false))
-    (util/update-provider "PROV1" true)
-    (is (util/verify-provider-was-saved "PROV1" true)))
+    (util/save-provider "PROV1" false false)
+    (is (util/verify-provider-was-saved "PROV1" false false))
+    (util/update-provider "PROV1" true false)
+    (is (util/verify-provider-was-saved "PROV1" true false)))
+  (testing "cannot modify small field of a provider"
+    (is (= 400 (:status (util/update-provider "PROV1" true true)))))
   (testing "update nonexistant provider"
-    (is (= 404 (:status (util/update-provider "PROV2" true)))))
+    (is (= 404 (:status (util/update-provider "PROV2" true false)))))
   (testing "bad parameters"
-    (is (= 400 (:status (util/update-provider nil true))))
-    (is (= 400 (:status (util/update-provider "PROV1" nil))))))
+    (is (= 400 (:status (util/update-provider nil true false))))
+    (is (= 400 (:status (util/update-provider "PROV1" nil false))))))
 
 (deftest get-providers-test
-  (util/save-provider "PROV1")
-  (util/save-provider "PROV2")
+  (util/save-provider "PROV1" false false)
+  (util/save-provider "PROV2" true true)
   (let [{:keys [status providers]} (util/get-providers)]
     (is (= status 200))
-    (is (= [{:provider-id "PROV1" :cmr-only false}
-            {:provider-id "PROV2" :cmr-only false}]
+    (is (= [{:provider-id "PROV1" :cmr-only false :small false}
+            {:provider-id "PROV2" :cmr-only true :small true}]
            (sort-by :provider-id providers)))))
 
 (deftest delete-provider-test
-  (util/save-provider "PROV1")
-  (util/save-provider "PROV2")
+  (util/save-provider "PROV1" false false)
+  (util/save-provider "PROV2" false true)
   (util/delete-provider "PROV1")
   (let [{:keys [status providers]} (util/get-providers)]
     (is (= status 200))
-    (is (= [{:provider-id "PROV2" :cmr-only false}] providers))))
+    (is (= [{:provider-id "PROV2" :cmr-only false :small true}] providers))))
 
 (deftest delete-nonexistant-provider-test
   (is (= 404 (:status (util/delete-provider "PROV1")))))

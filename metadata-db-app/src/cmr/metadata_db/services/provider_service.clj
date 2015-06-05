@@ -39,7 +39,8 @@
   {:provider-id (v/first-failing provider-id-length-validation
                                  provider-id-empty-validation
                                  provider-id-format-validation)
-   :cmr-only (v/first-failing v/required must-be-boolean)})
+   :cmr-only (v/first-failing v/required must-be-boolean)
+   :small (v/first-failing v/required must-be-boolean)})
 
 (defn validate-provider
   "Validates the provider. Throws an exception with validation errors if the provider is invalid."
@@ -86,6 +87,9 @@
       (cond
         (= error-code :not-found)
         (cmsg/data-error :not-found msg/provider-does-not-exist provider-id)
+
+        (= error-code :bad-request)
+        (cmsg/data-error :bad-request msg/provider-small-field-cannot-be-modified provider-id)
 
         :else
         (errors/internal-error! (:error-message result))))))
