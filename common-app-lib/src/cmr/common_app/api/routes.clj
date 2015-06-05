@@ -1,7 +1,6 @@
 (ns cmr.common-app.api.routes
   "Defines routes that are common across multiple applications."
-  (:require [cmr.common.api :as api]
-            [cmr.common.cache :as cache]
+  (:require [cmr.common.cache :as cache]
             [cmr.common.jobs :as jobs]
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]

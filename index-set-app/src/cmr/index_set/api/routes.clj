@@ -7,7 +7,6 @@
             [cheshire.core :as json]
             [ring.util.response :as r]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [clojure.walk :as walk]

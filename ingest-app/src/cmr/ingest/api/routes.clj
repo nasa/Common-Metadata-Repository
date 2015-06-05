@@ -18,7 +18,6 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]

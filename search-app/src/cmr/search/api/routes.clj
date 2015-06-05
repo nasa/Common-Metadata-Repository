@@ -4,7 +4,6 @@
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [cmr.common.api :as api]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]

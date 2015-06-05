@@ -5,7 +5,6 @@
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
             [cheshire.core :as json]
-            [cmr.common.api :as api]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.util :as util]

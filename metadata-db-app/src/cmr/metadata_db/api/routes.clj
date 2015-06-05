@@ -10,7 +10,6 @@
             [cheshire.core :as json]
             [cmr.common.jobs :as jobs]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [cmr.system-trace.http :as http-trace]
