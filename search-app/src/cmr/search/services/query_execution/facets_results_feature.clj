@@ -145,8 +145,7 @@
               [:archive-center :project :platform :instrument :sensor
                :two-d-coordinate-system-name :processing-level-id :detailed-variable])
             [(r/map->ScienceKeywordsFacet {:field "science_keywords"
-                                           :facets science-keywords-facets})]
-            )))
+                                           :facets science-keywords-facets})])))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns
@@ -183,10 +182,7 @@
     (x/element (with-prefix :value-count-maps) {}
                (for [value-count-map value-count-maps]
                  (if-let [facets (:facets value-count-map)]
-
                    (for [facet facets]
-
-
                      (let [child-facets (x/element (with-prefix :facets) {}
                                                    (facet->xml-element ns-prefix facet))]
                        (x/element (with-prefix :value-count-map) {}
@@ -194,10 +190,10 @@
                                               {:count (:count value-count-map)}
                                               (:value value-count-map))
                                    child-facets])))
-                     (x/element (with-prefix :value-count-map) {}
-                                (x/element (with-prefix :value)
-                                           {:count (:count value-count-map)}
-                                           (:value value-count-map))))))))
+                   (x/element (with-prefix :value-count-map) {}
+                              (x/element (with-prefix :value)
+                                         {:count (:count value-count-map)}
+                                         (:value value-count-map))))))))
 
 (defn- facet->xml-element
   [ns-prefix {:keys [field value-counts value-count-maps facets]}]

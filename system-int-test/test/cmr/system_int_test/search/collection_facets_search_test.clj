@@ -263,8 +263,8 @@
                                                    :include-facets true
                                                    :hierarchical-facets true})
         json-results (search/find-concepts-json :collection  {:page-size 0
-                                                                :include-facets true
-                                                                :hierarchical-facets true})]
+                                                              :include-facets true
+                                                              :hierarchical-facets true})]
     (is (= expected-facets (get-in json-results [:results :facets])))
     ;; TODO Fix test code parsing of XML facets
     ; (is (= expected-facets (:facets ref-results)))

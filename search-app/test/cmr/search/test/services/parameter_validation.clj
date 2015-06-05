@@ -150,9 +150,7 @@
   (testing "boolean parameters with an invalid value return an error"
     (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was not-right" "Parameter include_facets must take value of true, false, or unset, but was TRUE"]
            (pv/boolean-value-validation :collection {:include-facets "TRUE"
-                                                     :hierarchical-facets "not-right"}))))
-
-  )
+                                                     :hierarchical-facets "not-right"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
   (testing "valid-start-date"
