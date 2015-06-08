@@ -54,12 +54,14 @@
   "Adds extra information to the event to help with processing"
   [{:keys [concept-id] :as event}]
   (let [{:keys [provider-id concept-type]} (concepts/parse-concept-id concept-id)]
-    (assoc event :provider-id provider-id :concept-type concept-type)))
+    (-> event
+        (update-in [:action] keyword)
+        (assoc :provider-id provider-id :concept-type concept-type))))
 
 (defn- concept-event?
   "Returns true if this is an event that applies to concepts"
   [event]
-  (contains? #{:concept-update :concept-delete :concept-create} (:action event)))
+  (contains? #{:concept-update :concept-delete :concept-create} (keyword (:action event))))
 
 (defn- virtual-granule-event?
   "Returns true if this is an event that should apply to virtual granules"
