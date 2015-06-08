@@ -21,6 +21,9 @@
   (fn [context event]
     (:action event)))
 
+
+
+
 (defmethod handle-virtual-granule-event :concept-create
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
@@ -47,8 +50,9 @@
                       new-granule-ur (pr-str resp)))))))
 
 (defmethod handle-virtual-granule-event :concept-update
-  [context {:keys [concept-id revision-id]}]
-  (warn "Ignoring granule update temporarily"))
+  [context event]
+  ;; Create and update are handled in the same manner.
+  (handle-virtual-granule-event context (assoc event :action :concept-create)))
 
 (defmethod handle-virtual-granule-event :concept-delete
   [context {:keys [concept-id revision-id]}]

@@ -19,19 +19,6 @@
 (use-fixtures :each (ingest/reset-fixture (into {} (for [p virtual-product-providers]
                                                      [(str p "_guid") p]))))
 
-(comment
-  (do
-    (dev-sys-util/reset)
-    (doseq [p virtual-product-providers]
-      (ingest/create-provider (str p "_guid") p)))
-
-
-  (def isc (ingest-source-collections))
-
-  (def vpc (ingest-virtual-collections isc))
-
-  )
-
 (defn source-collections
   "Returns a sequence of UMM collection records that are sources of virtual products."
   []
@@ -52,7 +39,9 @@
   (for [virtual-coll-attribs (-> vp-config/source-to-virtual-product-config
                                  (get [(:provider-id source-collection) (:entry-title source-collection)])
                                  :virtual-collections)]
-    (assoc (dc/collection virtual-coll-attribs)
+    (assoc (dc/collection (merge (dissoc source-collection
+                                         :revision-id :native-id :concept-id :entry-id :product)
+                                 virtual-coll-attribs ))
            :provider-id (:provider-id source-collection))))
 
 (defn ingest-virtual-collections
@@ -78,19 +67,37 @@
   (is (= (set expected-granule-urs)
          (set (map :name refs)))))
 
+(comment
+  (do
+    (dev-sys-util/reset)
+    (doseq [p virtual-product-providers]
+      (ingest/create-provider (str p "_guid") p)))
+
+  (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
+
+
+  (def isc (ingest-source-collections))
+
+  (def vpc (ingest-virtual-collections isc))
+
+  )
+
 (deftest specific-granule-in-virtual-product-test
   (let [ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                              :projects (dc/projects "proj1" "proj2" "proj3")}))
         vp-colls (ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
-        ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur}))
-        expected-granule-urs (granule->expected-virtual-granule-urs ast-l1a-gran)]
+        ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur
+                                                                  :project-refs ["proj1"]}))
+        expected-granule-urs (granule->expected-virtual-granule-urs ast-l1a-gran)
+        all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
 
     (testing "Find all granules"
       (assert-matching-granule-urs
-        (cons (:granule-ur ast-l1a-gran) expected-granule-urs)
+        all-expected-granule-urs
         (search/find-refs :granule {:page-size 50})))
 
     (testing "Find all granules in virtual collections"
@@ -99,7 +106,28 @@
           [(vp-config/generate-granule-ur
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
-                                      :page-size 50}))))))
+                                      :page-size 50}))))
+
+    (testing "Find virtual granule by shared fields"
+      (assert-matching-granule-urs
+        all-expected-granule-urs
+        (search/find-refs :granule {:page-size 50
+                                    :project "proj1"})))
+
+    (testing "update source granule"
+      ;; Update the source granule so that the projects referenced are different than original
+      (let [ast-l1a-gran-r2 (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran
+                                                          :project-refs ["proj2" "proj3"]
+                                                          :revision-id nil))]
+        (index/wait-until-indexed)
+        (testing "find none by original project"
+          (is (= 0 (:hits (search/find-refs :granule {:project "proj1"})))))
+
+        (testing "Find virtual granule by shared fields"
+          (assert-matching-granule-urs
+            all-expected-granule-urs
+            (search/find-refs :granule {:page-size 50
+                                        :project "proj2"})))))))
 
 (deftest all-granules-in-virtual-product-test
   (let [source-collections (ingest-source-collections)
