@@ -20,6 +20,10 @@
     "Publishes a message on the queue with the given queue name. Returns true if the message was
     successfully enqueued. Otherwise returns false.")
 
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    "Returns a sequence of queue names that are bound to the given exchange.")
+
   (publish-to-exchange
     [this exchange-name msg]
     "Publishes a message on the exchange with the given exchange name. Returns true if the message was

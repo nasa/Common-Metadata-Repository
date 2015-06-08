@@ -38,8 +38,7 @@
           (try
             (handler msg)
             (catch Throwable e
-              (error "Message processing failed for message" (pr-str msg) "with error:"
-                     (.getMessage e))
+              (error e "Message processing failed for message" (pr-str msg))
               ;; Retry by requeueing the message
               (attempt-retry queue-broker queue-name msg {:message (.getMessage e)}))))
         (finally
@@ -98,6 +97,10 @@
     [this queue-name msg]
     ;; Puts the message on the channel
     (a/>!! (queues-to-channels queue-name) msg))
+
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    (seq (exchanges-to-queue-sets exchange-name)))
 
   (publish-to-exchange
     [this exchange-name msg]

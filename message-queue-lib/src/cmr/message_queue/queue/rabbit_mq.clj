@@ -266,6 +266,12 @@
     [this queue-name msg]
     (publish this default-exchange-name queue-name msg))
 
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    (for [[q e] bindings
+          :when (= e exchange-name)]
+      q))
+
   (publish-to-exchange
     [this exchange-name msg]
     (publish this exchange-name "" msg))

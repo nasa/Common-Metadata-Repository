@@ -231,7 +231,7 @@
             (verify-provider-against-client-id request-context provider-id)
             (info (format "Validating Collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (ingest/validate-concept request-context concept)
+            (ingest/validate-collection request-context concept)
             {:status 200})))
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context params]}
@@ -240,7 +240,7 @@
           (let [concept (body->concept :collection provider-id native-id body content-type headers)]
             (info (format "Ingesting collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+            (generate-ingest-response headers (ingest/save-collection request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
@@ -264,7 +264,7 @@
           (let [concept (body->concept :granule provider-id native-id body content-type headers)]
             (info (format "Ingesting granule %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+            (generate-ingest-response headers (ingest/save-granule request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id

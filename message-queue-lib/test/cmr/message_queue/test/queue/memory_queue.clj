@@ -7,8 +7,8 @@
 (defmacro is-wait
   "Works like is but will repeatedly run the test code until it passes or times out."
   [test-code]
-  `(let [sleep-time# 10
-         max-wait-time# 2000]
+  `(let [sleep-time# 50
+         max-wait-time# 5000]
      (loop [num-tries# 0]
        (when (>= (* sleep-time# num-tries#) max-wait-time#)
          (is ~test-code)
@@ -23,6 +23,7 @@
 (defn success-handler
   "A handler that doesn't do anything"
   [& args]
+  ;; do nothing
   )
 
 (defn retry-handler
@@ -78,12 +79,12 @@
       (let [msgs-received (add-message-capturing-handler qb "a" retry-handler)]
         (is (q/publish-to-queue qb "a" {:id 1}))
         (is-wait (= [{:id 1}
-                {:id 1 :retry-count 1}
-                {:id 1 :retry-count 2}
-                {:id 1 :retry-count 3}
-                {:id 1 :retry-count 4}
-                {:id 1 :retry-count 5}]
-               @msgs-received)))
+                     {:id 1 :retry-count 1}
+                     {:id 1 :retry-count 2}
+                     {:id 1 :retry-count 3}
+                     {:id 1 :retry-count 4}
+                     {:id 1 :retry-count 5}]
+                    @msgs-received)))
       (finally
         (l/stop qb nil)))))
 

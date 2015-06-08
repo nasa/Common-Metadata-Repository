@@ -20,7 +20,6 @@
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
             [cmr.acl.core :as acl]
-            [cmr.message-queue.services.queue :as queue]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]))
