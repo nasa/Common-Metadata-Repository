@@ -8,7 +8,7 @@
             [cmr.common.services.errors :as errors]))
 
 (defn- safe-parse-json
-  "Tries to parses the string as json. Swallows any exceptions."
+  "Tries to parse the string as json. Swallows any exceptions."
   [s]
   (when s
     (try

@@ -31,19 +31,9 @@
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
   )
 
-(defn- handle-concept-create-or-update
-  "Handles a concept create or update message. They are both handled the same way by indexing the
-  concept."
+(defmethod handle-ingest-event :concept-update
   [context {:keys [concept-id revision-id]}]
   (indexer/index-concept context concept-id revision-id true))
-
-(defmethod handle-ingest-event :concept-update
-  [context msg]
-  (handle-concept-create-or-update context msg))
-
-(defmethod handle-ingest-event :concept-create
-  [context msg]
-  (handle-concept-create-or-update context msg))
 
 (defmethod handle-ingest-event :concept-delete
   [context {:keys [concept-id revision-id]}]

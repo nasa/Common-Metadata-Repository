@@ -21,10 +21,7 @@
   (fn [context event]
     (:action event)))
 
-
-
-
-(defmethod handle-virtual-granule-event :concept-create
+(defmethod handle-virtual-granule-event :concept-update
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
@@ -48,11 +45,6 @@
             resp (ingest/ingest-concept context new-concept)]
         (info (format "Ingested new virtual granule [%s] with response [%s]"
                       new-granule-ur (pr-str resp)))))))
-
-(defmethod handle-virtual-granule-event :concept-update
-  [context event]
-  ;; Create and update are handled in the same manner.
-  (handle-virtual-granule-event context (assoc event :action :concept-create)))
 
 (defmethod handle-virtual-granule-event :concept-delete
   [context {:keys [concept-id revision-id]}]
@@ -88,10 +80,11 @@
 (defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."
   [context]
-  (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/virtual-product-queue-name)]
-    (dotimes [n (config/queue-listener-count)]
-      (queue/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
+  (when (config/virtual-products-enabled)
+    (let [queue-broker (get-in context [:system :queue-broker])
+          queue-name (config/virtual-product-queue-name)]
+      (dotimes [n (config/queue-listener-count)]
+        (queue/subscribe queue-broker queue-name #(handle-ingest-event context %))))))
 
 
 

@@ -14,7 +14,7 @@
             [camel-snake-kebab.core :as csk]))
 
 (defn finish-parse-concept
-  "Finishes the parsing of a concept. After a concept has been parsed from JSON some of it's fields
+  "Finishes the parsing of a concept. After a concept has been parsed from JSON some of its fields
   may still be a String instead of a native clojure types."
   [concept]
   (update-in concept [:concept-type] keyword))
