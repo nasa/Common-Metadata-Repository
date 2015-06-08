@@ -38,9 +38,8 @@
 
 (defmethod provider-holdings->string :xml
   [result-format provider-holdings options]
-  (let [{:keys [pretty? echo-compatible?]} options
-        xml-fn (if pretty? x/indent-str x/emit-str)]
-    (xml-fn
+  (let [{:keys [echo-compatible?]} options]
+    (x/emit-str
       (x/element :provider-holdings {:type "array"}
                  (map (partial provider-holding->xml-elem echo-compatible?) provider-holdings)))))
 
@@ -69,8 +68,8 @@
 
 (defmethod provider-holdings->string :json
   [result-format provider-holdings options]
-  (let [{:keys [pretty? echo-compatible?]} options
+  (let [{:keys [echo-compatible?]} options
         provider-holdings (if echo-compatible?
                             (map cmr-provider-holding->echo-provider-holding provider-holdings)
                             provider-holdings)]
-    (json/generate-string provider-holdings {:pretty pretty?})))
+    (json/generate-string provider-holdings)))

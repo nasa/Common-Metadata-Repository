@@ -1,13 +1,15 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.set :as set]
             [ring.util.response :as r]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cmr.ingest.api.multipart :as mp]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as cheshire]
@@ -15,7 +17,6 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
@@ -86,17 +87,16 @@
 
   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <result>
-    <revision-id>1</revision-id>
-    <concept-id>C1-PROV1</concept-id>
+  <revision-id>1</revision-id>
+  <concept-id>C1-PROV1</concept-id>
   </result>"
-  [m pretty?]
-  (let [emit-fn (if pretty? x/indent-str x/emit-str)]
-    (emit-fn
-      (x/element :result {}
-                 (reduce-kv (fn [memo k v]
-                              (conj memo (x/element (keyword k) {} v)))
-                            []
-                            m)))))
+  [m]
+  (x/emit-str
+    (x/element :result {}
+               (reduce-kv (fn [memo k v]
+                            (conj memo (x/element (keyword k) {} v)))
+                          []
+                          m))))
 
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from the Accept header or :xml
@@ -117,12 +117,15 @@
 (defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  {:status 200 :body result})
+  {:status 200
+   :headers {"Content-Type" (mt/format->mime-type :json)}
+   :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
-  (let [pretty? (api/pretty-request? nil headers)]
-    {:status 200 :body (result-map->xml result pretty?)}))
+    {:status 200
+     :headers {"Content-Type" (mt/format->mime-type :xml)}
+     :body (result-map->xml result)})
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -324,10 +327,12 @@
   (-> (build-routes system)
       acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
       ring-json/wrap-json-body
-      ring-json/wrap-json-response
-      (api-errors/exception-handler default-error-format-fn)))
+      (api-errors/exception-handler default-error-format-fn)
+      common-routes/pretty-print-response-handler
+      params/wrap-params))
 

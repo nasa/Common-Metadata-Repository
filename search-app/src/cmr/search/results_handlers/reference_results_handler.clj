@@ -108,7 +108,6 @@
 
 (defmethod qs/search-results->response :xml
   [context query results]
-  (let [{:keys [pretty? echo-compatible? result-features]} query
-        include-facets? (boolean (some #{:facets} result-features))
-        xml-fn (if pretty? x/indent-str x/emit-str)]
-    (xml-fn (results->xml-element echo-compatible? include-facets? results))))
+  (let [{:keys [echo-compatible? result-features]} query
+        include-facets? (boolean (some #{:facets} result-features))]
+    (x/emit-str (results->xml-element echo-compatible? include-facets? results))))

@@ -299,7 +299,6 @@
         ;; sorting by document relevance score
         sort-keys (or (parse-sort-key (:sort-key params))
                       (when (:keyword params) [{:order :desc :field :score}]))
-        pretty? (= "true" (:pretty params))
         echo-compatible? (= "true" (:echo-compatible params))
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
@@ -313,7 +312,6 @@
      :sort-keys sort-keys
      :result-format (:result-format params)
      :result-features (seq result-features)
-     :pretty? pretty?
      :echo-compatible? echo-compatible?}))
 
 (defn parameters->query
@@ -324,7 +322,7 @@
         keywords (when (:keyword params)
                    (str/split (str/lower-case (:keyword params)) #" "))
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
-        params (dissoc params :options :page-size :page-num :sort-key :result-format :pretty
+        params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible)]
     (if (empty? params)

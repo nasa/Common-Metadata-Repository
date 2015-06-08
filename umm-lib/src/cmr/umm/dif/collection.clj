@@ -138,8 +138,6 @@
   UmmCollection
   (umm->dif-xml
     ([collection]
-     (cmr.umm.dif.core/umm->dif-xml collection false))
-    ([collection indent?]
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
@@ -147,9 +145,8 @@
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
-           temporal (when (seq (:range-date-times temporal)) temporal)
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+           temporal (when (seq (:range-date-times temporal)) temporal)]
+       (x/emit-str
          (x/element :DIF dif-header-attributes
                     (x/element :Entry_ID {} entry-id)
                     (x/element :Entry_Title {} entry-title)
