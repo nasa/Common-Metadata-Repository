@@ -22,24 +22,18 @@
   "List containing the elements within the science keyword hierarchy from top to bottom."
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
 
-(defn- science-keyword-aggregations-helper
+(defn- science-keyword-aggregation-builder
   "Build the science keyword aggregations query."
   [field-hierarchy]
   (when-let [field (first field-hierarchy)]
-    (let [remaining-fields (rest field-hierarchy)
-          next-field (first remaining-fields)
-          terms {:field (str "science-keywords." (name field))}
-          aggs (if next-field
-                 {:coll-count collection-count-aggregation
-                  next-field (science-keyword-aggregations-helper remaining-fields)}
-                 {:coll-count collection-count-aggregation})]
-      {:terms terms
-       :aggs aggs})))
+    {field {:terms {:field (str "science-keywords." (name field))}
+            :aggs (merge {:coll-count collection-count-aggregation}
+                         (science-keyword-aggregation-builder (rest field-hierarchy)))}}))
 
 (def ^:private science-keyword-aggregations
   "Builds a nested aggregation query for science-keyword-aggregations in a hierarchical fashion"
   {:nested {:path :science-keywords}
-   :aggs {:category (science-keyword-aggregations-helper science-keyword-hierarchy)}})
+   :aggs (science-keyword-aggregation-builder science-keyword-hierarchy)})
 
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
@@ -102,37 +96,55 @@
       {:field (csk/->snake_case_string field-name)
        :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
 
-(defn- science-keywords-bucket-helper
-  "Helper to parse the elasticsearch aggregations response for science-keywords."
+(defn- parse-hierarchical-bucket
+  "Parses the elasticsearch aggregations response for hierarchical fields."
   [field-hierarchy aggregations-for-field]
   (when-let [field (first field-hierarchy)]
-    (let [remaining-fields (rest field-hierarchy)
-          next-field (first remaining-fields)
-          buckets (get aggregations-for-field :buckets)
-          response (r/map->HierarchicalFacet {:field field})]
-      (->> (for [bucket buckets
-                 :let [field-key (get bucket :key)
-                       coll-count (get-in bucket [:coll-count :doc_count])
-                       sub-aggregations-for-field (when next-field
-                                                    (select-keys (get bucket next-field)
-                                                                 [:coll-count :buckets]))]]
-             (if (seq (get sub-aggregations-for-field :buckets))
-               (r/map->ValueCountMaps
-                 {:value field-key
-                  :count coll-count
-                  :facets [(science-keywords-bucket-helper remaining-fields
-                                                           sub-aggregations-for-field)]})
-               (r/map->ValueCountMaps
-                 {:value field-key
-                  :count coll-count})))
-           (assoc response :value-count-maps)))))
+    (let [next-field (first (rest field-hierarchy))
+          value-count-maps (for [bucket (:buckets aggregations-for-field)
+                                 :let [field-key (:key bucket)
+                                       coll-count (get-in bucket [:coll-count :doc_count])
+                                       sub-aggregations-for-field (when next-field
+                                                                    (select-keys (get bucket next-field)
+                                                                                 [:coll-count :buckets]))]]
+                             (if (seq (:buckets sub-aggregations-for-field))
+                               (r/map->ValueCountMaps
+                                 {:value field-key
+                                  :count coll-count
+                                  :facets [(parse-hierarchical-bucket (rest field-hierarchy)
+                                                                       sub-aggregations-for-field)]})
+                               (r/map->ValueCountMaps
+                                 {:value field-key
+                                  :count coll-count})))]
+      (r/map->HierarchicalFacet {:field field
+                                 :value-count-maps value-count-maps}))))
+
+; (defn- parse-hierarchical-bucket
+;   "Parses the elasticsearch aggregations response for hierarchical fields."
+;   [field-hierarchy aggregations-for-field]
+;   (when-let [field (first field-hierarchy)]
+;     (let [next-field (first (rest field-hierarchy))
+;           value-count-maps (for [bucket (:buckets aggregations-for-field)
+;                                  :let [field-key (:key bucket)
+;                                        coll-count (get-in bucket [:coll-count :doc_count])
+;                                        sub-aggregations-for-field (when next-field
+;                                                                     (select-keys (get bucket next-field)
+;                                                                                  [:coll-count :buckets]))
+;                                        sub-value-count-maps (merge {:value field-key
+;                                                                 :count coll-count}
+;                                                                (parse-hierarchical-bucket
+;                                                                  (rest field-hierarchy)
+;                                                                  sub-aggregations-for-field))]]
+;                              (r/map->ValueCountMaps sub-value-count-maps))]
+;     (r/map->HierarchicalFacet {:field field
+;                                :value-count-maps value-count-maps}))))
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
   map of science keywords."
   [bucket-map]
-  (science-keywords-bucket-helper science-keyword-hierarchy
-                                  (get bucket-map (first science-keyword-hierarchy))))
+  (parse-hierarchical-bucket science-keyword-hierarchy
+                             (get bucket-map (first science-keyword-hierarchy))))
 
 (defn- create-hierarchical-facets
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and

@@ -4,8 +4,6 @@
             [clojure.set :as set]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
-
-;; TODO Fix parsing to handle hierarchical facets
 (defn parse-facets-xml
   "Converts an xml element into a sequence of facet maps containing field and value counts"
   [facets-elem]
@@ -14,6 +12,22 @@
       (for [facet-elem facet-elems]
         (let [field (get-in facet-elem [:attrs :field])
               value-elems (cx/elements-at-path facet-elem [:value])]
+          {:field field
+           :value-counts (for [value-elem value-elems]
+                           [(first (:content value-elem))
+                            (Long. ^String (get-in value-elem [:attrs :count]))])})))))
+
+;; TODO Fix parsing to handle hierarchical facets
+(defn parse-hierarchical-facets-xml
+  "Converts an XML facets hierarchy into a nested map representation."
+  [facets-elem]
+  (when facets-elem
+    (when-let [facet-elems (cx/elements-at-path facets-elem [:facet])]
+      (for [facet-elem facet-elems]
+        (let [field (get-in facet-elem [:attrs :field])
+              value-elems (cx/elements-at-path facet-elem [:value])
+              value-count-map-elems (cx/elements-at-path facet-elem [:value-count-maps])
+              facets (cx/elements-at-path facet-elem [:facets])]
           {:field field
            :value-counts (for [value-elem value-elems]
                            [(first (:content value-elem))
