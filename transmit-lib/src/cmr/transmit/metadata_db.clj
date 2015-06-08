@@ -13,6 +13,12 @@
             [cmr.common.util :as util :refer [defn-timed]]
             [camel-snake-kebab.core :as csk]))
 
+(defn finish-parse-concept
+  "Finishes the parsing of a concept. After a concept has been parsed from JSON some of its fields
+  may still be a String instead of a native clojure types."
+  [concept]
+  (update-in concept [:concept-type] keyword))
+
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
@@ -23,7 +29,7 @@
                               :headers (ch/context->http-headers context)
                               :connection-manager (conn/conn-mgr conn)})]
     (if (= 200 (:status response))
-      (json/decode (:body response) true)
+      (finish-parse-concept (json/decode (:body response) true))
       (errors/throw-service-error
         :not-found
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db: " (:body response))))))
@@ -41,7 +47,7 @@
                                :connection-manager (conn/conn-mgr conn)})
          status (:status response)]
      (if (= 200 status)
-       (json/parse-string (:body response) true)
+       (finish-parse-concept (json/parse-string (:body response) true))
        (when (and throw-service-error? (= 404 status))
          (errors/throw-service-error
            :not-found
@@ -133,7 +139,7 @@
          (errors/throw-service-error :not-found err-msg))
 
        200
-       (json/decode (:body response) true)
+       (map finish-parse-concept (json/decode (:body response) true))
 
        ;; default
        (errors/internal-error! (str "Get latest concept revisions failed. MetadataDb app response status code: "
@@ -153,7 +159,7 @@
                                           :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (case status
-      200 (json/decode body true)
+      200 (map finish-parse-concept (json/decode body true))
       ;; default
       (errors/internal-error!
         (format "Collection search failed. status: %s body: %s"

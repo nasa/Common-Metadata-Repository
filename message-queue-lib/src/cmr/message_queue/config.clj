@@ -1,6 +1,7 @@
 (ns cmr.message-queue.config
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as tcfg]
+            [cmr.common.services.errors :as errors]
             [cheshire.core :as json]))
 
 (defconfig rabbit-mq-port
@@ -36,4 +37,29 @@
    :admin-port (rabbit-mq-admin-port)
    :username (rabbit-mq-user)
    :password (rabbit-mq-password)
-   :requested-heartbeat 120})
+   :requested-heartbeat 120
+   :queues []
+   :exchanges []
+   :queues-to-exchanges {}})
+
+(defn merge-configs
+  "Takes two message queue configs and merges them. Throws an exception if they contain conflicting
+  infomation"
+  [config1 config2]
+  (let [must-match-keys [:host :port :admin-port :username :password :requested-heartbeat]]
+    (when-not (apply = (map #(select-keys % must-match-keys) [config1 config2]))
+      (errors/internal-error! "Configs contained conflicting information"))
+    (-> config1
+        (update-in [:queues] #(distinct (concat % (:queues config2))))
+        (update-in [:exchanges] #(distinct (concat % (:exchanges config2))))
+        (update-in [:queues-to-exchanges]
+                   (fn [q-to-e]
+                     (merge-with
+                       (fn [v1 v2]
+                         (if (= v1 v2)
+                           v1
+                           (errors/internal-error!
+                             (format "Queue was mapped to two different exchanges: %s %s"
+                                     v1 v2))))
+                       q-to-e
+                       (:queues-to-exchanges config2)))))))

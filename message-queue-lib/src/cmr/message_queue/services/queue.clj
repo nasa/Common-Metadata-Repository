@@ -20,6 +20,10 @@
     "Publishes a message on the queue with the given queue name. Returns true if the message was
     successfully enqueued. Otherwise returns false.")
 
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    "Returns a sequence of queue names that are bound to the given exchange.")
+
   (publish-to-exchange
     [this exchange-name msg]
     "Publishes a message on the exchange with the given exchange name. Returns true if the message was
@@ -30,12 +34,7 @@
     "Subscribes to the given queue using the given handler function.
 
     'handler-fn' is a function that takes a single parameter (the message) and attempts to
-    process it. This function should respond with a map of the of the follwing form:
-    {:status status :message message}
-    where status is one of (:ok, :retry, :fail) and message is optional.
-    :ok    - message was processed successfully
-    :retry - message could not be processed and should be re-queued
-    :fail  - the message cannot be processed and should not be re-queued")
+    process it. If the function throws an exception the delivery will be retried.")
 
   (reset
     [this]

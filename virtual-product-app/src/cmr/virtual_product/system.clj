@@ -9,7 +9,10 @@
             [cmr.common.api.web-server :as web]
             [cmr.system-trace.context :as context]
             [cmr.common.config :as cfg :refer [defconfig]]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.virtual-product.services.virtual-product-service :as vps]
+            [cmr.virtual-product.config :as config]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]))
 
 (defconfig virtual-product-nrepl-port
   "Port to listen for nREPL connections"
@@ -19,16 +22,18 @@
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:log :web])
+  component-order [:log :queue-broker :web :nrepl])
 
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  {:log (log/create-logger)
-   :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
-   :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
-   :relative-root-url (transmit-config/virtual-product-relative-root-url)
-   :zipkin (context/zipkin-config "virtual-product" false)})
+  (let [sys {:log (log/create-logger)
+             :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
+             :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
+             :relative-root-url (transmit-config/virtual-product-relative-root-url)
+             :zipkin (context/zipkin-config "virtual-product" false)
+             :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
+    (transmit-config/system-with-connections sys [:metadata-db :ingest])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -40,6 +45,9 @@
                                             #(when % (lifecycle/start % system))))
                                this
                                component-order)]
+
+    (vps/subscribe-to-ingest-events {:system started-system})
+
     (info "virtual-product System started")
     started-system))
 

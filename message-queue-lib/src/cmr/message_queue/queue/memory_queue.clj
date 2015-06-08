@@ -36,16 +36,9 @@
         (u/while-let
           [msg (a/<! queue-ch)]
           (try
-            (let [resp (handler msg)]
-              (case (:status resp)
-                :success nil
-                :retry (attempt-retry queue-broker queue-name msg resp)
-                :failure (error (format (str "Message failed processing with error '%s', it has been "
-                                             "removed from the message queue. Message details: %s")
-                                        (:message resp) msg))))
+            (handler msg)
             (catch Throwable e
-              (error "Message processing failed for message" (pr-str msg) "with error:"
-                     (.getMessage e))
+              (error e "Message processing failed for message" (pr-str msg))
               ;; Retry by requeueing the message
               (attempt-retry queue-broker queue-name msg {:message (.getMessage e)}))))
         (finally
@@ -104,6 +97,10 @@
     [this queue-name msg]
     ;; Puts the message on the channel
     (a/>!! (queues-to-channels queue-name) msg))
+
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    (seq (exchanges-to-queue-sets exchange-name)))
 
   (publish-to-exchange
     [this exchange-name msg]

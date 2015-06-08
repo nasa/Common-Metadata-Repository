@@ -7,8 +7,8 @@
 (defmacro is-wait
   "Works like is but will repeatedly run the test code until it passes or times out."
   [test-code]
-  `(let [sleep-time# 10
-         max-wait-time# 2000]
+  `(let [sleep-time# 50
+         max-wait-time# 5000]
      (loop [num-tries# 0]
        (when (>= (* sleep-time# num-tries#) max-wait-time#)
          (is ~test-code)
@@ -20,11 +20,22 @@
            (Thread/sleep sleep-time#)
            (recur (inc num-tries#)))))))
 
+(defn success-handler
+  "A handler that doesn't do anything"
+  [& args]
+  ;; do nothing
+  )
+
+(defn retry-handler
+  "A handler that forces a retry"
+  [& args]
+  (throw (Exception. "force retry")))
+
 (defn add-message-capturing-handler
   "Adds a handler to the message queue that will capture all messages that have been received and
   put them in an atom. Returns the atom."
   ([qb queue-name]
-   (add-message-capturing-handler qb queue-name (constantly {:status :success})))
+   (add-message-capturing-handler qb queue-name success-handler))
   ([qb queue-name resp-fn]
    (let [msgs-received (atom [])
          message-capturing-handler (fn [msg]
@@ -45,8 +56,8 @@
 
     (testing "shutdown with subscribers"
       (let [qb (make-qb)]
-        (q/subscribe qb "a" (constantly {:status :success}))
-        (q/subscribe qb "a" (constantly {:status :success}))
+        (q/subscribe qb "a" success-handler)
+        (q/subscribe qb "a" success-handler)
         (l/stop qb nil)))))
 
 (deftest queue-success-test
@@ -65,41 +76,15 @@
   (let [qb (l/start (mq/create-memory-queue-broker
                       {:queues ["a"]}) nil)]
     (try
-      (let [msgs-received (add-message-capturing-handler qb "a" (constantly {:status :retry}))]
+      (let [msgs-received (add-message-capturing-handler qb "a" retry-handler)]
         (is (q/publish-to-queue qb "a" {:id 1}))
         (is-wait (= [{:id 1}
-                {:id 1 :retry-count 1}
-                {:id 1 :retry-count 2}
-                {:id 1 :retry-count 3}
-                {:id 1 :retry-count 4}
-                {:id 1 :retry-count 5}]
-               @msgs-received)))
-      (finally
-        (l/stop qb nil)))))
-
-(deftest queue-failure-test
-  (let [qb (l/start (mq/create-memory-queue-broker
-                      {:queues ["a"]}) nil)]
-    (try
-      (let [msgs-received (add-message-capturing-handler qb "a" (constantly {:status :failure}))]
-        (is (q/publish-to-queue qb "a" {:id 1}))
-        (is-wait (= [{:id 1}] @msgs-received)))
-      (finally
-        (l/stop qb nil)))))
-
-(deftest queue-exception-test
-  (let [qb (l/start (mq/create-memory-queue-broker
-                      {:queues ["a"]}) nil)]
-    (try
-      (let [msgs-received (add-message-capturing-handler qb "a" #(throw (Exception. "fail")))]
-        (is (q/publish-to-queue qb "a" {:id 1}))
-        (is-wait (= [{:id 1}
-                {:id 1 :retry-count 1}
-                {:id 1 :retry-count 2}
-                {:id 1 :retry-count 3}
-                {:id 1 :retry-count 4}
-                {:id 1 :retry-count 5}]
-               @msgs-received)))
+                     {:id 1 :retry-count 1}
+                     {:id 1 :retry-count 2}
+                     {:id 1 :retry-count 3}
+                     {:id 1 :retry-count 4}
+                     {:id 1 :retry-count 5}]
+                    @msgs-received)))
       (finally
         (l/stop qb nil)))))
 

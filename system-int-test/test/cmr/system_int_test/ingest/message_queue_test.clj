@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.search-util :as search]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.indexer.config :as indexer-config]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -107,7 +108,7 @@
                 ["C1-PROV1" 1]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
 (deftest message-queue-retry-test
   (s/only-with-real-message-queue
@@ -129,7 +130,7 @@
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "success"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
 (deftest message-queue-failure-test
   (s/only-with-real-message-queue
@@ -159,7 +160,7 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "failure"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
 ;; This test isn't reliable as sometimes the item is able to be queued
 ;; See CMR-1717
@@ -173,7 +174,7 @@
           (is (= 503 (:status collection)))
           (index-util/wait-until-indexed)
           ;; Verify the message queue did not receive the message
-          (is (nil? (index-util/get-concept-message-queue-history)))))
+          (is (nil? (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))
 
       (testing "Delete concept"
         (index-util/set-message-queue-publish-timeout 10000)
@@ -187,7 +188,7 @@
           (is (= {[(:concept-id collection) 1]
                   [{:action "enqueue", :result "initial"}
                    {:action "process", :result "success"}]}
-                 (index-util/get-concept-message-queue-history))))))))
+                 (index-util/get-concept-message-queue-history (indexer-config/index-queue-name)))))))))
 
 (comment
 
