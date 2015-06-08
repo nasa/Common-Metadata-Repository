@@ -95,9 +95,9 @@
   fashion. This can be specified either through a pretty=true in the URL query parameters or
   through a Cmr-Pretty HTTP header."
   ([request]
-   (let [{:keys [headers query-string]} request]
+   (let [{:keys [headers params]} request]
      (or
-       (-> request :params (get "pretty") (= "true"))
+       (= "true" (get params "pretty"))
        (= "true" (get headers "cmr-pretty"))))))
 
 (defn- pretty-print-body
@@ -106,15 +106,14 @@
   (let [mime-type (mt/mime-type-from-headers (:headers response))
         find-re (fn [re] (and mime-type (re-find re mime-type)))]
     (if (string? (:body response))
-      (cond (find-re #"application/.*json.*")
-            (update-in response [:body]
-                       (fn [json-str]
-                         (-> json-str
-                             json/parse-string
-                             (json/generate-string {:pretty true}))))
-            (find-re #"application/.*xml.*")
-            (update-in response [:body] cx/pretty-print-xml)
-            :else response)
+      (cond
+        (find-re #"application/.*json.*")(update-in response [:body]
+                                                    (fn [json-str]
+                                                      (-> json-str
+                                                          json/parse-string
+                                                          (json/generate-string {:pretty true}))))
+        (find-re #"application/.*xml.*") (update-in response [:body] cx/pretty-print-xml)
+        :else response)
       ((ring-json/wrap-json-response identity {:pretty true}) response))))
 
 (defn pretty-print-response-handler

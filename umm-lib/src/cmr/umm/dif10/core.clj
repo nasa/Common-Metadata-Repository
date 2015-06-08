@@ -5,4 +5,4 @@
   "Functions for converting umm items to xml."
   (umm->dif10-xml
     [item]
-    "Converts the item to xml with optional indent flag to print indented."))
+    "Converts the item to xml."))

@@ -6,7 +6,7 @@
   "Functions for converting umm items to ISO MENDS xml."
   (umm->iso-mends-xml
     [item]
-    "Converts the item to xml with optional indent flag to print indented."))
+    "Converts the item to xml."))
 
 (defn id-elem
   "Returns MD_DataIdentification element from given ISO XML document."

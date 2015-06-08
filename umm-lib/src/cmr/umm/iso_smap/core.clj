@@ -5,4 +5,4 @@
   "Functions for converting umm items to ISO SMAP xml."
   (umm->iso-smap-xml
     [item]
-    "Converts the item to xml with optional indent flag to print indented."))
+    "Converts the item to xml."))

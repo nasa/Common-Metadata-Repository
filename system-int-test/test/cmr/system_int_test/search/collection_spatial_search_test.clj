@@ -318,7 +318,7 @@
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
            [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
 
-    (testing "multiple bounding-box searches should returns collections which intersect all the
+    (testing "multiple bounding-box searches should return collections which intersect all the
              supplied bounding boxes"
       (are [wnes-vec items]
            (let [found (search/find-refs :collection {:bounding-box
