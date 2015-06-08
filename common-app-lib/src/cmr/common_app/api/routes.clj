@@ -7,7 +7,6 @@
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
             [cmr.common.xml :as cx]
-            [clojure.string :as str]
             [cmr.common.mime-types :as mt]
             [compojure.core :refer :all]
             [ring.util.codec :as rc]))
@@ -107,11 +106,11 @@
         find-re (fn [re] (and mime-type (re-find re mime-type)))]
     (if (string? (:body response))
       (cond
-        (find-re #"application/.*json.*")(update-in response [:body]
-                                                    (fn [json-str]
-                                                      (-> json-str
-                                                          json/parse-string
-                                                          (json/generate-string {:pretty true}))))
+        (find-re #"application/.*json.*") (update-in response [:body]
+                                                     (fn [json-str]
+                                                       (-> json-str
+                                                           json/parse-string
+                                                           (json/generate-string {:pretty true}))))
         (find-re #"application/.*xml.*") (update-in response [:body] cx/pretty-print-xml)
         :else response)
       ((ring-json/wrap-json-response identity {:pretty true}) response))))
