@@ -75,7 +75,8 @@
   "Handles an ingest event. Checks if it is an event that should be applied to virtual granules. If
   it is then delegates to a granule event handler."
   [context event]
-  (when (concept-event? event)
+  (when (and (config/virtual-products-enabled)
+             (concept-event? event))
     (let [annotated-event (annotate-event event)]
       (when (virtual-granule-event? annotated-event)
         (handle-virtual-granule-event context annotated-event)))))

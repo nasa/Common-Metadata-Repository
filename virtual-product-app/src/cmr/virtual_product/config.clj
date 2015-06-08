@@ -3,6 +3,13 @@
             [cmr.message-queue.config :as mq-conf]
             [clojure.string :as str]))
 
+(defconfig virtual-products-enabled
+  "Enables the updates of virtual products. If this is false every ingest event will be ignored
+  by the virtual product application. If it is true ingest events will be processed and applied to
+  the equivalent virtual products."
+  {:default true
+   :type Boolean})
+
 (defconfig virtual-product-queue-name
   "The queue containing ingest events for the virtual product app."
   {:default "cmr_virtual_product.queue"})
@@ -35,7 +42,25 @@
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:source-short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
-                           :short-name "AST_05"}]}})
+                           :short-name "AST_05"}
+                          {:entry-title "ASTER On-Demand L2 Surface Reflectance"
+                           :short-name "AST_07"}
+                          {:entry-title "ASTER On-Demand L2 Surface Reflectance VNIR and SWIR Crosstalk-Corrected"
+                           :short-name "AST_07XT"}
+                          {:entry-title "ASTER On-Demand L2 Surface Kinetic Temperature"
+                           :short-name "AST_08"}
+                          {:entry-title "ASTER On-Demand L2 Surface Radiance SWIR and VNIR"
+                           :short-name "AST_09"}
+                          {:entry-title "ASTER On-Demand L2 Surface Radiance VNIR and SWIR Crosstalk-Corrected"
+                           :short-name "AST_09XT"}
+                          {:entry-title "ASTER On-Demand L2 Surface Radiance TIR"
+                           :short-name "AST_09T"}
+                          {:entry-title "ASTER On-Demand L3 Digital Elevation Model, GeoTIF Format"
+                           :short-name "AST14DEM"}
+                          {:entry-title "ASTER On-Demand L3 Orthorectified Images, GeoTIF Format"
+                           :short-name "AST14OTH"}
+                          {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
+                           :short-name "AST14DMO"}]}})
 
 (def sample-source-granule-urs
   "This contains a map of source collection provider id and entry title tuples to sample granule

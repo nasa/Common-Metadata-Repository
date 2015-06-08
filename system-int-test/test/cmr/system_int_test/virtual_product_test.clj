@@ -32,7 +32,6 @@
 
   )
 
-
 (defn source-collections
   "Returns a sequence of UMM collection records that are sources of virtual products."
   []
@@ -92,20 +91,50 @@
     (testing "Find all granules"
       (assert-matching-granule-urs
         (cons (:granule-ur ast-l1a-gran) expected-granule-urs)
-        (search/find-refs :granule {})))
+        (search/find-refs :granule {:page-size 50})))
 
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls]
         (assert-matching-granule-urs
           [(vp-config/generate-granule-ur
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
-          (search/find-refs :granule {:entry-title (:entry-title vp-coll)}))))))
+          (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                      :page-size 50}))))))
 
+(deftest all-granules-in-virtual-product-test
+  (let [source-collections (ingest-source-collections)
+        ;; Ingest the virtual collections. For each virtual collection associate it with the source
+        ;; collection to use later.
+        vp-colls (reduce (fn [new-colls source-coll]
+                           (into new-colls (map #(assoc % :source-collection source-coll)
+                                                (ingest-virtual-collections [source-coll]))))
+                         []
+                         source-collections)
+        source-granules (doall (for [source-coll source-collections
+                                     :let [{:keys [provider-id entry-title]} source-coll]
+                                     granule-ur (vp-config/sample-source-granule-urs
+                                                  [provider-id entry-title])]
+                                 (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))
+        all-expected-granule-urs (concat (mapcat granule->expected-virtual-granule-urs source-granules)
+                                         (map :granule-ur source-granules))]
+    (index/wait-until-indexed)
 
+    (testing "Find all granules"
+      (assert-matching-granule-urs
+        all-expected-granule-urs
+        (search/find-refs :granule {:page-size 50})))
 
-
-
-
+    (testing "Find all granules in virtual collections"
+      (doseq [vp-coll vp-colls
+              :let [{:keys [provider-id source-collection]} vp-coll
+                    source-short-name (get-in source-collection [:product :short-name])
+                    vp-short-name (get-in vp-coll [:product :short-name])]]
+        (assert-matching-granule-urs
+          (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
+               (vp-config/sample-source-granule-urs
+                 [provider-id (:entry-title source-collection)]))
+          (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                      :page-size 50}))))))
 
 
 
