@@ -40,3 +40,15 @@
                                 :content-type (:format concept)
                                 :headers {"Revision-Id" revision-id}
                                 :accept :json}}))))
+
+(defn-timed delete-concept
+  ([context concept]
+   (delete-concept context concept false))
+  ([context concept is-raw]
+   (let [{:keys [provider-id concept-type native-id revision-id]} concept]
+     (h/request context :ingest
+                {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
+                 :method :delete
+                 :raw? is-raw
+                 :http-options {:headers {"Revision-Id" revision-id}
+                                :accept :json}}))))
