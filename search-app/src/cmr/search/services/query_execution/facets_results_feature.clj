@@ -102,42 +102,17 @@
   (when-let [field (first field-hierarchy)]
     (let [next-field (first (rest field-hierarchy))
           value-count-maps (for [bucket (:buckets aggregations-for-field)
-                                 :let [field-key (:key bucket)
-                                       coll-count (get-in bucket [:coll-count :doc_count])
-                                       sub-aggregations-for-field (when next-field
-                                                                    (select-keys (get bucket next-field)
-                                                                                 [:coll-count :buckets]))]]
-                             (if (seq (:buckets sub-aggregations-for-field))
-                               (r/map->ValueCountMaps
-                                 {:value field-key
-                                  :count coll-count
-                                  :facets [(parse-hierarchical-bucket (rest field-hierarchy)
-                                                                       sub-aggregations-for-field)]})
-                               (r/map->ValueCountMaps
-                                 {:value field-key
-                                  :count coll-count})))]
-      (r/map->HierarchicalFacet {:field field
-                                 :value-count-maps value-count-maps}))))
-
-; (defn- parse-hierarchical-bucket
-;   "Parses the elasticsearch aggregations response for hierarchical fields."
-;   [field-hierarchy aggregations-for-field]
-;   (when-let [field (first field-hierarchy)]
-;     (let [next-field (first (rest field-hierarchy))
-;           value-count-maps (for [bucket (:buckets aggregations-for-field)
-;                                  :let [field-key (:key bucket)
-;                                        coll-count (get-in bucket [:coll-count :doc_count])
-;                                        sub-aggregations-for-field (when next-field
-;                                                                     (select-keys (get bucket next-field)
-;                                                                                  [:coll-count :buckets]))
-;                                        sub-value-count-maps (merge {:value field-key
-;                                                                 :count coll-count}
-;                                                                (parse-hierarchical-bucket
-;                                                                  (rest field-hierarchy)
-;                                                                  sub-aggregations-for-field))]]
-;                              (r/map->ValueCountMaps sub-value-count-maps))]
-;     (r/map->HierarchicalFacet {:field field
-;                                :value-count-maps value-count-maps}))))
+                                 :let [sub-aggregations-for-field (when next-field
+                                                                    (select-keys
+                                                                      (get bucket next-field)
+                                                                      [:coll-count :buckets]))]]
+                             (merge (when (seq (:buckets sub-aggregations-for-field))
+                                      (parse-hierarchical-bucket (rest field-hierarchy)
+                                                                 sub-aggregations-for-field))
+                                    {:count (get-in bucket [:coll-count :doc_count])
+                                     :value (:key bucket)}))]
+      {:subfields [field]
+       field value-count-maps})))
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
@@ -150,14 +125,12 @@
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
   returns the facets."
   [elastic-aggregations]
-  (let [science-keywords-bucket (:science-keywords elastic-aggregations)
-        science-keywords-facets (science-keywords-bucket->facets science-keywords-bucket)]
-    (concat (bucket-map->facets
-              (dissoc elastic-aggregations :science-keywords)
-              [:archive-center :project :platform :instrument :sensor
-               :two-d-coordinate-system-name :processing-level-id :detailed-variable])
-            [(r/map->ScienceKeywordsFacet {:field "science_keywords"
-                                           :facets science-keywords-facets})])))
+  (concat (bucket-map->facets (dissoc elastic-aggregations :science-keywords)
+                              [:archive-center :project :platform :instrument :sensor
+                               :two-d-coordinate-system-name :processing-level-id
+                               :detailed-variable])
+          [(merge (science-keywords-bucket->facets (:science-keywords elastic-aggregations))
+                  {:field "science_keywords"})]))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns

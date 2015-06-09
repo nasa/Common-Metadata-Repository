@@ -851,6 +851,157 @@ Facets are counts of unique values from fields in items matching search results.
 
 TODO: Document hierarchical facets
 
+{
+  "feed" : {
+    "updated" : "2015-06-09T11:51:42.889Z",
+    "id" : "http://localhost:3003/collections.json?include_facets=true&hierarchical_facets=true&pretty=true&page_size=0",
+    "title" : "ECHO dataset metadata",
+    "entry" : [ ],
+    "facets" : [ {
+      "field" : "archive_center",
+      "value-counts" : [ [ "Larc", 3 ], [ "GSFC", 1 ] ]
+    }, {
+      "field" : "project",
+      "value-counts" : [ [ "PROJ2", 2 ], [ "proj1", 1 ], [ "proj3", 1 ] ]
+    }, {
+      "field" : "platform",
+      "value-counts" : [ [ "A-p0", 2 ], [ "A-p1", 1 ], [ "B-p0", 1 ], [ "B-p1", 1 ] ]
+    }, {
+      "field" : "instrument",
+      "value-counts" : [ [ "A-p0-i0", 2 ], [ "A-p0-i1", 1 ], [ "A-p1-i0", 1 ], [ "A-p1-i1", 1 ], [ "B-p0-i0", 1 ], [ "B-p0-i1", 1 ], [ "B-p1-i0", 1 ], [ "B-p1-i1", 1 ] ]
+    }, {
+      "field" : "sensor",
+      "value-counts" : [ [ "A-p0-i0-s0", 2 ], [ "A-p0-i1-s0", 1 ], [ "A-p1-i0-s0", 1 ], [ "A-p1-i1-s0", 1 ], [ "B-p0-i0-s0", 1 ], [ "B-p0-i1-s0", 1 ], [ "B-p1-i0-s0", 1 ], [ "B-p1-i1-s0", 1 ] ]
+    }, {
+      "field" : "two_d_coordinate_system_name",
+      "value-counts" : [ [ "Alpha", 2 ], [ "Bravo", 1 ], [ "alpha", 1 ] ]
+    }, {
+      "field" : "processing_level_id",
+      "value-counts" : [ [ "PL1", 2 ], [ "PL2", 1 ], [ "pl1", 1 ] ]
+    }, {
+      "field" : "detailed_variable",
+      "value-counts" : [ [ "Detail1", 2 ], [ "UNIVERSAL", 1 ] ]
+    }, {
+      "field" : "science_keywords",
+      "subfields" : [ "category" ],
+      "category" : [ {
+        "value" : "Hurricane",
+        "count" : 3,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "Popular",
+          "count" : 2,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "UNIVERSAL",
+            "count" : 2
+          }, {
+            "value" : "Extreme",
+            "count" : 1,
+            "subfields" : [ "variable-level-1" ],
+            "variable-level-1" : [ {
+              "value" : "Level2-1",
+              "count" : 1,
+              "subfields" : [ "variable-level-2" ],
+              "variable-level-2" : [ {
+                "value" : "Level2-2",
+                "count" : 1,
+                "subfields" : [ "variable-level-3" ],
+                "variable-level-3" : [ {
+                  "value" : "Level2-3",
+                  "count" : 1
+                } ]
+              } ]
+            } ]
+          } ]
+        }, {
+          "value" : "Cool",
+          "count" : 1,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "Term4",
+            "count" : 1,
+            "subfields" : [ "variable-level-1" ],
+            "variable-level-1" : [ {
+              "value" : "UNIVERSAL",
+              "count" : 1
+            } ]
+          } ]
+        } ]
+      }, {
+        "value" : "Cat1",
+        "count" : 2,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "Topic1",
+          "count" : 2,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "Term1",
+            "count" : 2,
+            "subfields" : [ "variable-level-1" ],
+            "variable-level-1" : [ {
+              "value" : "Level1-1",
+              "count" : 2,
+              "subfields" : [ "variable-level-2" ],
+              "variable-level-2" : [ {
+                "value" : "Level1-2",
+                "count" : 2,
+                "subfields" : [ "variable-level-3" ],
+                "variable-level-3" : [ {
+                  "value" : "Level1-3",
+                  "count" : 2
+                } ]
+              } ]
+            } ]
+          } ]
+        } ]
+      }, {
+        "value" : "Tornado",
+        "count" : 2,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "Popular",
+          "count" : 2,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "Extreme",
+            "count" : 2
+          } ]
+        } ]
+      }, {
+        "value" : "UPCASE",
+        "count" : 1,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "Popular",
+          "count" : 1,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "Mild",
+            "count" : 1
+          } ]
+        } ]
+      }, {
+        "value" : "upcase",
+        "count" : 1,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "Cool",
+          "count" : 1,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "Mild",
+            "count" : 1
+          } ]
+        } ]
+      } ]
+    } ]
+  }
+}
+
+
+
 #### Facets in XML Responses
 
 Facets in XML search response formats will be formatted like the following example. The exception is ATOM XML which is the same except the tags are in the echo namespace.
