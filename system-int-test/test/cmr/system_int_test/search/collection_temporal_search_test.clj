@@ -50,51 +50,49 @@
                                                  :ends-at-present? true}))]
     (index/wait-until-indexed)
 
-    (doseq [sep ["," "/"]]
-
       (testing "search by temporal_start."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2010-12-12T12:00:00Z" sep)})]
+                                           {"temporal[]" "2010-12-12T12:00:00Z,"})]
           (is (d/refs-match? [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] references))))
 
       (testing "search by temporal_end."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" (str sep "2010-12-12T12:00:00Z")})]
+                                           {"temporal[]" "/2010-12-12T12:00:00Z"})]
           (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11 coll12 coll13] references))))
       (testing "search by temporal_range."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2010-01-01T10:00:00Z" sep "2010-01-10T12:00:00Z")})]
+                                           {"temporal[]" "2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z"})]
           (is (d/refs-match? [coll1 coll13] references))))
       (testing "search by temporal_range.options: :exclude-boundary false"
         (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2010-01-11T12:00:00Z" sep "2010-01-30T12:00:00Z")
+                                           {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
                                             "options[temporal][exclude_boundary]" "false"})]
           (is (d/refs-match? [coll1 coll6 coll13] references))))
       (testing "search by temporal_range.options: :exclude-boundary true"
         (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2010-01-11T12:00:00Z" sep "2010-01-30T12:00:00Z")
+                                           {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
                                             "options[temporal][exclude_boundary]" "true"})]
           (is (d/refs-match? [coll13] references))))
       (testing "search by multiple temporal_range."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2010-01-01T10:00:00Z" sep "2010-01-10T12:00:00Z") (str "2009-02-22T10:00:00Z" sep "2010-02-22T10:00:00Z")]})]
+                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/2010-02-22T10:00:00Z"]})]
           (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
       (testing "search by multiple temporal_range, options :or."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2010-01-01T10:00:00Z" sep "2010-01-10T12:00:00Z") (str "2009-02-22T10:00:00Z" sep "2010-02-22T10:00:00Z")]
+                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/P1Y"]
                                             "options[temporal][or]" ""})]
           (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
       (testing "search by multiple temporal_range, options :and."
         (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2010-01-01T10:00:00Z" sep "2010-01-10T12:00:00Z") (str "2009-02-22T10:00:00Z" sep "2010-02-22T10:00:00Z")]
+                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
                                             "options[temporal][and]" "true"})]
           (is (d/refs-match? [coll1 coll13] references))))
       (testing "search by multiple temporal_range, options :or :exclude-boundary"
         (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2009-02-22T10:00:00Z" sep "2010-01-01T12:00:00Z") (str "2010-01-11T12:00:00Z" sep "2010-12-03T12:00:00Z")]
+                                           {"temporal[]" ["2009-02-22T10:00:00Z,2010-01-01T12:00:00Z" "2010-01-11T12:00:00Z, 2010-12-03T12:00:00Z"]
                                             "options[temporal][or]" "true"
                                             "options[temporal][exclude_boundary]" "true"})]
-          (is (d/refs-match? [coll2 coll6 coll10 coll13] references)))))
+          (is (d/refs-match? [coll2 coll6 coll10 coll13] references))))
 
     (testing "search by temporal_range - iso8601 interval"
         (let [references (search/find-refs :collection

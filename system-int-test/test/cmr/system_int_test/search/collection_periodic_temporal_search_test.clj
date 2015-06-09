@@ -48,51 +48,49 @@
         coll20 (d/ingest "PROV2" (dc/collection {}))]
     (index/wait-until-indexed)
 
-    (doseq [sep ["," "/"]]
-
-      (testing "search by both start-day and end-day."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2000-02-15T00:00:00Z" sep "2002-03-15T00:00:00Z, 32, 90")
-                                            :page_size 100})]
-          (is (d/refs-match? [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17] references))))
-      (testing "search by both start-day and end-day - testing singular temporal."
-        (let [extent (str "2000-02-15T00:00:00Z" sep "2002-03-15T00:00:00Z, 32, 90")
-              references (search/find-refs :collection {"temporal[]" extent :page_size 100})
-              references1 (search/find-refs :collection {"temporal" extent :page_size 100})]
-          (is (= (dissoc references :took)
-                 (dissoc references1 :took)))))
-      (testing "search by end-day."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2000-02-15T00:00:00Z" sep "2002-03-15T00:00:00Z, , 90")
-                                            :page_size 100})]
-          (is (d/refs-match?
-                [coll2 coll3 coll5 coll6 coll7 coll9 coll10 coll11 coll16 coll17] references))))
-      (testing "search by start-day."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" (str "2000-02-15T00:00:00Z" sep "2002-03-15T00:00:00Z, 32,")
-                                            :page_size 100})]
-          (is (d/refs-match?
-                [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll16 coll17 coll19] references))))
-      (testing "search by start-day without end_date."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2000-02-15T00:00:00Z" sep " , 32")]
-                                            :page_size 100})]
-          (is (d/refs-match?
-                [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll12 coll13 coll15 coll16 coll17 coll18 coll19]
-                references))))
-      (testing "search by start-day/end-day with date crossing year boundary."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" [(str "2000-04-03T00:00:00Z" sep "2002-01-02T00:00:00Z, 93, 2")]
-                                            :page_size 100})]
-          (is (d/refs-match?
-                [coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll16 coll17 coll19] references))))
-      (testing "search by multiple temporal."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]"
-                                            [(str "1998-01-15T00:00:00Z" sep "1999-03-15T00:00:00Z, 60, 90")
-                                             (str "2000-02-15T00:00:00Z" sep "2001-03-15T00:00:00Z, 40, 50")]
-                                            :page_size 100})]
-          (is (d/refs-match? [coll2 coll6 coll14 coll16 coll17] references)))))
+    (testing "search by both start-day and end-day."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
+                                          :page_size 100})]
+        (is (d/refs-match? [coll2 coll3 coll6 coll7 coll10 coll11 coll16 coll17] references))))
+    (testing "search by both start-day and end-day - testing singular temporal."
+      (let [extent "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, 32, 90"
+            references (search/find-refs :collection {"temporal[]" extent :page_size 100})
+            references1 (search/find-refs :collection {"temporal" extent :page_size 100})]
+        (is (= (dissoc references :took)
+               (dissoc references1 :took)))))
+    (testing "search by end-day."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" "2000-02-15T00:00:00Z, 2002-03-15T00:00:00Z, , 90"
+                                          :page_size 100})]
+        (is (d/refs-match?
+              [coll2 coll3 coll5 coll6 coll7 coll9 coll10 coll11 coll16 coll17] references))))
+    (testing "search by start-day."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" "2000-02-15T00:00:00Z/P2Y1M, 32,"
+                                          :page_size 100})]
+        (is (d/refs-match?
+              [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll16 coll17 coll19] references))))
+    (testing "search by start-day without end_date."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" ["2000-02-15T00:00:00Z, , 32"]
+                                          :page_size 100})]
+        (is (d/refs-match?
+              [coll2 coll3 coll4 coll6 coll7 coll8 coll10 coll11 coll12 coll13 coll15 coll16 coll17 coll18 coll19]
+              references))))
+    (testing "search by start-day/end-day with date crossing year boundary."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]" ["2000-04-03T00:00:00Z, 2002-01-02T00:00:00Z, 93, 2"]
+                                          :page_size 100})]
+        (is (d/refs-match?
+              [coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll16 coll17 coll19] references))))
+    (testing "search by multiple temporal."
+      (let [references (search/find-refs :collection
+                                         {"temporal[]"
+                                          ["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
+                                           "2000-02-15T00:00:00Z, 2001-03-15T00:00:00Z, 40, 50"]
+                                          :page_size 100})]
+        (is (d/refs-match? [coll2 coll6 coll14 coll16 coll17] references))))
 
     (testing "search by temporal with aql"
       (are [items start-date stop-date start-day end-day]

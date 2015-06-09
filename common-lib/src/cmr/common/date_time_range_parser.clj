@@ -6,13 +6,11 @@
 
 (defn- parse-iso-datetime-range
   "Parse an ISO 8601 time interval"
-  [^java.lang.String iso-value]
+  [iso-value]
   (try
     (let [interval (org.joda.time.Interval/parse iso-value)]
       {:start-date (.getStart interval)
        :end-date (.getEnd interval)})
-    (catch clojure.lang.ExceptionInfo e
-      (msg/data-error :invalid-data msg/invalid-msg :date-range iso-value (.getMessage e)))
     (catch java.lang.IllegalArgumentException e
       (msg/data-error :invalid-data msg/invalid-msg :date-range iso-value (.getMessage e)))))
 
@@ -24,9 +22,7 @@
   where start-date and end-date are dates parsed from the input string."
   [^java.lang.String value]
   (if (re-matches #"^.*(,|/).*$" value)
-    (let [[_ ^java.lang.String start
-           ^java.lang.String seperator
-           ^java.lang.String stop] (re-find #"^(.*)(,|/)(.*)$" value)]
+    (let [[_ start seperator stop] (re-find #"^(.*)(,|/)(.*)$" value)]
       (cond
         (empty? start) {:end-date (dtp/parse-datetime stop)}
         (empty? stop) {:start-date (dtp/parse-datetime start)}

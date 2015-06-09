@@ -8,7 +8,7 @@
 (defn- to-utc
   "Get equivalent date-time in UTC"
   [date-time]
-  (when (not (nil? date-time))
+  (when date-time
     (t/to-time-zone date-time org.joda.time.DateTimeZone/UTC)))
 
 (deftest parse-datetime-range
