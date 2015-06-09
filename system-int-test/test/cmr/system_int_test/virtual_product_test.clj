@@ -7,7 +7,10 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.virtual-product.config :as vp-config]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.system-int-test.system :as s]
+            [cmr.common.time-keeper :as tk]
+            [clj-time.core :as t]))
 
 (def virtual-product-providers
   "Returns a list of the provider ids of the providers with virtual products."
@@ -83,14 +86,6 @@
   )
 
 ;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
-
-;; TODO add test where source granule is cleaned up by delete time.
-;; Add a separate test with multiple source granules
-
-;; TODO Is there any other way a granule will be deleted?
-;; - parent collection is deleted
-;; TODO document these decisions and any others in the README
-
 
 (deftest specific-granule-in-virtual-product-test
   (let [ast-coll (d/ingest "LPDAAC_ECS"
