@@ -92,27 +92,27 @@ The CMR Atom format provides search results in an XML file representing a feed o
  Each entry represents one search result, consisting of the following Atom standard fields and additional CMR specific fields:
 
 
-|                               Atom Standard Fields                               ||
-|   Field    |                             Description                              |
-| ---------- | -------------------------------------------------------------------- |
-| id         | the CMR identifier for the result                                    |
-| title      | the title of the item - corresponds to ECHO10 DataSetId or GranuleUR |
-| summary    | a description of the item - corresponds to ECHO10 Description        |
-| updated    | date/time of the last update to the assocated metadata               |
+|                                                           Atom Standard Fields                                                          ||
+|            Field            |                                                Description                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| id                          | the CMR identifier for the result                                                                          |
+| title                       | the UMM Entry Title                                                                                        |
+| summary  (collections only) | the summary of intentions with which this collection was developed. - corresponds to the UMM summary field |
+| updated                     | date/time of the last update to the assocated metadata                                                     |
 
 The following fields are specific to the CMR output and correspond to ECHO10 fields of the same name:
 
-|                        CMR Specific Fields                         ||
-|         Field         |                 Description                 |
-| --------------------- | ------------------------------------------- |
-| echo:datasetId        | description of the dataset                  |
-| echo:shortName        | concise name for the result concept         |
-| echo:versionId        | provider defined version id of the metadata |
-| echo:originalFormat   | original metadata format                    |
-| echo:dataCenter       | datacenter providing the metadata           |
-| echo:orbitParameters  | fields releated to the satellelite orbit    |
-| echo:onlineAccessFlag | true if the data is available online        |
-| echo:browseFlag       | true if the data contains browse imagery    |
+|                                                                      CMR Specific Fields                                                                      ||
+|                  Field                  |                                                     Description                                                      |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| echo:datasetId                          | description of the dataset                                                                                           |
+| echo:shortName (collections only)       | UMM Entry Title                                                                                                      |
+| echo:versionId  (collections only)      | provider defined version id of the metadata                                                                          |
+| echo:originalFormat                     | original metadata format                                                                                             |
+| echo:dataCenter                         | datacenter providing the metadata                                                                                    |
+| echo:orbitParameters (collections only) | fields releated to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
+| echo:onlineAccessFlag                   | true if the data is available online                                                                                 |
+| echo:browseFlag                         | true if the data contains browse imagery                                                                             |
 
 __Example__
 
@@ -128,7 +128,7 @@ __Example__
       xmlns:time="http://a9.com/-/opensearch/extensions/time/1.0/"
       esipdiscovery:version="1.2">
    <updated>2015-06-05T20:10:39.166Z</updated>
-   <id>http://localhost:3003/collections.atom?pretty=true</id>
+   <id>%CMR-ENDPOINT%:3003/collections.atom?pretty=true</id>
    <title type="text">ECHO dataset metadata</title>
    <entry>
       <id>C1200000000-PROV1</id>
@@ -160,7 +160,13 @@ SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,
 
 #### XML Formats (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
 
-All of the XML formats (exepct the XML used in returning refernces only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing a single `<took>` tag specifying the time in milliseconds it took to peform the search and one `<hits>` tag containing the total number of matching results.
+All of the XML formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing the following fields as sub-tags:
+
+|         Field         |                    Description                     |
+| --------------------- | -------------------------------------------------- |
+| hits                  | the number of results matching the search query    |
+| took                  | time in milliseconds it took to perform the search |
+| result (zero or more) | a single search result - documented below          |
 
 The results are returned as a seqeuence of `<result>` tags, the contents of which are documents in the specified format (DIF, ECHO 10 , etc.). Each `<result>` tag contains the following attributes:
 
@@ -170,7 +176,7 @@ The results are returned as a seqeuence of `<result>` tags, the contents of whic
 | format      | the mime-type for the returned metadata       |
 | revision-id | the CMR revision number of the stored concept |
 
-#### DIF
+#### DIF 9
 
 See the [specification](https://cdn.earthdata.nasa.gov/dif/9.x)
 
@@ -294,7 +300,7 @@ __Example__
 
 #### ISO-MENDS (ISO-19115)
 
-See the [specification](https://www.iso.org/obp/ui/#iso:std:iso:19115:-1:ed-1:v1:en)
+See the [specification](https://www.iso.org/obp/ui/#iso:std:iso:19115:-2:ed-1:v1:en)
 
 __Example__
 
@@ -477,7 +483,7 @@ __Example__
 {
   "feed" : {
     "updated" : "2015-06-05T17:52:10.316Z",
-    "id" : "http://localhost:3003/collections.json?pretty=true",
+    "id" : "%CMR-ENDPOINT%:3003/collections.json?pretty=true",
     "title" : "ECHO dataset metadata",
     "entry" : [ {
       "version_id" : "v1",
@@ -499,7 +505,7 @@ __Example__
 
 #### KML
 
-KML is the [XML language](https://developers.google.com/kml/documentation/) used by the Google Earth application and is used by the CMR to return spatial data associated with a collection or granule.
+KML is the [XML language](http://www.opengeospatial.org/standards/kml) used by the Google Earth application and is used by the CMR to return spatial data associated with a collection or granule.
 
 __Example__
 
@@ -599,17 +605,16 @@ The XML response format is used for returning references to search results. It c
 | ---------- | -------------------------------------------------- |
 | hits       | the number of results matching the search query    |
 | took       | time in milliseconds it took to perform the search |
-| references | identifying information about each searh result    |
+| references | identifying information about each search result    |
 
 The `references` field may contain multiple `reference` entries, each consisting of the following fields:
 
-|    Field    |                            Description                             |
-| ----------- | ------------------------------------------------------------------ |
-| name        | the provider identifier (short-name for ECHO10)                    |
-| id          | the CMR identifier for the result                                  |
-| location    | the URL at which the full metadata for the result can be retrieved |
-| revision-id | the internal CMR version number for the result                     |
-|             |                                                                    |
+|    Field    |                                                   Description                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| name        | the provider's unique identifier for the item. This is Granule UR for granules and Entry Title for collections. |
+| id          | the CMR identifier for the result                                                                               |
+| location    | the URL at which the full metadata for the result can be retrieved                                              |
+| revision-id | the internal CMR version number for the result                                                                  |
 
 __Example__
 
@@ -622,7 +627,7 @@ __Example__
       <reference>
          <name>dataset-id</name>
          <id>C1200000000-PROV1</id>
-         <location>http://localhost:3003/concepts/C1200000000-PROV1</location>
+         <location>%CMR-ENDPOINT%:3003/concepts/C1200000000-PROV1</location>
          <revision-id>1</revision-id>
       </reference>
    </references>
@@ -639,7 +644,7 @@ __Example__
    <reference>
       <name>SMAP Collection Dataset ID</name>
       <id>C1200000000-PROV1</id>
-      <location>http://localhost:3003/concepts/C1200000000-PROV1</location>
+      <location>%CMR-ENDPOINT%:3003/concepts/C1200000000-PROV1</location>
    </reference>
 </references>
 ```
