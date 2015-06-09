@@ -157,6 +157,10 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
+The time interval in temporal range searches can be specified as ISO8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
+
 #### Find collections by project
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
@@ -534,6 +538,10 @@ The parameters used for searching granules by spatial are the same as the spatia
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
+  The time interval in eqautor crossing date range searches can be specified as ISO8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_date=P10Y2M10DT2H/2000-01-01T10:00:00Z
+
 #### Find granules by updated_since
 
   Find granules which have revision date starting at or after 'updated_since' param value
@@ -695,6 +703,10 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
     curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+
+The time interval in temporal range searches can be specified as ISO8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
 
 #### Exclude granules from elastic results by echo granule id and concept ids.
 

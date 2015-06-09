@@ -6,6 +6,7 @@
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
+            [cmr.common.date-time-range-parser :as dtr-parser]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.converters.attribute :as attrib]
@@ -277,6 +278,16 @@
     (catch ExceptionInfo e
       [(format "%s datetime is invalid: %s." date-name (first (:errors (ex-data e))))])))
 
+(defn- validate-date-time-range
+  "Validates datetime range string is in the correct format"
+  [dtr]
+  (try
+    (when-not (s/blank? dtr)
+      (dtr-parser/parse-datetime-range dtr))
+    []
+    (catch ExceptionInfo e
+      [(format "temporal range is invalid: %s." (first (:errors (ex-data e))))])))
+
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
   [day tag]
@@ -299,12 +310,18 @@
                      [temporal])]
       (mapcat
         (fn [value]
-          (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-            (concat
-              (validate-date-time "temporal start" start-date)
-              (validate-date-time "temporal end" end-date)
-              (day-valid? start-day "temporal_start_day")
-              (day-valid? end-day "temporal_end_day"))))
+          (if (re-find #"/" value)
+            (let [[iso-range start-day end-day] (map s/trim (s/split value #","))]
+              (concat
+                (validate-date-time-range nil)
+                (day-valid? start-day "temporal_start_day")
+                (day-valid? end-day "temporal_end_day")))
+            (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+              (concat
+                (validate-date-time "temporal start" start-date)
+                (validate-date-time "temporal end" end-date)
+                (day-valid? start-day "temporal_start_day")
+                (day-valid? end-day "temporal_end_day")))))
         temporal))
     []))
 
