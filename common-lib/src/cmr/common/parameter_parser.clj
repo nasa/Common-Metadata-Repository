@@ -2,7 +2,8 @@
   "Contains helper functions to parse parameter strings."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as msg]
-            [cmr.common.date-time-parser :as dtp]))
+            [cmr.common.date-time-parser :as dtp]
+            [cmr.common.date-time-range-parser :as dtrp]))
 
 (defn range-parameter->map
   "Parses a range parameter in the form 'value' or 'min-value,max-value' where
@@ -49,30 +50,15 @@
            (vals value-map))
       [(msg/invalid-numeric-range-msg range-str)])))
 
-(defn date-time-range-parameter->map
-  "Parses a date range parameter in the form of 'value' or 'min-value,max-value'.
-  Returns a map of the form {:date date, :start-date start-date, :end-date end-date}
-  where start-date and end-date are dates parsed from min-value/max-value."
-  [param-str]
-
-  (let [value-map (if-let [[_ ^java.lang.String start ^java.lang.String stop] (re-find #"^(.*),(.*)$"
-                                                                                       param-str)]
-                    {:start-date (when (not (empty? start)) (dtp/parse-datetime start))
-                     :end-date (when (not (empty? stop)) (dtp/parse-datetime stop))}
-                    {:date (dtp/parse-datetime param-str)})]
-    (into {} (filter second value-map)))) ; filter nils
-
 (defn date-time-range-string-validation
   "Validates that a date-time range string is of the format 'value' or 'min-value,max-value'
   where min-value/max-value are optional (but at least one must be present.)."
   [range-str]
-  (let [value-map (range-parameter->map range-str)]
-    (if-not (empty? value-map)
-      ;; validatge the date strings
-      (try
-        (doseq [^java.lang.String value (vals value-map)]
-          (dtp/parse-datetime value))
-        (catch clojure.lang.ExceptionInfo e
-          [(.getMessage e)]))
-      [(msg/invalid-date-range-msg range-str)])))
+  (if-not (empty? range-str)
+    (try
+        (dtrp/parse-datetime-range range-str)
+        nil
+      (catch clojure.lang.ExceptionInfo e
+        [(.getMessage e)]))
+    [(msg/invalid-date-range-msg range-str)]))
 
