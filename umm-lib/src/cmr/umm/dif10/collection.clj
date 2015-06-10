@@ -89,16 +89,13 @@
   UmmCollection
   (umm->dif10-xml
     ([collection]
-     (dif10-core/umm->dif10-xml collection false))
-    ([collection indent?]
      (let [{{:keys [version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords
                    platforms product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
-                   publication-references temporal]} collection
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+                   publication-references temporal]} collection]
+       (x/emit-str
          (x/element :DIF dif10-header-attributes
                     (x/element :Entry_ID {} entry-id)
                     (x/element :Version {} version-id)

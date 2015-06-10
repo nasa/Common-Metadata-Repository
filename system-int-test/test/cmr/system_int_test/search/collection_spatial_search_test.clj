@@ -317,11 +317,11 @@
            ;; completely covers the polygon with holes
            [-5.95,-23.41,12.75,-23.69,11.11,-10.38,-6.62,-10.89,-5.95,-23.41]
            [whole-world polygon-with-holes-cart wide-south-cart normal-poly-cart]))
-    
-    (testing "multiple bounding-box searches should returns collections which intersect all the 
+
+    (testing "multiple bounding-box searches should return collections which intersect all the
              supplied bounding boxes"
       (are [wnes-vec items]
-           (let [found (search/find-refs :collection {:bounding-box 
+           (let [found (search/find-refs :collection {:bounding-box
                                                       (map #(codec/url-encode (apply m/mbr %)) wnes-vec)
                                                       :page-size 50})
                  matches? (d/refs-match? items found)]
@@ -329,34 +329,34 @@
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
-           
+
            [[-23.43 5 25.54 -6.31]]
            [whole-world polygon-with-holes normal-poly normal-brs]
-           
+
            [[-1.74 47.05 5.27 44.04]]
            [whole-world wide-north]
-           
+
            [[-23.43 5 25.54 -6.31]
             [-1.74 47.05 5.27 44.04]]
            [whole-world]))
-    
+
     (testing "multiple polygon searches should return collections which intersect all the supplied
              bounding boxes"
       (are [ords-vec items]
-           (let [found (search/find-refs :collection {:polygon 
+           (let [found (search/find-refs :collection {:polygon
                                                       (map (partial apply search-poly) ords-vec)})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
              matches?)
-           
+
            [[58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]]
            [whole-world on-np touches-np north-pole very-tall-cart along-am-line]
-           
+
            [[-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]]
            [whole-world on-sp wide-south touches-sp south-pole very-tall-cart]
-           
+
            [[58.41,76.95,163.98,80.56,-122.99,81.94,-26.18,82.82,58.41,76.95]
             [-161.53,-69.93,25.43,-51.08,13.89,-39.94,-2.02,-40.67,-161.53,-69.93]]
            [whole-world very-tall-cart]))
@@ -482,27 +482,27 @@
 (defn- add-param
   "Adds a spatial parameter with the given spatial type and ords into params map"
   [params [spatial-type ords]]
-    (assoc params spatial-type (conj (spatial-type params) 
+    (assoc params spatial-type (conj (spatial-type params)
                                      (ords->url-encoded-str spatial-type ords))))
 
 (deftest tile-search-multi-shape-test
   (testing "search involving multiple shapes"
     (u/are2 [ords-vectors tiles]
             (assert-tiles-found (reduce add-param {} ords-vectors) tiles)
-            
+
             "Empty parameters"
             [] all-tiles
-            
+
             "Two bounding boxes"
-            [[:bounding-box [-5 5 5 -5]] 
-             [:bounding-box [0 20 20 0]]] 
-            [[19 6] [19 9] [17 6] [18 7] [19 7] [18 9] [18 6] 
+            [[:bounding-box [-5 5 5 -5]]
+             [:bounding-box [0 20 20 0]]]
+            [[19 6] [19 9] [17 6] [18 7] [19 7] [18 9] [18 6]
              [18 8][20 8] [20 9] [19 8] [17 9] [17 8] [17 7]]
-            
+
             "Two bounding boxes, a point & a line"
-            [[:bounding-box [-180 90 180 -90]] 
-             [:bounding-box [-20 20 20 -20]] 
-             [:point [0 0]] 
+            [[:bounding-box [-180 90 180 -90]]
+             [:bounding-box [-20 20 20 -20]]
+             [:point [0 0]]
              [:line [0 10 20 20]]]
             all-tiles)))
 

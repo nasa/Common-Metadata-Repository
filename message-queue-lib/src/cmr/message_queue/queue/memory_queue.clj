@@ -6,6 +6,7 @@
             [cmr.message-queue.config :as config]
             [cmr.common.util :as u]
             [cmr.common.services.errors :as errors]
+            [cheshire.core :as json]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
@@ -35,19 +36,13 @@
       (try
         (u/while-let
           [msg (a/<! queue-ch)]
-          (try
-            (let [resp (handler msg)]
-              (case (:status resp)
-                :success nil
-                :retry (attempt-retry queue-broker queue-name msg resp)
-                :failure (error (format (str "Message failed processing with error '%s', it has been "
-                                             "removed from the message queue. Message details: %s")
-                                        (:message resp) msg))))
-            (catch Throwable e
-              (error "Message processing failed for message" (pr-str msg) "with error:"
-                     (.getMessage e))
-              ;; Retry by requeueing the message
-              (attempt-retry queue-broker queue-name msg {:message (.getMessage e)}))))
+          (let [msg (json/decode msg true)]
+            (try
+              (handler msg)
+              (catch Throwable e
+                (error e "Message processing failed for message" (pr-str msg))
+                ;; Retry by requeueing the message
+                (attempt-retry queue-broker queue-name msg {:message (.getMessage e)})))))
         (finally
           (info "Async go handler for queue" queue-name "completing."))))))
 
@@ -102,8 +97,12 @@
 
   (publish-to-queue
     [this queue-name msg]
-    ;; Puts the message on the channel
-    (a/>!! (queues-to-channels queue-name) msg))
+    ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
+    (a/>!! (queues-to-channels queue-name) (json/generate-string msg)))
+
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    (seq (exchanges-to-queue-sets exchange-name)))
 
   (publish-to-exchange
     [this exchange-name msg]

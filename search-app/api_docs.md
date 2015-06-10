@@ -158,6 +158,12 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
+The time interval in temporal range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
+
+Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of open-ended time intervals. For example, "2000-01-01T10:00:00Z/" and "/2000-01-01T10:00:00Z" are valid ranges.
+
 #### Find collections by project
 
 Note: An alias for the parameter 'project' is 'campaign'. As such 'campaign' can be used in place of 'project'.
@@ -509,57 +515,60 @@ The parameters used for searching granules by spatial are the same as the spatia
 
     curl "%CMR-ENDPOINT%/granules?orbit_number=10"
 
-  Find granules with an orbit number in a range of 0.5 to 1.5
+Find granules with an orbit number in a range of 0.5 to 1.5
 
     curl "%CMR-ENDPOINT%/granules?orbit_number=0.5,1.5"
 
 #### Find granules by orbit equator crossing longitude
 
-  Find granules with an exact equator crossing longitude of 90
+Find granules with an exact equator crossing longitude of 90
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=90"
 
-  Find granules with an orbit equator crossing longitude in the range of 0 to 10
+Find granules with an orbit equator crossing longitude in the range of 0 to 10
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=0,10
 
-  Find granules with an equator crossing longitude in the range from 170 to -170
+Find granules with an equator crossing longitude in the range from 170 to -170
   (across the anti-meridian)
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_longitude=170,-170
 
 #### Find granules by orbit equator crossing date
 
-  Find granules with an orbit equator crossing date in the range of
-  2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
+Find granules with an orbit equator crossing date in the range of 2000-01-01T10:00:00Z to 2010-03-10T12:00:00Z
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
+The time interval in equator crossing date range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/granules?equator_crossing_date=P10Y2M10DT2H/2010-03-10T12:00:00Z
+
 #### Find granules by updated_since
 
-  Find granules which have revision date starting at or after 'updated_since' param value
+Find granules which have revision date starting at or after 'updated_since' param value
 
      curl "%CMR-ENDPOINT%/granules?updated_since=2014-05-08T20:12:35Z"
 
 #### Find granules by revision_date
 
-  This supports option `and`.
+This supports option `and`.
 
-  Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
+Find granules which have revision date within the ranges of datetimes. The datetime has to be in yyyy-MM-ddTHH:mm:ssZ format. The default is inclusive on the range boundaries.
 
     curl "%CMR-ENDPOINT%/granules?revision_date\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z&revision_date\[\]=2015-01-01T10:00:00Z,"
 
 #### Find granules by cloud_cover
 
-  Find granules with just the min cloud cover value set to 0.2
+Find granules with just the min cloud cover value set to 0.2
 
      curl "%CMR-ENDPOINT%/granules?cloud_cover=0.2,"
 
-  Find granules with just the max cloud cover value set to 30
+Find granules with just the max cloud cover value set to 30
 
      curl "%CMR-ENDPOINT%/granules?cloud_cover=,30"
 
-  Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
+Find granules with cloud cover numeric range set to min: -70.0 max: 120.0
 
      curl "%CMR-ENDPOINT%/granules?cloud_cover=-70.0,120.0"
 
@@ -696,6 +705,12 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
     curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+
+The time interval in temporal range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
+
+    curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
+
+Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of open-ended time intervals. For example, "2000-01-01T10:00:00Z/" and "/2000-01-01T10:00:00Z" are valid ranges.
 
 #### Exclude granules from elastic results by echo granule id and concept ids.
 

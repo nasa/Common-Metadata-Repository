@@ -259,7 +259,7 @@
   [context query results]
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]
-    (json/generate-string response {:pretty (:pretty? query)})))
+    (json/generate-string response)))
 
 
 

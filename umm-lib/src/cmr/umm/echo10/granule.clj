@@ -122,15 +122,12 @@
   UmmGranule
   (umm->echo10-xml
     ([granule]
-     (cmr.umm.echo10.core/umm->echo10-xml granule false))
-    ([granule indent?]
      (let [{{:keys [entry-title short-name version-id entry-id]} :collection-ref
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                   spatial-coverage orbit two-d-coordinate-system]} granule
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+                   spatial-coverage orbit two-d-coordinate-system]} granule]
+       (x/emit-str
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
                     (x/element :InsertTime {} (str insert-time))

@@ -444,7 +444,6 @@
   [context query results]
   (let [{:keys [hits took items facets]} results
         {:keys [concept-type result-format]} query
-        xml-fn (if (:pretty? query) x/indent-str x/emit-str)
         items (if (= :granule concept-type)
                 (append-collection-links context items)
                 items)
@@ -455,7 +454,7 @@
                                    {:xmlns:relevance
                                     "http://a9.com/-/opensearch/extensions/relevance/1.0/"})
                             header-attributes)]
-    (xml-fn
+    (x/emit-str
       (x/element :feed header-attributes
                  (x/element :updated {} (str (time/now)))
                  (x/element :id {} (url/atom-request-url context concept-type result-format))

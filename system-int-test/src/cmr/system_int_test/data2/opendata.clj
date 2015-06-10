@@ -75,7 +75,7 @@
                            :accessLevel "public"
                            :bureauCode [odrh/BUREAU_CODE]
                            :programCode [odrh/PROGRAM_CODE]
-                           :spatial (odrh/spatial shapes false)
+                           :spatial (odrh/spatial shapes)
                            :temporal (odrh/temporal start-date end-date)
                            :theme (conj project-sn "geospatial")
                            :distribution distribution

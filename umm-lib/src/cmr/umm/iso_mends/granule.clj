@@ -13,11 +13,8 @@
   UmmGranule
   (umm->iso-mends-xml
     ([granule]
-     (cmr.umm.iso-mends.core/umm->iso-mends-xml granule false))
-    ([granule indent?]
-     (let [{:keys [granule-ur]} granule
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+     (let [{:keys [granule-ur]} granule]
+       (x/emit-str
          (x/element :granule {}
                     (x/element :placeholder {} "UMM granule for MENDS ISO is not supported.")
                     (x/element :granule-ur {} granule-ur)))))))

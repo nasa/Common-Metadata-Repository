@@ -100,6 +100,7 @@
 
 (defn-timed validate-granule
   "Validate a granule concept. Throws a service error if any validation issues are found.
+  Returns a tuple of the parent collection concept and the granule concept.
 
   Accepts an optional function for looking up the parent collection concept and UMM record as a tuple.
   This can be used to provide the collection through an alternative means like the API."
@@ -122,7 +123,7 @@
      (let [gran-concept (add-extra-fields-for-granule
                           context concept granule parent-collection-concept)]
        (v/validate-business-rules context gran-concept)
-       gran-concept))))
+       [parent-collection-concept gran-concept]))))
 
 (defn validate-granule-with-parent-collection
   "Validate a granule concept along with a parent collection. Throws a service error if any
@@ -135,26 +136,24 @@
                          type (map msg/invalid-parent-collection-for-validation errors)) ex))]
     (validate-granule context concept (constantly [parent-collection-concept collection]))))
 
-(defmulti validate-concept
-  "Validates a concept with UMM validation rules and Ingest rules. Throws a service error if any
-  validation issues are found."
-  (fn [context concept]
-    (:concept-type concept)))
-
-(defmethod validate-concept :collection
-  [context concept]
-  (validate-collection context concept))
-
-(defmethod validate-concept :granule
-  [context concept]
-  (validate-granule context concept))
-
-(defn-timed save-concept
+(defn-timed save-granule
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept]
-  (let [concept (validate-concept context concept)]
+  (let [[coll-concept concept] (validate-granule context concept)
+        {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
+    (ingest-events/publish-event
+      context
+      (ingest-events/granule-concept-update-event coll-concept concept-id revision-id))
+    {:concept-id concept-id, :revision-id revision-id}))
+
+(defn-timed save-collection
+  "Store a concept in mdb and indexer and return concept-id and revision-id."
+  [context concept]
+  (let [concept (validate-collection context concept)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      (ingest-events/publish-event context (ingest-events/concept-update-event concept-id revision-id))
+      (ingest-events/publish-event
+        context
+        (ingest-events/collection-concept-update-event concept-id revision-id))
       {:concept-id concept-id, :revision-id revision-id})))
 
 (defn-timed delete-concept
