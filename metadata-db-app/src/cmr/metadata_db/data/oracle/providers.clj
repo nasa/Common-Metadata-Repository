@@ -46,8 +46,7 @@
                    :providers
                    ["provider_id" "cmr_only" "small"]
                    [provider-id (if cmr-only 1 0) (if small 1 0)])
-        (when (or (not small)
-                  (= p/small-provider-id provider-id))
+        (when (not small)
           (ct/create-provider-concept-tables db provider)))
       (catch java.sql.BatchUpdateException e
         (let [error-message (.getMessage e)]
@@ -93,8 +92,7 @@
   (reset-providers
     [db]
     (doseq [{:keys [provider-id]} (p/get-providers db)]
-      (when-not (= p/small-provider-id provider-id)
-        (p/delete-provider db provider-id)))))
+        (p/delete-provider db provider-id))))
 
 
 (comment

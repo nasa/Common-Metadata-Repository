@@ -29,6 +29,12 @@
   (when (and provider-id (not (re-matches #"^[A-Z][A-Z0-9_]*" provider-id)))
     {field-path [(msg/invalid-provider-id provider-id)]}))
 
+(defn- provider-id-reserved-validation
+  "Validates the provider id isn't SMALL_PROV which is reserved."
+  [field-path provider-id]
+  (when (= providers/small-provider-id provider-id)
+    {field-path [(msg/provider-id-reserved)]}))
+
 (defn- must-be-boolean
   "Validates the value given is of Boolean type."
   [field-path value]
@@ -38,7 +44,8 @@
 (def ^:private provider-validations
   {:provider-id (v/first-failing provider-id-length-validation
                                  provider-id-empty-validation
-                                 provider-id-format-validation)
+                                 provider-id-format-validation
+                                 provider-id-reserved-validation)
    :cmr-only (v/first-failing v/required must-be-boolean)
    :small (v/first-failing v/required must-be-boolean)})
 

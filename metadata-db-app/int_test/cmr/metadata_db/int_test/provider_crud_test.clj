@@ -28,7 +28,11 @@
       "cmr-only true small true" "PROV4" true true
       "cmr-only and small default to false" "PROV5" nil nil))
   (testing "save provider twice"
-    (is (= 409 (:status (util/save-provider "PROV1" false false))))))
+    (is (= 409 (:status (util/save-provider "PROV1" false false)))))
+  (testing "save reserved provder is not allowed"
+    (let [{:keys [status errors]} (util/save-provider "SMALL_PROV" false false)]
+      (is (= [400 ["Provider ID [SMALL_PROV] is reserved"]]
+             [status errors])))))
 
 (deftest update-provider-test
   (testing "basic update"
@@ -40,6 +44,10 @@
     (is (= 400 (:status (util/update-provider "PROV1" true true)))))
   (testing "update nonexistant provider"
     (is (= 404 (:status (util/update-provider "PROV2" true false)))))
+  (testing "update reserved provder is not allowed"
+    (let [{:keys [status errors]} (util/update-provider "SMALL_PROV" false false)]
+      (is (= [400 ["Provider ID [SMALL_PROV] is reserved"]]
+             [status errors]))))
   (testing "bad parameters"
     (is (= 400 (:status (util/update-provider nil true false))))
     (is (= 400 (:status (util/update-provider "PROV1" nil false))))))
@@ -47,9 +55,7 @@
 (deftest get-providers-test
   (util/save-provider "PROV1" false false)
   (util/save-provider "PROV2" true true)
-  (let [{:keys [status providers]} (util/get-providers)
-        ;; filter out the SMALL_PROV which always exists in metadata db real database
-        providers (filter #(not= "SMALL_PROV" (:provider-id %)) providers)]
+  (let [{:keys [status providers]} (util/get-providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV1" :cmr-only false :small false}
             {:provider-id "PROV2" :cmr-only true :small true}]
@@ -60,16 +66,14 @@
     (util/save-provider "PROV1" false false)
     (util/save-provider "PROV2" false true)
     (util/delete-provider "PROV1")
-    (let [{:keys [status providers]} (util/get-providers)
-          ;; filter out the SMALL_PROV which always exists in metadata db real database
-          providers (filter #(not= "SMALL_PROV" (:provider-id %)) providers)]
+    (let [{:keys [status providers]} (util/get-providers)]
       (is (= status 200))
       (is (= [{:provider-id "PROV2" :cmr-only false :small true}] providers))))
   (testing "delete SMALL_PROV provider"
     (let [{:keys [status errors]} (util/delete-provider "SMALL_PROV")]
       (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
              [status errors]))))
-  (testing "delete non-existant provider"
+  (testing "delete non-existent provider"
     (let [{:keys [status errors]} (util/delete-provider "NOT_PROV")]
       (is (= [404 ["Provider with provider-id [NOT_PROV] does not exist."]]
              [status errors])))))

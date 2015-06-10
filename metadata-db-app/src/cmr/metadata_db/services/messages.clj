@@ -113,5 +113,8 @@
   (format "Provider ID [%s] exceeds ten characters"
           provider-id))
 
+(defn provider-id-reserved []
+  (format "Provider ID [SMALL_PROV] is reserved"))
+
 (defn invalid-provider-id [provider-id]
   (format "provider-id [%s] is invalid" provider-id))

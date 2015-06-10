@@ -289,7 +289,7 @@ Synchronously runs the expired concept cleanup job. Requires token with UPDATE i
 
 ### Create provider
 
-Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is a provider that has ingest directly to the CMR and not through Catalog REST. `cmr-only` defaults to false. The `small` parameter indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
+Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is a provider that ingests directly to the CMR and not through Catalog REST. `cmr-only` defaults to false. The `small` parameter indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":false, "small":false}' http://localhost:3001/providers
 
@@ -311,7 +311,7 @@ Returns a list of the configured providers in Metadata DB.
 
     curl http://localhost:3001/providers
 
-    [{"provider-id":"SMALL_PROV","cmr-only":true,"small":true},{"provider-id":"PROV1","cmr-only":false,"small":false}]
+    [{"provider-id":"PROV2","cmr-only":true,"small":true},{"provider-id":"PROV1","cmr-only":false,"small":false}]
 
 ## Querying caches
 
