@@ -30,7 +30,7 @@
   "Validates that the concept-id native-id pair for a concept being saved is not changing. This
   should be done within a save transaction to avoid race conditions where we might miss it.
   Returns nil if valid and an error response if invalid."
-  [db concept]
+  [db provider concept]
   (let [{:keys [concept-id native-id concept-type provider-id]} concept
         {existing-concept-id :concept-id
          existing-native-id :native-id} (->> (deref (:concepts-atom db))
@@ -102,8 +102,9 @@
                             :provider-id provider-id})))
 
   (get-concept-id
-    [this concept-type provider-id native-id]
-    (let [concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
+    [this concept-type provider native-id]
+    (let [provider-id (:provider-id provider)
+          concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
       (->> @concepts-atom
            (filter (fn [c]
                      (and (= concept-type (:concept-type c))
@@ -113,11 +114,11 @@
            :concept-id)))
 
   (get-concept
-    [db concept-type provider-id concept-id]
+    [db concept-type provider concept-id]
     (let [revisions (filter
                       (fn [c]
                         (and (= concept-type (:concept-type c))
-                             (= provider-id (:provider-id c))
+                             (= (:provider-id provider) (:provider-id c))
                              (= concept-id (:concept-id c))))
                       @concepts-atom)]
       (->> revisions
@@ -125,19 +126,19 @@
            last)))
 
   (get-concept
-    [db concept-type provider-id concept-id revision-id]
+    [db concept-type provider concept-id revision-id]
     (if-not revision-id
-      (concepts/get-concept db concept-type provider-id concept-id)
+      (concepts/get-concept db concept-type provider concept-id)
       (first (filter
                (fn [c]
                  (and (= concept-type (:concept-type c))
-                      (= provider-id (:provider-id c))
+                      (= (:provider-id provider) (:provider-id c))
                       (= concept-id (:concept-id c))
                       (= revision-id (:revision-id c))))
                @concepts-atom))))
 
   (get-concept-by-provider-id-native-id-concept-type
-    [this concept]
+    [this provider concept]
     (let [{:keys [concept-type provider-id native-id]} concept]
       (->> @concepts-atom
            (filter (fn [c]
@@ -147,14 +148,14 @@
            first)))
 
   (get-concepts
-    [this concept-type provider-id concept-id-revision-id-tuples]
+    [this concept-type provider concept-id-revision-id-tuples]
     (filter identity
             (map (fn [[concept-id revision-id]]
-                   (concepts/get-concept this concept-type provider-id concept-id revision-id))
+                   (concepts/get-concept this concept-type provider concept-id revision-id))
                  concept-id-revision-id-tuples)))
 
   (get-latest-concepts
-    [db concept-type provider-id concept-ids]
+    [db concept-type provider concept-ids]
     (let [concept-id-set (set concept-ids)
           concept-map (reduce (fn [concept-map {:keys [concept-id revision-id] :as concept}]
                                 (if (contains? concept-id-set concept-id)
@@ -174,7 +175,7 @@
       (keep (partial get concept-map) concept-ids)))
 
   (find-concepts
-    [db params]
+    [db provider params]
     (let [{:keys [concept-type provider-id native-id]} params
           extra-field-params (dissoc params :concept-type :provider-id :native-id)]
       (keep (fn [{extra-fields :extra-fields
@@ -192,10 +193,10 @@
             @concepts-atom)))
 
   (save-concept
-    [this concept]
+    [this provider concept]
     {:pre [(:revision-id concept)]}
 
-    (if-let [error (validate-concept-id-native-id-not-changing this concept)]
+    (if-let [error (validate-concept-id-native-id-not-changing this provider concept)]
       ;; There was a concept id, native id mismatch with earlier concepts
       error
       ;; Concept id native id pair was valid
@@ -203,7 +204,7 @@
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
                                                                           (tk/now))))]
         (if (or (nil? revision-id)
-                (concepts/get-concept this concept-type provider-id concept-id revision-id))
+                (concepts/get-concept this concept-type provider concept-id revision-id))
           {:error :revision-id-conflict}
           (do
             (swap! concepts-atom (fn [concepts]
@@ -212,25 +213,25 @@
             nil)))))
 
   (force-delete
-    [db concept-type provider-id concept-id revision-id]
+    [db concept-type provider concept-id revision-id]
     (swap! concepts-atom
            #(filter
               (fn [c]
                 (not (and (= concept-type (:concept-type c))
-                          (= provider-id (:provider-id c))
+                          (= (:provider-id provider) (:provider-id c))
                           (= concept-id (:concept-id c))
                           (= revision-id (:revision-id c)))))
               %)))
 
   (force-delete-concepts
-    [db provider-id concept-type concept-id-revision-id-tuples]
+    [db provider concept-type concept-id-revision-id-tuples]
     (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-      (concepts/force-delete db concept-type provider-id concept-id revision-id)))
+      (concepts/force-delete db concept-type provider concept-id revision-id)))
 
   (get-concept-type-counts-by-collection
-    [db concept-type provider-id]
+    [db concept-type provider]
     (->> @concepts-atom
-         (filter #(= provider-id (:provider-id %)))
+         (filter #(= (:provider-id provider) (:provider-id %)))
          (filter #(= concept-type (:concept-type %)))
          (group-by (comp :parent-collection-id :extra-fields))
          (map #(update-in % [1] count))
@@ -242,9 +243,9 @@
     (reset! next-id-atom (dec cmr.metadata-db.data.oracle.concepts/INITIAL_CONCEPT_NUM)))
 
   (get-expired-concepts
-    [db provider-id concept-type]
+    [db provider concept-type]
     (->> @concepts-atom
-         (filter #(= provider-id (:provider-id %)))
+         (filter #(= (:provider-id provider) (:provider-id %)))
          (filter #(= concept-type (:concept-type %)))
          latest-revisions
          (filter expired?)
@@ -254,7 +255,7 @@
     [db provider concept-type tombstone-cut-off-date limit]
     (->> @concepts-atom
          (filter #(= concept-type (:concept-type %)))
-         (filter #(= provider (:provider-id %)))
+         (filter #(= (:provider-id provider) (:provider-id %)))
          (filter :deleted)
          (filter #(t/before? (p/parse-datetime (:revision-date %)) tombstone-cut-off-date))
          (map #(vector (:concept-id %) (:revision-id %)))
@@ -269,7 +270,7 @@
                    (drop-last max-versions)))]
       (->> @concepts-atom
            (filter #(= concept-type (:concept-type %)))
-           (filter #(= provider (:provider-id %)))
+           (filter #(= (:provider-id provider) (:provider-id %)))
            (group-by :concept-id)
            vals
            (filter #(> (count %) max-versions))

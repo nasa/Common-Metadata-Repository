@@ -47,7 +47,9 @@
 (deftest get-providers-test
   (util/save-provider "PROV1" false false)
   (util/save-provider "PROV2" true true)
-  (let [{:keys [status providers]} (util/get-providers)]
+  (let [{:keys [status providers]} (util/get-providers)
+        ;; filter out the SMALL_PROV which always exists in metadata db real database
+        providers (filter #(not= "SMALL_PROV" (:provider-id %)) providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV1" :cmr-only false :small false}
             {:provider-id "PROV2" :cmr-only true :small true}]
@@ -57,7 +59,9 @@
   (util/save-provider "PROV1" false false)
   (util/save-provider "PROV2" false true)
   (util/delete-provider "PROV1")
-  (let [{:keys [status providers]} (util/get-providers)]
+  (let [{:keys [status providers]} (util/get-providers)
+        ;; filter out the SMALL_PROV which always exists in metadata db real database
+        providers (filter #(not= "SMALL_PROV" (:provider-id %)) providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV2" :cmr-only false :small true}] providers))))
 

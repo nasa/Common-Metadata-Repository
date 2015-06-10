@@ -1,6 +1,10 @@
 (ns cmr.metadata-db.data.providers
   "Defines a protocol for CRUD operations on providers.")
 
+(def small-provider-id
+  "Provider id of the small provider"
+  "SMALL_PROV")
+
 (defprotocol ProvidersStore
   "Functions for saving and retrieving providers"
 

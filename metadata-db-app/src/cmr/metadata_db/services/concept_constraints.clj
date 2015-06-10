@@ -15,8 +15,8 @@
 (defn- find-latest-matching-concepts
   "Returns any concepts which match the concept-type, provider-id, and value for the given field
   that matches the passed in concept"
-  [db concept field field-value]
-  (->> (c/find-latest-concepts db {:concept-type (:concept-type concept)
+  [db provider concept field field-value]
+  (->> (c/find-latest-concepts db provider {:concept-type (:concept-type concept)
                                    :provider-id (:provider-id concept)
                                    field field-value})
        ;; Remove tombstones from the list of concepts
@@ -43,9 +43,9 @@
   "Returns a function which verifies that there is only one non-deleted concept for a provider
   with the value for the given field."
   [field]
-  (fn [db concept]
+  (fn [db provider concept]
     (let [field-value (get-in concept [:extra-fields field])
-          concepts (find-latest-matching-concepts db concept field field-value)]
+          concepts (find-latest-matching-concepts db provider concept field field-value)]
       (validate-num-concepts-found concepts concept field field-value))))
 
 (defn granule-ur-unique-constraint
@@ -57,10 +57,10 @@
   As a result we need to look for granules with granule-ur or native-id that match the granule-ur
   of the newly ingested concept. We then take the union of those results and check if more than
   one concept is found."
-  [db concept]
+  [db provider concept]
   (let [granule-ur (get-in concept [:extra-fields :granule-ur])
-        granule-ur-concept-matches (find-latest-matching-concepts db concept :granule-ur granule-ur)
-        native-id-concept-matches (find-latest-matching-concepts db concept :native-id granule-ur)
+        granule-ur-concept-matches (find-latest-matching-concepts db provider concept :granule-ur granule-ur)
+        native-id-concept-matches (find-latest-matching-concepts db provider concept :native-id granule-ur)
         combined-matches (->> (set/union (set granule-ur-concept-matches)
                                          (set native-id-concept-matches))
                               (filter #(= granule-ur (get-in % [:extra-fields :granule-ur]))))]
@@ -80,8 +80,8 @@
   "Perform the post commit constraint checks aggregating any constraint violations. Returns nil if
   there are no constraint violations. Otherwise it performs any necessary database cleanup using
   the provided rollback-function and throws a :conflict error."
-  [db concept rollback-function]
+  [db provider concept rollback-function]
   (let [constraints ((constraints-by-concept-type) (:concept-type concept))]
-    (when-let [errors (seq (util/apply-validations constraints db concept))]
+    (when-let [errors (seq (util/apply-validations constraints db provider concept))]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))))

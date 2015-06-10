@@ -1,12 +1,13 @@
 (ns cmr.metadata-db.data.oracle.providers
   "Functions for saving, retrieving, deleting providers."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.log :refer (debug info warn error)]
+  (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as cutil]
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.providers :as p]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct])
+            [cmr.metadata-db.data.oracle.concept-tables :as ct]
+            [cmr.metadata-db.data.oracle.sql-helper :as sh]
+            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
 (defn dbresult->provider
@@ -15,6 +16,24 @@
   {:provider-id provider_id
    :cmr-only (== 1 cmr_only)
    :small (== 1 small) })
+
+(defn- provider->db-provider-id
+  "Returns the database provider-id for the given provider"
+  [provider]
+  (let [{:keys [provider-id small]} provider]
+    (if small
+      p/small-provider-id
+      provider-id)))
+
+(defn- delete-small-provider-concepts
+  "Delete all concepts of the given small provider"
+  [db provider]
+  {:pre [(:small provider)]}
+  (let [provider-id (:provider-id provider)]
+    (sh/force-delete-concept-by-params db provider {:concept-type :granule
+                                                    :provider-id provider-id})
+    (sh/force-delete-concept-by-params db provider {:concept-type :collection
+                                                    :provider-id provider-id})))
 
 (extend-protocol p/ProvidersStore
   OracleStore
@@ -27,7 +46,9 @@
                    :providers
                    ["provider_id" "cmr_only" "small"]
                    [provider-id (if cmr-only 1 0) (if small 1 0)])
-        (ct/create-provider-concept-tables db provider-id))
+        (when (or (not small)
+                  (= p/small-provider-id provider-id))
+          (ct/create-provider-concept-tables db provider)))
       (catch java.sql.BatchUpdateException e
         (let [error-message (.getMessage e)]
           (if (re-find #"UNIQUE_PROVIDER_ID" error-message)
@@ -61,18 +82,19 @@
 
   (delete-provider
     [db provider-id]
-    (if (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
-             first vals first (== 1)) ;; == is important because type returned is a big decimal
+    (if-let [existing-provider (p/get-provider db provider-id)]
       (do
-        (ct/delete-provider-concept-tables db provider-id)
+        (if (:small existing-provider)
+          (delete-small-provider-concepts db existing-provider)
+          (ct/delete-provider-concept-tables db existing-provider))
         (j/delete! db :providers ["provider_id = ?" provider-id]))
-      {:error :not-found
-       :error-message (format "Provider %s does not exist." provider-id)}))
+      (p/provider-not-found-error provider-id)))
 
   (reset-providers
     [db]
     (doseq [{:keys [provider-id]} (p/get-providers db)]
-      (p/delete-provider db provider-id))))
+      (when-not (= p/small-provider-id provider-id)
+        (p/delete-provider db provider-id)))))
 
 
 (comment

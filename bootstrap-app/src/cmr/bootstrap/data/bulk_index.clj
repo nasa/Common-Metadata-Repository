@@ -3,6 +3,7 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.indexer.services.index-service :as index]
             [cmr.metadata-db.data.concepts :as db]
+            [cmr.metadata-db.data.providers :as p]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [clojure.java.jdbc :as j]
             [clj-http.client :as client]
@@ -40,54 +41,58 @@
   "Get the list of collecitons belonging to the given provider."
   [system provider-id]
   (let [db (helper/get-metadata-db-db system)
+        provider (p/get-provider db provider-id)
         params {:concept-type :collection
                 :provider-id provider-id}
-        collections (db/find-concepts db params)]
+        collections (db/find-concepts db provider params)]
     (map :concept-id collections)))
 
-(defn provider-exists?
-  "Checks if the given provider exists in cmr."
+(defn get-provider-by-id
+  "Returns the metadata db provider that matches the given provider id."
   [context provider-id]
-  (let [provider-list (provider-service/get-providers context)]
-    (some #{provider-id} (map :provider-id provider-list))))
+  (let [db (helper/get-metadata-db-db (:system context))]
+    (p/get-provider db provider-id)))
 
 (defn get-collection
   "Get specified collection from cmr."
-  [context provider-id collection-id]
-  (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider-id collection-id))
+  [context provider collection-id]
+  (db/get-concept (helper/get-metadata-db-db (:system context)) :collection provider collection-id))
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
   [system provider-id collection-id]
   (info "Indexing granule data for collection" collection-id)
   (let [db (helper/get-metadata-db-db system)
+        provider (p/get-provider db provider-id)
         params {:concept-type :granule
                 :provider-id provider-id
                 :parent-collection-id collection-id}
-        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
+        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
         num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     num-granules))
 
 (defn- index-granules-for-provider
   "Index the granule data for every collection for a given provider."
-  [system provider-id start-index]
-  (info "Indexing granule data for provider" provider-id)
+  [system provider start-index]
+  (info "Indexing granule data for provider" (:provider-id provider))
   (let [db (helper/get-metadata-db-db system)
+        {:keys [provider-id]} provider
         params {:concept-type :granule
                 :provider-id provider-id}
-        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system) start-index)
+        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
         num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
 (defn- index-provider-collections
   "Index all the collections concepts for a given provider."
-  [system provider-id]
+  [system provider]
   (let [db (helper/get-metadata-db-db system)
+        {:keys [provider-id]} provider
         params {:concept-type :collection
                 :provider-id provider-id}
-        concept-batches (db/find-concepts-in-batches db params (:db-batch-size system))
+        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
         num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
@@ -96,8 +101,10 @@
   "Bulk index a provider."
   [system provider-id start-index]
   (info "Indexing provider" provider-id)
-  (let [col-count (index-provider-collections system provider-id)
-        gran-count (index-granules-for-provider system provider-id start-index)]
+  (let [db (helper/get-metadata-db-db system)
+        {:keys [provider-id] :as provider} (p/get-provider db provider-id)
+        col-count (index-provider-collections system provider)
+        gran-count (index-granules-for-provider system provider start-index)]
     (info "Indexing of provider" provider-id "completed.")
     (format "Indexed %d collections containing %d granules for provider %s"
             col-count

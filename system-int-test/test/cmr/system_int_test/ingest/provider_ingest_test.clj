@@ -34,16 +34,20 @@
         (= [400 [error]] [status errors]))
 
       "without cmr-only"
-      {:provider-id "PROV8" :small false} "Cmr Only is required."
+      {:provider-id "PROV8" :small false}
+      "Cmr Only is required."
 
       "cmr-only invalid value"
-      {:provider-id "PROV8" :cmr-only "" :small false} "Cmr Only must be either true or false but was [\"\"]"
+      {:provider-id "PROV8" :cmr-only "" :small false}
+      "Cmr Only must be either true or false but was [\"\"]"
 
       "without small"
-      {:provider-id "PROV8" :cmr-only false} "Small is required."
+      {:provider-id "PROV8" :cmr-only false}
+      "Small is required."
 
       "small invalid value"
-      {:provider-id "PROV8" :cmr-only false :small ""} "Small must be either true or false but was [\"\"]")))
+      {:provider-id "PROV8" :cmr-only false :small ""}
+      "Small must be either true or false but was [\"\"]")))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
@@ -58,7 +62,8 @@
              {:provider-id "PROV3" :cmr-only false :small false}
              {:provider-id "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :cmr-only true :small false}}
-           (set (ingest/get-ingest-providers)))))
+           ;; filter out the SMALL_PROV which always exists in metadata db real database
+           (set (filter #(not= "SMALL_PROV" (:provider-id %)) (ingest/get-ingest-providers))))))
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true false)))))
   (testing "update provider with a different small value is invalid"
@@ -126,7 +131,15 @@
           (search/find-refs :granule {:provider-id "PROV2"})))))
 
 (deftest delete-non-existent-provider-test
-  (is (= 404 (ingest/delete-ingest-provider "NON_EXIST"))))
+  (let [[status errors] (ingest/delete-ingest-provider "NON_EXIST")]
+    (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
+           [status errors]))))
+
+(deftest delete-small-provider-test
+  (testing "delete SMALL_PROV is not allowed"
+    (let [[status errors] (ingest/delete-ingest-provider "SMALL_PROV")]
+      (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
+             [status errors])))))
 
 (deftest delete-provider-without-permission-test
   (let [response (client/delete (url/ingest-provider-url "PROV1")

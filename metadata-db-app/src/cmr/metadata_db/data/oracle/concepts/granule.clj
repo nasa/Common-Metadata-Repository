@@ -22,10 +22,17 @@
           ;; native id.
           (assoc-in [:extra-fields :granule-ur] (or (:granule_ur result) (:native_id result)))))
 
-(defmethod c/concept->insert-args :granule
-  [concept]
+(defmethod c/concept->insert-args [:granule false]
+  [concept _]
   (let [{{:keys [parent-collection-id delete-time granule-ur]} :extra-fields} concept
-        [cols values] (c/concept->insert-args (assoc concept :concept-type :default))
+        [cols values] (c/concept->insert-args (assoc concept :concept-type :default) nil)
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime  delete-time)))]
     [(concat cols ["parent_collection_id" "delete_time" "granule_ur"])
      (concat values [parent-collection-id delete-time granule-ur])]))
+
+(defmethod c/concept->insert-args [:granule true]
+  [concept _]
+  (let [{:keys [provider-id]} concept
+        [cols values] (c/concept->insert-args concept false)]
+    [(concat cols ["provider_id"])
+     (concat values [provider-id])]))

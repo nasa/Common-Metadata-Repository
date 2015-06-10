@@ -410,9 +410,11 @@
 (defn reset-database-fixture
   "Creates a database fixture function to reset the database after every test.
   Optionally accepts a list of provider-ids to create before the test"
-  [& provider-ids]
+  [& providers]
   (fn [f]
     (reset-database)
-    (doseq [pid provider-ids] (save-provider pid false false))
+    (doseq [provider providers]
+      (let [{:keys [provider-id cmr-only small]} provider]
+        (save-provider provider-id (if cmr-only true false) (if small true false))))
     (f)))
 

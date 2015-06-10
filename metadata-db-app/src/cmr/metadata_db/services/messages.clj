@@ -91,6 +91,9 @@
 (defn provider-small-field-cannot-be-modified [provider-id]
   (format "Provider [%s] small field cannot be modified." provider-id))
 
+(defn small-provider-cannot-be-deleted []
+  "Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted.")
+
 (defn provider-does-not-exist [provider-id]
   (format "Provider with provider-id [%s] does not exist."
           provider-id))

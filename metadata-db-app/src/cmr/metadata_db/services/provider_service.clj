@@ -98,6 +98,8 @@
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
+  (when (= providers/small-provider-id provider-id)
+    (cmsg/data-error :bad-request msg/small-provider-cannot-be-deleted))
   (let [db (mdb-util/context->db context)
         result (providers/delete-provider db provider-id)
         error-code (:error result)]

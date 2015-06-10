@@ -31,12 +31,12 @@
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]
-   (create-provider-through-url provider (url/create-provider-url)))
+  (create-provider-through-url provider (url/create-provider-url)))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
   [provider]
-   (create-provider-through-url provider (url/ingest-create-provider-url)))
+  (create-provider-through-url provider (url/ingest-create-provider-url)))
 
 (defn get-providers-through-url
   [provider-url]
@@ -68,8 +68,12 @@
   (let [response (client/delete (url/ingest-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
-                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
-    (:status response)))
+                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+        {:keys [status body]} response
+        errors (:errors (json/decode body true))]
+    (if (= 200 status)
+      status
+      [status errors])))
 
 (defn update-ingest-provider
   "Updates the cmr-only attribute of an ingest provider."

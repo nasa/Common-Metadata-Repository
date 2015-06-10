@@ -14,7 +14,8 @@
 (defn metadata-db-concept-table
   "Get the collection/granule table name for a given provider."
   [system provider-id concept-type]
-  (str (metadata-db-user system) "." (tables/get-table-name provider-id concept-type)))
+  (str (metadata-db-user system) "."
+       (tables/get-table-name {:provider-id provider-id :cmr-only false :small false} concept-type)))
 
 (def concept-type->catalog-rest-id-field
   {:granule "echo_granule_id"

@@ -10,7 +10,8 @@
             [cmr.common.time-keeper :as tk]))
 
 (use-fixtures :each (join-fixtures
-                      [(util/reset-database-fixture "PROV1" "PROV2")
+                      [(util/reset-database-fixture {:provider-id "PROV1" :small false}
+                                                    {:provider-id "PROV2" :small true})
                        (tk/freeze-resume-time-fixture)]))
 
 (defn concept-revision-exists?
