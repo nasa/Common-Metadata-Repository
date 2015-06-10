@@ -176,9 +176,9 @@ The results are returned as a seqeuence of `<result>` tags, the contents of whic
 | format      | the mime-type for the returned metadata       |
 | revision-id | the CMR revision number of the stored concept |
 
-#### DIF 9
+#### DIF
 
-See the [specification](https://cdn.earthdata.nasa.gov/dif/9.x)
+Mime-type application/dif+xml corresponds to the DIF 9 format. See the [specification](https://cdn.earthdata.nasa.gov/dif/9.x)
 
 __Example__
 
