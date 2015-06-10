@@ -354,8 +354,7 @@
                 :page-num default-page-num
                 :sort-keys (default-sort-keys :collection)
                 :result-format :xml
-                :echo-compatible? false
-                :hierarchical-facets? false}})
+                :echo-compatible? false}})
 
 (defn query
   "Constructs a query with the given type, page-size, page-num, result-format,

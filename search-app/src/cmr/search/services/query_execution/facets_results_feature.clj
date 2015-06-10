@@ -23,7 +23,38 @@
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
 
 (defn- science-keyword-aggregation-builder
-  "Build the science keyword aggregations query."
+  "Build the science keyword aggregations query.
+
+  The elastic aggregations look like the following - the same pattern follows for the entire
+  hierarchy:
+
+  \"aggs\": {
+  \"science_keywords\": {
+  \"nested\": {
+  \"path\": \"science-keywords\"},
+  \"aggs\": {
+  \"category\": {
+  \"terms\": {
+  \"field\": \"science-keywords.category\"},
+  \"aggs\": {
+  \"category-coll-count\": {
+  \"reverse_nested\": {},
+  \"aggs\": {
+  \"concept-id\": {
+  \"terms\": {
+  \"field\": \"concept-id\",
+  \"size\": 1}}}},
+  \"topic\": {
+  \"terms\": {
+  \"field\": \"science-keywords.topic\"},
+  \"aggs\": {
+  \"topic-coll-count\": {
+  \"reverse_nested\": {},
+  \"aggs\": {
+  \"concept-id\": {
+  \"terms\": {
+  \"field\": \"concept-id\",
+  \"size\": 1}}}},..."
   [field-hierarchy]
   (when-let [field (first field-hierarchy)]
     {field {:terms {:field (str "science-keywords." (name field))}
@@ -31,7 +62,7 @@
                          (science-keyword-aggregation-builder (rest field-hierarchy)))}}))
 
 (def ^:private science-keyword-aggregations
-  "Builds a nested aggregation query for science-keyword-aggregations in a hierarchical fashion"
+  "Returns the nested aggregation query for science-keyword-aggregations in a hierarchical fashion"
   {:nested {:path :science-keywords}
    :aggs (science-keyword-aggregation-builder science-keyword-hierarchy)})
 
@@ -76,7 +107,11 @@
 
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
-  (assoc query :aggregations (facet-aggregations (:hierarchical-facets? query))))
+  (assoc query :aggregations flat-facet-aggregations))
+
+(defmethod query-execution/pre-process-query-result-feature :hierarchical-facets
+  [context query feature]
+  (assoc query :aggregations hierarchical-facet-aggregations))
 
 (defn- buckets->value-count-pairs
   "Processes an elasticsearch aggregation response of buckets to a sequence of value and count
@@ -97,7 +132,43 @@
        :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
 
 (defn- parse-hierarchical-bucket
-  "Parses the elasticsearch aggregations response for hierarchical fields."
+  "Parses the elasticsearch aggregations response for hierarchical fields.
+
+  Here is a sample response:
+
+  {:subfields [\"category\"],
+  :category
+  [{:value \"Hurricane\",
+  :count 2,
+  :subfields [\"topic\"],
+  :topic
+  [{:value \"Popular\",
+  :count 2,
+  :subfields [\"term\"],
+  :term
+  [{:value \"Extreme\",
+  :count 2,
+  :subfields [\"variable-level-1\"],
+  :variable-level-1
+  [{:value \"Level2-1\",
+  :count 2,
+  :subfields [\"variable-level-2\"],
+  :variable-level-2
+  [{:value \"Level2-2\",
+  :count 2,
+  :subfields [\"variable-level-3\"],
+  :variable-level-3
+  [{:value \"Level2-3\", :count 2}]}]}]}
+  {:value \"UNIVERSAL\", :count 2}]}
+  {:value \"Cool\",
+  :count 2,
+  :subfields [\"term\"],
+  :term
+  [{:value \"Term4\",
+  :count 2,
+  :subfields [\"variable-level-1\"],
+  :variable-level-1
+  [{:value \"UNIVERSAL\", :count 2}]}]}]}]}"
   [field-hierarchy aggregations-for-field]
   (when-let [field (first field-hierarchy)]
     (let [next-field (first (rest field-hierarchy))
@@ -118,7 +189,7 @@
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
-  map of science keywords."
+  map of science keywords. See parse-hierarchical-bucket for an example response."
   [bucket-map]
   (parse-hierarchical-bucket science-keyword-hierarchy
                              (get bucket-map (first science-keyword-hierarchy))))
@@ -146,11 +217,12 @@
      :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable]))
 
 (defmethod query-execution/post-process-query-result-feature :facets
-  [_ {:keys [hierarchical-facets?]} {:keys [aggregations]} query-results _]
-  (let [facets (if hierarchical-facets?
-                 (create-hierarchical-facets aggregations)
-                 (create-flat-facets aggregations))]
-    (assoc query-results :facets facets)))
+  [_ _ {:keys [aggregations]} query-results _]
+  (assoc query-results :facets (create-flat-facets aggregations)))
+
+(defmethod query-execution/post-process-query-result-feature :hierarchical-facets
+  [_ _ {:keys [aggregations]} query-results _]
+  (assoc query-results :facets (create-hierarchical-facets aggregations)))
 
 (defn- key-with-prefix
   [prefix k]
@@ -181,6 +253,7 @@
                                          (:value value-count-map))))))))
 
 (defn- facet->xml-element
+  "Helper function for converting a facet result into an XML element"
   [ns-prefix {:keys [field value-counts subfields] :as facet}]
   (let [with-prefix (partial key-with-prefix ns-prefix)
         xml-element-content
@@ -193,7 +266,7 @@
     (x/element (with-prefix :facet) {:field (name field)} xml-element-content)))
 
 (defn facets->xml-element
-  "Helper function for converting a facet result into an XML element"
+  "Converts a facets result into an XML element"
   ([facets]
    (facets->xml-element nil facets))
   ([ns-prefix facets]

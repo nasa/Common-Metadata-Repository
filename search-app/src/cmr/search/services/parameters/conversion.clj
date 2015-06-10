@@ -306,15 +306,16 @@
                                 (when (= (:include-has-granules params) "true")
                                   [:has-granules])
                                 (when (= (:include-facets params) "true")
-                                  [:facets]))]
+                                  (if hierarchical-facets?
+                                    [:hierarchical-facets]
+                                    [:facets])))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
      :sort-keys sort-keys
      :result-format (:result-format params)
      :result-features (seq result-features)
-     :echo-compatible? echo-compatible?
-     :hierarchical-facets? hierarchical-facets?}))
+     :echo-compatible? echo-compatible?}))
 
 (defn parameters->query
   "Converts parameters into a query model."

@@ -161,19 +161,6 @@
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
 
-(defn remove-nested-nil-keys
-  "Removes keys mapping to nil values in a nested map.
-  From http://stackoverflow.com/questions/29362150/remove-nil-values-from-deeply-nested-maps"
-  [nm]
-  (w/postwalk
-   (fn [el]
-     (if (map? el)
-       (let [m (into {} (remove (comp nil? second) el))]
-         (when (seq m)
-           m))
-       el))
-   nm))
-
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."

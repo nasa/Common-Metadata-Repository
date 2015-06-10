@@ -133,7 +133,7 @@
         :id (url/atom-request-url context concept-type :json)
         :title (atom/concept-type->atom-title concept-type)
         :entry (map (partial atom-reference->json results concept-type) items)
-        :facets (util/remove-nested-nil-keys facets)})}))
+        :facets facets})}))
 
 (defmethod qs/search-results->response :json
   [context query results]
