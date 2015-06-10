@@ -250,12 +250,7 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-<<<<<<< HEAD
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty
-                       :echo-compatible)
-=======
   (let [params (dissoc params :page-size :page-num :sort-key :result-format :echo-compatible)
->>>>>>> master
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
