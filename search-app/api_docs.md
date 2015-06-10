@@ -128,7 +128,7 @@ __Example__
       xmlns:time="http://a9.com/-/opensearch/extensions/time/1.0/"
       esipdiscovery:version="1.2">
    <updated>2015-06-05T20:10:39.166Z</updated>
-   <id>%CMR-ENDPOINT%:3003/collections.atom?pretty=true</id>
+   <id>%CMR-ENDPOINT%/collections.atom?pretty=true</id>
    <title type="text">ECHO dataset metadata</title>
    <entry>
       <id>C1200000000-PROV1</id>
@@ -483,7 +483,7 @@ __Example__
 {
   "feed" : {
     "updated" : "2015-06-05T17:52:10.316Z",
-    "id" : "%CMR-ENDPOINT%:3003/collections.json?pretty=true",
+    "id" : "%CMR-ENDPOINT%/collections.json?pretty=true",
     "title" : "ECHO dataset metadata",
     "entry" : [ {
       "version_id" : "v1",
@@ -627,7 +627,7 @@ __Example__
       <reference>
          <name>dataset-id</name>
          <id>C1200000000-PROV1</id>
-         <location>%CMR-ENDPOINT%:3003/concepts/C1200000000-PROV1</location>
+         <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1</location>
          <revision-id>1</revision-id>
       </reference>
    </references>
@@ -644,14 +644,12 @@ __Example__
    <reference>
       <name>SMAP Collection Dataset ID</name>
       <id>C1200000000-PROV1</id>
-      <location>%CMR-ENDPOINT%:3003/concepts/C1200000000-PROV1</location>
+      <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1</location>
    </reference>
 </references>
 ```
 
-### Example Searches
-
-### Search for Collections
+### Collection Search Examples
 
 #### Find all collections
 
@@ -995,7 +993,7 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date
 
-### Search for Granules
+### Granule Search Examples
 
 #### Find all granules
 
