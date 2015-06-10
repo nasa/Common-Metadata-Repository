@@ -48,20 +48,6 @@
                              :db db
                              :table-name table-name})))
 
-(comment
-  (let [db (assoc (oracle/create-db (config/db-spec "metadata-db"))
-                         :result-set-fetch-size
-                         (config/result-set-fetch-size))]
-  (j/db-do-commands db (format "CREATE TABLE %s (%s, %s)"
-                                 "SMALL_PROV_Granules"
-                                 (gt/get-gran-column-sql {:small true
-                                                          :table-name "SMALL_PROV_Granules"})
-                                 (gt/get-gran-constraint-sql {:small true
-                                                              :table-name "SMALL_PROV_Granules"})))
-  )
-
-  )
-
 (defmethod create-concept-table :granule
   [{:keys [db provider]}]
   (let [table-name (get-table-name provider :granule)
