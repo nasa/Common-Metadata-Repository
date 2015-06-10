@@ -156,20 +156,18 @@
     (symbol (str prefix ":" (name k)))
     k))
 
-;; Forward declaration to handle circular dependency within value-count-maps->xml-element and
-;; facet->xml-element functions
-(declare facet->xml-element)
-
 (defn- value-count-maps->xml-element
   "Converts a list of value-count-maps into an XML element."
   [ns-prefix value-count-maps]
   (let [with-prefix (partial key-with-prefix ns-prefix)]
     (x/element (with-prefix :value-count-maps) {}
                (for [value-count-map value-count-maps]
-                 (if-let [facets (:facets value-count-map)]
-                   (for [facet facets]
-                     (let [child-facets (x/element (with-prefix :facets) {}
-                                                   (facet->xml-element ns-prefix facet))]
+                 (if-let [subfield-name (first (:subfields value-count-map))]
+                   (when-let [subfield-facets (get value-count-map subfield-name)]
+                     (let [child-facets (x/element (with-prefix :facet)
+                                                   {:field (name subfield-name)}
+                                                   (value-count-maps->xml-element ns-prefix
+                                                                                  subfield-facets))]
                        (x/element (with-prefix :value-count-map) {}
                                   [(x/element (with-prefix :value)
                                               {:count (:count value-count-map)}
@@ -181,15 +179,15 @@
                                          (:value value-count-map))))))))
 
 (defn- facet->xml-element
-  [ns-prefix {:keys [field value-counts value-count-maps facets]}]
+  [ns-prefix {:keys [field value-counts subfields] :as facet}]
   (let [with-prefix (partial key-with-prefix ns-prefix)
         xml-element-content
-        (cond value-count-maps (value-count-maps->xml-element ns-prefix value-count-maps)
-              facets (x/element (with-prefix :facets) {}
-                                (facet->xml-element ns-prefix facets))
-              :else
-              (for [[value value-count] value-counts]
-                (x/element (with-prefix :value) {:count value-count} value)))]
+        (if-let [subfield (first subfields)]
+          (x/element (with-prefix :facet)
+                     {:field (name subfield)}
+                     (value-count-maps->xml-element ns-prefix (get facet subfield)))
+          (for [[value value-count] value-counts]
+            (x/element (with-prefix :value) {:count value-count} value)))]
     (x/element (with-prefix :facet) {:field (name field)} xml-element-content)))
 
 (defn facets->xml-element
@@ -216,8 +214,7 @@
    "variable_level_1" :variable-level-1-keyword
    "variable_level_2" :variable-level-2-keyword
    "variable_level_3" :variable-level-3-keyword
-   "detailed_variable" :detailed-variable-keyword
-   "science_keywords" :science-keywords})
+   "detailed_variable" :detailed-variable-keyword})
 
 (defn- facet->echo-xml-element
   [facet]

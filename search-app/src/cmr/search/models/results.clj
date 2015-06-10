@@ -13,28 +13,6 @@
    value-counts
    ])
 
-(defrecord HierarchicalFacet
-  [
-   ;; TODO Figure out if this is actually the structure we want and then document
-  field
-  value-count-maps
-  ])
-
-(defrecord ScienceKeywordsFacet
-  [
-   ;; TODO Figure out if this is actually the structure we want and then document
-   field
-   facets
-   ])
-
-(defrecord ValueCountMaps
-  [
-   ;; TODO Figure out if this is actually the structure we want and then document
-   value
-   count
-   facets
-   ])
-
 (defrecord Results
   [
    ;; The number of hits
@@ -65,9 +43,6 @@
 
 (record-pretty-printer/enable-record-pretty-printing
   Facet
-  HierarchicalFacet
-  ScienceKeywordsFacet
-  ValueCountMaps
   Results)
 
 (defn normalize-score

@@ -4,34 +4,38 @@
             [clojure.set :as set]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
+(defn- parse-facet-xml
+  "Converts an XML facet element into a nested map representation."
+  [facet-elem]
+  (let [field (get-in facet-elem [:attrs :field])
+        value-elems (cx/elements-at-path facet-elem [:value])
+        value-count-map-elems (cx/elements-at-path facet-elem [:value-count-maps :value-count-map])
+        facet (cx/element-at-path facet-elem [:facet])]
+    (cond (seq value-count-map-elems)
+          {(keyword field) (for [value-count-map-elem value-count-map-elems
+                                 :let [value-elem (cx/element-at-path value-count-map-elem [:value])
+                                       sub-facet-elem (cx/element-at-path value-count-map-elem [:facet])]]
+                             (merge (when sub-facet-elem
+                                      (merge (parse-facet-xml sub-facet-elem)
+                                             {:subfields [(get-in sub-facet-elem [:attrs :field])]}))
+                                    {:value (first (:content value-elem))
+                                     :count (Long. ^String (get-in value-elem [:attrs :count]))}))}
+          facet
+            (merge (parse-facet-xml facet)
+                   {:field field
+                    :subfields [(get-in facet [:attrs :field])]})
+          :else
+          {:field field
+           :value-counts (for [value-elem value-elems]
+                           [(first (:content value-elem))
+                            (Long. ^String (get-in value-elem [:attrs :count]))])})))
 (defn parse-facets-xml
-  "Converts an xml element into a sequence of facet maps containing field and value counts"
+  "Converts an XML facets element into a nested map representation."
   [facets-elem]
   (when facets-elem
     (when-let [facet-elems (cx/elements-at-path facets-elem [:facet])]
       (for [facet-elem facet-elems]
-        (let [field (get-in facet-elem [:attrs :field])
-              value-elems (cx/elements-at-path facet-elem [:value])]
-          {:field field
-           :value-counts (for [value-elem value-elems]
-                           [(first (:content value-elem))
-                            (Long. ^String (get-in value-elem [:attrs :count]))])})))))
-
-;; TODO Fix parsing to handle hierarchical facets
-(defn parse-hierarchical-facets-xml
-  "Converts an XML facets hierarchy into a nested map representation."
-  [facets-elem]
-  (when facets-elem
-    (when-let [facet-elems (cx/elements-at-path facets-elem [:facet])]
-      (for [facet-elem facet-elems]
-        (let [field (get-in facet-elem [:attrs :field])
-              value-elems (cx/elements-at-path facet-elem [:value])
-              value-count-map-elems (cx/elements-at-path facet-elem [:value-count-maps])
-              facets (cx/elements-at-path facet-elem [:facets])]
-          {:field field
-           :value-counts (for [value-elem value-elems]
-                           [(first (:content value-elem))
-                            (Long. ^String (get-in value-elem [:attrs :count]))])})))))
+        (parse-facet-xml facet-elem)))))
 
 (def echo-facet-key->cmr-facet-name
   (set/map-invert frf/cmr-facet-name->echo-facet-keyword))
