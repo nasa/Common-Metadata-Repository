@@ -4,6 +4,10 @@
             [clojure.set :as set]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
+(def ^:private hierarchical-fields
+  "Set of fields that are in hierarchical format"
+  #{"science_keywords"})
+
 (defn- parse-facet-xml
   "Converts an XML facet element into a nested map representation."
   [facet-elem]
@@ -21,14 +25,19 @@
                                     {:value (first (:content value-elem))
                                      :count (Long. ^String (get-in value-elem [:attrs :count]))}))}
           facet
-            (merge (parse-facet-xml facet)
-                   {:field field
-                    :subfields [(get-in facet [:attrs :field])]})
-          :else
+          (merge (parse-facet-xml facet)
+                 {:field field
+                  :subfields [(get-in facet [:attrs :field])]})
+
+          (not (contains? hierarchical-fields field))
           {:field field
            :value-counts (for [value-elem value-elems]
                            [(first (:content value-elem))
-                            (Long. ^String (get-in value-elem [:attrs :count]))])})))
+                            (Long. ^String (get-in value-elem [:attrs :count]))])}
+          :else
+          {:field field
+           :subfields []})))
+
 (defn parse-facets-xml
   "Converts an XML facets element into a nested map representation."
   [facets-elem]

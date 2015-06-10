@@ -111,8 +111,10 @@
                                                                  sub-aggregations-for-field))
                                     {:count (get-in bucket [:coll-count :doc_count])
                                      :value (:key bucket)}))]
-      {:subfields [field]
-       field value-count-maps})))
+      (if (seq value-count-maps)
+        {:subfields [field]
+         field value-count-maps}
+        {:subfields []}))))
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet

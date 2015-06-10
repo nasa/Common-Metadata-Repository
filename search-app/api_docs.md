@@ -39,7 +39,7 @@ These are query parameters specific to collections
   * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata.
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
-  * TODO: document hierarchical_facets
+  * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
 
 #### Headers
 
@@ -862,164 +862,15 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 
 ### Facets
 
-Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in xml or json format.
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in XML or JSON format.
 
-TODO: Document hierarchical facets
-
-{
-  "feed" : {
-    "updated" : "2015-06-09T11:51:42.889Z",
-    "id" : "http://localhost:3003/collections.json?include_facets=true&hierarchical_facets=true&pretty=true&page_size=0",
-    "title" : "ECHO dataset metadata",
-    "entry" : [ ],
-    "facets" : [ {
-      "field" : "archive_center",
-      "value-counts" : [ [ "Larc", 3 ], [ "GSFC", 1 ] ]
-    }, {
-      "field" : "project",
-      "value-counts" : [ [ "PROJ2", 2 ], [ "proj1", 1 ], [ "proj3", 1 ] ]
-    }, {
-      "field" : "platform",
-      "value-counts" : [ [ "A-p0", 2 ], [ "A-p1", 1 ], [ "B-p0", 1 ], [ "B-p1", 1 ] ]
-    }, {
-      "field" : "instrument",
-      "value-counts" : [ [ "A-p0-i0", 2 ], [ "A-p0-i1", 1 ], [ "A-p1-i0", 1 ], [ "A-p1-i1", 1 ], [ "B-p0-i0", 1 ], [ "B-p0-i1", 1 ], [ "B-p1-i0", 1 ], [ "B-p1-i1", 1 ] ]
-    }, {
-      "field" : "sensor",
-      "value-counts" : [ [ "A-p0-i0-s0", 2 ], [ "A-p0-i1-s0", 1 ], [ "A-p1-i0-s0", 1 ], [ "A-p1-i1-s0", 1 ], [ "B-p0-i0-s0", 1 ], [ "B-p0-i1-s0", 1 ], [ "B-p1-i0-s0", 1 ], [ "B-p1-i1-s0", 1 ] ]
-    }, {
-      "field" : "two_d_coordinate_system_name",
-      "value-counts" : [ [ "Alpha", 2 ], [ "Bravo", 1 ], [ "alpha", 1 ] ]
-    }, {
-      "field" : "processing_level_id",
-      "value-counts" : [ [ "PL1", 2 ], [ "PL2", 1 ], [ "pl1", 1 ] ]
-    }, {
-      "field" : "detailed_variable",
-      "value-counts" : [ [ "Detail1", 2 ], [ "UNIVERSAL", 1 ] ]
-    }, {
-      "field" : "science_keywords",
-      "subfields" : [ "category" ],
-      "category" : [ {
-        "value" : "Hurricane",
-        "count" : 3,
-        "subfields" : [ "topic" ],
-        "topic" : [ {
-          "value" : "Popular",
-          "count" : 2,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "UNIVERSAL",
-            "count" : 2
-          }, {
-            "value" : "Extreme",
-            "count" : 1,
-            "subfields" : [ "variable-level-1" ],
-            "variable-level-1" : [ {
-              "value" : "Level2-1",
-              "count" : 1,
-              "subfields" : [ "variable-level-2" ],
-              "variable-level-2" : [ {
-                "value" : "Level2-2",
-                "count" : 1,
-                "subfields" : [ "variable-level-3" ],
-                "variable-level-3" : [ {
-                  "value" : "Level2-3",
-                  "count" : 1
-                } ]
-              } ]
-            } ]
-          } ]
-        }, {
-          "value" : "Cool",
-          "count" : 1,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "Term4",
-            "count" : 1,
-            "subfields" : [ "variable-level-1" ],
-            "variable-level-1" : [ {
-              "value" : "UNIVERSAL",
-              "count" : 1
-            } ]
-          } ]
-        } ]
-      }, {
-        "value" : "Cat1",
-        "count" : 2,
-        "subfields" : [ "topic" ],
-        "topic" : [ {
-          "value" : "Topic1",
-          "count" : 2,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "Term1",
-            "count" : 2,
-            "subfields" : [ "variable-level-1" ],
-            "variable-level-1" : [ {
-              "value" : "Level1-1",
-              "count" : 2,
-              "subfields" : [ "variable-level-2" ],
-              "variable-level-2" : [ {
-                "value" : "Level1-2",
-                "count" : 2,
-                "subfields" : [ "variable-level-3" ],
-                "variable-level-3" : [ {
-                  "value" : "Level1-3",
-                  "count" : 2
-                } ]
-              } ]
-            } ]
-          } ]
-        } ]
-      }, {
-        "value" : "Tornado",
-        "count" : 2,
-        "subfields" : [ "topic" ],
-        "topic" : [ {
-          "value" : "Popular",
-          "count" : 2,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "Extreme",
-            "count" : 2
-          } ]
-        } ]
-      }, {
-        "value" : "UPCASE",
-        "count" : 1,
-        "subfields" : [ "topic" ],
-        "topic" : [ {
-          "value" : "Popular",
-          "count" : 1,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "Mild",
-            "count" : 1
-          } ]
-        } ]
-      }, {
-        "value" : "upcase",
-        "count" : 1,
-        "subfields" : [ "topic" ],
-        "topic" : [ {
-          "value" : "Cool",
-          "count" : 1,
-          "subfields" : [ "term" ],
-          "term" : [ {
-            "value" : "Mild",
-            "count" : 1
-          } ]
-        } ]
-      } ]
-    } ]
-  }
-}
-
-
+The science_keywords field is a hierarchical field. By default facets are returned in a flat format showing counts for each nested field separately. In order to retrieve hierarchical facets pass in the parameter `hierarchical_facets=true`.
 
 #### Facets in XML Responses
 
-Facets in XML search response formats will be formatted like the following example. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+Facets in XML search response formats will be formatted like the following examples. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+
+##### Flat XML Facets
 
 ```
 <facets>
@@ -1051,9 +902,55 @@ Facets in XML search response formats will be formatted like the following examp
 </facets>
 ```
 
+##### Hierarchical XML Facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+
+```
+<facets>
+  <facet field="archive_center"/>
+  ...
+  <facet field="science_keywords">
+    <facet field="category">
+      <value-count-maps>
+        <value-count-map>
+          <value count="31550">EARTH SCIENCE</value>
+          <facet field="topic">
+            <value-count-maps>
+              <value-count-map>
+                <value count="8166">ATMOSPHERE</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="785">AEROSOLS</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+              <value-count-map>
+                <value count="10269">OCEANS</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="293">AQUATIC SCIENCES</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+            </value-count-maps>
+          </facet>
+        </value-count-map>
+      </value-count-maps>
+    </facet>
+  </facet>
+</facets>
+```
+
 #### Facets in JSON Responses
 
-Facets in JSON search response formats will be formatted like the following example.
+Facets in JSON search response formats will be formatted like the following examples.
+
+##### Flat JSON facets
 
 ```
 {
@@ -1111,6 +1008,42 @@ Facets in JSON search response formats will be formatted like the following exam
     }]
   }
 }
+```
+
+##### Hierarchical JSON facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+
+```
+    "facets" : [ {
+      "field" : "archive_center",
+      "value-counts" : [ ]
+    ...
+    }, {
+      "field" : "science_keywords",
+      "subfields" : [ "category" ],
+      "category" : [ {
+        "value" : "EARTH SCIENCE",
+        "count" : 31550,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "ATMOSPHERE",
+          "count" : 8166,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AEROSOLS",
+            "count" : 785 } ]
+          }, {
+          "value" : "OCEANS",
+          "count" : 10269,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AQUATIC SCIENCES",
+            "count" : 293
+          } ]
+        } ]
+      } ]
+    } ]
 ```
 
 ### Search for Tiles
