@@ -1,5 +1,5 @@
 (ns cmr.search.services.query-execution.facets-results-feature
-  "This is enables returning facets with collection search results"
+  "This enables returning facets with collection search results"
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
             [camel-snake-kebab.core :as csk]
@@ -7,7 +7,7 @@
 
 (defn- terms-facet
   [field]
-  ;; We shouldn't try to handle this many different values.
+  ;; FIXME: We shouldn't try to handle this many different values.
   ;; We should have a limit and if that's exceeded in the elastic response we should note that in
   ;; the values returned. This can be handled as a part of CMR-1101.
   {:terms {:field field :size 10000}})
@@ -65,7 +65,8 @@
    :processing-level-id (terms-facet :processing-level-id)
    :science-keywords science-keyword-aggregations
    ;; Detailed variable is technically part of the science keyword hierarchy directly below
-   ;; variable level 1 (at the same level as variable level 2.) Opened ticket TBD to address.
+   ;; variable level 1 (at the same level as variable level 2.)
+   ;; Opened ticket CMR-1722 to address.
    :detailed-variable (terms-facet :detailed-variable)})
 
 (defmethod query-execution/pre-process-query-result-feature :facets

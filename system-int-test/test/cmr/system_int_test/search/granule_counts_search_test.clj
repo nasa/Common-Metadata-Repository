@@ -113,7 +113,7 @@
 
     (testing "granule counts"
       (testing "invalid include-granule-counts"
-        (is (= {:errors ["Parameter include_granule_counts must take value of true, false, or unset, but was foo"] :status 400}
+        (is (= {:errors ["Parameter [include_granule_counts] must take value of true, false, or unset, but was [foo]"] :status 400}
                (search/find-refs :collection {:include-granule-counts "foo"})))
         (is (= {:errors ["Parameter [include_granule_counts] was not recognized."] :status 400}
                (search/find-refs :granule {:include-granule-counts true}))))
@@ -178,7 +178,7 @@
 
     (testing "has granules"
       (testing "invalid include-has-granules"
-        (is (= {:errors ["Parameter include_has_granules must take value of true, false, or unset, but was foo"] :status 400}
+        (is (= {:errors ["Parameter [include_has_granules] must take value of true, false, or unset, but was [foo]"] :status 400}
                (search/find-refs :collection {:include-has-granules "foo"})))
         (is (= {:errors ["Parameter [include_has_granules] was not recognized."] :status 400}
                (search/find-refs :granule {:include-has-granules true}))))

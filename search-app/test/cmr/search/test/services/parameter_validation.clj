@@ -145,11 +145,12 @@
   (testing "valid boolean parameters do not return an error"
     (is (= []
            (pv/boolean-value-validation :collection {:include-facets "false"
-                                                     :hierarchical-facets "true"
+                                                     :hierarchical-facets "TRUE"
                                                      :downloadable "uNSet"}))))
   (testing "boolean parameters with an invalid value return an error"
-    (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was not-right" "Parameter include_facets must take value of true, false, or unset, but was TRUE"]
-           (pv/boolean-value-validation :collection {:include-facets "TRUE"
+    (is (= ["Parameter [hierarchical_facets] must take value of true, false, or unset, but was [not-right]"
+            "Parameter [include_facets] must take value of true, false, or unset, but was [TRUE-ISH]"]
+           (pv/boolean-value-validation :collection {:include-facets "TRUE-ISH"
                                                      :hierarchical-facets "not-right"})))))
 
 (deftest temporal-format-validation :collection-start-date-test
