@@ -1,18 +1,24 @@
 (ns cmr.common.mime-types
-  "Provides functions for handling mime types."
+  "Provides vars and functions for parsing and generating between MIME
+  type and HTTP Content-Type strings and data formats supported by the
+  CMR."
   (:refer-clojure :exclude [atom])
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
+;; (note: these maps will be populated as MIME types are declared)
+
 (def base-mime-type-to-format
-  "A map of base mime types to the format symbols supported"
+  "A map of MIME type strings to CMR data format keywords."
   {})
 
 (def format->mime-type
-  "A map of format symbols to their mime type."
+  "A map of CMR data format keywords to MIME type strings."
   {})
+
+;; Supported MIME types
 
 (defmacro defmimetype
   "An elegant DSL for crafting beautiful mime-type definitions."
@@ -46,6 +52,10 @@
 
 (defmimetype native "application/metadata+xml" :native)
 
+(def any "*/*")
+
+;; extra helpers
+
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
   (keys base-mime-type-to-format))
@@ -53,12 +63,24 @@
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   ([mime-type]
-   (mime-type->format mime-type "application/json"))
+   (mime-type->format mime-type json))
   ([mime-type default-mime-type]
    (if mime-type
      (or (get base-mime-type-to-format mime-type)
          (get base-mime-type-to-format default-mime-type))
      (get base-mime-type-to-format default-mime-type))))
+
+;; Content-Type utilities
+
+(defn with-charset
+  "Returns a Content-Type header string with the given mime-type and charset."
+  [mime-type charset]
+  (str mime-type "; charset=" charset))
+
+(defn with-utf-8
+  "Returns mimetype with utf-8 charset specified."
+  [mime-type]
+  (with-charset mime-type "utf-8"))
 
 (defn extract-mime-types
   "Extracts mime types from an accept header string according to RFC 2616 and returns them
