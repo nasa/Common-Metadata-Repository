@@ -1,5 +1,6 @@
 (ns cmr.common.mime-types
   "Provides functions for handling mime types."
+  (:refer-clojure :exclude [atom])
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as svc-errors]
@@ -7,35 +8,43 @@
 
 (def base-mime-type-to-format
   "A map of base mime types to the format symbols supported"
-  {"application/json" :json
-   "application/xml" :xml
-   "application/echo10+xml" :echo10
-   "application/iso:smap+xml" :iso-smap
-   "application/iso19115+xml" :iso19115
-   "application/dif+xml" :dif
-   "application/dif10+xml" :dif10
-   "text/csv" :csv
-   "application/atom+xml" :atom
-   "application/vnd.google-earth.kml+xml" :kml
-   "application/opendata+json" :opendata
-   "application/metadata+xml" :native})
+  {})
 
 (def format->mime-type
   "A map of format symbols to their mime type."
-  {:json "application/json"
-   :xml "application/xml"
-   :echo10 "application/echo10+xml"
-   :iso_smap "application/iso:smap+xml"
-   :iso-smap "application/iso:smap+xml"
-   :iso "application/iso19115+xml"
-   :iso19115 "application/iso19115+xml"
-   :dif "application/dif+xml"
-   :dif10 "application/dif10+xml"
-   :csv "text/csv"
-   :atom "application/atom+xml"
-   :kml "application/vnd.google-earth.kml+xml"
-   :opendata "application/opendata+json"
-   :native "application/metadata+xml"})
+  {})
+
+(defmacro defmimetype
+  "An elegant DSL for crafting beautiful mime-type definitions."
+  [name string format-kw & format-aliases]
+  (alter-var-root #'base-mime-type-to-format assoc string format-kw)
+  (doseq [kw (conj format-aliases format-kw)]
+    (alter-var-root #'format->mime-type assoc kw string))
+  `(def ~name ~string))
+
+(defmimetype json "application/json" :json)
+
+(defmimetype xml "application/xml" :xml)
+
+(defmimetype echo10 "application/echo10+xml" :echo10)
+
+(defmimetype iso-smap "application/iso:smap+xml" :iso-smap :iso_smap)
+
+(defmimetype iso "application/iso19115+xml" :iso19115 :iso)
+
+(defmimetype dif "application/dif+xml" :dif)
+
+(defmimetype dif10 "application/dif10+xml" :dif10)
+
+(defmimetype csv "text/csv" :csv)
+
+(defmimetype atom  "application/atom+xml" :atom)
+
+(defmimetype kml "application/vnd.google-earth.kml+xml" :kml)
+
+(defmimetype opendata "application/opendata+json" :opendata)
+
+(defmimetype native "application/metadata+xml" :native)
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
