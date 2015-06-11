@@ -1,10 +1,13 @@
 (ns cmr.transmit.ingest
   "Provide functions to invoke ingest app"
-  (:require [cmr.common.services.health-helper :as hh]
+  (:require [clj-http.client :as client]
+            [cmr.common.services.health-helper :as hh]
             [cmr.transmit.connection :as conn]
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
             [camel-snake-kebab.core :as csk]
+            [cmr.transmit.config :as config]
+            [cheshire.core :as cheshire]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 
@@ -40,3 +43,23 @@
                                 :content-type (:format concept)
                                 :headers {"Revision-Id" revision-id}
                                 :accept :json}}))))
+
+(defn get-ingest-health-fn
+  "Returns the health status of the ingest"
+  [context]
+  (let [conn (config/context->app-connection context :ingest)
+        request-url (str (conn/root-url conn) "/health")
+        response (client/get request-url {:accept :json
+                                          :throw-exceptions false
+                                          :connection-manager (conn/conn-mgr conn)})
+        {:keys [status body]} response
+        result (cheshire/decode body true)]
+    (if (= 200 status)
+      {:ok? true :dependencies result}
+      {:ok? false :problem result})))
+
+(defn get-ingest-health
+  "Returns the ingest health with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-ingest-health-fn context) timeout-ms)))

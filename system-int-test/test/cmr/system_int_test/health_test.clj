@@ -25,6 +25,17 @@
   {:ok? true
    :dependencies {:elastic_search {:ok? true}, :echo {:ok? true}}})
 
+(def good-indexer-health
+  {:ok? true
+   :dependencies {:elastic_search {:ok? true}
+                  :echo {:ok? true}
+                  :cubby {:ok? true,
+                          :dependencies
+                          {:elastic_search {:ok? true}, :echo {:ok? true}}}
+                  :rabbit-mq {:ok? true}
+                  :metadata-db good-metadata-db-health
+                  :index-set good-index-set-db-health}})
+
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
          (get-app-health (url/index-set-health-url)))))
@@ -56,15 +67,7 @@
                  :echo {:ok? true}
                  :metadata-db good-metadata-db-health
                  :rabbit-mq {:ok? true}
-                 :indexer {:ok? true
-                           :dependencies {:elastic_search {:ok? true}
-                                          :echo {:ok? true}
-                                          :cubby {:ok? true,
-                                                  :dependencies
-                                                  {:elastic_search {:ok? true}, :echo {:ok? true}}}
-                                          :rabbit-mq {:ok? true}
-                                          :metadata-db good-metadata-db-health
-                                          :index-set good-index-set-db-health}}}]
+                 :indexer good-indexer-health}]
            (get-app-health (url/ingest-health-url))))))
 
 (deftest search-health-test
@@ -87,3 +90,15 @@
                                           :metadata-db good-metadata-db-health
                                           :index-set good-index-set-db-health}}}]
            (get-app-health (url/bootstrap-health-url))))))
+
+(deftest virtual-product-health-test
+  (s/only-with-real-database
+    (is (= [200 {:ingest
+                 {:ok? true
+                  :dependencies {:oracle {:ok? true}
+                                 :echo {:ok? true}
+                                 :metadata-db good-metadata-db-health
+                                 :rabbit-mq {:ok? true}
+                                 :indexer good-indexer-health}}
+                 :metadata-db good-metadata-db-health}]
+           (get-app-health (url/virtual-product-health-url))))))
