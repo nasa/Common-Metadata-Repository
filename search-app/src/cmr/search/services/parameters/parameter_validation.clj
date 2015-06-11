@@ -467,6 +467,7 @@
     []))
 
 (defn boolean-value-validation
+  "Validates that all of the boolean parameters have values of true, false or unset."
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :include-facets

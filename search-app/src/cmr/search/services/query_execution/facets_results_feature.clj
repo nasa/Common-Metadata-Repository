@@ -23,38 +23,7 @@
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
 
 (defn- science-keyword-aggregation-builder
-  "Build the science keyword aggregations query.
-
-  The elastic aggregations look like the following - the same pattern follows for the entire
-  hierarchy:
-
-  \"aggs\": {
-  \"science_keywords\": {
-  \"nested\": {
-  \"path\": \"science-keywords\"},
-  \"aggs\": {
-  \"category\": {
-  \"terms\": {
-  \"field\": \"science-keywords.category\"},
-  \"aggs\": {
-  \"category-coll-count\": {
-  \"reverse_nested\": {},
-  \"aggs\": {
-  \"concept-id\": {
-  \"terms\": {
-  \"field\": \"concept-id\",
-  \"size\": 1}}}},
-  \"topic\": {
-  \"terms\": {
-  \"field\": \"science-keywords.topic\"},
-  \"aggs\": {
-  \"topic-coll-count\": {
-  \"reverse_nested\": {},
-  \"aggs\": {
-  \"concept-id\": {
-  \"terms\": {
-  \"field\": \"concept-id\",
-  \"size\": 1}}}},..."
+  "Build the science keyword aggregations query."
   [field-hierarchy]
   (when-let [field (first field-hierarchy)]
     {field {:terms {:field (str "science-keywords." (name field))}
@@ -99,12 +68,6 @@
    ;; variable level 1 (at the same level as variable level 2.) Opened ticket TBD to address.
    :detailed-variable (terms-facet :detailed-variable)})
 
-(defn- facet-aggregations
-  "Return facet aggregations to use depending on whether a flat or hierarchical facet response is
-  requested."
-  [hierarchical-facets?]
-  (if hierarchical-facets? hierarchical-facet-aggregations flat-facet-aggregations))
-
 (defmethod query-execution/pre-process-query-result-feature :facets
   [context query feature]
   (assoc query :aggregations flat-facet-aggregations))
@@ -132,67 +95,28 @@
        :value-counts (buckets->value-count-pairs (get bucket-map field-name))})))
 
 (defn- parse-hierarchical-bucket
-  "Parses the elasticsearch aggregations response for hierarchical fields.
-
-  Here is a sample response:
-
-  {:subfields [\"category\"],
-  :category
-  [{:value \"Hurricane\",
-  :count 2,
-  :subfields [\"topic\"],
-  :topic
-  [{:value \"Popular\",
-  :count 2,
-  :subfields [\"term\"],
-  :term
-  [{:value \"Extreme\",
-  :count 2,
-  :subfields [\"variable-level-1\"],
-  :variable-level-1
-  [{:value \"Level2-1\",
-  :count 2,
-  :subfields [\"variable-level-2\"],
-  :variable-level-2
-  [{:value \"Level2-2\",
-  :count 2,
-  :subfields [\"variable-level-3\"],
-  :variable-level-3
-  [{:value \"Level2-3\", :count 2}]}]}]}
-  {:value \"UNIVERSAL\", :count 2}]}
-  {:value \"Cool\",
-  :count 2,
-  :subfields [\"term\"],
-  :term
-  [{:value \"Term4\",
-  :count 2,
-  :subfields [\"variable-level-1\"],
-  :variable-level-1
-  [{:value \"UNIVERSAL\", :count 2}]}]}]}]}"
-  [field-hierarchy aggregations-for-field]
+  "Parses the elasticsearch aggregations response for hierarchical fields."
+  [field-hierarchy bucket-map]
   (when-let [field (first field-hierarchy)]
-    (let [next-field (first (rest field-hierarchy))
-          value-count-maps (for [bucket (:buckets aggregations-for-field)
-                                 :let [sub-aggregations-for-field (when next-field
-                                                                    (select-keys
-                                                                      (get bucket next-field)
-                                                                      [:coll-count :buckets]))]]
-                             (merge (when (seq (:buckets sub-aggregations-for-field))
-                                      (parse-hierarchical-bucket (rest field-hierarchy)
-                                                                 sub-aggregations-for-field))
-                                    {:count (get-in bucket [:coll-count :doc_count])
-                                     :value (:key bucket)}))]
-      (if (seq value-count-maps)
+    (let [empty-response {:subfields []}
+          value-counts (for [bucket (get-in bucket-map [field :buckets])
+                             :let [sub-facets (parse-hierarchical-bucket (rest field-hierarchy)
+                                                                         bucket)]]
+                         (merge {:value (:key bucket)
+                                 :count (get-in bucket [:coll-count :doc_count]
+                                                (:doc_count bucket))}
+                                (when-not (= sub-facets empty-response)
+                                  sub-facets)))]
+      (if (seq value-counts)
         {:subfields [field]
-         field value-count-maps}
-        {:subfields []}))))
+         field value-counts}
+        empty-response))))
 
 (defn- science-keywords-bucket->facets
   "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
   map of science keywords. See parse-hierarchical-bucket for an example response."
   [bucket-map]
-  (parse-hierarchical-bucket science-keyword-hierarchy
-                             (get bucket-map (first science-keyword-hierarchy))))
+  (parse-hierarchical-bucket science-keyword-hierarchy bucket-map))
 
 (defn- create-hierarchical-facets
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
@@ -202,8 +126,8 @@
                               [:archive-center :project :platform :instrument :sensor
                                :two-d-coordinate-system-name :processing-level-id
                                :detailed-variable])
-          [(merge (science-keywords-bucket->facets (:science-keywords elastic-aggregations))
-                  {:field "science_keywords"})]))
+          [(assoc (science-keywords-bucket->facets (:science-keywords elastic-aggregations))
+                  :field "science_keywords")]))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns
@@ -326,4 +250,85 @@
   [facets]
   (when facets
     (into {} (map facet->echo-json facets))))
+
+(comment
+
+  ;; See below for snippets of the data structures used for building hierarchical facets
+  ;; 1) The elastic aggregations query for hierarchical facets
+
+  ;; GET 1_collections/collection/_search
+  ; {
+  ; "query": {
+  ;   "match_all": {}
+  ; },
+  ; "size": 0,
+  ; "aggs": {
+  ;   "science_keywords": {
+  ;     "nested": {
+  ;       "path": "science-keywords"
+  ;     },
+  ;     "aggs": {
+  ;       "category": {
+  ;         "terms": {
+  ;           "field": "science-keywords.category"
+  ;         },
+  ;         "aggs": {
+  ;           "category-coll-count": {
+  ;             "reverse_nested": {},
+  ;             "aggs": {
+  ;               "concept-id": {
+  ;                 "terms": {
+  ;                   "field": "concept-id",
+  ;                   "size": 1
+  ;                 }
+  ;               }
+  ;             }
+  ;           },
+  ;           "topic": {
+  ;             ;; ... same structure as category
+  ;             ;; repeats for each term in the science keyword hierarchy
+
+  ;; Snippet of the elastic response for hierarchical facets
+  ;  "aggregations": {
+  ;     "science_keywords": {
+  ;        "doc_count": 14,
+  ;        "category": {
+  ;           "doc_count_error_upper_bound": 0,
+  ;           "sum_other_doc_count": 0,
+  ;           "buckets": [
+  ;              {
+  ;                 "key": "Hurricane",
+  ;                 "doc_count": 6,
+  ;                 "category-coll-count": {
+  ;                    "doc_count": 2,
+  ;                    "concept-id": {
+  ;                       "doc_count_error_upper_bound": 0,
+  ;                       "sum_other_doc_count": 1,
+  ;                       "buckets": [
+  ;                          {
+  ;                             "key": "C1200000000-PROV1",
+  ;                             "doc_count": 1
+  ;                          }
+  ;                       ]
+  ;                    }
+  ;                 },
+  ;             "topic": {
+  ;                ...
+
+  ;; Hierarchical facets json response
+  ;  }, {
+  ;     "field" : "detailed_variable",
+  ;     "value-counts" : [ [ "Detail1", 2 ], [ "UNIVERSAL", 2 ] ]
+  ;   }, {
+  ;     "field" : "science_keywords",
+  ;     "subfields" : [ "category" ],
+  ;     "category" : [ {
+  ;       "value" : "Hurricane",
+  ;       "count" : 2,
+  ;       "subfields" : [ "topic" ],
+  ;       "topic" : [ {
+  ;         "value" : "Popular",
+  ;           ...
+  ;
+  )
 
