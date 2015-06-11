@@ -142,8 +142,9 @@
        :revision-date (oracle-timestamp->str-time db revision_date)
        :deleted (not= (int deleted) 0)})))
 
-(defmethod concept->insert-args [:default nil]
-  [concept _]
+(defn concept->common-insert-args
+  "Converts a concept into a set of insert arguments that is common for all provider concept types."
+  [concept]
   (let [{:keys [concept-type
                 native-id
                 concept-id
@@ -252,6 +253,26 @@
        :existing-concept-id concept_id
        :existing-native-id native_id})))
 
+(defn- by-provider
+  "Converts the sql condition clause into provider aware condition clause, i.e. adding the provider-id
+  condition to the condition clause when the given provider is small; otherwise returns the same
+  condition clause. For example:
+  `(= :native-id \"blah\") becomes `(and (= :native-id \"blah\") (= :provider-id \"PROV1\"))"
+  [{:keys [provider-id small]} base-clause]
+  (if small
+    (if (= (first base-clause) 'clojure.core/and)
+      ;; Insert the provider id clause at the beginning.
+      `(and (= :provider-id ~provider-id) ~@(rest base-clause))
+      `(and (= :provider-id ~provider-id) ~base-clause))
+    base-clause))
+
+(defn- params->sql-params
+  "Converts the search params into params that can be converted in sql condition clause."
+  [provider params]
+  (if (:small provider)
+    (dissoc params :concept-type)
+    (dissoc params :concept-type :provider-id)))
+
 (extend-protocol c/ConceptsStore
   OracleStore
 
@@ -266,11 +287,7 @@
   (get-concept-id
     [db concept-type provider native-id]
     (let [table (tables/get-table-name provider concept-type)
-          {:keys [provider-id small]} provider
-          where-clause (if small
-                         (where `(and (= :native-id ~native-id)
-                                      (= :provider-id ~provider-id)))
-                         (where `(= :native-id ~native-id)))]
+          where-clause (where (by-provider provider `(= :native-id ~native-id)))]
       (:concept_id
         (su/find-one db (select [:concept-id]
                                 (from table)
@@ -281,24 +298,16 @@
     (j/with-db-transaction
       [conn db]
       (let [{:keys [concept-type provider-id native-id revision-id]} concept
-            {:keys [small]} provider
             table (tables/get-table-name provider concept-type)
             stmt (if revision-id
                    ;; find specific revision
-                   (let [where-clause (if small
-                                        (where `(and (= :native-id ~native-id)
-                                                     (= :revision-id ~revision-id)
-                                                     (= :provider-id ~provider-id)))
-                                        (where `(and (= :native-id ~native-id)
-                                                     (= :revision-id ~revision-id))))]
+                   (let [where-clause (where (by-provider provider `(and (= :native-id ~native-id)
+                                                                         (= :revision-id ~revision-id))))]
                      (select '[*]
                              (from table)
                              where-clause))
                    ;; find latest
-                   (let [where-clause (if small
-                                        (where `(and (= :native-id ~native-id)
-                                                     (= :provider-id ~provider-id)))
-                                        (where `(= :native-id ~native-id)))]
+                   (let [where-clause (where (by-provider provider `(= :native-id ~native-id)))]
                      (select '[*]
                              (from table)
                              where-clause
@@ -364,9 +373,7 @@
     (j/with-db-transaction
       [conn db]
       (let [{:keys [concept-type provider-id]} params
-            params (if (:small provider)
-                     (dissoc params :concept-type)
-                     (dissoc params :concept-type :provider-id))
+            params (params->sql-params provider params)
             table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:*]
                                    (from table)
@@ -380,9 +387,7 @@
      (c/find-concepts-in-batches db provider params batch-size 0))
     ([db provider params batch-size requested-start-index]
      (let [{:keys [concept-type provider-id]} params
-           params (if (:small provider)
-                    (dissoc params :concept-type)
-                    (dissoc params :concept-type :provider-id))
+           params (params->sql-params provider params)
            table (tables/get-table-name provider concept-type)]
        (letfn [(find-batch
                  [start-index]

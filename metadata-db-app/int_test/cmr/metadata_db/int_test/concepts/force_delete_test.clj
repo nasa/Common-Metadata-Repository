@@ -7,14 +7,14 @@
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                 {:provider-id "PROV2" :small true}))
+(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "SMAL_PROV" :small true}))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest force-delete-collection-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)
           concept-id (:concept-id coll)
           _ (dorun (repeatedly 3 #(util/save-concept (dissoc coll :revision-id))))
@@ -34,7 +34,7 @@
         (is (= 404 (:status (util/force-delete-concept concept-id 22))))))))
 
 (deftest force-delete-granule-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)
           gran (util/create-and-save-granule provider-id (:concept-id coll) 1)
           concept-id (:concept-id gran)
@@ -56,8 +56,8 @@
 
 (deftest force-delete-non-existent-test
   (testing "id not exist"
-    (is (= 404 (:status (util/force-delete-concept "C22-PROV1" 0))))
-    (is (= 404 (:status (util/force-delete-concept "G22-PROV1" 0)))))
+    (is (= 404 (:status (util/force-delete-concept "C22-REG_PROV" 0))))
+    (is (= 404 (:status (util/force-delete-concept "G22-REG_PROV" 0)))))
   (testing "provider not exist"
     (is (= 404 (:status (util/force-delete-concept "C22-PROV3" 0))))
     (is (= 404 (:status (util/force-delete-concept "G22-PROV3" 0))))))

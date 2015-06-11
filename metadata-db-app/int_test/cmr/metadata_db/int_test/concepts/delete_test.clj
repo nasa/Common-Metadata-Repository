@@ -10,13 +10,13 @@
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                 {:provider-id "PROV2" :small true}))
+(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "SMAL_PROV" :small true}))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest delete-collection-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           gran1 (util/create-and-save-granule provider-id (:concept-id coll1) 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
@@ -47,14 +47,14 @@
       (is (util/verify-concept-was-saved gran3)))))
 
 (deftest delete-collection-with-valid-revision-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 4)]
       (is (= status 200))
       (is (= revision-id 4)))))
 
 (deftest delete-granule-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
           gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
           gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
@@ -69,7 +69,7 @@
       (is (util/verify-concept-was-saved gran2)))))
 
 (deftest delete-granule-with-valid-revision-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
           gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
           {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 4)]
@@ -77,22 +77,22 @@
       (is (= revision-id 4)))))
 
 (deftest delete-concept-with-skipped-revisions-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
           {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 100)]
       (is (= status 200))
       (is (= revision-id 100)))))
 
 (deftest delete-concept-with-invalid-revision
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
           {:keys [status]} (util/delete-concept (:concept-id coll1) 0)]
       (is (= status 409)))))
 
 (deftest fail-to-delete-missing-concept
-  (let [{:keys [status revision-id errors]} (util/delete-concept "C100-PROV1")]
+  (let [{:keys [status revision-id errors]} (util/delete-concept "C100-REG_PROV")]
     (is (= status 404))
-    (is (= errors [(messages/concept-does-not-exist "C100-PROV1")]))))
+    (is (= errors [(messages/concept-does-not-exist "C100-REG_PROV")]))))
 
 (deftest fail-to-delete-missing-concept-for-missing-provider
   (let [{:keys [status revision-id errors]} (util/delete-concept "C100-NONEXIST")]
@@ -100,7 +100,7 @@
     (is (= errors [(messages/providers-do-not-exist ["NONEXIST"])]))))
 
 (deftest repeated-calls-to-delete-get-same-revision
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)]
       (is (= (util/delete-concept (:concept-id coll1))
              (util/delete-concept (:concept-id coll1))

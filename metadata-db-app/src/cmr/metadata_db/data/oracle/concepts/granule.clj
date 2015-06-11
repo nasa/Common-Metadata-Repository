@@ -25,7 +25,7 @@
 (defmethod c/concept->insert-args [:granule false]
   [concept _]
   (let [{{:keys [parent-collection-id delete-time granule-ur]} :extra-fields} concept
-        [cols values] (c/concept->insert-args (assoc concept :concept-type :default) nil)
+        [cols values] (c/concept->common-insert-args concept)
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime  delete-time)))]
     [(concat cols ["parent_collection_id" "delete_time" "granule_ur"])
      (concat values [parent-collection-id delete-time granule-ur])]))

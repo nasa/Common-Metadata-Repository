@@ -14,14 +14,14 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Set up PROV1 as regular provider and PROV2 as a small provider
-(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                 {:provider-id "PROV2" :small true}))
+;; Set up REG_PROV as regular provider and SMAL_PROV as a small provider
+(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "SMAL_PROV" :small true}))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-collection-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
@@ -29,7 +29,7 @@
       (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
 
 (deftest save-collection-with-revision-date-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1 {:revision-date (t/date-time 2001 1 1 12 12 14)})
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
@@ -38,14 +38,14 @@
         (is (= (:revision-date concept) (:revision-date (:concept retrieved-concept))))))))
 
 (deftest save-collection-with-bad-revision-date-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1 {:revision-date "foo"})
           {:keys [status errors]} (util/save-concept concept)]
       (is (= 422 status))
       (is (= ["[foo] is not a valid datetime"] errors)))))
 
 (deftest save-collection-without-version-id-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1 {:extra-fields {:version-id nil}})
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
@@ -53,7 +53,7 @@
       (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
 
 (deftest save-granule-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [collection (util/collection-concept provider-id 1)
           parent-collection-id (:concept-id (util/save-concept collection))
           granule (util/granule-concept provider-id parent-collection-id 1)
@@ -63,7 +63,7 @@
       (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))))
 
 (deftest save-concept-test-with-proper-revision-id-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)]
       ;; save the concept once
       (let [{:keys [revision-id concept-id]} (util/save-concept concept)
@@ -81,7 +81,7 @@
           (is (util/verify-concept-was-saved updated-concept)))))))
 
 (deftest save-concept-with-skipped-revisions-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-skipped-revisions (assoc concept :concept-id concept-id :revision-id 100)
@@ -91,7 +91,7 @@
       (is (= 100 revision-id (:revision-id retrieved-concept))))))
 
 (deftest auto-increment-of-revision-id-works-with-skipped-revisions-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-concept-id (assoc concept :concept-id concept-id)
@@ -102,7 +102,7 @@
       (is (= 101 revision-id (:revision-id retrieved-concept))))))
 
 (deftest save-concept-with-low-revision-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 0)
@@ -111,13 +111,13 @@
       (is (nil? revision-id)))))
 
 (deftest save-concept-with-revision-id-0
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept-with-bad-revision (util/collection-concept provider-id 1 {:revision-id 0})
           {:keys [status]} (util/save-concept concept-with-bad-revision)]
       (is (= 409 status)))))
 
 (deftest save-concept-with-missing-required-parameter
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)]
       (are [field] (let [{:keys [status errors]} (util/save-concept (dissoc concept field))]
                      (and (= 422 status)
@@ -128,7 +128,7 @@
            :extra-fields))))
 
 (deftest save-concept-after-delete
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
       (is (= 200 (:status (util/delete-concept concept-id))))
@@ -137,7 +137,7 @@
         (is (= revision-id 3))))))
 
 (deftest save-concept-after-delete-invalid-revision-id
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
       (is (= 200 (:status (util/delete-concept concept-id))))
@@ -145,7 +145,7 @@
         (is (= 409 status))))))
 
 (deftest save-granule-with-concept-id
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [collection (util/collection-concept provider-id 1)
           parent-collection-id (:concept-id (util/save-concept collection))
           gran-concept-id (str "G10-" provider-id)
@@ -191,7 +191,7 @@
 
 (deftest save-granule-with-nil-required-field
   (testing "nil parent-collection-id"
-    (doseq [provider-id ["PROV1" "PROV2"]]
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
       (let [granule (util/granule-concept provider-id nil 1)
             {:keys [status revision-id concept-id]} (util/save-concept granule)]
         (is (= 422 status))
@@ -210,7 +210,7 @@
 
 (deftest save-collection-post-commit-constraint-violations
   (testing "duplicate entry titles"
-    (doseq [provider-id ["PROV1" "PROV2"]]
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
       (let [existing-concept-id (str "C1-" provider-id)
             existing-collection (util/collection-concept provider-id 1
                                                          {:concept-id existing-concept-id
@@ -239,7 +239,7 @@
 
 (deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
-    (doseq [provider-id ["PROV1" "PROV2"]]
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
       ;; Turn on enforcement of duplicate granule UR constraint
       (cc/set-enforce-granule-ur-constraint! true)
       (let [collection (util/collection-concept provider-id 1)

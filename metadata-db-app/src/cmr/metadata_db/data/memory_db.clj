@@ -281,9 +281,7 @@
 
   (save-provider
     [db {:keys [provider-id] :as provider}]
-    (if (@providers-atom provider-id)
-      {:error :provider-id-conflict :error-message (format "Provider [%s] already exists." provider-id)}
-      (swap! providers-atom assoc provider-id provider)))
+    (swap! providers-atom assoc provider-id provider))
 
   (get-providers
     [db]
@@ -295,17 +293,11 @@
 
   (update-provider
     [db {:keys [provider-id small] :as provider}]
-    (if-let [existing-provider (@providers-atom provider-id)]
-      (if (= small (:small existing-provider))
-        (swap! providers-atom assoc provider-id provider)
-        (providers/small-field-cannot-be-modified provider-id))
-      (providers/provider-not-found-error provider-id)))
+    (swap! providers-atom assoc provider-id provider))
 
   (delete-provider
-    [db provider-id]
-    (if (@providers-atom provider-id)
-      (swap! providers-atom dissoc provider-id)
-      (providers/provider-not-found-error provider-id)))
+    [db provider]
+    (swap! providers-atom dissoc (:provider-id provider)))
 
   (reset-providers
     [db]

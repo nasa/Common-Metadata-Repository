@@ -10,8 +10,8 @@
             [cmr.common.time-keeper :as tk]))
 
 (use-fixtures :each (join-fixtures
-                      [(util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                    {:provider-id "PROV2" :small true})
+                      [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                    {:provider-id "SMAL_PROV" :small true})
                        (tk/freeze-resume-time-fixture)]))
 
 (defn concept-revision-exists?
@@ -44,10 +44,10 @@
   (= 200 (:status (util/get-concept-by-id (:concept-id concept)))))
 
 (deftest old-collection-revisions-are-cleaned-up
-  (let [coll1 (util/create-and-save-collection "PROV1" 1 13)
-        coll2 (util/create-and-save-collection "PROV1" 2 3)
-        coll3 (util/create-and-save-collection "PROV2" 1 12)
-        coll4 (util/create-and-save-collection "PROV2" 4 3)
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 13)
+        coll2 (util/create-and-save-collection "REG_PROV" 2 3)
+        coll3 (util/create-and-save-collection "SMAL_PROV" 1 12)
+        coll4 (util/create-and-save-collection "SMAL_PROV" 4 3)
         collections [coll1 coll2 coll3 coll4]]
 
     ;; Collection 4 has a tombstone
@@ -70,12 +70,12 @@
     (is (revisions-exist? coll4 (range 1 5)))))
 
 (deftest old-granule-revisions-are-cleaned-up
-  (let [coll1 (util/create-and-save-collection "PROV1" 1 1)
-        gran1 (util/create-and-save-granule "PROV1" (:concept-id coll1) 1 3)
-        gran2 (util/create-and-save-granule "PROV1" (:concept-id coll1) 2 3)
-        coll2 (util/create-and-save-collection "PROV2" 2 1)
-        gran3 (util/create-and-save-granule "PROV2" (:concept-id coll2) 1 3)
-        gran4 (util/create-and-save-granule "PROV2" (:concept-id coll2) 4 2)
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
+        gran1 (util/create-and-save-granule "REG_PROV" (:concept-id coll1) 1 3)
+        gran2 (util/create-and-save-granule "REG_PROV" (:concept-id coll1) 2 3)
+        coll2 (util/create-and-save-collection "SMAL_PROV" 2 1)
+        gran3 (util/create-and-save-granule "SMAL_PROV" (:concept-id coll2) 1 3)
+        gran4 (util/create-and-save-granule "SMAL_PROV" (:concept-id coll2) 4 2)
         granules [gran1 gran2 gran3 gran4]]
 
     ;; Granule 4 has a tombstone
@@ -90,13 +90,13 @@
     (is (every? #(concept-revision-exists? % 3) granules))))
 
 (deftest old-tombstones-are-cleaned-up
-  (let [coll1 (util/create-and-save-collection "PROV1" 1)
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
         base-revision-date (tk/now)
         offset->date #(t/plus base-revision-date (t/days %))
 
         ;; Creates a granule based on the number with a revision date offset-days in the future
         make-gran (fn [uniq-num offset-days]
-                    (let [gran (assoc (util/granule-concept "PROV1" (:concept-id coll1) uniq-num)
+                    (let [gran (assoc (util/granule-concept "REG_PROV" (:concept-id coll1) uniq-num)
                                       :revision-date (offset->date offset-days))
                           {:keys [concept-id revision-id]} (util/assert-no-errors
                                                              (util/save-concept gran))]

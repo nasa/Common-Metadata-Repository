@@ -1,10 +1,6 @@
 (ns cmr.metadata-db.data.providers
   "Defines a protocol for CRUD operations on providers.")
 
-(def small-provider-id
-  "Provider id of the small provider"
-  "SMALL_PROV")
-
 (defprotocol ProvidersStore
   "Functions for saving and retrieving providers"
 
@@ -27,19 +23,10 @@
     provider map's provider-id value.")
 
   (delete-provider
-    [db provider-id]
+    [db provider]
     "Remove a provider from the database completely, including all of its concepts.")
 
   (reset-providers
     [db]
     "Delete all providers from the database including their concept tables.  USE WITH CAUTION."))
 
-(defn provider-not-found-error
-  "Error message indicating that the given provider-id does not exist."
-  [provider-id]
-  {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)})
-
-(defn small-field-cannot-be-modified
-  "Error message indicating that the small field of a provider cannot be modified."
-  [provider-id]
-  {:error :bad-request :error-message (format "Provider [%s] small field cannot be modified." provider-id)})

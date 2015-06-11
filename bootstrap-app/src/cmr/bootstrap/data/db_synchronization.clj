@@ -47,6 +47,11 @@
           [concept_id (when revision_id (long revision_id))])
         (su/query conn stmt)))
 
+(defn- provider-id->provider
+  "Helper function to convert a provider id into a provider map"
+  [provider-id]
+  {:provider-id provider-id :cmr-only false :small false})
+
 (defmulti concept-matches-dataset-id-clause
   "Returns a sql clause to find items in the given concept type table by dataset id in a Catalog REST
   table."
@@ -75,8 +80,7 @@
 (defmethod concept-matches-entry-title-clause :granule
   [system provider-id concept-type]
   (format "parent_collection_id = (select distinct concept_id from %s where entry_title = ?)"
-          (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                 :collection)))
+          (tables/get-table-name (provider-id->provider provider-id) :collection)))
 
 (defmulti add-updates-to-work-table-stmt
   (fn [system provider-id concept-type params]
@@ -141,7 +145,7 @@
   [system provider-id concept-type concept-ids]
   (let [tuples (mdb-concepts/get-latest-concept-id-revision-id-tuples
                  (:db system) concept-type
-                 {:provider-id provider-id :cmr-only false :small false} concept-ids)]
+                 (provider-id->provider provider-id) concept-ids)]
     (concat tuples
             ;; Find concept ids that didn't exist in Metadata DB at all.
             ;; A revision 0 indicates they don't exist yet. This will be incremented to the first
@@ -360,14 +364,12 @@
            (mu/concept-type->catalog-rest-id-field concept-type)
            (mu/catalog-rest-table system provider-id concept-type)
            (mu/concept-type->catalog-rest-id-field concept-type)
-           (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                  concept-type)
+           (tables/get-table-name (provider-id->provider provider-id) concept-type)
            ;; Second select
            (mu/concept-type->catalog-rest-id-field concept-type)
            (mu/catalog-rest-table system provider-id concept-type)
            (mu/concept-type->catalog-rest-id-field concept-type)
-           (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                  concept-type))])
+           (tables/get-table-name (provider-id->provider provider-id) concept-type))])
 
 (defmethod add-missing-to-work-table-stmt #{:entry-title}
   [system provider-id concept-type {:keys [entry-title]}]
@@ -381,15 +383,13 @@
              (mu/catalog-rest-table system provider-id concept-type)
              concept-clause
              (mu/concept-type->catalog-rest-id-field concept-type)
-             (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                    concept-type)
+             (tables/get-table-name (provider-id->provider provider-id) concept-type)
              ;; Second select
              (mu/concept-type->catalog-rest-id-field concept-type)
              (mu/catalog-rest-table system provider-id concept-type)
              concept-clause
              (mu/concept-type->catalog-rest-id-field concept-type)
-             (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                    concept-type))
+             (tables/get-table-name (provider-id->provider provider-id) concept-type))
      entry-title entry-title]))
 
 (defn- add-missing-to-work-table
@@ -441,8 +441,7 @@
   [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
            select concept_id, revision_id, deleted from %s
            where concept_id not in (select %s from %s)"
-           (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                  concept-type)
+           (tables/get-table-name (provider-id->provider provider-id) concept-type)
            (mu/concept-type->catalog-rest-id-field concept-type)
            (mu/catalog-rest-table system provider-id concept-type))])
 
@@ -453,8 +452,7 @@
     [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
              select concept_id, revision_id, deleted from %s
              where %s and concept_id not in (select %s from %s where %s)"
-             (tables/get-table-name {:provider-id provider-id :cmr-only false :small false}
-                                    concept-type)
+             (tables/get-table-name (provider-id->provider provider-id) concept-type)
              match-entry-title-clause
              (mu/concept-type->catalog-rest-id-field concept-type)
              (mu/catalog-rest-table system provider-id concept-type)

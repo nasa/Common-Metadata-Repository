@@ -2,12 +2,13 @@
   "Contains helper functions to create collection table."
   (require [clojure.java.jdbc :as j]))
 
-(defmulti get-coll-column-sql
-  (fn [m]
-    (:small m)))
+(defmulti collection-column-sql
+  "Returns the sql to define provider collection columns"
+  (fn [provider]
+    (:small provider)))
 
-(defmethod get-coll-column-sql false
-  [m]
+(defmethod collection-column-sql false
+  [provider]
   "id NUMBER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
@@ -22,18 +23,19 @@
   entry_title VARCHAR(1030) NOT NULL,
   delete_time TIMESTAMP WITH TIME ZONE")
 
-(defmethod get-coll-column-sql true
-  [m]
+(defmethod collection-column-sql true
+  [provider]
   ;; For small provider collection table, there is an extra provider_id column
-  (str (get-coll-column-sql {:small false})
+  (str (collection-column-sql {:small false})
        ",provider_id VARCHAR(255) NOT NULL"))
 
-(defmulti get-coll-constraint-sql
-  (fn [m]
-    (:small m)))
+(defmulti collection-constraint-sql
+  "Returns the sql to define constraint on provider collection table"
+  (fn [provider table-name]
+    (:small provider)))
 
-(defmethod get-coll-constraint-sql false
-  [{:keys [table-name]}]
+(defmethod collection-constraint-sql false
+  [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -55,8 +57,8 @@
           table-name
           table-name))
 
-(defmethod get-coll-constraint-sql true
-  [{:keys [table-name]}]
+(defmethod collection-constraint-sql true
+  [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
             ;; Unique constraint on native id and revision id
@@ -78,12 +80,13 @@
           table-name
           table-name))
 
-(defmulti create-coll-indexes
-  (fn [m]
-    (:small m)))
+(defmulti create-collection-indexes
+  "Create indexes on provider collection table"
+  (fn [db provider table-name]
+    (:small provider)))
 
-(defmethod create-coll-indexes false
-  [{:keys [db table-name]}]
+(defmethod create-collection-indexes false
+  [db _ table-name]
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))
@@ -97,8 +100,8 @@
                                table-name
                                table-name)))
 
-(defmethod create-coll-indexes true
-  [{:keys [db table-name]}]
+(defmethod create-collection-indexes true
+  [db _ table-name]
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))

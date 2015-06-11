@@ -23,7 +23,7 @@
 (defmethod c/concept->insert-args [:collection false]
   [concept _]
   (let [{{:keys [short-name version-id entry-id entry-title delete-time]} :extra-fields} concept
-        [cols values] (c/concept->insert-args (assoc concept :concept-type :default) nil)
+        [cols values] (c/concept->common-insert-args concept)
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]
     [(concat cols ["short_name" "version_id" "entry_id" "entry_title" "delete_time"])
      (concat values [short-name version-id entry-id entry-title delete-time])]))

@@ -295,7 +295,7 @@ Creates a provider in Metadata DB. The `cmr-only` parameter indicates if this is
 
 ### Update provider
 
-Updates the attributes of a provider in Metadata DB. The `small` parameter cannot be changed during update.
+Updates the attributes of a provider in Metadata DB. The `small` attribute cannot be changed during update.
 
     curl -v -XPUT -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "cmr-only":true, "small":false}' http://localhost:3001/providers/PROV1
 

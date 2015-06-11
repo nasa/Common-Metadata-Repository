@@ -5,8 +5,8 @@
             [clojure.pprint :refer (pprint pp)]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.providers :as p]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct]
             [cmr.metadata-db.data.oracle.sql-helper :as sh]
+            [cmr.metadata-db.data.oracle.concept-tables :as ct]
             [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
@@ -16,14 +16,6 @@
   {:provider-id provider_id
    :cmr-only (== 1 cmr_only)
    :small (== 1 small) })
-
-(defn- provider->db-provider-id
-  "Returns the database provider-id for the given provider"
-  [provider]
-  (let [{:keys [provider-id small]} provider]
-    (if small
-      p/small-provider-id
-      provider-id)))
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
@@ -58,7 +50,7 @@
   (get-providers
     [db]
     (map dbresult->provider
-         (j/query db ["SELECT provider_id, cmr_only, small FROM providers"])))
+         (j/query db ["SELECT * FROM providers"])))
 
   (get-provider
     [db provider-id]
@@ -69,30 +61,24 @@
 
   (update-provider
     [db {:keys [provider-id cmr-only small]}]
-    (if-let [existing-provider (p/get-provider db provider-id)]
-      (if (= small (:small existing-provider))
-        (j/update! db
-                   :providers
-                   {:cmr_only (if cmr-only 1 0)
-                    :small (if small 1 0)}
-                   ["provider_id = ?" provider-id])
-        (p/small-field-cannot-be-modified provider-id))
-      (p/provider-not-found-error provider-id)))
+    (j/update! db
+               :providers
+               {:cmr_only (if cmr-only 1 0)
+                :small (if small 1 0)}
+               ["provider_id = ?" provider-id]))
 
   (delete-provider
-    [db provider-id]
-    (if-let [existing-provider (p/get-provider db provider-id)]
-      (do
-        (if (:small existing-provider)
-          (delete-small-provider-concepts db existing-provider)
-          (ct/delete-provider-concept-tables db existing-provider))
-        (j/delete! db :providers ["provider_id = ?" provider-id]))
-      (p/provider-not-found-error provider-id)))
+    [db provider]
+    (let [{:keys [provider-id small]} provider]
+      (if small
+        (delete-small-provider-concepts db provider)
+        (ct/delete-provider-concept-tables db provider))
+      (j/delete! db :providers ["provider_id = ?" provider-id])))
 
   (reset-providers
     [db]
-    (doseq [{:keys [provider-id]} (p/get-providers db)]
-        (p/delete-provider db provider-id))))
+    (doseq [provider (p/get-providers db)]
+      (p/delete-provider db provider))))
 
 
 (comment
@@ -106,7 +92,6 @@
 
   (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
        first vals first (== 0))
-
 
 
   (j/delete! db :providers ["provider_id = ?" "FOO"])

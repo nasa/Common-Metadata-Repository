@@ -6,8 +6,8 @@
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]))
 
-(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                 {:provider-id "PROV2" :small true}))
+(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "SMAL_PROV" :small true}))
 
 (defn verify
   [result]
@@ -22,7 +22,7 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [concept1 (util/collection-concept provider-id 1)
           concept2-concept-id (str "C2-" provider-id)
           concept2 (assoc (util/collection-concept provider-id 2) :concept-id concept2-concept-id)
@@ -40,7 +40,7 @@
         (testing "Non existent collection id"
           (is (= 404 (:status (util/get-concept-by-id (str "C123-" provider-id))))))
         (testing "Non existent provider id"
-          (is (= 404 (:status (util/get-concept-by-id "C1000000000-PROV12"))))))
+          (is (= 404 (:status (util/get-concept-by-id "C1000000000-REG_PROV2"))))))
 
       (testing "get-concept-with-version-test"
         "Get a concept by concept-id and version-id."

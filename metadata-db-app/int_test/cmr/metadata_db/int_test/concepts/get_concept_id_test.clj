@@ -11,13 +11,13 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(use-fixtures :each (util/reset-database-fixture {:provider-id "PROV1" :small false}
-                                                 {:provider-id "PROV2" :small true}))
+(use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "SMAL_PROV" :small true}))
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest get-concept-id-test
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)]
       (testing "collection"
         (is (= {:status 200
@@ -35,7 +35,7 @@
                  (util/get-concept-id "granule" provider-id (:native-id gran)))))))))
 
 (deftest fail-to-get-concept-id-for-non-existing-concept
-  (doseq [provider-id ["PROV1" "PROV2"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)
           gran (util/create-and-save-granule provider-id (:concept-id coll) 1)]
       (testing "native-id does not exist"

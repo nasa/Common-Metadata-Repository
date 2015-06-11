@@ -2,12 +2,13 @@
   "Contains helper functions to create granule table."
   (require [clojure.java.jdbc :as j]))
 
-(defmulti get-gran-column-sql
-  (fn [m]
-    (:small m)))
+(defmulti granule-column-sql
+  "Returns the sql to define provider granule columns"
+  (fn [provider]
+    (:small provider)))
 
-(defmethod get-gran-column-sql false
-  [m]
+(defmethod granule-column-sql false
+  [provider]
   (str "id NUMBER,
        concept_id VARCHAR(255) NOT NULL,
        native_id VARCHAR(250) NOT NULL,
@@ -25,18 +26,19 @@
        ;; fully populated.
        "granule_ur VARCHAR(250)"))
 
-(defmethod get-gran-column-sql true
-  [m]
+(defmethod granule-column-sql true
+  [provider]
   ;; For small provider granule table, there is an extra provider_id column
-  (str (get-gran-column-sql {:small false})
+  (str (granule-column-sql {:small false})
        ",provider_id VARCHAR(255) NOT NULL"))
 
-(defmulti get-gran-constraint-sql
-  (fn [m]
-    (:small m)))
+(defmulti granule-constraint-sql
+  "Returns the sql to define constraint on provider granule table"
+  (fn [provider table-name]
+    (:small provider)))
 
-(defmethod get-gran-constraint-sql false
-  [{:keys [table-name]}]
+(defmethod granule-constraint-sql false
+  [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -58,8 +60,8 @@
           table-name
           table-name))
 
-(defmethod get-gran-constraint-sql true
-  [{:keys [table-name]}]
+(defmethod granule-constraint-sql true
+  [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -82,7 +84,7 @@
           table-name))
 
 (defn- create-common-gran-indexes
-  [{:keys [db table-name]}]
+  [db table-name]
   ;; can't create constraint with column of datatype TIME/TIMESTAMP WITH TIME ZONE
   ;; so we create the index separately from the create table statement
   (j/db-do-commands db (format "CREATE INDEX %s_crddr ON %s (concept_id, revision_id, deleted, delete_time, revision_date)"
@@ -106,18 +108,19 @@
                table-name
                table-name)))
 
-(defmulti create-gran-indexes
-  (fn [m]
-    (:small m)))
+(defmulti create-granule-indexes
+  "Create indexes on provider granule table"
+  (fn [db provider table-name]
+    (:small provider)))
 
-(defmethod create-gran-indexes false
-  [{:keys [db table-name]}]
-  (create-common-gran-indexes {:db db :table-name table-name})
+(defmethod create-granule-indexes false
+  [db provider table-name]
+  (create-common-gran-indexes db table-name)
   (j/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name)))
 
-(defmethod create-gran-indexes true
-  [{:keys [db table-name]}]
-  (create-common-gran-indexes {:db db :table-name table-name})
+(defmethod create-granule-indexes true
+  [db provider table-name]
+  (create-common-gran-indexes db table-name)
   (j/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
                                table-name table-name)))
 

@@ -338,6 +338,7 @@
         latest-only? (= "true" (:latest params))
         params (dissoc params :latest)]
     (cv/validate-find-params params)
+    ;; provider-id is a required field in find params. It always exists.
     (if-let [provider (get-provider-by-id context (:provider-id params) false)]
       (if latest-only?
         (c/find-latest-concepts db provider params)
