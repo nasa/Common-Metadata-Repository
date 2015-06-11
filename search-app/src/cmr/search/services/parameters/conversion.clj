@@ -300,12 +300,15 @@
         sort-keys (or (parse-sort-key (:sort-key params))
                       (when (:keyword params) [{:order :desc :field :score}]))
         echo-compatible? (= "true" (:echo-compatible params))
+        hierarchical-facets? (= "true" (:hierarchical-facets params))
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
                                   [:has-granules])
                                 (when (= (:include-facets params) "true")
-                                  [:facets]))]
+                                  (if hierarchical-facets?
+                                    [:hierarchical-facets]
+                                    [:facets])))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
@@ -324,7 +327,7 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible)]
+                       :echo-compatible :hierarchical-facets)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

@@ -1,5 +1,5 @@
 (ns cmr.search.data.elastic-results-to-query-results
-  "Contains function to covert elasticsearch results to query results."
+  "Contains functions to convert elasticsearch results to query results."
   (:require [clojure.string :as s]
             [cmr.search.models.results :as results]
             [cmr.search.services.url-helper :as url]))

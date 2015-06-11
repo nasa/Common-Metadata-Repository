@@ -39,6 +39,7 @@ These are query parameters specific to collections
   * `include_has_granules` - If this parameter is set to "true" this will include a flag indicating true or false if the collection has any granules at all. Supported in all response formats except opendata.
   * `include_granule_counts` - If this parameter is set to "true" this will include a count of the granules in each collection that would match the spatial and temporal conditions from the collection query. Supported in all response formats except opendata.
   * `include_facets` - If this parameter is set to "true" facets will be included in the collection results (not applicable to opendata results). Facets are described in detail below.
+  * `hierarchical_facets` - If this parameter is set to "true" and the parameter `include_facets` is set to "true" the facets that are returned will be hierarchical. Hierarchical facets are described in the facets section below.
 
 #### Headers
 
@@ -1435,11 +1436,15 @@ exactly matches the Platform/Instrument/short-name field - weight 1.2
 
 ### Facets
 
-Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in xml or json format.
+Facets are counts of unique values from fields in items matching search results. Facets are supported with collection search results and are enabled with the `include_facets=true` parameter. Facets are supported on all collection search response formats. When `echo_compatible=true` parameter is also present, the facets are returned in the catalog-rest search_facet style in XML or JSON format.
+
+The science_keywords field is a hierarchical field. By default facets are returned in a flat format showing counts for each nested field separately. In order to retrieve hierarchical facets pass in the parameter `hierarchical_facets=true`.
 
 #### Facets in XML Responses
 
-Facets in XML search response formats will be formatted like the following example. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+Facets in XML search response formats will be formatted like the following examples. The exception is ATOM XML which is the same except the tags are in the echo namespace.
+
+##### Flat XML Facets
 
 ```
 <facets>
@@ -1471,9 +1476,55 @@ Facets in XML search response formats will be formatted like the following examp
 </facets>
 ```
 
+##### Hierarchical XML Facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+
+```
+<facets>
+  <facet field="archive_center"/>
+  ...
+  <facet field="science_keywords">
+    <facet field="category">
+      <value-count-maps>
+        <value-count-map>
+          <value count="31550">EARTH SCIENCE</value>
+          <facet field="topic">
+            <value-count-maps>
+              <value-count-map>
+                <value count="8166">ATMOSPHERE</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="785">AEROSOLS</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+              <value-count-map>
+                <value count="10269">OCEANS</value>
+                <facet field="term">
+                  <value-count-maps>
+                    <value-count-map>
+                      <value count="293">AQUATIC SCIENCES</value>
+                    </value-count-map>
+                  </value-count-maps>
+                </facet>
+              </value-count-map>
+            </value-count-maps>
+          </facet>
+        </value-count-map>
+      </value-count-maps>
+    </facet>
+  </facet>
+</facets>
+```
+
 #### Facets in JSON Responses
 
-Facets in JSON search response formats will be formatted like the following example.
+Facets in JSON search response formats will be formatted like the following examples.
+
+##### Flat JSON facets
 
 ```
 {
@@ -1531,6 +1582,42 @@ Facets in JSON search response formats will be formatted like the following exam
     }]
   }
 }
+```
+
+##### Hierarchical JSON facets
+
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+
+```
+    "facets" : [ {
+      "field" : "archive_center",
+      "value-counts" : [ ]
+    ...
+    }, {
+      "field" : "science_keywords",
+      "subfields" : [ "category" ],
+      "category" : [ {
+        "value" : "EARTH SCIENCE",
+        "count" : 31550,
+        "subfields" : [ "topic" ],
+        "topic" : [ {
+          "value" : "ATMOSPHERE",
+          "count" : 8166,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AEROSOLS",
+            "count" : 785 } ]
+          }, {
+          "value" : "OCEANS",
+          "count" : 10269,
+          "subfields" : [ "term" ],
+          "term" : [ {
+            "value" : "AQUATIC SCIENCES",
+            "count" : 293
+          } ]
+        } ]
+      } ]
+    } ]
 ```
 
 ### Search for Tiles
