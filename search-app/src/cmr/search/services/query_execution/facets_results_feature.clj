@@ -102,11 +102,10 @@
           value-counts (for [bucket (get-in bucket-map [field :buckets])
                              :let [sub-facets (parse-hierarchical-bucket (rest field-hierarchy)
                                                                          bucket)]]
-                         (merge {:value (:key bucket)
-                                 :count (get-in bucket [:coll-count :doc_count]
-                                                (:doc_count bucket))}
-                                (when-not (= sub-facets empty-response)
-                                  sub-facets)))]
+                         (merge (when-not (= sub-facets empty-response)
+                                  sub-facets)
+                                {:count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
+                                 :value (:key bucket)}))]
       (if (seq value-counts)
         {:subfields [field]
          field value-counts}
