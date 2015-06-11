@@ -148,8 +148,8 @@
                                                      :hierarchical-facets "TRUE"
                                                      :downloadable "uNSet"}))))
   (testing "boolean parameters with an invalid value return an error"
-    (is (= ["Parameter [hierarchical_facets] must take value of true, false, or unset, but was [not-right]"
-            "Parameter [include_facets] must take value of true, false, or unset, but was [TRUE-ISH]"]
+    (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"
+            "Parameter include_facets must take value of true, false, or unset, but was [TRUE-ISH]"]
            (pv/boolean-value-validation :collection {:include-facets "TRUE-ISH"
                                                      :hierarchical-facets "not-right"})))))
 
