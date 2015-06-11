@@ -11,6 +11,13 @@ Virtual products will be supported during the ordering process as well. When a v
 ordered ECHO will use the Virtual Product Apps API to convert virtual product order item ids into
 the source ids and send them to the provider.
 
+## Administrative API
+
+### Administrative API Overview
+
+  * /health
+    * [GET - Gets the health of the virtual product application.](#health)
+
 ## License
 
 Copyright © 2015 NASA
