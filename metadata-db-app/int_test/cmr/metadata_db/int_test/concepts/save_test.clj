@@ -269,7 +269,9 @@
                                           :extra-fields {:entry-title "ET-1"}})
           _ (util/save-concept coll1)
           {:keys [status]} (util/save-concept coll2)]
-      (is (= 201 status)))))
+      (is (= 201 status))
+      (is (util/verify-concept-was-saved coll1))
+      (is (util/verify-concept-was-saved coll2)))))
 
 (deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
@@ -326,5 +328,7 @@
                                        :extra-fields {:granule-ur "GR-UR1"}})
           _ (util/save-concept gran1)
           {:keys [status]} (util/save-concept gran2)]
-      (is (= 201 status)))))
+      (is (= 201 status))
+      (is (util/verify-concept-was-saved gran1))
+      (is (util/verify-concept-was-saved gran2)))))
 

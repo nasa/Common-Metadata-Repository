@@ -49,7 +49,8 @@
         (su/query conn stmt)))
 
 (defn- provider-id->provider
-  "Helper function to convert a provider id into a provider map"
+  "Helper function to convert a provider id into a provider map.
+  All catalog-rest providers map to CMR providers that has both cmr-only and small fields false."
   [provider-id]
   {:provider-id provider-id :cmr-only false :small false})
 
