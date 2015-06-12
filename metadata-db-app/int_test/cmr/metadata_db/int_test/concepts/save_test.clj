@@ -48,11 +48,11 @@
 (deftest save-collection-with-same-native-id-test
   (testing "Save collections with the same native-id for two small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1 1 {:native-id "foo"})
-          coll2 (util/create-and-save-collection "SMAL_PROV2" 1 1 {:native-id "foo"})
-          [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])
-          {:keys [concepts]} (util/get-concepts [[coll1-concept-id 1] [coll2-concept-id 1]])]
-      (is (= [coll1-concept-id coll2-concept-id]
-             (map :concept-id concepts))))))
+          coll2 (util/create-and-save-collection "SMAL_PROV2" 2 1 {:native-id "foo"})
+          [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])]
+      (is (util/verify-concept-was-saved coll1))
+      (is (util/verify-concept-was-saved coll2))
+      (is (not= coll1-concept-id coll2-concept-id)))))
 
 (deftest save-collection-without-version-id-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -71,6 +71,18 @@
       (is (= 201 status) (pr-str resp))
       (is (= revision-id 1))
       (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))))
+
+(deftest save-granule-with-same-native-id-test
+  (testing "Save granules with the same native-id for two small providers is OK"
+    (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
+          coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
+          [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])
+          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1-concept-id 1 1 {:native-id "foo"})
+          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2-concept-id 2 1 {:native-id "foo"})
+          [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
+      (is (util/verify-concept-was-saved gran1))
+      (is (util/verify-concept-was-saved gran2))
+      (is (not= gran1-concept-id gran2-concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -292,12 +304,15 @@
           (is (= [existing-granule]
                  (map #(dissoc % :revision-date) (:concepts found-concepts)))))
         (testing "duplicate granule URs are allowed when the constraint is configured as off"
-          (cc/set-enforce-granule-ur-constraint! false)
-          (is (= {:status 201
-                  :revision-id (:revision-id test-granule)
-                  :concept-id (:concept-id test-granule)
-                  :errors nil}
-                 (util/save-concept test-granule)))))))
+          (try
+            (cc/set-enforce-granule-ur-constraint! false)
+            (is (= {:status 201
+                    :revision-id (:revision-id test-granule)
+                    :concept-id (:concept-id test-granule)
+                    :errors nil}
+                   (util/save-concept test-granule)))
+            (finally
+              (cc/set-enforce-granule-ur-constraint! true)))))))
   (testing "duplicate granule urs within multiple small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2)

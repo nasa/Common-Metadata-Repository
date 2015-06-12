@@ -114,20 +114,6 @@
       `(and (= :provider-id ~provider-id) ~base-clause))
     base-clause))
 
-(defn- provider->where-sql-condition
-  "Returns the sql where condition string that matches the provider"
-  [{:keys [provider-id small]}]
-  (if small
-    (format " where provider_id = '%s' " provider-id)
-    " "))
-
-(defn- provider->and-sql-condition
-  "Returns the sql and condition string that matches the provider"
-  [{:keys [provider-id small]}]
-  (if small
-    (format " and provider_id = '%s' " provider-id)
-    " "))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multi methods for concept types to implement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -504,17 +490,26 @@
   (get-concept-type-counts-by-collection
     [db concept-type provider]
     (let [table (tables/get-table-name provider :granule)
-          stmt [(str (format "select count(1) concept_count, a.parent_collection_id
-                             from %s a,
-                             (select concept_id, max(revision_id) revision_id
-                             from %s"
-                             table table)
-                     (provider->where-sql-condition provider)
-                     "group by concept_id) b
-                     where  a.deleted = 0
-                     and    a.concept_id = b.concept_id
-                     and    a.revision_id = b.revision_id
-                     group by a.parent_collection_id")]
+          {:keys [provider-id small]} provider
+          stmt (if small
+                 [(format "select count(1) concept_count, a.parent_collection_id
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s where provider_id = '%s' group by concept_id) b
+                          where  a.deleted = 0
+                          and    a.concept_id = b.concept_id
+                          and    a.revision_id = b.revision_id
+                          group by a.parent_collection_id"
+                          table table provider-id)]
+                 [(format "select count(1) concept_count, a.parent_collection_id
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s group by concept_id) b
+                          where  a.deleted = 0
+                          and    a.concept_id = b.concept_id
+                          and    a.revision_id = b.revision_id
+                          group by a.parent_collection_id"
+                          table table)])
           result (su/query db stmt)]
       (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
                 (assoc count-map parent_collection_id (long concept_count)))
@@ -536,30 +531,52 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
-            stmt [(str (format "select *
-                               from %s outer,
-                               ( select a.concept_id, a.revision_id
-                               from (select concept_id, max(revision_id) as revision_id
-                               from %s
-                               where deleted = 0
-                               and   delete_time is not null
-                               and   delete_time < systimestamp"
-                               table table)
-                       (provider->and-sql-condition provider)
-                       (format "group by concept_id
-                               ) a,
-                               (select concept_id, max(revision_id) as revision_id
-                               from %s" table)
-                       (provider->where-sql-condition provider)
-                       (format "group by concept_id
-                               ) b
-                               where a.concept_id = b.concept_id
-                               and   a.revision_id = b.revision_id
-                               and   rowNum <= %d
-                               ) inner
-                               where outer.concept_id = inner.concept_id
-                               and   outer.revision_id = inner.revision_id"
-                               EXPIRED_CONCEPTS_BATCH_SIZE))]]
+            {:keys [provider-id small]} provider
+            stmt (if small
+                   [(format "select *
+                            from %s outer,
+                            ( select a.concept_id, a.revision_id
+                            from (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where provider_id = '%s'
+                            and deleted = 0
+                            and   delete_time is not null
+                            and   delete_time < systimestamp
+                            group by concept_id
+                            ) a,
+                            (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where provider_id = '%s'
+                            group by concept_id
+                            ) b
+                            where a.concept_id = b.concept_id
+                            and   a.revision_id = b.revision_id
+                            and   rowNum <= %d
+                            ) inner
+                            where outer.concept_id = inner.concept_id
+                            and   outer.revision_id = inner.revision_id"
+                            table table provider-id table provider-id EXPIRED_CONCEPTS_BATCH_SIZE)]
+                   [(format "select *
+                            from %s outer,
+                            ( select a.concept_id, a.revision_id
+                            from (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where deleted = 0
+                            and   delete_time is not null
+                            and   delete_time < systimestamp
+                            group by concept_id
+                            ) a,
+                            (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            group by concept_id
+                            ) b
+                            where a.concept_id = b.concept_id
+                            and   a.revision_id = b.revision_id
+                            and   rowNum <= %d
+                            ) inner
+                            where outer.concept_id = inner.concept_id
+                            and   outer.revision_id = inner.revision_id"
+                            table table table EXPIRED_CONCEPTS_BATCH_SIZE)])]
         (doall (map (partial db-result->concept-map concept-type conn (:provider-id provider))
                     (su/query conn stmt))))))
 
@@ -568,18 +585,25 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
+            {:keys [provider-id small]} provider
             ;; This will return the concept-id/revision-id pairs for tombstones and revisions
             ;; older than the tombstone - up to 'limit' concepts.
-            stmt [(str (format "select t1.concept_id, t1.revision_id from %s t1 inner join
-                               (select * from
-                               (select concept_id, revision_id from %s
-                               where DELETED = 1 " table table)
-                       (provider->and-sql-condition provider)
-                       (format "and REVISION_DATE < ?)
-                               where rownum < %d) t2
-                               on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
-                               limit))
-                  (cr/to-sql-time tombstone-cut-off-date)]
+            sql (if small
+                  (format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                          (select * from
+                          (select concept_id, revision_id from %s
+                          where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?)
+                          where rownum < %d) t2
+                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
+                          table table provider-id limit)
+                  (format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                          (select * from
+                          (select concept_id, revision_id from %s
+                          where DELETED = 1 and REVISION_DATE < ?)
+                          where rownum < %d) t2
+                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
+                          table table limit))
+            stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
             result (su/query conn stmt)]
         ;; create tuples of concept-id/revision-id to remove
         (map (fn [{:keys [concept_id revision_id]}]
@@ -591,16 +615,22 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
+            {:keys [provider-id small]} provider
             ;; This will return the concepts that have more than 'max-revisions' revisions.
             ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
             ;; not the number of concept-id/revision-id pairs. All revisions are returned for
             ;; each returned concept-id.
-            stmt [(str (format "select concept_id, revision_id from %s
-                               where concept_id in (select * from (select concept_id from %s "
-                               table table)
-                       (provider->where-sql-condition provider)
-                       (format "group by concept_id having count(*) > %d) where rownum <= %d)"
-                               max-revisions limit))]
+            stmt (if small
+                   [(format "select concept_id, revision_id from %s
+                            where concept_id in (select * from
+                            (select concept_id from %s where provider_id = '%s' group by
+                            concept_id having count(*) > %d) where rownum <= %d)"
+                            table table provider-id max-revisions limit)]
+                   [(format "select concept_id, revision_id from %s
+                            where concept_id in (select * from
+                            (select concept_id from %s group by
+                            concept_id having count(*) > %d) where rownum <= %d)"
+                            table table max-revisions limit)])
             result (su/query conn stmt)
             ;; create a map of concept-ids to sequences of all returned revisions
             concept-id-rev-ids-map (reduce (fn [memo concept-map]
@@ -616,3 +646,4 @@
                                             (truncate-highest rev-ids max-revisions))))
                    []
                    concept-id-rev-ids-map)))))
+

@@ -46,8 +46,8 @@
       (let [cmr-only (get body "cmr-only")
             small (get body "small")]
         (save-provider request-context params {:provider-id (get body "provider-id")
-                                               :cmr-only (if cmr-only cmr-only false)
-                                               :small (if small small false)})))
+                                               :cmr-only (if (some? cmr-only) cmr-only false)
+                                               :small (if (some? small) small false)})))
 
     ;; update a provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
