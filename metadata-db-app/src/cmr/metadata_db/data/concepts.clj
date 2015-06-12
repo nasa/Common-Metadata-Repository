@@ -9,60 +9,60 @@
     "Create a concept-id for a given concept type and provider id.")
 
   (get-concept-id
-    [db concept-type provider-id native-id]
+    [db concept-type provider native-id]
     "Return a distinct identifier for the given arguments.")
 
   (get-concept
-    [db concept-type provider-id concept-id revision-id]
-    [db concept-type provider-id concept-id]
+    [db concept-type provider concept-id revision-id]
+    [db concept-type provider concept-id]
     "Gets a version of a concept with a given concept-id and revision-id. If the
     revision-id is not given or is nil then the latest revision is returned.")
 
   (get-concept-by-provider-id-native-id-concept-type
-    [db concept]
+    [db provider concept]
     "Gets a version of a concept that has the same concept-type, provider-id, and native-id
     as the given concept.")
 
   (get-concepts
-    [db concept-type provider-id concept-id-revision-id-tuples]
+    [db concept-type provider concept-id-revision-id-tuples]
     "Get a sequence of concepts by specifying a list of
     tuples holding concept-id/revision-id")
 
   (get-latest-concepts
-    [db concept-type provider-id concept-ids]
+    [db concept-type provider concept-ids]
     "Get a sequence of the latest revision of concepts by specifying a list of
     concept-ids")
 
   (find-concepts
-    [db params]
+    [db provider params]
     "Finds concepts by the given parameters")
 
   (find-concepts-in-batches
-    [db params batch-size]
-    [db params batch-size start-index]
+    [db provider params batch-size]
+    [db provider params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
 
   (save-concept
-    [db concept]
+    [db provider concept]
     "Saves a concept and returns the revision id. If the concept already
     exists then a new revision will be created. If a revision-id is
     included and it is not valid, e.g. the revision already exists,
     then an exception is thrown.")
 
   (force-delete
-    [db concept-type provider-id concept-id revision-id]
+    [db concept-type provider concept-id revision-id]
     "Remove a revision of a concept from the database completely.")
 
   (force-delete-concepts
-    [db provider-id concept-type concept-id-revision-id-tuples]
+    [db provider concept-type concept-id-revision-id-tuples]
     "Remove concept revisions given by concept-id/revision-id tuples.")
 
   (force-delete-by-params
-    [db params]
+    [db provider params]
     "Deletes concepts by the given parameters")
 
   (get-concept-type-counts-by-collection
-    [db concept-type provider-id]
+    [db concept-type provider]
     "Returns a counts of the concept type per collection for the given provider. Returns a map of
     collection concept id to counts of the concept type.")
 
@@ -87,8 +87,8 @@
 
 (defn find-latest-concepts
   "Finds the latest revision of concepts by the given parameters"
-  [db params]
-  (let [revision-concepts (find-concepts db params)]
+  [db provider params]
+  (let [revision-concepts (find-concepts db provider params)]
     (->> revision-concepts
          (group-by :concept-id)
          (map (fn [[concept-id concepts]]

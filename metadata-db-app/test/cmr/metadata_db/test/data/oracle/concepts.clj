@@ -31,20 +31,6 @@
   (let [vector-result (apply vector (map #(apply vector %) result))]
     (update-in vector-result [1 2] #(gzip-bytes->string %))))
 
-(deftest find-params->sql-clause-test
-  (testing "only allows valid param names to prevent sql-injection"
-    (are [keystring] (c/find-params->sql-clause {(keyword keystring) 1})
-         "a" "a1" "A" "A1" "A_1" "b123__dkA" "a-b")
-    (are [keystring] (thrown? Exception (c/find-params->sql-clause {(keyword keystring) 1}))
-         "a;b" "a&b" "a!b" ))
-  (testing "converting single parameter"
-    (is (= `(= :a 5)
-           (c/find-params->sql-clause {:a 5}))))
-  (testing "converting multiple parameters"
-    (is (= `(and (= :b "bravo")
-                 (= :a 5))
-           (c/find-params->sql-clause {:a 5 :b "bravo"})))))
-
 ;; This test is commented out until CMR-1303 is resolved
 #_(deftest db-result->concept-map-test
   (let [db (->> (mdb-config/db-spec "metadata-db-test")
@@ -132,7 +118,12 @@
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
                "short_name" "version_id" "entry_id" "entry_title" "delete_time"]
               ["foo" "C5-PROV1" "<foo>" "ECHO10" 2 false "short" "v1" "short_v1" "entry" sql-timestamp]]
-             (fix-result (c/concept->insert-args concept))))))
+             (fix-result (c/concept->insert-args concept false))))
+      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
+               "short_name" "version_id" "entry_id" "entry_title" "delete_time" "provider_id"]
+              ["foo" "C5-PROV1" "<foo>" "ECHO10" 2 false "short" "v1" "short_v1" "entry"
+               sql-timestamp "PROV1"]]
+             (fix-result (c/concept->insert-args concept true))))))
   (testing "granule insert-args"
     (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
           sql-timestamp (cr/to-sql-time revision-time)
@@ -150,4 +141,8 @@
       (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
                "parent_collection_id" "delete_time" "granule_ur"]
               ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp "foo-ur"]]
-             (fix-result (c/concept->insert-args concept)))))))
+             (fix-result (c/concept->insert-args concept false))))
+      (is (= [["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"
+               "parent_collection_id" "delete_time" "granule_ur" "provider_id"]
+              ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp "foo-ur" "PROV1"]]
+             (fix-result (c/concept->insert-args concept true)))))))

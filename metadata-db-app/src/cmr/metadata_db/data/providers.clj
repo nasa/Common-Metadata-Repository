@@ -13,20 +13,20 @@
     [db]
     "Get a sequence of all the providers.")
 
+  (get-provider
+    [db provider-id]
+    "Get the provider with given id.")
+
   (update-provider
     [db provider]
     "Updates an existing provider in the database based on the
     provider map's provider-id value.")
 
   (delete-provider
-    [db provider-id]
+    [db provider]
     "Remove a provider from the database completely, including all of its concepts.")
 
   (reset-providers
     [db]
     "Delete all providers from the database including their concept tables.  USE WITH CAUTION."))
 
-(defn provider-not-found-error
-  "Error message indicating that the given provider-id does not exist."
-  [provider-id]
-  {:error :not-found :error-message (format "Provider [%s] does not exist." provider-id)})

@@ -88,6 +88,12 @@
 (defn provider-id-parameter-required []
   "A provider parameter was required but was not provided.")
 
+(defn provider-small-field-cannot-be-modified [provider-id]
+  (format "Provider [%s] small field cannot be modified." provider-id))
+
+(defn small-provider-cannot-be-deleted []
+  "Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted.")
+
 (defn provider-does-not-exist [provider-id]
   (format "Provider with provider-id [%s] does not exist."
           provider-id))
@@ -106,6 +112,9 @@
 (defn provider-id-too-long [provider-id]
   (format "Provider ID [%s] exceeds ten characters"
           provider-id))
+
+(defn provider-id-reserved []
+  (format "Provider ID [SMALL_PROV] is reserved"))
 
 (defn invalid-provider-id [provider-id]
   (format "provider-id [%s] is invalid" provider-id))

@@ -7,6 +7,7 @@
             [clojure.string :as str]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-service :as cs]
+            [cmr.metadata-db.services.provider-service :as ps]
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
@@ -44,70 +45,71 @@
 
 ;;; Verify that the revision id check works as expected.
 (deftest check-concept-revision-id-test
-  (let [previous-concept example-concept]
+  (let [previous-concept example-concept
+        db (memory/create-db [example-concept])]
     (testing "valid revision-id"
-      (let [db (memory/create-db [example-concept])
-            concept (assoc previous-concept :revision-id 2)]
-        (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
+      (let [concept (assoc previous-concept :revision-id 2)]
+        (is (= {:status :pass} (#'cs/check-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))))
     (testing "skipped revision-id"
-      (let [db (memory/create-db [example-concept])
-            concept (assoc previous-concept :revision-id 100)]
-        (is (= {:status :pass} (cs/check-concept-revision-id db concept previous-concept)))))
+      (let [concept (assoc previous-concept :revision-id 100)]
+        (is (= {:status :pass} (#'cs/check-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))))
     (testing "invalid revision-id - low"
-      (let [db (memory/create-db [example-concept])
-            concept (assoc previous-concept :revision-id 0)
-            result (cs/check-concept-revision-id db concept previous-concept)]
+      (let [concept (assoc previous-concept :revision-id 0)
+            result (#'cs/check-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)]
         (is (= (:status result) :fail))
         (is (= (:expected result) 2))))))
 
 ;;; Verify that the revision id validation works as expected.
 (deftest validate-concept-revision-id-test
-  (let [previous-concept example-concept]
+  (let [previous-concept example-concept
+        db (memory/create-db [example-concept])]
     (testing "valid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 2)]
-        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
+        (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))
     (testing "invalid concept revision-id"
       (let [concept (assoc previous-concept :revision-id 1)]
         (tu/assert-exception-thrown-with-errors
           :conflict
           [(messages/invalid-revision-id (:concept-id concept) 2 1)]
-          (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept))))
+          (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))
     (testing "missing concept-id no revision-id"
       (let [concept (dissoc previous-concept :concept-id)]
-        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
+        (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))
     (testing "missing concept-id valid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 1))]
-        (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept)))
+        (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
       (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 2))]
         (tu/assert-exception-thrown-with-errors
           :conflict
           [(messages/invalid-revision-id (:concept-id concept) 1 2)]
-          (cs/validate-concept-revision-id (memory/create-db [example-concept]) concept previous-concept))))))
+          (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))))
 
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
   (testing "must be called with a revision-id"
     (let [db (memory/create-db [example-concept])]
       (is (thrown-with-msg? AssertionError #"Assert failed: .*revision-id"
-                            (cs/try-to-save db (dissoc example-concept :revision-id))))))
+                            (cs/try-to-save db {:provider-id "PROV1"}
+                                            (dissoc example-concept :revision-id))))))
   (testing "valid with revision-id"
     (let [db (memory/create-db [example-concept])
-          result (cs/try-to-save db (assoc example-concept :revision-id 2))]
+          result (cs/try-to-save db {:provider-id "PROV1"} (assoc example-concept :revision-id 2))]
       (is (= 2 (:revision-id result)))))
   (testing "conflicting concept-id and revision-id"
     (tu/assert-exception-thrown-with-errors
       :conflict
       [(messages/concept-id-and-revision-id-conflict (:concept-id example-concept) 1)]
       (cs/try-to-save (memory/create-db [example-concept])
+                      {:provider-id "PROV1"}
                       (assoc example-concept :revision-id 1)))))
 
 (deftest delete-expired-concepts-test
   (testing "basic case"
     (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
           db (memory/create-db [expired])]
-      (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
-      (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))
+      (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
+      (is (empty? (c/get-expired-concepts db {:provider-id "PROV1"} :collection)))))
   (testing "with a conflict"
     (let [expired (assoc-in example-concept [:extra-fields :delete-time] "1986-10-14T04:03:27.456Z")
           db (memory/create-db [expired])
@@ -121,20 +123,20 @@
 
           fake-save (fn [& args]
                       (when-not @saved
-                        (orig-save db expired-2)
+                        (orig-save db {:provider-id "PROV1"} expired-2)
                         (reset! saved true))
                       (apply orig-save args))]
       ;; replace cs/try-to-save with our overridden function for this test
       (with-redefs [cs/try-to-save fake-save]
-        (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
+        (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
         (is @saved)
 
         ;; ensure that the cleanup failed and our concurrent update
         ;; went through
         (is (= [expired-2]
-               (for [concept (c/get-expired-concepts db "PROV1" :collection)]
+               (for [concept (c/get-expired-concepts db {:provider-id "PROV1"} :collection)]
                  (dissoc concept :revision-date))))
 
         ;; run it again, this time without the conflict...
-        (cs/delete-expired-concepts {:system {:db db}} "PROV1" :collection)
-        (is (empty? (c/get-expired-concepts db "PROV1" :collection)))))))
+        (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
+        (is (empty? (c/get-expired-concepts db {:provider-id "PROV1"} :collection)))))))
