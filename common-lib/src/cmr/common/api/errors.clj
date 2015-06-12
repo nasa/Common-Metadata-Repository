@@ -85,7 +85,7 @@
 (defn- response-type-body
   "Returns the response content-type and body for the given errors and format"
   [errors results-format]
-  (let [content-type (if (re-find #"xml" results-format) "application/xml" "application/json")
+  (let [content-type (if (re-find #"xml" results-format) mt/xml mt/json)
         response-format (mt/mime-type->format content-type)
         body (errors->body-string response-format errors)]
     [content-type body]))
@@ -113,7 +113,7 @@
   if the request does not explicitly set a format.  It takes the request and the ExceptionInfo
   as arguments."
   ([f]
-   (exception-handler f (constantly "application/json")))
+   (exception-handler f (constantly mt/json)))
   ([f default-format-fn]
    (fn [request]
      (try
