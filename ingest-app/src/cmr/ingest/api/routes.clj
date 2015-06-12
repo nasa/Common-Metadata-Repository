@@ -67,17 +67,17 @@
 
 (def valid-response-mime-types
   "Supported ingest response formats"
-  #{"*/*" "application/xml" "application/json"})
+  #{mt/any mt/xml mt/json})
 
 (def content-type-mime-type->response-format
   "A map of mime-types to supported response format"
-  {"application/echo10+xml" :xml
-   "application/iso19115+xml" :xml
-   "application/iso:smap+xml" :xml
-   "application/dif+xml" :xml
-   "application/dif10+xml" :xml
-   "application/xml" :xml
-   "application/json" :json})
+  {mt/echo10 :xml
+   mt/iso :xml
+   mt/iso-smap :xml
+   mt/dif :xml
+   mt/dif10 :xml
+   mt/xml :xml
+   mt/json :json})
 
 (defn- result-map->xml
   "Converts all keys in a map to tags with values given by the map values to form a trivial
@@ -321,7 +321,7 @@
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
   the default format has not been set to :xml."
   [_request e]
-  (get mt/format->mime-type (:default-format (ex-data e)) "application/json"))
+  (get mt/format->mime-type (:default-format (ex-data e)) mt/json))
 
 (defn make-api [system]
   (-> (build-routes system)

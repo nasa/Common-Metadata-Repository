@@ -162,7 +162,7 @@
          params (update-in params [:interval] #(if % (name %) ""))
          [url accept] (if url-extension
                         [(str (url/timeline-url) "." url-extension)]
-                        [(url/timeline-url) "application/json"])
+                        [(url/timeline-url) mime-types/json])
          get-request? (= :get (:method options))
          response (get-search-failure-data
                     (if get-request?
@@ -200,7 +200,7 @@
    (find-concepts-atom concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-xml-data
-                    (find-concepts-in-format "application/atom+xml" concept-type params options))
+                    (find-concepts-in-format mime-types/atom concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
@@ -213,7 +213,7 @@
    (find-concepts-json concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format "application/json" concept-type params options))
+                    (find-concepts-in-format mime-types/json concept-type params options))
          {:keys [status body]} response
          {:keys [echo-compatible include-facets]} params]
      (if (and echo-compatible include-facets)
@@ -229,7 +229,7 @@
    (find-concepts-kml concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format "application/vnd.google-earth.kml+xml"
+                    (find-concepts-in-format mime-types/kml
                                              concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
@@ -243,7 +243,7 @@
    (find-concepts-opendata concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format "application/opendata+json"
+                    (find-concepts-in-format mime-types/opendata
                                              concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
@@ -342,7 +342,7 @@
         ;; we cannot destructing params as a map for the next two lines.
         echo-compatible (:echo-compatible params)
         include-facets (:include-facets params)
-        response (find-concepts-in-format "application/xml" concept-type params options)]
+        response (find-concepts-in-format mime-types/xml concept-type params options)]
     (if (and echo-compatible include-facets)
       (parse-echo-facets-response response)
       (parse-reference-response echo-compatible response))))
@@ -360,7 +360,7 @@
   [concept-type params]
   (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
-                                {:accept "application/xml"
+                                {:accept mime-types/xml
                                  :content-type "application/x-www-form-urlencoded"
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
@@ -371,11 +371,11 @@
   ([aql]
    (find-refs-with-aql-string aql {}))
   ([aql options]
-   (find-refs-with-aql-string aql options "application/xml"))
+   (find-refs-with-aql-string aql options mime-types/xml))
   ([aql options content-type]
    (get-search-failure-xml-data
      (let [response (client/post (url/aql-url)
-                                 (merge {:accept "application/xml"
+                                 (merge {:accept mime-types/xml
                                          :content-type content-type
                                          :body aql
                                          :query-params {:page-size 100}
@@ -405,7 +405,7 @@
   ([concept-id options]
    (let [url-extension (get options :url-extension)
          concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
-         format-mime-type (or (:accept options) "application/echo10+xml")
+         format-mime-type (or (:accept options) mime-types/echo10)
          url (url/retrieve-concept-url concept-type concept-id)
          url (if url-extension
                (str url "." url-extension)

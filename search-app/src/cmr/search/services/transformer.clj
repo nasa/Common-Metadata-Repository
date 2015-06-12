@@ -94,7 +94,7 @@
   (fn [concept]
     (:format concept)))
 
-(defmethod extract-access-value "application/echo10+xml"
+(defmethod extract-access-value mt/echo10
   [concept]
   (let [^String metadata (:metadata concept)]
     ;; This contains check is a performance enhancement. This saves a lot of time versus the regular
@@ -104,21 +104,21 @@
                                                       metadata)]
         (Double. ^String restriction-flag-str)))))
 
-(defmethod extract-access-value "application/dif+xml"
+(defmethod extract-access-value mt/dif
   [concept]
   ;; DIF doesn't support restriction flag yet.
   nil)
 
-(defmethod extract-access-value "application/dif10+xml"
+(defmethod extract-access-value mt/dif10
   [concept]
   ;; TODO: Add support for Access Constraints, CMR-1574
   nil)
 
-(defmethod extract-access-value "application/iso19115+xml"
+(defmethod extract-access-value mt/iso
   [concept]
   (get-iso-access-value concept))
 
-(defmethod extract-access-value "application/iso:smap+xml"
+(defmethod extract-access-value mt/iso-smap
   [concept]
   (when (= :granule (:concept-type concept))
     (smap-g/xml->access-value (:metadata concept))))

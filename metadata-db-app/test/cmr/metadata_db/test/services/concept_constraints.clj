@@ -3,7 +3,6 @@
   (:require [clojure.test :refer :all]
             [cmr.metadata-db.services.concept-constraints :as cc]
             [cmr.metadata-db.data.memory-db :as mem-db]
-            [cmr.metadata-db.data.concepts :as dc]
             [cmr.metadata-db.services.messages :as msg]))
 
 (defn- make-concept
@@ -30,7 +29,7 @@
   function against the concept that is passed in."
   [constraint test-concept & existing-concepts]
   (let [db (mem-db/create-db (cons test-concept existing-concepts))]
-    (constraint db test-concept)))
+    (constraint db {:provider-id "PROV1"} test-concept)))
 
 (defn- assert-invalid
   "Runs the given constraint function against a concept with a list of existing concepts in the
@@ -93,7 +92,7 @@
           (is (thrown-with-msg?
                 java.lang.Exception
                 error-regex
-                (constraint-fn db test-concept))))))))
+                (constraint-fn db {:provider-id "PROV1"} test-concept))))))))
 
 (deftest unique-constraint-tests
   (unique-constraint-test :collection (cc/unique-field-constraint :entry-title) :entry-title)
@@ -107,7 +106,7 @@
       (is (thrown-with-msg?
             java.lang.Exception
             #"Unable to find saved concept for provider \[PROV1\] and invalid-field \[null\]"
-            ((cc/unique-field-constraint :invalid-field) db test-concept))))))
+            ((cc/unique-field-constraint :invalid-field) db {:provider-id "PROV1"} test-concept))))))
 
 (deftest granule-ur-unique-constraint-test
   (testing "native-id is checked for uniqueness when granule-ur is null"

@@ -1,4 +1,5 @@
-(ns cmr.metadata-db.api.route-helpers)
+(ns cmr.metadata-db.api.route-helpers
+  (:require [cmr.common.mime-types :as mt]))
 
 (def json-header
-  {"Content-Type" "application/json; charset=utf-8"})
+  {"Content-Type" (mt/with-utf-8 mt/json)})

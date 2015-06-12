@@ -2,13 +2,16 @@
   "Provides default implementations of the cmr.metadata-db.data.concepts multimethods"
   (:require [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
+            [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
+            [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.set :as set]
             [cmr.metadata-db.services.util :as util]
+            [cmr.metadata-db.data.oracle.sql-helper :as sh]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.date-time-parser :as p]
             [clj-time.format :as f]
@@ -37,11 +40,11 @@
   "A mapping of mime type strings to the strings they are stored in the database as. The existing ones
   here match what Catalog REST stores and must continue to match that. Adding new ones is allowed
   but do not modify these existing values."
-  {"application/echo10+xml" "ECHO10"
-   "application/iso:smap+xml" "ISO_SMAP"
-   "application/iso19115+xml" "ISO19115"
-   "application/dif+xml" "DIF"
-   "application/dif10+xml" "DIF10"})
+  {mt/echo10   "ECHO10"
+   mt/iso-smap "ISO_SMAP"
+   mt/iso      "ISO19115"
+   mt/dif      "DIF"
+   mt/dif10    "DIF10"})
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
@@ -50,9 +53,9 @@
   ;; CMR bootstrap-app simply copies this format into CMR database, we could have "ISO-SMAP" as
   ;; a format in CMR database.
   (assoc (set/map-invert mime-type->db-format)
-         "ISO-SMAP" "application/iso:smap+xml"
+         "ISO-SMAP" mt/iso-smap
          ;; We also have to support whatever the original version of the the string Metadata DB originally used.
-         "SMAP_ISO"  "application/iso:smap+xml"))
+         "SMAP_ISO" mt/iso-smap))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
@@ -100,6 +103,19 @@
   (f/unparse (f/formatters :date-time)
              (oracle/oracle-timestamp->clj-time db ot)))
 
+(defn- by-provider
+  "Converts the sql condition clause into provider aware condition clause, i.e. adding the provider-id
+  condition to the condition clause when the given provider is small; otherwise returns the same
+  condition clause. For example:
+  `(= :native-id \"blah\") becomes `(and (= :native-id \"blah\") (= :provider-id \"PROV1\"))"
+  [{:keys [provider-id small]} base-clause]
+  (if small
+    (if (= (first base-clause) 'clojure.core/and)
+      ;; Insert the provider id clause at the beginning.
+      `(and (= :provider-id ~provider-id) ~@(rest base-clause))
+      `(and (= :provider-id ~provider-id) ~base-clause))
+    base-clause))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multi methods for concept types to implement
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,14 +126,14 @@
     concept-type))
 
 (defmulti concept->insert-args
-  "Converts a concept into the insert arguments"
-  (fn [concept]
-    (:concept-type concept)))
+  "Converts a concept into the insert arguments based on the concept-type and small field of the provider"
+  (fn [concept small]
+    [(:concept-type concept) small]))
 
 (defmulti after-save
   "This is a handler for concept types to add save specific behavior after the save of a concept has
   been completed. It will be called after a concept has been saved within the transaction."
-  (fn [db concept]
+  (fn [db provider concept]
     (:concept-type concept)))
 
 ;; Multimethod defaults
@@ -142,7 +158,8 @@
        :revision-date (oracle-timestamp->str-time db revision_date)
        :deleted (not= (int deleted) 0)})))
 
-(defmethod concept->insert-args :default
+(defn concept->common-insert-args
+  "Converts a concept into a set of insert arguments that is common for all provider concept types."
   [concept]
   (let [{:keys [concept-type
                 native-id
@@ -166,40 +183,23 @@
       [fields values])))
 
 (defmethod after-save :default
-  [db concept]
+  [db provider concept]
   ;; Does nothing
   nil)
 
-(defn find-params->sql-clause
-  "Converts a parameter map for finding concept types into a sql clause for inclusion in a query."
-  [params]
-  ;; Validate parameter names as a sanity check to prevent sql injection
-  (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
-    (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
-      (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
-                                      (str/join ", " invalid-names)))))
-  (let [comparisons (for [[k v] params]
-                      `(= ~k ~v))]
-    (if (> (count comparisons) 1)
-      (cons `and comparisons)
-      (first comparisons))))
-
 (defn- find-batch-starting-id
   "Returns the first id that would be returned in a batch."
-  ([conn params]
-   (find-batch-starting-id conn params 0))
-  ([conn params min-id]
-   (let [{:keys [concept-type provider-id]} params
-         params (dissoc params :concept-type :provider-id)
-         table (tables/get-table-name provider-id concept-type)
-         existing-params (when (seq params) (find-params->sql-clause params))
+  ([conn table params]
+   (find-batch-starting-id conn table params 0))
+  ([conn table params min-id]
+   (let [existing-params (when (seq params) (sh/find-params->sql-clause params))
          params-clause (if existing-params
                          `(and (>= :id ~min-id)
                                ~existing-params)
                          `(>= :id ~min-id))
          stmt (select ['(min :id)]
-                (from table)
-                (where params-clause))]
+                      (from table)
+                      (where params-clause))]
      (-> (su/find-one conn stmt)
          vals
          first))))
@@ -218,7 +218,7 @@
 (defn get-latest-concept-id-revision-id-tuples
   "Finds the latest pairs of concept id and revision ids for the given concept ids. If no revisions
   exist for a given concept id it will not be returned."
-  [db concept-type provider-id concept-ids]
+  [db concept-type provider concept-ids]
   (let [start (System/currentTimeMillis)]
     (j/with-db-transaction
       [conn db]
@@ -232,11 +232,11 @@
              (concat (map vector concept-ids) [:transaction? false]))
       ;; pull back all revisions of each concept-id and then take the latest
       ;; instead of using group-by in SQL
-      (let [table (tables/get-table-name provider-id concept-type)
+      (let [table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:c.concept-id :c.revision-id]
-                             (from (as (keyword table) :c)
-                                   (as :get-concepts-work-area :t))
-                             (where `(and (= :c.concept-id :t.concept-id)))))
+                                   (from (as (keyword table) :c)
+                                         (as :get-concepts-work-area :t))
+                                   (where `(and (= :c.concept-id :t.concept-id)))))
             cid-rid-maps (su/query conn stmt)
             concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
                                            cid-rid-maps)
@@ -251,15 +251,15 @@
   "Validates that the concept-id native-id pair for a concept being saved is not changing. This
   should be done within a save transaction to avoid race conditions where we might miss it.
   Returns nil if valid and an error response if invalid."
-  [db concept]
+  [db provider concept]
   (let [{:keys [concept-type provider-id concept-id native-id]} concept
-        table (tables/get-table-name provider-id concept-type)
+        table (tables/get-table-name provider concept-type)
         {:keys [concept_id native_id]} (or (su/find-one db (select [:concept-id :native-id]
-                                                             (from table)
-                                                             (where `(= :native-id ~native-id))))
+                                                                   (from table)
+                                                                   (where (by-provider provider `(= :native-id ~native-id)))))
                                            (su/find-one db (select [:concept-id :native-id]
-                                                             (from table)
-                                                             (where `(= :concept-id ~concept-id)))))]
+                                                                   (from table)
+                                                                   (where `(= :concept-id ~concept-id)))))]
     (when (and (and concept_id native_id)
                (or (not= concept_id concept-id) (not= native_id native-id)))
       {:error :concept-id-concept-conflict
@@ -268,6 +268,16 @@
                               concept-id native-id concept_id native_id)
        :existing-concept-id concept_id
        :existing-native-id native_id})))
+
+(defn- params->sql-params
+  "Converts the search params into params that can be converted in sql condition clause."
+  [provider params]
+  (when-not (:provider-id params)
+    (errors/internal-error!
+      (format "Provider id is missing from find concepts parameters [%s]" params)))
+  (if (:small provider)
+    (dissoc params :concept-type)
+    (dissoc params :concept-type :provider-id)))
 
 (extend-protocol c/ConceptsStore
   OracleStore
@@ -281,57 +291,57 @@
                             :sequence-number (biginteger seq-num)})))
 
   (get-concept-id
-    [db concept-type provider-id native-id]
-    (let [table (tables/get-table-name provider-id concept-type)]
+    [db concept-type provider native-id]
+    (let [table (tables/get-table-name provider concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                          (from table)
-                          (where `(= :native-id ~native-id)))))))
+                                (from table)
+                                (where (by-provider provider `(= :native-id ~native-id))))))))
 
   (get-concept-by-provider-id-native-id-concept-type
-    [db concept]
+    [db provider concept]
     (j/with-db-transaction
       [conn db]
       (let [{:keys [concept-type provider-id native-id revision-id]} concept
-            table (tables/get-table-name provider-id concept-type)
+            table (tables/get-table-name provider concept-type)
             stmt (if revision-id
                    ;; find specific revision
                    (select '[*]
-                     (from table)
-                     (where `(and (= :native-id ~native-id)
-                                  (= :revision-id ~revision-id))))
+                           (from table)
+                           (where (by-provider provider `(and (= :native-id ~native-id)
+                                                              (= :revision-id ~revision-id)))))
                    ;; find latest
                    (select '[*]
-                     (from table)
-                     (where `(= :native-id ~native-id))
-                     (order-by (desc :revision-id))))]
+                           (from table)
+                           (where (by-provider provider `(= :native-id ~native-id)))
+                           (order-by (desc :revision-id))))]
         (db-result->concept-map concept-type conn provider-id
                                 (su/find-one conn stmt)))))
 
   (get-concept
-    ([db concept-type provider-id concept-id]
+    ([db concept-type provider concept-id]
      (j/with-db-transaction
        [conn db]
-       (let [table (tables/get-table-name provider-id concept-type)]
-         (db-result->concept-map concept-type conn provider-id
+       (let [table (tables/get-table-name provider concept-type)]
+         (db-result->concept-map concept-type conn (:provider-id provider)
                                  (su/find-one conn (select '[*]
-                                                     (from table)
-                                                     (where `(= :concept-id ~concept-id))
-                                                     (order-by (desc :revision-id))))))))
-    ([db concept-type provider-id concept-id revision-id]
+                                                           (from table)
+                                                           (where `(= :concept-id ~concept-id))
+                                                           (order-by (desc :revision-id))))))))
+    ([db concept-type provider concept-id revision-id]
      (if revision-id
-       (let [table (tables/get-table-name provider-id concept-type)]
+       (let [table (tables/get-table-name provider concept-type)]
          (j/with-db-transaction
            [conn db]
-           (db-result->concept-map concept-type conn provider-id
+           (db-result->concept-map concept-type conn (:provider-id provider)
                                    (su/find-one conn (select '[*]
-                                                       (from table)
-                                                       (where `(and (= :concept-id ~concept-id)
-                                                                    (= :revision-id ~revision-id))))))))
-       (c/get-concept db concept-type provider-id concept-id))))
+                                                             (from table)
+                                                             (where `(and (= :concept-id ~concept-id)
+                                                                          (= :revision-id ~revision-id))))))))
+       (c/get-concept db concept-type provider concept-id))))
 
   (get-concepts
-    [db concept-type provider-id concept-id-revision-id-tuples]
+    [db concept-type provider concept-id-revision-id-tuples]
     (if (> (count concept-id-revision-id-tuples) 0)
       (let [start (System/currentTimeMillis)]
         (j/with-db-transaction
@@ -340,12 +350,13 @@
           ;; pull everything in one select
           (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
-          (let [table (tables/get-table-name provider-id concept-type)
+          (let [provider-id (:provider-id provider)
+                table (tables/get-table-name provider concept-type)
                 stmt (su/build (select [:c.*]
-                                 (from (as (keyword table) :c)
-                                       (as :get-concepts-work-area :t))
-                                 (where `(and (= :c.concept-id :t.concept-id)
-                                              (= :c.revision-id :t.revision-id)))))
+                                       (from (as (keyword table) :c)
+                                             (as :get-concepts-work-area :t))
+                                       (where `(and (= :c.concept-id :t.concept-id)
+                                                    (= :c.revision-id :t.revision-id)))))
 
                 result (doall (map (partial db-result->concept-map concept-type conn provider-id)
                                    (su/query conn stmt)))
@@ -355,79 +366,78 @@
       []))
 
   (get-latest-concepts
-    [db concept-type provider-id concept-ids]
+    [db concept-type provider concept-ids]
     (c/get-concepts
-      db concept-type provider-id
-      (get-latest-concept-id-revision-id-tuples db concept-type provider-id concept-ids)))
+      db concept-type provider
+      (get-latest-concept-id-revision-id-tuples db concept-type provider concept-ids)))
 
   (find-concepts
-    [db params]
+    [db provider params]
     (j/with-db-transaction
       [conn db]
       (let [{:keys [concept-type provider-id]} params
-            params (dissoc params :concept-type :provider-id)
-            table (tables/get-table-name provider-id concept-type)
+            params (params->sql-params provider params)
+            table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:*]
-                             (from table)
-                             (when-not (empty? params)
-                               (where (find-params->sql-clause params)))))]
+                                   (from table)
+                                   (when-not (empty? params)
+                                     (where (sh/find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (su/query conn stmt))))))
 
   (find-concepts-in-batches
-    ([db params batch-size]
-     (c/find-concepts-in-batches db params batch-size 0))
-    ([db params batch-size requested-start-index]
-
-     (letfn [(find-batch
-               [start-index]
-               (j/with-db-transaction
-                 [conn db]
-                 (let [{:keys [concept-type provider-id]} params
-                       params (dissoc params :concept-type :provider-id)
-                       table (tables/get-table-name provider-id concept-type)
-                       conditions [`(>= :id ~start-index)
-                                   `(< :id ~(+ start-index batch-size))]
-                       _ (debug "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
-                       conditions (if (empty? params)
-                                    conditions
-                                    (cons (find-params->sql-clause params) conditions))
-                       stmt (su/build (select [:*]
-                                        (from table)
-                                        (where (cons `and conditions))))
-                       batch-result (su/query db stmt)]
-                   (mapv (partial db-result->concept-map concept-type conn provider-id)
-                         batch-result))))
-             (lazy-find
-               [start-index]
-               (let [batch (find-batch start-index)]
-                 (if (empty? batch)
-                   ;; We couldn't find any items  between start-index and start-index + batch-size
-                   ;; Look for the next greatest id and to see if there's a gap that we can restart from.
-                   (do
-                     (debug "Couldn't find batch so searching for more from" start-index)
-                     (when-let [next-id (find-batch-starting-id db params start-index)]
-                       (debug "Found next-id of" next-id)
-                       (lazy-find next-id)))
-                   ;; We found a batch. Return it and the next batch lazily
-                   (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
-       ;; If there's no minimum found so there are no concepts that match
-       (when-let [start-index (find-batch-starting-id db params)]
-         (lazy-find (max requested-start-index start-index))))))
+    ([db provider params batch-size]
+     (c/find-concepts-in-batches db provider params batch-size 0))
+    ([db provider params batch-size requested-start-index]
+     (let [{:keys [concept-type provider-id]} params
+           params (params->sql-params provider params)
+           table (tables/get-table-name provider concept-type)]
+       (letfn [(find-batch
+                 [start-index]
+                 (j/with-db-transaction
+                   [conn db]
+                   (let [conditions [`(>= :id ~start-index)
+                                     `(< :id ~(+ start-index batch-size))]
+                         _ (debug "Finding batch for provider" provider-id "from id >=" start-index " and id <" (+ start-index batch-size))
+                         conditions (if (empty? params)
+                                      conditions
+                                      (cons (sh/find-params->sql-clause params) conditions))
+                         stmt (su/build (select [:*]
+                                                (from table)
+                                                (where (cons `and conditions))))
+                         batch-result (su/query db stmt)]
+                     (mapv (partial db-result->concept-map concept-type conn provider-id)
+                           batch-result))))
+               (lazy-find
+                 [start-index]
+                 (let [batch (find-batch start-index)]
+                   (if (empty? batch)
+                     ;; We couldn't find any items  between start-index and start-index + batch-size
+                     ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+                     (do
+                       (debug "Couldn't find batch so searching for more from" start-index)
+                       (when-let [next-id (find-batch-starting-id db table params start-index)]
+                         (debug "Found next-id of" next-id)
+                         (lazy-find next-id)))
+                     ;; We found a batch. Return it and the next batch lazily
+                     (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
+         ;; If there's no minimum found so there are no concepts that match
+         (when-let [start-index (find-batch-starting-id db table params)]
+           (lazy-find (max requested-start-index start-index)))))))
 
   (save-concept
-    [db concept]
+    [db provider concept]
     (try
       (j/with-db-transaction
         [conn db]
-        (if-let [error (validate-concept-id-native-id-not-changing db concept)]
+        (if-let [error (validate-concept-id-native-id-not-changing db provider concept)]
           ;; There was a concept id, native id mismatch with earlier concepts
           error
           ;; Concept id native id pair was valid
           (let [{:keys [concept-type provider-id]} concept
-                table (tables/get-table-name provider-id concept-type)
+                table (tables/get-table-name provider concept-type)
                 seq-name (str table "_seq")
-                [cols values] (concept->insert-args concept)
+                [cols values] (concept->insert-args concept (:small provider))
                 stmt (format "INSERT INTO %s (id, %s) VALUES (%s.NEXTVAL,%s)"
                              table
                              (str/join "," cols)
@@ -436,7 +446,7 @@
             ;; Uncomment to debug what's inserted
             ; (debug "Executing" stmt "with values" (pr-str values))
             (j/db-do-prepared db stmt values)
-            (after-save conn concept)
+            (after-save conn provider concept)
 
             nil)))
       (catch Exception e
@@ -453,25 +463,20 @@
           {:error error-code :error-message error-message :throwable e}))))
 
   (force-delete
-    [this concept-type provider-id concept-id revision-id]
-    (let [table (tables/get-table-name provider-id concept-type)
+    [this concept-type provider concept-id revision-id]
+    (let [table (tables/get-table-name provider concept-type)
           stmt (su/build (delete table
-                           (where `(and (= :concept-id ~concept-id)
-                                        (= :revision-id ~revision-id)))))]
+                                 (where `(and (= :concept-id ~concept-id)
+                                              (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (force-delete-by-params
-    [db params]
-    (let [{:keys [concept-type provider-id]} params
-          params (dissoc params :concept-type :provider-id)
-          table (tables/get-table-name provider-id concept-type)
-          stmt (su/build (delete table
-                           (where (find-params->sql-clause params))))]
-      (j/execute! db stmt)))
+    [db provider params]
+    (sh/force-delete-concept-by-params db provider params))
 
   (force-delete-concepts
-    [db provider-id concept-type concept-id-revision-id-tuples]
-    (let [table (tables/get-table-name provider-id concept-type)]
+    [db provider concept-type concept-id-revision-id-tuples]
+    (let [table (tables/get-table-name provider concept-type)]
       (j/with-db-transaction
         [conn db]
         ;; use a temporary table to insert our values so we can use them in our delete
@@ -485,17 +490,28 @@
           (j/execute! conn stmt)))))
 
   (get-concept-type-counts-by-collection
-    [db concept-type provider-id]
-    (let [table (tables/get-table-name provider-id :granule)
-          stmt [(format "select count(1) concept_count, a.parent_collection_id
-                        from %s a,
-                        (select concept_id, max(revision_id) revision_id
-                        from %s group by concept_id) b
-                        where  a.deleted = 0
-                        and    a.concept_id = b.concept_id
-                        and    a.revision_id = b.revision_id
-                        group by a.parent_collection_id"
-                        table table)]
+    [db concept-type provider]
+    (let [table (tables/get-table-name provider :granule)
+          {:keys [provider-id small]} provider
+          stmt (if small
+                 [(format "select count(1) concept_count, a.parent_collection_id
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s where provider_id = '%s' group by concept_id) b
+                          where  a.deleted = 0
+                          and    a.concept_id = b.concept_id
+                          and    a.revision_id = b.revision_id
+                          group by a.parent_collection_id"
+                          table table provider-id)]
+                 [(format "select count(1) concept_count, a.parent_collection_id
+                          from %s a,
+                          (select concept_id, max(revision_id) revision_id
+                          from %s group by concept_id) b
+                          where  a.deleted = 0
+                          and    a.concept_id = b.concept_id
+                          and    a.revision_id = b.revision_id
+                          group by a.parent_collection_id"
+                          table table)])
           result (su/query db stmt)]
       (reduce (fn [count-map {:keys [parent_collection_id concept_count]}]
                 (assoc count-map parent_collection_id (long concept_count)))
@@ -517,28 +533,53 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
-            stmt [(format "select *
-                          from %s outer,
-                          ( select a.concept_id, a.revision_id
-                          from (select concept_id, max(revision_id) as revision_id
-                          from %s
-                          where deleted = 0
-                          and   delete_time is not null
-                          and   delete_time < systimestamp
-                          group by concept_id
-                          ) a,
-                          (select concept_id, max(revision_id) as revision_id
-                          from %s
-                          group by concept_id
-                          ) b
-                          where a.concept_id = b.concept_id
-                          and   a.revision_id = b.revision_id
-                          and   rowNum <= %d
-                          ) inner
-                          where outer.concept_id = inner.concept_id
-                          and   outer.revision_id = inner.revision_id"
-                          table table table EXPIRED_CONCEPTS_BATCH_SIZE)]]
-        (doall (map (partial db-result->concept-map concept-type conn provider)
+            {:keys [provider-id small]} provider
+            stmt (if small
+                   [(format "select *
+                            from %s outer,
+                            ( select a.concept_id, a.revision_id
+                            from (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where provider_id = '%s'
+                            and deleted = 0
+                            and   delete_time is not null
+                            and   delete_time < systimestamp
+                            group by concept_id
+                            ) a,
+                            (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where provider_id = '%s'
+                            group by concept_id
+                            ) b
+                            where a.concept_id = b.concept_id
+                            and   a.revision_id = b.revision_id
+                            and   rowNum <= %d
+                            ) inner
+                            where outer.concept_id = inner.concept_id
+                            and   outer.revision_id = inner.revision_id"
+                            table table provider-id table provider-id EXPIRED_CONCEPTS_BATCH_SIZE)]
+                   [(format "select *
+                            from %s outer,
+                            ( select a.concept_id, a.revision_id
+                            from (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            where deleted = 0
+                            and   delete_time is not null
+                            and   delete_time < systimestamp
+                            group by concept_id
+                            ) a,
+                            (select concept_id, max(revision_id) as revision_id
+                            from %s
+                            group by concept_id
+                            ) b
+                            where a.concept_id = b.concept_id
+                            and   a.revision_id = b.revision_id
+                            and   rowNum <= %d
+                            ) inner
+                            where outer.concept_id = inner.concept_id
+                            and   outer.revision_id = inner.revision_id"
+                            table table table EXPIRED_CONCEPTS_BATCH_SIZE)])]
+        (doall (map (partial db-result->concept-map concept-type conn (:provider-id provider))
                     (su/query conn stmt))))))
 
   (get-tombstoned-concept-revisions
@@ -546,18 +587,25 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
+            {:keys [provider-id small]} provider
             ;; This will return the concept-id/revision-id pairs for tombstones and revisions
             ;; older than the tombstone - up to 'limit' concepts.
-            stmt [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
+            sql (if small
+                  (format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                          (select * from
+                          (select concept_id, revision_id from %s
+                          where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?)
+                          where rownum < %d) t2
+                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
+                          table table provider-id limit)
+                  (format "select t1.concept_id, t1.revision_id from %s t1 inner join
                           (select * from
                           (select concept_id, revision_id from %s
                           where DELETED = 1 and REVISION_DATE < ?)
                           where rownum < %d) t2
                           on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
-                          table
-                          table
-                          limit)
-                  (cr/to-sql-time tombstone-cut-off-date)]
+                          table table limit))
+            stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
             result (su/query conn stmt)]
         ;; create tuples of concept-id/revision-id to remove
         (map (fn [{:keys [concept_id revision_id]}]
@@ -569,17 +617,22 @@
     (j/with-db-transaction
       [conn this]
       (let [table (tables/get-table-name provider concept-type)
+            {:keys [provider-id small]} provider
             ;; This will return the concepts that have more than 'max-revisions' revisions.
             ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
             ;; not the number of concept-id/revision-id pairs. All revisions are returned for
             ;; each returned concept-id.
-            stmt [(format "select concept_id, revision_id from %s
-                          where concept_id in (select * from (select concept_id from %s group by
-                          concept_id having count(*) > %d) where rownum <= %d)"
-                          table
-                          table
-                          max-revisions
-                          limit)]
+            stmt (if small
+                   [(format "select concept_id, revision_id from %s
+                            where concept_id in (select * from
+                            (select concept_id from %s where provider_id = '%s' group by
+                            concept_id having count(*) > %d) where rownum <= %d)"
+                            table table provider-id max-revisions limit)]
+                   [(format "select concept_id, revision_id from %s
+                            where concept_id in (select * from
+                            (select concept_id from %s group by
+                            concept_id having count(*) > %d) where rownum <= %d)"
+                            table table max-revisions limit)])
             result (su/query conn stmt)
             ;; create a map of concept-ids to sequences of all returned revisions
             concept-id-rev-ids-map (reduce (fn [memo concept-map]
@@ -595,3 +648,4 @@
                                             (truncate-highest rev-ids max-revisions))))
                    []
                    concept-id-rev-ids-map)))))
+
