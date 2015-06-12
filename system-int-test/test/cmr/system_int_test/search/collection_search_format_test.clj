@@ -231,8 +231,6 @@
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
-             "application/atom+xml" true
-             "application/json" false
              "text/csv" false)))
 
     (testing "Retrieving results as XML References"
