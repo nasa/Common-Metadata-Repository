@@ -44,6 +44,6 @@
            [g2 g4 g5] nil))
 
     (testing "search by browsable wrong value"
-      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was [wrong]"]}
              (search/find-refs :granule {:browsable "wrong"}))))))
 

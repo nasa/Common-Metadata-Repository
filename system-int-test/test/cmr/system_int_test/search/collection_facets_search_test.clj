@@ -14,14 +14,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
-(comment
-
-  (dev-sys-util/reset)
-  (ingest/create-provider "provguid1" "PROV1")
-  (ingest/create-provider "provguid2" "PROV2")
-  )
-
-
 (defn make-coll
   "Helper for creating and ingesting a collection"
   [n prov & attribs]
@@ -97,6 +89,12 @@
                               :topic "Cool"
                               :term "Mild"}))
 
+(def sk8 (dc/science-keyword {:category "Category"
+                              :topic "Topic"
+                              :term "Term"
+                              :variable-level-1 "V-L1"
+                              :detailed-variable "Detailed-No-Level2-or-3"}))
+
 (defn science-keywords
   [& sks]
   {:science-keywords sks})
@@ -105,13 +103,265 @@
   [id]
   {:processing-level-id id})
 
-
-(deftest retrieve-collection-facets-test
-  ;; Grant guests permission to provider 1
+(defn grant-permissions
+  "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
+  []
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
-  ;; Grant guests permission to specific collections in provider 2
-  (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"])))
+  (e/grant-guest (s/context)
+                 (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
 
+(defn- get-facet-results
+  "Returns the facets returned by a search in both JSON and XML reference formats. Takes the type
+  of facets to be returned - either :flat or :hierarchical. The format of the response is:
+  {:xml-facets xml-facets
+  :json-facets json-results}"
+  [type]
+  (index/wait-until-indexed)
+  (let [search-options {:page-size 0
+                        :include-facets true
+                        :hierarchical-facets (= :hierarchical type)}]
+    {:xml-facets (:facets (search/find-refs :collection search-options))
+     :json-facets (get-in (search/find-concepts-json :collection search-options)
+                          [:results :facets])}))
+
+(deftest all-science-keywords-fields-hierarchy
+  (grant-permissions)
+  (let [coll1 (make-coll 1 "PROV1"
+                         (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
+                         (projects "proj1" "PROJ2")
+                         (platforms "A" 2 2 1)
+                         (twod-coords "Alpha")
+                         (processing-level-id "PL1")
+                         {:organizations [(dc/org :archive-center "Larc")]})
+        coll2 (make-coll 2 "PROV1"
+                         (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
+                         (projects "proj1" "PROJ2")
+                         (platforms "A" 2 2 1)
+                         (twod-coords "Alpha")
+                         (processing-level-id "PL1")
+                         {:organizations [(dc/org :archive-center "Larc")]})
+        expected-facets [{:field "archive_center", :value-counts [["Larc" 2]]}
+                         {:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
+                         {:field "platform", :value-counts [["A-p0" 2] ["A-p1" 2]]}
+                         {:field "instrument",
+                          :value-counts
+                          [["A-p0-i0" 2] ["A-p0-i1" 2] ["A-p1-i0" 2] ["A-p1-i1" 2]]}
+                         {:field "sensor",
+                          :value-counts
+                          [["A-p0-i0-s0" 2]
+                           ["A-p0-i1-s0" 2]
+                           ["A-p1-i0-s0" 2]
+                           ["A-p1-i1-s0" 2]]}
+                         {:field "two_d_coordinate_system_name",
+                          :value-counts [["Alpha" 2]]}
+                         {:field "processing_level_id", :value-counts [["PL1" 2]]}
+                         {:field "detailed_variable",
+                          :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+                         {:field "science_keywords",
+                          :subfields ["category"],
+                          :category
+                          [{:value "Hurricane",
+                            :count 2,
+                            :subfields ["topic"],
+                            :topic
+                            [{:value "Popular",
+                              :count 2,
+                              :subfields ["term"],
+                              :term
+                              [{:value "Extreme",
+                                :count 2,
+                                :subfields ["variable-level-1"],
+                                :variable-level-1
+                                [{:value "Level2-1",
+                                  :count 2,
+                                  :subfields ["variable-level-2"],
+                                  :variable-level-2
+                                  [{:value "Level2-2",
+                                    :count 2,
+                                    :subfields ["variable-level-3"],
+                                    :variable-level-3
+                                    [{:value "Level2-3", :count 2}]}]}]}
+                               {:value "UNIVERSAL", :count 2}]}
+                             {:value "Cool",
+                              :count 2,
+                              :subfields ["term"],
+                              :term
+                              [{:value "Term4",
+                                :count 2,
+                                :subfields ["variable-level-1"],
+                                :variable-level-1
+                                [{:value "UNIVERSAL", :count 2}]}]}]}
+                           {:value "Cat1",
+                            :count 2,
+                            :subfields ["topic"],
+                            :topic
+                            [{:value "Topic1",
+                              :count 2,
+                              :subfields ["term"],
+                              :term
+                              [{:value "Term1",
+                                :count 2,
+                                :subfields ["variable-level-1"],
+                                :variable-level-1
+                                [{:value "Level1-1",
+                                  :count 2,
+                                  :subfields ["variable-level-2"],
+                                  :variable-level-2
+                                  [{:value "Level1-2",
+                                    :count 2,
+                                    :subfields ["variable-level-3"],
+                                    :variable-level-3
+                                    [{:value "Level1-3", :count 2}]}]}]}]}]}
+                           {:value "Tornado",
+                            :count 2,
+                            :subfields ["topic"],
+                            :topic
+                            [{:value "Popular",
+                              :count 2,
+                              :subfields ["term"],
+                              :term [{:value "Extreme", :count 2}]}]}
+                           {:value "UPCASE",
+                            :count 2,
+                            :subfields ["topic"],
+                            :topic
+                            [{:value "Popular",
+                              :count 2,
+                              :subfields ["term"],
+                              :term [{:value "Mild", :count 2}]}]}
+                           {:value "upcase",
+                            :count 2,
+                            :subfields ["topic"],
+                            :topic
+                            [{:value "Cool",
+                              :count 2,
+                              :subfields ["term"],
+                              :term [{:value "Mild", :count 2}]}]}]}]
+        actual-facets (get-facet-results :hierarchical)]
+    (is (= expected-facets (:xml-facets actual-facets)))
+    (is (= expected-facets (:json-facets actual-facets)))))
+
+;; The purpose of the test is to make sure when the same topic "Popular" is used under two different
+;; categories, the flat facets correctly say 2 collections have the "Popular topic and the
+;; hierarchical facets report just one collection with "Popular" below each category.
+(deftest nested-duplicate-topics
+  (grant-permissions)
+  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk3))
+        coll2 (make-coll 2 "PROV1" (science-keywords sk5))
+        expected-hierarchical-facets [{:field "archive_center", :value-counts []}
+                                      {:field "project", :value-counts []}
+                                      {:field "platform", :value-counts []}
+                                      {:field "instrument", :value-counts []}
+                                      {:field "sensor", :value-counts []}
+                                      {:field "two_d_coordinate_system_name", :value-counts []}
+                                      {:field "processing_level_id", :value-counts []}
+                                      {:field "detailed_variable", :value-counts []}
+                                      {:field "science_keywords",
+                                       :subfields ["category"],
+                                       :category
+                                       [{:value "Hurricane",
+                                         :count 1,
+                                         :subfields ["topic"],
+                                         :topic
+                                         [{:value "Popular",
+                                           :count 1,
+                                           :subfields ["term"],
+                                           :term [{:value "UNIVERSAL", :count 1}]}]}
+                                        {:value "Tornado",
+                                         :count 1,
+                                         :subfields ["topic"],
+                                         :topic
+                                         [{:value "Popular",
+                                           :count 1,
+                                           :subfields ["term"],
+                                           :term [{:value "Extreme", :count 1}]}]}]}]
+        expected-flat-facets [{:field "archive_center", :value-counts []}
+                              {:field "project", :value-counts []}
+                              {:field "platform", :value-counts []}
+                              {:field "instrument", :value-counts []}
+                              {:field "sensor", :value-counts []}
+                              {:field "two_d_coordinate_system_name", :value-counts []}
+                              {:field "processing_level_id", :value-counts []}
+                              {:field "category",
+                               :value-counts [["Hurricane" 1] ["Tornado" 1]]}
+                              {:field "topic", :value-counts [["Popular" 2]]}
+                              {:field "term",
+                               :value-counts [["Extreme" 1] ["UNIVERSAL" 1]]}
+                              {:field "variable_level_1", :value-counts []}
+                              {:field "variable_level_2", :value-counts []}
+                              {:field "variable_level_3", :value-counts []}
+                              {:field "detailed_variable", :value-counts []}]
+        actual-hierarchical-facets (get-facet-results :hierarchical)
+        actual-flat-facets (get-facet-results :flat)]
+    (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
+    (is (= expected-hierarchical-facets (:json-facets actual-hierarchical-facets)))
+    (is (= expected-flat-facets (:xml-facets actual-flat-facets)))
+    (is (= expected-flat-facets (:json-facets actual-flat-facets)))))
+
+(deftest empty-hierarchical-facets-test
+  (let [expected-facets [{:field "archive_center", :value-counts []}
+                         {:field "project", :value-counts []}
+                         {:field "platform", :value-counts []}
+                         {:field "instrument", :value-counts []}
+                         {:field "sensor", :value-counts []}
+                         {:field "two_d_coordinate_system_name", :value-counts []}
+                         {:field "processing_level_id", :value-counts []}
+                         {:field "detailed_variable", :value-counts []}
+                         {:field "science_keywords", :subfields []}]
+        actual-facets (get-facet-results :hierarchical)]
+    (is (= expected-facets (:xml-facets actual-facets)))
+    (is (= expected-facets (:json-facets actual-facets)))))
+
+(deftest detailed-variable-test
+  (grant-permissions)
+  (let [coll1 (make-coll 1 "PROV1" (science-keywords sk8))
+        expected-hierarchical-facets [{:field "archive_center", :value-counts []}
+                                      {:field "project", :value-counts []}
+                                      {:field "platform", :value-counts []}
+                                      {:field "instrument", :value-counts []}
+                                      {:field "sensor", :value-counts []}
+                                      {:field "two_d_coordinate_system_name", :value-counts []}
+                                      {:field "processing_level_id", :value-counts []}
+                                      {:field "detailed_variable",
+                                       :value-counts [["Detailed-No-Level2-or-3" 1]]}
+                                      {:field "science_keywords",
+                                       :subfields ["category"],
+                                       :category
+                                       [{:value "Category",
+                                         :count 1,
+                                         :subfields ["topic"],
+                                         :topic
+                                         [{:value "Topic",
+                                           :count 1,
+                                           :subfields ["term"],
+                                           :term
+                                           [{:value "Term",
+                                             :count 1,
+                                             :subfields ["variable-level-1"],
+                                             :variable-level-1 [{:value "V-L1", :count 1}]}]}]}]}]
+        expected-flat-facets [{:field "archive_center", :value-counts []}
+                              {:field "project", :value-counts []}
+                              {:field "platform", :value-counts []}
+                              {:field "instrument", :value-counts []}
+                              {:field "sensor", :value-counts []}
+                              {:field "two_d_coordinate_system_name", :value-counts []}
+                              {:field "processing_level_id", :value-counts []}
+                              {:field "category", :value-counts [["Category" 1]]}
+                              {:field "topic", :value-counts [["Topic" 1]]}
+                              {:field "term", :value-counts [["Term" 1]]}
+                              {:field "variable_level_1", :value-counts [["V-L1" 1]]}
+                              {:field "variable_level_2", :value-counts []}
+                              {:field "variable_level_3", :value-counts []}
+                              {:field "detailed_variable",
+                               :value-counts [["Detailed-No-Level2-or-3" 1]]}]
+        actual-hierarchical-facets (get-facet-results :hierarchical)
+        actual-flat-facets (get-facet-results :flat)]
+    (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
+    (is (= expected-hierarchical-facets (:json-facets actual-hierarchical-facets)))
+    (is (= expected-flat-facets (:xml-facets actual-flat-facets)))
+    (is (= expected-flat-facets (:json-facets actual-flat-facets)))))
+
+(deftest flat-facets-test
+  (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
                          (projects "proj1" "PROJ2")
                          (platforms "A" 2 2 1)
@@ -150,7 +400,7 @@
     (index/wait-until-indexed)
 
     (testing "invalid include-facets"
-      (is (= {:errors ["Parameter include_facets must take value of true, false, or unset, but was foo"] :status 400}
+      (is (= {:errors ["Parameter include_facets must take value of true, false, or unset, but was [foo]"] :status 400}
              (search/find-refs :collection {:include-facets "foo"})))
       (is (= {:errors ["Parameter [include_facets] was not recognized."] :status 400}
              (search/find-refs :granule {:include-facets true}))))
@@ -209,6 +459,7 @@
         (testing "refs"
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true})))))
+
         (testing "refs echo-compatible true"
           (is (= expected-facets
                  (search/find-refs :collection {:include-facets true
