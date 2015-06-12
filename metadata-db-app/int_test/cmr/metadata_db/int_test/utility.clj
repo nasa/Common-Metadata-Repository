@@ -303,7 +303,9 @@
   ([provider-id parent-collection-id uniq-num]
    (create-and-save-granule provider-id parent-collection-id uniq-num 1))
   ([provider-id parent-collection-id uniq-num num-revisions]
-   (let [concept (granule-concept provider-id parent-collection-id uniq-num)
+   (create-and-save-granule provider-id parent-collection-id uniq-num num-revisions {}))
+  ([provider-id parent-collection-id uniq-num num-revisions attributes]
+   (let [concept (granule-concept provider-id parent-collection-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

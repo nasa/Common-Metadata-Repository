@@ -43,9 +43,11 @@
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (acl/verify-ingest-management-permission request-context :update)
-      (save-provider request-context params {:provider-id (get body "provider-id")
-                                             :cmr-only (get body "cmr-only" false)
-                                             :small (get body "small" false)}))
+      (let [cmr-only (get body "cmr-only")
+            small (get body "small")]
+        (save-provider request-context params {:provider-id (get body "provider-id")
+                                               :cmr-only (if cmr-only cmr-only false)
+                                               :small (if small small false)})))
 
     ;; update a provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params

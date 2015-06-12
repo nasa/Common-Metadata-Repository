@@ -25,7 +25,8 @@
          "PROV3" false false
          "PROV4" true false
          "PROV5" false true
-         "PROV6" true true))
+         "PROV6" true true
+         "PROV7" nil nil))
   (testing "create provider invalid value"
     (u/are2
       [provider error]
@@ -33,17 +34,9 @@
             {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
         (= [400 [error]] [status errors]))
 
-      "without cmr-only"
-      {:provider-id "PROV8" :small false}
-      "Cmr Only is required."
-
       "cmr-only invalid value"
       {:provider-id "PROV8" :cmr-only "" :small false}
       "Cmr Only must be either true or false but was [\"\"]"
-
-      "without small"
-      {:provider-id "PROV8" :cmr-only false}
-      "Small is required."
 
       "small invalid value"
       {:provider-id "PROV8" :cmr-only false :small ""}

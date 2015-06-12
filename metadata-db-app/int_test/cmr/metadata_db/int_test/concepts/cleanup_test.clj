@@ -11,7 +11,8 @@
 
 (use-fixtures :each (join-fixtures
                       [(util/reset-database-fixture {:provider-id "REG_PROV" :small false}
-                                                    {:provider-id "SMAL_PROV" :small true})
+                                                    {:provider-id "SMAL_PROV1" :small true}
+                                                    {:provider-id "SMAL_PROV2" :small true})
                        (tk/freeze-resume-time-fixture)]))
 
 (defn concept-revision-exists?
@@ -46,9 +47,10 @@
 (deftest old-collection-revisions-are-cleaned-up
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 13)
         coll2 (util/create-and-save-collection "REG_PROV" 2 3)
-        coll3 (util/create-and-save-collection "SMAL_PROV" 1 12)
-        coll4 (util/create-and-save-collection "SMAL_PROV" 4 3)
-        collections [coll1 coll2 coll3 coll4]]
+        coll3 (util/create-and-save-collection "SMAL_PROV1" 1 12 {:native-id "foo"})
+        coll4 (util/create-and-save-collection "SMAL_PROV1" 4 3)
+        coll5 (util/create-and-save-collection "SMAL_PROV2" 4 3 {:native-id "foo"})
+        collections [coll1 coll2 coll3 coll4 coll5]]
 
     ;; Collection 4 has a tombstone
     (util/delete-concept (:concept-id coll4))
@@ -67,16 +69,19 @@
     (is (revisions-removed? coll3 (range 1 3)))
     (is (revisions-exist? coll3 (range 3 13)))
 
-    (is (revisions-exist? coll4 (range 1 5)))))
+    (is (revisions-exist? coll4 (range 1 5)))
+    (is (revisions-exist? coll5 (range 1 4)))))
 
 (deftest old-granule-revisions-are-cleaned-up
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
         gran1 (util/create-and-save-granule "REG_PROV" (:concept-id coll1) 1 3)
         gran2 (util/create-and-save-granule "REG_PROV" (:concept-id coll1) 2 3)
-        coll2 (util/create-and-save-collection "SMAL_PROV" 2 1)
-        gran3 (util/create-and-save-granule "SMAL_PROV" (:concept-id coll2) 1 3)
-        gran4 (util/create-and-save-granule "SMAL_PROV" (:concept-id coll2) 4 2)
-        granules [gran1 gran2 gran3 gran4]]
+        coll2 (util/create-and-save-collection "SMAL_PROV1" 2 1)
+        gran3 (util/create-and-save-granule "SMAL_PROV1" (:concept-id coll2) 1 3 {:native-id "foo"})
+        gran4 (util/create-and-save-granule "SMAL_PROV1" (:concept-id coll2) 4 2)
+        coll3 (util/create-and-save-collection "SMAL_PROV2" 2 1)
+        gran5 (util/create-and-save-granule "SMAL_PROV2" (:concept-id coll3) 1 12 {:native-id "foo"})
+        granules [gran1 gran2 gran3 gran4 gran5]]
 
     ;; Granule 4 has a tombstone
     (util/delete-concept (:concept-id gran4))
@@ -87,7 +92,8 @@
     (is (= 204 (util/old-revision-concept-cleanup)))
 
     (is (every? #(revisions-removed? % (range 1 3)) granules))
-    (is (every? #(concept-revision-exists? % 3) granules))))
+    (is (every? #(concept-revision-exists? % 3) [gran1 gran2 gran3 gran4]))
+    (is (concept-revision-exists? gran5 12))))
 
 (deftest old-tombstones-are-cleaned-up
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)

@@ -13,7 +13,7 @@
   ;; Create the SMALL_PROV tables and sequence
   ;; We use a dummy provider (the key is :small true) to invoke the create tables code.
   (let [db (config/db)]
-    (ct/create-provider-concept-tables db {:provider-id "AAAAA_PROV"
+    (ct/create-provider-concept-tables db {:provider-id "IGNORED"
                                            :cmr-only true
                                            :small true})))
 
@@ -23,7 +23,7 @@
   (println "migrations.016-add-small-to-provider-table down...")
   ;; Drop the SMALL_PROV tables and sequence
   (let [db (config/db)]
-    (ct/delete-provider-concept-tables db {:provider-id "AAAAA_PROV"
+    (ct/delete-provider-concept-tables db {:provider-id "IGNORED"
                                            :cmr-only true
                                            :small true}))
   (h/sql "alter table providers drop column small"))
