@@ -6,6 +6,7 @@
             [cmr.common.services.errors :as serv-err]
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
+            [cheshire.core :as json]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.common.log :refer (debug info warn error)]))
 
@@ -23,7 +24,7 @@
    (get-concept context params concept-id nil))
   ([context params concept-id revision]
    {:status 200
-    :body (rh/to-json (concept-service/get-concept context concept-id (as-int revision)) params)
+    :body (json/generate-string (concept-service/get-concept context concept-id (as-int revision)))
     :headers rh/json-header}))
 
 (defn- allow-missing?
@@ -36,7 +37,7 @@
   [context params concept-id-revisions]
   (let [concepts (concept-service/get-concepts context concept-id-revisions (allow-missing? params))]
     {:status 200
-     :body (rh/to-json concepts params)
+     :body (json/generate-string concepts)
      :headers rh/json-header}))
 
 (defn- get-latest-concepts
@@ -44,7 +45,7 @@
   [context params concept-ids]
   (let [concepts (concept-service/get-latest-concepts context concept-ids (allow-missing? params))]
     {:status 200
-     :body (rh/to-json concepts params)
+     :body (json/generate-string concepts)
      :headers rh/json-header}))
 
 (defn- get-expired-collections-concept-ids
@@ -52,7 +53,7 @@
   [context params]
   (if-let [provider (:provider params)]
     {:status 200
-     :body (rh/to-json (concept-service/get-expired-collections-concept-ids context provider) params)
+     :body (json/generate-string (concept-service/get-expired-collections-concept-ids context provider))
      :headers rh/json-header}
     (serv-err/throw-service-error :bad-request (msg/provider-id-parameter-required))))
 
@@ -62,7 +63,7 @@
   (let [params (update-in params [:concept-type] (comp keyword inf/singular))
         concepts (concept-service/find-concepts context params)]
     {:status 200
-     :body (rh/to-json concepts params)
+     :body (json/generate-string concepts)
      :headers rh/json-header}))
 
 (defn- save-concept
@@ -73,7 +74,7 @@
                     (update-in [:concept-type] keyword))
         {:keys [concept-id revision-id]} (concept-service/save-concept context concept)]
     {:status 201
-     :body (rh/to-json {:revision-id revision-id :concept-id concept-id} params)
+     :body (json/generate-string {:revision-id revision-id :concept-id concept-id})
      :headers rh/json-header}))
 
 (defn- delete-concept
@@ -82,7 +83,7 @@
   (let [{:keys [revision-id]} (concept-service/delete-concept
                                 context concept-id (as-int revision-id) (:revision-date params))]
     {:status 200
-     :body (rh/to-json {:revision-id revision-id} params)
+     :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))
 
 (defn- force-delete
@@ -90,7 +91,7 @@
   [context params concept-id revision-id]
   (let [{:keys [revision-id]} (concept-service/force-delete context concept-id (as-int revision-id))]
     {:status 200
-     :body (rh/to-json {:revision-id revision-id} params)
+     :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))
 
 (defn- get-concept-id
@@ -98,14 +99,14 @@
   [context params concept-type provider-id native-id]
   (let [concept-id (concept-service/get-concept-id context concept-type provider-id native-id)]
     {:status 200
-     :body (rh/to-json {:concept-id concept-id} params)
+     :body (json/generate-string {:concept-id concept-id})
      :headers rh/json-header}))
 
 (defn- get-provider-holdings
   "Returns the provider holdings within metadata db"
   [context params]
   {:status 200
-   :body (rh/to-json (concept-service/get-provider-holdings context) params)
+   :body (json/generate-string (concept-service/get-provider-holdings context))
    :headers rh/json-header})
 
 (def concepts-api-routes

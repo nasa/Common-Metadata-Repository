@@ -215,7 +215,7 @@
 (deftracefn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
-  (let [{:keys [provider-id echo-compatible pretty]} (u/map-keys->kebab-case params)
+  (let [{:keys [provider-id echo-compatible]} (u/map-keys->kebab-case params)
         ;; make sure provider-ids is sequential
         provider-ids (if (or (nil? provider-id) (sequential? provider-id))
                        provider-id
@@ -229,8 +229,7 @@
                                collections)]
     [provider-holdings
      (ph/provider-holdings->string
-       (:result-format params) provider-holdings {:pretty? (= "true" pretty)
-                                                  :echo-compatible? (= "true" echo-compatible)})]))
+       (:result-format params) provider-holdings {:echo-compatible? (= "true" echo-compatible)})]))
 
 (defn- shape-param->tile-set
   "Converts a shape of given type to the set of tiles which the shape intersects"

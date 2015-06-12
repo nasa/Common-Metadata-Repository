@@ -14,6 +14,7 @@
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
 
                  ;; included to allow access to catalog rest and db connection code
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]

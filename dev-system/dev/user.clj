@@ -1,5 +1,8 @@
 (ns user
-  (:require [clojure.pprint :refer (pprint pp)]
+  (:require [cmr.common.dev.capture-reveal]
+            [clojure.main]
+            [debugger.core]
+            [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.dev-system.system :as system]
             [cmr.dev-system.tests :as tests]
@@ -13,8 +16,7 @@
             [vdd-core.core :as vdd])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
-        [alex-and-georges.debug-repl]
-        [cmr.common.dev.capture-reveal]))
+        [alex-and-georges.debug-repl]))
 
 (def system nil)
 

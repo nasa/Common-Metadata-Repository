@@ -47,11 +47,20 @@
            (str "Request timed out when attempting to publish message: " msg)
            e))))))
 
-(defn concept-update-event
-  "Creates an event representing concept being updated or created. The function determines whether it
-  is a create or update based on the revision id."
+(defn collection-concept-update-event
+  "Creates an event representing a collection concept being updated or created."
   [concept-id revision-id]
-  {:action (if (= revision-id 1) :concept-create :concept-update)
+  {:action :concept-update
+   :concept-id concept-id
+   :revision-id revision-id})
+
+(defn granule-concept-update-event
+  "Creates an event representing a granule concept being updated or created."
+  [coll-concept concept-id revision-id]
+  {:action :concept-update
+   ;; The entry title is used in the virtual product processing to avoid having to fetch the full
+   ;; metadata to determine if this is a granule that requires processing.
+   :entry-title (get-in coll-concept [:extra-fields :entry-title])
    :concept-id concept-id
    :revision-id revision-id})
 

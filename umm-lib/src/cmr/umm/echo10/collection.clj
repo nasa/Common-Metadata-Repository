@@ -144,8 +144,6 @@
   UmmCollection
   (umm->echo10-xml
     ([collection]
-     (cmr.umm.echo10.core/umm->echo10-xml collection false))
-    ([collection indent?]
      (let [{{:keys [short-name long-name version-id version-description
                     processing-level-id collection-data-type]} :product
             dataset-id :entry-title
@@ -154,9 +152,8 @@
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel]} collection
-           emit-fn (if indent? x/indent-str x/emit-str)]
-       (emit-fn
+                   personnel]} collection]
+       (x/emit-str
          (x/element :Collection {}
                     (x/element :ShortName {} short-name)
                     (x/element :VersionId {} version-id)

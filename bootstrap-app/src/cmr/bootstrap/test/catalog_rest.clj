@@ -6,6 +6,7 @@
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.common.concepts :as concepts]
             [cmr.common.date-time-parser :as p]
+            [cmr.common.mime-types :as mt]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
             [cmr.oracle.connection :as oracle]
             [clj-time.core :as t]
@@ -104,7 +105,7 @@
 (def mime-type->db-format
   "Map of mime types to the format to store in the database. Modified to store what Catalog REST uses"
   (assoc mdb-concepts/mime-type->db-format
-         "application/iso:smap+xml" "ISO-SMAP"))
+         mt/iso-smap "ISO-SMAP"))
 
 (defn update-concept
   "Updates the concept in the Catalog REST database"
@@ -190,7 +191,7 @@
      :concept-type :collection
      :concept-id "C1-JPROV"
      :metadata "the metadata"
-     :format "application/echo10+xml"
+     :format mt/echo10
      :extra-fields {:short-name "short"
                     :version-id "V1"
                     :entry-id "short_V1"
@@ -202,7 +203,7 @@
      :concept-type :granule
      :concept-id "G1-JPROV"
      :metadata "the metadata"
-     :format "application/echo10+xml"
+     :format mt/echo10
      :native-id "granule ur"
      :extra-fields {:parent-collection-id "C1-JPROV"
                     :delete-time "2014-05-05T00:00:00Z"

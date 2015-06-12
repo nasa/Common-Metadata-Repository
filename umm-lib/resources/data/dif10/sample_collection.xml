@@ -1,0 +1,120 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Entry_ID>minimal_dif10_dataset</Entry_ID>
+    <Version>001</Version>
+    <Entry_Title>A minimal dif dataset</Entry_Title>
+  <Personnel>
+    <Role>TECHNICAL CONTACT</Role>
+    <Contact_Person>
+      <First_Name>first name</First_Name>
+      <Middle_Name>middle name</Middle_Name>
+      <Last_Name>last name</Last_Name>
+      <Email>dssweb@ucar.edu</Email>
+    </Contact_Person>
+  </Personnel>
+    <Science_Keywords>
+      <Category>EARTH SCIENCE</Category>
+      <Topic>CRYOSPHERE</Topic>
+      <Term>SEA ICE</Term>
+    </Science_Keywords>
+    <Platform>
+      <Type>In Situ Land-based Platforms</Type>
+      <Short_Name>platform-short-name</Short_Name>
+      <Long_Name>Long Name</Long_Name>
+      <Instrument>
+        <Short_Name>Short Name</Short_Name>
+      </Instrument>
+    </Platform>
+    <Temporal_Coverage>
+      <Range_DateTime>
+        <Beginning_Date_Time>1998-02-24T22:20:41-05:00</Beginning_Date_Time>
+        <Ending_Date_Time>1999-03-24T22:20:41-05:00</Ending_Date_Time>
+      </Range_DateTime>
+    </Temporal_Coverage>
+    <Spatial_Coverage>
+      <Granule_Spatial_Representation>GEODETIC</Granule_Spatial_Representation>
+      <Geometry>
+        <Coordinate_System>CARTESIAN</Coordinate_System>
+        <Bounding_Rectangle>
+          <Southernmost_Latitude>-90</Southernmost_Latitude>
+          <Northernmost_Latitude>90</Northernmost_Latitude>
+          <Westernmost_Longitude>-180</Westernmost_Longitude>
+          <Easternmost_Longitude>180</Easternmost_Longitude>
+        </Bounding_Rectangle>
+      </Geometry>
+    </Spatial_Coverage>
+    <Project>
+      <Short_Name>short name</Short_Name>
+    </Project>
+    <Organization>
+      <Organization_Type>ARCHIVER</Organization_Type>
+      <Organization_Name>
+        <Short_Name>EU/JRC/IES</Short_Name>
+        <Long_Name>Institute for Environment and Sustainability, Joint Research Center, European Union</Long_Name>
+      </Organization_Name>
+      <Personnel>
+        <Role>DATA CENTER CONTACT</Role>
+        <Contact_Person>
+          <Last_Name>Not provided</Last_Name>
+        </Contact_Person>
+      </Personnel>
+    </Organization>
+    <Reference>
+      <Author>author</Author>
+      <Publication_Date>2015</Publication_Date>
+      <Title>title</Title>
+      <Series>1</Series>
+      <Edition>2</Edition>
+      <Volume>3</Volume>
+      <Issue>4</Issue>
+      <Report_Number>5</Report_Number>
+      <Publication_Place>Frederick, MD</Publication_Place>
+      <Publisher>publisher</Publisher>
+      <Pages>678</Pages>
+      <ISBN>978-0-394-80001-1</ISBN>
+      <Online_Resource>http://example.com</Online_Resource>
+      <Other_Reference_Details>blah</Other_Reference_Details>
+    </Reference>
+    <Summary>
+      <Abstract>summary of the dataset</Abstract>
+      <Purpose>A grand purpose</Purpose>
+    </Summary>
+    <Related_URL>
+      <URL>http://www.foo.com</URL>
+    </Related_URL>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-237</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-238</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
+    <Metadata_Association>
+      <Entry_Id>COLLOTHER-239</Entry_Id>
+      <Version>1</Version>
+      <Type>Input</Type>
+      <Description>Extra data</Description>
+    </Metadata_Association>
+    <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+    <Metadata_Version>VERSION 10.1</Metadata_Version>
+    <Metadata_Dates>
+      <Metadata_Creation>2000-03-24T22:20:41-05:00</Metadata_Creation>
+      <Metadata_Last_Revision>2000-03-24T22:20:41-05:00</Metadata_Last_Revision>
+      <Data_Creation>1970-01-01T00:00:00</Data_Creation>
+      <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
+    </Metadata_Dates>
+    <Additional_Attributes>
+      <Name>dif-additional-attribute</Name>
+      <DataType>FLOAT</DataType>
+      <Description>something float</Description>
+      <ParameterRangeBegin>0.1</ParameterRangeBegin>
+      <ParameterRangeEnd>100.43</ParameterRangeEnd>
+      <Value>12.3</Value>
+    </Additional_Attributes>
+    <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
+    <Product_Flag>Not provided</Product_Flag>
+   </DIF>

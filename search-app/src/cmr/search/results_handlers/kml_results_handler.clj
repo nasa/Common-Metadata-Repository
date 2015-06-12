@@ -198,14 +198,12 @@
 
 (defmethod qs/search-results->response :kml
   [context query results]
-  (let [items (:items results)
-        xml-fn (if (:pretty? query) x/indent-str x/emit-str)]
-    (xml-fn
-      (x/element :kml KML_XML_NAMESPACE_ATTRIBUTES
-                 (x/element :Document {}
-                            kml-geodetic-style-xml-elem
-                            kml-cartesian-style-xml-elem
-                            (mapcat item->kml-placemarks items))))))
+  (x/emit-str
+    (x/element :kml KML_XML_NAMESPACE_ATTRIBUTES
+               (x/element :Document {}
+                          kml-geodetic-style-xml-elem
+                          kml-cartesian-style-xml-elem
+                          (mapcat item->kml-placemarks (:items results))))))
 
 
 

@@ -34,9 +34,6 @@
    ;; Flag indicates if results should be returned in a way that is ECHO compatible.
    echo-compatible?
 
-   ;; flag to determine if the results should be pretty printed in the response
-   pretty?
-
    ;; Keywords are included at the top level of the query so they can be used to construct the final
    ;; resulting function_score query filters. The keyword condition uses these to construct
    ;; the full text search on the :keyword field, but they are also needed for the filter sections
@@ -351,15 +348,13 @@
              :page-num default-page-num
              :sort-keys (default-sort-keys :granule)
              :result-format :xml
-             :echo-compatible? false
-             :pretty? false}
+             :echo-compatible? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
                 :sort-keys (default-sort-keys :collection)
                 :result-format :xml
-                :echo-compatible? false
-                :pretty? false}})
+                :echo-compatible? false}})
 
 (defn query
   "Constructs a query with the given type, page-size, page-num, result-format,

@@ -3,6 +3,7 @@
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.mime-types :as mt]
             [cmr.message-queue.config :as config]
             [cmr.common.services.errors :as errors]
             [cmr.message-queue.services.queue :as queue]
@@ -76,19 +77,10 @@
   (let [{:keys [delivery-tag]} metadata
         msg (json/parse-string (String. payload) true)]
     (try
-      (let [resp (client-handler msg)]
-        (case (:status resp)
-          :success (lb/ack ch delivery-tag)
-          :retry (attempt-retry queue-broker ch queue-name msg delivery-tag resp)
-          :failure (do
-                     ;; bad data - nack it
-                     (error (format "Message failed processing with error '%s', it has been removed from the message queue. Message details: %s"
-                                    (:message resp)
-                                    msg))
-                     (lb/nack ch delivery-tag false false))))
+      (client-handler msg)
+      (lb/ack ch delivery-tag)
       (catch Throwable e
-        (error "Message processing failed for message" (pr-str msg) "with error:"
-               (.getMessage e))
+        (error e "Message processing failed for message" (pr-str msg))
         (attempt-retry queue-broker ch queue-name msg delivery-tag
                        {:message (.getMessage e)})))))
 
@@ -102,9 +94,7 @@
   the identifier used to create the queue with the create-queue function.
 
   'client-handler' is a function that takes a single parameter (the message) and attempts to
-  process it. This function should respond with a map of the of the following form:
-  {:status status :message message}
-  where status is one of (:success, :retry, :failure) and message is optional."
+  process it. If a function throws an exception it will be retried."
   [queue-broker queue-name client-handler]
   (let [conn (:conn queue-broker)
         ;; don't want this channel to close automatically, so no with-channel here
@@ -166,7 +156,7 @@
   exchange name to an empty string and the routing-key to the queue name."
   [queue-broker exchange-name routing-key msg]
   (let [payload (json/generate-string msg)
-        metadata {:content-type "application/json" :persistent true}]
+        metadata {:content-type mt/json :persistent true}]
     (with-channel
       [pub-ch (:conn queue-broker)]
       ;; put channel into confirmation mode
@@ -277,6 +267,12 @@
     [this queue-name msg]
     (publish this default-exchange-name queue-name msg))
 
+  (get-queues-bound-to-exchange
+    [this exchange-name]
+    (for [[q e] bindings
+          :when (= e exchange-name)]
+      q))
+
   (publish-to-exchange
     [this exchange-name msg]
     (publish this exchange-name "" msg))
@@ -307,67 +303,3 @@
   (->RabbitMQBroker host port admin-port username password nil
                     queues exchanges queues-to-exchanges))
 
-
-(comment
-  (do
-    (delete-queue q "test.simple")
-
-    (def q (let [q (create-queue-broker {:host (config/rabbit-mq-host)
-                                         :port (config/rabbit-mq-port)
-                                         :admin-port (config/rabbit-mq-admin-port)
-                                         :username (config/rabbit-mq-user)
-                                         :password (config/rabbit-mq-password)
-                                         :queues ["test.simple"]
-                                         :exchanges ["test.simple.exchange"]
-                                         :queues-to-exchanges {"test.simple" "test.simple.exchange"}
-                                         :ttls [1 1 1 1 1]})]
-             (lifecycle/start q {})))
-
-
-    ; (queue/health {:system {:queue-broker q}})
-
-    (defn random-message-handler
-      [msg]
-      (println "received" (:concept-id msg))
-      (let [val (rand)
-            rval (cond
-                   (> 0.5 val) {:status :success}
-                   (> 0.97 val) {:status :retry :message "service down"}
-                   :else {:status :failure :message "bad data"})]
-        (println "Responding with" (pr-str rval))
-        rval))
-
-    (defn sleep-success-message-handler
-      [msg]
-      (println "received" (:concept-id msg))
-      (let [sleep-secs 1]
-        (Thread/sleep (* 1000 sleep-secs))
-        (info "Test handler - finished sleeping")
-        {:status :success}))
-
-    ; (queue/subscribe q "test.simple" sleep-success-message-handler)
-    (queue/subscribe q "test.simple" random-message-handler)
-
-
-    (doseq [n (range 0 2)
-            :let [concept-id (str "C" n "-PROV1")
-                  msg {:action :index-concept
-                       :concept-id concept-id
-                       :revision-id 1}]]
-      (println "Publishing" concept-id)
-      (queue/publish-to-exchange q "test.simple.exchange" msg))
-
-    (info "Finished publishing messages for processing"))
-
-
-  (queue/create-queue q "cmr_index.queue")
-
-  (delete-queue q "test.simple")
-
-  (delete-queue q "cmr_index.queue")
-
-  (purge-queue q "cmr_index.queue")
-
-  (lifecycle/stop q {})
-
-  )

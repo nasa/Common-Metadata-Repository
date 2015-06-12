@@ -1,13 +1,15 @@
 (ns cmr.ingest.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.set :as set]
             [ring.util.response :as r]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cmr.ingest.api.multipart :as mp]
             [clojure.stacktrace :refer [print-stack-trace]]
             [cheshire.core :as cheshire]
@@ -15,7 +17,6 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as svc-errors]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as api-errors]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.jobs :as common-jobs]
@@ -66,17 +67,17 @@
 
 (def valid-response-mime-types
   "Supported ingest response formats"
-  #{"*/*" "application/xml" "application/json"})
+  #{mt/any mt/xml mt/json})
 
 (def content-type-mime-type->response-format
   "A map of mime-types to supported response format"
-  {"application/echo10+xml" :xml
-   "application/iso19115+xml" :xml
-   "application/iso:smap+xml" :xml
-   "application/dif+xml" :xml
-   "application/dif10+xml" :xml
-   "application/xml" :xml
-   "application/json" :json})
+  {mt/echo10 :xml
+   mt/iso :xml
+   mt/iso-smap :xml
+   mt/dif :xml
+   mt/dif10 :xml
+   mt/xml :xml
+   mt/json :json})
 
 (defn- result-map->xml
   "Converts all keys in a map to tags with values given by the map values to form a trivial
@@ -86,17 +87,16 @@
 
   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
   <result>
-    <revision-id>1</revision-id>
-    <concept-id>C1-PROV1</concept-id>
+  <revision-id>1</revision-id>
+  <concept-id>C1-PROV1</concept-id>
   </result>"
-  [m pretty?]
-  (let [emit-fn (if pretty? x/indent-str x/emit-str)]
-    (emit-fn
-      (x/element :result {}
-                 (reduce-kv (fn [memo k v]
-                              (conj memo (x/element (keyword k) {} v)))
-                            []
-                            m)))))
+  [m]
+  (x/emit-str
+    (x/element :result {}
+               (reduce-kv (fn [memo k v]
+                            (conj memo (x/element (keyword k) {} v)))
+                          []
+                          m))))
 
 (defn- get-ingest-result-format
   "Returns the requested ingest result format parsed from the Accept header or :xml
@@ -117,12 +117,15 @@
 (defmethod generate-ingest-response :json
   [headers result]
   ;; ring-json middleware will handle converting the body to json
-  {:status 200 :body result})
+  {:status 200
+   :headers {"Content-Type" (mt/format->mime-type :json)}
+   :body result})
 
 (defmethod generate-ingest-response :xml
   [headers result]
-  (let [pretty? (api/pretty-request? nil headers)]
-    {:status 200 :body (result-map->xml result pretty?)}))
+    {:status 200
+     :headers {"Content-Type" (mt/format->mime-type :xml)}
+     :body (result-map->xml result)})
 
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
@@ -231,7 +234,7 @@
             (verify-provider-against-client-id request-context provider-id)
             (info (format "Validating Collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (ingest/validate-concept request-context concept)
+            (ingest/validate-collection request-context concept)
             {:status 200})))
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context params]}
@@ -240,7 +243,7 @@
           (let [concept (body->concept :collection provider-id native-id body content-type headers)]
             (info (format "Ingesting collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+            (generate-ingest-response headers (ingest/save-collection request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
@@ -264,7 +267,7 @@
           (let [concept (body->concept :granule provider-id native-id body content-type headers)]
             (info (format "Ingesting granule %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-concept request-context concept))))
+            (generate-ingest-response headers (ingest/save-granule request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
@@ -318,16 +321,18 @@
   key set on the ExceptionInfo object passed in as parameter e. Defaults to json if
   the default format has not been set to :xml."
   [_request e]
-  (get mt/format->mime-type (:default-format (ex-data e)) "application/json"))
+  (get mt/format->mime-type (:default-format (ex-data e)) mt/json))
 
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
       ring-json/wrap-json-body
-      ring-json/wrap-json-response
-      (api-errors/exception-handler default-error-format-fn)))
+      (api-errors/exception-handler default-error-format-fn)
+      common-routes/pretty-print-response-handler
+      params/wrap-params))
 

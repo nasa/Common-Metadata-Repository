@@ -10,7 +10,8 @@
 
             [cmr.cubby.system :as cubby-system]
 
-            [cmr.virtual-product.system :as virtual-product-system]
+            [cmr.virtual-product.system :as vp-system]
+            [cmr.virtual-product.config :as vp-config]
 
             [cmr.metadata-db.system :as mdb-system]
             [cmr.metadata-db.data.memory-db :as memory]
@@ -81,8 +82,8 @@
                :stop bootstrap-system/stop}
    :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}
-   :virtual-product {:start virtual-product-system/start
-                     :stop virtual-product-system/stop}})
+   :virtual-product {:start vp-system/start
+                     :stop vp-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
@@ -166,6 +167,7 @@
 (defmethod create-queue-broker :in-memory
   [type]
   (-> (indexer-config/rabbit-mq-config)
+      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
       mem-queue/create-memory-queue-broker
       wrapper/create-queue-broker-wrapper))
 
@@ -175,6 +177,7 @@
   (let [ttls [1 1 1 1 1]]
     (rmq-conf/set-rabbit-mq-ttls! ttls)
     (-> (indexer-config/rabbit-mq-config)
+        (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
         (assoc :ttls ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
@@ -191,9 +194,12 @@
 (defn create-indexer-app
   "Create an instance of the indexer application."
   [queue-broker]
-  (if queue-broker
-    (assoc (indexer-system/create-system) :queue-broker queue-broker)
-    (indexer-system/create-system)))
+  (assoc (indexer-system/create-system) :queue-broker queue-broker))
+
+(defn create-virtual-product-app
+  "Create an instance of the virtual product application."
+  [queue-broker]
+  (assoc (vp-system/create-system) :queue-broker queue-broker))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
@@ -273,7 +279,7 @@
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component)
-              :virtual-product (virtual-product-system/create-system)})
+              :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})

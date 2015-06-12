@@ -86,15 +86,14 @@
 
 (defn shapes->json
   "Returns the json representation of the given shapes"
-  [shapes pretty?]
-  (let [xml-fn (if pretty? x/indent-str x/emit-str)
-        shapes-by-type (group-by type shapes)
+  [shapes]
+  (let [shapes-by-type (group-by type shapes)
         points (when-let [points (get shapes-by-type cmr.spatial.point.Point)]
                  (shape->string (first points)))
         boxes (when-let [boxes (get shapes-by-type cmr.spatial.mbr.Mbr)]
                 (shape->string (first boxes)))
         polygons (when-let [polygons (get shapes-by-type cmr.spatial.polygon.Polygon)]
-                   (xml-fn (shape->gml (first polygons))))
+                   (x/emit-str (shape->gml (first polygons))))
         lines (when-let [lines (get shapes-by-type cmr.spatial.line_string.LineString)]
-                (xml-fn (shape->gml (first lines))))]
+                (x/emit-str (shape->gml (first lines))))]
     (or polygons lines boxes points)))

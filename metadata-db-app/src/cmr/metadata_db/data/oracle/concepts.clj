@@ -5,6 +5,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
+            [cmr.common.mime-types :as mt]
+            [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.set :as set]
@@ -38,11 +40,11 @@
   "A mapping of mime type strings to the strings they are stored in the database as. The existing ones
   here match what Catalog REST stores and must continue to match that. Adding new ones is allowed
   but do not modify these existing values."
-  {"application/echo10+xml" "ECHO10"
-   "application/iso:smap+xml" "ISO_SMAP"
-   "application/iso19115+xml" "ISO19115"
-   "application/dif+xml" "DIF"
-   "application/dif10+xml" "DIF10"})
+  {mt/echo10   "ECHO10"
+   mt/iso-smap "ISO_SMAP"
+   mt/iso      "ISO19115"
+   mt/dif      "DIF"
+   mt/dif10    "DIF10"})
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
@@ -51,9 +53,9 @@
   ;; CMR bootstrap-app simply copies this format into CMR database, we could have "ISO-SMAP" as
   ;; a format in CMR database.
   (assoc (set/map-invert mime-type->db-format)
-         "ISO-SMAP" "application/iso:smap+xml"
+         "ISO-SMAP" mt/iso-smap
          ;; We also have to support whatever the original version of the the string Metadata DB originally used.
-         "SMAP_ISO"  "application/iso:smap+xml"))
+         "SMAP_ISO" mt/iso-smap))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"

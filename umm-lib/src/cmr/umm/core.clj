@@ -1,6 +1,7 @@
 (ns cmr.umm.core
   "Functions to transform concepts between formats."
-  (:require [cmr.umm.echo10.core :as echo10]
+  (:require [cmr.common.mime-types :as mt]
+            [cmr.umm.echo10.core :as echo10]
             [cmr.umm.echo10.collection :as echo10-c]
             [cmr.umm.echo10.granule :as echo10-g]
             [cmr.umm.dif.core :as dif]
@@ -19,31 +20,31 @@
   (fn [concept]
     [(keyword (:concept-type concept)) (:format concept)]))
 
-(defmethod validate-concept-xml [:collection "application/echo10+xml"]
+(defmethod validate-concept-xml [:collection mt/echo10]
   [concept]
   (echo10-c/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:granule "application/echo10+xml"]
+(defmethod validate-concept-xml [:granule mt/echo10]
   [concept]
   (echo10-g/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:collection "application/dif+xml"]
+(defmethod validate-concept-xml [:collection mt/dif]
   [concept]
   (dif-c/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:collection "application/dif10+xml"]
+(defmethod validate-concept-xml [:collection mt/dif10]
   [concept]
   (dif10-c/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:collection "application/iso19115+xml"]
+(defmethod validate-concept-xml [:collection mt/iso]
   [concept]
   (iso-mends-c/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:collection "application/iso:smap+xml"]
+(defmethod validate-concept-xml [:collection mt/iso-smap]
   [concept]
   (iso-smap-c/validate-xml (:metadata concept)))
 
-(defmethod validate-concept-xml [:granule "application/iso:smap+xml"]
+(defmethod validate-concept-xml [:granule mt/iso-smap]
   [concept]
   (iso-smap-g/validate-xml (:metadata concept)))
 
@@ -52,31 +53,31 @@
   (fn [concept]
     [(keyword (:concept-type concept)) (:format concept)]))
 
-(defmethod parse-concept [:collection "application/echo10+xml"]
+(defmethod parse-concept [:collection mt/echo10]
   [concept]
   (echo10-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:granule "application/echo10+xml"]
+(defmethod parse-concept [:granule mt/echo10]
   [concept]
   (echo10-g/parse-granule (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/dif+xml"]
+(defmethod parse-concept [:collection mt/dif]
   [concept]
   (dif-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/dif10+xml"]
+(defmethod parse-concept [:collection mt/dif10]
   [concept]
   (dif10-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/iso19115+xml"]
+(defmethod parse-concept [:collection mt/iso]
   [concept]
   (iso-mends-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:collection "application/iso:smap+xml"]
+(defmethod parse-concept [:collection mt/iso-smap]
   [concept]
   (iso-smap-c/parse-collection (:metadata concept)))
 
-(defmethod parse-concept [:granule "application/iso:smap+xml"]
+(defmethod parse-concept [:granule mt/iso-smap]
   [concept]
   (iso-smap-g/parse-granule (:metadata concept)))
 

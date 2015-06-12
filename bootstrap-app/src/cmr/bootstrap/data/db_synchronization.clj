@@ -12,6 +12,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
             [cmr.common.config :as config :refer [defconfig]]
+            [cmr.common.mime-types :as mt]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
@@ -156,7 +157,7 @@
 (defn- get-entry-id
   "Returns the collection entry-id based on the given fields of a collection"
   [mdb-format short-name version-id]
-  (if (or (= "application/dif+xml" mdb-format) (empty? version-id))
+  (if (or (= mt/dif mdb-format) (empty? version-id))
     short-name
     (str short-name "_" version-id)))
 

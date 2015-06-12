@@ -1,14 +1,15 @@
 (ns cmr.search.api.routes
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [cmr.common.api :as api]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
@@ -64,40 +65,40 @@
 
 (def search-result-supported-mime-types
   "The mime types supported by search."
-  #{"*/*"
-    "application/xml"
-    "application/json"
-    "application/echo10+xml"
-    "application/dif+xml"
-    "application/dif10+xml"
-    "application/atom+xml"
-    "application/iso19115+xml"
-    "application/opendata+json"
-    "text/csv"
-    "application/vnd.google-earth.kml+xml"
-    "application/metadata+xml"})
+  #{mt/any
+    mt/xml
+    mt/json
+    mt/echo10
+    mt/dif
+    mt/dif10
+    mt/atom
+    mt/iso
+    mt/opendata
+    mt/csv
+    mt/kml
+    mt/native})
 
 (def supported-provider-holdings-mime-types
   "The mime types supported by search."
-  #{"*/*"
-    "application/xml"
-    "application/json"
-    "text/csv"})
+  #{mt/any
+    mt/xml
+    mt/json
+    mt/csv})
 
 (def supported-concept-id-retrieval-mime-types
-  #{"*/*"
-    "application/xml" ; allows retrieving native format
-    "application/metadata+xml" ; retrieve in native format
-    "application/echo10+xml"
-    "application/iso19115+xml"
-    "application/iso:smap+xml"
-    "application/dif+xml"
-    "application/dif10+xml"})
+  #{mt/any
+    mt/xml ; allows retrieving native format
+    mt/native ; retrieve in native format
+    mt/echo10
+    mt/iso
+    mt/iso-smap
+    mt/dif
+    mt/dif10})
 
 (defn- search-response-headers
   "Generate headers for search response."
   [content-type results]
-  {CONTENT_TYPE_HEADER (str content-type "; charset=utf-8")
+  {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
    CORS_ORIGIN_HEADER "*"
    HITS_HEADER (str (:hits results))
    TOOK_HEADER (str (:took results))})
@@ -170,7 +171,7 @@
             (= "application/x-www-form-urlencoded" content-type-header))
       (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
             context (assoc context :query-string query-string)
-            params (process-params params path-w-extension headers "application/xml")
+            params (process-params params path-w-extension headers mt/xml)
             result-format (:result-format params)
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
@@ -186,7 +187,7 @@
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
   [context path-w-extension params headers query-string]
-  (let [params (process-params params path-w-extension headers "application/json")
+  (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Getting granule timeline from client %s with params %s."
                         (:client-id context) (pr-str params)))
         search-params (lp/process-legacy-psa params query-string)
@@ -198,7 +199,7 @@
 (defn- find-concepts-by-aql
   "Invokes query service to parse the AQL query, find results and returns the response"
   [context path-w-extension params headers aql]
-  (let [params (process-params params path-w-extension headers "application/xml")
+  (let [params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id context) (:result-format params) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
@@ -209,23 +210,20 @@
   [context path-w-extension params headers]
   (let [result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
-                                                 "application/xml")
+                                                 mt/xml)
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         concept (query-svc/find-concept-by-id context result-format concept-id)
-        {:keys [metadata]} concept
-        body (if (api/pretty-request? params headers)
-               (cx/pretty-print-xml metadata)
-               metadata)]
+        {:keys [metadata]} concept]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER (str (:format concept) "; charset=utf-8")
+     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 (:format concept))
                CORS_ORIGIN_HEADER "*"}
-     :body body}))
+     :body metadata}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
-  (let [params (process-params params path-w-extension headers "application/json")
+  (let [params (process-params params path-w-extension headers mt/json)
         _ (info (format "Searching for provider holdings from client %s in format %s with params %s."
                         (:client-id context) (:result-format params) (pr-str params)))
         [provider-holdings provider-holdings-formatted]
@@ -244,7 +242,7 @@
   [context params]
   (let [results (query-svc/find-tiles-by-geometry context params)]
     {:status 200
-     :headers {CONTENT_TYPE_HEADER "application/json; charset=utf-8"}
+     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
 
 (defn- build-routes [system]
@@ -353,16 +351,18 @@
   "Determine the format that errors should be returned in based on the request URI."
   [{:keys [uri]} _e]
   (if (re-find #"caches" uri)
-    "application/json"
-    "application/xml"))
+    mt/json
+    mt/xml))
 
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
-      copy-of-body-handler
       (errors/exception-handler default-error-format-fn)
-      ring-json/wrap-json-response))
+      common-routes/pretty-print-response-handler
+      params/wrap-params
+      copy-of-body-handler))

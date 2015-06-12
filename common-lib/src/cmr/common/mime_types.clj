@@ -1,41 +1,60 @@
 (ns cmr.common.mime-types
-  "Provides functions for handling mime types."
+  "Provides vars and functions for parsing and generating between MIME
+  type and HTTP Content-Type strings and data formats supported by the
+  CMR."
+  (:refer-clojure :exclude [atom])
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
+;; (note: these maps will be populated as MIME types are declared)
+
 (def base-mime-type-to-format
-  "A map of base mime types to the format symbols supported"
-  {"application/json" :json
-   "application/xml" :xml
-   "application/echo10+xml" :echo10
-   "application/iso:smap+xml" :iso-smap
-   "application/iso19115+xml" :iso19115
-   "application/dif+xml" :dif
-   "application/dif10+xml" :dif10
-   "text/csv" :csv
-   "application/atom+xml" :atom
-   "application/vnd.google-earth.kml+xml" :kml
-   "application/opendata+json" :opendata
-   "application/metadata+xml" :native})
+  "A map of MIME type strings to CMR data format keywords."
+  {})
 
 (def format->mime-type
-  "A map of format symbols to their mime type."
-  {:json "application/json"
-   :xml "application/xml"
-   :echo10 "application/echo10+xml"
-   :iso_smap "application/iso:smap+xml"
-   :iso-smap "application/iso:smap+xml"
-   :iso "application/iso19115+xml"
-   :iso19115 "application/iso19115+xml"
-   :dif "application/dif+xml"
-   :dif10 "application/dif10+xml"
-   :csv "text/csv"
-   :atom "application/atom+xml"
-   :kml "application/vnd.google-earth.kml+xml"
-   :opendata "application/opendata+json"
-   :native "application/metadata+xml"})
+  "A map of CMR data format keywords to MIME type strings."
+  {})
+
+;; Supported MIME types
+
+(defmacro defmimetype
+  "An elegant DSL for crafting beautiful mime-type definitions."
+  [name string format-kw & format-aliases]
+  (alter-var-root #'base-mime-type-to-format assoc string format-kw)
+  (doseq [kw (conj format-aliases format-kw)]
+    (alter-var-root #'format->mime-type assoc kw string))
+  `(def ~name ~string))
+
+(defmimetype json "application/json" :json)
+
+(defmimetype xml "application/xml" :xml)
+
+(defmimetype echo10 "application/echo10+xml" :echo10)
+
+(defmimetype iso-smap "application/iso:smap+xml" :iso-smap :iso_smap)
+
+(defmimetype iso "application/iso19115+xml" :iso19115 :iso)
+
+(defmimetype dif "application/dif+xml" :dif)
+
+(defmimetype dif10 "application/dif10+xml" :dif10)
+
+(defmimetype csv "text/csv" :csv)
+
+(defmimetype atom  "application/atom+xml" :atom)
+
+(defmimetype kml "application/vnd.google-earth.kml+xml" :kml)
+
+(defmimetype opendata "application/opendata+json" :opendata)
+
+(defmimetype native "application/metadata+xml" :native)
+
+(def any "*/*")
+
+;; extra helpers
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
@@ -44,12 +63,24 @@
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   ([mime-type]
-   (mime-type->format mime-type "application/json"))
+   (mime-type->format mime-type json))
   ([mime-type default-mime-type]
    (if mime-type
      (or (get base-mime-type-to-format mime-type)
          (get base-mime-type-to-format default-mime-type))
      (get base-mime-type-to-format default-mime-type))))
+
+;; Content-Type utilities
+
+(defn with-charset
+  "Returns a Content-Type header string with the given mime-type and charset."
+  [mime-type charset]
+  (str mime-type "; charset=" charset))
+
+(defn with-utf-8
+  "Returns mimetype with utf-8 charset specified."
+  [mime-type]
+  (with-charset mime-type "utf-8"))
 
 (defn extract-mime-types
   "Extracts mime types from an accept header string according to RFC 2616 and returns them
