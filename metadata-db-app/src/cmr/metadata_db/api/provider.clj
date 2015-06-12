@@ -3,6 +3,7 @@
   (:require [clojure.walk :as walk]
             [compojure.core :refer :all]
             [cmr.acl.core :as acl]
+            [cheshire.core :as json]
             [cmr.metadata-db.api.route-helpers :as rh]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -12,7 +13,7 @@
   [context params provider]
   (let [saved-provider-id (provider-service/create-provider context provider)]
     {:status 201
-     :body (rh/to-json saved-provider-id params)
+     :body (json/generate-string saved-provider-id)
      :headers rh/json-header}))
 
 (defn- update-provider
@@ -20,7 +21,7 @@
   [context params provider]
   (provider-service/update-provider context provider)
   {:status 200
-   :body (rh/to-json provider params)
+   :body (json/generate-string provider)
    :headers rh/json-header})
 
 (defn- delete-provider
@@ -34,7 +35,7 @@
   [context params]
   (let [providers (provider-service/get-providers context)]
     {:status 200
-     :body (rh/to-json providers params)
+     :body (json/generate-string providers)
      :headers rh/json-header}))
 
 (def provider-api-routes

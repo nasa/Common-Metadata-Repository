@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.search-util :as search]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.indexer.config :as indexer-config]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -107,7 +108,7 @@
                 ["C1-PROV1" 1]
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "success"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
 (deftest message-queue-retry-test
   (s/only-with-real-message-queue
@@ -129,7 +130,7 @@
                 [{:action "enqueue", :result "initial"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "success"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
 (deftest message-queue-failure-test
   (s/only-with-real-message-queue
@@ -159,46 +160,35 @@
                  {:action "process", :result "retry"}
                  {:action "process", :result "retry"}
                  {:action "process", :result "failure"}]}
-               (index-util/get-concept-message-queue-history)))))))
+               (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))))
 
-(deftest publish-messages-failure-test
+;; This test isn't reliable as sometimes the item is able to be queued
+;; See CMR-1717
+#_(deftest publish-messages-failure-test
   (s/only-with-real-message-queue
-    (testing "When unable to queue a message on the queue, the concept is indexed via http"
-      (index-util/set-message-queue-publish-timeout 0)
-      (let [collection (make-coll 1)]
-        ;; Verify ingest received a successful status code
-        (is (= 200 (:status collection)))
-        (assert-in-metadata-db collection)
-        (index-util/wait-until-indexed)
-        (assert-indexed :collection collection)
-        ;; Verify the message queue did not receive the message
-        (is (nil? (index-util/get-concept-message-queue-history)))))))
+    (testing "When unable to publish a message on the queue the ingest fails."
+      (testing "Update concept"
+        (index-util/set-message-queue-publish-timeout 0)
+        (let [collection (d/ingest "PROV1" (dc/collection) {:allow-failure? true})]
+          ;; Verify ingest received a failed status code
+          (is (= 503 (:status collection)))
+          (index-util/wait-until-indexed)
+          ;; Verify the message queue did not receive the message
+          (is (nil? (index-util/get-concept-message-queue-history (indexer-config/index-queue-name))))))
 
-(deftest message-queue-fallback-to-http-test
-  (s/only-with-real-message-queue
-    (testing "Fallback to indexing using http if enqueueing a message fails"
-      (index-util/set-message-queue-publish-timeout 0)
-      (let [collection (make-coll 1)
-            granule (make-gran collection 1)]
-        (assert-in-metadata-db collection granule)
-        (index-util/wait-until-indexed)
-        (assert-indexed :collection collection)
-        (assert-indexed :granule granule)
-
-        ;; Verify the message queue did not receive the messages
-        (is (nil? (index-util/get-concept-message-queue-history)))
-        (testing "Concepts will be deleted via http if enqueuing a message fails"
-          (let [delete-granule-response (delete-gran granule)
-                delete-collection-response (delete-coll collection)]
-            (is (= 200 (:status delete-collection-response)))
-            (is (= 200 (:status delete-granule-response)))
-            (index-util/wait-until-indexed)
-            ;; Verify concepts have been removed from the index
-            (assert-not-indexed :collection collection)
-            (assert-not-indexed :granule granule)
-
-            ;; Verify the message queue did not receive the delete messages
-            (is (nil? (index-util/get-concept-message-queue-history)))))))))
+      (testing "Delete concept"
+        (index-util/set-message-queue-publish-timeout 10000)
+        (let [collection (d/ingest "PROV1" (dc/collection))
+              _ (index-util/set-message-queue-publish-timeout 0)
+              response (ingest/delete-concept (d/item->concept collection))]
+          ;; Verify ingest received a failed status code
+          (is (= 503 (:status response)))
+          (index-util/wait-until-indexed)
+          ;; Verify the message queue did not receive the delete message
+          (is (= {[(:concept-id collection) 1]
+                  [{:action "enqueue", :result "initial"}
+                   {:action "process", :result "success"}]}
+                 (index-util/get-concept-message-queue-history (indexer-config/index-queue-name)))))))))
 
 (comment
 

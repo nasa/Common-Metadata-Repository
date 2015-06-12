@@ -102,11 +102,13 @@
     (testing "json response"
       (let [granule (d/item->concept (dg/granule collection))
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})]
+        (index/wait-until-indexed)
         (is (= {:concept-id "G1200000001-PROV1" :revision-id 1}
                (ingest/parse-ingest-body :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection))
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})]
+        (index/wait-until-indexed)
         (is (= {:concept-id "G1200000002-PROV1" :revision-id 1}
                (ingest/parse-ingest-body :xml response)))))))
 

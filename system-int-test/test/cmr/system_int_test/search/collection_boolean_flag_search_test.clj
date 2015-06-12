@@ -30,7 +30,7 @@
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
     (testing "search by downloadable wrong value"
-      (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was [wrong]"]}
              (search/find-refs :collection {:downloadable "wrong"}))))
 
     (testing "search by online only flag"
@@ -41,7 +41,7 @@
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
      (testing "search by online only wrong value"
-      (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 400 :errors ["Parameter downloadable must take value of true, false, or unset, but was [wrong]"]}
              (search/find-refs :collection {:online-only "wrong"}))))
 
     (testing "search by online only with aql"
@@ -61,7 +61,7 @@
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
     (testing "search by browsable wrong value"
-      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was [wrong]"]}
              (search/find-refs :collection {:browsable "wrong"}))))
 
     (testing "search by browse_only flag."
@@ -72,5 +72,5 @@
          [coll1 coll2 coll3 coll4 coll5 coll6] "unset"))
 
     (testing "search by browse_only wrong value"
-      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was wrong"]}
+      (is (= {:status 400 :errors ["Parameter browsable must take value of true, false, or unset, but was [wrong]"]}
              (search/find-refs :collection {:browse-only "wrong"}))))))

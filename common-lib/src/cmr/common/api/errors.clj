@@ -1,6 +1,5 @@
 (ns cmr.common.api.errors
   (:require [cmr.common.log :refer [error]]
-            [cmr.common.api :as api]
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
@@ -39,7 +38,7 @@
 (defmulti errors->body-string
   "Converts a set of errors into a string to return in the response body formatted according
   to the requested response format."
-  (fn [response-format errors pretty?]
+  (fn [response-format errors]
     response-format))
 
 (defmulti error->json-element
@@ -56,8 +55,8 @@
   (update-in error [:path] keyword-path->string-path))
 
 (defmethod errors->body-string :json
-  [response-format errors pretty?]
-  (json/generate-string {:errors (map error->json-element errors)} {:pretty pretty?}))
+  [response-format errors]
+  (json/generate-string {:errors (map error->json-element errors)}))
 
 (defmulti error->xml-element
   "Converts an individual error element to the equivalent XML structure."
@@ -78,18 +77,17 @@
                             (x/element :error {} error))))))
 
 (defmethod errors->body-string :xml
-  [response-format errors pretty?]
-  (let [xml-fn (if pretty? x/indent-str x/emit-str)]
-    (xml-fn
-      (x/element :errors {}
-                 (map error->xml-element errors)))))
+  [response-format errors]
+  (x/emit-str
+    (x/element :errors {}
+               (map error->xml-element errors))))
 
 (defn- response-type-body
   "Returns the response content-type and body for the given errors and format"
-  [errors results-format pretty?]
+  [errors results-format]
   (let [content-type (if (re-find #"xml" results-format) "application/xml" "application/json")
         response-format (mt/mime-type->format content-type)
-        body (errors->body-string response-format errors pretty?)]
+        body (errors->body-string response-format errors)]
     [content-type body]))
 
 (defn- handle-service-error
@@ -100,8 +98,7 @@
                          (:headers request)
                          (default-format-fn request e))
         status-code (type->http-status-code type)
-        [content-type response-body] (response-type-body errors results-format
-                                                         (api/pretty-request? request))]
+        [content-type response-body] (response-type-body errors results-format)]
     ;; Log exceptions for server errors
     (when (>= status-code 500)
       (error e))

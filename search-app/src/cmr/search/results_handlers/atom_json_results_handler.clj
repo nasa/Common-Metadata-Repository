@@ -137,11 +137,11 @@
 
 (defmethod qs/search-results->response :json
   [context query results]
-  (let [{:keys [concept-type pretty? echo-compatible? result-features]} query
+  (let [{:keys [concept-type echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))
         response-results (results->json
                            context echo-compatible? include-facets? concept-type results)]
-    (json/generate-string response-results {:pretty pretty?})))
+    (json/generate-string response-results)))
 
 (defmethod qs/single-result->response :json
   [context query results]

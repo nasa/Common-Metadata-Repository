@@ -23,10 +23,10 @@
   []
   (format "http://localhost:%s/eval" dev-system-port))
 
-(defn dev-system-wait-for-indexing-url
-  "The wait-for-indexing url on the dev system control api."
+(defn dev-system-wait-for-terminal-states-url
+  "The wait-for-terminal-states url on the dev system control api."
   []
-  (format "http://localhost:%s/message-queue/wait-for-indexing" dev-system-port))
+  (format "http://localhost:%s/message-queue/wait-for-terminal-states" dev-system-port))
 
 (defn dev-system-get-message-queue-history-url
   "The get-message-queue-history url on the dev system control api."

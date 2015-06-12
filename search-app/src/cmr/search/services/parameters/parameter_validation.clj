@@ -6,6 +6,7 @@
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
+            [cmr.common.date-time-range-parser :as dtr-parser]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.converters.attribute :as attrib]
@@ -25,8 +26,8 @@
 
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
-  #{:keyword :page-size :page-num :result-format :pretty :echo-compatible
-    :include-granule-counts :include-has-granules :include-facets})
+  #{:keyword :page-size :page-num :result-format :echo-compatible :include-granule-counts
+    :include-has-granules :include-facets :hierarchical-facets})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -249,10 +250,11 @@
   "Validates that no invalid parameters were supplied"
   [concept-type params]
   ;; this test does not apply to page_size, page_num, etc.
-  (let [params (dissoc params :page-size :page-num :sort-key :result-format :pretty :echo-compatible)
+  (let [params (dissoc params :page-size :page-num :sort-key :result-format :echo-compatible)
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
-                 (dissoc params :include-granule-counts :include-has-granules :include-facets)
+                 (dissoc params :include-granule-counts :include-has-granules :include-facets
+                         :hierarchical-facets)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -277,6 +279,16 @@
     (catch ExceptionInfo e
       [(format "%s datetime is invalid: %s." date-name (first (:errors (ex-data e))))])))
 
+(defn- validate-date-time-range
+  "Validates datetime range string is in the correct format"
+  [dtr]
+  (try
+    (when-not (s/blank? dtr)
+      (dtr-parser/parse-datetime-range dtr))
+    []
+    (catch ExceptionInfo e
+      [(format "temporal range is invalid: %s." (first (:errors (ex-data e))))])))
+
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
   [day tag]
@@ -299,12 +311,18 @@
                      [temporal])]
       (mapcat
         (fn [value]
-          (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-            (concat
-              (validate-date-time "temporal start" start-date)
-              (validate-date-time "temporal end" end-date)
-              (day-valid? start-day "temporal_start_day")
-              (day-valid? end-day "temporal_end_day"))))
+          (if (re-find #"/" value)
+            (let [[iso-range start-day end-day] (map s/trim (s/split value #","))]
+              (concat
+                (validate-date-time-range nil)
+                (day-valid? start-day "temporal_start_day")
+                (day-valid? end-day "temporal_end_day")))
+            (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+              (concat
+                (validate-date-time "temporal start" start-date)
+                (validate-date-time "temporal end" end-date)
+                (day-valid? start-day "temporal_start_day")
+                (day-valid? end-day "temporal_end_day")))))
         temporal))
     []))
 
@@ -313,7 +331,7 @@
   [concept-type params]
   (if-let [param-value (:updated-since params)]
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
-      [(format "search not allowed with multiple updated_since values s%: " (:updated-since params))]
+      ["Search not allowed with multiple updated_since values"]
       (let [updated-since-val (if (sequential? param-value) (first param-value) param-value)]
         (validate-date-time "updated_since" updated-since-val)))
     []))
@@ -449,14 +467,16 @@
     []))
 
 (defn boolean-value-validation
+  "Validates that all of the boolean parameters have values of true, false or unset."
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
-                                         :include-has-granules :include-facets])]
+                                         :include-has-granules :include-facets
+                                         :hierarchical-facets])]
     (mapcat
       (fn [[param value]]
-        (if (or (= "true" value) (= "false" value) (= "unset" (s/lower-case value)))
+        (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
           []
-          [(format "Parameter %s must take value of true, false, or unset, but was %s"
+          [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
                    (csk/->snake_case_string param) value)]))
       bool-params)))
 
@@ -486,9 +506,9 @@
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
        (set/difference (set (keys params))
-                       (set [:page-size :page-num :sort-key :result-format :pretty :options
+                       (set [:page-size :page-num :sort-key :result-format :options
                              :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible]))))
+                             :echo-compatible :hierarchical-facets]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"

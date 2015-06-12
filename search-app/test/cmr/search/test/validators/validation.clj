@@ -17,8 +17,7 @@
    [{:field :provider-id, :order :asc}
     {:field :start-date, :order :asc}],
    :result-format :xml,
-   :echo-compatible? false,
-   :pretty? false})
+   :echo-compatible? false})
 
 (deftest validate-supported-result-format-test
   (testing "result formats"

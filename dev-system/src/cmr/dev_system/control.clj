@@ -143,18 +143,17 @@
         {:status 200}))
 
     (context "/message-queue" []
-      (POST "/wait-for-indexing" []
+      (POST "/wait-for-terminal-states" []
         (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
-          (debug "dev system /wait-for-indexing")
-          (when (iconfig/use-index-queue?)
-            (wrapper/wait-for-indexing broker-wrapper))
+          (debug "dev system /wait-for-terminal-states")
+          (wrapper/wait-for-terminal-states broker-wrapper)
           (debug "indexing complete")
           {:status 200}))
 
-      (GET "/history" []
+      (GET "/history" {:keys [params]}
         (if-let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
           {:status 200
-           :body (wrapper/get-message-queue-history broker-wrapper)
+           :body (wrapper/get-message-queue-history broker-wrapper (:queue-name params))
            :headers {"Content-Type" "application/json"}}
           {:status 403
            :body "Cannot get message queue history unless using the message queue wrapper."}))

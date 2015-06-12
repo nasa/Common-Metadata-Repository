@@ -1,12 +1,15 @@
 (ns cmr.common-app.api.routes
   "Defines routes that are common across multiple applications."
-  (:require [cmr.common.api :as api]
-            [cmr.common.cache :as cache]
+  (:require [cmr.common.cache :as cache]
             [cmr.common.jobs :as jobs]
+            [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
-            [compojure.core :refer :all]))
+            [cmr.common.xml :as cx]
+            [cmr.common.mime-types :as mt]
+            [compojure.core :refer :all]
+            [ring.util.codec :as rc]))
 
 (def cache-api-routes
   "Create routes for the cache querying/management api"
@@ -79,10 +82,48 @@
   working as expected."
   [health-fn]
   (GET "/health" {request-context :request-context :as request}
-    (let [pretty? (api/pretty-request? request)
-          {:keys [ok? dependencies]} (health-fn request-context)]
+    (let [{:keys [ok? dependencies]} (health-fn request-context)]
       (when-not ok?
         (warn "Health check failed" (pr-str dependencies)))
       {:status (if ok? 200 503)
        :headers {"Content-Type" "application/json; charset=utf-8"}
-       :body (json/generate-string dependencies {:pretty pretty?})})))
+       :body (json/generate-string dependencies)})))
+
+(defn pretty-request?
+  "Returns true if the request indicates the response should be returned in a human readable
+  fashion. This can be specified either through a pretty=true in the URL query parameters or
+  through a Cmr-Pretty HTTP header."
+  ([request]
+   (let [{:keys [headers params]} request]
+     (or
+       (= "true" (get params "pretty"))
+       (= "true" (get headers "cmr-pretty"))))))
+
+(defn- pretty-print-body
+  "Update the body of the response to a pretty printed string based on the content type"
+  [response]
+  (let [mime-type (mt/mime-type-from-headers (:headers response))
+        find-re (fn [re] (and mime-type (re-find re mime-type)))]
+    (if (string? (:body response))
+      (cond
+        (find-re #"application/.*json.*") (update-in response [:body]
+                                                     (fn [json-str]
+                                                       (-> json-str
+                                                           json/parse-string
+                                                           (json/generate-string {:pretty true}))))
+        (find-re #"application/.*xml.*") (update-in response [:body] cx/pretty-print-xml)
+        :else response)
+      ((ring-json/wrap-json-response identity {:pretty true}) response))))
+
+(defn pretty-print-response-handler
+  "Middleware which pretty prints the response if the parameter pretty in the
+  URL query is set to true of if the header Cmr-Pretty is set to true."
+  [f]
+  (fn [request]
+    (let [pretty? (pretty-request? request)
+          request (-> request
+                      (update-in [:params] dissoc "pretty")
+                      (update-in [:query-params] dissoc "pretty"))]
+      (if pretty?
+        (pretty-print-body (f request))
+        ((ring-json/wrap-json-response f) request)))))

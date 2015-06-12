@@ -17,8 +17,7 @@
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
-  (when (config/use-index-queue?)
-    (client/post (url/dev-system-wait-for-indexing-url) {:connection-manager (s/conn-mgr)}))
+  (client/post (url/dev-system-wait-for-terminal-states-url) {:connection-manager (s/conn-mgr)})
   (refresh-elastic-index))
 
 (defn update-indexes
@@ -48,8 +47,10 @@
 
 (defn get-message-queue-history
   "Returns the message queue history."
-  []
-  (-> (client/get (url/dev-system-get-message-queue-history-url) {:connection-manager (s/conn-mgr)})
+  [queue-name]
+  (-> (client/get (url/dev-system-get-message-queue-history-url)
+                  {:connection-manager (s/conn-mgr)
+                   :query-params {:queue-name queue-name}})
       :body
       (json/decode true)))
 
@@ -71,8 +72,8 @@
 (defn get-concept-message-queue-history
   "Gets the message queue history and then returns a map of concept-id revision-id tuples to the
   sequence of states for each one."
-  []
-  (concept-history (get-message-queue-history)))
+  [queue-name]
+  (concept-history (get-message-queue-history queue-name)))
 
 (defn reset-message-queue-behavior-fixture
   "This is a clojure.test fixture that will reset the message queue behavior to normal processing

@@ -1,13 +1,14 @@
 (ns cmr.index-set.api.routes
   "Defines the HTTP URL routes for the application."
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
             [ring.util.response :as r]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.api :as api]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
             [clojure.walk :as walk]
@@ -68,9 +69,11 @@
       (http-trace/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       ring-json/wrap-json-body
-      ring-json/wrap-json-response))
+      common-routes/pretty-print-response-handler
+      params/wrap-params))
 
 
 

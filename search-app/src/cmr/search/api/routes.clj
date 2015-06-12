@@ -1,14 +1,15 @@
 (ns cmr.search.api.routes
-  (:require [compojure.handler :as handler]
-            [compojure.route :as route]
+  (:require [compojure.route :as route]
             [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [cmr.common.api :as api]
             [ring.util.response :as r]
             [ring.util.request :as request]
             [ring.util.codec :as codec]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
@@ -216,12 +217,8 @@
         params (assoc params :result-format result-format)
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)
-        results (cond
-                  results results
-                  (api/pretty-request? params headers) (cx/pretty-print-xml metadata)
-                  :else metadata)]
-    (search-response params {:results results})))
+        {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)]
+    (search-response params {:results (or results metadata)})))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -361,9 +358,11 @@
   (-> (build-routes system)
       acl/add-authentication-handler
       (http-trace/build-request-context-handler system)
-      handler/site
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
-      copy-of-body-handler
       (errors/exception-handler default-error-format-fn)
-      ring-json/wrap-json-response))
+      common-routes/pretty-print-response-handler
+      params/wrap-params
+      copy-of-body-handler))

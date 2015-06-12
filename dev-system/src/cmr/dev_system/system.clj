@@ -10,14 +10,15 @@
 
             [cmr.cubby.system :as cubby-system]
 
-            [cmr.virtual-product.system :as virtual-product-system]
+            [cmr.virtual-product.system :as vp-system]
+            [cmr.virtual-product.config :as vp-config]
 
             [cmr.metadata-db.system :as mdb-system]
             [cmr.metadata-db.data.memory-db :as memory]
 
             [cmr.indexer.system :as indexer-system]
             [cmr.indexer.config :as indexer-config]
-            [cmr.indexer.services.queue-listener :as ql]
+            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]
 
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]
@@ -39,6 +40,7 @@
             [cmr.message-queue.config :as rmq-conf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.message-queue.services.queue :as queue]
+            [cmr.message-queue.queue.memory-queue :as mem-queue]
 
             [cmr.dev-system.queue-broker-wrapper :as wrapper]
             [cmr.dev-system.control :as control]
@@ -80,8 +82,8 @@
                :stop bootstrap-system/stop}
    :cubby {:start cubby-system/dev-start
            :stop cubby-system/stop}
-   :virtual-product {:start virtual-product-system/start
-                     :stop virtual-product-system/stop}})
+   :virtual-product {:start vp-system/start
+                     :stop vp-system/stop}})
 
 (def app-startup-order
   "Defines the order in which applications should be started"
@@ -164,37 +166,21 @@
 
 (defmethod create-queue-broker :in-memory
   [type]
-  (indexer-config/set-indexing-communication-method! "http")
-  nil)
+  (-> (indexer-config/rabbit-mq-config)
+      (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
+      mem-queue/create-memory-queue-broker
+      wrapper/create-queue-broker-wrapper))
 
 (defmethod create-queue-broker :external
   [type]
-  (indexer-config/set-indexing-communication-method! "queue")
   ;; set the time-to-live on the retry queues to 1 second so our retry tests won't take too long
   (let [ttls [1 1 1 1 1]]
     (rmq-conf/set-rabbit-mq-ttls! ttls)
     (-> (indexer-config/rabbit-mq-config)
+        (rmq-conf/merge-configs (vp-config/rabbit-mq-config))
         (assoc :ttls ttls)
         rmq/create-queue-broker
         wrapper/create-queue-broker-wrapper)))
-
-(defmulti create-queue-listener
-  "Returns an instance of the message queue listener component to use if using a message queue."
-  (fn [type queue-broker]
-    type))
-
-(defmethod create-queue-listener :in-memory
-  [type queue-broker]
-  nil)
-
-(defmethod create-queue-listener :external
-  [type queue-broker]
-  (let [listener-start-fn #(ql/start-queue-message-handler
-                             %
-                             (wrapper/handler-wrapper queue-broker ql/handle-index-action))]
-    (queue/create-queue-listener
-      {:num-workers (indexer-config/queue-listener-count)
-       :start-function listener-start-fn})))
 
 (defn create-metadata-db-app
   "Create an instance of the metadata-db application."
@@ -207,12 +193,13 @@
 
 (defn create-indexer-app
   "Create an instance of the indexer application."
-  [queue-broker queue-listener]
-  (if queue-broker
-    (-> (indexer-system/create-system)
-        (assoc :queue-broker queue-broker
-               :queue-listener queue-listener))
-    (indexer-system/create-system)))
+  [queue-broker]
+  (assoc (indexer-system/create-system) :queue-broker queue-broker))
+
+(defn create-virtual-product-app
+  "Create an instance of the virtual product application."
+  [queue-broker]
+  (assoc (vp-system/create-system) :queue-broker queue-broker))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
@@ -281,7 +268,6 @@
         db-component (create-db db)
         echo-component (create-echo echo)
         queue-broker (create-queue-broker message-queue)
-        queue-listener (create-queue-listener message-queue queue-broker)
         elastic-server (create-elastic elastic)
         control-server (web/create-web-server 2999 control/make-api use-compression? use-access-log?)]
     {:apps (u/remove-nil-keys
@@ -289,11 +275,11 @@
               :cubby (cubby-system/create-system)
               :metadata-db (create-metadata-db-app db-component)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
-              :indexer (create-indexer-app queue-broker queue-listener)
+              :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component)
-              :virtual-product (virtual-product-system/create-system)})
+              :virtual-product (create-virtual-product-app queue-broker)})
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})

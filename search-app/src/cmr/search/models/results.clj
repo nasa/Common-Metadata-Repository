@@ -13,7 +13,6 @@
    value-counts
    ])
 
-
 (defrecord Results
   [
    ;; The number of hits
@@ -40,7 +39,7 @@
 
    facets
 
-  ])
+   ])
 
 (record-pretty-printer/enable-record-pretty-printing
   Facet

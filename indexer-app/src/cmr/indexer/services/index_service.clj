@@ -145,22 +145,23 @@
   (es/update-indexes context)
   (cache/reset-caches context))
 
-(defn- health-check-fns
+(def health-check-fns
   "A map of keywords to functions to be called for health checks"
-  []
-  (let [default-fns {:elastic_search #(es-util/health % :db)
-                     :echo rest/health
-                     :cubby cubby/get-cubby-health
-                     :metadata-db meta-db/get-metadata-db-health
-                     :index-set tis/get-index-set-health}]
-    (merge default-fns
-           (when (config/use-index-queue?)
-             {:rabbit-mq #(queue/health (get-in % [:system :queue-broker]))}))))
+  {:elastic_search #(es-util/health % :db)
+   :echo rest/health
+   :cubby cubby/get-cubby-health
+   :metadata-db meta-db/get-metadata-db-health
+   :index-set tis/get-index-set-health
+   :rabbit-mq (fn [context]
+                (when-let [qb (get-in context [:system :queue-broker])]
+                  (queue/health qb)))})
 
 (deftracefn health
   "Returns the health state of the app."
   [context]
-  (let [dep-health (util/map-values #(% context) (health-check-fns))
+  (let [dep-health (util/remove-nil-keys (util/map-values #(% context) health-check-fns))
         ok? (every? :ok? (vals dep-health))]
     {:ok? ok?
      :dependencies dep-health}))
+
+
