@@ -1,5 +1,6 @@
 (ns cmr.mock-echo.api.api-helpers
-  (:require [cmr.common.services.errors :as svc-errors]
+  (:require [cmr.common.mime-types :as mt]
+            [cmr.common.services.errors :as svc-errors]
             [cheshire.core :as json]))
 
 (defmulti prepare-body
@@ -17,19 +18,19 @@
 (defn status-ok
   [body]
   {:status 200
-   :headers {"Content-type" "application/json"}
+   :headers {"Content-type" mt/json}
    :body (prepare-body body)})
 
 (defn status-bad-request
   [body]
   {:status 400
-   :headers {"Content-type" "application/json"}
+   :headers {"Content-type" mt/json}
    :body (prepare-body body)})
 
 (defn status-created
   [body]
   {:status 201
-   :headers {"Content-type" "application/json"}
+   :headers {"Content-type" mt/json}
    :body (prepare-body body)})
 
 (defn require-sys-admin-token
