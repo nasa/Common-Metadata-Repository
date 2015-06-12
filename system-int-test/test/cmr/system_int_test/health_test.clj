@@ -89,14 +89,7 @@
   (s/only-with-real-database
     (is (= [200 {:metadata-db good-metadata-db-health
                  :internal-metadata-db good-metadata-db-health
-                 :indexer {:ok? true
-                           :dependencies {:elastic_search {:ok? true}
-                                          :echo {:ok? true}
-                                          :cubby {:ok? true,
-                                                  :dependencies
-                                                  {:elastic_search {:ok? true}, :echo {:ok? true}}}
-                                          :metadata-db good-metadata-db-health
-                                          :index-set good-index-set-db-health}}}]
+                 :indexer (update-in good-indexer-health [:dependencies] dissoc :rabbit-mq)}]
            (get-app-health (url/bootstrap-health-url))))))
 
 (deftest virtual-product-health-test
