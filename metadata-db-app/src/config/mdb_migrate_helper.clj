@@ -32,13 +32,13 @@
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db))))
+  (distinct (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db)))))
 
 (defn get-granule-tablenames
   "Gets a list of all the granule tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (map #(concept-tables/get-table-name % :granule) (p/get-providers (config/db))))
+  (distinct (map #(concept-tables/get-table-name % :granule) (p/get-providers (config/db)))))
 
 (defn concept-id-seq-missing?
   "Returns true if concept_id_seq does not exist"
