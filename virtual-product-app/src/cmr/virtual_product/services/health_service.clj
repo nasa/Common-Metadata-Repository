@@ -10,7 +10,7 @@
   [context]
   (let [ingest-health (ingest/get-ingest-health context)
         metadata-db-health (mdb/get-metadata-db-health context)
-        rabbit-mq-health (#(queue/health (get-in % [:system :queue-broker])) context)
+        rabbit-mq-health (queue/health (get-in context [:system :queue-broker]))
         ok? (every? :ok? [ingest-health metadata-db-health rabbit-mq-health])]
     {:ok? ok?
      :dependencies {:ingest ingest-health

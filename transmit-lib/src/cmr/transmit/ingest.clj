@@ -58,7 +58,7 @@
       {:ok? false :problem body})))
 
 (defn get-ingest-health
-  "Returns the ingest health with timeout handling."
+  "Returns the health of ingest application with timeout handling."
   [context]
   (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
     (hh/get-health #(get-ingest-health-fn context) timeout-ms)))
