@@ -36,6 +36,14 @@
                   :metadata-db good-metadata-db-health
                   :index-set good-index-set-db-health}})
 
+(def good-ingest-health
+  {:ok? true
+   :dependencies {:oracle {:ok? true}
+                  :echo {:ok? true}
+                  :metadata-db good-metadata-db-health
+                  :rabbit-mq {:ok? true}
+                  :indexer good-indexer-health}})
+
 (deftest index-set-health-test
   (is (= [200 {:elastic_search {:ok? true} :echo {:ok? true}}]
          (get-app-health (url/index-set-health-url)))))
@@ -93,12 +101,7 @@
 
 (deftest virtual-product-health-test
   (s/only-with-real-database
-    (is (= [200 {:ingest
-                 {:ok? true
-                  :dependencies {:oracle {:ok? true}
-                                 :echo {:ok? true}
-                                 :metadata-db good-metadata-db-health
-                                 :rabbit-mq {:ok? true}
-                                 :indexer good-indexer-health}}
-                 :metadata-db good-metadata-db-health}]
+    (is (= [200 {:ingest good-ingest-health
+                 :metadata-db good-metadata-db-health
+                 :rabbit-mq {:ok? true}}]
            (get-app-health (url/virtual-product-health-url))))))

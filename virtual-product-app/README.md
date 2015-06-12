@@ -16,7 +16,203 @@ the source ids and send them to the provider.
 ### Administrative API Overview
 
   * /health
-    * [GET - Gets the health of the virtual product application.](#health)
+    * [GET - Gets the health of the virtual product application.](#application-health)
+
+
+### <a name="application-health"></a> Application Health
+
+This will report the current health of the application. It checks all resources and services used by the application and reports their health status in the response body in JSON format. The report includes an "ok?" status and a "problem" field for each resource. The report includes an overall "ok?" status and health reports for each of a service's dependencies. It returns HTTP status code 200 when the application is healthy, which means all its interfacing resources and services are healthy; or HTTP status code 503 when one of the resources or services is not healthy. It also takes pretty parameter for pretty printing the response.
+
+    curl -i -XGET %CMR-ENDPOINT%/health?pretty=true
+
+Example healthy response body:
+
+```
+{
+  "ingest": {
+    "ok?": true,
+    "dependencies": {
+      "oracle": {
+        "ok?": true
+      },
+      "echo": {
+        "ok?": true
+      },
+      "metadata-db": {
+        "ok?": true,
+        "dependencies": {
+          "oracle": {
+            "ok?": true
+          },
+          "echo": {
+            "ok?": true
+          }
+        }
+      },
+      "indexer": {
+        "ok?": true,
+        "dependencies": {
+          "elastic_search": {
+            "ok?": true
+          },
+          "echo": {
+            "ok?": true
+          },
+          "cubby": {
+            "ok?": true,
+            "dependencies": {
+              "elastic_search": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "metadata-db": {
+            "ok?": true,
+            "dependencies": {
+              "oracle": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "index-set": {
+            "ok?": true,
+            "dependencies": {
+              "elastic_search": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "rabbit-mq": {
+            "ok?": true
+          }
+        }
+      },
+      "rabbit-mq": {
+        "ok?": true
+      }
+    }
+  },
+  "metadata-db": {
+    "ok?": true,
+    "dependencies": {
+      "oracle": {
+        "ok?": true
+      },
+      "echo": {
+        "ok?": true
+      }
+    }
+  },
+  "rabbit-mq": {
+    "ok?": true
+  }
+}
+```
+
+Example unhealthy response body:
+
+```
+{
+  "ingest": {
+    "ok?": true,
+    "dependencies": {
+      "oracle": {
+        "ok?" : false,
+    	"problem" : "Exception occurred while getting connection: oracle.ucp.UniversalConnectionPoolException: Cannot get Connection from Datasource: java.sql.SQLRecoverableException: IO Error: The Network Adapter could not establish the connection"
+      },
+      "echo": {
+        "ok?": true
+      },
+      "metadata-db": {
+        "ok?": true,
+        "dependencies": {
+          "oracle": {
+            "ok?": true
+          },
+          "echo": {
+            "ok?": true
+          }
+        }
+      },
+      "indexer": {
+        "ok?": true,
+        "dependencies": {
+          "elastic_search": {
+            "ok?": true
+          },
+          "echo": {
+            "ok?": true
+          },
+          "cubby": {
+            "ok?": true,
+            "dependencies": {
+              "elastic_search": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "metadata-db": {
+            "ok?": true,
+            "dependencies": {
+              "oracle": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "index-set": {
+            "ok?": true,
+            "dependencies": {
+              "elastic_search": {
+                "ok?": true
+              },
+              "echo": {
+                "ok?": true
+              }
+            }
+          },
+          "rabbit-mq": {
+            "ok?": true
+          }
+        }
+      },
+      "rabbit-mq": {
+        "ok?": true
+      }
+    }
+  },
+  "metadata-db": {
+    "ok?": true,
+    "dependencies": {
+      "oracle": {
+        "ok?": true
+      },
+      "echo": {
+        "ok?": true
+      }
+    }
+  },
+  "rabbit-mq": {
+    "ok?": true
+  }
+}
+```
+
+***
 
 ## License
 

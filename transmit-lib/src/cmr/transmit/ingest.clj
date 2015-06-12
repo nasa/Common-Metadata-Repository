@@ -26,6 +26,10 @@
           (concept-type->url-part concept-type)
           (codec/url-encode native-id)))
 
+(defn- health-url
+  [conn]
+  (format "%s/health" (conn/root-url conn)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
@@ -47,16 +51,11 @@
 (defn get-ingest-health-fn
   "Returns the health status of the ingest"
   [context]
-  (let [conn (config/context->app-connection context :ingest)
-        request-url (str (conn/root-url conn) "/health")
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
-        {:keys [status body]} response
-        result (cheshire/decode body true)]
+  (let [{:keys [status body]} (h/request context :ingest
+                                         {:url-fn health-url, :method :get, :raw? true})]
     (if (= 200 status)
-      {:ok? true :dependencies result}
-      {:ok? false :problem result})))
+      {:ok? true :dependencies body}
+      {:ok? false :problem body})))
 
 (defn get-ingest-health
   "Returns the ingest health with timeout handling."

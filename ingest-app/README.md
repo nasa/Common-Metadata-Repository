@@ -84,7 +84,7 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-ialue)
     * [POST /caches/clear-cache - Clears the ingest caches.](#clear-cache)
   * /health
-    * [GET - Gets the health of the ingest application.](#health)
+    * [GET - Gets the health of the ingest application.](#application-health)
 
 ### <a name="providers"></a> Providers
 
