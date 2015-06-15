@@ -195,6 +195,15 @@
              c8-dif10 "application/dif10+xml" :dif10 nil
              c8-dif10 nil :dif10 "dif10"))
 
+      (testing "atom/json formats"
+        (let [get-response (fn [concept format]
+                             (search/get-concept-by-concept-id
+                              (:concept-id concept)
+                              {:url-extension (name format)}))
+              result (util/map-keys->kebab-case (json/decode (:body (get-response c1-echo :json)) true))]
+          (is (= (da/collection->expected-atom c1-echo)
+                 (dissoc result :orbit-parameters)))))
+
       (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
         ;; .native extension, or not specifying any format.
