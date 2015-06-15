@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
             [cheshire.core :as json]
@@ -199,10 +200,9 @@
         (let [get-response (fn [concept format]
                              (search/get-concept-by-concept-id
                               (:concept-id concept)
-                              {:url-extension (name format)}))
-              result (util/map-keys->kebab-case (json/decode (:body (get-response c1-echo :json)) true))]
+                              {:url-extension (name format)}))]
           (is (= (da/collection->expected-atom c1-echo)
-                 (dissoc result :orbit-parameters)))))
+                 (dj/parse-json-collection (:body (get-response c1-echo :json)))))))
 
       (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
