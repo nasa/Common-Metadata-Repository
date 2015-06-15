@@ -8,52 +8,46 @@
             [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
-;; (note: these maps will be populated as MIME types are declared)
+(def mime-types
+  "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
+   gas a var defined for it for easy access."
+  {:json {:mime-type "application/json"}
+   :xml {:mime-type "application/xml"}
+   :echo10 {:mime-type "application/echo10+xml"}
+   :iso-smap {:mime-type "application/iso:smap+xml"
+              :aliases [:iso_smap]}
+   :iso19115 {:mime-type "application/iso19115+xml"
+         :aliases [:iso]}
+   :dif {:mime-type "application/dif+xml"}
+   :dif10 {:mime-type "application/dif10+xml"}
+   :csv {:mime-type "text/csv"}
+   :atom {:mime-type  "application/atom+xml"}
+   :kml {:mime-type "application/vnd.google-earth.kml+xml"}
+   :opendata {:mime-type "application/opendata+json"}
+   :native {:mime-type "application/metadata+xml"}})
 
-(def base-mime-type-to-format
-  "A map of MIME type strings to CMR data format keywords."
-  {})
+;; Define vars for each of the mime type formats
+(doseq [[format-kw {:keys [mime-type]}] mime-types]
+  (eval `(def ~(symbol (name format-kw)) ~mime-type)))
 
-(def format->mime-type
-  "A map of CMR data format keywords to MIME type strings."
-  {})
-
-;; Supported MIME types
-
-(defmacro defmimetype
-  "An elegant DSL for crafting beautiful mime-type definitions."
-  [name string format-kw & format-aliases]
-  (alter-var-root #'base-mime-type-to-format assoc string format-kw)
-  (doseq [kw (conj format-aliases format-kw)]
-    (alter-var-root #'format->mime-type assoc kw string))
-  `(def ~name ~string))
-
-(defmimetype json "application/json" :json)
-
-(defmimetype xml "application/xml" :xml)
-
-(defmimetype echo10 "application/echo10+xml" :echo10)
-
-(defmimetype iso-smap "application/iso:smap+xml" :iso-smap :iso_smap)
-
-(defmimetype iso "application/iso19115+xml" :iso19115 :iso)
-
-(defmimetype dif "application/dif+xml" :dif)
-
-(defmimetype dif10 "application/dif10+xml" :dif10)
-
-(defmimetype csv "text/csv" :csv)
-
-(defmimetype atom  "application/atom+xml" :atom)
-
-(defmimetype kml "application/vnd.google-earth.kml+xml" :kml)
-
-(defmimetype opendata "application/opendata+json" :opendata)
-
-(defmimetype native "application/metadata+xml" :native)
+(def iso
+  "Defines a shorter alias for iso19115."
+  iso19115)
 
 (def any "*/*")
 
+(def base-mime-type-to-format
+  "A map of MIME type strings to CMR data format keywords."
+  (into {} (for [[format-kw {:keys [mime-type]}] mime-types]
+             [mime-type format-kw])))
+
+(def format->mime-type
+  "A map of CMR data format keywords to MIME type strings."
+  (into {} (mapcat (fn [[format-kw {:keys [mime-type aliases]}]]
+                     (cons [format-kw mime-type]
+                            (for [a aliases]
+                              [a mime-type])))
+                   mime-types)))
 ;; extra helpers
 
 (def all-supported-mime-types
@@ -90,7 +84,7 @@
   audio/*; q=0.2, audio/basic
 
   \"SHOULD be interpreted as \"I prefer audio/basic, but send me any audio
-   type if it is the best available after an 80% mark-down in quality.\"\"
+  type if it is the best available after an 80% mark-down in quality.\"\"
 
   This function will return [\"audio/basic\" \"audio/*\"]
 
