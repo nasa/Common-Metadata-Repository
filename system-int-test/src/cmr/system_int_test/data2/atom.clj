@@ -233,7 +233,7 @@
   (let [non-browse-coll-links (filter #(not= "GET RELATED VISUALIZATION" (:type %)) (:related-urls coll))]
     (concat related-urls (map #(assoc % :inherited "true") non-browse-coll-links))))
 
-(defn- collection->expected-atom
+(defn collection->expected-atom
   "Returns the atom map of the collection"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
