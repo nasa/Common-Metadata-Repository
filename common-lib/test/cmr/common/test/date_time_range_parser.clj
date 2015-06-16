@@ -16,9 +16,20 @@
     (are [string start end]
          (let [interval (p/parse-datetime-range string)
                range-start (:start-date interval)
-               range-end (:end-date interval)]
-           (and (= start (to-utc range-start))
-                (= end (to-utc range-end))))
+               range-end (:end-date interval)
+               matches (and (= start (to-utc range-start))
+                            (= end (to-utc range-end)))]
+           (when-not matches
+             (println "Failure:"
+                      (pr-str `(and (= ~start (to-utc ~range-start))
+                                     (= ~end (to-utc ~range-end)))))
+             (println "start:" start)
+             (println "end:" end)
+             (println "range-start:" range-start)
+             (println "range-end:" range-end)
+             (println "(to-utc range-start):" (to-utc range-start))
+             (println "(to-utc range-end)):" (to-utc range-end)))
+           matches)
 
          "1987-01-01T00:00:00.000Z,1990-01-01T00:00:00.000Z"
          (t/date-time 1987 1 1 0 0 0) (t/date-time 1990 1 1 0 0 0)
