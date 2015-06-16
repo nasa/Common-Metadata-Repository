@@ -260,7 +260,6 @@
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context}
-             (println "Got query for concept" path-w-extension)
           (find-concept-by-cmr-concept-id context path-w-extension params headers)))
 
       ;; Find concepts
