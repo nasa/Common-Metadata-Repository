@@ -159,9 +159,9 @@ Granule UR,Producer Granule ID,Start Time,End Time,Online Access URLs,Browse URL
 SC:SPL1AA.001:12345,SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5,,,,,,,
 ```
 
-#### XML Formats (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
+#### Metadata Responses (DIF, DIF 10, ECHO 10, ISO-SMAP, ISO-MENDS)
 
-All of the XML formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing the following fields as sub-tags:
+All of the XML Metadata formats (except the XML used in returning references only) have the same structure, differing only in the way each result is returned. These formats return a single XML document with a `<results>` tag containing the following fields as sub-tags:
 
 |         Field         |                    Description                     |
 | --------------------- | -------------------------------------------------- |
