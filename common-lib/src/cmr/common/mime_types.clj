@@ -10,14 +10,14 @@
 
 (def mime-types
   "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
-   gas a var defined for it for easy access."
+   has a var defined for it for easy access."
   {:json {:mime-type "application/json"}
    :xml {:mime-type "application/xml"}
    :echo10 {:mime-type "application/echo10+xml"}
    :iso-smap {:mime-type "application/iso:smap+xml"
               :aliases [:iso_smap]}
    :iso19115 {:mime-type "application/iso19115+xml"
-         :aliases [:iso]}
+              :aliases [:iso]}
    :dif {:mime-type "application/dif+xml"}
    :dif10 {:mime-type "application/dif10+xml"}
    :csv {:mime-type "text/csv"}

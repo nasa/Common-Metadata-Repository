@@ -141,12 +141,14 @@
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
             _ (ingest/ingest-concept granule)
             response (ingest/delete-concept granule {:accept-format :json :raw? true})]
+        (index/wait-until-indexed)
          (is (= {:concept-id "G1-PROV1" :revision-id 2}
              (ingest/parse-ingest-body :json response)))))
     (testing "xml response"
       (let [granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
             _ (ingest/ingest-concept granule)
             response (ingest/delete-concept granule {:accept-format :xml :raw? true})]
+        (index/wait-until-indexed)
         (is (= {:concept-id "G2-PROV1" :revision-id 2}
              (ingest/parse-ingest-body :xml response)))))))
 
@@ -225,6 +227,7 @@
         granule (d/item->concept umm-granule)
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
+    (index/wait-until-indexed)
     (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
            [status errors]))
     (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
@@ -276,6 +279,7 @@
                              (assoc :collection-ref (umm-g/map->CollectionRef attrs))
                              (d/item->concept :iso-smap))
                  {:keys [status]} (ingest/ingest-concept granule)]
+             (index/wait-until-indexed)
              (= 200 status))
 
            {:entry-title "correct"}

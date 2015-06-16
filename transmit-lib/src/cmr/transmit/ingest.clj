@@ -23,6 +23,10 @@
           (concept-type->url-part concept-type)
           (codec/url-encode native-id)))
 
+(defn- health-url
+  [conn]
+  (format "%s/health" (conn/root-url conn)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
@@ -40,3 +44,29 @@
                                 :content-type (:format concept)
                                 :headers {"Revision-Id" revision-id}
                                 :accept :json}}))))
+(defn-timed delete-concept
+  ([context concept]
+   (delete-concept context concept false))
+  ([context concept is-raw]
+   (let [{:keys [provider-id concept-type native-id revision-id]} concept]
+     (h/request context :ingest
+                {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
+                 :method :delete
+                 :raw? is-raw
+                 :http-options {:headers {"Revision-Id" revision-id}
+                                :accept :json}}))))
+
+(defn get-ingest-health-fn
+  "Returns the health status of the ingest"
+  [context]
+  (let [{:keys [status body]} (h/request context :ingest
+                                         {:url-fn health-url, :method :get, :raw? true})]
+    (if (= 200 status)
+      {:ok? true :dependencies body}
+      {:ok? false :problem body})))
+
+(defn get-ingest-health
+  "Returns the health of ingest application with timeout handling."
+  [context]
+  (let [timeout-ms (* 1000 (+ 2 (hh/health-check-timeout-seconds)))]
+    (hh/get-health #(get-ingest-health-fn context) timeout-ms)))

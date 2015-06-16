@@ -7,7 +7,10 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.virtual-product.config :as vp-config]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.system-int-test.system :as s]
+            [cmr.common.time-keeper :as tk]
+            [clj-time.core :as t]))
 
 (def virtual-product-providers
   "Returns a list of the provider ids of the providers with virtual products."
@@ -82,6 +85,8 @@
 
   )
 
+;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
+
 (deftest specific-granule-in-virtual-product-test
   (let [ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
@@ -114,7 +119,7 @@
         (search/find-refs :granule {:page-size 50
                                     :project "proj1"})))
 
-    (testing "update source granule"
+    (testing "Update source granule"
       ;; Update the source granule so that the projects referenced are different than original
       (let [ast-l1a-gran-r2 (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran
                                                           :project-refs ["proj2" "proj3"]
@@ -127,7 +132,23 @@
           (assert-matching-granule-urs
             all-expected-granule-urs
             (search/find-refs :granule {:page-size 50
-                                        :project "proj2"})))))))
+                                        :project "proj2"})))))
+
+    (testing "Delete source granule"
+      (let [resp (ingest/delete-concept (d/item->concept ast-l1a-gran))]
+        (is (= 200 (:status resp)) (pr-str resp)))
+      (index/wait-until-indexed)
+
+      (testing "Find no granules"
+        (is (= 0 (:hits (search/find-refs :granule {}))))))
+
+    (testing "Recreate source granule"
+      (let [ast-l1a-gran-r4 (d/ingest "LPDAAC_ECS" (dissoc ast-l1a-gran :revision-id :concept-id))]
+        (index/wait-until-indexed)
+        (testing "Find all granules"
+          (assert-matching-granule-urs
+            all-expected-granule-urs
+            (search/find-refs :granule {:page-size 50})))))))
 
 (deftest all-granules-in-virtual-product-test
   (let [source-collections (ingest-source-collections)
