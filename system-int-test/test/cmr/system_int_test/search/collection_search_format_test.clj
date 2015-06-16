@@ -201,8 +201,11 @@
                              (search/get-concept-by-concept-id
                               (:concept-id concept)
                               {:url-extension (name format)}))]
-          (is (= (da/collection->expected-atom c1-echo)
-                 (dj/parse-json-collection (:body (get-response c1-echo :json)))))))
+          (are [concept] (= (da/collection->expected-atom concept)
+                            (dj/parse-json-collection (:body (get-response concept :json))))
+            c1-echo
+            c3-dif
+            c5-iso)))
 
       (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
