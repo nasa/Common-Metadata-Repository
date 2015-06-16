@@ -354,3 +354,11 @@
   []
   (format "http://localhost:%s/health" (transmit-config/indexer-port)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Virtual Product URLs
+
+(defn virtual-product-health-url
+  "URL to check virtual product health."
+  []
+  (format "http://localhost:%s/health" (transmit-config/virtual-product-port)))
+

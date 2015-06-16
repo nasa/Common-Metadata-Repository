@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as err]
             [cmr.common.date-time-parser :as parser]
+            [cmr.common.date-time-range-parser :as range-parser]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.conversion :as p]))
@@ -21,10 +22,19 @@
         (map #(p/parameter->condition concept-type param % options) value))
       (gc/or-conds
         (map #(p/parameter->condition concept-type param % options) value)))
-    (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
-      (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
-                                  :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
-                                  :start-day (string->int-value start-day)
-                                  :end-day (string->int-value end-day)
-                                  :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))}))))
+    (if (re-find #"/" value)
+      (let [[iso-range start-day end-day] (map s/trim (s/split value #","))
+            date-time-range (when-not (s/blank? iso-range)
+                              (range-parser/parse-datetime-range iso-range))]
+        (qm/map->TemporalCondition {:start-date (:start-date date-time-range)
+                                    :end-date (:end-date date-time-range)
+                                    :start-day (string->int-value start-day)
+                                    :end-day (string->int-value end-day)
+                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))}))
+      (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+        (qm/map->TemporalCondition {:start-date (when-not (s/blank? start-date) (parser/parse-datetime start-date))
+                                    :end-date (when-not (s/blank? end-date) (parser/parse-datetime end-date))
+                                    :start-day (string->int-value start-day)
+                                    :end-day (string->int-value end-day)
+                                    :exclusive? (= "true" (get-in options [:temporal :exclude-boundary]))})))))
 

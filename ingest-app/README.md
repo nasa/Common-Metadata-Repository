@@ -84,7 +84,7 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
     * [GET /caches/\<cache-name>/\<cache-key> - Gets the value of the cache key in the specific cache](#get-cache-ialue)
     * [POST /caches/clear-cache - Clears the ingest caches.](#clear-cache)
   * /health
-    * [GET - Gets the health of the ingest application.](#health)
+    * [GET - Gets the health of the ingest application.](#application-health)
 
 ### <a name="providers"></a> Providers
 
@@ -92,6 +92,7 @@ The providers that exist in the CMR are administered through the Ingest API. A p
 
  * `provider-id` - The alpha numeric upper case string identifying the provider. See [provider id](#provider-id).
  * `cmr-only` - True or false value that indicates if this is a provider that ingests directly through the CMR Ingest API or the legacy ECHO Catalog REST Ingest API. A CMR Only provider will still have ACLs configured in ECHO and support ordering through ECHO. A CMR Only provider may even still have data in Catalog REST but it will not be kept in sync with the CMR. `cmr-only` defaults to false.
+ * `small` - True or false value that indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
 
 The provider API only supports requests and responses in JSON.
 
@@ -102,7 +103,7 @@ Returns a list of the configured providers in the CMR.
 ```
 curl %CMR-ENDPOINT%/providers
 
-[{"provider-id":"PROV2","cmr-only":true},{"provider-id":"PROV1","cmr-only":false}]
+[{"provider-id":"PROV2","cmr-only":true,"small":false},{"provider-id":"PROV1","cmr-only":false,"small":false}]
 ```
 
 #### <a name="create-provider"></a> Create Provider
@@ -111,16 +112,16 @@ Creates a provider in the CMR. The provider id specified should match that of a 
 
 ```
 curl -i -XPOST -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT/providers -d \
-'{"provider-id": "PROV1", "cmr-only": false}'
+'{"provider-id": "PROV1", "cmr-only": false, "small":false}'
 ```
 
 #### <a name="update-provider"></a> Update Provider
 
-Updates the attributes of a provider in the CMR.
+Updates the attributes of a provider in the CMR. The `small` attribute cannot be changed during update.
 
 ```
 curl -i -XPUT -H "Content-Type: application/json" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1 -d \
-'{"provider-id": "PROV1", "cmr-only":true}'
+'{"provider-id": "PROV1", "cmr-only":true, "small":false}'
 ```
 
 #### <a name="delete-provider"></a> Delete Provider

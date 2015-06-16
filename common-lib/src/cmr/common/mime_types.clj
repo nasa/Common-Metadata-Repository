@@ -1,41 +1,54 @@
 (ns cmr.common.mime-types
-  "Provides functions for handling mime types."
+  "Provides vars and functions for parsing and generating between MIME
+  type and HTTP Content-Type strings and data formats supported by the
+  CMR."
+  (:refer-clojure :exclude [atom])
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as svc-errors]
             [ring.middleware.format-response :as fr]))
 
+(def mime-types
+  "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
+   has a var defined for it for easy access."
+  {:json {:mime-type "application/json"}
+   :xml {:mime-type "application/xml"}
+   :echo10 {:mime-type "application/echo10+xml"}
+   :iso-smap {:mime-type "application/iso:smap+xml"
+              :aliases [:iso_smap]}
+   :iso19115 {:mime-type "application/iso19115+xml"
+              :aliases [:iso]}
+   :dif {:mime-type "application/dif+xml"}
+   :dif10 {:mime-type "application/dif10+xml"}
+   :csv {:mime-type "text/csv"}
+   :atom {:mime-type  "application/atom+xml"}
+   :kml {:mime-type "application/vnd.google-earth.kml+xml"}
+   :opendata {:mime-type "application/opendata+json"}
+   :native {:mime-type "application/metadata+xml"}})
+
+;; Define vars for each of the mime type formats
+(doseq [[format-kw {:keys [mime-type]}] mime-types]
+  (eval `(def ~(symbol (name format-kw)) ~mime-type)))
+
+(def iso
+  "Defines a shorter alias for iso19115."
+  iso19115)
+
+(def any "*/*")
+
 (def base-mime-type-to-format
-  "A map of base mime types to the format symbols supported"
-  {"application/json" :json
-   "application/xml" :xml
-   "application/echo10+xml" :echo10
-   "application/iso:smap+xml" :iso-smap
-   "application/iso19115+xml" :iso19115
-   "application/dif+xml" :dif
-   "application/dif10+xml" :dif10
-   "text/csv" :csv
-   "application/atom+xml" :atom
-   "application/vnd.google-earth.kml+xml" :kml
-   "application/opendata+json" :opendata
-   "application/metadata+xml" :native})
+  "A map of MIME type strings to CMR data format keywords."
+  (into {} (for [[format-kw {:keys [mime-type]}] mime-types]
+             [mime-type format-kw])))
 
 (def format->mime-type
-  "A map of format symbols to their mime type."
-  {:json "application/json"
-   :xml "application/xml"
-   :echo10 "application/echo10+xml"
-   :iso_smap "application/iso:smap+xml"
-   :iso-smap "application/iso:smap+xml"
-   :iso "application/iso19115+xml"
-   :iso19115 "application/iso19115+xml"
-   :dif "application/dif+xml"
-   :dif10 "application/dif10+xml"
-   :csv "text/csv"
-   :atom "application/atom+xml"
-   :kml "application/vnd.google-earth.kml+xml"
-   :opendata "application/opendata+json"
-   :native "application/metadata+xml"})
+  "A map of CMR data format keywords to MIME type strings."
+  (into {} (mapcat (fn [[format-kw {:keys [mime-type aliases]}]]
+                     (cons [format-kw mime-type]
+                            (for [a aliases]
+                              [a mime-type])))
+                   mime-types)))
+;; extra helpers
 
 (def all-supported-mime-types
   "A superset of all mime types supported by any CMR applications."
@@ -44,12 +57,24 @@
 (defn mime-type->format
   "Converts a mime-type into the format requested."
   ([mime-type]
-   (mime-type->format mime-type "application/json"))
+   (mime-type->format mime-type json))
   ([mime-type default-mime-type]
    (if mime-type
      (or (get base-mime-type-to-format mime-type)
          (get base-mime-type-to-format default-mime-type))
      (get base-mime-type-to-format default-mime-type))))
+
+;; Content-Type utilities
+
+(defn with-charset
+  "Returns a Content-Type header string with the given mime-type and charset."
+  [mime-type charset]
+  (str mime-type "; charset=" charset))
+
+(defn with-utf-8
+  "Returns mimetype with utf-8 charset specified."
+  [mime-type]
+  (with-charset mime-type "utf-8"))
 
 (defn extract-mime-types
   "Extracts mime types from an accept header string according to RFC 2616 and returns them
@@ -59,7 +84,7 @@
   audio/*; q=0.2, audio/basic
 
   \"SHOULD be interpreted as \"I prefer audio/basic, but send me any audio
-   type if it is the best available after an 80% mark-down in quality.\"\"
+  type if it is the best available after an 80% mark-down in quality.\"\"
 
   This function will return [\"audio/basic\" \"audio/*\"]
 

@@ -3,6 +3,7 @@
   (:gen-class)
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.common.mime-types :as mt]
             [cmr.message-queue.config :as config]
             [cmr.common.services.errors :as errors]
             [cmr.message-queue.services.queue :as queue]
@@ -155,7 +156,7 @@
   exchange name to an empty string and the routing-key to the queue name."
   [queue-broker exchange-name routing-key msg]
   (let [payload (json/generate-string msg)
-        metadata {:content-type "application/json" :persistent true}]
+        metadata {:content-type mt/json :persistent true}]
     (with-channel
       [pub-ch (:conn queue-broker)]
       ;; put channel into confirmation mode

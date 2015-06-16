@@ -7,6 +7,7 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.common.concepts :as cs]
+            [cmr.common.mime-types :as mt]
             [cmr.elastic-utils.connect :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
@@ -23,8 +24,7 @@
 
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{"application/echo10+xml" "application/dif+xml" "application/iso:smap+xml"
-    "application/iso19115+xml"})
+  #{mt/echo10 mt/dif mt/iso-smap mt/iso})
 
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"

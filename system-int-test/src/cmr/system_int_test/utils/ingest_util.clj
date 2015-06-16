@@ -20,26 +20,23 @@
 
 (defn- create-provider-through-url
   "Create the provider by http POST on the given url"
-  [provider-id cmr-only endpoint-url]
+  [provider endpoint-url]
   (client/post endpoint-url
-               {:body (json/generate-string {:provider-id provider-id :cmr-only cmr-only})
+               {:body (json/generate-string provider)
                 :content-type :json
+                :throw-exceptions false
                 :connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
-  ([provider-id]
-   (create-mdb-provider provider-id false))
-  ([provider-id cmr-only]
-   (create-provider-through-url provider-id cmr-only (url/create-provider-url))))
+  [provider]
+  (create-provider-through-url provider (url/create-provider-url)))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
-  ([provider-id]
-   (create-ingest-provider provider-id false))
-  ([provider-id cmr-only]
-   (create-provider-through-url provider-id cmr-only (url/ingest-create-provider-url))))
+  [provider]
+  (create-provider-through-url provider (url/ingest-create-provider-url)))
 
 (defn get-providers-through-url
   [provider-url]
@@ -71,16 +68,21 @@
   (let [response (client/delete (url/ingest-provider-url provider-id)
                                 {:throw-exceptions false
                                  :connection-manager (s/conn-mgr)
-                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
-    (:status response)))
+                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+        {:keys [status body]} response
+        errors (:errors (json/decode body true))]
+    (if (= 200 status)
+      status
+      [status errors])))
 
 (defn update-ingest-provider
   "Updates the cmr-only attribute of an ingest provider."
-  [provider-id cmr-only]
+  [provider-id cmr-only small]
   (client/put (url/ingest-provider-url provider-id)
               {:throw-exceptions false
                :body (json/generate-string {:provider-id provider-id
-                                            :cmr-only cmr-only})
+                                            :cmr-only cmr-only
+                                            :small small})
                :content-type :json
                :connection-manager (s/conn-mgr)
                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
@@ -362,9 +364,12 @@
   ([provider-guid provider-id options]
    (let [grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
-         cmr-only (get options :cmr-only true)]
+         cmr-only (get options :cmr-only true)
+         small (get options :small false)]
 
-     (create-mdb-provider provider-id cmr-only)
+     (create-mdb-provider {:provider-id provider-id
+                           :cmr-only cmr-only
+                           :small small})
      (echo-util/create-providers (s/context) {provider-guid provider-id})
 
      (when grant-all-search?

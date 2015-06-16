@@ -2,7 +2,9 @@
   "Contains helper functions for performing database migrations"
   (:require [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
-            [config.migrate-config :as config]))
+            [config.migrate-config :as config]
+            [cmr.metadata-db.data.oracle.providers]
+            [cmr.metadata-db.data.providers :as p]))
 
 (defn sql
   "Applies the sql update"
@@ -30,13 +32,13 @@
   "Gets a list of all the collection tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (map #(concept-tables/get-table-name % :collection) (get-provider-ids)))
+  (distinct (map #(concept-tables/get-table-name % :collection) (p/get-providers (config/db)))))
 
 (defn get-granule-tablenames
   "Gets a list of all the granule tablenames. Primarily for enabling migrations of existing
   provider tables."
   []
-  (map #(concept-tables/get-table-name % :granule) (get-provider-ids)))
+  (distinct (map #(concept-tables/get-table-name % :granule) (p/get-providers (config/db)))))
 
 (defn concept-id-seq-missing?
   "Returns true if concept_id_seq does not exist"

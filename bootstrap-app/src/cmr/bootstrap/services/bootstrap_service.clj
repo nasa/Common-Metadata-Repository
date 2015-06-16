@@ -27,25 +27,27 @@
       (info "Adding collection"  collection-id "for provider" provider-id "to collection channel")
       (go (>! channel {:collection-id collection-id :provider-id provider-id})))))
 
-(defn validate-provider
-  "Validates to be bulk_indexed provider exists in cmr else an exception is thrown."
+(defn- get-provider
+  "Returns the metadata db provider that matches the given provider id. Throws exception if
+  no matching provider is found."
   [context provider-id]
-  (when-not (bulk/provider-exists? context provider-id)
+  (if-let [provider (bulk/get-provider-by-id context provider-id)]
+    provider
     (err/throw-service-errors :bad-request
                               [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn validate-collection
   "Validates to be bulk_indexed collection exists in cmr else an exception is thrown."
   [context provider-id collection-id]
-  (validate-provider context provider-id)
-  (when-not (bulk/get-collection context provider-id collection-id)
-    (err/throw-service-errors :bad-request
-                              [(format "Collection [%s] does not exist." collection-id)])))
+  (let [provider (get-provider context provider-id)]
+    (when-not (bulk/get-collection context provider collection-id)
+      (err/throw-service-errors :bad-request
+                                [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-provider
   "Bulk index all the collections and granules for a provider."
   [context provider-id synchronous start-index]
-  (validate-provider context provider-id)
+  (get-provider context provider-id)
   (if synchronous
     (bulk/index-provider (:system context) provider-id start-index)
     (let [channel (get-in context [:system :provider-index-channel])]

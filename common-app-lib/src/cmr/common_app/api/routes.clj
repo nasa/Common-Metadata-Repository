@@ -86,7 +86,7 @@
       (when-not ok?
         (warn "Health check failed" (pr-str dependencies)))
       {:status (if ok? 200 503)
-       :headers {"Content-Type" "application/json; charset=utf-8"}
+       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
        :body (json/generate-string dependencies)})))
 
 (defn pretty-request?

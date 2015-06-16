@@ -25,7 +25,8 @@
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
   [system provider-id collection-id]
-  (let [collection-table (tables/get-table-name provider-id :collection)]
+  (let [provider {:provider-id provider-id :cmr-only false :small false}
+        collection-table (tables/get-table-name provider :collection)]
     (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
 
 (defn- delete-collection
@@ -39,7 +40,8 @@
 (defn- delete-collection-granules-sql
   "Generate SQL to delete granules for a given collection from a provider's granule table."
   [provider-id collection-id]
-  (let [granule-table (tables/get-table-name provider-id :granule)]
+  (let [provider {:provider-id provider-id :cmr-only false :small false}
+        granule-table (tables/get-table-name provider :granule)]
     (su/build (delete granule-table (where `(= :parent-collection-id ~collection-id))))))
 
 (defn- delete-collection-granules
