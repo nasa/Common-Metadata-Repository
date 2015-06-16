@@ -1,13 +1,10 @@
 (ns cmr.transmit.ingest
   "Provide functions to invoke ingest app"
-  (:require [clj-http.client :as client]
-            [cmr.common.services.health-helper :as hh]
+  (:require [cmr.common.services.health-helper :as hh]
             [cmr.transmit.connection :as conn]
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
             [camel-snake-kebab.core :as csk]
-            [cmr.transmit.config :as config]
-            [cheshire.core :as cheshire]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 
@@ -46,6 +43,17 @@
                  :http-options {:body metadata
                                 :content-type (:format concept)
                                 :headers {"Revision-Id" revision-id}
+                                :accept :json}}))))
+(defn-timed delete-concept
+  ([context concept]
+   (delete-concept context concept false))
+  ([context concept is-raw]
+   (let [{:keys [provider-id concept-type native-id revision-id]} concept]
+     (h/request context :ingest
+                {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
+                 :method :delete
+                 :raw? is-raw
+                 :http-options {:headers {"Revision-Id" revision-id}
                                 :accept :json}}))))
 
 (defn get-ingest-health-fn
