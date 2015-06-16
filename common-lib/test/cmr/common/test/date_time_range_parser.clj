@@ -16,20 +16,9 @@
     (are [string start end]
          (let [interval (p/parse-datetime-range string)
                range-start (:start-date interval)
-               range-end (:end-date interval)
-               matches (and (= start (to-utc range-start))
-                            (= end (to-utc range-end)))]
-           (when-not matches
-             (println "Failure:"
-                      (pr-str `(and (= ~start (to-utc ~range-start))
-                                     (= ~end (to-utc ~range-end)))))
-             (println "start:" start)
-             (println "end:" end)
-             (println "range-start:" range-start)
-             (println "range-end:" range-end)
-             (println "(to-utc range-start):" (to-utc range-start))
-             (println "(to-utc range-end)):" (to-utc range-end)))
-           matches)
+               range-end (:end-date interval)]
+           (and (= start (to-utc range-start))
+                (= end (to-utc range-end))))
 
          "1987-01-01T00:00:00.000Z,1990-01-01T00:00:00.000Z"
          (t/date-time 1987 1 1 0 0 0) (t/date-time 1990 1 1 0 0 0)
@@ -49,6 +38,12 @@
          ;; This test fails in CI due to the issue descirbed in CMR-1737
          ; "P1Y2M10DT2H30M/2008-05-11T15:30:00Z"
          ; (t/date-time 2007 3 1 14 0 0) (t/date-time 2008 5 11 15 30 0)
+
+         ;; This tests fail locally assuming the code is run on a machine
+         ;; which is using Eastern Time Zone. But succeeds on a machine using UTC.
+         ;; "1987-03-02T00:00:00.000Z/P1Y2M10DT2H30M"
+         ;; (t/date-time 1987 3 2 0 0 0) (t/date-time 1988 5 12 2 30 0)
+
 
          "/2001-02-01T10:30:00Z"
          nil (t/date-time 2001 2 1 10 30 0)
