@@ -36,8 +36,8 @@
          (t/date-time 1987 1 1 0 0 0) (t/date-time 1988 3 11 2 30 0)
 
          ;; This test fails in CI due to the issue descirbed in CMR-1737
-         ; "P1Y2M10DT2H30M/2008-05-11T15:30:00Z"
-         ; (t/date-time 2007 3 1 14 0 0) (t/date-time 2008 5 11 15 30 0)
+         ;; "P1Y2M10DT2H30M/2008-05-11T15:30:00Z"
+         ;; (t/date-time 2007 3 1 14 0 0) (t/date-time 2008 5 11 15 30 0)
 
          ;; This tests fail locally assuming the code is run on a machine
          ;; which is using Eastern Time Zone. But succeeds on a machine using UTC.
