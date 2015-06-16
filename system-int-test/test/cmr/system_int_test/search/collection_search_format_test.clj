@@ -205,6 +205,13 @@
                             (dj/parse-json-collection (:body (get-response concept :json))))
             c1-echo
             c3-dif
+            c5-iso)
+          (are [concept] (= [(da/collection->expected-atom concept)]
+                            (:entries
+                             (da/parse-atom-result :collection
+                                                   (:body (get-response concept :atom)))))
+            c1-echo
+            c3-dif
             c5-iso)))
 
       (testing "native format direct retrieval"
