@@ -77,10 +77,11 @@
 
 (defn update-ingest-provider
   "Updates the cmr-only attribute of an ingest provider."
-  [provider-id cmr-only small]
+  [provider-id short-name cmr-only small]
   (client/put (url/ingest-provider-url provider-id)
               {:throw-exceptions false
                :body (json/generate-string {:provider-id provider-id
+                                            :short-name short-name
                                             :cmr-only cmr-only
                                             :small small})
                :content-type :json
@@ -364,10 +365,13 @@
   ([provider-guid provider-id options]
    (let [grant-all-search? (get options :grant-all-search? true)
          grant-all-ingest? (get options :grant-all-ingest? true)
+         short-name (:short-name options)
+         short-name (if short-name short-name provider-id)
          cmr-only (get options :cmr-only true)
          small (get options :small false)]
 
      (create-mdb-provider {:provider-id provider-id
+                           :short-name short-name
                            :cmr-only cmr-only
                            :small small})
      (echo-util/create-providers (s/context) {provider-guid provider-id})

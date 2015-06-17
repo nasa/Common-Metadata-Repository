@@ -317,10 +317,11 @@
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider  Returns a map with
   status and a list of error messages."
-  [provider-id cmr-only small]
+  [provider-id short-name cmr-only small]
   (let [response (client/post providers-url
                               {:body (json/generate-string
                                        (util/remove-nil-keys {:provider-id provider-id
+                                                              :short-name short-name
                                                               :cmr-only cmr-only
                                                               :small small}))
                                :content-type :json
@@ -346,9 +347,10 @@
      :providers (when (= status 200) body)}))
 
 (defn update-provider
-  [provider-id cmr-only small]
+  [provider-id short-name cmr-only small]
   (let [response (client/put (format "%s/%s" providers-url provider-id)
                              {:body (json/generate-string {:provider-id provider-id
+                                                           :short-name short-name
                                                            :cmr-only cmr-only
                                                            :small small})
                               :content-type :json
@@ -377,8 +379,9 @@
 
 (defn verify-provider-was-saved
   "Verify that the given provider-id is in the list of providers."
-  [provider-id cmr-only small]
+  [provider-id short-name cmr-only small]
   (some #{{:provider-id provider-id
+           :short-name short-name
            :cmr-only cmr-only
            :small small}}
         (:providers (get-providers))))
@@ -420,7 +423,8 @@
   (fn [f]
     (reset-database)
     (doseq [provider providers]
-      (let [{:keys [provider-id cmr-only small]} provider]
-        (save-provider provider-id (if cmr-only true false) (if small true false))))
+      (let [{:keys [provider-id short-name cmr-only small]} provider
+            short-name (if short-name short-name provider-id)]
+        (save-provider provider-id short-name (if cmr-only true false) (if small true false))))
     (f)))
 

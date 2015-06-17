@@ -91,6 +91,11 @@
 (defn provider-small-field-cannot-be-modified [provider-id]
   (format "Provider [%s] small field cannot be modified." provider-id))
 
+(defn provider-short-name-cannot-be-modified [provider new-short-name]
+  (let [{:keys [provider-id short-name]} provider]
+    (format "Provider [%s] short-name cannot be modified. It was [%s], new value is [%s]."
+            provider-id short-name new-short-name)))
+
 (defn small-provider-cannot-be-deleted []
   "Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted.")
 
@@ -102,19 +107,23 @@
   (format "Providers with provider-ids [%s] do not exist."
           (str/join ", " provider-ids)))
 
-(defn provider-exists [provider-id]
-  (format "Provider [%s] already exists."
-          provider-id))
+(defn provider-with-id-exists [provider-id]
+  (format "Provider with provider id [%s] already exists." provider-id))
+
+(defn provider-with-short-name-exists [provider]
+  (let [{:keys [provider-id short-name]} provider]
+    (format "Provider with short name [%s] already exists. Its provider id is [%s]."
+            short-name provider-id)))
 
 (defn provider-id-empty []
-  (format "Provider ID cannot be empty"))
+  "%s cannot be empty")
 
-(defn provider-id-too-long [provider-id]
-  (format "Provider ID [%s] exceeds ten characters"
-          provider-id))
+(defn provider-id-too-long [provider-id limit]
+  (format "%%s [%s] exceeds %d characters"
+          provider-id limit))
 
 (defn provider-id-reserved []
-  (format "Provider ID [SMALL_PROV] is reserved"))
+  "%s [SMALL_PROV] is reserved")
 
 (defn invalid-provider-id [provider-id]
-  (format "provider-id [%s] is invalid" provider-id))
+  (format "%%s [%s] is invalid" provider-id))

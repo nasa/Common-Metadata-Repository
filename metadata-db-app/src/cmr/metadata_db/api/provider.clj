@@ -47,6 +47,7 @@
       (let [cmr-only (get body "cmr-only")
             small (get body "small")]
         (save-provider request-context params {:provider-id (get body "provider-id")
+                                               :short-name (get body "short-name")
                                                :cmr-only (if (some? cmr-only) cmr-only false)
                                                :small (if (some? small) small false)})))
 

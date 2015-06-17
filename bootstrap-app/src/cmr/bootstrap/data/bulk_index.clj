@@ -11,7 +11,6 @@
             [cheshire.core :as json]
             [clojure.core.async :as ca :refer [go go-loop alts!! <!! >!]]
             [cmr.oracle.connection :as oc]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.embedded-system-helper :as helper]))

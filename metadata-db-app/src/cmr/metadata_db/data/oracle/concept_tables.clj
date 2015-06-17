@@ -17,8 +17,8 @@
   [provider concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
   (pv/validate-provider provider)
-  (let [{:keys [provider-id small]} provider
-        db-provider-id (if small pv/small-provider-id provider-id)]
+  (let [{:keys [short-name small]} provider
+        db-provider-id (if small pv/small-provider-id short-name)]
     (format "%s_%s" (string/lower-case db-provider-id) (inf/plural (name concept-type)))))
 
 (defn create-concept-table-id-sequence
