@@ -650,7 +650,7 @@ __Example__
 </references>
 ```
 
-### Temporal Range searches
+### <a name="temporal-range-searches"></a> Temporal Range searches
 
 A couple of parameters used in search expect a temporal range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma seperated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
 
@@ -745,7 +745,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-The first two values of the parameter together define the temporal bounds. See under "Temporal Range searches" on different ways of specifying the temporal bounds including ISO 8601.
+The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
@@ -1125,7 +1125,7 @@ Find granules with an orbit equator crossing date in the range of 2000-01-01T10:
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
-The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under "Temporal Range searches".
+The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under [Temporal Range searches](#temporal-range-searches).
 
 #### Find granules by updated_since
 
@@ -1287,7 +1287,7 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-The first two values of the parameter together define the temporal bounds. See under "Temporal Range searches" on different ways of specifying the temporal bounds including ISO 8601.
+The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
 For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
