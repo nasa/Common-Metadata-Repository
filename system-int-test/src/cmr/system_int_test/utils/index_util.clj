@@ -14,10 +14,15 @@
   []
   (client/post (url/elastic-refresh-url) {:connection-manager (s/conn-mgr)}))
 
+(defn wait-for-terminal-states
+  "Waits until all the message queues have reached a terminal state"
+  []
+  (client/post (url/dev-system-wait-for-terminal-states-url) {:connection-manager (s/conn-mgr)}))
+
 (defn wait-until-indexed
   "Wait until ingested concepts have been indexed"
   []
-  (client/post (url/dev-system-wait-for-terminal-states-url) {:connection-manager (s/conn-mgr)})
+  (wait-for-terminal-states)
   (refresh-elastic-index))
 
 (defn update-indexes

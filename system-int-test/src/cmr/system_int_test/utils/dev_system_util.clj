@@ -18,8 +18,9 @@
 (defn reset
   "Resets the database, queues, and the elastic indexes"
   []
+  (index/wait-for-terminal-states)
   (client/post (url/dev-system-reset-url) (admin-connect-options))
-  (index/wait-until-indexed))
+  (index/refresh-elastic-index))
 
 (defn eval-in-dev-sys*
   "Evaluates the code given in dev system"
