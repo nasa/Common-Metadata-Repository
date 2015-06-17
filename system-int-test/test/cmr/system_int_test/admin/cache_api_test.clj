@@ -177,9 +177,9 @@
       (s/only-with-real-database
         (testing "list cache keys for bootstrap"
           (let [response (list-cache-keys (url/bootstrap-read-caches-url) "token-imp" admin-read-token)]
-            (is (= #{["ABC-1" "read"]
-                     ["ABC-2" "read"]}
-                   (set response)))))))
+            (is (every? (set response)
+                        [["ABC-1" "read"]
+                         ["ABC-2" "read"]]))))))
 
 
     (testing "normal user cannot retrieve cache values"
