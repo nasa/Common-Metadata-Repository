@@ -464,4 +464,5 @@
 
 (defmethod qs/single-result->response :atom
   [context query results]
+  {:pre [(<= (count (:items results)) 1)]}
   (qs/search-results->response context query results))
