@@ -29,6 +29,17 @@
   (let [db (mdb-util/context->db context)]
     (providers/get-providers db)))
 
+(deftracefn get-provider-by-id
+  "Returns the provider with the given provider-id, raise error when provider does not exist based
+  on the throw-error flag"
+  ([context provider-id]
+   (get-provider-by-id context provider-id true))
+  ([context provider-id throw-error?]
+   (if-let [provider (providers/get-provider (mdb-util/context->db context) provider-id)]
+     provider
+     (when throw-error?
+       (errors/throw-service-error :not-found (msg/providers-do-not-exist [provider-id]))))))
+
 (deftracefn update-provider
   "Updates a provider."
   [context {:keys [provider-id small] :as provider}]

@@ -254,6 +254,11 @@
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
 
+      ;; Retrieve concept maps with basic data in metadata-db (exclude metadata)
+      ; (context "/concept-revisions" []
+      ;   (GET "/:concept-type" {:keys [params headers request-context]}
+      ;     (find-concept-revisions request-context params headers)))
+
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.

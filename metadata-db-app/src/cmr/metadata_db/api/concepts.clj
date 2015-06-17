@@ -8,6 +8,7 @@
             [inflections.core :as inf]
             [cheshire.core :as json]
             [cmr.metadata-db.services.concept-service :as concept-service]
+            [cmr.metadata-db.services.search-service :as search-service]
             [cmr.common.log :refer (debug info warn error)]))
 
 (defn as-int
@@ -61,7 +62,7 @@
   "Find concepts for a concept type with specific params"
   [context params]
   (let [params (update-in params [:concept-type] (comp keyword inf/singular))
-        concepts (concept-service/find-concepts context params)]
+        concepts (search-service/find-concepts-for-provider context params)]
     {:status 200
      :body (json/generate-string concepts)
      :headers rh/json-header}))
