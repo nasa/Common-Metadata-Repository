@@ -147,7 +147,7 @@
         (let [broker-wrapper (get-in system [:pre-components :broker-wrapper])]
           (debug "dev system /wait-for-terminal-states")
           (wrapper/wait-for-terminal-states broker-wrapper)
-          (debug "indexing complete")
+          (debug "/wait-for-terminal-states complete")
           {:status 200}))
 
       (GET "/history" {:keys [params]}
