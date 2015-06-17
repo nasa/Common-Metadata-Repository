@@ -464,4 +464,4 @@
 
 (defmethod qs/single-result->response :atom
   [context query results]
-  (qs/search-results->response context query (update-in results [:items] (partial take 1))))
+  (qs/search-results->response context query results))
