@@ -177,6 +177,12 @@
                   aql))
     results))
 
+(defn- throw-id-not-found
+  [concept-id]
+  (err/throw-service-error
+   :not-found
+   (format "Concept with concept-id: %s could not be found" concept-id)))
+
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
@@ -188,16 +194,13 @@
                                       :result-format result-format})
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
-        (err/throw-service-error :not-found
-                                 (format "Concept with concept-id: %s could not be found" concept-id)))
+        (throw-id-not-found concept-id))
       {:results (single-result->response context query results)})
     ;; else
-    (let [concepts (t/get-latest-formatted-concepts context [concept-id] result-format)]
-      (when-not (seq concepts)
-        (err/throw-service-error
-         :not-found
-         (format "Concept with concept-id: %s could not be found" concept-id)))
-      (first concepts))))
+    (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
+      (when-not concept
+        (throw-id-not-found concept-id))
+      concept)))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
