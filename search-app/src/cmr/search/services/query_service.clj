@@ -65,6 +65,7 @@
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.common.concepts :as cc]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
             [camel-snake-kebab.core :as csk]
@@ -85,6 +86,12 @@
 
 (defmulti search-results->response
   "Converts query search results into a string response."
+  (fn [context query results]
+    (:result-format query)))
+
+(defmulti single-result->response
+  "Returns a string representation of a single concept in the format
+  specified in the query."
   (fn [context query results]
     (:result-format query)))
 
@@ -170,15 +177,30 @@
                   aql))
     results))
 
+(defn- throw-id-not-found
+  [concept-id]
+  (err/throw-service-error
+   :not-found
+   (format "Concept with concept-id: %s could not be found" concept-id)))
+
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
-  (let [concepts (t/get-latest-formatted-concepts context [concept-id] result-format)]
-    (when-not (seq concepts)
-      (err/throw-service-error
-        :not-found
-        (format "Concept with concept-id: %s could not be found" concept-id)))
-    (first concepts)))
+  (if (contains? #{:atom :json} result-format)
+    ;; do a query and use single-result->response
+    (let [query (p/parameters->query (cc/concept-id->type concept-id)
+                                     {:page-size 1
+                                      :concept-id concept-id
+                                      :result-format result-format})
+          results (qe/execute-query context query)]
+      (when (zero? (:hits results))
+        (throw-id-not-found concept-id))
+      {:results (single-result->response context query results)})
+    ;; else
+    (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
+      (when-not concept
+        (throw-id-not-found concept-id))
+      concept)))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."

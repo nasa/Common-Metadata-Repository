@@ -11,6 +11,7 @@
             [ring.middleware.nested-params :as nested-params]
             [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
+            [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
@@ -89,6 +90,8 @@
   #{mt/any
     mt/xml ; allows retrieving native format
     mt/native ; retrieve in native format
+    mt/atom
+    mt/json
     mt/echo10
     mt/iso
     mt/iso-smap
@@ -211,14 +214,11 @@
   (let [result-format (get-search-results-format path-w-extension headers
                                                  supported-concept-id-retrieval-mime-types
                                                  mt/xml)
+        params (assoc params :result-format result-format)
         concept-id (path-w-extension->concept-id path-w-extension)
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        concept (query-svc/find-concept-by-id context result-format concept-id)
-        {:keys [metadata]} concept]
-    {:status 200
-     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 (:format concept))
-               CORS_ORIGIN_HEADER "*"}
-     :body metadata}))
+        {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)]
+    (search-response params {:results (or results metadata)})))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"

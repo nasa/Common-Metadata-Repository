@@ -94,6 +94,28 @@
              "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
              "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
 
+    (testing "Get granule as concept in JSON format"
+      (are [granule coll options]
+        (= (da/granule->expected-atom granule coll)
+           (dissoc
+            (dj/parse-json-granule (:body (search/get-concept-by-concept-id (:concept-id granule) options)))
+            :day-night-flag))
+        g1-echo c1-echo {:accept        "application/json"}
+        g1-echo c1-echo {:url-extension "json"}
+        g1-smap c2-smap {:accept        "application/json"}
+        g1-smap c2-smap {:url-extension "json"}))
+
+    (testing "Get granule as concept in Atom format"
+      (are [granule coll options]
+        (= [(da/granule->expected-atom granule coll)]
+           (map #(dissoc % :day-night-flag)
+                (:entries
+                 (da/parse-atom-result :granule (:body (search/get-concept-by-concept-id (:concept-id granule) options))))))
+        g1-echo c1-echo {:accept        "application/atom+xml"}
+        g1-echo c1-echo {:url-extension "atom"}
+        g1-smap c2-smap {:accept        "application/atom+xml"}
+        g1-smap c2-smap {:url-extension "atom"}))
+
     (testing "Retrieving results in echo10"
       (are [search expected]
            (d/assert-metadata-results-match

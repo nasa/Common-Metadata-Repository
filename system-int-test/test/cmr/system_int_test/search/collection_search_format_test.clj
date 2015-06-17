@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.atom :as da]
+            [cmr.system-int-test.data2.atom-json :as dj]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.system :as s]
             [cheshire.core :as json]
@@ -40,6 +41,13 @@
     (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                       :version-id "V1"
                                       :entry-title "ET1"}))))
+
+(defn- get-concept-by-id-helper
+  [concept options]
+  (:body
+   (search/get-concept-by-concept-id
+    (:concept-id concept)
+    options)))
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -175,25 +183,45 @@
           (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
 
     (testing "Get by concept id in formats"
-      (testing "supported formats"
+      (testing "XML Metadata formats"
         (are [concept mime-type format-key url-extension]
-             (let [response (search/get-concept-by-concept-id
-                              (:concept-id concept)
-                              {:url-extension url-extension :accept mime-type})]
-               (= (umm/umm->xml concept format-key) (:body response)))
-             c1-echo "application/dif+xml" :dif nil
-             c1-echo nil :dif "dif"
-             c1-echo "application/echo10+xml" :echo10 nil
-             c1-echo nil :echo10 "echo10"
-             c3-dif "application/dif+xml" :dif nil
-             c3-dif nil :dif "dif"
-             c5-iso "application/iso19115+xml" :iso19115 nil
-             c5-iso nil :iso19115 "iso19115"
-             c5-iso nil :iso19115 "iso"
-             c7-smap "application/iso:smap+xml" :iso-smap nil
-             c7-smap nil :iso-smap "iso_smap"
-             c8-dif10 "application/dif10+xml" :dif10 nil
-             c8-dif10 nil :dif10 "dif10"))
+          (= (umm/umm->xml concept format-key)
+             (get-concept-by-id-helper concept {:url-extension url-extension :accept mime-type}))
+          c1-echo "application/dif+xml" :dif nil
+          c1-echo nil :dif "dif"
+          c1-echo "application/echo10+xml" :echo10 nil
+          c1-echo nil :echo10 "echo10"
+          c3-dif "application/dif+xml" :dif nil
+          c3-dif nil :dif "dif"
+          c5-iso "application/iso19115+xml" :iso19115 nil
+          c5-iso nil :iso19115 "iso19115"
+          c5-iso nil :iso19115 "iso"
+          c7-smap "application/iso:smap+xml" :iso-smap nil
+          c7-smap nil :iso-smap "iso_smap"
+          c8-dif10 "application/dif10+xml" :dif10 nil
+          c8-dif10 nil :dif10 "dif10"))
+
+      (testing "json"
+        (are [concept options]
+          (= (da/collection->expected-atom concept)
+             (dj/parse-json-collection (get-concept-by-id-helper concept options)))
+          c1-echo {:url-extension "json"}
+          c1-echo {:accept        "application/json"}
+          c3-dif  {:url-extension "json"}
+          c3-dif  {:accept        "application/json"}
+          c5-iso  {:url-extension "json"}
+          c5-iso  {:accept        "application/json"}))
+
+      (testing "atom"
+        (are [concept options]
+          (= [(da/collection->expected-atom concept)]
+             (:entries (da/parse-atom-result :collection (get-concept-by-id-helper concept options))))
+          c1-echo {:url-extension "atom"}
+          c1-echo {:accept        "application/atom+xml"}
+          c3-dif  {:url-extension "atom"}
+          c3-dif  {:accept        "application/atom+xml"}
+          c5-iso  {:url-extension "atom"}
+          c5-iso  {:accept        "application/atom+xml"}))
 
       (testing "native format direct retrieval"
         ;; Native format can be specified using application/xml, application/metadata+xml,
@@ -231,8 +259,6 @@
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
-             "application/atom+xml" true
-             "application/json" false
              "text/csv" false)))
 
     (testing "Retrieving results as XML References"
