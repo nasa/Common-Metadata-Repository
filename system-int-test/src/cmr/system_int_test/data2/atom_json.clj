@@ -183,6 +183,16 @@
        :entries (seq (map (partial json-entry->entry concept-type) entry))
        :facets facets})))
 
+(defn parse-json-collection
+  "Parses a standalone collection from a JSON string."
+  [json-str]
+  (json-entry->entry :collection (json/decode json-str true)))
+
+(defn parse-json-granule
+  "Parses a standalone granule from a JSON string."
+  [json-str]
+  (json-entry->entry :granule (json/decode json-str true)))
+
 (defn- update-inherited-link
   "Update the inherited field from string to boolean value"
   [link]

@@ -1341,16 +1341,28 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 ### Retrieve concept with a given cmr-concept-id
 
-This allows retrieving the metadata for a single concept. If no format is specified the native format of the metadata will be returned.
+This allows retrieving the metadata for a single concept. If no format
+is specified the native format of the metadata will be returned.
 
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-
-The native format can also be retrieved using either 'application/xml' or 'application/metadata+xml' in
-the Accept header or by using the '.native' extension
-
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i -H 'Accept: application/metadata+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
-    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.native"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
+
+
+The following extensions and MIME types are supported by the
+`/concepts/` resource:
+
+  * `json`      "application/json"
+  * `xml`       "application/xml" (same as .native)
+  * `native`    "application/metadata+xml"
+  * `echo10`    "application/echo10+xml"
+  * `iso`       "application/iso19115+xml"
+  * `iso19115`  "application/iso19115+xml"
+  * `dif`       "application/dif+xml"
+  * `dif10`     "application/dif10+xml"
+  * `atom`      "application/atom+xml"
 
 ### Search with POST
 
