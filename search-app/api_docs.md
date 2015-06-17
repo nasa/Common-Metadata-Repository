@@ -652,16 +652,16 @@ __Example__
 
 ### <a name="temporal-range-searches"></a> Temporal Range searches
 
-A couple of parameters used in search expect a temporal range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma seperated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
+A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma seperated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
 
-2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
-,2010-03-10T12:00:00Z
-2000-01-01T10:00:00Z,
-2000-01-01T10:00:00Z/2010-03-10T12:00:00Z
-2000-01-01T10:00:00Z/
-/2010-03-10T12:00:00Z
-2000-01-01T10:00:00Z/P10Y2M10DT2H
-P10Y2M10DT2H/2000-01-01T10:00:00Z
+`2000-01-01T10:00:00Z,2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+`,2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z,` - matches data after `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/` - matches data after `2010-03-10T12:00:00Z`
+`/2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/P10Y2M10DT2H` - matches data between `2000-01-01T10:00:00Z` and a date 10 years 2 months 10 days and 2 hours after that or `2010-03-11T02:00:00Z`
+`P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hourse and 30 minutes before that or `2007-05-01T14:00:00Z`.
 
 Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, "2000-01-01T10:00:00Z/" and "/2000-01-01T10:00:00Z" are valid ranges.
 
