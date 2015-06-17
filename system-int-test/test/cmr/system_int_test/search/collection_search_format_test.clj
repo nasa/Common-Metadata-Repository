@@ -183,7 +183,7 @@
           (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
 
     (testing "Get by concept id in formats"
-      (testing "umm->xml formats"
+      (testing "XML Metadata formats"
         (are [concept mime-type format-key url-extension]
           (= (umm/umm->xml concept format-key)
              (get-concept-by-id-helper concept {:url-extension url-extension :accept mime-type}))

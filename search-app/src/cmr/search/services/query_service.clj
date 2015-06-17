@@ -65,6 +65,7 @@
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
+            [cmr.common.concepts :as cc]
             [cmr.common.services.errors :as err]
             [cmr.common.util :as u]
             [camel-snake-kebab.core :as csk]
@@ -181,7 +182,7 @@
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (p/parameters->query (cmr.common.concepts/concept-id->type concept-id)
+    (let [query (p/parameters->query (cc/concept-id->type concept-id)
                                      {:page-size 1
                                       :concept-id concept-id
                                       :result-format result-format})
