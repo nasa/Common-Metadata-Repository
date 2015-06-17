@@ -1216,15 +1216,15 @@ curl "%CMR-ENDPOINT%/granules?day_night_flag=day
 curl "%CMR-ENDPOINT%/granules?day_night=unspecified
 ```
 
-#### Find granules by grid param.
+#### Find granules by two\_d\_coordinate\_system parameter.
 
-This is an alias of catalog-rest two\_d\_coordinate_system.
-
-':' is the separator between name and coordinates; range is indicated by '-', otherwise it is a single value.
+Note: An alias for the parameter 'two_d_coordinate_system' is 'grid'. As such 'grid' can be used in place of 'two_d_coordinate_system'.
 
 ```
-  curl "%CMR-ENDPOINT%/granules?grid\[\]=wrs-1:5,10:8-10,0-10
+  curl "%CMR-ENDPOINT%/granules?two_d_coordinate_system\[\]=wrs-1:5,10:8-10,0-10:8,12
 ```
+
+The parameter expects a coordinate system name and a set of two-d coordinates. The two-d coordinates could be represented either by a single coordinate pair or a pair of coordinate ranges. ':' is used as the separator between the coordinate system name, single coordinate pairs and coordinate range pairs. The coordinates in the single coordinate pair are represented in the format "x,y". And the coordinates in the coordinate range pairs are represented in the format "x1-x2,y1-y2" where x1 and x2 are the bounds of the values for the first coordinate and y1 and y2, for the second coordinate. One can also use single values for each of the two ranges, say "x1" instead of "x1-x2", in which case the upper and lower bound are considered the same. In other words using "x1" for range is equivalent to using "x1-x1". A single query can consist of a combination of individual coordinate pairs and coordinate range pairs. For example, the query above indicates that the user wants to search for granules which have a two\_d\_coordinate\_system whose name is wrs-1 and whose two-d coordinates match(or fall within) at least one of the given pairs: a single coordinate pair (5,10), a range coordinate pair 8-10,0-10 and another single coordinate pair (8,12).
 
 #### Find granules by provider
 
