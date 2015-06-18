@@ -278,7 +278,7 @@
                  missing-concept-tuples)))))))
 
 (deftracefn get-latest-concepts
-  "Get the lastest version of concepts by specifiying a list of concept-ids. Results are
+  "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids allow-missing?]
   (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
@@ -408,7 +408,7 @@
   (let [db (util/context->db context)]
     (into {} (pmap (fn [{:keys [provider-id] :as provider}]
                      [provider-id
-                      (->> (c/find-latest-concepts db provider {:provider-id provider-id
+                      (->> (c/find-latest-concepts db [provider] {:provider-id provider-id
                                                                 :concept-type :collection})
                            (remove :deleted))])
                    (provider-db/get-providers db)))))

@@ -32,7 +32,7 @@
     ;; provider-id is a required field in find params. It always exists.
     (if-let [provider (provider-service/get-provider-by-id context (:provider-id params) false)]
       (if latest-only?
-        (c/find-latest-concepts db provider params)
+        (c/find-latest-concepts db [provider] params)
         (c/find-concepts db [provider] params))
       ;; the provider doesn't exist
       [])))
@@ -42,5 +42,8 @@
   [context params]
   (let [db (util/context->db context)
         latest-only? (= "true" (:latest params))
-        params (dissoc params :latest)]
+        params (dissoc params :latest :provider-id)
+        providers (provider-service/get-providers context)]
+    (println "PROVIDERS.....")
+    (println providers)
     (cv/validate-find-params params)))

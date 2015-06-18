@@ -16,7 +16,7 @@
   "Returns any concepts which match the concept-type, provider-id, and value for the given field
   that matches the passed in concept"
   [db provider concept field field-value]
-  (->> (c/find-latest-concepts db provider {:concept-type (:concept-type concept)
+  (->> (c/find-latest-concepts db [provider] {:concept-type (:concept-type concept)
                                    :provider-id (:provider-id concept)
                                    field field-value})
        ;; Remove tombstones from the list of concepts

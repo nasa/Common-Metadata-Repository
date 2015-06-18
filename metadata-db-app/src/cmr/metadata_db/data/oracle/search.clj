@@ -57,7 +57,8 @@ for retrieving concepts using parameters"
     (dissoc params :concept-type :provider-id)))
 
 (defmulti find-concepts-in-table
-  "Retrieve concept maps from the given table"
+  "Retrieve concept maps from the given table, handling small providers separately from
+  normal providers"
   (fn [db table concept-type providers params]
     (:small (first providers))))
 
@@ -98,6 +99,7 @@ for retrieving concepts using parameters"
 
 (find-concepts
   [db providers params]
+  {:pre [(coll? providers)]}
   (let [concept-type (:concept-type params)
         table-provider (group-by #(tables/get-table-name % concept-type) providers)]
     (mapcat (fn [[table provider-list]]

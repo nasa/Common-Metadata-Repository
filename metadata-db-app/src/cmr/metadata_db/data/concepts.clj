@@ -91,8 +91,8 @@
 
 (defn find-latest-concepts
   "Finds the latest revision of concepts by the given parameters"
-  [db provider params]
-  (let [revision-concepts (find-concepts db [provider] params)]
+  [db providers params]
+  (let [revision-concepts (find-concepts db providers params)]
     (->> revision-concepts
          (group-by :concept-id)
          (map (fn [[concept-id concepts]]
