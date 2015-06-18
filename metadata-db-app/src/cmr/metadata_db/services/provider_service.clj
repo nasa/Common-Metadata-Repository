@@ -16,7 +16,7 @@
   (pv/validate-provider provider)
   (let [db (mdb-util/context->db context)
         providers (providers/get-providers db)]
-    (when (some #(when (= provider-id (:provider-id %)) %) providers)
+    (when (some #(= provider-id (:provider-id %)) providers)
       (cmsg/data-error :conflict msg/provider-with-id-exists provider-id))
     (when-let [existing-provider (some #(when (= short-name (:short-name %)) %) providers)]
       (cmsg/data-error :conflict msg/provider-with-short-name-exists existing-provider))

@@ -53,20 +53,29 @@
                                     :short-name "S4"
                                     :cmr-only true
                                     :small true})
-    (ingest/update-ingest-provider "PROV4" "S4" false true)
+    (ingest/update-ingest-provider {:provider-id "PROV4"
+                                    :short-name "S4"
+                                    :cmr-only false
+                                    :small true})
     (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
              {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :short-name "PROV1":cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
   (testing "updating a non-existent provider fails"
-    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" "S5" true false)))))
+    (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"
+                                                        :short-name "S5"
+                                                        :cmr-only true
+                                                        :small false})))))
   (testing "update provider with a different small value is invalid"
     (ingest/create-ingest-provider {:provider-id "PROV5"
                                     :short-name "S5"
                                     :cmr-only true
                                     :small true})
-    (let [response (ingest/update-ingest-provider "PROV5" "S5" true false)
+    (let [response (ingest/update-ingest-provider {:provider-id "PROV5"
+                                                   :short-name "S5"
+                                                   :cmr-only true
+                                                   :small false})
           {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
       (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
              [status errors])))))

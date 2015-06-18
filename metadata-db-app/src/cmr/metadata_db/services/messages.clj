@@ -110,9 +110,6 @@
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
             short-name provider-id)))
 
-(defn field-blank []
-  "%s cannot be blank")
-
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
 

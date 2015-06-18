@@ -34,7 +34,10 @@
   (testing "validation on non CMR-ONLY provider must be submitted by client Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
-      (ingest/update-ingest-provider "PROV1" "PROV1" false false)
+      (ingest/update-ingest-provider {:provider-id "PROV1"
+                                      :short-name "PROV1"
+                                      :cmr-only false
+                                      :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-result func concept "bad" 400 cmr-only-false-errors)
@@ -52,7 +55,10 @@
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           concept (d/item->concept (dg/granule collection))]
       (ingest/ingest-concept concept)
-      (ingest/update-ingest-provider "PROV1" "PROV1" false false)
+      (ingest/update-ingest-provider {:provider-id "PROV1"
+                                      :short-name "PROV1"
+                                      :cmr-only false
+                                      :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
         (assert-ingest-result func concept "bad" 400 cmr-only-false-errors)

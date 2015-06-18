@@ -28,7 +28,7 @@
   "Validates the string value isn't blank."
   [field-path value]
   (when (s/blank? value)
-    {field-path [(msg/field-blank)]}))
+    {field-path ["%s cannot be blank"]}))
 
 (defn- provider-id-format-validation
   "Validates the provider id is in the correct format."
