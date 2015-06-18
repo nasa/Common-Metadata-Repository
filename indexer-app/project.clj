@@ -15,7 +15,7 @@
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
 
-  :jvm-opts  ["-XX:PermSize=256m" "-XX:MaxPermSize=1024m"]
+  :jvm-opts  []
 
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
