@@ -33,7 +33,7 @@
     (if-let [provider (provider-service/get-provider-by-id context (:provider-id params) false)]
       (if latest-only?
         (c/find-latest-concepts db provider params)
-        (c/find-concepts db provider params))
+        (c/find-concepts db [provider] params))
       ;; the provider doesn't exist
       [])))
 

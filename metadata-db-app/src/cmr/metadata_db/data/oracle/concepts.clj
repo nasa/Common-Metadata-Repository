@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.data.oracle.concepts
-  "Provides default implementations of the cmr.metadata-db.data.concepts multimethods"
+  "Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore methods for OracleStore"
   (:require [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.services.errors :as errors]
@@ -148,6 +148,8 @@
                   revision_id
                   revision_date
                   deleted]} result]
+      (println "RESULT......")
+      (println result)
       {:concept-type concept-type
        :native-id native_id
        :concept-id concept_id

@@ -42,9 +42,8 @@
   [system provider-id]
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
-        params {:concept-type :collection
-                :provider-id provider-id}
-        collections (db/find-concepts db provider params)]
+        params {:concept-type :collection}
+        collections (db/find-concepts db [provider] params)]
     (map :concept-id collections)))
 
 (defn get-provider-by-id

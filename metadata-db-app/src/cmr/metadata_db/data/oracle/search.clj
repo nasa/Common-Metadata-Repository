@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.data.oracle.search
-
+"Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore protocol methods
+for retrieving concepts using parameters"
 (:require [cmr.metadata-db.data.concepts :as c]
           [cmr.metadata-db.data.oracle.concepts :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
@@ -55,22 +56,57 @@
     (dissoc params :concept-type)
     (dissoc params :concept-type :provider-id)))
 
-(extend-protocol c/ConceptsStore
+(defmulti find-concepts-in-table
+  "Retrieve concept maps from the given table"
+  (fn [db table concept-type providers params]
+    (:small (first providers))))
+
+;; Execute a query against the small providers table
+(defmethod find-concepts-in-table true
+  [db table concept-type providers params]
+  (mapcat (fn [provider]
+            (j/with-db-transaction
+              [conn db]
+              (let [params (params->sql-params provider params)
+                    stmt (su/build (select [:*]
+                                     (from table)
+                                     (when-not (empty? params)
+                                       (where (sh/find-params->sql-clause params)))))]
+                (doall (map (fn [res]
+                              (oc/db-result->concept-map concept-type conn (:provider_id res) res))
+                            (su/query conn stmt))))))
+          providers))
+
+;; Execute a query against a normal (not small) provider table
+(defmethod find-concepts-in-table :default
+  [db table concept-type providers params]
+  (let [provider (first providers)
+        provider-id (:provider-id provider)]
+    (j/with-db-transaction
+      [conn db]
+      (let [params (params->sql-params provider params)
+            stmt (su/build (select [:*]
+                             (from table)
+                             (when-not (empty? params)
+                               (where (sh/find-params->sql-clause params)))))
+            _ (println "STMT....")
+            _ (println stmt)]
+        (doall (map (fn [res]
+                      (println "RES.....")
+                      (println res)
+                      (oc/db-result->concept-map concept-type conn provider-id res))
+                    (su/query conn stmt)))))))
+
+(extend-protocol c/ConceptSearch
   OracleStore
 
 (find-concepts
-    [db provider params]
-    (j/with-db-transaction
-      [conn db]
-      (let [{:keys [concept-type provider-id]} params
-            params (params->sql-params provider params)
-            table (tables/get-table-name provider concept-type)
-            stmt (su/build (select [:*]
-                                   (from table)
-                                   (when-not (empty? params)
-                                     (where (sh/find-params->sql-clause params)))))]
-        (doall (map (partial oc/db-result->concept-map concept-type conn provider-id)
-                    (su/query conn stmt))))))
+  [db providers params]
+  (let [concept-type (:concept-type params)
+        table-provider (group-by #(tables/get-table-name % concept-type) providers)]
+    (mapcat (fn [[table provider-list]]
+              (find-concepts-in-table db table concept-type provider-list params))
+            (seq table-provider))))
 
   (find-concepts-in-batches
     ([db provider params batch-size]
