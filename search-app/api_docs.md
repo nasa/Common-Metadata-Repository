@@ -650,6 +650,21 @@ __Example__
 </references>
 ```
 
+### <a name="temporal-range-searches"></a> Temporal Range searches
+
+A couple of parameters used in search expect a date range as input. For example, the parameter "temporal" used in collection and granule searches and the parameter "equator_crossing_longitude" used in granule searches both accept date ranges. All these parameters expect temporal ranges in the same format. The temporal ranges can be specified as a pair of date-time values separated by comma(,). Exactly one of the two bounds of the interval can be omitted. In addition to comma seperated values, one can also specify temporal ranges as [ISO 8601 time intervals](https://en.wikipedia.org/?title=ISO_8601#Time_intervals). Some examples of valid temporal range values are:
+
+`2000-01-01T10:00:00Z,2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+`,2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z,` - matches data after `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/2010-03-10T12:00:00Z` - matches data between `2000-01-01T10:00:00Z` and `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/` - matches data after `2010-03-10T12:00:00Z`
+`/2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
+`2000-01-01T10:00:00Z/P10Y2M10DT2H` - matches data between `2000-01-01T10:00:00Z` and a date 10 years 2 months 10 days and 2 hours after that or `2010-03-11T02:00:00Z`
+`P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hours and 30 minutes before that or `2007-05-01T14:00:00Z`.
+
+Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
+
 ### Collection Search Examples
 
 #### Find all collections
@@ -730,13 +745,9 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
-The time interval in temporal range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
-
-    curl "%CMR-ENDPOINT%/collections?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
-
-Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of open-ended time intervals. For example, "2000-01-01T10:00:00Z/" and "/2000-01-01T10:00:00Z" are valid ranges.
+For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
 #### Find collections by project
 
@@ -1114,9 +1125,7 @@ Find granules with an orbit equator crossing date in the range of 2000-01-01T10:
 
     curl "%CMR-ENDPOINT%/granules?equator_crossing_date=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z
 
-The time interval in equator crossing date range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
-
-    curl "%CMR-ENDPOINT%/granules?equator_crossing_date=P10Y2M10DT2H/2010-03-10T12:00:00Z
+The time interval in equator crossing date range searches can be specified in different ways including ISO 8601. See under [Temporal Range searches](#temporal-range-searches).
 
 #### Find granules by updated_since
 
@@ -1278,13 +1287,9 @@ The temporal datetime has to be in yyyy-MM-ddTHH:mm:ssZ format.
 
     curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z,30,60&temporal\[\]=2000-01-01T10:00:00Z,,30&temporal\[\]=2000-01-01T10:00:00Z,2010-03-10T12:00:00Z"
 
-For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[attribute][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
+The first two values of the parameter together define the temporal bounds. See under [Temporal Range searches](#temporal-range-searches) for different ways of specifying the temporal bounds including ISO 8601.
 
-The time interval in temporal range searches can be specified as ISO 8601 time intervals instead of comma seperated values.
-
-    curl "%CMR-ENDPOINT%/granules?temporal\[\]=2000-01-01T10:00:00Z/P10Y2M10DT2H,30,60&temporal\[\]=2000-01-01T10:00:00Z/,30&temporal\[\]=2000-01-01T10:00:00Z/2010-03-10T12:00:00Z"
-
-Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of open-ended time intervals. For example, "2000-01-01T10:00:00Z/" and "/2000-01-01T10:00:00Z" are valid ranges.
+For temporal range search, the default is inclusive on the range boundaries. This can be changed by specifying `exclude_boundary` option with `options[temporal][exclude_boundary]=true`. This option has no impact on periodic temporal searches.
 
 #### Exclude granules from elastic results by echo granule id and concept ids.
 
