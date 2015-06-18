@@ -353,7 +353,7 @@
           ;; There was a concept id, native id mismatch with earlier concepts
           error
           ;; Concept id native id pair was valid
-          (let [{:keys [concept-type provider-id]} concept
+          (let [{:keys [concept-type]} concept
                 table (tables/get-table-name provider concept-type)
                 seq-name (str table "_seq")
                 [cols values] (concept->insert-args concept (:small provider))

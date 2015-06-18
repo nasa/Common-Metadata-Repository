@@ -4,7 +4,6 @@
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.sql-utils :as su :refer [select insert from where delete]]
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
-            [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.metadata-db :as transmit-mdb]
             [cmr.bootstrap.data.migration-utils :as mu]))
@@ -25,8 +24,7 @@
 (defn- delete-collection-sql
   "Generate SQL to delete a collection from a provider's collection table."
   [system provider-id collection-id]
-  (let [provider {:provider-id provider-id :cmr-only false :small false}
-        collection-table (tables/get-table-name provider :collection)]
+  (let [collection-table (mu/metadata-db-concept-table provider-id :collection)]
     (su/build (delete collection-table (where `(= :concept-id ~collection-id))))))
 
 (defn- delete-collection
@@ -40,8 +38,7 @@
 (defn- delete-collection-granules-sql
   "Generate SQL to delete granules for a given collection from a provider's granule table."
   [provider-id collection-id]
-  (let [provider {:provider-id provider-id :cmr-only false :small false}
-        granule-table (tables/get-table-name provider :granule)]
+  (let [granule-table (mu/metadata-db-concept-table provider-id :granule)]
     (su/build (delete granule-table (where `(= :parent-collection-id ~collection-id))))))
 
 (defn- delete-collection-granules
@@ -88,7 +85,7 @@
    (copy-collection-data-sql system provider-id nil))
   ([system provider-id collection-id]
    (let [dataset-table (mu/catalog-rest-table system provider-id :collection)
-         collection-table (mu/metadata-db-concept-table system provider-id :collection)
+         collection-table (mu/full-metadata-db-concept-table system provider-id :collection)
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
                            "version_id, entry_title, delete_time, revision_date, entry_id) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
@@ -119,7 +116,7 @@
   "Generate the SQL to copy the granule data from the catalog reset datbase to the metadata db."
   [system provider-id collection-id dataset-record-id]
   (let [granule-echo-table (mu/catalog-rest-table system provider-id :granule)
-        granule-mdb-table (mu/metadata-db-concept-table system provider-id :granule)
+        granule-mdb-table (mu/full-metadata-db-concept-table system provider-id :granule)
         stmt (format (str "INSERT INTO %s (id, concept_id, native_id, parent_collection_id, "
                           "metadata, format, delete_time, revision_date, granule_ur) "
                           "SELECT %s_seq.NEXTVAL, echo_granule_id, granule_ur, '%s', "
@@ -164,7 +161,7 @@
   database into the metadata db database."
   [system provider-id]
   (transmit-mdb/delete-provider {:system system} provider-id)
-  (transmit-mdb/create-provider {:system system} {:provider-id provider-id :cmr-only false})
+  (transmit-mdb/create-provider {:system system} (mu/provider-id->provider provider-id))
   (copy-collection-data system provider-id)
   (copy-granule-data-for-provider system provider-id)
   (info "Processing of provider" provider-id "completed."))
@@ -206,6 +203,6 @@
   (get-provider-collection-list-sql  "FIX_PROV1")
   (copy-granule-data-for-provider (oc/create-db (mdb-config/db-spec)) "FIX_PROV1")
   (delete-collection-granules-sql "FIX_PROV1" "C1000000073-FIX_PROV1")
-  (mu/metadata-db-concept-table "FIX_PROV1" :collection)
+  (mu/full-metadata-db-concept-table "FIX_PROV1" :collection)
   )
 

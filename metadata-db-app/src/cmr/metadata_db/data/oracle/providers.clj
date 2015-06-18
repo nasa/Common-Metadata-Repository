@@ -12,8 +12,9 @@
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
-  [{:keys [provider_id cmr_only small]}]
+  [{:keys [provider_id short_name cmr_only small]}]
   {:provider-id provider_id
+   :short-name short_name
    :cmr-only (== 1 cmr_only)
    :small (== 1 small) })
 
@@ -32,20 +33,13 @@
 
   (save-provider
     [db provider]
-    (try
-      (let [{:keys [provider-id cmr-only small]} provider]
-        (j/insert! db
-                   :providers
-                   ["provider_id" "cmr_only" "small"]
-                   [provider-id (if cmr-only 1 0) (if small 1 0)])
-        (when (not small)
-          (ct/create-provider-concept-tables db provider)))
-      (catch java.sql.BatchUpdateException e
-        (let [error-message (.getMessage e)]
-          (if (re-find #"UNIQUE_PROVIDER_ID" error-message)
-            {:error :provider-id-conflict
-             :error-message error-message}
-            (throw e))))))
+    (let [{:keys [provider-id short-name cmr-only small]} provider]
+      (j/insert! db
+                 :providers
+                 ["provider_id" "short_name" "cmr_only" "small"]
+                 [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
+      (when (not small)
+        (ct/create-provider-concept-tables db provider))))
 
   (get-providers
     [db]
@@ -56,15 +50,15 @@
     [db provider-id]
     (first (map dbresult->provider
                 (j/query db
-                         ["SELECT provider_id, cmr_only, small FROM providers where provider_id = ?"
+                         ["SELECT provider_id, short_name, cmr_only, small FROM providers where provider_id = ?"
                           provider-id]))))
 
   (update-provider
-    [db {:keys [provider-id cmr-only small]}]
+    [db {:keys [provider-id short-name cmr-only]}]
     (j/update! db
                :providers
-               {:cmr_only (if cmr-only 1 0)
-                :small (if small 1 0)}
+               {:short_name short-name
+                :cmr_only (if cmr-only 1 0)}
                ["provider_id = ?" provider-id]))
 
   (delete-provider

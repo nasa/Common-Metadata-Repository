@@ -16,17 +16,18 @@
 
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
-    (are [provider-id cmr-only small]
+    (are [provider-id short-name cmr-only small]
          (let [{:keys [status]} (ingest/create-ingest-provider {:provider-id provider-id
+                                                                :short-name short-name
                                                                 :cmr-only cmr-only
                                                                 :small small})]
            (and (= 201 status))
            (= (ingest/get-providers) (ingest/get-ingest-providers)))
-         "PROV3" false false
-         "PROV4" true false
-         "PROV5" false true
-         "PROV6" true true
-         "PROV7" nil nil))
+         "PROV3" "S3" false false
+         "PROV4" "S4" true false
+         "PROV5" "S5" false true
+         "PROV6" "S6" true true
+         "PROV7" "S7" nil nil))
   (testing "create provider invalid value"
     (u/are2
       [provider error]
@@ -35,34 +36,46 @@
         (= [400 [error]] [status errors]))
 
       "cmr-only invalid value"
-      {:provider-id "PROV8" :cmr-only "" :small false}
+      {:provider-id "PROV8" :short-name "S8" :cmr-only "" :small false}
       "Cmr Only must be either true or false but was [\"\"]"
 
       "small invalid value"
-      {:provider-id "PROV8" :cmr-only false :small ""}
+      {:provider-id "PROV8" :short-name "S8" :cmr-only false :small ""}
       "Small must be either true or false but was [\"\"]")))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
     (ingest/create-ingest-provider {:provider-id "PROV3"
+                                    :short-name "S3"
                                     :cmr-only false
                                     :small false})
     (ingest/create-ingest-provider {:provider-id "PROV4"
+                                    :short-name "S4"
                                     :cmr-only true
                                     :small true})
-    (ingest/update-ingest-provider "PROV4" false true)
-    (is (= #{{:provider-id "PROV4" :cmr-only false :small true}
-             {:provider-id "PROV3" :cmr-only false :small false}
-             {:provider-id "PROV2" :cmr-only true :small false}
-             {:provider-id "PROV1" :cmr-only true :small false}}
+    (ingest/update-ingest-provider {:provider-id "PROV4"
+                                    :short-name "S4"
+                                    :cmr-only false
+                                    :small true})
+    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
+             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
+             {:provider-id "PROV1" :short-name "PROV1":cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
   (testing "updating a non-existent provider fails"
-    (is (= 404 (:status (ingest/update-ingest-provider "PROV5" true false)))))
+    (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"
+                                                        :short-name "S5"
+                                                        :cmr-only true
+                                                        :small false})))))
   (testing "update provider with a different small value is invalid"
     (ingest/create-ingest-provider {:provider-id "PROV5"
+                                    :short-name "S5"
                                     :cmr-only true
                                     :small true})
-    (let [response (ingest/update-ingest-provider "PROV5" true false)
+    (let [response (ingest/update-ingest-provider {:provider-id "PROV5"
+                                                   :short-name "S5"
+                                                   :cmr-only true
+                                                   :small false})
           {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
       (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
              [status errors])))))
