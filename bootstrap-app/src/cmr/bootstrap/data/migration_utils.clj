@@ -11,11 +11,21 @@
   [system]
   (get-in system [:db :spec :user]))
 
+(defn provider-id->provider
+  "Helper function to convert a provider id into a provider map.
+  All catalog-rest providers map to CMR providers that has both cmr-only and small fields false."
+  [provider-id]
+  {:provider-id provider-id :short-name provider-id :cmr-only false :small false})
+
 (defn metadata-db-concept-table
+  [provider-id concept-type]
+  (tables/get-table-name (provider-id->provider provider-id) concept-type))
+
+(defn full-metadata-db-concept-table
   "Get the collection/granule table name for a given provider."
   [system provider-id concept-type]
   (str (metadata-db-user system) "."
-       (tables/get-table-name {:provider-id provider-id :cmr-only false :small false} concept-type)))
+       (metadata-db-concept-table provider-id concept-type)))
 
 (def concept-type->catalog-rest-id-field
   {:granule "echo_granule_id"

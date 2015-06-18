@@ -292,7 +292,7 @@
     (@providers-atom provider-id))
 
   (update-provider
-    [db {:keys [provider-id small] :as provider}]
+    [db {:keys [provider-id] :as provider}]
     (swap! providers-atom assoc provider-id provider))
 
   (delete-provider

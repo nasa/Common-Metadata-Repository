@@ -11,6 +11,7 @@
     (POST "/" {:keys [request-context body params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (ps/create-provider request-context {:provider-id (get body "provider-id")
+                                           :short-name (get body "short-name")
                                            :cmr-only (get body "cmr-only")
                                            :small (get body "small")}))
 
