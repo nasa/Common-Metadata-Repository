@@ -96,25 +96,36 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for concept find
 
-(def concept-type->supported-parameter-combinations
-  "Map of concept types to supported parameter combination sets."
-  {:collection #{#{:provider-id :entry-id}
-                 #{:provider-id :entry-title}
-                 #{:provider-id :short-name :version-id}
-                 #{:provider-id :entry-title :short-name}
-                 #{:provider-id :entry-title :version-id}
-                 #{:provider-id :entry-title :short-name :version-id}
-                 #{:provider-id}}
-   :granule #{#{:provider-id :granule-ur}
-              #{:provider-id :native-id}}})
+(def supported-collection-parameters
+  "Set of parameters supported by find for collections"
+  #{:provider-id :entry-title :entry-id :short-name :version-id})
 
-(defn supported-parameter-combinations-validation
+(def granule-supported-parameter-combinations
+  "Supported parameter combination sets for granule find"
+  #{#{:provider-id :granule-ur}
+    #{:provider-id :native-id}})
+
+(defmulti supported-parameter-combinations-validation
+  "Validates the find parameters for a concept type"
+  (fn [params]
+    (:concept-type params)))
+
+(defmethod supported-parameter-combinations-validation :collection
+  [params]
+  (let [params (dissoc params :concept-type)]
+    (when-not (clojure.set/subset? (set (keys params)) supported-collection-parameters)
+      [(msg/find-not-supported :collection (keys params))])))
+
+(defmethod supported-parameter-combinations-validation :granule
   [{:keys [concept-type] :as params}]
   (let [params (dissoc params :concept-type)]
-    (when-not (contains?
-                (get concept-type->supported-parameter-combinations concept-type)
-                (set (keys params)))
+    (when-not (contains? granule-supported-parameter-combinations (set (keys params)))
       [(msg/find-not-supported concept-type (keys params))])))
+
+(defmethod supported-parameter-combinations-validation :default
+  [{:keys [concept-type] :as params}]
+  [(msg/find-not-supported concept-type (keys (dissoc params :concept-type)))])
+
 
 (def find-params-validation
   "Validates parameters for finding a concept"

@@ -37,13 +37,7 @@
     (is (= [(msg/find-not-supported :foo [:provider-id :entry-title])]
            (v/find-params-validation {:concept-type "foo"
                                       :entry-title "e"
-                                      :provider-id "p"}))))
-  (testing "extra parameters"
-    (is (= [(msg/find-not-supported :collection [:provider-id :entry-id :entry-title])]
-           (v/find-params-validation {:concept-type :collection
-                                      :provider-id "p"
-                                      :entry-id "s"
-                                      :entry-title "e"})))))
+                                      :provider-id "p"})))))
 
 (deftest collection-validation-test
   (testing "valid-concept"

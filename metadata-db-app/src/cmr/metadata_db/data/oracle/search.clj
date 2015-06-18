@@ -88,12 +88,8 @@ for retrieving concepts using parameters"
             stmt (su/build (select [:*]
                              (from table)
                              (when-not (empty? params)
-                               (where (sh/find-params->sql-clause params)))))
-            _ (println "STMT....")
-            _ (println stmt)]
+                               (where (sh/find-params->sql-clause params)))))]
         (doall (map (fn [res]
-                      (println "RES.....")
-                      (println res)
                       (oc/db-result->concept-map concept-type conn provider-id res))
                     (su/query conn stmt)))))))
 

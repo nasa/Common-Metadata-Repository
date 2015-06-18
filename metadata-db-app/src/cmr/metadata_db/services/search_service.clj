@@ -40,4 +40,7 @@
 (deftracefn find-concepts
   "Find concepts for all providers for a concept type with specific parameters"
   [context params]
-  )
+  (let [db (util/context->db context)
+        latest-only? (= "true" (:latest params))
+        params (dissoc params :latest)]
+    (cv/validate-find-params params)))

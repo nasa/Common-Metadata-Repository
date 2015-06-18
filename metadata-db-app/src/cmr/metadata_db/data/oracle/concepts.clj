@@ -148,8 +148,6 @@
                   revision_id
                   revision_date
                   deleted]} result]
-      (println "RESULT......")
-      (println result)
       {:concept-type concept-type
        :native-id native_id
        :concept-id concept_id

@@ -230,14 +230,6 @@
              (util/get-expired-collection-concept-ids nil))))))
 
 (deftest find-collections-with-invalid-parameters
-  (testing "missing parameters"
-    (are [params] (= {:status 400
-                      :errors [(msg/find-not-supported :collection params)]}
-                     (util/find-concepts :collection (reduce #(assoc %1 %2 1) {} params)))
-         [:provider-id :short-name]
-         [:provider-id :version-id]
-         [:short-name :version-id]
-         []))
   (testing "extra parameters"
     (= {:status 400
         :errors [(msg/find-not-supported :collection [:provider-id :short-name :version-id :foo])]}
