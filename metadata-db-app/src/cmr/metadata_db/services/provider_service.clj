@@ -20,9 +20,7 @@
       (cmsg/data-error :conflict msg/provider-with-id-exists provider-id))
     (when-let [existing-provider (some #(when (= short-name (:short-name %)) %) providers)]
       (cmsg/data-error :conflict msg/provider-with-short-name-exists existing-provider))
-    (let [result (providers/save-provider db provider)]
-      (when (:error result)
-        (errors/internal-error! (:error-message result))))))
+    (providers/save-provider db provider)))
 
 (deftracefn get-providers
   "Get the list of providers."
@@ -37,17 +35,17 @@
   (info "Updating provider [" provider-id "]")
   (pv/validate-provider provider)
   (let [db (mdb-util/context->db context)
-        existing-provider (providers/get-provider db provider-id)]
+        providers (providers/get-providers db)
+        existing-provider (some #(when (= provider-id (:provider-id %)) %) providers)]
     (when-not existing-provider
       (cmsg/data-error :not-found msg/provider-does-not-exist provider-id))
-    (when-not (= short-name (:short-name existing-provider))
-      (cmsg/data-error :bad-request
-                       msg/provider-short-name-cannot-be-modified existing-provider short-name))
+    (when-let [conflict-provider (some #(when (and (= short-name (:short-name %))
+                                                   (not= provider-id (:provider-id %))) %)
+                                       providers)]
+      (cmsg/data-error :conflict msg/provider-with-short-name-exists conflict-provider))
     (when-not (= small (:small existing-provider))
       (cmsg/data-error :bad-request msg/provider-small-field-cannot-be-modified provider-id))
-    (let [result (providers/update-provider db provider)]
-      (when (:error result)
-        (errors/internal-error! (:error-message result))))))
+    (providers/update-provider db provider)))
 
 (deftracefn delete-provider
   "Delete a provider and all its concept tables."

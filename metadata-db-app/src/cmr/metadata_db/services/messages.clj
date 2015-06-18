@@ -91,11 +91,6 @@
 (defn provider-small-field-cannot-be-modified [provider-id]
   (format "Provider [%s] small field cannot be modified." provider-id))
 
-(defn provider-short-name-cannot-be-modified [provider new-short-name]
-  (let [{:keys [provider-id short-name]} provider]
-    (format "Provider [%s] short-name cannot be modified. It was [%s], new value is [%s]."
-            provider-id short-name new-short-name)))
-
 (defn small-provider-cannot-be-deleted []
   "Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted.")
 
@@ -115,12 +110,11 @@
     (format "Provider with short name [%s] already exists. Its provider id is [%s]."
             short-name provider-id)))
 
-(defn provider-id-empty []
-  "%s cannot be empty")
+(defn field-blank []
+  "%s cannot be blank")
 
-(defn provider-id-too-long [provider-id limit]
-  (format "%%s [%s] exceeds %d characters"
-          provider-id limit))
+(defn field-too-long [value limit]
+  (format "%%s [%s] exceeds %d characters" value limit))
 
 (defn provider-id-reserved []
   "%s [SMALL_PROV] is reserved")

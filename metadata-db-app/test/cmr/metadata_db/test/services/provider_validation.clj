@@ -9,13 +9,13 @@
             [cmr.common.util :as u]
             [cmr.common.test.test-util :as tu]))
 
-(def long-provider-id
-  "A provider id with 255 characters, maximum allowed."
-  (str (apply str (repeat 10 "ABCDEFGHIJKLMNOPQRSTUVWXY")) "12345"))
+(def long-short-name
+  "A provider short name with 128 characters, maximum allowed."
+  (str (apply str (repeat 6 "ABCDEFGHIJKLMNOPQRST")) "12345678"))
 
-(def too-long-provider-id
-  "A provider id with 255 characters, maximum allowed."
-  (str (apply str (repeat 10 "ABCDEFGHIJKLMNOPQRSTUVWXY")) "123456"))
+(def too-long-short-name
+  "A provider short name with 129 characters."
+  (str long-short-name "1"))
 
 (deftest validate-provider-test
   (testing "valid provider"
@@ -25,7 +25,8 @@
                                       :cmr-only false
                                       :small false}))
          "PROV1" "PROV1" false false
-         long-provider-id "PROV2" true false))
+         "PROV1" "Dept of Commerce/NOAA/Weather Balloons" false false
+         "P123456789" long-short-name true false))
   (testing "invalid providers"
     (u/are2 [attrs error]
             (tu/assert-exception-thrown-with-errors
@@ -39,35 +40,31 @@
 
             "empty provider-id"
             {:provider-id ""}
-            "Provider Id cannot be empty"
+            "Provider Id cannot be blank"
 
             "nil provider-id"
             {:provider-id nil}
-            "Provider Id cannot be empty"
+            "Provider Id cannot be blank"
 
             "provider-id too long"
-            {:provider-id too-long-provider-id}
-            (format "Provider Id [%s] exceeds 255 characters" too-long-provider-id)
+            {:provider-id "A2345678901"}
+            "Provider Id [A2345678901] exceeds 10 characters"
 
             "provider-id invalid character"
             {:provider-id "ab:123"}
             "Provider Id [ab:123] is invalid"
 
             "empty short-name"
-            {:short-name ""}
-            "Short Name cannot be empty"
+            {:short-name "   "}
+            "Short Name cannot be blank"
 
             "nil short-name"
             {:short-name nil}
-            "Short Name cannot be empty"
+            "Short Name cannot be blank"
 
             "short-name too long"
-            {:short-name "a2345678901"}
-            "Short Name [a2345678901] exceeds 10 characters"
-
-            "short-name invalid character"
-            {:short-name "ab:123"}
-            "Short Name [ab:123] is invalid"
+            {:short-name too-long-short-name}
+             (format "Short Name [%s] exceeds 128 characters" too-long-short-name)
 
             "cmr-only not provided"
             {:cmr-only nil}

@@ -33,20 +33,13 @@
 
   (save-provider
     [db provider]
-    (try
-      (let [{:keys [provider-id short-name cmr-only small]} provider]
-        (j/insert! db
-                   :providers
-                   ["provider_id" "short_name" "cmr_only" "small"]
-                   [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
-        (when (not small)
-          (ct/create-provider-concept-tables db provider)))
-      (catch java.sql.BatchUpdateException e
-        (let [error-message (.getMessage e)]
-          (if (re-find #"UNIQUE_PROVIDER_ID" error-message)
-            {:error :provider-id-conflict
-             :error-message error-message}
-            (throw e))))))
+    (let [{:keys [provider-id short-name cmr-only small]} provider]
+      (j/insert! db
+                 :providers
+                 ["provider_id" "short_name" "cmr_only" "small"]
+                 [provider-id short-name (if cmr-only 1 0) (if small 1 0)])
+      (when (not small)
+        (ct/create-provider-concept-tables db provider))))
 
   (get-providers
     [db]
@@ -61,11 +54,11 @@
                           provider-id]))))
 
   (update-provider
-    [db {:keys [provider-id cmr-only]}]
-    ;; only the cmr-only field of a provider can be updated
+    [db {:keys [provider-id short-name cmr-only]}]
     (j/update! db
                :providers
-               {:cmr_only (if cmr-only 1 0)}
+               {:short_name short-name
+                :cmr_only (if cmr-only 1 0)}
                ["provider_id = ?" provider-id]))
 
   (delete-provider

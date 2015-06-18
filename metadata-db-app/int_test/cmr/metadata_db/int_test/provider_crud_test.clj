@@ -51,9 +51,13 @@
     (let [{:keys [status errors]} (util/update-provider "PROV1" "S1" true true)]
       (is (= [400 ["Provider [PROV1] small field cannot be modified."]]
              [status errors]))))
-  (testing "cannot modify short name of a provider"
-    (let [{:keys [status errors]} (util/update-provider "PROV1" "S5" true false)]
-      (is (= [400 ["Provider [PROV1] short-name cannot be modified. It was [S1], new value is [S5]."]]
+  (testing "modify short name of a provider without conflict is OK"
+    (util/update-provider "PROV1" "S5" true false)
+    (is (util/verify-provider-was-saved "PROV1" "S5" true false)))
+  (testing "modify short name of a provider with conflict is not OK"
+    (util/save-provider "PROV6" "S6" false false)
+    (let [{:keys [status errors]} (util/update-provider "PROV1" "S6" true false)]
+      (is (= [409 ["Provider with short name [S6] already exists. Its provider id is [PROV6]."]]
              [status errors]))))
   (testing "update nonexistant provider"
     (is (= 404 (:status (util/update-provider "PROV2" "S2" true false)))))
