@@ -62,7 +62,9 @@
   "Find concepts for a concept type with specific params"
   [context params]
   (let [params (update-in params [:concept-type] (comp keyword inf/singular))
-        concepts (search-service/find-concepts-for-provider context params)]
+        concepts (if (:provider-id params)
+                   (search-service/find-concepts-for-provider context params)
+                   (search-service/find-concepts context params))]
     {:status 200
      :body (json/generate-string concepts)
      :headers rh/json-header}))

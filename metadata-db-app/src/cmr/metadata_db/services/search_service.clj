@@ -46,4 +46,7 @@
         providers (provider-service/get-providers context)]
     (println "PROVIDERS.....")
     (println providers)
-    (cv/validate-find-params params)))
+    (cv/validate-find-params params)
+    (if latest-only?
+      (c/find-latest-concepts db providers params)
+      (c/find-concepts db providers params))))
