@@ -176,11 +176,17 @@
       (is (= {:status 409
               :errors [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]}
              response))))
-  (testing "attempting to ingest using an invalid revision id returns an error"
+  (testing "attempting to ingest using an non-integer revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "NaN"}))]
       (is (= {:status 400
               :errors [(msg/invalid-revision-id "NaN")]}
+             response))))
+  (testing "attempting to ingest using a negative revision id returns an error"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
+                                                                  :revision-id "-1"}))]
+      (is (= {:status 400
+              :errors [(msg/invalid-revision-id "-1")]}
              response)))))
 
 (comment

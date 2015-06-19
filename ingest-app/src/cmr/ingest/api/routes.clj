@@ -127,22 +127,28 @@
      :headers {"Content-Type" (mt/format->mime-type :xml)}
      :body (result-map->xml result)})
 
+(defn- assoc-revision-id
+  "Associate revision id to concept if revision id is a positive integer. Otherwise return an error"
+  [concept revision-id]
+  (try
+    (let [revision-id (Integer/parseInt revision-id)]
+      (if (pos? revision-id)
+        (assoc concept :revision-id revision-id)
+        (throw (IllegalArgumentException.))))
+    (catch IllegalArgumentException _
+      (srvc-errors/throw-service-error
+        :bad-request
+        (msg/invalid-revision-id revision-id)))))
+
 (defn- set-concept-id-and-revision-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
   (let [concept-id (get headers "concept-id")
         revision-id (get headers "revision-id")]
-    (if concept-id
-      (if revision-id
-        (try
-          (assoc concept :concept-id concept-id :revision-id (Integer/parseInt revision-id))
-          (catch NumberFormatException e
-            (srvc-errors/throw-service-error
-              :bad-request
-              (msg/invalid-revision-id revision-id))))
-        (assoc concept :concept-id concept-id))
-      concept)))
+    (-> concept
+        (cond-> concept-id (assoc :concept-id concept-id))
+        (cond-> revision-id (assoc-revision-id revision-id)))))
 
 (defn- sanitize-concept-type
   "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
