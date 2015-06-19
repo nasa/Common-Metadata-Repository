@@ -1,17 +1,9 @@
 (ns cmr.metadata-db.services.search-service
   "Contains fucntions for retrieving concepts using parameter search"
   (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.concepts :as cu]
-            [cmr.common.util :as cutil]
-            [cmr.metadata-db.services.messages :as msg]
-            [cmr.common.services.messages :as cmsg]
-            [cmr.common.config :as cfg]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
             [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.data.providers :as provider-db]
-            [cmr.metadata-db.config :as config]
 
             ;; Required to get code loaded
             [cmr.metadata-db.data.oracle.concepts]
@@ -44,8 +36,6 @@
         latest-only? (= "true" (:latest params))
         params (dissoc params :latest :provider-id)
         providers (provider-service/get-providers context)]
-    (println "PROVIDERS.....")
-    (println providers)
     (cv/validate-find-params params)
     (if latest-only?
       (c/find-latest-concepts db providers params)
