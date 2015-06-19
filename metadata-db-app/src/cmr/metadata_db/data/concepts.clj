@@ -2,7 +2,7 @@
   "Defines a protocol for CRUD operations on concepts.")
 
 (defprotocol ConceptSearch
-  "Functions for retrievng concepts by parameters"
+  "Functions for retrieving concepts by parameters"
 
   (find-concepts
     [db providers params]

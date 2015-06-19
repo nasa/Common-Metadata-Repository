@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.services.search-service
-  "Contains fucntions for retrieving concepts using parameter search"
+  "Contains functions for retrieving concepts using parameter search"
   (:require [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-validations :as cv]
@@ -14,29 +14,31 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(deftracefn find-concepts-for-provider
-  "Find concepts for a concept type with specific parameters"
+(defn- find-providers-for-params
+  "Find providers that mach the given parameters"
   [context params]
-  (let [db (util/context->db context)
-        latest-only? (= "true" (:latest params))
-        params (dissoc params :latest)]
-    (cv/validate-find-params params)
-    ;; provider-id is a required field in find params. It always exists.
-    (if-let [provider (provider-service/get-provider-by-id context (:provider-id params) false)]
-      (if latest-only?
-        (c/find-latest-concepts db [provider] params)
-        (c/find-concepts db [provider] params))
-      ;; the provider doesn't exist
-      [])))
+  ;; TODO - Add support for finding provider from concept-id parameter when support is added
+  ;; to find-concepts for that parameter
+  (if-let [provider-id (:provider-id params)]
+    (if-let [provider (provider-service/get-provider-by-id context provider-id false)]
+      [provider]
+      [])
+    (provider-service/get-providers context)))
+
 
 (deftracefn find-concepts
-  "Find concepts for all providers for a concept type with specific parameters"
+  "Find concepts with specific parameters"
   [context params]
   (let [db (util/context->db context)
         latest-only? (= "true" (:latest params))
-        params (dissoc params :latest :provider-id)
-        providers (provider-service/get-providers context)]
-    (cv/validate-find-params params)
-    (if latest-only?
-      (c/find-latest-concepts db providers params)
-      (c/find-concepts db providers params))))
+        providers (find-providers-for-params context params)
+        _ (println "PROVIDERS....")
+        _ (println providers)
+        params (dissoc params :latest)]
+    (if (seq providers)
+      (do
+        (cv/validate-find-params params)
+        (if latest-only?
+          (c/find-latest-concepts db providers params)
+          (c/find-concepts db providers params)))
+      [])))

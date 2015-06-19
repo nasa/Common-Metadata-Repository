@@ -104,10 +104,14 @@
     (is (= [(:concept-id coll1)] (map :concept-id concepts)))))
 
 (deftest find-collections
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
-        coll2 (util/create-and-save-collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-1"}})
-        coll3 (util/create-and-save-collection "SMAL_PROV1" 3 1 {:extra-fields {:entry-id "entry-1"}})
-        coll4 (util/create-and-save-collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"}})
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1 {:extra-fields {:entry-id "entry-0"
+                                                                              :version-id "A"}})
+        coll2 (util/create-and-save-collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-1"
+                                                                              :version-id "B"}})
+        coll3 (util/create-and-save-collection "SMAL_PROV1" 3 1 {:extra-fields {:entry-id "entry-1"
+                                                                                :version-id "C"}})
+        coll4 (util/create-and-save-collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"
+                                                                                :version-id "D"}})
         colls [coll1 coll2 coll3 coll4]
         [short1 short2 short3 short4] (map #(get-in % [:extra-fields :short-name]) colls)
         [vid1 vid2 vid3 vid4] (map #(get-in % [:extra-fields :version-id]) colls)
