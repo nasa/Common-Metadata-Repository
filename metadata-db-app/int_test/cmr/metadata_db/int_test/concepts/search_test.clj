@@ -105,7 +105,7 @@
 
 (deftest find-collections
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
-        coll2 (util/create-and-save-collection "REG_PROV" 2)
+        coll2 (util/create-and-save-collection "REG_PROV" 2 1 {:extra-fields {:entry-id "entry-1"}})
         coll3 (util/create-and-save-collection "SMAL_PROV1" 3 1 {:extra-fields {:entry-id "entry-1"}})
         coll4 (util/create-and-save-collection "SMAL_PROV2" 4 1 {:extra-fields {:entry-id "entry-1"}})
         colls [coll1 coll2 coll3 coll4]
@@ -113,6 +113,17 @@
         [vid1 vid2 vid3 vid4] (map #(get-in % [:extra-fields :version-id]) colls)
         [eid1 eid2 eid3 eid4] (map #(get-in % [:extra-fields :entry-id]) colls)
         [et1 et2 et3 et4] (map #(get-in % [:extra-fields :entry-title]) colls)]
+    (testing "find-without-provider-id"
+      (are [collections params]
+           (= (set collections)
+              (set (-> (util/find-concepts :collection params)
+                       :concepts
+                       concepts-for-comparison)))
+           [coll1] {:entry-title et1}
+           ;; Mixture of small and normal providers
+           [coll2 coll3 coll4] {:entry-id "entry-1"}
+           [coll2] {:version-id vid2}))
+
     (testing "find by provider-id, short-name, version id"
       (testing "find one"
         (are [collection provider-id short-name version-id]
@@ -182,16 +193,27 @@
   (let [coll5 (util/create-and-save-collection "REG_PROV" 4 3)
         eid5 (get-in coll5 [:extra-fields :entry-id])]
     (testing "find all revisions"
+      (testing "with provider id"
       (is (= 3
              (count (-> (util/find-concepts :collection {:provider-id "REG_PROV"
                                                          :entry-id eid5})
                         :concepts)))))
+      (testing "without provider id"
+        (is (= 3
+             (count (-> (util/find-concepts :collection {:entry-id eid5})
+                        :concepts)))))
     (testing "find the latest revision"
+      (testing "with provider id"
       (is (= [coll5]
              (-> (util/find-latest-concepts :collection {:provider-id "REG_PROV"
                                                          :entry-id eid5})
                  :concepts
-                 concepts-for-comparison))))))
+                 concepts-for-comparison))))
+      (testing "without provider id"
+        (is (= [coll5]
+             (-> (util/find-latest-concepts :collection {:entry-id eid5})
+                 :concepts
+                 concepts-for-comparison))))))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)

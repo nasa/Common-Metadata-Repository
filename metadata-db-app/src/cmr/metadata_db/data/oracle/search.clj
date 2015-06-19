@@ -49,7 +49,7 @@ for retrieving concepts using parameters"
 (defn- params->sql-params
   "Converts the search params into params that can be converted in sql condition clause."
   [provider params]
-  (when-not (:provider-id params)
+  #_(when-not (:provider-id params)
     (errors/internal-error!
       (format "Provider id is missing from find concepts parameters [%s]" params)))
   (if (:small provider)
