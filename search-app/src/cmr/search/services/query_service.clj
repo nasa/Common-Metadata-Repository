@@ -27,6 +27,9 @@
             [cmr.search.services.parameters.converters.science-keyword]
             [cmr.search.services.parameters.converters.two-d-coordinate-system]
 
+            ;; json converters
+            [cmr.search.services.json-parameters.conversion :as jp]
+
             ;; aql
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.services.aql.converters.temporal]
@@ -160,6 +163,22 @@
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   (pr-str params)))
+    results))
+
+(deftracefn find-concepts-by-json
+  "Executes a search for concepts using the given JSON. The concepts will be returned with
+  concept id and native provider id along with hit count and timing info."
+  [context concept-type params json-query]
+  ; nil)
+  (let [[query-creation-time query] (u/time-execution
+                                      (jp/json-parameters->query concept-type
+                                                                 (sanitize-params params)
+                                                                 json-query))
+        results (find-concepts context concept-type params query-creation-time query)]
+    ;; TODO refactor this out into find-concepts or some common function
+    (info (format "Found %d %ss in %d ms in format %s with JSON %s and query params %s."
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  json-query (pr-str params)))
     results))
 
 (deftracefn find-concepts-by-aql

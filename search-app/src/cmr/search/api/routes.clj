@@ -166,26 +166,40 @@
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
 
+(defn- find-concepts-by-json
+  "Invokes query service to parse the JSON query, find results and return the response."
+  [context path-w-extension params headers json-query]
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+        _ (println "CDD I'm searching for JSON")
+        params (process-params params path-w-extension headers mt/xml)
+        _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
+                        (:client-id context) (:result-format params) json-query params))
+        results (query-svc/find-concepts-by-json context concept-type params json-query)]
+    (search-response params results)))
+
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
-  [context path-w-extension params headers query-string]
+  [context path-w-extension params headers body]
   (let [content-type-header (get headers (str/lower-case CONTENT_TYPE_HEADER))]
-    (if (or (nil? content-type-header)
-            (= "application/x-www-form-urlencoded" content-type-header))
+    (case content-type-header
+      "application/json" (find-concepts-by-json context path-w-extension params headers body)
+      (nil "application/x-www-form-urlencoded")
       (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-            context (assoc context :query-string query-string)
+            context (assoc context :query-string body)
             params (process-params params path-w-extension headers mt/xml)
             result-format (:result-format params)
             _ (info (format "Searching for %ss from client %s in format %s with params %s."
                             (name concept-type) (:client-id context) result-format
                             (pr-str params)))
-            search-params (lp/process-legacy-psa params query-string)
+            search-params (lp/process-legacy-psa params body)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
+      ;; else
       {:status 415
        :headers {CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["
                   (get headers (str/lower-case CONTENT_TYPE_HEADER)) "]")})))
+
 
 (defn- get-granules-timeline
   "Retrieves a timeline of granules within each collection found."
@@ -267,7 +281,7 @@
         (OPTIONS "/" req options-response)
         (GET "/" {params :params headers :headers context :request-context query-string :query-string}
           (find-concepts context path-w-extension params headers query-string))
-        ;; Find concepts - form encoded
+        ;; Find concepts - form encoded or JSON
         (POST "/" {params :params headers :headers context :request-context body :body-copy}
           (find-concepts context path-w-extension params headers body)))
 
