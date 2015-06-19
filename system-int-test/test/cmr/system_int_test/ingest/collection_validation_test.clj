@@ -187,7 +187,18 @@
                                                                   :revision-id "-1"}))]
       (is (= {:status 400
               :errors [(msg/invalid-revision-id "-1")]}
-             response)))))
+             response))))
+  (testing "ingesting a concept with just the revision-id succeeds"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))]
+      (is (and (= 200 (:status response)) (= 2 (:revision-id response))))))
+  (testing "ingesting a concept while skipping revision-ids succeeds, but fails if revision id is smaller than the maximum revision id"
+    (let [_ (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))
+          response1 (ingest/ingest-concept (dc/collection-concept {:revision-id "6"}))
+          response2 (ingest/ingest-concept (dc/collection-concept {:revision-id "4"}))]
+      (is (and (= 200 (:status response1)) (= 6 (:revision-id response1)))
+          (= {:status 400
+              :errors [(msg/invalid-revision-id "4")]}
+             response2)))))
 
 (comment
   (ingest/delete-provider "PROV1")
