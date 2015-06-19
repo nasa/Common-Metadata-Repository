@@ -192,12 +192,14 @@
     (let [response (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))]
       (is (and (= 200 (:status response)) (= 2 (:revision-id response))))))
   (testing "ingesting a concept while skipping revision-ids succeeds, but fails if revision id is smaller than the maximum revision id"
-    (let [_ (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))
-          response1 (ingest/ingest-concept (dc/collection-concept {:revision-id "6"}))
-          response2 (ingest/ingest-concept (dc/collection-concept {:revision-id "4"}))]
-      (is (and (= 200 (:status response1)) (= 6 (:revision-id response1)))
-          (= {:status 400
-              :errors [(msg/invalid-revision-id "4")]}
+    (let [concept-id "C3-PROV1"
+          coll (dc/collection-concept {:concept-id concept-id})
+          _ (ingest/ingest-concept (assoc coll :revision-id "2"))
+          response1 (ingest/ingest-concept (assoc coll :revision-id "6"))
+          response2 (ingest/ingest-concept (assoc coll :revision-id "4"))]
+      (is (and (= 200 (:status response1)) (= 6 (:revision-id response1))))
+      (is (= {:status 409
+              :errors [(format "Expected revision-id of [7] got [4] for [%s]" concept-id)]}
              response2)))))
 
 (comment

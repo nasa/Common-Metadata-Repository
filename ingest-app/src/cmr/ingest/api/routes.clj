@@ -129,27 +129,27 @@
 
 (defn- set-revision-id
   "Associate revision id to concept if revision id is a positive integer. Otherwise return an error"
-  [concept revision-id]
-  (let [throw-error (partial srvc-errors/throw-service-error
-                             :bad-request
-                             (msg/invalid-revision-id revision-id))]
-    (try
-      (let [revision-id (Integer/parseInt revision-id)]
-        (if (pos? revision-id)
-          (assoc concept :revision-id revision-id)
-          (throw-error)))
-      (catch NumberFormatException _
-        (throw-error)))))
+  [concept headers]
+  (if-let [revision-id (get headers "revision-id")]
+    (let [throw-error (partial srvc-errors/throw-service-error
+                               :bad-request
+                               (msg/invalid-revision-id revision-id))]
+      (try
+        (let [revision-id (Integer/parseInt revision-id)]
+          (if (pos? revision-id)
+            (assoc concept :revision-id revision-id)
+            (throw-error)))
+        (catch NumberFormatException _
+          (throw-error))))
+    concept))
 
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
-  (let [concept-id (get headers "concept-id")
-        revision-id (get headers "revision-id")]
-    (-> concept
-        (cond-> concept-id (assoc :concept-id concept-id))
-        (cond-> revision-id (set-revision-id revision-id)))))
+  (if-let [concept-id (get headers "concept-id")]
+    (assoc concept :concept-id concept-id)
+    concept))
 
 (defn- sanitize-concept-type
   "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
@@ -165,7 +165,8 @@
          :provider-id provider-id
          :native-id native-id
          :concept-type concept-type}
-        (set-concept-id headers))))
+        (set-concept-id headers)
+        (set-revision-id headers))))
 
 (defn- concept->loggable-string
   "Returns a string with information about the concept as a loggable string."
