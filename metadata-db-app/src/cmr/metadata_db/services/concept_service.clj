@@ -360,7 +360,7 @@
         provider (get-provider-by-id context provider-id)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
-      (if (util/is-tombstone? previous-revision)
+      (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
         (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""
                                                   :revision-date revision-date})]

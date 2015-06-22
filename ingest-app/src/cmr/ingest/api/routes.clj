@@ -259,7 +259,8 @@
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
-                                 :concept-type :collection}]
+                                 :concept-type :collection
+                                 :revision-id (get headers "revision-id")}]
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
             (info (format "Deleting collection %s from client %s"

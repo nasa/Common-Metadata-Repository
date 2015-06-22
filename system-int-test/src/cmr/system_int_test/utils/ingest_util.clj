@@ -194,9 +194,10 @@
    (delete-concept concept {}))
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token client-id accept-format]} options
+         {:keys [token client-id accept-format revision-id]} options
          headers (util/remove-nil-keys {"Echo-Token" token
-                                        "Client-Id" client-id})
+                                        "Client-Id" client-id
+                                        "revision-id" revision-id})
          params {:method :delete
                  :url (url/ingest-url provider-id concept-type native-id)
                  :headers headers

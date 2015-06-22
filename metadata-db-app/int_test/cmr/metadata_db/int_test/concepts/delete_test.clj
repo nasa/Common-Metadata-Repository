@@ -89,6 +89,15 @@
           {:keys [status]} (util/delete-concept (:concept-id coll1) 0)]
       (is (= status 409)))))
 
+(deftest delete-deleted-concept-with-new-revision-test
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+    (let [coll1 (util/create-and-save-collection provider-id 1)
+          {status1 :status revision-id1 :revision-id} (util/delete-concept (:concept-id coll1) 5)
+          {status2 :status revision-id2 :revision-id} (util/delete-concept (:concept-id coll1) 7)]
+      (is (= 200 status1 status2))
+      (is (= 5 revision-id1))
+      (is (= 7 revision-id2)))))
+
 (deftest fail-to-delete-missing-concept
   (let [{:keys [status revision-id errors]} (util/delete-concept "C100-REG_PROV")]
     (is (= status 404))
