@@ -367,6 +367,19 @@
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible params) response))))
 
+(defn find-refs-with-json
+  "Returns the references that are found by searching using a JSON request."
+  [concept-type query-params json-as-map]
+  (get-search-failure-xml-data
+    (let [response (client/post (url/search-url concept-type)
+                                {:accept mime-types/xml
+                                 :content-type "application/json"
+                                 :body (json/generate-string json-as-map)
+                                 :query-params query-params
+                                 :throw-exceptions false
+                                 :connection-manager (s/conn-mgr)})]
+      (parse-reference-response (:echo-compatible query-params) response))))
+
 (defn find-refs-with-aql-string
   ([aql]
    (find-refs-with-aql-string aql {}))

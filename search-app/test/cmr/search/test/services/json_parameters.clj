@@ -4,50 +4,74 @@
             [cmr.search.models.query :as q]
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.json-parameters.conversion :as jp]))
+            [cmr.search.services.json-parameters.conversion :as jp]
+            [cheshire.core :as json]))
 
 (deftest json-parameters->query-test
   (testing "Empty parameters"
     (are [empty-string] (= (q/query {:concept-type :collection})
                            (jp/json-parameters->query :collection {} empty-string))
          "{}" "" nil))
-  #_(testing "option map aliases are corrected"
+  (testing "Combination of query and JSON parameters"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/string-condition :entry-title "foo" false false)})
-           (jp/json-parameters->query :collection {:entry-title ["foo"]
-                                             :options {:entry-title {:ignore-case "true"}}}))))
-  #_(testing "with one condition"
+                     :condition (q/string-condition :entry-title "ET")
+                     :page-size 15})
+           (jp/json-parameters->query :collection {:page-size 15, :include-facets true}
+                                      (json/generate-string {:entry-title "ET"})))))
+  (testing "Multiple nested JSON parameter conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (q/string-condition :entry-title "foo")})
-           (jp/json-parameters->query :collection {:entry-title ["foo"]}))))
-  #_(testing "with multiple conditions"
+                     :condition (gc/or-conds
+                                  [(gc/and-conds [(q/string-condition :provider "bar")
+                                                  (q/string-condition :entry-title "foo")])
+                                   (gc/and-conds [(q/string-condition :entry-title "ET")
+                                                  (q/string-condition :provider "soap")
+                                                  (q/->NegatedCondition
+                                                    (q/string-condition :provider "alpha"))])])})
+           (jp/json-parameters->query
+             :collection
+             {}
+             (json/generate-string {:or [{:entry-title "foo"
+                                          :provider "bar"}
+                                         {:provider "soap"
+                                          :and [{:not {:provider "alpha"}}
+                                                {:entry-title "ET"}]}]})))))
+  (testing "Implicit ANDing of conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :provider "bar")
-                                              (q/string-condition :entry-title "foo")])})
-           (jp/json-parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
+                                               (q/string-condition :entry-title "foo")])})
+           (jp/json-parameters->query :collection
+                                      {}
+                                      (json/generate-string {:entry-title "foo"
+                                                             :provider "bar"}))))))
 
-; (deftest parameter->condition-test
-;   (testing "String conditions"
-;     (testing "with one value"
-;       (is (= (q/string-condition :entry-title "bar")
-;              (p/parameter->condition :collection :entry-title "bar" nil))))
-;     (testing "with multiple values"
-;       (is (= (q/string-conditions :entry-title ["foo" "bar"])
-;              (p/parameter->condition :collection :entry-title ["foo" "bar"] nil))))
-;     (testing "with multiple values case sensitive"
-;       (is (= (q/string-conditions :entry-title ["foo" "bar"] true false :or)
-;              (p/parameter->condition :collection :entry-title ["foo" "bar"]
-;                                      {:entry-title {:ignore-case "false"}}))))
-;     (testing "with multiple values pattern"
-;       (is (= (gc/or-conds [(q/string-condition :entry-title "foo" false true)
-;                           (q/string-condition :entry-title "bar" false true)])
-;              (p/parameter->condition :collection :entry-title ["foo" "bar"]
-;                                      {:entry-title {:pattern "true"}}))))
-;     (testing "with multiple values and'd"
-;       (is (= (gc/and-conds [(q/string-condition :entry-title "foo" false false)
-;                           (q/string-condition :entry-title "bar" false false)])
-;              (p/parameter->condition :collection :entry-title ["foo" "bar"]
-;                                      {:entry-title {:and "true"}}))))
+(deftest parameter->condition-test
+  (testing "OR condition"
+    (is (= (gc/or-conds [(q/string-condition :provider "foo")
+                         (q/string-condition :entry-title "bar")])
+           (jp/json-parameter->condition :collection :or
+                                         [{:provider "foo"} {:entry-title "bar"}]))))
+  (testing "AND condition"
+    (is (= (gc/and-conds [(q/string-condition :provider "foo")
+                          (q/string-condition :entry-title "bar")])
+           (jp/json-parameter->condition :collection :and
+                                         [{:provider "foo"} {:entry-title "bar"}]))))
+  (testing "NOT condition"
+    (is (= (q/->NegatedCondition (q/string-condition :provider "alpha"))
+           (jp/json-parameter->condition :collection :not {:provider "alpha"}))))
+
+  (testing "Nested conditions"
+    (is (= (gc/or-conds [(gc/and-conds [(q/string-condition :provider "bar")
+                                        (q/string-condition :entry-title "foo")])
+                         (gc/and-conds [(q/string-condition :entry-title "ET")
+                                        (q/string-condition :provider "soap")
+                                        (q/->NegatedCondition
+                                          (q/string-condition :provider "alpha"))])])
+           (jp/json-parameter->condition :collection :or [{:entry-title "foo"
+                                                           :provider "bar"}
+                                                          {:provider "soap"
+                                                           :and [{:not {:provider "alpha"}}
+                                                                 {:entry-title "ET"}]}])))))
+;; TODO tests
 ;     (testing "case-insensitive"
 ;       (is (= (q/string-condition :entry-title "bar" false false)
 ;              (p/parameter->condition :collection :entry-title "bar"
