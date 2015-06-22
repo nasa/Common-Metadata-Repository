@@ -1,9 +1,7 @@
 (ns cmr.search.test.services.json-parameters
   (:require [clojure.test :refer :all]
-            [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
             [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cheshire.core :as json]))
 
