@@ -176,12 +176,31 @@
       (is (= {:status 409
               :errors [(format "Expected revision-id of [2] got [1] for [%s]" concept-id)]}
              response))))
-  (testing "attempting to ingest using an invalid revision id returns an error"
+  (testing "attempting to ingest using an non-integer revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "NaN"}))]
       (is (= {:status 400
               :errors [(msg/invalid-revision-id "NaN")]}
-             response)))))
+             response))))
+  (testing "attempting to ingest using a negative revision id returns an error"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
+                                                                  :revision-id "-1"}))]
+      (is (= {:status 400
+              :errors [(msg/invalid-revision-id "-1")]}
+             response))))
+  (testing "ingesting a concept with just the revision-id succeeds"
+    (let [response (ingest/ingest-concept (dc/collection-concept {:revision-id "2"}))]
+      (is (and (= 200 (:status response)) (= 2 (:revision-id response))))))
+  (testing "ingesting a concept while skipping revision-ids succeeds, but fails if revision id is smaller than the maximum revision id"
+    (let [concept-id "C3-PROV1"
+          coll (dc/collection-concept {:concept-id concept-id})
+          _ (ingest/ingest-concept (assoc coll :revision-id "2"))
+          response1 (ingest/ingest-concept (assoc coll :revision-id "6"))
+          response2 (ingest/ingest-concept (assoc coll :revision-id "4"))]
+      (is (and (= 200 (:status response1)) (= 6 (:revision-id response1))))
+      (is (= {:status 409
+              :errors [(format "Expected revision-id of [7] got [4] for [%s]" concept-id)]}
+             response2)))))
 
 (comment
   (ingest/delete-provider "PROV1")

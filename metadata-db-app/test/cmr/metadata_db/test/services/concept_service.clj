@@ -73,16 +73,17 @@
           [(messages/invalid-revision-id (:concept-id concept) 2 1)]
           (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))
     (testing "missing concept-id no revision-id"
-      (let [concept (dissoc previous-concept :concept-id)]
+      (let [concept (dissoc previous-concept :concept-id :revision-id)]
         (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))
     (testing "missing concept-id valid revision-id"
-      (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 1))]
+      (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 5))]
         (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept)))
     (testing "missing concept-id invalid revision-id"
-      (let [concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 2))]
+      (let [concept-id (:concept-id previous-concept)
+            concept (-> previous-concept (dissoc :concept-id) (assoc :revision-id 1))]
         (tu/assert-exception-thrown-with-errors
           :conflict
-          [(messages/invalid-revision-id (:concept-id concept) 1 2)]
+          [(messages/invalid-revision-id concept-id 2 1)]
           (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))))
 
 ;;; Verify that the try-to-save logic is correct.
