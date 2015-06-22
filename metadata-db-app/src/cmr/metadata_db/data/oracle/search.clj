@@ -45,18 +45,17 @@ for retrieving concepts using parameters"
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
-  (util/mapcatv (fn [provider]
-            (j/with-db-transaction
-              [conn db]
-              (let [params (params->sql-params provider params)
-                    stmt (su/build (select [:*]
-                                     (from table)
-                                     (when-not (empty? params)
-                                       (where (sh/find-params->sql-clause params)))))]
-                (doall (map (fn [res]
-                              (oc/db-result->concept-map concept-type conn (:provider_id res) res))
-                            (su/query conn stmt))))))
-          providers))
+  (j/with-db-transaction
+    [conn db]
+    (let [params (params->sql-params (first providers)
+                                     (assoc params :provider-id (map :provider-id providers)))
+          stmt (su/build (select [:*]
+                           (from table)
+                           (when-not (empty? params)
+                             (where (sh/find-params->sql-clause params)))))]
+      (doall (map (fn [res]
+                    (oc/db-result->concept-map concept-type conn (:provider_id res) res))
+                  (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
@@ -74,6 +73,16 @@ for retrieving concepts using parameters"
         (doall (for [res (su/query conn stmt)]
                  (oc/db-result->concept-map concept-type conn provider-id res)))))))
 
+(comment
+
+  (let [list (into () [1 2 3])]
+                   (su/build (select [:*] (from "table") (where `(in :x ~list)))))
+
+
+
+  )
+
+
 (extend-protocol c/ConceptSearch
   OracleStore
 
@@ -84,7 +93,7 @@ for retrieving concepts using parameters"
         table-provider (group-by #(tables/get-table-name % concept-type) providers)]
     (util/mapcatv (fn [[table provider-list]]
               (find-concepts-in-table db table concept-type provider-list params))
-            (seq table-provider))))
+            table-provider)))
 
   (find-concepts-in-batches
     ([db provider params batch-size]

@@ -15,8 +15,14 @@
     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
                                       (str/join ", " invalid-names)))))
-  (let [comparisons (for [[k v] params]
-                      `(= ~k ~v))]
+  (let [comparisons (for [[k v] params
+                          :let [[operator val] (if (sequential? v)
+                                           ['in (into () v)]
+                                           [`= v])]]
+                      (do
+                      (println "VAL....")
+                      (println val)
+                      `(~operator ~k ~val)))]
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))
@@ -33,3 +39,10 @@
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))]
     (j/execute! db stmt)))
+
+(comment
+
+  (find-params->sql-clause {:short-name "s", :version-id "v" :provider-id ["PROV1" "PROV2"]})
+
+
+  )
