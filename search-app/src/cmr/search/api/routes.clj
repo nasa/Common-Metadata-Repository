@@ -170,7 +170,6 @@
   "Invokes query service to parse the JSON query, find results and return the response."
   [context path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-        _ (println "CDD I'm searching for JSON")
         params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
                         (:client-id context) (:result-format params) json-query params))

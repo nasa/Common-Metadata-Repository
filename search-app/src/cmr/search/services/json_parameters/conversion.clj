@@ -43,33 +43,38 @@
   ;; TODO handle case sensitivity and wildcards
   (qm/string-condition param value false false))
 
-;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
-;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
-(defmethod json-parameter->condition :and
-  [concept-type param values]
-  (gc/and-conds
+(defn- grouping-condition
+  "Converts :and or :or condition to the appropriate query condition."
+  [concept-type values condition]
+  (condition
     (for [value values]
       (gc/and-conds
         (for [[k v] value]
           (json-parameter->condition concept-type k v))))))
+
+;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
+;;                  {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
+(defmethod json-parameter->condition :and
+  [concept-type param values]
+  (grouping-condition concept-type values gc/and-conds))
 
 ;; Example {"or": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
 (defmethod json-parameter->condition :or
   [concept-type param values]
-  (gc/or-conds
-    (for [value values]
-      (gc/and-conds
-        (for [[k v] value]
-          (json-parameter->condition concept-type k v))))))
+  (grouping-condition concept-type values gc/or-conds))
 
+;; Example - note in maps the conditions are implicitly and'ed together
+;;         {"not": {"entry-title": "ET",
+;;                  "provider": "PROV1",
+;;                  "revision-date": [null, "2015-04-01T00:00:00Z"]}}
 (defmethod json-parameter->condition :not
-  [concept-type param value]
-  (gc/or-conds
+  [concept-type param values]
+  (gc/and-conds
     (map (fn [[exclude-param exclude-val]]
            (qm/map->NegatedCondition
              {:condition (json-parameter->condition concept-type exclude-param exclude-val)}))
-         value)))
+         values)))
 
 (defn- json-query->query-condition
   "Converts a JSON query into a query condition."
