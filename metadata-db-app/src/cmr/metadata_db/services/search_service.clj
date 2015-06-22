@@ -32,8 +32,6 @@
   (let [db (util/context->db context)
         latest-only? (= "true" (:latest params))
         providers (find-providers-for-params context params)
-        _ (println "PROVIDERS....")
-        _ (println providers)
         params (dissoc params :latest)]
     (if (seq providers)
       (do

@@ -190,6 +190,14 @@
   [m]
   (map-keys csk/->kebab-case-keyword m))
 
+(defn mapcatv
+  "An eager version of mapcat that returns a vector of the results."
+  [f sequence]
+  (reduce (fn [v i]
+            (into v (f i)))
+          []
+          sequence))
+
 (defn map-n
   "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
   but faster. Note that it drops partitions at the end that would be less than a length of n."

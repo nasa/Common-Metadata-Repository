@@ -6,6 +6,7 @@ for retrieving concepts using parameters"
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.util :as util]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.sql-helper :as sh]
             [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
@@ -44,7 +45,7 @@ for retrieving concepts using parameters"
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
-  (mapcat (fn [provider]
+  (util/mapcatv (fn [provider]
             (j/with-db-transaction
               [conn db]
               (let [params (params->sql-params provider params)
@@ -60,6 +61,7 @@ for retrieving concepts using parameters"
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
   [db table concept-type providers params]
+  {:pre [(== 1 (count providers))]}
   (let [provider (first providers)
         provider-id (:provider-id provider)]
     (j/with-db-transaction
@@ -69,9 +71,8 @@ for retrieving concepts using parameters"
                              (from table)
                              (when-not (empty? params)
                                (where (sh/find-params->sql-clause params)))))]
-        (doall (map (fn [res]
-                      (oc/db-result->concept-map concept-type conn provider-id res))
-                    (su/query conn stmt)))))))
+        (doall (for [res (su/query conn stmt)]
+                 (oc/db-result->concept-map concept-type conn provider-id res)))))))
 
 (extend-protocol c/ConceptSearch
   OracleStore
@@ -81,7 +82,7 @@ for retrieving concepts using parameters"
   {:pre [(coll? providers)]}
   (let [concept-type (:concept-type params)
         table-provider (group-by #(tables/get-table-name % concept-type) providers)]
-    (mapcat (fn [[table provider-list]]
+    (util/mapcatv (fn [[table provider-list]]
               (find-concepts-in-table db table concept-type provider-list params))
             (seq table-provider))))
 
