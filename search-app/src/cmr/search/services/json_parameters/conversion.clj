@@ -11,109 +11,79 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]
-            [cheshire.core :as json]
-            [cmr.umm-spec.specs.umm-c-dsl :as umm-dsl :refer [define-schema define-type]])
-  (:import com.github.fge.jsonschema.main.JsonSchemaFactory
-           com.github.fge.jackson.JsonLoader))
+            [cheshire.core :as json]))
+
+(def concept-param->type
+  "A mapping of param names to query condition types based on concept-type"
+  {:collection {:entry-title :string
+                :entry-id :string
+                :provider :string
+                :or :or
+                :and :and
+                :not :not}})
+
+(defn- param-name->type
+  "Returns the query condition type based on the given concept-type and param-name."
+  [concept-type param-name]
+  (get-in concept-param->type [concept-type param-name]))
+
+(defmulti json-parameter->condition
+  "Converts a JSON parameter into a condition"
+  (fn [concept-type param value]
+    (param-name->type concept-type param)))
+
+(defmethod json-parameter->condition :default
+  [concept-type param value]
+  (errors/internal-error!
+    (format "Could not find parameter handler for [%s] with concept-type [%s]"
+            param concept-type)))
+
+(defmethod json-parameter->condition :string
+  [concept-type param value]
+  ;; TODO handle case sensitivity and wildcards
+  (qm/string-condition param value false false))
+
+;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
+;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
+(defmethod json-parameter->condition :and
+  [concept-type param values]
+  (gc/and-conds
+    (for [value values]
+      (gc/and-conds
+        (for [[k v] value]
+          (json-parameter->condition concept-type k v))))))
+
+;; Example {"or": [{"entry-title": "ET", "provider": "PROV1"}
+;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
+(defmethod json-parameter->condition :or
+  [concept-type param values]
+  (gc/or-conds
+    (for [value values]
+      (gc/and-conds
+        (for [[k v] value]
+          (json-parameter->condition concept-type k v))))))
+
+(defmethod json-parameter->condition :not
+  [concept-type param value]
+  (gc/or-conds
+    (map (fn [[exclude-param exclude-val]]
+           (qm/map->NegatedCondition
+             {:condition (json-parameter->condition concept-type exclude-param exclude-val)}))
+         value)))
+
+(defn- json-query->query-condition
+  "Converts a JSON query into a query condition."
+  [concept-type json-query]
+  (let [query-conditions (concat (for [[k v] json-query]
+                                   (json-parameter->condition concept-type k v)))]
+    (when (seq query-conditions) (gc/and-conds query-conditions))))
 
 (defn json-parameters->query
-  "Converts parameters into a query model."
-  [concept-type params json-query]
-  (let [params (pv/validate-aql-or-json-parameters concept-type params)]
-    (qm/query (pc/standard-params->query-attribs concept-type params))))
+  "Converts a JSON query string and query parameters into a query model."
+  [concept-type params json-string]
+  (let [params (pv/validate-aql-or-json-parameters concept-type params)
+        json-query (u/map-keys->kebab-case (json/parse-string json-string true))]
+    (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
+                     :concept-type concept-type
+                     :condition (json-query->query-condition concept-type json-query)))))
 
-  ; (let [options (u/map-keys->kebab-case (get params :options {}))
-  ;       query-attribs (standard-params->query-attribs concept-type params)
-  ;       keywords (when (:keyword params)
-  ;                  (str/split (str/lower-case (:keyword params)) #" "))
-  ;       params (if keywords (assoc params :keyword (str/join " " keywords)) params)
-  ;       params (dissoc params :options :page-size :page-num :sort-key :result-format
-  ;                      :include-granule-counts :include-has-granules :include-facets
-  ;                      :echo-compatible :hierarchical-facets)]
-  ;   (if (empty? params)
-  ;     ;; matches everything
-  ;     (qm/query query-attribs)
-  ;     ;; Convert params into conditions
-  ;     (let [conditions (map (fn [[param value]]
-  ;                             (parameter->condition concept-type param value options))
-  ;                           params)]
-  ;       (qm/query (assoc query-attribs
-  ;                        :condition (gc/and-conds conditions)
-  ;                        :keywords keywords))))))
-
-
-
-; (defn aql->query
-;   "Validates parameters and converts aql into a query model."
-;   [params aql]
-;   (validate-aql aql)
-;   (let [;; remove the DocType from the aql string as clojure.data.xml does not handle it correctly
-;         ;; by adding attributes to elements when it is present.
-;         xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
-;         concept-type (get-concept-type xml-struct)
-;         params (pv/validate-aql-parameters concept-type params)]
-;     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
-;                      :concept-type concept-type
-;                      :condition (xml-struct->query-condition concept-type xml-struct)))))
-
-; (defn group-operation
-;   "TODO Implement nested grouping"
-;   []
-;   "TODO")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Testing out JSON Schema
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def string-type {:type :string})
-
-(def schema
-  {:$schema "http://json-schema.org/draft-04/schema#"
-   ;; All string types, no definitions needed yet
-   ; :definitions {}
-
-   :title "JSON Search"
-   :description "Used to search for collections in the CMR."
-   :type :object
-   :properties {:entry-title string-type
-                :entry-id string-type
-                :provider string-type
-                :short-name string-type
-                :version string-type}})
-
-; (define-type Query
-;   "Defines a JSON search query"
-;   {:entry-title string-type
-;    :entry-id string-type
-;    :provider string-type
-;    :short-name string-type
-;    :version string-type})
-
-; (define-schema json-query
-;   {:main-type Query})
-
-; ;; Create schema
-; (def json-schema (json/generate-string json-query {:pretty true}))
-(def json-schema (json/generate-string schema {:pretty true}))
-
-(comment
-  (println json-schema)
-  (validate-query-against-json-schema {:entry-title "ET"
-                                       :version "004"
-                                       :nonsense 3})
-  )
-
-
-;; Validate query against schema
-(defn validate-query-against-json-schema
-  [query]
-  (let [factory (JsonSchemaFactory/byDefault)
-        json-node (JsonLoader/fromString json-schema)
-        schema (.getJsonSchema factory json-node)
-        query-json-node (JsonLoader/fromString (json/generate-string query))]
-; (cmr.common.dev.capture-reveal/capture-all)
-    (.validate schema query-json-node)))
-
-;; END Testing JSON Schema
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

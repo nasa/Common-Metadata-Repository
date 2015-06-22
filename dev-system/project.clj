@@ -21,8 +21,7 @@
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
    :cmr-mock-echo-app "0.1.0-SNAPSHOT"
    :cmr-message-queue-lib "0.1.0-SNAPSHOT"
-   :cmr-common-app-lib "0.1.0-SNAPSHOT"
-   :umm-spec "0.1.0-SNAPSHOT"})
+   :cmr-common-app-lib "0.1.0-SNAPSHOT"})
 
 (def project-dependencies
   "A list of other projects as maven dependencies"
@@ -64,8 +63,7 @@
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
-                 [umm-spec "0.1.0-SNAPSHOT"]]
+                 [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]]
 
 
   :plugins [[lein-shell "0.4.0"]

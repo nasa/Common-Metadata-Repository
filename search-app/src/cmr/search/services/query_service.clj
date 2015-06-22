@@ -165,10 +165,17 @@
                   (pr-str params)))
     results))
 
+(comment
+  (def query (cmr.common.dev.capture-reveal/reveal json-query))
+  (println query)
+  (cheshire.core/parse-string query true)
+  )
+
 (deftracefn find-concepts-by-json
   "Executes a search for concepts using the given JSON. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
+  (cmr.common.dev.capture-reveal/capture json-query)
   ; nil)
   (let [[query-creation-time query] (u/time-execution
                                       (jp/json-parameters->query concept-type
