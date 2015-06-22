@@ -106,6 +106,7 @@
     (if (>= revision-id minimum-revision-id)
       {:status :pass}
       {:status :fail
+       :concept-id (:concept-id latest-revision)
        :expected minimum-revision-id})))
 
 (defn- validate-concept-revision-id
@@ -115,29 +116,14 @@
   ([db provider concept]
    (validate-concept-revision-id db provider concept nil))
   ([db provider concept previous-revision]
-   (let [{:keys [concept-id revision-id]} concept]
-     (cond
-       (and revision-id concept-id)
-       ;; both provided
-       (let [result (check-concept-revision-id db provider concept previous-revision)]
-         (when (= (:status result) :fail)
-           (cmsg/data-error :conflict
-                            msg/invalid-revision-id
-                            concept-id
-                            (:expected result)
-                            revision-id)))
-
-       revision-id
-       ;; only revision-id provided so it should be 1 (no concept-id has been assigned yet)
-       (when-not (= revision-id 1)
+   (when-let [revision-id (:revision-id concept)]
+     (let [result (check-concept-revision-id db provider concept previous-revision)]
+       (when (= (:status result) :fail)
          (cmsg/data-error :conflict
                           msg/invalid-revision-id
-                          concept-id
-                          1
-                          revision-id))
-
-       ;; just concept-id or neither provided - do nothing
-       ))))
+                          (:concept-id result)
+                          (:expected result)
+                          revision-id))))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
@@ -358,10 +344,10 @@
   [context concept]
   (cv/validate-concept concept)
   (let [db (util/context->db context)
-        provider (get-provider-by-id context (:provider-id concept))]
+        provider (get-provider-by-id context (:provider-id concept))
+        concept (set-or-generate-concept-id db provider concept)]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
-                       (set-or-generate-concept-id db provider)
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false))]
       (try-to-save db provider concept))))
