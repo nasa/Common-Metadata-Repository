@@ -249,7 +249,7 @@
       "SMAL_PROV2" [coll7]))
 
     (testing "invalid or missing provider id"
-      (is (= {:status 404, :errors ["Providers with provider-ids [PROVNONE] do not exist."]}
+      (is (= {:status 404, :errors ["Provider with provider-id [PROVNONE] does not exist."]}
              (util/get-expired-collection-concept-ids "PROVNONE")))
 
       (is (= {:status 400, :errors ["A provider parameter was required but was not provided."]}

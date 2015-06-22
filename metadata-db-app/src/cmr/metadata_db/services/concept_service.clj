@@ -178,7 +178,7 @@
   ([context concept-id]
    (let [db (util/context->db context)
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id)]
+         provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id)
          (cmsg/data-error :not-found
                           msg/concept-does-not-exist
@@ -186,7 +186,7 @@
   ([context concept-id revision-id]
    (let [db (util/context->db context)
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id)]
+         provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id revision-id)
          (cmsg/data-error :not-found
                           msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -238,7 +238,7 @@
     (let [concepts (apply concat
                           (for [[provider-id concept-type-tuples-map] split-tuples-map
                                 [concept-type tuples] concept-type-tuples-map]
-                            (let [provider (provider-service/get-provider-by-id context provider-id)]
+                            (let [provider (provider-service/get-provider-by-id context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
                               (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count tuples)))
                                 ;; retrieving chunks in parallel for faster read performance
@@ -281,7 +281,7 @@
     (let [concepts (apply concat
                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
                                 [concept-type cids] concept-type-concept-id-map]
-                            (let [provider (provider-service/get-provider-by-id context provider-id)]
+                            (let [provider (provider-service/get-provider-by-id context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
                               (if (and (> parallel-chunk-size 0) (< parallel-chunk-size (count cids)))
                                 ;; retrieving chunks in parallel for faster read performance
@@ -310,7 +310,7 @@
   "Returns the concept ids of expired collections in the provider."
   [context provider-id]
   (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context provider-id)]
+        provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
 (deftracefn save-concept
@@ -318,7 +318,7 @@
   [context concept]
   (cv/validate-concept concept)
   (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context (:provider-id concept))
+        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
         concept (set-or-generate-concept-id db provider concept)]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
@@ -331,7 +331,7 @@
   [context concept-id revision-id revision-date]
   (let [db (util/context->db context)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-        provider (provider-service/get-provider-by-id context provider-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
       (if (util/is-tombstone? previous-revision)
@@ -356,7 +356,7 @@
   [context concept-id revision-id]
   (let [db (util/context->db context)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-        provider (provider-service/get-provider-by-id context provider-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
         concept (c/get-concept db concept-type provider concept-id revision-id)]
     (if concept
       (c/force-delete db concept-type provider concept-id revision-id)
@@ -378,7 +378,7 @@
   [context concept-type provider-id native-id]
   (cu/validate-concept-type concept-type)
   (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context provider-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
         concept-id (c/get-concept-id db concept-type provider native-id)]
     (if concept-id
       concept-id

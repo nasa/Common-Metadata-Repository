@@ -97,7 +97,7 @@
 (deftest fail-to-delete-missing-concept-for-missing-provider
   (let [{:keys [status revision-id errors]} (util/delete-concept "C100-NONEXIST")]
     (is (= status 404))
-    (is (= errors [(messages/providers-do-not-exist ["NONEXIST"])]))))
+    (is (= errors [(messages/provider-does-not-exist "NONEXIST")]))))
 
 (deftest repeated-calls-to-delete-get-same-revision
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
