@@ -24,7 +24,7 @@
                                                   (q/string-condition :entry-title "foo")])
                                    (gc/and-conds [(q/string-condition :entry-title "ET")
                                                   (q/string-condition :provider "soap")
-                                                  (q/->NegatedCondition
+                                                  (q/negated-condition
                                                     (q/string-condition :provider "alpha"))])])})
            (jp/parse-json-query
              :collection
@@ -55,7 +55,7 @@
            (jp/parse-json-condition :collection :and
                                     [{:provider "foo"} {:entry-title "bar"}]))))
   (testing "NOT condition"
-    (is (= (q/->NegatedCondition (q/string-condition :provider "alpha"))
+    (is (= (q/negated-condition (q/string-condition :provider "alpha"))
            (jp/parse-json-condition :collection :not {:provider "alpha"}))))
 
   (testing "Nested conditions"

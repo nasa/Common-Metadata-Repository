@@ -317,7 +317,7 @@
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?}))
 
-(defn parameters->query
+(defn parse-parameter-query
   "Converts parameters into a query model."
   [concept-type params]
   (let [options (u/map-keys->kebab-case (get params :options {}))
@@ -343,7 +343,7 @@
   "Converts parameters from a granule timeline request into a query."
   [params]
   (let [{:keys [interval start-date end-date]} params
-        query (parameters->query
+        query (parse-parameter-query
                 :granule
                 (dissoc params :interval :start-date :end-date))]
     ;; Add timeline request fields to the query so that they can be used later

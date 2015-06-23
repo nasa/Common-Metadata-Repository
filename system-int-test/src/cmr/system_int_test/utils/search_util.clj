@@ -361,7 +361,7 @@
   (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
-                                 :content-type "application/x-www-form-urlencoded"
+                                 :content-type mime-types/x-www-form-urlencoded
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
                                  :connection-manager (s/conn-mgr)})]
@@ -373,12 +373,14 @@
   (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
-                                 :content-type "application/json"
+                                 :content-type mime-types/json
                                  :body (json/generate-string json-as-map)
                                  :query-params query-params
-                                 :throw-exceptions false
+                                 :throw-exceptions true
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible query-params) response))))
+
+
 
 (defn find-refs-with-aql-string
   ([aql]

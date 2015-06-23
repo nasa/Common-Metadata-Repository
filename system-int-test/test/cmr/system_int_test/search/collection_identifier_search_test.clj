@@ -109,6 +109,10 @@
            all-prov1-colls {:or [{:provider "PROV1"}
                                  {:provider "PROV3"}]}
 
+           ;; In combination with 'not'
+           all-prov2-colls {:not {:provider "PROV1"}}
+           all-prov1-colls {:not {:provider "PROV2"}}
+
            ;; TODO
            ; ;; Wildcards
            ; all-colls "PROV*" {:pattern true}

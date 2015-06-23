@@ -692,6 +692,16 @@
       (err/throw-service-errors :bad-request errors)))
   params)
 
+(defn validate-json-conditions
+  "Validates the query parameters passed in with an AQL or JSON search.
+  Throws exceptions to send to the user. Returns parameters if validation
+  was successful so it can be chained with other calls."
+  [concept-type params]
+  (let [errors (mapcat #(% concept-type params) standard-query-parameter-validations)]
+    (when (seq errors)
+      (err/throw-service-errors :bad-request errors)))
+  params)
+
 (defn validate-timeline-parameters
   "Validates the query parameters passed in with a timeline search.
   Throws exceptions to send to the user. Returns parameters if validation

@@ -158,7 +158,7 @@
                                            (lp/replace-science-keywords-or-option concept-type)
 
                                            (pv/validate-parameters concept-type)
-                                           (p/parameters->query concept-type)))
+                                           (p/parse-parameter-query concept-type)))
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
@@ -198,18 +198,18 @@
 (defn- throw-id-not-found
   [concept-id]
   (err/throw-service-error
-   :not-found
-   (format "Concept with concept-id: %s could not be found" concept-id)))
+    :not-found
+    (format "Concept with concept-id: %s could not be found" concept-id)))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (p/parameters->query (cc/concept-id->type concept-id)
-                                     {:page-size 1
-                                      :concept-id concept-id
-                                      :result-format result-format})
+    (let [query (p/parse-parameter-query (cc/concept-id->type concept-id)
+                                         {:page-size 1
+                                          :concept-id concept-id
+                                          :result-format result-format})
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
@@ -287,7 +287,7 @@
                             (#(select-keys % [:bounding-box :point :line :polygon])))]
     (if (seq spatial-params)
       (apply clojure.set/union
-              (for [[param-name values] spatial-params
-                    value (if (sequential? values) values [values])]
-                (shape-param->tile-set param-name value)))
+             (for [[param-name values] spatial-params
+                   value (if (sequential? values) values [values])]
+               (shape-param->tile-set param-name value)))
       (tile/all-tiles))))
