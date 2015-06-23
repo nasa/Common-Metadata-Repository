@@ -134,17 +134,22 @@
     :bad-request
     (msg/invalid-revision-id revision-id)))
 
+(defn- parse-validate-revision-id
+  "Parse revision id and return it if it is positive"
+  [revision-id]
+  (try
+    (let [revision-id (Integer/parseInt revision-id)]
+      (when (pos? revision-id)
+        revision-id))
+    (catch NumberFormatException _)))
+
 (defn- set-revision-id
   "Associate revision id to concept if revision id is a positive integer. Otherwise return an error"
   [concept headers]
   (if-let [revision-id (get headers "cmr-revision-id")]
-    (try
-      (let [revision-id (Integer/parseInt revision-id)]
-        (if (pos? revision-id)
-          (assoc concept :revision-id revision-id)
-          (invalid-revision-id-error revision-id)))
-      (catch NumberFormatException _
-        (invalid-revision-id-error revision-id)))
+    (if-let [revision-id (parse-validate-revision-id revision-id)]
+      (assoc concept :revision-id revision-id)
+      (invalid-revision-id-error revision-id))
     concept))
 
 (defn- set-concept-id

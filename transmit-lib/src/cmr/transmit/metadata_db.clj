@@ -280,10 +280,9 @@
       (errors/throw-service-errors :conflict (get body "errors"))
 
       ;; default
-      (errors/internal-error! (str "Save concept failed. MetadataDb app response status code: "
-                                   status
-                                   " "
-                                   response)))))
+      (errors/internal-error!
+        (format "Save concept failed. MetadataDb app response status code: %s response: %s"
+                status response)))))
 
 (defn-timed delete-concept
   "Delete a concept from metatdata db."
@@ -308,10 +307,9 @@
        (get body "revision-id")
 
        ;; default
-       (errors/internal-error! (str "Delete concept operation failed. MetadataDb app response status code: "
-                                    status
-                                    " "
-                                    response))))))
+       (errors/internal-error!
+         (str "Delete concept operation failed. MetadataDb app response status code: %s response: %s "
+                                    status response))))))
 
 (defn get-metadata-db-health-fn
   "Returns the health status of the metadata db"
