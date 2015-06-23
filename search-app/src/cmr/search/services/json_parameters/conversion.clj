@@ -1,5 +1,5 @@
 (ns cmr.search.services.json-parameters.conversion
-  "Contains functions for parsing and converting JSON query parameters to query conditions"
+  "Contains functions for parsing and converting JSON queries into query conditions"
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
@@ -13,8 +13,8 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cheshire.core :as json]))
 
-(def concept-param->type
-  "A mapping of param names to query condition types based on concept-type"
+(def query-condition-name->condition-type-map
+  "A mapping of query condition names to the query condition type based on concept-type."
   {:collection {:entry-title :string
                 :entry-id :string
                 :provider :string
@@ -22,71 +22,77 @@
                 :and :and
                 :not :not}})
 
-(defn- param-name->type
+(defn- query-condition-name->condition-type
   "Returns the query condition type based on the given concept-type and param-name."
   [concept-type param-name]
-  (get-in concept-param->type [concept-type param-name]))
+  (get-in query-condition-name->condition-type-map [concept-type param-name]))
 
-(defmulti json-parameter->condition
-  "Converts a JSON parameter into a condition"
-  (fn [concept-type param value]
-    (param-name->type concept-type param)))
+(defmulti parse-json-condition
+  "Converts a JSON query condition into a query model condition"
+  (fn [concept-type condition-name value]
+    (query-condition-name->condition-type concept-type condition-name)))
 
-(defmethod json-parameter->condition :default
-  [concept-type param value]
+(defmethod parse-json-condition :default
+  [concept-type condition-name value]
   (errors/internal-error!
     (format "Could not find parameter handler for [%s] with concept-type [%s]"
-            param concept-type)))
+            condition-name concept-type)))
 
-(defmethod json-parameter->condition :string
-  [concept-type param value]
+(defmethod parse-json-condition :string
+  [concept-type condition-name value]
   ;; TODO handle case sensitivity and wildcards
-  (qm/string-condition param value false false))
+  (qm/string-condition condition-name value false false))
+
+(defn- parse-json-condition-map
+  "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
+  implicitly and'ed together."
+  [concept-type condition-map]
+  (gc/and-conds
+    (for [[k v] condition-map]
+      (parse-json-condition concept-type k v))))
 
 (defn- grouping-condition
   "Converts :and or :or condition to the appropriate query condition."
-  [concept-type values condition]
-  (condition
+  [concept-type values grouping-fn]
+  (grouping-fn
     (for [value values]
-      (gc/and-conds
-        (for [[k v] value]
-          (json-parameter->condition concept-type k v))))))
+      (parse-json-condition-map concept-type values))))
 
 ;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                  {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
-(defmethod json-parameter->condition :and
-  [concept-type param values]
-  (grouping-condition concept-type values gc/and-conds))
+(defmethod parse-json-condition :and
+  [concept-type condition-name values]
+  (gc/and-conds (map #(parse-json-condition-map concept-type %) values)))
 
 ;; Example {"or": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
-(defmethod json-parameter->condition :or
-  [concept-type param values]
-  (grouping-condition concept-type values gc/or-conds))
+(defmethod parse-json-condition :or
+  [concept-type condition-name values]
+  (gc/or-conds (map #(parse-json-condition-map concept-type %) values)))
 
 ;; Example - note in maps the conditions are implicitly and'ed together
 ;;         {"not": {"entry-title": "ET",
 ;;                  "provider": "PROV1",
 ;;                  "revision-date": [null, "2015-04-01T00:00:00Z"]}}
-(defmethod json-parameter->condition :not
-  [concept-type param values]
+(defmethod parse-json-condition :not
+  [concept-type condition-name values]
   (gc/and-conds
     (map (fn [[exclude-param exclude-val]]
            (qm/map->NegatedCondition
-             {:condition (json-parameter->condition concept-type exclude-param exclude-val)}))
+             {:condition (parse-json-condition concept-type exclude-param exclude-val)}))
          values)))
 
 (defn- json-query->query-condition
   "Converts a JSON query into a query condition."
   [concept-type json-query]
   (let [query-conditions (concat (for [[k v] json-query]
-                                   (json-parameter->condition concept-type k v)))]
+                                   (parse-json-condition concept-type k v)))]
     (when (seq query-conditions) (gc/and-conds query-conditions))))
 
-(defn json-parameters->query
+(defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."
   [concept-type params json-string]
-  (let [params (pv/validate-aql-or-json-parameters concept-type params)
+  (let [params (pv/validate-standard-query-parameters concept-type params)
         json-query (u/map-keys->kebab-case (json/parse-string json-string true))]
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type

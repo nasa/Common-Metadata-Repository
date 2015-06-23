@@ -97,7 +97,7 @@
 
     (testing "provider with JSON parameters"
       (are [items json-search]
-           (d/refs-match? items (search/find-refs-with-json :collection {} json-search))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
            all-prov1-colls {:provider "PROV1"}
            all-prov2-colls {:provider "PROV2"}
@@ -256,7 +256,7 @@
 
     (testing "Entry id search using JSON"
       (are [items json-search]
-           (d/refs-match? items (search/find-refs-with-json :collection {} json-search))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
            [c1-p1 c1-p2] {:entry-id "S1_V1"}
            [] {:entry-id "S44_V44"}
@@ -317,7 +317,7 @@
 
     (testing "Entry title search using JSON"
       (are [items json-search]
-           (d/refs-match? items (search/find-refs-with-json :collection {} json-search))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
            [c1-p1 c1-p2] {:entry-title "ET1"}
            [] {:entry-title "ET44"}

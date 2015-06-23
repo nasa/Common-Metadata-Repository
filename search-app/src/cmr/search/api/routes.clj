@@ -166,23 +166,24 @@
              ;; set to 30 days
              CORS_MAX_AGE_HEADER "2592000"}})
 
-(defn- find-concepts-by-json
+(defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return the response."
   [context path-w-extension params headers json-query]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         params (process-params params path-w-extension headers mt/xml)
         _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
                         (:client-id context) (:result-format params) json-query params))
-        results (query-svc/find-concepts-by-json context concept-type params json-query)]
+        results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
     (search-response params results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
   [context path-w-extension params headers body]
   (let [content-type-header (get headers (str/lower-case CONTENT_TYPE_HEADER))]
-    (case content-type-header
-      "application/json" (find-concepts-by-json context path-w-extension params headers body)
-      (nil "application/x-www-form-urlencoded")
+    (cond
+      (= mt/json content-type-header)
+      (find-concepts-by-json-query context path-w-extension params headers body)
+      (or (nil? content-type-header) (= mt/x-www-form-urlencoded content-type-header))
       (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
             context (assoc context :query-string body)
             params (process-params params path-w-extension headers mt/xml)
@@ -193,7 +194,7 @@
             search-params (lp/process-legacy-psa params body)
             results (query-svc/find-concepts-by-parameters context concept-type search-params)]
         (search-response params results))
-      ;; else
+      :else
       {:status 415
        :headers {CORS_ORIGIN_HEADER "*"}
        :body (str "Unsupported content type ["

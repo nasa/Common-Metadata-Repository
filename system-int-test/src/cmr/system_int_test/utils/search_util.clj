@@ -367,7 +367,7 @@
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible params) response))))
 
-(defn find-refs-with-json
+(defn find-refs-with-json-query
   "Returns the references that are found by searching using a JSON request."
   [concept-type query-params json-as-map]
   (get-search-failure-xml-data

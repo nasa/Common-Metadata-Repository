@@ -165,25 +165,17 @@
                   (pr-str params)))
     results))
 
-(comment
-  (def query (cmr.common.dev.capture-reveal/reveal json-query))
-  (println query)
-  (cheshire.core/parse-string query true)
-  )
-
-(deftracefn find-concepts-by-json
+(deftracefn find-concepts-by-json-query
   "Executes a search for concepts using the given JSON. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
-  (cmr.common.dev.capture-reveal/capture json-query)
-  ; nil)
   (let [[query-creation-time query] (u/time-execution
-                                      (jp/json-parameters->query concept-type
-                                                                 (sanitize-params params)
-                                                                 json-query))
+                                      (jp/parse-json-query concept-type
+                                                           (sanitize-params params)
+                                                           json-query))
         results (find-concepts context concept-type params query-creation-time query)]
     ;; TODO refactor this out into find-concepts or some common function
-    (info (format "Found %d %ss in %d ms in format %s with JSON %s and query params %s."
+    (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   json-query (pr-str params)))
     results))
@@ -195,7 +187,7 @@
   (let [params (-> params
                    sanitize-aql-params
                    lp/replace-parameter-aliases)
-        [query-creation-time query] (u/time-execution (a/aql->query params aql))
+        [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."

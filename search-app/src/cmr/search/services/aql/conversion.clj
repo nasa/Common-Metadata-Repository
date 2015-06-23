@@ -346,7 +346,7 @@
                      where-conditions)]
     (when (seq conditions) (gc/and-conds conditions))))
 
-(defn aql->query
+(defn parse-aql-query
   "Validates parameters and converts aql into a query model."
   [params aql]
   (validate-aql aql)
@@ -354,7 +354,7 @@
         ;; by adding attributes to elements when it is present.
         xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
-        params (pv/validate-aql-or-json-parameters concept-type params)]
+        params (pv/validate-standard-query-parameters concept-type params)]
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type
                      :condition (xml-struct->query-condition concept-type xml-struct)))))

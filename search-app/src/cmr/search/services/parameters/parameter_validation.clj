@@ -502,7 +502,7 @@
   ([params] (line-validation nil params))
   ([_ params] (spatial-validation params :line)))
 
-(defn unrecognized-aql-or-json-params-validation
+(defn unrecognized-standard-query-params-validation
   "Validates that any query parameters passed to the AQL or JSON search endpoints are valid."
   [concept-type params]
   (map #(str "Parameter [" (csk/->snake_case_string % )"] was not recognized.")
@@ -631,7 +631,7 @@
    point-validation
    line-validation])
 
-(def aql-or-json-parameter-validations
+(def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.
   They all accept parameters as an argument and return a list of errors."
   [single-value-validation
@@ -639,7 +639,7 @@
    page-num-validation
    paging-depth-validation
    sort-key-validation
-   unrecognized-aql-or-json-params-validation])
+   unrecognized-standard-query-params-validation])
 
 (def timeline-parameter-validations
   "A list of function that can validate timeline query parameters. It will only validate the timeline
@@ -682,12 +682,12 @@
       (err/throw-service-errors :bad-request errors)))
   params)
 
-(defn validate-aql-or-json-parameters
+(defn validate-standard-query-parameters
   "Validates the query parameters passed in with an AQL or JSON search.
   Throws exceptions to send to the user. Returns parameters if validation
   was successful so it can be chained with other calls."
   [concept-type params]
-  (let [errors (mapcat #(% concept-type params) aql-or-json-parameter-validations)]
+  (let [errors (mapcat #(% concept-type params) standard-query-parameter-validations)]
     (when (seq errors)
       (err/throw-service-errors :bad-request errors)))
   params)
