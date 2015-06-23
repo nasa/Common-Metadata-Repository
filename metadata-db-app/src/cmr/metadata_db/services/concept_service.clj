@@ -63,19 +63,13 @@
      (when throw-error?
        (errors/throw-service-error :not-found (msg/providers-do-not-exist [provider-id]))))))
 
-(defn- get-existing-concept-id
-  "Retrieve concept-id from DB."
-  [db provider concept]
-  (some-> (c/get-concept-by-provider-id-native-id-concept-type db provider concept)
-          :concept-id))
-
 (defn- set-or-generate-concept-id
   "Get an existing concept-id from the DB for the given concept or generate one
   if the concept has never been saved."
   [db provider concept]
   (if (:concept-id concept)
     concept
-    (let [concept-id (get-existing-concept-id db provider concept)]
+    (let [concept-id (c/get-concept-id db (:concept-type concept) provider (:native-id concept))]
       (if concept-id
         (assoc concept :concept-id concept-id)
         (assoc concept :concept-id (c/generate-concept-id db concept))))))

@@ -295,28 +295,8 @@
     (let [table (tables/get-table-name provider concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                                (from table)
-                                (where (by-provider provider `(= :native-id ~native-id))))))))
-
-  (get-concept-by-provider-id-native-id-concept-type
-    [db provider concept]
-    (j/with-db-transaction
-      [conn db]
-      (let [{:keys [concept-type provider-id native-id revision-id]} concept
-            table (tables/get-table-name provider concept-type)
-            stmt (if revision-id
-                   ;; find specific revision
-                   (select '[*]
-                           (from table)
-                           (where (by-provider provider `(and (= :native-id ~native-id)
-                                                              (= :revision-id ~revision-id)))))
-                   ;; find latest
-                   (select '[*]
-                           (from table)
-                           (where (by-provider provider `(= :native-id ~native-id)))
-                           (order-by (desc :revision-id))))]
-        (db-result->concept-map concept-type conn provider-id
-                                (su/find-one conn stmt)))))
+                          (from table)
+                          (where (by-provider provider `(= :native-id ~native-id))))))))
 
   (get-concept
     ([db concept-type provider concept-id]
@@ -325,9 +305,9 @@
        (let [table (tables/get-table-name provider concept-type)]
          (db-result->concept-map concept-type conn (:provider-id provider)
                                  (su/find-one conn (select '[*]
-                                                           (from table)
-                                                           (where `(= :concept-id ~concept-id))
-                                                           (order-by (desc :revision-id))))))))
+                                                     (from table)
+                                                     (where `(= :concept-id ~concept-id))
+                                                     (order-by (desc :revision-id))))))))
     ([db concept-type provider concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider concept-type)]
@@ -335,9 +315,9 @@
            [conn db]
            (db-result->concept-map concept-type conn (:provider-id provider)
                                    (su/find-one conn (select '[*]
-                                                             (from table)
-                                                             (where `(and (= :concept-id ~concept-id)
-                                                                          (= :revision-id ~revision-id))))))))
+                                                       (from table)
+                                                       (where `(and (= :concept-id ~concept-id)
+                                                                    (= :revision-id ~revision-id))))))))
        (c/get-concept db concept-type provider concept-id))))
 
   (get-concepts
@@ -353,10 +333,10 @@
           (let [provider-id (:provider-id provider)
                 table (tables/get-table-name provider concept-type)
                 stmt (su/build (select [:c.*]
-                                       (from (as (keyword table) :c)
-                                             (as :get-concepts-work-area :t))
-                                       (where `(and (= :c.concept-id :t.concept-id)
-                                                    (= :c.revision-id :t.revision-id)))))
+                                 (from (as (keyword table) :c)
+                                       (as :get-concepts-work-area :t))
+                                 (where `(and (= :c.concept-id :t.concept-id)
+                                              (= :c.revision-id :t.revision-id)))))
 
                 result (doall (map (partial db-result->concept-map concept-type conn provider-id)
                                    (su/query conn stmt)))
@@ -379,9 +359,9 @@
             params (params->sql-params provider params)
             table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:*]
-                                   (from table)
-                                   (when-not (empty? params)
-                                     (where (sh/find-params->sql-clause params)))))]
+                             (from table)
+                             (when-not (empty? params)
+                               (where (sh/find-params->sql-clause params)))))]
         (doall (map (partial db-result->concept-map concept-type conn provider-id)
                     (su/query conn stmt))))))
 
@@ -403,8 +383,8 @@
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
                          stmt (su/build (select [:*]
-                                                (from table)
-                                                (where (cons `and conditions))))
+                                          (from table)
+                                          (where (cons `and conditions))))
                          batch-result (su/query db stmt)]
                      (mapv (partial db-result->concept-map concept-type conn provider-id)
                            batch-result))))
@@ -466,8 +446,8 @@
     [this concept-type provider concept-id revision-id]
     (let [table (tables/get-table-name provider concept-type)
           stmt (su/build (delete table
-                                 (where `(and (= :concept-id ~concept-id)
-                                              (= :revision-id ~revision-id)))))]
+                           (where `(and (= :concept-id ~concept-id)
+                                        (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (force-delete-by-params
