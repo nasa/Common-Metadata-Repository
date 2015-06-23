@@ -91,6 +91,29 @@
         this)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  concepts/ConceptSearch
+
+  (find-concepts
+    [db providers params]
+    (mapcat (fn [provider]
+              (let [provider-id (:provider-id provider)
+                    {:keys [concept-type native-id]} params
+                    extra-field-params (dissoc params :concept-type :provider-id :native-id)]
+                (keep (fn [{extra-fields :extra-fields
+                            ct :concept-type
+                            pid :provider-id :as concept}]
+                        (when (and (= concept-type ct)
+                                   (= provider-id pid)
+                                   (= extra-field-params (select-keys extra-fields
+                                                                      (keys extra-field-params))))
+                          (if (and (= :granule concept-type)
+                                   (nil? (get-in concept [:extra-fields :granule-ur])))
+                            (assoc-in concept [:extra-fields :granule-ur]
+                                      (:native-id concept))
+                            concept)))
+                      @concepts-atom)))
+            providers))
+
   concepts/ConceptsStore
 
   (generate-concept-id
@@ -163,24 +186,6 @@
                               {}
                               @concepts-atom)]
       (keep (partial get concept-map) concept-ids)))
-
-  (find-concepts
-    [db provider params]
-    (let [{:keys [concept-type provider-id native-id]} params
-          extra-field-params (dissoc params :concept-type :provider-id :native-id)]
-      (keep (fn [{extra-fields :extra-fields
-                  ct :concept-type
-                  pid :provider-id :as concept}]
-              (when (and (= concept-type ct)
-                         (= provider-id pid)
-                         (= extra-field-params (select-keys extra-fields
-                                                            (keys extra-field-params))))
-                (if (and (= :granule concept-type)
-                         (nil? (get-in concept [:extra-fields :granule-ur])))
-                  (assoc-in concept [:extra-fields :granule-ur]
-                            (:native-id concept))
-                  concept)))
-            @concepts-atom)))
 
   (save-concept
     [this provider concept]

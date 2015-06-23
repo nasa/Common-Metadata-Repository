@@ -29,6 +29,16 @@
   (let [db (mdb-util/context->db context)]
     (providers/get-providers db)))
 
+(deftracefn get-provider-by-id
+  "Returns the provider with the given provider-id, raise error when provider does not exist based
+  on the throw-error flag"
+  ([context provider-id]
+   (get-provider-by-id context provider-id false))
+  ([context provider-id throw-error?]
+   (or (providers/get-provider (mdb-util/context->db context) provider-id)
+       (when throw-error?
+         (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
+
 (deftracefn update-provider
   "Updates a provider."
   [context {:keys [provider-id short-name small] :as provider}]
@@ -36,9 +46,7 @@
   (pv/validate-provider provider)
   (let [db (mdb-util/context->db context)
         providers (providers/get-providers db)
-        existing-provider (some #(when (= provider-id (:provider-id %)) %) providers)]
-    (when-not existing-provider
-      (cmsg/data-error :not-found msg/provider-does-not-exist provider-id))
+        existing-provider (get-provider-by-id context provider-id true)]
     (when-let [conflict-provider (some #(when (and (= short-name (:short-name %))
                                                    (not= provider-id (:provider-id %))) %)
                                        providers)]
@@ -54,12 +62,10 @@
   (when (= pv/small-provider-id provider-id)
     (cmsg/data-error :bad-request msg/small-provider-cannot-be-deleted))
   (let [db (mdb-util/context->db context)
-        provider (providers/get-provider db provider-id)]
-    (if provider
-      (let [result (providers/delete-provider db provider)]
-        (when (:error result)
-          (errors/internal-error! (:error-message result))))
-      (cmsg/data-error :not-found msg/provider-does-not-exist provider-id))))
+        provider (get-provider-by-id context provider-id true)
+        result (providers/delete-provider db provider)]
+    (when (:error result)
+      (errors/internal-error! (:error-message result)))))
 
 (deftracefn reset-providers
   "Delete all the providers and their concepts."

@@ -8,4 +8,4 @@ if [ -d es_data ] ; then
   rm -fr es_data
 fi
 lein do clean, uberjar
-nohup java -XX:MaxPermSize=256m -classpath ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr.dev_system.runner&
+nohup java -classpath ./target/cmr-dev-system-0.1.0-SNAPSHOT-standalone.jar cmr.dev_system.runner&

@@ -26,7 +26,7 @@
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]]
   :plugins [[lein-test-out "0.3.1"]]
 
-  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=256m" "-XX:-OmitStackTraceInFastThrow"]
+  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]

@@ -46,9 +46,14 @@
   (format "Concept field [%s] cannot be nil." (name field)))
 
 (defn find-not-supported [concept-type params]
+  (format "Finding concept type [%s] with parameters [%s] is not supported."
+          (name concept-type)
+          (str/join ", " (map name params))))
+
+(defn find-not-supported-combination [concept-type params]
   (format "Finding concept type [%s] with parameter combination [%s] is not supported."
           (name concept-type)
-          (str/join ", " params)))
+          (str/join ", " (map name params))))
 
 (defn invalid-concept-id [concept-id provider-id concept-type]
   (format "Concept-id [%s] for concept does not match provider-id [%s] or concept-type [%s]."

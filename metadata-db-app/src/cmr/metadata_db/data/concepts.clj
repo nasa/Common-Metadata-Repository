@@ -1,6 +1,19 @@
 (ns cmr.metadata-db.data.concepts
   "Defines a protocol for CRUD operations on concepts.")
 
+(defprotocol ConceptSearch
+  "Functions for retrieving concepts by parameters"
+
+  (find-concepts
+    [db providers params]
+    "Finds concepts by the given parameters")
+
+  (find-concepts-in-batches
+    [db provider params batch-size]
+    [db provider params batch-size start-index]
+    "Get a lazy sequence of batched concepts for the given parameters.")
+)
+
 (defprotocol ConceptsStore
   "Functions for saving and retrieving concepts"
 
@@ -27,15 +40,6 @@
     [db concept-type provider concept-ids]
     "Get a sequence of the latest revision of concepts by specifying a list of
     concept-ids")
-
-  (find-concepts
-    [db provider params]
-    "Finds concepts by the given parameters")
-
-  (find-concepts-in-batches
-    [db provider params batch-size]
-    [db provider params batch-size start-index]
-    "Get a lazy sequence of batched concepts for the given parameters.")
 
   (save-concept
     [db provider concept]
@@ -82,8 +86,8 @@
 
 (defn find-latest-concepts
   "Finds the latest revision of concepts by the given parameters"
-  [db provider params]
-  (let [revision-concepts (find-concepts db provider params)]
+  [db providers params]
+  (let [revision-concepts (find-concepts db providers params)]
     (->> revision-concepts
          (group-by :concept-id)
          (map (fn [[concept-id concepts]]

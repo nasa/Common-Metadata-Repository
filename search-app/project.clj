@@ -23,7 +23,7 @@
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user
                  :timeout 120000}
-  :jvm-opts ["-XX:PermSize=256m" "-XX:MaxPermSize=1024m"]
+  :jvm-opts []
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]

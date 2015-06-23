@@ -92,34 +92,3 @@
 (def validate-concept
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data concept-validation))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Validations for concept find
-
-(def concept-type->supported-parameter-combinations
-  "Map of concept types to supported parameter combination sets."
-  {:collection #{#{:provider-id :entry-id}
-                 #{:provider-id :entry-title}
-                 #{:provider-id :short-name :version-id}
-                 #{:provider-id :entry-title :short-name}
-                 #{:provider-id :entry-title :version-id}
-                 #{:provider-id :entry-title :short-name :version-id}
-                 #{:provider-id}}
-   :granule #{#{:provider-id :granule-ur}
-              #{:provider-id :native-id}}})
-
-(defn supported-parameter-combinations-validation
-  [{:keys [concept-type] :as params}]
-  (let [params (dissoc params :concept-type)]
-    (when-not (contains?
-                (get concept-type->supported-parameter-combinations concept-type)
-                (set (keys params)))
-      [(msg/find-not-supported concept-type (keys params))])))
-
-(def find-params-validation
-  "Validates parameters for finding a concept"
-  (util/compose-validations [supported-parameter-combinations-validation]))
-
-(def validate-find-params
-  "Validates find parameters. Throws an eror if invalid."
-  (util/build-validator :bad-request find-params-validation))

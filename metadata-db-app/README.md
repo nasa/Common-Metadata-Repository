@@ -185,17 +185,15 @@ returns: list of the latest revisions of concepts matching the ids provided in t
 This returns all revisions of the concept that matches the search parameters by default. It also supports parameter 'latest'. When latest=true, only the latest revision of the concepts are returned.
 
 Supported combinations of concept type and parameters:
-  * collections, provider-id, entry-id
-  * collections, provider-id, entry-title
-  * collections, provider-id, short-name, version-id
-  * collections, provider-id, entry-title, short-name
-  * collections, provider-id, entry-title, version-id
-  * collections, provider-id, entry-title, short-name, version-id
-  * collections, provider-id
+  * collections with any combination of provider-id, entry-id, entry-title, short-name, version-id
+  * granules with provider-id, granule-ur
+  * granules with provider-id, native-id
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule_ur=ur"
+curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id=id"
 ```
 
 ### GET /concepts/search/expired-collections?provider=PROV

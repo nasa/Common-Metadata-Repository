@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.test.services.concept-validations
   (:require [clojure.test :refer :all]
             [cmr.metadata-db.services.concept-validations :as v]
+            [cmr.metadata-db.services.search-service :as search]
             [cmr.metadata-db.services.messages :as msg]))
 
 (def valid-collection
@@ -25,7 +26,7 @@
 (deftest find-params-validation-test
   (testing "valid params"
     (are [params]
-         (= [] (v/find-params-validation (assoc params :concept-type :collection)))
+         (= [] (search/find-params-validation (assoc params :concept-type :collection)))
          {:provider-id "p"}
          {:provider-id "p" :entry-id "i"}
          {:provider-id "p" :entry-title "t"}
@@ -33,17 +34,18 @@
          {:provider-id "p" :entry-title "t" :short-name "s"}
          {:provider-id "p" :entry-title "t" :version-id "v"}
          {:provider-id "p" :entry-title "t" :short-name "s" :version-id "v"}))
+  (testing "invalid param"
+    (is (= [(msg/find-not-supported-combination :collection [:foo])]
+           (search/find-params-validation {:concept-type "collection"
+                                      :foo "f"})))
+    (is (= [(msg/find-not-supported-combination :granule [:foo])]
+           (search/find-params-validation {:concept-type "granule"
+                                      :foo "f"}))))
   (testing "invalid concept-type"
-    (is (= [(msg/find-not-supported :foo [:provider-id :entry-title])]
-           (v/find-params-validation {:concept-type "foo"
+    (is (= [(msg/find-not-supported-combination :foo [:provider-id :entry-title])]
+           (search/find-params-validation {:concept-type "foo"
                                       :entry-title "e"
-                                      :provider-id "p"}))))
-  (testing "extra parameters"
-    (is (= [(msg/find-not-supported :collection [:provider-id :entry-id :entry-title])]
-           (v/find-params-validation {:concept-type :collection
-                                      :provider-id "p"
-                                      :entry-id "s"
-                                      :entry-title "e"})))))
+                                      :provider-id "p"})))))
 
 (deftest collection-validation-test
   (testing "valid-concept"

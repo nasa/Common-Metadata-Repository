@@ -16,7 +16,10 @@
       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
                                       (str/join ", " invalid-names)))))
   (let [comparisons (for [[k v] params]
-                      `(= ~k ~v))]
+                      (if (sequential? v)
+                        (let [val (seq v)]
+                          `(in ~k ~val))
+                        `(= ~k ~v)))]
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))
@@ -31,5 +34,5 @@
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
         stmt (su/build (delete table
-                               (where (find-params->sql-clause params))))]
+                         (where (find-params->sql-clause params))))]
     (j/execute! db stmt)))
