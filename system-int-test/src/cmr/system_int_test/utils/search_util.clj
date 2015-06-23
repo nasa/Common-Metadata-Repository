@@ -173,7 +173,7 @@
                       (client/post url
                                    {:accept accept
                                     :headers headers
-                                    :content-type "application/x-www-form-urlencoded"
+                                    :content-type mime-types/form-url-encoded
                                     :body (codec/form-encode params)
                                     :connection-manager (s/conn-mgr)})))]
      (if (= 200 (:status response))
@@ -361,7 +361,7 @@
   (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
-                                 :content-type mime-types/x-www-form-urlencoded
+                                 :content-type mime-types/form-url-encoded
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
                                  :connection-manager (s/conn-mgr)})]

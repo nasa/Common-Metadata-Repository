@@ -11,7 +11,8 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cmr.search.services.messages.common-messages :as msg]))
 
 (def valid-conditions-for-concept-type
   "A mapping of concept-type to a list of valid conditions for that concept type"
@@ -51,9 +52,9 @@
   "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
   implicitly and'ed together."
   [condition-map]
-  (let [query-conditions (for [[k v] condition-map]
-                           (parse-json-condition k v))]
-    (when (seq query-conditions) (gc/and-conds query-conditions))))
+  (when-let [query-conditions (seq (for [[k v] condition-map]
+                                     (parse-json-condition k v)))]
+    (gc/and-conds query-conditions)))
 
 ;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                  {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
@@ -93,14 +94,13 @@
 (defn- validate-json-conditions
   "Validates that the condition names in the query are valid"
   [concept-type json-query]
-  (let [all-keys (get-unique-keys json-query)
-        invalid-conditions (remove #(contains? (concept-type valid-conditions-for-concept-type) %)
-                                   all-keys)]
+  (let [all-condition-names (get-unique-keys json-query)
+        valid-conditions (get valid-conditions-for-concept-type concept-type)
+        invalid-conditions (set/difference all-condition-names valid-conditions)]
     (when (seq invalid-conditions)
       (errors/throw-service-error :bad-request
-                                  (format "Invalid JSON condition name(s) %s for %s search."
-                                          (mapv name invalid-conditions)
-                                          (name concept-type))))))
+                                  (msg/invalid-json-condition-names-msg concept-type
+                                                                        invalid-conditions)))))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

@@ -297,3 +297,17 @@
   compare function underneath and applies to other types other than just java.lang.Number."
   [& values]
   (compare-results-match? neg? values))
+
+(defn get-keys-in
+  "Returns a set of all of the keys in the given nested map or collection."
+  ([m]
+   (get-keys-in m #{}))
+  ([m key-set]
+   (cond
+     (map? m)
+     (-> key-set
+         (into (keys m))
+         (into (get-keys-in (vals m))))
+
+     (sequential? m)
+     (reduce #(into %1 (get-keys-in %2)) key-set m))))

@@ -6,15 +6,17 @@
             [cmr.system-int-test.utils.search-util :as search]))
 
 (deftest validation-test
-  (testing "invalide JSON condition names"
-    (are [concept-type invalid-keys json-search]
+  (testing "invalid JSON condition names"
+    (are [concept-type search-map error-message]
          (= {:status 400
-             :errors [(format "Invalid JSON condition name(s) %s for %s search."
-                              (mapv name invalid-keys)
-                              (name concept-type))]}
-            (search/find-refs-with-json-query concept-type {} json-search))
-         :collection [:foo] {:foo "bar"}
-         :collection [:not-right] {:not {:or [{:provider "PROV1"}
-                                              {:not-right "123"}]}}
+             :errors error-message}
+            (search/find-refs-with-json-query concept-type {} search-map))
+         :collection {:foo "bar"}
+         ["Invalid JSON condition name(s) [\"foo\"] for collection search."]
+
+         :collection {:not {:or [{:provider "PROV1"} {:not-right {:another-bad-name "123"}}]}}
+         ["Invalid JSON condition name(s) [\"not-right\" \"another-bad-name\"] for collection search."]
+
          ;; We do not support JSON Queries for granules yet
-         :granule [:provider] {:provider "PROV1"})))
+         :granule {:provider "PROV1"}
+         ["Invalid JSON condition name(s) [\"provider\"] for granule search."])))
