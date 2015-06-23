@@ -50,9 +50,9 @@ The Accept header specifies the format of the response message. The Accept heade
 
 The revision id header allows specifying the [revision id](#revision-id) to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
 
-#### <a name="cmr-concept-id-header"></a> Cmr-Concept-Id Header
+#### <a name="cmr-concept-id-header"></a> Cmr-Concept-Id (or Concept-Id) Header
 
-The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id.
+The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id. The header Concept-Id is an alias for Cmr-Concept-Id.
 
 ***
 

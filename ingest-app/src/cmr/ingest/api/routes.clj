@@ -151,7 +151,7 @@
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
-  (if-let [concept-id (get headers "cmr-concept-id")]
+  (if-let [concept-id (or (get headers "cmr-concept-id") (get headers "concept-id"))]
     (assoc concept :concept-id concept-id)
     concept))
 
