@@ -18,61 +18,61 @@
   {:collection #{:or :and :not :provider :entry-id :entry-title}})
 
 (def query-condition-name->condition-type-map
-  "A mapping of query condition names to the query condition type based on concept-type."
-  {:collection {:entry-title :string
-                :entry-id :string
-                :provider :string
-                :or :or
-                :and :and
-                :not :not}})
+  "A mapping of query condition names to the query condition type."
+  {:entry-title :string
+   :entry-id :string
+   :provider :string
+   :or :or
+   :and :and
+   :not :not})
 
 (defn- query-condition-name->condition-type
   "Returns the query condition type based on the given concept-type and param-name."
-  [concept-type param-name]
-  (get-in query-condition-name->condition-type-map [concept-type param-name]))
+  [condition-name]
+  (condition-name query-condition-name->condition-type-map))
 
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
-  (fn [concept-type condition-name value]
-    (query-condition-name->condition-type concept-type condition-name)))
+  (fn [condition-name value]
+    (query-condition-name->condition-type condition-name)))
 
 (defmethod parse-json-condition :default
-  [concept-type condition-name value]
+  [condition-name value]
   (errors/internal-error!
-    (format "Could not find parameter handler for [%s] with concept-type [%s]"
-            condition-name concept-type)))
+    (format "Could not find parameter handler for [%s]"
+            condition-name)))
 
 (defmethod parse-json-condition :string
-  [concept-type condition-name value]
+  [condition-name value]
   ;; TODO handle case sensitivity and wildcards
   (qm/string-condition condition-name value false false))
 
 (defn- parse-json-condition-map
   "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
   implicitly and'ed together."
-  [concept-type condition-map]
+  [condition-map]
   (let [query-conditions (for [[k v] condition-map]
-                           (parse-json-condition concept-type k v))]
+                           (parse-json-condition k v))]
     (when (seq query-conditions) (gc/and-conds query-conditions))))
 
 ;; Example {"and": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                  {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
 (defmethod parse-json-condition :and
-  [concept-type condition-name values]
-  (gc/and-conds (map #(parse-json-condition-map concept-type %) values)))
+  [condition-name values]
+  (gc/and-conds (map #(parse-json-condition-map %) values)))
 
 ;; Example {"or": [{"entry-title": "ET", "provider": "PROV1"}
 ;;                 {"revision-date": [null, "2015-04-01T00:00:00Z"]}]}
 (defmethod parse-json-condition :or
-  [concept-type condition-name values]
-  (gc/or-conds (map #(parse-json-condition-map concept-type %) values)))
+  [condition-name values]
+  (gc/or-conds (map #(parse-json-condition-map %) values)))
 
 ;; Example {"not": {"entry-title": "ET",
 ;;                  "provider": "PROV1",
 ;;                  "revision-date": [null, "2015-04-01T00:00:00Z"]}}
 (defmethod parse-json-condition :not
-  [concept-type condition-name value]
-  (qm/negated-condition (parse-json-condition-map concept-type value)))
+  [condition-name value]
+  (qm/negated-condition (parse-json-condition-map value)))
 
 (defn- get-keys
   "Returns all of the keys from a nested map"
@@ -94,13 +94,8 @@
   "Validates that the condition names in the query are valid"
   [concept-type json-query]
   (let [all-keys (get-unique-keys json-query)
-        invalid-conditions (filter (fn [condition]
-                                     (when-not (contains?
-                                                 (concept-type valid-conditions-for-concept-type)
-                                                 condition)
-                                       condition))
+        invalid-conditions (remove #(contains? (concept-type valid-conditions-for-concept-type) %)
                                    all-keys)]
-
     (when (seq invalid-conditions)
       (errors/throw-service-error :bad-request
                                   (format "Invalid JSON condition name(s) %s for %s search."
@@ -115,5 +110,5 @@
     (validate-json-conditions concept-type json-query)
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type
-                     :condition (parse-json-condition-map concept-type json-query)))))
+                     :condition (parse-json-condition-map json-query)))))
 

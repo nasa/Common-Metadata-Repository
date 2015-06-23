@@ -6,7 +6,7 @@
             [cmr.search.services.json-parameters.conversion :as jp]
             [cheshire.core :as json]))
 
-(deftest json-parameters->query-test
+(deftest parse-json-query-test
   (testing "Empty parameters"
     (are [empty-string] (= (q/query {:concept-type :collection})
                            (jp/parse-json-query :collection {} empty-string))
@@ -38,25 +38,21 @@
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :provider "bar")
                                                (q/string-condition :entry-title "foo")])})
-           (jp/parse-json-query :collection
-                                {}
-                                (json/generate-string {:entry-title "foo"
-                                                       :provider "bar"}))))))
+           (jp/parse-json-query :collection {} (json/generate-string {:entry-title "foo"
+                                                                      :provider "bar"}))))))
 
-(deftest parameter->condition-test
+(deftest parse-json-condition-test
   (testing "OR condition"
     (is (= (gc/or-conds [(q/string-condition :provider "foo")
                          (q/string-condition :entry-title "bar")])
-           (jp/parse-json-condition :collection :or
-                                    [{:provider "foo"} {:entry-title "bar"}]))))
+           (jp/parse-json-condition :or [{:provider "foo"} {:entry-title "bar"}]))))
   (testing "AND condition"
     (is (= (gc/and-conds [(q/string-condition :provider "foo")
                           (q/string-condition :entry-title "bar")])
-           (jp/parse-json-condition :collection :and
-                                    [{:provider "foo"} {:entry-title "bar"}]))))
+           (jp/parse-json-condition :and [{:provider "foo"} {:entry-title "bar"}]))))
   (testing "NOT condition"
     (is (= (q/negated-condition (q/string-condition :provider "alpha"))
-           (jp/parse-json-condition :collection :not {:provider "alpha"}))))
+           (jp/parse-json-condition :not {:provider "alpha"}))))
 
   (testing "Nested conditions"
     (is (= (gc/or-conds [(gc/and-conds [(q/string-condition :provider "bar")
@@ -65,11 +61,11 @@
                                         (q/string-condition :provider "soap")
                                         (q/->NegatedCondition
                                           (q/string-condition :provider "alpha"))])])
-           (jp/parse-json-condition :collection :or [{:entry-title "foo"
-                                                      :provider "bar"}
-                                                     {:provider "soap"
-                                                      :and [{:not {:provider "alpha"}}
-                                                            {:entry-title "ET"}]}])))))
+           (jp/parse-json-condition :or [{:entry-title "foo"
+                                          :provider "bar"}
+                                         {:provider "soap"
+                                          :and [{:not {:provider "alpha"}}
+                                                {:entry-title "ET"}]}])))))
 ;; TODO tests
 ;     (testing "case-insensitive"
 ;       (is (= (q/string-condition :entry-title "bar" false false)
