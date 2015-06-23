@@ -1,9 +1,10 @@
 (ns cmr.metadata-db.services.search-service
   "Contains functions for retrieving concepts using parameter search"
   (:require [cmr.metadata-db.data.concepts :as c]
-            [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.services.concept-validations :as cv]
+            [cmr.metadata-db.services.util :as db-util]
             [cmr.metadata-db.services.provider-service :as provider-service]
+            [cmr.metadata-db.services.messages :as msg]
+            [clojure.set :as set]
 
             ;; Required to get code loaded
             [cmr.metadata-db.data.oracle.concepts]
@@ -12,31 +13,74 @@
             [cmr.metadata-db.data.oracle.providers]
 
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.util :as util]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validations for find concepts
+
+(def supported-collection-parameters
+  "Set of parameters supported by find for collections"
+  #{:provider-id :entry-title :entry-id :short-name :version-id})
+
+(def granule-supported-parameter-combinations
+  "Supported parameter combination sets for granule find"
+  #{#{:provider-id :granule-ur}
+    #{:provider-id :native-id}})
+
+(defmulti supported-parameter-combinations-validation
+  "Validates the find parameters for a concept type"
+  (fn [params]
+    (:concept-type params)))
+
+(defmethod supported-parameter-combinations-validation :collection
+  [params]
+  (let [params (dissoc params :concept-type)]
+    (when-let [unsupported-params (seq (set/difference (set (keys params)) supported-collection-parameters))]
+      [(msg/find-not-supported :collection unsupported-params)])))
+
+(defmethod supported-parameter-combinations-validation :granule
+  [{:keys [concept-type] :as params}]
+  (let [params (dissoc params :concept-type)]
+    (when-not (contains? granule-supported-parameter-combinations (set (keys params)))
+      [(msg/find-not-supported-combination concept-type (keys params))])))
+
+(defmethod supported-parameter-combinations-validation :default
+  [{:keys [concept-type] :as params}]
+  [(msg/find-not-supported-combination concept-type (keys (dissoc params :concept-type)))])
+
+(def find-params-validation
+  "Validates parameters for finding a concept"
+  (util/compose-validations [supported-parameter-combinations-validation]))
+
+(def validate-find-params
+  "Validates find parameters. Throws an error if invalid."
+  (util/build-validator :bad-request find-params-validation))
+
 (defn- find-providers-for-params
-  "Find providers that mach the given parameters"
+  "Find providers that match the given parameters. If no providers are specified we return all
+  providers as possible providers that could match the parameters."
   [context params]
   ;; TODO - Add support for finding provider from concept-id parameter when support is added
   ;; to find-concepts for that parameter
   (if-let [provider-id (:provider-id params)]
-    (if-let [provider (provider-service/get-provider-by-id context provider-id false)]
-      [provider]
-      [])
+    (when-let [provider (provider-service/get-provider-by-id context provider-id)]
+      [provider])
     (provider-service/get-providers context)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Service methods for finding concepts
 
 (deftracefn find-concepts
   "Find concepts with specific parameters"
   [context params]
-  (let [db (util/context->db context)
+  (let [db (db-util/context->db context)
         latest-only? (= "true" (:latest params))
-        providers (find-providers-for-params context params)
-        params (dissoc params :latest)]
-    (if (seq providers)
+        params (dissoc params :latest)
+        _ (validate-find-params params)
+        providers (find-providers-for-params context params)]
+    (when (seq providers)
       (do
-        (cv/validate-find-params params)
         (if latest-only?
           (c/find-latest-concepts db providers params)
-          (c/find-concepts db providers params)))
-      [])))
+          (c/find-concepts db providers params))))))

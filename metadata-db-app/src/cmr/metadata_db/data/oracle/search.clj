@@ -1,8 +1,8 @@
 (ns cmr.metadata-db.data.oracle.search
-"Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore protocol methods
-for retrieving concepts using parameters"
-(:require [cmr.metadata-db.data.concepts :as c]
-          [cmr.metadata-db.data.oracle.concepts :as oc]
+  "Provides implementations of the cmr.metadata-db.data.concepts/ConceptStore protocol methods
+  for retrieving concepts using parameters"
+  (:require [cmr.metadata-db.data.concepts :as c]
+            [cmr.metadata-db.data.oracle.concepts :as oc]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]
@@ -23,8 +23,8 @@ for retrieving concepts using parameters"
                                ~existing-params)
                          `(>= :id ~min-id))
          stmt (select ['(min :id)]
-                      (from table)
-                      (where params-clause))]
+                (from table)
+                (where params-clause))]
      (-> (su/find-one conn stmt)
          vals
          first))))
@@ -58,8 +58,9 @@ for retrieving concepts using parameters"
         stmt (gen-find-concepts-in-table-sql table params)]
     (j/with-db-transaction
       [conn db]
-      (doall (for [res (su/query conn stmt)]
-               (oc/db-result->concept-map concept-type conn (:provider_id res) res))))))
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
@@ -67,25 +68,26 @@ for retrieving concepts using parameters"
   {:pre [(== 1 (count providers))]}
   (let [provider (first providers)
         provider-id (:provider-id provider)
-        params (assoc params :provider-id provider-id)
-        params (params->sql-params provider params)
+        params (params->sql-params provider (assoc params :provider-id provider-id))
         stmt (gen-find-concepts-in-table-sql table params)]
     (j/with-db-transaction
       [conn db]
-      (doall (for [res (su/query conn stmt)]
-               (oc/db-result->concept-map concept-type conn provider-id res))))))
+      ;; doall is necessary to force result retrieval while inside transaction - otherwise
+      ;; connection closed errors will occur
+      (doall (mapv #(oc/db-result->concept-map concept-type conn provider-id %)
+                   (su/query conn stmt))))))
 
 (extend-protocol c/ConceptSearch
   OracleStore
 
-(find-concepts
-  [db providers params]
-  {:pre [(coll? providers)]}
-  (let [concept-type (:concept-type params)
-        table-provider (group-by #(tables/get-table-name % concept-type) providers)]
-    (util/mapcatv (fn [[table provider-list]]
-              (find-concepts-in-table db table concept-type provider-list params))
-            table-provider)))
+  (find-concepts
+    [db providers params]
+    {:pre [(coll? providers)]}
+    (let [concept-type (:concept-type params)
+          tables-to-providers (group-by #(tables/get-table-name % concept-type) providers)]
+      (util/mapcatv (fn [[table provider-list]]
+                      (find-concepts-in-table db table concept-type provider-list params))
+                    tables-to-providers)))
 
   (find-concepts-in-batches
     ([db provider params batch-size]
@@ -105,8 +107,8 @@ for retrieving concepts using parameters"
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
                          stmt (su/build (select [:*]
-                                                (from table)
-                                                (where (cons `and conditions))))
+                                          (from table)
+                                          (where (cons `and conditions))))
                          batch-result (su/query db stmt)]
                      (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                            batch-result))))
