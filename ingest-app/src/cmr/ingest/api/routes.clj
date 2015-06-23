@@ -151,6 +151,7 @@
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
+  ;; The header concept-id exists primarily to support backwards compatibility with Catalog Rest
   (if-let [concept-id (or (get headers "cmr-concept-id") (get headers "concept-id"))]
     (assoc concept :concept-id concept-id)
     concept))
