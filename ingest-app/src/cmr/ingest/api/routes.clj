@@ -137,7 +137,7 @@
 (defn- set-revision-id
   "Associate revision id to concept if revision id is a positive integer. Otherwise return an error"
   [concept headers]
-  (if-let [revision-id (get headers "revision-id")]
+  (if-let [revision-id (get headers "cmr-revision-id")]
     (try
       (let [revision-id (Integer/parseInt revision-id)]
         (if (pos? revision-id)
@@ -151,7 +151,7 @@
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
-  (if-let [concept-id (get headers "concept-id")]
+  (if-let [concept-id (get headers "cmr-concept-id")]
     (assoc concept :concept-id concept-id)
     concept))
 
@@ -260,7 +260,7 @@
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
                                  :concept-type :collection
-                                 :revision-id (get headers "revision-id")}]
+                                 :revision-id (get headers "cmr-revision-id")}]
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
             (info (format "Deleting collection %s from client %s"

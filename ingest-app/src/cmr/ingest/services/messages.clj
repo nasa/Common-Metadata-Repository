@@ -20,7 +20,7 @@
 
 (defn invalid-revision-id
   [revision-id]
-  (format "Invalid revision-id [%s]. Revision-id must be a positive integer." revision-id))
+  (format "Invalid revision-id [%s]. Cmr-Revision-id must be a positive integer." revision-id))
 
 (defn invalid-parent-collection-for-validation
   [collection-validation-error]

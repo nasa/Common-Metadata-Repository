@@ -46,11 +46,11 @@ All Ingest API operations require specifying a token obtained from URS or ECHO. 
 
 The Accept header specifies the format of the response message. The Accept header will default to XML for the normal Ingest APIs. `application/json` can be specified if you prefer responses in JSON.
 
-#### <a name="revision-id-header"></a> Revision Id Header
+#### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
 The revision id header allows specifying the [revision id](#revision-id) to use when saving the concept. If the revision id specified is not the latest a HTTP Status code of 409 will be returned indicating a conflict.
 
-#### <a name="concept-id-header"></a> Concept Id Header
+#### <a name="cmr-concept-id-header"></a> Cmr-Concept-Id Header
 
 The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id.
 
@@ -146,24 +146,24 @@ A provider id identifies a provider and is composed of a combination of upper ca
 
 The native id is the id that a provider client uses to refer to a granule or collection in the URL. For example a provider could create a new collection with native id "cloud_sat_5" in provider "PROV" by sending a HTTP PUT request to `/providers/PROV/collections/cloud_sat_5`. The native id must be unique within a provider. Two collections could not share a native id for example. The native id doesn't have to matche an id in the metadata but providers are encouraged to use something like entry id or entry title for their native ids.
 
-#### <a name="revision-id"></a> Revision Id
+#### <a name="revision-id"></a> CMR Revision Id
 
 Every update or deletion of a concept is stored separately as a separate revision in the CMR database. Deletion revisions are called tombstones. The CMR uses this to improve caching, synchronization, and to maintain an audit log of changes to concepts. Every revision is given a separate id starting with 1 for the first revision.
 
-##### Example Revision Ids
+##### Example CMR Revision Ids
 
 Here's a table showing an example set of revisions for one collection.
 
-| Concept Id | Revision Id | Metadata | Deleted |
-| ---------- | ----------- | -------- | ------- |
-| C1-PROV1   |           1 | ...      | false   |
-| C1-PROV1   |           2 | ...      | false   |
-| C1-PROV1   |           3 | null     | true    |
-| C1-PROV1   |           4 | ...      | false   |
+| Concept Id | CMR Revision Id | Metadata | Deleted |
+| ---------- | --------------- | -------- | ------- |
+| C1-PROV1   |        1        | ...      | false   |
+| C1-PROV1   |        2        | ...      | false   |
+| C1-PROV1   |        3        | null     | true    |
+| C1-PROV1   |        4        | ...      | false   |
 
 The table shows one collection with 4 revisions. It was created and then updated. The third revision was a deletion. The last revision was when the collection was recreated.
 
-#### <a name="concept-id"></a> Concept Id
+#### <a name="concept-id"></a> CMR Concept Id
 
 A concept is any type of metadata that is managed by the CMR. Collections and granules are the current concept types the CMR manages. The concept id is the unique identifier of concepts in the CMR.
 
