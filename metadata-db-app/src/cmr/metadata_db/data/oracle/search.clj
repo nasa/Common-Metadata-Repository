@@ -30,11 +30,19 @@ for retrieving concepts using parameters"
          first))))
 
 (defn- params->sql-params
-  "Converts the search params into params that can be converted in sql condition clause."
+  "Converts the search params into params that can be converted into a sql condition clause."
   [provider params]
   (if (:small provider)
     (dissoc params :concept-type)
     (dissoc params :concept-type :provider-id)))
+
+(defn- gen-find-concepts-in-table-sql
+  "Create the SQL for the given params and table"
+  [table params]
+  (su/build (select [:*]
+              (from table)
+              (when-not (empty? params)
+                (where (sh/find-params->sql-clause params))))))
 
 (defmulti find-concepts-in-table
   "Retrieve concept maps from the given table, handling small providers separately from
@@ -45,43 +53,27 @@ for retrieving concepts using parameters"
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
-  (j/with-db-transaction
-    [conn db]
-    (let [params (params->sql-params (first providers)
-                                     (assoc params :provider-id (map :provider-id providers)))
-          stmt (su/build (select [:*]
-                           (from table)
-                           (when-not (empty? params)
-                             (where (sh/find-params->sql-clause params)))))]
-      (doall (map (fn [res]
-                    (oc/db-result->concept-map concept-type conn (:provider_id res) res))
-                  (su/query conn stmt))))))
+  (let [params (params->sql-params (first providers)
+                                   (assoc params :provider-id (map :provider-id providers)))
+        stmt (gen-find-concepts-in-table-sql table params)]
+    (j/with-db-transaction
+      [conn db]
+      (doall (for [res (su/query conn stmt)]
+               (oc/db-result->concept-map concept-type conn (:provider_id res) res))))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
   [db table concept-type providers params]
   {:pre [(== 1 (count providers))]}
   (let [provider (first providers)
-        provider-id (:provider-id provider)]
+        provider-id (:provider-id provider)
+        params (assoc params :provider-id provider-id)
+        params (params->sql-params provider params)
+        stmt (gen-find-concepts-in-table-sql table params)]
     (j/with-db-transaction
       [conn db]
-      (let [params (params->sql-params provider params)
-            stmt (su/build (select [:*]
-                             (from table)
-                             (when-not (empty? params)
-                               (where (sh/find-params->sql-clause params)))))]
-        (doall (for [res (su/query conn stmt)]
-                 (oc/db-result->concept-map concept-type conn provider-id res)))))))
-
-(comment
-
-  (let [list (into () [1 2 3])]
-                   (su/build (select [:*] (from "table") (where `(in :x ~list)))))
-
-
-
-  )
-
+      (doall (for [res (su/query conn stmt)]
+               (oc/db-result->concept-map concept-type conn provider-id res))))))
 
 (extend-protocol c/ConceptSearch
   OracleStore

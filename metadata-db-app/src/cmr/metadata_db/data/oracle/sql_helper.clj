@@ -17,12 +17,9 @@
                                       (str/join ", " invalid-names)))))
   (let [comparisons (for [[k v] params
                           :let [[operator val] (if (sequential? v)
-                                           ['in (into () v)]
-                                           [`= v])]]
-                      (do
-                      (println "VAL....")
-                      (println val)
-                      `(~operator ~k ~val)))]
+                                                 ['in (into () v)]
+                                                 [`= v])]]
+                      `(~operator ~k ~val))]
     (if (> (count comparisons) 1)
       (cons `and comparisons)
       (first comparisons))))

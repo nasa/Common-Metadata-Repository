@@ -163,10 +163,10 @@
               "mixed providers - entry-title"
               [coll1 coll4] {:entry-title "et1"}
 
-              "find none - provider-id"
+              "find none - bad provider-id"
               [] {:provider-id "PROV_NONE"}
 
-              "find none - provider-id, version-id"
+              "find none - provider-id, bad version-id"
               [] {:provider-id "REG_PROV" :version-id "v7"}))
       (testing "all revisions"
         (are2 [rev-count params]
