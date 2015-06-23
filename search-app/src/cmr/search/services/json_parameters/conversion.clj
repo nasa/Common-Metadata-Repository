@@ -5,7 +5,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]
-            [cmr.common.util :as u]
+            [cmr.common.util :as util]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]
@@ -75,26 +75,10 @@
   [condition-name value]
   (qm/negated-condition (parse-json-condition-map value)))
 
-(defn- get-keys
-  "Returns all of the keys from a nested map"
-  [m]
-  (cond
-    (map? m)
-    (for [[k v] m]
-      (conj (get-keys v) k))
-    (sequential? m)
-    (for [v m]
-      (get-keys v))))
-
-(defn- get-unique-keys
-  "Returns a set of keys from a nested map"
-  [m]
-  (set (flatten (get-keys m))))
-
 (defn- validate-json-conditions
   "Validates that the condition names in the query are valid"
   [concept-type json-query]
-  (let [all-condition-names (get-unique-keys json-query)
+  (let [all-condition-names (util/get-keys-in json-query)
         valid-conditions (get valid-conditions-for-concept-type concept-type)
         invalid-conditions (set/difference all-condition-names valid-conditions)]
     (when (seq invalid-conditions)
@@ -106,7 +90,7 @@
   "Converts a JSON query string and query parameters into a query model."
   [concept-type params json-string]
   (let [params (pv/validate-standard-query-parameters concept-type params)
-        json-query (u/map-keys->kebab-case (json/parse-string json-string true))]
+        json-query (util/map-keys->kebab-case (json/parse-string json-string true))]
     (validate-json-conditions concept-type json-query)
     (qm/query (assoc (pc/standard-params->query-attribs concept-type params)
                      :concept-type concept-type
