@@ -160,16 +160,6 @@
                       (= revision-id (:revision-id c))))
                @concepts-atom))))
 
-  (get-concept-by-provider-id-native-id-concept-type
-    [this provider concept]
-    (let [{:keys [concept-type provider-id native-id]} concept]
-      (->> @concepts-atom
-           (filter (fn [c]
-                     (and (= concept-type (:concept-type c))
-                          (= provider-id (:provider-id c))
-                          (= native-id (:native-id c)))))
-           first)))
-
   (get-concepts
     [this concept-type provider concept-id-revision-id-tuples]
     (filter identity

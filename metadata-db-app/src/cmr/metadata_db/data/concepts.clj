@@ -31,11 +31,6 @@
     "Gets a version of a concept with a given concept-id and revision-id. If the
     revision-id is not given or is nil then the latest revision is returned.")
 
-  (get-concept-by-provider-id-native-id-concept-type
-    [db provider concept]
-    "Gets a version of a concept that has the same concept-type, provider-id, and native-id
-    as the given concept.")
-
   (get-concepts
     [db concept-type provider concept-id-revision-id-tuples]
     "Get a sequence of concepts by specifying a list of
