@@ -37,17 +37,17 @@
   [params]
   (let [params (dissoc params :concept-type)]
     (when-let [unsupported-params (seq (set/difference (set (keys params)) supported-collection-parameters))]
-      [(msg/find-not-supported :collection (map name unsupported-params))])))
+      [(msg/find-not-supported :collection unsupported-params)])))
 
 (defmethod supported-parameter-combinations-validation :granule
   [{:keys [concept-type] :as params}]
   (let [params (dissoc params :concept-type)]
     (when-not (contains? granule-supported-parameter-combinations (set (keys params)))
-      [(msg/find-not-supported-combination concept-type (map name (keys params)))])))
+      [(msg/find-not-supported-combination concept-type (keys params))])))
 
 (defmethod supported-parameter-combinations-validation :default
   [{:keys [concept-type] :as params}]
-  [(msg/find-not-supported-combination concept-type (map name (keys (dissoc params :concept-type))))])
+  [(msg/find-not-supported-combination concept-type (keys (dissoc params :concept-type)))])
 
 (def find-params-validation
   "Validates parameters for finding a concept"
