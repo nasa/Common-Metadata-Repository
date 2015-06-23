@@ -328,7 +328,13 @@
         provider (provider-service/get-provider-by-id context provider-id true)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
-      (if (util/is-tombstone? previous-revision)
+      ;; For a concept which is already deleted (i.e. previous revision is a tombstone),
+      ;; new revision is created only if the revision id is supplied. We don't want extraneous
+      ;; tombstones created which, for example, can happen if multiple delete requests are sent at
+      ;; once for the same concept. But if a revision id is sent we need to validate it and store a
+      ;; record in the database. The revision id allows a client (including virutal product service)
+      ;; to send concept updates and deletions out of order.
+      (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
         (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""
                                                   :revision-date revision-date})]

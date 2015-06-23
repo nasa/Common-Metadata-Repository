@@ -298,6 +298,19 @@
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
+(deftest delete-deleted-collection-with-new-revision-id
+  (let [coll (d/ingest "PROV1" (dc/collection))
+        concept-id (:concept-id coll)
+        coll-del1 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 5})
+        coll-del2 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 7})]
+    (is (= 200 (:status coll-del1) (:status coll-del2)))
+    (is (= 5 (:revision-id coll-del1)))
+    (is (= 7 (:revision-id coll-del2)))
+    (index/wait-until-indexed)
+    (is (empty? (:refs (search/find-refs :collection {"concept-id" concept-id}))))
+    (is (ingest/concept-exists-in-mdb? concept-id 5))
+    (is (ingest/concept-exists-in-mdb? concept-id 7))))
+
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
   (let [concept (assoc (dc/collection-concept {})

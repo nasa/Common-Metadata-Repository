@@ -174,8 +174,8 @@
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id]} options
          accept-format (:accept-format options)
-         headers (util/remove-nil-keys {"concept-id" concept-id
-                                        "revision-id" revision-id
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
                                         "Echo-Token" token
                                         "Client-Id" client-id})
          params {:method :put
@@ -194,9 +194,10 @@
    (delete-concept concept {}))
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token client-id accept-format]} options
+         {:keys [token client-id accept-format revision-id]} options
          headers (util/remove-nil-keys {"Echo-Token" token
-                                        "Client-Id" client-id})
+                                        "Client-Id" client-id
+                                        "Cmr-Revision-id" revision-id})
          params {:method :delete
                  :url (url/ingest-url provider-id concept-type native-id)
                  :headers headers
@@ -236,8 +237,8 @@
          accept-format (get options :accept-format :xml)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
-         headers (util/remove-nil-keys {"concept-id" concept-id
-                                        "revision-id" revision-id
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
                                         "Client-Id" client-id})
          response (client/request
                     {:method :post
