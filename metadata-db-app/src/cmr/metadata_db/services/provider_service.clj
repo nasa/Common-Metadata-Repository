@@ -62,10 +62,10 @@
   (when (= pv/small-provider-id provider-id)
     (cmsg/data-error :bad-request msg/small-provider-cannot-be-deleted))
   (let [db (mdb-util/context->db context)
-        provider (get-provider-by-id context provider-id true)]
-    (let [result (providers/delete-provider db provider)]
-      (when (:error result)
-        (errors/internal-error! (:error-message result))))))
+        provider (get-provider-by-id context provider-id true)
+        result (providers/delete-provider db provider)]
+    (when (:error result)
+      (errors/internal-error! (:error-message result)))))
 
 (deftracefn reset-providers
   "Delete all the providers and their concepts."
