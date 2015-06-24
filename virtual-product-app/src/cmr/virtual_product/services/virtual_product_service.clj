@@ -127,11 +127,11 @@
       ;; granule is present in the virtual product queue and is not yet consumed. The exception will
       ;; cause the event to be put back in the queue. The event will be retried until the ingest
       ;; event is consumed.
-      ;; Note that the existence of a delete event for the virtual granule means that the real
-      ;; granule exists in the database (otherwise corresponding delete request for real granule
-      ;; would fail with 404 and the delete event for the virtual granule would never be put on
-      ;; the virtual product queue to begin with). Which in turn means that ingest event
-      ;; corresponding to the granule has been created in the past (either recent past or
+      ;; Note that the existence of a delete event for the virtual granule means that the
+      ;; corresponding real granule exists in the database (otherwise corresponding delete request
+      ;; for real granule would fail with 404 and the delete event for the virtual granule would
+      ;; never be put on the virtual product queue to begin with). Which in turn means that ingest
+      ;; event corresponding to the granule has been created in the past (either recent past or
       ;; distant past) and that event has to to consumed before the delete event can be consumed
       ;; off the queue.
       (= status 404) (errors/internal-error!
