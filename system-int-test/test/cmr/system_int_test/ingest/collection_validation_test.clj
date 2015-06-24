@@ -202,6 +202,46 @@
               :errors [(format "Expected revision-id of [7] got [4] for [%s]" concept-id)]}
              response2)))))
 
+(defn- assert-revision-conflict
+  [concept-id format-str response]
+  (is (= {:status 409
+          :errors [(format format-str concept-id)]}
+         response)))
+
+(deftest revision-conflict-tests
+  (testing "ingest with higher revision id comes before ingest with lower revision-id"
+    (let [concept (dc/collection-concept {:revision-id 4})
+          concept-id (:concept-id (ingest/ingest-concept concept))
+          response (ingest/ingest-concept (assoc concept :revision-id 2))]
+      (assert-revision-conflict concept-id "Expected revision-id of [5] got [2] for [%s]" response)))
+
+  (testing "ingest with higher revision id comes before delete with lower revision-id"
+    (let [concept (dc/collection-concept {:revision-id 4})
+          concept-id (:concept-id (ingest/ingest-concept concept))
+          response (ingest/delete-concept concept {:revision-id 2})]
+      (assert-revision-conflict concept-id "Expected revision-id of [5] got [2] for [%s]" response)))
+
+  (testing "delete with higher revision id comes before ingest with lower revision-id"
+    (let [concept (dc/collection-concept {})
+          concept-id (:concept-id (ingest/ingest-concept concept))
+          _ (ingest/delete-concept concept {:revision-id 5})
+          response (ingest/ingest-concept (assoc concept :revision-id 3))]
+      (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
+
+  (testing "delete with higher revision id comes before delete with lower revision-id"
+    (let [concept (dc/collection-concept {})
+          concept-id (:concept-id (ingest/ingest-concept concept))
+          _ (ingest/delete-concept concept {:revision-id 5})
+          response (ingest/delete-concept concept {:revision-id 3})]
+      (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
+
+  (testing "deleting non-existent collection with no tombstone"
+    (let [concept (dc/collection-concept {})
+          response (ingest/delete-concept concept {:revision-id 2})
+          {:keys [status errors]} response]
+      (is (= status 404))
+      (is (re-find #"Collection .* does not exist" (first errors))))))
+
 (comment
   (ingest/delete-provider "PROV1")
   ;; Attempt to create race conditions by ingesting the same concept-id simultaneously. We expect
