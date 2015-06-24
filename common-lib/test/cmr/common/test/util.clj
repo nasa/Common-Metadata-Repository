@@ -262,6 +262,16 @@
      {:g [{:h "H"}]}]
     #{:a :b :c :d :e :f :g :h}
 
+    "Complex keys in map"
+    {{:a "a"} "map"
+     (symbol "a+-*&%$#!") "symbol"
+     1 2
+     "str" [{1 2
+             3 4}]
+     #{5 6 7} "set"
+     [8 9] "vec"}
+    #{{:a "a"} (symbol "a+-*&%$#!") 1 "str" 3 #{5 6 7} [8 9]}
+
     "Empty map"
     {}
     #{}
