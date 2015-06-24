@@ -52,3 +52,10 @@
   (str "Parameter ["
        (csk/->snake_case_string param)
        "] may be either single valued or multivalued, but not both."))
+
+(defn invalid-json-condition-names-msg
+  "Creates a message indicating the provided JSON condition names are invalid."
+  [concept-type condition-names]
+  (format "Invalid JSON condition name(s) %s for %s search."
+          (mapv name condition-names)
+          (name concept-type)))

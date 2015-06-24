@@ -229,3 +229,53 @@
          [:d :c :b :a]
          [(t/date-time 2015 1 14 4 3 27) (t/date-time 1986 10 14 4 3 28)])))
 
+(deftest get-keys-in-test
+  (util/are2
+    [map-or-coll expected]
+    (= expected (util/get-keys-in map-or-coll))
+
+    "Simple map"
+    {:a "A" :b "B"}
+    #{:a :b}
+
+    "Simple collection"
+    [{:a "A" :b "B"}
+     {:a "C" :d "D"}]
+    #{:a :b :d}
+
+    "Nested map"
+    {:a {:b "B"
+         :c "C"}
+     :b {:d "D"}
+     :c [{:e "E"
+          :f "F"}
+         [{:g "G"
+           :h "H"}]]}
+    #{:a :b :c :d :e :f :g :h}
+
+    "Nested collection"
+    [[{:a [{:b "B"
+            :c "C"}
+           {:d "D"
+            :e "E"}]}
+      {:f "F"}]
+     {:g [{:h "H"}]}]
+    #{:a :b :c :d :e :f :g :h}
+
+    "Complex keys in map"
+    {{:a "a"} "map"
+     (symbol "a+-*&%$#!") "symbol"
+     1 2
+     "str" [{1 2
+             3 4}]
+     #{5 6 7} "set"
+     [8 9] "vec"}
+    #{{:a "a"} (symbol "a+-*&%$#!") 1 "str" 3 #{5 6 7} [8 9]}
+
+    "Empty map"
+    {}
+    #{}
+
+    "Empty collection"
+    []
+    #{}))

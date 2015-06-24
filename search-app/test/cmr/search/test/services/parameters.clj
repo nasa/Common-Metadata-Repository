@@ -73,21 +73,21 @@
 (deftest parameters->query-test
   (testing "Empty parameters"
     (is (= (q/query {:concept-type :collection})
-           (p/parameters->query :collection {}))))
+           (p/parse-parameter-query :collection {}))))
   (testing "option map aliases are corrected"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo" false false)})
-           (p/parameters->query :collection {:entry-title ["foo"]
+           (p/parse-parameter-query :collection {:entry-title ["foo"]
                                              :options {:entry-title {:ignore-case "true"}}}))))
   (testing "with one condition"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo")})
-           (p/parameters->query :collection {:entry-title ["foo"]}))))
+           (p/parse-parameter-query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :provider "bar")
                                               (q/string-condition :entry-title "foo")])})
-           (p/parameters->query :collection {:entry-title ["foo"] :provider "bar"})))))
+           (p/parse-parameter-query :collection {:entry-title ["foo"] :provider "bar"})))))
 
 (deftest parse-sort-key-test
   (testing "no sort key"

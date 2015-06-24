@@ -27,6 +27,9 @@
             [cmr.search.services.parameters.converters.science-keyword]
             [cmr.search.services.parameters.converters.two-d-coordinate-system]
 
+            ;; json converters
+            [cmr.search.services.json-parameters.conversion :as jp]
+
             ;; aql
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.services.aql.converters.temporal]
@@ -155,11 +158,26 @@
                                            (lp/replace-science-keywords-or-option concept-type)
 
                                            (pv/validate-parameters concept-type)
-                                           (p/parameters->query concept-type)))
+                                           (p/parse-parameter-query concept-type)))
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   (pr-str params)))
+    results))
+
+(deftracefn find-concepts-by-json-query
+  "Executes a search for concepts using the given JSON. The concepts will be returned with
+  concept id and native provider id along with hit count and timing info."
+  [context concept-type params json-query]
+  (let [[query-creation-time query] (u/time-execution
+                                      (jp/parse-json-query concept-type
+                                                           (sanitize-params params)
+                                                           json-query))
+        results (find-concepts context concept-type params query-creation-time query)]
+    ;; TODO refactor this out into find-concepts or some common function
+    (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
+                  (:hits results) (name concept-type) (:total-took results) (:result-format query)
+                  json-query (pr-str params)))
     results))
 
 (deftracefn find-concepts-by-aql
@@ -169,7 +187,7 @@
   (let [params (-> params
                    sanitize-aql-params
                    lp/replace-parameter-aliases)
-        [query-creation-time query] (u/time-execution (a/aql->query params aql))
+        [query-creation-time query] (u/time-execution (a/parse-aql-query params aql))
         concept-type (:concept-type query)
         results (find-concepts context concept-type params query-creation-time query)]
     (info (format "Found %d %ss in %d ms in format %s with aql: %s."
@@ -180,18 +198,18 @@
 (defn- throw-id-not-found
   [concept-id]
   (err/throw-service-error
-   :not-found
-   (format "Concept with concept-id: %s could not be found" concept-id)))
+    :not-found
+    (format "Concept with concept-id: %s could not be found" concept-id)))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
     ;; do a query and use single-result->response
-    (let [query (p/parameters->query (cc/concept-id->type concept-id)
-                                     {:page-size 1
-                                      :concept-id concept-id
-                                      :result-format result-format})
+    (let [query (p/parse-parameter-query (cc/concept-id->type concept-id)
+                                         {:page-size 1
+                                          :concept-id concept-id
+                                          :result-format result-format})
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
@@ -269,7 +287,7 @@
                             (#(select-keys % [:bounding-box :point :line :polygon])))]
     (if (seq spatial-params)
       (apply clojure.set/union
-              (for [[param-name values] spatial-params
-                    value (if (sequential? values) values [values])]
-                (shape-param->tile-set param-name value)))
+             (for [[param-name values] spatial-params
+                   value (if (sequential? values) values [values])]
+               (shape-param->tile-set param-name value)))
       (tile/all-tiles))))

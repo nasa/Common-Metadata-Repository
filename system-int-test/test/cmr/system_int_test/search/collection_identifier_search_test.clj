@@ -95,6 +95,39 @@
            all-prov1-colls "pRoV1" {:ignore-case true}
            [] "prov1" {:ignore-case false}))
 
+    (testing "Provider search using JSON query"
+      (are [items json-search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
+
+           all-prov1-colls {:provider "PROV1"}
+           all-prov2-colls {:provider "PROV2"}
+           [] {:provider "PROV3"}
+
+           ;; Multiple values
+           all-colls {:or [{:provider "PROV1"}
+                           {:provider "PROV2"}]}
+           all-prov1-colls {:or [{:provider "PROV1"}
+                                 {:provider "PROV3"}]}
+
+           ;; In combination with 'not'
+           all-prov2-colls {:not {:provider "PROV1"}}
+           all-prov1-colls {:not {:provider "PROV2"}}
+
+           ;; TODO
+           ; ;; Wildcards
+           ; all-colls "PROV*" {:pattern true}
+           ; [] "PROV*" {:pattern false}
+           ; [] "PROV*" {}
+           ; all-prov1-colls "*1" {:pattern true}
+           ; all-prov1-colls "P?OV1" {:pattern true}
+           ; [] "*Q*" {:pattern true}
+
+           ; ;; Ignore case
+           ; all-prov1-colls "pRoV1" {}
+           ; all-prov1-colls "pRoV1" {:ignore-case true}
+           ; [] "prov1" {:ignore-case false}))
+           ))
+
     (testing "short name"
       (are [items sn options]
            (let [params (merge {:short-name sn}
@@ -198,7 +231,7 @@
            [c1-p1 c1-p2] "v1" {:ignore-case true}
            [] "v1" {:ignore-case false}))
 
-    (testing "entry id"
+    (testing "Entry id"
       (are [items ids options]
            (let [params (merge {:entry-id ids}
                                (when options
@@ -224,6 +257,45 @@
            ;; Ignore case
            [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
            [] "S1_v1" {:ignore-case false}))
+
+    (testing "Entry id search using JSON Query"
+      (are [items json-search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
+
+           [c1-p1 c1-p2] {:entry-id "S1_V1"}
+           [] {:entry-id "S44_V44"}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-id "S1_V1"}
+                                           {:entry-id "S2_V2"}]}
+           [c1-p1 c1-p2] {:or [{:entry-id "S1_V1"}
+                               {:entry-id "S44_V44"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-id "S1_V1"}
+                                           {:entry-id "S2_V2"}]}
+           [] {:and [{:entry-id "S1_V1"}
+                     {:entry-id "S2_V2"}]}
+
+           ;; Not with multiple entry-ids
+           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry-id "S2_V2"}
+                                                 {:entry-id "S1_V1"}]}}
+
+           ;; Not with multiple entry-ids and provider
+           [c3-p1 c4-p1] {:not {:or [{:entry-id "S2_V2"}
+                                     {:entry-id "S1_V1"}
+                                     {:provider "PROV2"}]}}
+
+           ))
+           ;; TODO
+           ;; Wildcards
+           ; all-colls "S*_V*" {:pattern true}
+           ; [] "S*_V*" {:pattern false}
+           ; [] "S*_V*" {}
+           ; [c1-p1 c1-p2] "*1" {:pattern true}
+           ; [c1-p1 c1-p2] "S1_?1" {:pattern true}
+           ; [] "*Q*" {:pattern true}
+
+           ; ;; Ignore case
+           ; [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
+           ; [] "S1_v1" {:ignore-case false}))
 
     (testing "Entry title"
       (are [items v options]
@@ -256,6 +328,40 @@
             [c1-p1 c1-p2]
             (search/find-refs :collection {:dataset-id "ET1"}))
           "dataset_id should be an alias for entry title."))
+
+    (testing "Entry title search using JSON Query"
+      (are [items json-search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
+
+           [c1-p1 c1-p2] {:entry-title "ET1"}
+           [] {:entry-title "ET44"}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-title "ET1"}
+                                           {:entry-title "ET2"}]}
+           [c1-p1 c1-p2] {:or [{:entry-title "ET1"}
+                               {:entry-title "ET44"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-title "ET1"}
+                                           {:entry-title "ET2"}]}
+           [] {:and [{:entry-title "ET1"}
+                     {:entry-title "ET2"}]}))
+
+           ;; TODO
+           ;; Wildcards
+           ; all-colls "ET*" {:pattern true}
+           ; [] "ET*" {:pattern false}
+           ; [] "ET*" {}
+           ; [c1-p1 c1-p2] "*1" {:pattern true}
+           ; [c1-p1 c1-p2] "?T1" {:pattern true}
+           ; [] "*Q*" {:pattern true}
+
+           ; ;; Ignore case
+           ; [c1-p1 c1-p2] "et1" {:ignore-case true}
+           ; [] "et1" {:ignore-case false})
+
+      ; (is (d/refs-match?
+      ;       [c1-p1 c1-p2]
+      ;       (search/find-refs :collection {:dataset-id "ET1"}))
+      ;     "dataset_id should be an alias for entry title."))
 
     (testing "dataSetId with aql"
       (are [items v options]

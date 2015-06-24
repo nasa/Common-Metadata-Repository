@@ -173,7 +173,7 @@
                       (client/post url
                                    {:accept accept
                                     :headers headers
-                                    :content-type "application/x-www-form-urlencoded"
+                                    :content-type mime-types/form-url-encoded
                                     :body (codec/form-encode params)
                                     :connection-manager (s/conn-mgr)})))]
      (if (= 200 (:status response))
@@ -361,11 +361,26 @@
   (get-search-failure-xml-data
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
-                                 :content-type "application/x-www-form-urlencoded"
+                                 :content-type mime-types/form-url-encoded
                                  :body (codec/form-encode params)
                                  :throw-exceptions false
                                  :connection-manager (s/conn-mgr)})]
       (parse-reference-response (:echo-compatible params) response))))
+
+(defn find-refs-with-json-query
+  "Returns the references that are found by searching using a JSON request."
+  [concept-type query-params json-as-map]
+  (get-search-failure-xml-data
+    (let [response (client/post (url/search-url concept-type)
+                                {:accept mime-types/xml
+                                 :content-type mime-types/json
+                                 :body (json/generate-string json-as-map)
+                                 :query-params query-params
+                                 :throw-exceptions true
+                                 :connection-manager (s/conn-mgr)})]
+      (parse-reference-response (:echo-compatible query-params) response))))
+
+
 
 (defn find-refs-with-aql-string
   ([aql]
