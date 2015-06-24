@@ -17,9 +17,8 @@
 
 (def valid-conditions-for-concept-type
   "A mapping of concept-type to a list of valid conditions for that concept type"
-  {:collection #{:or :and :not :provider :entry-id :entry-title :science-keywords :category :topic
-                 :term :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable
-                 :any}})
+  {:collection (set/union #{:or :and :not :provider :entry-id :entry-title :science-keywords :any}
+                          psk/science-keyword-fields)})
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."

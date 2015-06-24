@@ -21,6 +21,7 @@
     (qm/string-condition (sk-field->elastic-keyword field) value case-sensitive? pattern?)))
 
 (defn parse-nested-science-keyword-condition
+  "Converts a science keyword condition into a query model condition."
   [value case-sensitive? pattern?]
   (qm/nested-condition
     :science-keywords
