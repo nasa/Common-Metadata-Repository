@@ -13,6 +13,7 @@
    has a var defined for it for easy access."
   {:json {:mime-type "application/json"}
    :xml {:mime-type "application/xml"}
+   :form-url-encoded {:mime-type "application/x-www-form-urlencoded"}
    :echo10 {:mime-type "application/echo10+xml"}
    :iso-smap {:mime-type "application/iso:smap+xml"
               :aliases [:iso_smap]}

@@ -134,24 +134,30 @@
     :bad-request
     (msg/invalid-revision-id revision-id)))
 
+(defn- parse-validate-revision-id
+  "Parse revision id and return it if it is positive"
+  [revision-id]
+  (try
+    (let [revision-id (Integer/parseInt revision-id)]
+      (when (pos? revision-id)
+        revision-id))
+    (catch NumberFormatException _)))
+
 (defn- set-revision-id
   "Associate revision id to concept if revision id is a positive integer. Otherwise return an error"
   [concept headers]
-  (if-let [revision-id (get headers "revision-id")]
-    (try
-      (let [revision-id (Integer/parseInt revision-id)]
-        (if (pos? revision-id)
-          (assoc concept :revision-id revision-id)
-          (invalid-revision-id-error revision-id)))
-      (catch NumberFormatException _
-        (invalid-revision-id-error revision-id)))
+  (if-let [revision-id (get headers "cmr-revision-id")]
+    (if-let [revision-id (parse-validate-revision-id revision-id)]
+      (assoc concept :revision-id revision-id)
+      (invalid-revision-id-error revision-id))
     concept))
 
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
   [concept headers]
-  (if-let [concept-id (get headers "concept-id")]
+  ;; The header concept-id exists primarily to support backwards compatibility with Catalog Rest
+  (if-let [concept-id (or (get headers "cmr-concept-id") (get headers "concept-id"))]
     (assoc concept :concept-id concept-id)
     concept))
 
@@ -259,7 +265,8 @@
         (DELETE "/" {:keys [request-context params headers]}
           (let [concept-attribs {:provider-id provider-id
                                  :native-id native-id
-                                 :concept-type :collection}]
+                                 :concept-type :collection
+                                 :revision-id (get headers "cmr-revision-id")}]
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
             (info (format "Deleting collection %s from client %s"

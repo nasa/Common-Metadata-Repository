@@ -421,6 +421,11 @@
   [field query-str]
   (->TextCondition field query-str))
 
+(defn negated-condition
+  "Creates a negated condition."
+  [value]
+  (->NegatedCondition value))
+
 (defn string-condition
   ([field value]
    (string-condition field value false false))
