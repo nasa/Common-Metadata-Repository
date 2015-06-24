@@ -15,16 +15,28 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.science-keyword :as psk]))
 
+
+(def valid-string-conditions
+  "A set of the valid JSON Query string conditions"
+  #{:provider :entry-id :entry-title :keyword})
+
+(def valid-grouping-conditions
+  "A set of the valid JSON Query grouping conditions"
+  #{:and :or :not})
+
 (def valid-conditions-for-concept-type
   "A mapping of concept-type to a list of valid conditions for that concept type"
-  {:collection (set/union #{:or :and :not :provider :entry-id :entry-title :science-keywords :any}
-                          psk/science-keyword-fields)})
+  {:collection (set/union #{:science-keywords :any}
+                          psk/science-keyword-fields
+                          valid-string-conditions
+                          valid-grouping-conditions)})
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."
   {:entry-title :string
    :entry-id :string
    :provider :string
+   :keyword :keyword
    :or :or
    :and :and
    :not :not
@@ -50,6 +62,10 @@
   [condition-name value]
   ;; TODO handle case sensitivity and wildcards
   (qm/string-condition condition-name value false false))
+
+(defmethod parse-json-condition :keyword
+  [_ value]
+  (qm/text-condition :keyword (str/lower-case value)))
 
 (defn- parse-json-condition-map
   "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
