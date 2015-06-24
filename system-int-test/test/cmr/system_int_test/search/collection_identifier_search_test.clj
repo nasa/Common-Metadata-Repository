@@ -95,7 +95,7 @@
            all-prov1-colls "pRoV1" {:ignore-case true}
            [] "prov1" {:ignore-case false}))
 
-    (testing "provider with JSON parameters"
+    (testing "Provider search using JSON query"
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
@@ -258,7 +258,7 @@
            [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
            [] "S1_v1" {:ignore-case false}))
 
-    (testing "Entry id search using JSON"
+    (testing "Entry id search using JSON Query"
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
@@ -273,6 +273,16 @@
                                            {:entry-id "S2_V2"}]}
            [] {:and [{:entry-id "S1_V1"}
                      {:entry-id "S2_V2"}]}
+
+           ;; Not with multiple entry-ids
+           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry-id "S2_V2"}
+                                                 {:entry-id "S1_V1"}]}}
+
+           ;; Not with multiple entry-ids and provider
+           [c3-p1 c4-p1] {:not {:or [{:entry-id "S2_V2"}
+                                     {:entry-id "S1_V1"}
+                                     {:provider "PROV2"}]}}
+
            ))
            ;; TODO
            ;; Wildcards
@@ -319,7 +329,7 @@
             (search/find-refs :collection {:dataset-id "ET1"}))
           "dataset_id should be an alias for entry title."))
 
-    (testing "Entry title search using JSON"
+    (testing "Entry title search using JSON Query"
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
