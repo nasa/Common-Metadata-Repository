@@ -6,7 +6,7 @@
             [cmr.system-int-test.utils.search-util :as search]))
 
 (deftest validation-test
-  (testing "invalid JSON condition names"
+  (testing "Invalid JSON condition names"
     (are [concept-type search-map error-message]
          (= {:status 400
              :errors error-message}
@@ -19,4 +19,10 @@
 
          ;; We do not support JSON Queries for granules yet
          :granule {:provider "PROV1"}
-         ["Invalid JSON condition name(s) [\"provider\"] for granule search."])))
+         ["Invalid JSON condition name(s) [\"provider\"] for granule search."]))
+
+  (testing "Invalid science keyword parameters"
+    (is (= {:status 400 :errors ["Invalid science keyword parameter(s) [\"not\" \"and\"]."]}
+           (search/find-refs-with-json-query :collection {} {:science-keywords {:category "cat"
+                                                                                :and "bad1"
+                                                                                :not "bad2"}})))))
