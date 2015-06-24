@@ -29,20 +29,42 @@
          vals
          first))))
 
+(defmulti fields-for-find-concept
+  "Returns the fields that should be included in a find-concept"
+  (fn [concept-type params]
+    concept-type))
+
+(defmethod fields-for-find-concept :granule
+  [concept-type params]
+  (let [exclude-metatdata? (:exclude-metadata params)
+        all-fields #{:provider_id :native_id :concept_id :revision_date :metadata :deleted :revision_id :format :parent_collection_id :delete_time :granule_ur}]
+    (disj all-fields (when exclude-metatdata? :metadata))))
+
+(defmethod fields-for-find-concept :collection
+  [concpet-type params]
+  (let [exclude-metatdata? (:exclude-metadata params)
+        all-fields #{:native_id :provider_id :concept_id :revision_date :revision_id :metadata :deleted :format :entry_title :entry_id :short_name :version_id :delete_time}]
+    (disj all-fields (when exclude-metatdata? :metadata))))
+
+(defmethod fields-for-find-concept :default
+  [concpet-type params]
+  #{:*})
+
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [provider params]
   (if (:small provider)
-    (dissoc params :concept-type)
-    (dissoc params :concept-type :provider-id)))
+    (dissoc params :concept-type :exclude-metadata)
+    (dissoc params :concept-type :exclude-metadata :provider-id)))
 
 (defn- gen-find-concepts-in-table-sql
   "Create the SQL for the given params and table"
-  [table params]
-  (su/build (select [:*]
-              (from table)
-              (when-not (empty? params)
-                (where (sh/find-params->sql-clause params))))))
+  [concept-type table fields params]
+  (let [params (dissoc params :exclude-metadata)]
+    (su/build (select fields
+                (from table)
+                (when-not (empty? params)
+                  (where (sh/find-params->sql-clause params)))))))
 
 (defmulti find-concepts-in-table
   "Retrieve concept maps from the given table, handling small providers separately from
@@ -53,9 +75,10 @@
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
   [db table concept-type providers params]
-  (let [params (params->sql-params (first providers)
+  (let [fields (vec (fields-for-find-concept concept-type params))
+        params (params->sql-params (first providers)
                                    (assoc params :provider-id (map :provider-id providers)))
-        stmt (gen-find-concepts-in-table-sql table params)]
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
       [conn db]
       (doall
@@ -68,8 +91,9 @@
   {:pre [(== 1 (count providers))]}
   (let [provider (first providers)
         provider-id (:provider-id provider)
+        fields (vec (disj (fields-for-find-concept concept-type params) :provider_id))
         params (params->sql-params provider (assoc params :provider-id provider-id))
-        stmt (gen-find-concepts-in-table-sql table params)]
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
       [conn db]
       ;; doall is necessary to force result retrieval while inside transaction - otherwise

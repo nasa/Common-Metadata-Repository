@@ -102,13 +102,23 @@
              errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
 
+
 (defn make-raw-search-query
   "Make a query to search with the given query string."
   [concept-type query]
   (let [url (url/search-url concept-type)]
     (get-search-failure-data
-
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
+
+(defn find-concept-revisions
+  "Returns the response of finding concept revisions from search"
+  [concept-type params]
+  (let [url (url/concept-revisions-url concept-type)
+        _ (println "URL....")
+        _  (println url)
+        response (client/get url {:query-params params})]
+    (is (= 200 (:status response)))
+    response))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."

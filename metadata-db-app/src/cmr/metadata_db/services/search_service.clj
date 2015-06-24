@@ -21,12 +21,18 @@
 
 (def supported-collection-parameters
   "Set of parameters supported by find for collections"
-  #{:provider-id :entry-title :entry-id :short-name :version-id})
+  #{:provider-id :entry-title :entry-id :short-name :version-id :latest :exclude-metadata})
 
 (def granule-supported-parameter-combinations
   "Supported parameter combination sets for granule find"
   #{#{:provider-id :granule-ur}
-    #{:provider-id :native-id}})
+    #{:provider-id :native-id}
+    #{:provider-id :granule-ur :latest}
+    #{:provider-id :native-id :latest}
+    #{:provider-id :granule-ur :exclude-metadata}
+    #{:provider-id :native-id :exclude-metadata}
+    #{:provider-id :granule-ur :latest :exclude-metadata}
+    #{:provider-id :native-id :latest :exclude-metadata}})
 
 (defmulti supported-parameter-combinations-validation
   "Validates the find parameters for a concept type"
@@ -74,10 +80,10 @@
 (deftracefn find-concepts
   "Find concepts with specific parameters"
   [context params]
+  (validate-find-params params)
   (let [db (db-util/context->db context)
         latest-only? (= "true" (:latest params))
         params (dissoc params :latest)
-        _ (validate-find-params params)
         providers (find-providers-for-params context params)]
     (when (seq providers)
       (do

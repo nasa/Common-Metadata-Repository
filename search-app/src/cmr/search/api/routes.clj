@@ -220,6 +220,15 @@
         {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)]
     (search-response params {:results (or results metadata)})))
 
+(defn- find-concept-revisions
+  "Calls query service to get concept revisions for the given parameters"
+  [context params headers]
+  (let [params (dissoc params :token)
+        _ (info (format "Retrieving concept revisions for client %s using query parameters%s."
+                        (:client-id context) params))]
+    #_(query-svc/find-concept-revision context params)
+    {:results [{:concept-id "C-1"} {:concept-id "C-2"}]}))
+
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
@@ -253,6 +262,11 @@
         (get-in system [:search-public-conf :protocol])
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
+
+      ;; Retrieve concept maps with basic data in metadata-db (exclude metadata)
+      (context "/concept-revisions" []
+        (GET "/:concept-type" {:keys [params headers request-context]}
+          (find-concept-revisions request-context params headers)))
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
