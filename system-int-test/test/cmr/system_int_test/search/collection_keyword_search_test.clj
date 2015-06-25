@@ -84,12 +84,20 @@
 
     (testing "search by keywords."
       (are [keyword-str items]
-           (let [refs (search/find-refs :collection {:keyword keyword-str})
-                 matches? (d/refs-match? items refs)]
-             (when-not matches?
+           (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
+                 json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})
+                 parameter-matches? (d/refs-match? items parameter-refs)
+                 json-matches? (d/refs-match? items json-refs)]
+             (when-not parameter-matches?
+               (println "Parameter search failed")
                (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs refs))))
-             matches?)
+               (println "Actual:" (map :name (:refs parameter-refs))))
+             (when-not json-matches?
+               (println "JSON Query search failed")
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs json-refs))))
+             (and parameter-matches? json-matches?))
+
            "ABC" [coll2 coll5 coll21]
            "place" [coll6]
            "Laser" [coll5 coll7 coll9 coll14]
@@ -207,6 +215,7 @@
            "Level2-3" [coll9]
            ;; - detailed-variable
            "SUPER" [coll9]))
+
     (testing "Boost on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection
