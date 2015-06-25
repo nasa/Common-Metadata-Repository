@@ -7,7 +7,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -31,6 +32,7 @@
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
       (let [response (search/get-concept-by-concept-id (:concept-id gran1))
             parsed-granule (g/parse-granule (:body response))]
+        (is (search/mime-type-matches-response? response mt/echo10))
         (is (= umm-gran
                parsed-granule))))
     (testing "retrieval of a deleted granule results in a 404"
