@@ -10,72 +10,98 @@
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.common.util :refer [are2]]))
+            [cmr.common.util :refer [are2]]
+            [cmr.transmit.config :as transmit-config]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(comment
-  (dev-sys-util/reset)
-  (ingest/create-provider "provguid1" "PROV1")
-  (ingest/create-provider "provguid2" "PROV2")
+(defn- umm->concept-map
+  "Convet a UMM collection record into concept map like the ones returned by the find-concepts API"
+  [umm deleted?]
+  (let [{:keys [entry-id entry-title revision-id provider-id concept-id product]} umm
+        {:keys [short-name version-id]} product]
+    {:provider-id provider-id
+     :revision-id revision-id
+     :deleted deleted?
+     :concept-id concept-id
+     :concept-type "collection"
+     :extra-fields {:entry-title entry-title
+                    :entry-id entry-id
+                    :short-name short-name
+                    :version-id version-id}}))
 
-  (def user1-token (e/login (s/context) "user1"))
+(defn- strip-unneeded-fields
+  "Remove fields from a concept map not needed for comparing to a UMM record"
+  [con-map]
+  (-> (dissoc con-map :format :revision-date :native-id)
+      (update-in [:extra-fields] dissoc :delete-time)))
 
-  (search/get-concept-by-concept-id "C1200000000-PROV1"
-                                    {:query-params {:token user1-token}})
-
-  (get-in user/system [:apps :search :caches :acls])
-
-)
 
 (deftest retrieve-collection-concept-revisions-by-params
 
-  ;; Users with admin privs have access to all collections
-  (e/grant-group-admin (s/context) "group1")
 
-  ;; Ingest 2 early versions of coll1
-  (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                    :projects (dc/projects "ESI_1")}))
-  (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
-                                    :projects (dc/projects "ESI_2")}))
+  (let [umm-coll (dc/collection {:entry-title "et1"
+                                 :entry-id "s1_v1"
+                                 :version-id "v1"
+                                 :short-name "s1"})
+        ;; ingest twice to get different revision-id
+        _ (d/ingest "PROV1" umm-coll)
+        coll1 (d/ingest "PROV1" umm-coll)
 
-
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-id "entry-1"
-                                                :entry-title "et1"
-                                                :version-id "v1"
-                                                :short-name "s1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-id "entry-2"
-                                                :entry-title "et2"
-                                                :version-id "v1"
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
+                                                :entry-id "s2_v2"
+                                                :version-id "v2"
                                                 :short-name "s2"}))
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-id "entry-3"
-                                                :entry-title "et3"
+        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
                                                 :version-id "v3"
-                                                :short-name "s3"}))
-        coll4 (d/ingest "PROV1" (dc/collection {:entry-id "entry-1"
-                                                :entry-title "et1"
+                                                :short-name "s1"}))
+        coll4 (d/ingest "PROV2" (dc/collection {:entry-title "et4"
                                                 :version-id "v3"
-                                                :short-name "s4"}))
-
-        ;; tokens
-        user1-token (e/login (s/context) "user1" "group1")]
+                                                :short-name "s4"}))]
     (index/wait-until-indexed)
 
     (testing "find-with-parameters"
-      (testing "latest concepts"
+      (testing "latest revisions"
         (are2 [collections params]
-              (= (set collections)
-                 (set (-> (search/find-concept-revisions :collection params)
-                          :concepts)))
+              (= (set (map #(umm->concept-map % false) collections))
+                 (set (map strip-unneeded-fields (:body (search/find-concept-revisions
+                                                          :collection
+                                                          (assoc params :latest true)
+                                                          (transmit-config/echo-system-token))))))
               "provider-id"
-              [coll1 coll2] {:provider-id "PROV1"})))
+              [coll1 coll2] {:provider-id "PROV1"}
+
+              "provider-id, entry-title"
+              [coll1] {:provider-id "PROV1" :entry-title "et1"}
 
 
+              "provider-id, entry-id"
+              [coll2] {:provider-id "PROV1" :entry-id "s2_v2"}
 
-    #_(testing "retrieval by params"
-      (let [response (search/get-concept-by-concept-id (:concept-id coll1)
-                                                       {:query-params {:token user1-token}})]
-        (is (= 404 (:status response)))
-        (is (re-find #"Concept with concept-id: .*? could not be found" (:body response)))))
-    ))
+
+              "short-name, version-id"
+              [coll2] {:short-name "s2" :version-id "v2"}
+
+              "mixed providers - short-name"
+              [coll1 coll3] {:short-name "s1"}
+
+              "find none - bad provider-id"
+              [] {:provider-id "PROV_NONE"}
+
+              "find none - provider-id, bad version-id"
+              [] {:provider-id "PROV1" :version-id "v7"}))
+      (testing "all revisions"
+        (are2 [rev-count params]
+              (= rev-count
+                 (count (:body (search/find-concept-revisions
+                                 :collection params (transmit-config/echo-system-token)))))
+              "provider-id - three revisions"
+              3 {:provider-id "PROV1"}
+
+              "entry-title - two revisons"
+              2 {:entry-title "et1"}))
+      (testing "ACLs"
+        ;; no token
+        (is (= 401
+               (:status (search/find-concept-revisions :collection {:provider-id "PROV1"}))))))))
 

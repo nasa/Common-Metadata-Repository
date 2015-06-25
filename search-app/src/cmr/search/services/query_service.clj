@@ -66,7 +66,7 @@
             [cmr.search.services.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
-            [cmr.metadata-db.services.concept-service :as meta-db]
+            [cmr.metadata-db.services.search-service :as mdb-search]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.concepts :as cc]
             [cmr.common.services.errors :as err]
@@ -219,6 +219,15 @@
       (when-not concept
         (throw-id-not-found concept-id))
       concept)))
+
+(deftracefn find-concept-revisions
+  "Uses the metadata-db to find concept revisions for the given parameters"
+  ([context params]
+   (find-concept-revisions context params true))
+  ([context params latest-only?]
+   (let [params (-> (assoc params :exclude-metadata "true")
+                    (assoc :latest (when latest-only? "true")))]
+     (mdb-search/find-concepts (t/context->metadata-db-context context) params))))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."

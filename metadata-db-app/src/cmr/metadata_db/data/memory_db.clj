@@ -98,7 +98,9 @@
     (mapcat (fn [provider]
               (let [provider-id (:provider-id provider)
                     {:keys [concept-type native-id]} params
-                    extra-field-params (dissoc params :concept-type :provider-id :native-id)]
+                    exclude-metadata? (= "true" (:exclude-metadata params))
+                    extra-field-params (dissoc params :concept-type :provider-id :native-id
+                                               :exclude-metadata)]
                 (keep (fn [{extra-fields :extra-fields
                             ct :concept-type
                             pid :provider-id :as concept}]
@@ -106,11 +108,12 @@
                                    (= provider-id pid)
                                    (= extra-field-params (select-keys extra-fields
                                                                       (keys extra-field-params))))
-                          (if (and (= :granule concept-type)
-                                   (nil? (get-in concept [:extra-fields :granule-ur])))
-                            (assoc-in concept [:extra-fields :granule-ur]
-                                      (:native-id concept))
-                            concept)))
+                          (dissoc (if (and (= :granule concept-type)
+                                           (nil? (get-in concept [:extra-fields :granule-ur])))
+                                    (assoc-in concept [:extra-fields :granule-ur]
+                                              (:native-id concept))
+                                    concept)
+                                  (when exclude-metadata? :metadata))))
                       @concepts-atom)))
             providers))
 

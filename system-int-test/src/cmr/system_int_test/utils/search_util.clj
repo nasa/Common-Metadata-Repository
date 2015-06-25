@@ -112,13 +112,16 @@
 
 (defn find-concept-revisions
   "Returns the response of finding concept revisions from search"
-  [concept-type params]
-  (let [url (url/concept-revisions-url concept-type)
-        _ (println "URL....")
-        _  (println url)
-        response (client/get url {:query-params params})]
-    (is (= 200 (:status response)))
-    response))
+  ([concept-type params]
+   (find-concept-revisions concept-type params nil))
+  ([concept-type params token]
+   (let [url (url/concept-revisions-url concept-type)
+         response (client/get url {:throw-exceptions false
+                                   :query-params params
+                                   :headers (when token {transmit-config/token-header token})})]
+     (if (= 200 (:status response))
+       (update-in response [:body] #(json/decode % true))
+       response))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."

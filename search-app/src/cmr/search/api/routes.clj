@@ -11,6 +11,8 @@
             [ring.middleware.nested-params :as nested-params]
             [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
+            [inflections.core :as inf]
+
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
@@ -244,11 +246,14 @@
 (defn- find-concept-revisions
   "Calls query service to get concept revisions for the given parameters"
   [context params headers]
-  (let [params (dissoc params :token)
-        _ (info (format "Retrieving concept revisions for client %s using query parameters%s."
-                        (:client-id context) params))]
-    #_(query-svc/find-concept-revision context params)
-    {:results [{:concept-id "C-1"} {:concept-id "C-2"}]}))
+  (let [params (update-in (dissoc params :token) [:concept-type] (comp keyword inf/singular))
+        _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
+                        (:client-id context) params))
+        latest-only? (= "true" (:latest params))
+        results (query-svc/find-concept-revisions context params latest-only?)]
+    {:status 200
+     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
+     :body results}))
 
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
@@ -287,6 +292,7 @@
       ;; Retrieve concept maps with basic data in metadata-db (exclude metadata)
       (context "/concept-revisions" []
         (GET "/:concept-type" {:keys [params headers request-context]}
+          (acl/verify-ingest-management-permission request-context :read)
           (find-concept-revisions request-context params headers)))
 
       ;; Retrieve by cmr concept id -
