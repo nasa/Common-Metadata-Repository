@@ -209,33 +209,37 @@
          response)))
 
 (deftest revision-conflict-tests
-  (testing "ingest with higher revision id comes before ingest with lower revision-id"
+  "Added to test out of order processing of ingest and delete requests with revision-ids in their header.
+  The proper handling of incorrectly ordered requests is important for Virtual Product Service which picks
+  events off the queue and sends them to ingest service. It cannot be gauranteed that the ingest events are
+  processed by Virtual Product Service in the same order that the events are placed on the queue."
+  (testing "Update with lower revision id should be rejected if it comes after an concept with a higher revision id"
     (let [concept (dc/collection-concept {:revision-id 4})
           concept-id (:concept-id (ingest/ingest-concept concept))
           response (ingest/ingest-concept (assoc concept :revision-id 2))]
       (assert-revision-conflict concept-id "Expected revision-id of [5] got [2] for [%s]" response)))
 
-  (testing "ingest with higher revision id comes before delete with lower revision-id"
+  (testing "Delete with lower revision id than latest concept should be rejected"
     (let [concept (dc/collection-concept {:revision-id 4})
           concept-id (:concept-id (ingest/ingest-concept concept))
           response (ingest/delete-concept concept {:revision-id 2})]
       (assert-revision-conflict concept-id "Expected revision-id of [5] got [2] for [%s]" response)))
 
-  (testing "delete with higher revision id comes before ingest with lower revision-id"
+  (testing "Ingest with lower revision id than latest tombstone should be rejected"
     (let [concept (dc/collection-concept {})
           concept-id (:concept-id (ingest/ingest-concept concept))
           _ (ingest/delete-concept concept {:revision-id 5})
           response (ingest/ingest-concept (assoc concept :revision-id 3))]
       (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
 
-  (testing "delete with higher revision id comes before delete with lower revision-id"
+  (testing "Delete with lower revision id than latest tombstone should be rejected"
     (let [concept (dc/collection-concept {})
           concept-id (:concept-id (ingest/ingest-concept concept))
           _ (ingest/delete-concept concept {:revision-id 5})
           response (ingest/delete-concept concept {:revision-id 3})]
       (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
 
-  (testing "deleting non-existent collection with no tombstone"
+  (testing "Deleting non-existent collection should be rejected"
     (let [concept (dc/collection-concept {})
           response (ingest/delete-concept concept {:revision-id 2})
           {:keys [status errors]} response]
