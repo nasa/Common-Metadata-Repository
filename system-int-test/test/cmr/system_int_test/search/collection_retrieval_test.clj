@@ -9,7 +9,8 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
 
@@ -58,7 +59,14 @@
       (let [response (search/get-concept-by-concept-id (:concept-id coll1)
                                                        {:query-params {:token user1-token}})
             parsed-collection (c/parse-collection (:body response))]
-        (is (= "application/echo10+xml; charset=utf-8" (get-in response [:headers "Content-Type"])))
+        (is (search/mime-type-matches-response? response mt/echo10))
+        (is (= umm-coll parsed-collection))))
+    (testing "retrieval with .xml extension returns correct mime type"
+      (let [response (search/get-concept-by-concept-id (:concept-id coll1)
+                                                       {:query-params {:token user1-token}
+                                                        :url-extension "xml"})
+            parsed-collection (c/parse-collection (:body response))]
+        (is (search/mime-type-matches-response? response mt/echo10))
         (is (= umm-coll parsed-collection))))
     (testing "ACL enforced on retrieval"
       (let [response (search/get-concept-by-concept-id (:concept-id coll1) {:query-params {:token guest-token}})]

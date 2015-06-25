@@ -19,6 +19,7 @@
             [cmr.spatial.ring-relations :as rr]
             [clj-http.client :as client]
             [cmr.common.concepts :as cu]
+            [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.umm.core :as umm]
             [cmr.umm.spatial :as umm-s]
@@ -33,7 +34,11 @@
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2"))
 
+
+  (mt/mime-type-from-headers (:headers (cmr.common.dev.capture-reveal/reveal resp)))
+
   )
+
 
 (deftest search-granules-in-xml-metadata
   (let [c1-echo (d/ingest "PROV1" (dc/collection) {:format :echo10})
@@ -77,44 +82,52 @@
                  "SMAP ISO accept application/metadata+xml" [g1-smap g2-smap] :iso-smap nil "application/metadata+xml"))
 
     (testing "native format direct retrieval"
-        ;; Native format can be specified using application/xml, application/metadata+xml,
-        ;; .native extension, or not specifying any format.
-        (util/are2 [concept format-key extension accept]
-             (let [options (-> {:accept nil}
-                               (merge (when extension {:url-extension extension}))
-                               (merge (when accept {:accept accept})))
-                   response (search/get-concept-by-concept-id (:concept-id concept) options)]
-               (is (= (umm/umm->xml concept format-key) (:body response))))
-             "ECHO10 no extension" g1-echo :echo10 nil nil
-             "SMAP ISO no extension" g1-smap :iso-smap nil nil
-             "ECHO10 .native extension" g1-echo :echo10 "native" nil
-             "SMAP ISO .native extension" g1-smap :iso-smap "native" nil
-             "ECHO10 accept application/xml" g1-echo :echo10 nil "application/xml"
-             "SMAP ISO accept application/xml" g1-smap :iso-smap nil "application/xml"
-             "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
-             "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
+      ;; Native format can be specified using application/xml, application/metadata+xml,
+      ;; .native extension, or not specifying any format.
+      (util/are2 [concept format-key extension accept]
+                 (let [options (-> {:accept nil}
+                                   (merge (when extension {:url-extension extension}))
+                                   (merge (when accept {:accept accept})))
+                       response (search/get-concept-by-concept-id (:concept-id concept) options)]
+                   (and
+                     (search/mime-type-matches-response? response (mt/format->mime-type format-key))
+                     (= (umm/umm->xml concept format-key) (:body response))))
+                 "ECHO10 no extension" g1-echo :echo10 nil nil
+                 "SMAP ISO no extension" g1-smap :iso-smap nil nil
+                 "ECHO10 .native extension" g1-echo :echo10 "native" nil
+                 "SMAP ISO .native extension" g1-smap :iso-smap "native" nil
+                 "ECHO10 accept application/xml" g1-echo :echo10 nil "application/xml"
+                 "SMAP ISO accept application/xml" g1-smap :iso-smap nil "application/xml"
+                 "ECHO10 accept application/metadata+xml" g1-echo :echo10 nil "application/metadata+xml"
+                 "SMAP ISO accept application/metadata+xml" g1-smap :iso-smap nil "application/metadata+xml"))
 
     (testing "Get granule as concept in JSON format"
       (are [granule coll options]
-        (= (da/granule->expected-atom granule coll)
-           (dissoc
-            (dj/parse-json-granule (:body (search/get-concept-by-concept-id (:concept-id granule) options)))
-            :day-night-flag))
-        g1-echo c1-echo {:accept        "application/json"}
-        g1-echo c1-echo {:url-extension "json"}
-        g1-smap c2-smap {:accept        "application/json"}
-        g1-smap c2-smap {:url-extension "json"}))
+           (let [resp (search/get-concept-by-concept-id (:concept-id granule) options)]
+             (and
+               (search/mime-type-matches-response? resp mt/json)
+               (= (da/granule->expected-atom granule coll)
+                  (dissoc
+                    (dj/parse-json-granule (:body resp))
+                    :day-night-flag))))
+           g1-echo c1-echo {:accept        "application/json"}
+           g1-echo c1-echo {:url-extension "json"}
+           g1-smap c2-smap {:accept        "application/json"}
+           g1-smap c2-smap {:url-extension "json"}))
 
     (testing "Get granule as concept in Atom format"
       (are [granule coll options]
-        (= [(da/granule->expected-atom granule coll)]
-           (map #(dissoc % :day-night-flag)
-                (:entries
-                 (da/parse-atom-result :granule (:body (search/get-concept-by-concept-id (:concept-id granule) options))))))
-        g1-echo c1-echo {:accept        "application/atom+xml"}
-        g1-echo c1-echo {:url-extension "atom"}
-        g1-smap c2-smap {:accept        "application/atom+xml"}
-        g1-smap c2-smap {:url-extension "atom"}))
+           (let [resp (search/get-concept-by-concept-id (:concept-id granule) options)]
+             (and
+               (search/mime-type-matches-response? resp mt/atom)
+               (= [(da/granule->expected-atom granule coll)]
+                  (map #(dissoc % :day-night-flag)
+                       (:entries
+                         (da/parse-atom-result :granule (:body resp)))))))
+           g1-echo c1-echo {:accept        "application/atom+xml"}
+           g1-echo c1-echo {:url-extension "atom"}
+           g1-smap c2-smap {:accept        "application/atom+xml"}
+           g1-smap c2-smap {:url-extension "atom"}))
 
     (testing "Retrieving results in echo10"
       (are [search expected]
@@ -302,8 +315,8 @@
       (is (= (select-keys (search/find-concepts-csv :granule {:granule-ur "Granule1"})
                           [:status :body])
              (select-keys (search/find-concepts-csv :granule
-                                                 {:granule-ur "Granule1"}
-                                                 {:url-extension "csv"})
+                                                    {:granule-ur "Granule1"}
+                                                    {:url-extension "csv"})
                           [:status :body]))))))
 
 (deftest search-granule-atom-and-json-and-kml
