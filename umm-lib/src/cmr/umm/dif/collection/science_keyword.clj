@@ -32,7 +32,7 @@
 
 (defn generate-science-keywords
   [science-keywords]
-  (when-not (empty? science-keywords)
+  (if-not (empty? science-keywords)
     (for [science-keyword science-keywords]
       (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]} science-keyword]
         (x/element :Parameters {}
@@ -42,4 +42,9 @@
                    (gu/optional-elem :Variable_Level_1 variable-level-1)
                    (gu/optional-elem :Variable_Level_2 variable-level-2)
                    (gu/optional-elem :Variable_Level_3 variable-level-3)
-                   (gu/optional-elem :Detailed_Variable detailed-variable))))))
+                   (gu/optional-elem :Detailed_Variable detailed-variable))))
+    ;; Added since Science Keywords is a required field in DIF9. CMRIN-81
+    (x/element :Parameters {}
+               (x/element :Category {} "Not provided")
+               (x/element :Topic {} "Not provided")
+               (x/element :Term {} "Not provided"))))
