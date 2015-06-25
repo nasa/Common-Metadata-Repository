@@ -208,12 +208,12 @@
           :errors [(format format-str concept-id)]}
          response)))
 
+;; Added to test out of order processing of ingest and delete requests with revision-ids in their
+;; header. The proper handling of incorrectly ordered requests is important for Virtual Product
+;; Service which picks events off the queue and sends them to ingest service. It cannot be
+;; gauranteed that the ingest events are processed by Virtual Product Service in the same order
+;; that the events are placed on the queue.
 (deftest revision-conflict-tests
-  ;; Added to test out of order processing of ingest and delete requests with revision-ids in their
-  ;; header. The proper handling of incorrectly ordered requests is important for Virtual Product
-  ;; Service which picks events off the queue and sends them to ingest service. It cannot be
-  ;; gauranteed that the ingest events are processed by Virtual Product Service in the same order
-  ;; that the events are placed on the queue.
   (testing "Update with lower revision id should be rejected if it comes after an concept with a higher revision id"
     (let [concept (dc/collection-concept {:revision-id 4})
           concept-id (:concept-id (ingest/ingest-concept concept))
