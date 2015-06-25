@@ -102,7 +102,6 @@
              errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
 
-
 (defn make-raw-search-query
   "Make a query to search with the given query string."
   [concept-type query]

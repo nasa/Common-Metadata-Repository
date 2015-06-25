@@ -36,15 +36,15 @@
 
 (defmethod fields-for-find-concept :granule
   [concept-type params]
-  (let [exclude-metatdata? (:exclude-metadata params)
+  (let [exclude-metadata? (:exclude-metadata params)
         all-fields #{:provider_id :native_id :concept_id :revision_date :metadata :deleted :revision_id :format :parent_collection_id :delete_time :granule_ur}]
-    (disj all-fields (when exclude-metatdata? :metadata))))
+    (disj all-fields (when exclude-metadata? :metadata))))
 
 (defmethod fields-for-find-concept :collection
   [concpet-type params]
-  (let [exclude-metatdata? (:exclude-metadata params)
+  (let [exclude-metadata? (:exclude-metadata params)
         all-fields #{:native_id :provider_id :concept_id :revision_date :revision_id :metadata :deleted :format :entry_title :entry_id :short_name :version_id :delete_time}]
-    (disj all-fields (when exclude-metatdata? :metadata))))
+    (disj all-fields (when exclude-metadata? :metadata))))
 
 (defmethod fields-for-find-concept :default
   [concpet-type params]
