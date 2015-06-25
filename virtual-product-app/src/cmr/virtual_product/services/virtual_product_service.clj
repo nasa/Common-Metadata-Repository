@@ -11,6 +11,7 @@
             [clojure.string :as str]
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
+            [cmr.common.services.errors :as errors]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -54,6 +55,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handle updates
 
+(defn- handle-update-response
+  "Handle response received from ingest service to an update request. Status codes which do not
+  fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
+  corresponding queue event to be put back in the queue to be retried."
+  [response granule-ur]
+  (let [{:keys [status body]} response]
+    (cond
+      (<= 200 status 299)
+      (info (format "Ingested virtual granule [%s] with the following response: [%s]"
+                    granule-ur (pr-str body)))
+
+      ;; Conflict (status code 409)
+      ;; This would occurs when an ingest event with lower revision-id is consumed after an event with
+      ;; higher revision id for the same granule. The event is ignored and the revision is lost.
+      (= status 409)
+      (info (format (str "Received a response with status code [409] and the following body when "
+                         "ingesting the virtual granule [%s] : [%s]. The event will be ignored.")
+                    granule-ur (pr-str body)))
+
+      :else
+      (errors/internal-error!
+        (format (str "Received unexpected status code [%s] and the following response when "
+                     "ingesting the virtual granule [%s] : [%s]")
+                status granule-ur (pr-str response))))))
+
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
@@ -67,18 +93,16 @@
                                                        (:short-name virtual-coll)
                                                        (:granule-ur orig-umm))
             new-umm (assoc orig-umm
-                           :granule-ur new-granule-ur
-                           :collection-ref (umm-g/map->CollectionRef
-                                             (select-keys virtual-coll [:entry-title])))
+                      :granule-ur new-granule-ur
+                      :collection-ref (umm-g/map->CollectionRef
+                                        (select-keys virtual-coll [:entry-title])))
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
             new-concept (-> orig-concept
                             (select-keys [:revision-id :format :provider-id :concept-type])
                             (assoc :native-id new-granule-ur
-                                   :metadata new-metadata))
-            resp (ingest/ingest-concept context new-concept)]
-        (info (format "Ingested virtual granule [%s] with response [%s]"
-                      new-granule-ur (pr-str resp)))))))
+                              :metadata new-metadata))]
+        (handle-update-response (ingest/ingest-concept context new-concept true) new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-update
   [context event]
@@ -102,6 +126,54 @@
            :granule-ur granule-ur
            :entry-title entry-title)))
 
+(defn- handle-delete-response
+  "Handle response received from ingest service to a delete request. Status codes which do not
+  fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
+  corresponding queue event to be put back in the queue to be retried."
+  [response granule-ur]
+  (let [{:keys [status body]} response]
+    (cond
+      (<= 200 status 299)
+      (info (format "Deleted virtual granule [%s] with the following response: [%s]"
+                    granule-ur (pr-str body)))
+
+      ;; Not Found (status code 404)
+      ;; This would occur if delete event is consumed before the concept creation event and
+      ;; metadata-db does not yet have the granule concept. This usually means that an ingest event
+      ;; for the same granule is present in the virtual product queue and is not yet consumed. The
+      ;; exception will cause the event to be put back in the queue. We don't ignore this because
+      ;; the create event would eventually be processed and the virtual granule would exist when it
+      ;; should actually be deleted. We will retry this until the granule is created and the
+      ;; deletion can be processed successfully creating a tombstone with the correct revision id.
+
+      ;; Note that the existence of a delete event for the virtual granule means that the
+      ;; corresponding real granule exists in the database (otherwise corresponding delete request
+      ;; for real granule would fail with 404 and the delete event for the virtual granule would
+      ;; never be put on the virtual product queue to begin with). Which in turn means that ingest
+      ;; event corresponding to the granule has been created in the past (either recent past or
+      ;; distant past) and that event has to to consumed before the delete event can be consumed
+      ;; off the queue.
+      (= status 404)
+      (errors/internal-error!
+        (format (str "Received a response with status code [404] and the following response body "
+                     "when deleting the virtual granule [%s] : [%s]. The delete request will be "
+                     "retried.")
+                granule-ur (pr-str body)))
+
+      ;; Conflict (status code 409)
+      ;; This would occurs if a delete event with lower revision-id is consumed after an event with
+      ;; higher revision id for the same granule. The event is ignored and the revision is lost.
+      (= status 409)
+      (info (format (str "Received a response with status code [409] and following body when
+                         deleting the virtual granule [%s] : [%s]. The event will be ignored")
+                    granule-ur (pr-str body)))
+
+      :else
+      (errors/internal-error!
+        (format (str "Received unexpected status code [%s] and the following response when "
+                     "deleting the virtual granule [%s] : [%s]")
+                status granule-ur (pr-str response))))))
+
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
   [context {:keys [provider-id revision-id granule-ur entry-title]}]
@@ -114,9 +186,8 @@
             resp (ingest/delete-concept context {:provider-id provider-id
                                                  :concept-type :granule
                                                  :native-id new-granule-ur
-                                                 :revision-id revision-id})]
-        (info (format "Deleted virtual granule [%s] with response [%s]"
-                      new-granule-ur (pr-str resp)))))))
+                                                 :revision-id revision-id} true)]
+        (handle-delete-response resp new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-delete
   [context event]
@@ -126,13 +197,3 @@
         (let [annotated-delete-event (annotate-granule-delete-event context annotated-event)]
           (when (virtual-granule-event? annotated-delete-event)
             (apply-source-granule-delete-event context annotated-delete-event)))))))
-
-
-
-
-
-
-
-
-
-

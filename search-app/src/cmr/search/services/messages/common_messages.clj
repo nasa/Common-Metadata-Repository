@@ -59,3 +59,8 @@
   (format "Invalid JSON condition name(s) %s for %s search."
           (mapv name condition-names)
           (name concept-type)))
+
+(defn invalid-science-keyword-condition-msg
+  "Creates a message indicating the provided science keyword conditions are invalid."
+  [invalid-keys]
+  (format "Invalid science keyword parameter(s) %s." (mapv name invalid-keys)))

@@ -3,7 +3,8 @@
   (:require [cmr.oracle.connection]
             [cmr.common.lifecycle :as lifecycle]
             [clojure.java.jdbc :as j]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cmr.common.util :refer [defn-timed]]))
 
 (defprotocol AclHashStore
   "Defines a protocol for storing the acl hashes as a string."
@@ -59,12 +60,12 @@
   [context]
   (get-in context [:system :db]))
 
-(defn get-provider-id-acl-hashes
+(defn-timed get-provider-id-acl-hashes
   "Returns a map of provider ids to hash values."
   [context]
   (some-> context context->db get-acl-hash edn/read-string))
 
-(defn save-provider-id-acl-hashes
+(defn-timed save-provider-id-acl-hashes
   "Saves the map of provider id acl hash values"
   [context provider-hashes]
   (save-acl-hash (context->db context) (pr-str provider-hashes)))

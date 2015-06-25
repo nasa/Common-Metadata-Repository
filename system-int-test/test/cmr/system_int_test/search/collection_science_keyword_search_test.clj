@@ -194,7 +194,33 @@
            [coll1] [{:category "C%" :pattern true}] {}
            [] [{:category "C%" :pattern false}] {}
            [] [{:category "C%"}] {}
-           [coll1] [{:category "Cat_" :pattern true}] {}))))
+           [coll1] [{:category "Cat_" :pattern true}] {}))
+
+    (testing "Search collections by science keywords using a JSON Query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll1] {:science-keywords {:category "Cat1"}}
+           [coll1] {:science-keywords {:topic "Topic1"}}
+           [coll1] {:science-keywords {:term "Term1"}}
+           [coll1] {:science-keywords {:variable-level-1 "Level1-1"}}
+           [coll1] {:science-keywords {:variable-level-2 "Level1-2"}}
+           [coll1] {:science-keywords {:variable-level-3 "Level1-3"}}
+           [coll1] {:science-keywords {:detailed-variable "Detail1"}}
+           [coll5 coll6 coll7] {:science-keywords {:category "Tornado"}}
+           [coll2 coll3 coll4 coll6 coll7] {:science-keywords {:any "UNIVERSAL"}}
+
+           [] {:science-keywords {:category "BLAH"}}
+
+           [coll2] {:science-keywords {:category "Hurricane"
+                     :topic "Popular"
+                     :term "Extreme"}}
+           [coll2 coll6] {:and [{:science-keywords {:category "Hurricane"
+                                                    :topic "Popular"}}
+                                {:science-keywords {:term "Extreme"}}]}
+           [coll2 coll3 coll5 coll6 coll7] {:or [{:science-keywords {:category "Hurricane"
+                                                                     :topic "Popular"}}
+                                                  {:science-keywords {:term "Extreme"}}]}))))
 
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."
