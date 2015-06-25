@@ -66,6 +66,7 @@
       (info (format "Ingested virtual granule [%s] with the following response: [%s]"
                     granule-ur (pr-str body)))
 
+      ;; Conflict (status code 409)
       ;; This would occurs when an ingest event with lower revision-id is consumed after an event with
       ;; higher revision id for the same granule. The event is ignored and the revision is lost.
       (= status 409)
@@ -136,6 +137,7 @@
       (info (format "Deleted virtual granule [%s] with the following response: [%s]"
                     granule-ur (pr-str body)))
 
+      ;; Not Found (status code 404)
       ;; This would occur if delete event is consumed before the concept creation event and
       ;; metadata-db does not yet have the granule concept. This usually means that an ingest event
       ;; for the same granule is present in the virtual product queue and is not yet consumed. The
@@ -158,6 +160,7 @@
                      "retried.")
                 granule-ur (pr-str body)))
 
+      ;; Conflict (status code 409)
       ;; This would occurs if a delete event with lower revision-id is consumed after an event with
       ;; higher revision id for the same granule. The event is ignored and the revision is lost.
       (= status 409)
