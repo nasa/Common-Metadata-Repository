@@ -4,7 +4,7 @@
             [cmr.transmit.echo.conversion :as c]
             [cmr.transmit.echo.providers :as echo-providers]
             [cmr.common.services.errors :as errors]
-            [cmr.common.util :as util]
+            [cmr.common.util :as util :refer [defn-timed]]
             [clojure.string :as str]
             [camel-snake-kebab.core :as csk]))
 
@@ -52,7 +52,7 @@
   [acl-type]
   (csk/->SCREAMING_SNAKE_CASE_STRING acl-type))
 
-(defn get-acls-by-types
+(defn-timed get-acls-by-types
   "Fetches ACLs from ECHO by object identity type."
   ([context types]
    (get-acls-by-types context types nil))
