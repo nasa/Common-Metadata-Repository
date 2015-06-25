@@ -306,9 +306,13 @@
        200
        (get body "revision-id")
 
+       409
+      ;; Post commit constraint violation occurred
+      (errors/throw-service-errors :conflict (get body "errors"))
+
        ;; default
        (errors/internal-error!
-         (str "Delete concept operation failed. MetadataDb app response status code: %s response: %s "
+         (format "Delete concept operation failed. MetadataDb app response status code: %s response: %s "
                                     status response))))))
 
 (defn get-metadata-db-health-fn
