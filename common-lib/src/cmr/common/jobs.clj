@@ -26,15 +26,16 @@
        [~job-context-sym]
        (.setName (Thread/currentThread) ~job-name)
        (info ~(str job-name " starting."))
-       (try
-         (let [system-holder-var-name# (get (qc/from-job-data ~job-context-sym)
-                                            "system-holder-var-name")
-               system-holder# (-> system-holder-var-name# symbol find-var var-get)
-               ~system-sym (deref system-holder#)]
-           ~@body)
-         (catch Throwable e#
-           (error e# ~(str job-name " caught exception."))))
-       (info ~(str job-name " complete.")))))
+       (let [start-time# (System/currentTimeMillis)]
+         (try
+           (let [system-holder-var-name# (get (qc/from-job-data ~job-context-sym)
+                                              "system-holder-var-name")
+                 system-holder# (-> system-holder-var-name# symbol find-var var-get)
+                 ~system-sym (deref system-holder#)]
+             ~@body)
+           (catch Throwable e#
+             (error e# ~(str job-name " caught exception."))))
+         (info ~(str job-name " complete in") (- (System/currentTimeMillis) start-time#) "ms")))))
 
 (defmacro defjob
   "Wrapper for quartzite defjob that adds a few extras. The code in defjob should take two

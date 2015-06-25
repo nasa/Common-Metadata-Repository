@@ -22,7 +22,7 @@
          transmit-config/token-header
          (transmit-config/echo-system-token)))
 
-(deftracefn reindex-provider-collections
+(defn-timed reindex-provider-collections
   "Re-indexes all the collections in the provider"
   [context provider-ids]
   (let [conn (transmit-config/context->app-connection context :indexer)
