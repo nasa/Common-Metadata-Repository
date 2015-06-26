@@ -214,7 +214,30 @@
            "Level2-2" [coll9]
            "Level2-3" [coll9]
            ;; - detailed-variable
-           "SUPER" [coll9]))
+           "SUPER" [coll9]
+
+           ;; search by keywords using wildcard *
+           "A*C" [coll2 coll5 coll21]
+           "XY*" [coll2 coll13]
+           "*aser" [coll5 coll7 coll9 coll14]
+           "p*ce" [coll6]
+           "NEA*REA*IME" [coll22]
+           "nea*rea*ime" [coll22]
+           "\"Quoted*" [coll23]
+
+           ;; search by keywords using wildcard ?
+           "A?C" [coll2 coll5 coll21]
+           "XY?" [coll2 coll13]
+           "?aser" [coll5 coll7 coll9 coll14]
+           "p*ace" [coll6]
+           "NEAR?REAL?TIME" [coll22]
+           "near?real?time" [coll22]
+
+           ;; sorted search by keywords
+           "Laser spoonA" [coll14 coll9]
+           "La?er spoonA" [coll14 coll9]
+           "L*er spo*A" [coll14 coll9]
+           "L?s* s?o*A" [coll14 coll9]))
 
     (testing "Boost on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
@@ -254,47 +277,6 @@
            ;; science-keywords
            (:category sk1) [k2e/science-keywords-boost]))
 
-    (testing "search by keywords using wildcard *."
-      (are [keyword-str items]
-           (let [refs (search/find-refs :collection {:keyword keyword-str})
-                 matches? (d/refs-match? items refs)]
-             (when-not matches?
-               (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs refs))))
-             matches?)
-           "A*C" [coll2 coll5 coll21]
-           "XY*" [coll2 coll13]
-           "*aser" [coll5 coll7 coll9 coll14]
-           "p*ce" [coll6]
-           "NEA*REA*IME" [coll22]
-           "nea*rea*ime" [coll22]
-           "\"Quoted*" [coll23]))
-    (testing "search by keywords using wildcard ?."
-      (are [keyword-str items]
-           (let [refs (search/find-refs :collection {:keyword keyword-str})
-                 matches? (d/refs-match? items refs)]
-             (when-not matches?
-               (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs refs))))
-             matches?)
-           "A?C" [coll2 coll5 coll21]
-           "XY?" [coll2 coll13]
-           "?aser" [coll5 coll7 coll9 coll14]
-           "p*ace" [coll6]
-           "NEAR?REAL?TIME" [coll22]
-           "near?real?time" [coll22]))
-    (testing "sorted search by keywords."
-      (are [keyword-str items]
-           (let [refs (search/find-refs :collection {:keyword keyword-str})
-                 matches? (d/refs-match-order? items refs)]
-             (when-not matches?
-               (println "Expected:" (map :entry-title items))
-               (println "Actual:" (map :name (:refs refs))))
-             matches?)
-           "Laser spoonA" [coll14 coll9]
-           "La?er spoonA" [coll14 coll9]
-           "L*er spo*A" [coll14 coll9]
-           "L?s* s?o*A" [coll14 coll9]))
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
            (let [refs (search/find-refs :collection {:keyword keyword-str :sort-key sort-key})
@@ -307,6 +289,7 @@
            "Laser" "score" [coll14 coll5 coll7 coll9]
            "Laser" "+score" [coll5 coll7 coll9 coll14]
            "Laser" "-score" [coll14 coll5 coll7 coll9]))
+
     (testing "search by multiple keywords returns an error."
       (let [resp (search/find-refs :collection {:provider "PROV1"
                                                 :page_size 5

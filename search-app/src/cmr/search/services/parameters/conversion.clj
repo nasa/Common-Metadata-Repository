@@ -127,10 +127,8 @@
   (string-parameter->condition param value options))
 
 (defmethod parameter->condition :keyword
-  [concept-type param value options]
-  (let [pattern (pattern-field? param options)
-        keywords (str/lower-case value)]
-    (qm/text-condition :keyword keywords)))
+  [_ _ value _]
+    (qm/text-condition :keyword (str/lower-case value)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
