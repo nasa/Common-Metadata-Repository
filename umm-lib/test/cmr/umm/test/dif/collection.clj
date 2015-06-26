@@ -62,6 +62,14 @@
   (update-in person [:contacts] (fn [contacts]
                                   (filter #(= :email (:type %))
                                           contacts))))
+(defn- science-keywords->expected-parsed
+  "Returns expected parsed science keywords if science keywords is empty"
+  [science-keywords]
+  (if (empty? science-keywords)
+    [(umm-c/map->ScienceKeyword {:category "Not provided"
+                                 :topic    "Not provided"
+                                 :term     "Not provided"})]
+    science-keywords))
 
 (defn- umm->expected-parsed-dif
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
@@ -101,6 +109,8 @@
         (assoc :personnel personnel)
         ;; DIF only support some portion of the spatial
         (update-in [:spatial-coverage] spatial-coverage->expected-parsed)
+        ;; DIF 9 requires science keywords
+        (update-in [:science-keywords] science-keywords->expected-parsed)
         ;; DIF does not support size or mime-type in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; DIF does not have version-id in collection associations and we hardcoded it to "dummy"
