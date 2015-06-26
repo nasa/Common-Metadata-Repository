@@ -1,5 +1,5 @@
-(ns cmr.system-int-test.search.collection-concept-revision-retrieval-test
-  "Integration test for collection concept map retrieval with params"
+(ns cmr.system-int-test.search.collection-concept-revision-search-test
+  "Integration test for collection concept map search with params"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
@@ -12,7 +12,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (defn- umm->concept-map
-  "Convet a UMM collection record into concept map like the ones returned by the find-concepts API"
+  "Convert a UMM collection record into concept map like the ones returned by the find-concepts API"
   [umm deleted?]
   (let [{:keys [entry-id entry-title revision-id provider-id concept-id product]} umm
         {:keys [short-name version-id]} product]

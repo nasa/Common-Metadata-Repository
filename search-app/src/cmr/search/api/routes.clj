@@ -182,15 +182,15 @@
   "Invokes query service to parse the parameters query, find results, and return the response"
   [context path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-            context (assoc context :query-string body)
-            params (process-params params path-w-extension headers mt/xml)
-            result-format (:result-format params)
-            _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                            (name concept-type) (:client-id context) result-format
-                            (pr-str params)))
-            search-params (lp/process-legacy-psa params body)
-            results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-        (search-response params results)))
+        context (assoc context :query-string body)
+        params (process-params params path-w-extension headers mt/xml)
+        result-format (:result-format params)
+        _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                        (name concept-type) (:client-id context) result-format
+                        (pr-str params)))
+        search-params (lp/process-legacy-psa params body)
+        results (query-svc/find-concepts-by-parameters context concept-type search-params)]
+    (search-response params results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -246,7 +246,9 @@
 (defn- find-concept-revisions
   "Calls query service to get concept revisions for the given parameters"
   [context params headers]
-  (let [params (update-in (dissoc params :token) [:concept-type] (comp keyword inf/singular))
+  (let [params (-> params
+                   (dissoc params :token)
+                   (update-in [:concept-type] (comp keyword inf/singular)))
         _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
                         (:client-id context) params))
         latest-only? (= "true" (:latest params))

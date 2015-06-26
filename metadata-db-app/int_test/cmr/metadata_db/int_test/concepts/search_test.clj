@@ -163,6 +163,9 @@
               "mixed providers - entry-title"
               [coll1 coll4] {:entry-title "et1"}
 
+              "exclude-metadata=true"
+              [(dissoc coll3 :metadata)] {:provider-id "SMAL_PROV1" :exclude-metadata "true"}
+
               "find none - bad provider-id"
               [] {:provider-id "PROV_NONE"}
 

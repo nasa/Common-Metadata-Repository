@@ -183,6 +183,7 @@ returns: list of the latest revisions of concepts matching the ids provided in t
 ### GET /concepts/search/:concept-types?param1=value&...
 
 This returns all revisions of the concept that matches the search parameters by default. It also supports parameter 'latest'. When latest=true, only the latest revision of the concepts are returned.
+Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.
 
 Supported combinations of concept type and parameters:
   * collections with any combination of provider-id, entry-id, entry-title, short-name, version-id
