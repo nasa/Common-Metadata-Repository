@@ -231,13 +231,7 @@
            "?aser" [coll5 coll7 coll9 coll14]
            "p*ace" [coll6]
            "NEAR?REAL?TIME" [coll22]
-           "near?real?time" [coll22]
-
-           ;; sorted search by keywords
-           "Laser spoonA" [coll14 coll9]
-           "La?er spoonA" [coll14 coll9]
-           "L*er spo*A" [coll14 coll9]
-           "L?s* s?o*A" [coll14 coll9]))
+           "near?real?time" [coll22]))
 
     (testing "Boost on fields"
       (are [keyword-str scores] (= (map #(/ % 2.0) scores)
@@ -276,6 +270,19 @@
 
            ;; science-keywords
            (:category sk1) [k2e/science-keywords-boost]))
+
+    (testing "sorted search by keywords."
+      (are [keyword-str items]
+           (let [refs (search/find-refs :collection {:keyword keyword-str})
+                 matches? (d/refs-match-order? items refs)]
+             (when-not matches?
+               (println "Expected:" (map :entry-title items))
+               (println "Actual:" (map :name (:refs refs))))
+             matches?)
+           "Laser spoonA" [coll14 coll9]
+           "La?er spoonA" [coll14 coll9]
+           "L*er spo*A" [coll14 coll9]
+           "L?s* s?o*A" [coll14 coll9]))
 
     (testing "sorted search by keywords with sort keys."
       (are [keyword-str sort-key items]
