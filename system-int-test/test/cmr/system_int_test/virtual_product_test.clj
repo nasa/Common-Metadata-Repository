@@ -195,7 +195,8 @@
 (defn- assert-tombstones
   "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
   [concept-ids revision-id]
-  (apply = true (map #(:deleted (ingest/get-concept % revision-id)) concept-ids)))
+  (doseq [concept-id concept-ids]
+    (is (:deleted (ingest/get-concept concept-id revision-id)))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
@@ -219,7 +220,7 @@
     ;; check revision ids are in sync after delete operations
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
     (index/wait-until-indexed)
-    (is (assert-tombstones vp-granule-ids 12))
+    (assert-tombstones vp-granule-ids 12)
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
     (index/wait-until-indexed)
-    (is (assert-tombstones vp-granule-ids 14))))
+    (assert-tombstones vp-granule-ids 14)))
