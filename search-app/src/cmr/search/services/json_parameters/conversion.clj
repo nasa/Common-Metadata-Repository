@@ -18,7 +18,9 @@
 
 (def valid-string-conditions
   "A set of the valid JSON Query string conditions"
-  #{:provider :entry-id :entry-title :keyword})
+  #{:provider :entry-id :entry-title :keyword :short-name :version :processing-level-id :concept-id
+    :platform :instrument :sensor :project :archive-center :spatial-keyword
+    :two-d-coordinate-system-name})
 
 (def valid-grouping-conditions
   "A set of the valid JSON Query grouping conditions"
@@ -36,6 +38,17 @@
   {:entry-title :string
    :entry-id :string
    :provider :string
+   :short-name :string
+   :version :string
+   :processing-level-id :string
+   :concept-id :string
+   :platform :string
+   :instrument :string
+   :sensor :string
+   :project :string
+   :archive-center :string
+   :spatial-keyword :string
+   :two-d-coordinate-system-name :string
    :keyword :keyword
    :or :or
    :and :and
@@ -60,8 +73,8 @@
 
 (defmethod parse-json-condition :string
   [condition-name value]
-  ;; TODO handle case sensitivity and wildcards
-  (qm/string-condition condition-name value false false))
+  ;; CMR-1765 handle case sensitivity and wildcards
+  (qm/string-condition condition-name value (pc/case-sensitive-field? condition-name) false))
 
 (defmethod parse-json-condition :keyword
   [_ value]

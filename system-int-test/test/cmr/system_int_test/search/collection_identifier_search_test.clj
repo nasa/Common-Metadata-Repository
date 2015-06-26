@@ -44,6 +44,20 @@
            [c1-p1] [(:concept-id c1-p1) "FOO"]
            [] "FOO"))
 
+    (testing "Concept id search using JSON query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [c1-p1] {:concept-id (:concept-id c1-p1)}
+           [c1-p2] {:concept-id (:concept-id c1-p2)}
+           [c1-p1 c1-p2] {:or [{:concept-id (:concept-id c1-p1)}
+                               {:concept-id (:concept-id c1-p2)}]}
+           [c1-p1] {:or [{:concept-id (:concept-id c1-p1)}
+                         {:concept-id "C2200-PROV1"}]}
+           [c1-p1] {:or [{:concept-id (:concept-id c1-p1)}
+                         {:concept-id "FOO"}]}
+           [] {:concept-id "FOO"}))
+
     (testing "provider with parameters"
       (are [items p options]
            (let [params (merge {:provider p}
@@ -113,7 +127,7 @@
            all-prov2-colls {:not {:provider "PROV1"}}
            all-prov1-colls {:not {:provider "PROV2"}}
 
-           ;; TODO
+           ;; CMR-1765
            ; ;; Wildcards
            ; all-colls "PROV*" {:pattern true}
            ; [] "PROV*" {:pattern false}
@@ -183,6 +197,32 @@
            [c1-p1 c1-p2] "s1" {:ignore-case true}
            [] "s1" {:ignore-case false}))
 
+    (testing "Short name using JSON query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [c1-p1 c1-p2] {:short-name "S1"}
+           [] {:short-name "S44"}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:short-name "S1"} {:short-name "S2"}]}
+           [c1-p1 c1-p2] {:or [{:short-name "S1"} {:short-name "S44"}]}
+           [] {:and [{:short-name "S1"} {:short-name "S2"}]}
+
+           ;; CMR-1765
+           ;; Wildcards
+           ; all-colls "S*" {:pattern true}
+           ; [] "S*" {:pattern false}
+           ; [] "S*" {}
+           ; [c1-p1 c1-p2] "*1" {:pattern true}
+           ; [c1-p1 c1-p2] "?1" {:pattern true}
+           ; [] "*Q*" {:pattern true}
+
+           ; ;; Ignore case
+           ; [c1-p1 c1-p2] "s1" {}
+           ; [c1-p1 c1-p2] "s1" {:ignore-case true}
+           ; [] "s1" {:ignore-case false}))
+           ))
+
     (testing "version"
       (are [items v options]
            (let [params (merge {:version v}
@@ -230,6 +270,31 @@
            ;; Ignore case
            [c1-p1 c1-p2] "v1" {:ignore-case true}
            [] "v1" {:ignore-case false}))
+
+    (testing "Version using JSON query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [c1-p1 c1-p2] {:version "V1"}
+           [] {:version "V44"}
+           ;; Multiple values
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:version "V1"} {:version "V2"}]}
+           [c1-p1 c1-p2] {:or [{:version "V1"} {:version "V44"}]}
+           [] {:and [{:version "V1"} {:version "V2"}]}
+
+           ;; CMR-1765
+           ; ;; Wildcards
+           ; all-colls "V*" {:pattern true}
+           ; [] "V*" {:pattern false}
+           ; [] "V*" {}
+           ; [c1-p1 c1-p2] "*1" {:pattern true}
+           ; [c1-p1 c1-p2] "?1" {:pattern true}
+           ; [] "*Q*" {:pattern true}
+
+           ; ;; Ignore case
+           ; [c1-p1 c1-p2] "v1" {:ignore-case true}
+           ; [] "v1" {:ignore-case false}))
+           ))
 
     (testing "Entry id"
       (are [items ids options]
@@ -284,7 +349,7 @@
                                      {:provider "PROV2"}]}}
 
            ))
-           ;; TODO
+           ;; CMR-1765
            ;; Wildcards
            ; all-colls "S*_V*" {:pattern true}
            ; [] "S*_V*" {:pattern false}
@@ -345,7 +410,7 @@
            [] {:and [{:entry-title "ET1"}
                      {:entry-title "ET2"}]}))
 
-           ;; TODO
+           ;; CMR-1765
            ;; Wildcards
            ; all-colls "ET*" {:pattern true}
            ; [] "ET*" {:pattern false}
@@ -462,7 +527,35 @@
 
            ;; Ignore case
            [c2-p2] "2b" {:ignore-case true}
-           [] "2b" {:ignore-case false}))))
+           [] "2b" {:ignore-case false}))
+
+    (testing "Processing level id search using JSON Query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [c1-p2] {:processing-level-id "1B"}
+           [] {:processing-level-id "1C"}
+           ;; Multiple values
+           [c1-p2 c2-p2 c3-p2] {:or [{:processing-level-id "1B"}
+                                     {:processing-level-id "2B"}
+                                     {:processing-level-id "3B"}]}
+           [c4-p2] {:or [{:processing-level-id "4B"} {:processing-level-id "4C"}]}
+           [c1-p1 c2-p1 c3-p1 c4-p1 c4-p2] {:not {:or [{:processing-level-id "1B"}
+                                                       {:processing-level-id "2B"}
+                                                       {:processing-level-id "3B"}]}}
+
+           ;; CMR-1765
+           ;; Wildcards
+           ; all-prov2-colls "%B" {:pattern true}
+           ; [] "B%" {:pattern false}
+           ; [] "B%"
+           ; all-prov2-colls "_B" {:pattern true}
+           ; [] "%Q%" {:pattern true}
+
+           ; ;; Ignore case
+           ; [c2-p2] "2b" {:ignore-case true}
+           ; [] "2b" {:ignore-case false}))))
+           ))))
 
 ;; Find collections by echo_collection_id and concept_id params
 (deftest echo-coll-id-search-test
