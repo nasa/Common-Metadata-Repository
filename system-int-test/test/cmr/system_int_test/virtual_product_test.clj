@@ -192,13 +192,13 @@
   (mapcat #(map field (:refs (search/find-refs
                              :granule {:entry-title (:entry-title %) :page-size 50}))) vp-colls))
 
-(defn- assert-mdb-revision-ids-equal
-  "Assert that the concepts with the given concept-ids and revision-id exist in mdb"
+(defn- assert-tombstones
+  "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
   [concept-ids revision-id]
-  (apply = true (map #(ingest/concept-exists-in-mdb? % revision-id) concept-ids)))
+  (apply = true (map #(:deleted (ingest/get-concept % revision-id)) concept-ids)))
 
-;; Verify that latest revision ids of virtual granules and the corresponding real granules
-;; are in sync as various ingest operoations are performed on the real granule
+;; Verify that latest revision ids of virtual granules and the corresponding source granules
+;; are in sync as various ingest operoations are performed on the source granules
 (deftest revision-ids-in-sync-test
   (let [ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
@@ -210,16 +210,16 @@
         _ (index/wait-until-indexed)
         vp-granule-ids (virtual-granules-attrs vp-colls :id)]
 
-    ;; check revision ids are synced due to ingest/update operations
+    ;; check revision ids are synced after ingest/update operations
     (is (apply = 5 (virtual-granules-attrs vp-colls :revision-id)))
     (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
     (index/wait-until-indexed)
     (is (apply = 10 (virtual-granules-attrs vp-colls :revision-id)))
 
-    ;; check revision ids are synced due to delete operations
+    ;; check revision ids are synced after delete operations
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
     (index/wait-until-indexed)
-    (is (assert-mdb-revision-ids-equal vp-granule-ids 12))
+    (is (assert-tombstones vp-granule-ids 12))
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
     (index/wait-until-indexed)
-    (is (assert-mdb-revision-ids-equal vp-granule-ids 14))))
+    (is (assert-tombstones vp-granule-ids 14))))
