@@ -59,7 +59,14 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id)))))
+      (is (= 1 revision-id))))
+  (testing "ingest of a new granule with a revision id"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          granule (assoc (d/item->concept (dg/granule collection)) :revision-id 5)
+          {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
+      (index/wait-until-indexed)
+      (is (ingest/concept-exists-in-mdb? concept-id 5))
+      (is (= 5 revision-id)))))
 
 ;; Verify a new granule with concept-id is ingested successfully.
 (deftest granule-w-concept-id-ingest-test
@@ -152,17 +159,26 @@
         (is (= {:concept-id "G2-PROV1" :revision-id 2}
              (ingest/parse-ingest-body :xml response)))))))
 
-;; Verify existing granule can be deleted and operation results in revision id 1 greater than
-;; max revision id of the granule prior to the delete
 (deftest delete-granule-test
-  (let [collection (d/ingest "PROV1" (dc/collection {}))
-        granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
-        ingest-result (ingest/ingest-concept granule)
-        delete-result (ingest/delete-concept granule)
-        ingest-revision-id (:revision-id ingest-result)
-        delete-revision-id (:revision-id delete-result)]
-    (index/wait-until-indexed)
-    (is (= 1 (- delete-revision-id ingest-revision-id)))))
+  (testing "It should be possible to delete existing concept and the operation without revision id should
+           result in revision id 1 greater than max revision id of the concept prior to the delete"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          granule (d/item->concept (dg/granule collection {:concept-id "G1-PROV1"}))
+          ingest-result (ingest/ingest-concept granule)
+          delete-result (ingest/delete-concept granule)
+          ingest-revision-id (:revision-id ingest-result)
+          delete-revision-id (:revision-id delete-result)]
+      (index/wait-until-indexed)
+      (is (= 1 (- delete-revision-id ingest-revision-id)))))
+  (testing "Deleting existing concept with a revision-id should respect the revision id"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          granule (d/item->concept (dg/granule collection {:concept-id "G2-PROV1"}))
+          _ (ingest/ingest-concept granule)
+          delete-result (ingest/delete-concept granule {:revision-id 5})
+          delete-revision-id (:revision-id delete-result)]
+      (index/wait-until-indexed)
+      (is (= 5 delete-revision-id))
+      (is (ingest/concept-exists-in-mdb? (:concept-id delete-result) 5)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest delete-non-existing-concept-gives-good-error-message-test
