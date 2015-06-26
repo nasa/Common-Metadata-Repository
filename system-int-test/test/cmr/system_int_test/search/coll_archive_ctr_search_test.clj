@@ -62,5 +62,29 @@
 
            ;; Ignore case
            [coll5 coll7] "sedac ac" {:ignore-case true}
-           [] "sedac ac" {:ignore-case false}))))
+           [] "sedac ac" {:ignore-case false}))
+
+    (testing "Search collections by archive center using JSON Query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll4 coll6] {:archive-center "Larc"}
+           [coll5 coll7] {:archive-center "SEDAC AC"}
+           [coll5 coll7] {:archive-center "Sedac AC"}
+           [] {:archive-center "SEDAC PC"}
+           [] {:archive-center "BLAH"}
+           [coll4 coll5 coll6 coll7] {:or [{:archive-center "SEDAC AC"} {:archive-center "Larc"}]}
+           [] {:and [{:archive-center "SEDAC AC"} {:archive-center "Larc"}]}
+           [coll1 coll2 coll3 coll4 coll6] {:not {:archive-center "SEDAC AC"}}
+
+           ;; CMR-1765
+           ; ;; Wildcards
+           ; [coll5 coll7] "S%" {:pattern true}
+           ; [coll5] "SEDAC _C" {:pattern true}
+           ; [] "%Q%" {:pattern true}
+
+           ; ;; Ignore case
+           ; [coll5 coll7] "sedac ac" {:ignore-case true}
+           ; [] "sedac ac" {:ignore-case false}))
+    ))))
 

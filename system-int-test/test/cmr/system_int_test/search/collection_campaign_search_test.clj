@@ -74,5 +74,33 @@
            ;; Ignore case
            [] "epi" {}
            [coll5 coll6] "epi" {:ignore-case true}
-           [] "epi" {:ignore-case false}))))
+           [] "epi" {:ignore-case false}))
+
+    (testing "Search by project/campaign using JSON query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll3 coll4 coll6] {:project "ESI"}
+           [coll5 coll6] {:project "EVI"}
+           [coll5 coll6] {:project "EPI"}
+           [] {:project "BLAH"}
+
+           ;; Multiple values
+           [coll3 coll4 coll5 coll6] {:or [{:project "ESI"} {:project "EVI"}]}
+
+           ;; CMR-1765
+           ; ;; Wildcards
+           ; [coll3 coll4 coll5 coll6] "E%" {:pattern true}
+           ; [] "E%" {:pattern false}
+           ; [] "E%"
+           ; [coll3 coll4 coll5 coll6] "%I" {:pattern true}
+           ; [coll5 coll6] "EP_" {:pattern true}
+           ; [coll3 coll4 coll5 coll6] "E_%" {:pattern true}
+           ; [] "%Q%" {:pattern true}
+
+           ; ;; Ignore case
+           ; [] "epi"
+           ; [coll5 coll6] "epi" {:ignore-case true}
+           ; [] "epi" {:ignore-case false}))
+    ))))
 
