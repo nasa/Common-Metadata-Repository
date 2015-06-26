@@ -209,11 +209,13 @@
         ingest-result (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
         _ (index/wait-until-indexed)
         vp-granule-ids (virtual-granules-attrs vp-colls :id)]
+
     ;; check revision ids are synced due to ingest/update operations
     (is (apply = 5 (virtual-granules-attrs vp-colls :revision-id)))
     (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
     (index/wait-until-indexed)
     (is (apply = 10 (virtual-granules-attrs vp-colls :revision-id)))
+
     ;; check revision ids are synced due to delete operations
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
     (index/wait-until-indexed)
