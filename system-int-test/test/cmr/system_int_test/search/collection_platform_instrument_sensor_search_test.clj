@@ -75,12 +75,10 @@
            [coll9] {:platform "SMAP"}
            [coll1 coll2 coll4] {:or [{:platform "platform_SnA"} {:platform "platform_Sn A"}]}
            [coll2] {:and [{:platform "platform_Sn B"} {:platform "platform_Sn A"}]}
-           ;; CMR-1765
-           ; [coll6 coll7] ["platform_x"] {:ignore-case true}
-           ; [coll7] ["platform_x"] {:ignore-case false}
-           ; [coll1 coll2 coll3] ["platform_Sn *"] {:pattern true}
-           ; [coll4 coll5] ["platform_Sn?"] {:pattern true}
-           ))))
+           [coll6 coll7] {:platform {:value "platform_x" :ignore-case true}}
+           [coll7] {:platform {:value "platform_x" :ignore-case false}}
+           [coll1 coll2 coll3] {:platform {:value "platform_Sn *" :pattern true}}
+           [coll4 coll5] {:platform {:value "platform_Sn?" :pattern true}}))))
 
 (deftest search-by-instrument-short-names
   (let [i1 (dc/instrument {:short-name "instrument_Sn A"})
@@ -159,12 +157,10 @@
            [coll1 coll2 coll4 coll6] {:or [{:instrument "instrument_SnA"}
                                            {:instrument "instrument_Sn A"}]}
            [coll2 coll6] {:and [{:instrument "instrument_Sn B"} {:instrument "instrument_Sn A"}]}
-           ;; CMR-1765
-           ; [coll7 coll8] ["instrument_x"] {:ignore-case true}
-           ; [coll8] ["instrument_x"] {:ignore-case false}
-           ; [coll1 coll2 coll3 coll6] ["instrument_Sn *"] {:pattern true}
-           ; [coll4 coll5] ["instrument_Sn?"] {:pattern true}
-           ))))
+           [coll7 coll8] {:instrument {:value "instrument_x" :ignore-case true}}
+           [coll8] {:instrument {:value "instrument_x" :ignore-case false}}
+           [coll1 coll2 coll3 coll6] {:instrument {:value "instrument_Sn *" :pattern true}}
+           [coll4 coll5] {:instrument {:value "instrument_Sn?" :pattern true}}))))
 
 (deftest search-by-sensor-short-names
   (let [s1 (dc/sensor {:short-name "sensor_Sn A"})
@@ -242,10 +238,8 @@
            [] {:sensor "BLAH"}
            [coll1 coll2 coll4 coll6 coll7] {:or [{:sensor "sensor_SnA"} {:sensor "sensor_Sn A"}]}
            [coll2 coll6 coll7] {:and [{:sensor "sensor_Sn B"} {:sensor "sensor_Sn A"}]}
-           ;; CMR-1765
-           ; [coll8 coll9] ["sensor_x"] {:ignore-case true}
-           ; [coll8] ["sensor_x"] {:ignore-case false}
-           ; [coll1 coll2 coll3 coll6 coll7] ["sensor_Sn *"] {:pattern true}
-           ; [coll4 coll5] ["sensor_Sn?"] {:pattern true}
-           ))))
+           [coll8 coll9] {:sensor {:value "sensor_x" :ignore-case true}}
+           [coll8] {:sensor {:value "sensor_x" :ignore-case false}}
+           [coll1 coll2 coll3 coll6 coll7] {:sensor {:value "sensor_Sn *" :pattern true}}
+           [coll4 coll5] {:sensor {:value "sensor_Sn?" :pattern true}}))))
 

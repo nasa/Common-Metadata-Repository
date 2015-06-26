@@ -22,7 +22,7 @@
 
 (defn parse-nested-science-keyword-condition
   "Converts a science keyword condition into a query model condition."
-  [value case-sensitive? pattern?]
+  [science-keyword-map case-sensitive? pattern?]
   (qm/nested-condition
     :science-keywords
     (gc/and-conds
@@ -32,7 +32,7 @@
                  (map #(sk-field+value->string-condition % field-value case-sensitive? pattern?)
                       science-keyword-fields))
                (sk-field+value->string-condition field-name field-value case-sensitive? pattern?)))
-           value))))
+           (dissoc science-keyword-map :pattern :ignore-case)))))
 
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords

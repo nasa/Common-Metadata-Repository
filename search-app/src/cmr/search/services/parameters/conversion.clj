@@ -78,11 +78,9 @@
 
 (defn case-sensitive-field?
   "Return true if the given field is a case-sensitive field"
-  ([field]
-   (case-sensitive-field? field {}))
-  ([field options]
+  [field options]
   (or (contains? always-case-sensitive field)
-      (= "false" (get-in options [field :ignore-case])))))
+      (= "false" (get-in options [field :ignore-case]))))
 
 (defn pattern-field?
   "Returns true if the field is a pattern"
