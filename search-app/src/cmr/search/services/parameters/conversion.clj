@@ -72,14 +72,14 @@
              :browsable :boolean
              :two-d-coordinate-system :two-d-coordinate-system}})
 
-(def always-case-sensitive
+(def always-case-sensitive-fields
   "A set of parameters that will always be case sensitive"
   #{:concept-id :collection-concept-id})
 
 (defn case-sensitive-field?
   "Return true if the given field is a case-sensitive field"
   [field options]
-  (or (contains? always-case-sensitive field)
+  (or (contains? always-case-sensitive-fields field)
       (= "false" (get-in options [field :ignore-case]))))
 
 (defn pattern-field?

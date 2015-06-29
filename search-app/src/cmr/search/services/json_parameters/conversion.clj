@@ -70,7 +70,7 @@
   ([field]
    (case-sensitive-field? field {}))
   ([field value-map]
-   (or (contains? pc/always-case-sensitive field)
+   (or (contains? pc/always-case-sensitive-fields field)
        (= false (:ignore-case value-map)))))
 
 (defmulti parse-json-condition
