@@ -186,6 +186,7 @@
                                       :page-size 50}))))))
 
 (defn- assert-virtual-gran-revision-id
+  "Assert that the revision ids of the granules of the collections vp-colls match expected-revision-id"
   [vp-colls expected-revision-id]
   (doseq [revision-id  (mapcat #(map :revision-id (:refs (search/find-refs
                                                             :granule {:entry-title (:entry-title %)
