@@ -195,10 +195,8 @@
 
 (defn- assert-tombstones
   "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
-  [vp-colls revision-id]
-  (doseq [concept-id (mapcat #(map :id (:refs (search/find-refs
-                                                :granule {:entry-title (:entry-title %)
-                                                          :page-size 50}))) vp-colls)]
+  [concept-ids revision-id]
+  (doseq [concept-id concept-ids]
     (is (:deleted (ingest/get-concept concept-id revision-id)))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
@@ -211,7 +209,10 @@
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
         ingest-result (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
-        _ (index/wait-until-indexed)]
+        _ (index/wait-until-indexed)
+        vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
+                                                :granule {:entry-title (:entry-title %)
+                                                          :page-size 50}))) vp-colls)]
 
     ;; check revision ids are in sync after ingest/update operations
     (assert-virtual-gran-revision-id vp-colls 5)
@@ -222,7 +223,7 @@
     ;; check revision ids are in sync after delete operations
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
     (index/wait-until-indexed)
-    (assert-tombstones vp-colls 12)
+    (assert-tombstones vp-granule-ids 12)
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
     (index/wait-until-indexed)
-    (assert-tombstones vp-colls 14)))
+    (assert-tombstones vp-granule-ids 14)))
