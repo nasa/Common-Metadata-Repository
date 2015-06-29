@@ -195,11 +195,11 @@
 
 (defn- assert-tombstones
   "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
-  [vp-colls expected-revision-id]
+  [vp-colls revision-id]
   (doseq [concept-id (mapcat #(map :id (:refs (search/find-refs
                                                 :granule {:entry-title (:entry-title %)
                                                           :page-size 50}))) vp-colls)]
-    (is (:deleted (ingest/get-concept concept-id expected-revision-id)))))
+    (is (:deleted (ingest/get-concept concept-id revision-id)))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
