@@ -220,7 +220,19 @@
                                 {:science-keywords {:term "Extreme"}}]}
            [coll2 coll3 coll5 coll6 coll7] {:or [{:science-keywords {:category "Hurricane"
                                                                      :topic "Popular"}}
-                                                  {:science-keywords {:term "Extreme"}}]}))))
+                                                  {:science-keywords {:term "Extreme"}}]}
+
+           ;; case sensitivity
+           [coll1] {:science-keywords {:category "cat1"}}
+           [] {:science-keywords {:category "cat1" :ignore-case false}}
+           [coll1] {:or [{:science-keywords {:category "Cat1"}}
+                         {:science-keywords {:term "extreme" :ignore-case false}}]}
+
+           ;; pattern
+           [coll1] {:science-keywords {:category "C*" :pattern true}}
+           [] {:science-keywords {:category "C*" :pattern false}}
+           [] {:science-keywords {:category "C*"}}
+           [coll1] {:science-keywords {:category "Cat?" :pattern true}}))))
 
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."

@@ -91,13 +91,10 @@
            [coll1 coll2 coll5 coll6 coll7] {:not {:spatial-keyword "DC"}}
            [] {:spatial-keyword "BLAH"}
 
-           ;; CMR-1765
-           ; ;; pattern
-           ; [coll3 coll4 coll5] "D%" {:pattern true}
-           ; [coll4 coll6] "L_" {:pattern true}
-           ; ;;ignore case
-           ; [coll7] "detroit"
-           ; [coll5 coll7] "detroit" {:ignore-case true}
-           ; [coll7] "detroit" {:ignore-case false}))))
-           ))))
-
+           ;; pattern
+           [coll3 coll4 coll5 coll7] {:spatial-keyword {:value "D*" :pattern true}}
+           [coll4 coll6] {:spatial-keyword {:value "L?" :pattern true}}
+           ;;ignore case
+           [coll5 coll7] {:spatial-keyword {:value "detroit"}}
+           [coll5 coll7] {:spatial-keyword {:value "detroit" :ignore-case true}}
+           [coll7] {:spatial-keyword {:value "detroit" :ignore-case false}}))))

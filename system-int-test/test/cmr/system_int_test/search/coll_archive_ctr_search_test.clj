@@ -77,14 +77,12 @@
            [] {:and [{:archive-center "SEDAC AC"} {:archive-center "Larc"}]}
            [coll1 coll2 coll3 coll4 coll6] {:not {:archive-center "SEDAC AC"}}
 
-           ;; CMR-1765
-           ; ;; Wildcards
-           ; [coll5 coll7] "S%" {:pattern true}
-           ; [coll5] "SEDAC _C" {:pattern true}
-           ; [] "%Q%" {:pattern true}
+           ;; Wildcards
+           [coll5 coll7] {:archive-center {:value "S*" :pattern true}}
+           [coll5 coll7] {:archive-center {:value "SEDAC ?C" :pattern true}}
+           [coll5] {:archive-center {:value "SEDAC ?C" :pattern true :ignore-case false}}
+           [] {:archive-center {:value "*Q*" :pattern true}}
 
-           ; ;; Ignore case
-           ; [coll5 coll7] "sedac ac" {:ignore-case true}
-           ; [] "sedac ac" {:ignore-case false}))
-    ))))
-
+           ;; Ignore case
+           [coll5 coll7] {:archive-center {:value "sedac ac" :ignore-case true}}
+           [] {:archive-center {:value "sedac ac" :ignore-case false}}))))

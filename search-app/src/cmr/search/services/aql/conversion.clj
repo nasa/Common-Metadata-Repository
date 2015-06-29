@@ -174,7 +174,7 @@
    (let [value (element->string-content elem)
          value (if pattern? (aql-pattern->cmr-pattern value) value)
          case-sensitive? (aql-elem-case-sensitive? elem)
-         case-sensitive? (if (some? (pc/always-case-sensitive key)) true case-sensitive?)]
+         case-sensitive? (if (contains? pc/always-case-sensitive-fields key) true case-sensitive?)]
      (if (inherited-condition? concept-type key)
        (inheritance-condition key value case-sensitive? pattern?)
        (qm/string-condition key value case-sensitive? pattern?)))))
