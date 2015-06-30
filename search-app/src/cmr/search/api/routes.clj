@@ -250,9 +250,8 @@
                    (dissoc params :token)
                    (update-in [:concept-type] (comp keyword inf/singular)))
         _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
-                        (:client-id context) params))
-        latest-only? (= "true" (:latest params))
-        results (query-svc/find-concept-revisions context params latest-only?)]
+                        (:client-id context) (pr-str params)))
+        results (query-svc/find-concept-revisions context params)]
     {:status 200
      :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
      :body results}))
@@ -291,7 +290,9 @@
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
 
-      ;; Retrieve concept maps with basic data in metadata-db (exclude metadata)
+      ;; Retrieve concept maps with basic data in metadata-db (possibly excluding metadata)
+      ;; We are limiting this to admin acccess for now and will add access to users who have
+      ;; been granted read access to the providers' data in CMR-1771.
       (context "/concept-revisions" []
         (GET "/:concept-type" {:keys [params headers request-context]}
           (acl/verify-ingest-management-permission request-context :read)

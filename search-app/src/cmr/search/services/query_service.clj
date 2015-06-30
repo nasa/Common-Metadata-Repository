@@ -226,8 +226,7 @@
    (find-concept-revisions context params true))
   ([context params latest-only?]
    ;; Prepare params as if they were sent over HTTP to metadata db
-   (let [params (-> (assoc params :exclude-metadata "true")
-                    (assoc :latest (when latest-only? "true")))]
+   (let [params (u/map-keys->kebab-case params)]
      (mdb-search/find-concepts (t/context->metadata-db-context context) params))))
 
 (deftracefn get-granule-timeline
