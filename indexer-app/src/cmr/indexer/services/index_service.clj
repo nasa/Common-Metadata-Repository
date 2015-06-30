@@ -59,11 +59,7 @@
   (acl-fetcher/refresh-acl-cache context)
 
   (doseq [provider-id provider-ids]
-    (let [collections (->> (meta-db/find-collections context {:provider-id provider-id})
-                           ;; Limit to the maximum revision of each concept
-                           (group-by :concept-id)
-                           vals
-                           (map #(last (sort-by :revision-id %))))]
+    (let [collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
       (bulk-index context [collections]))))
 
 (deftracefn index-concept
