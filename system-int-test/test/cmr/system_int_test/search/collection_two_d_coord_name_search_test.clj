@@ -91,4 +91,17 @@
            [] "NO MATCH" {}
 
            ;; search by two d coordinate system name - multiple in collection
-           [coll2 coll5] "two CALIPSO" {}))))
+           [coll2 coll5] "two CALIPSO" {}))
+
+    (testing "two d coordinate search using JSON Query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll1] {:two-d-coordinate-system-name "one CALIPSO"}
+           [coll1 coll4] {:or [{:two-d-coordinate-system-name "one CALIPSO"}
+                               {:two-d-coordinate-system-name "three Bravo"}]}
+           [] {:two-d-coordinate-system-name "NO MATCH"}
+           [coll2 coll5] {:two-d-coordinate-system-name "two CALIPSO"}
+           [coll3 coll4] {:two-d-coordinate-system-name {:value "three *"
+                                                         :pattern true
+                                                         :ignore-case false}}))))

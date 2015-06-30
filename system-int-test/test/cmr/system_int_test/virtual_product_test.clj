@@ -185,10 +185,45 @@
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))))
 
+(defn- assert-virtual-gran-revision-id
+  "Assert that the revision ids of the granules of the collections vp-colls match expected-revision-id"
+  [vp-colls expected-revision-id]
+  (doseq [revision-id  (mapcat #(map :revision-id (:refs (search/find-refs
+                                                            :granule {:entry-title (:entry-title %)
+                                                                      :page-size 50}))) vp-colls)]
+    (is (= expected-revision-id revision-id))))
 
+(defn- assert-tombstones
+  "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
+  [concept-ids revision-id]
+  (doseq [concept-id concept-ids]
+    (is (:deleted (ingest/get-concept concept-id revision-id)))))
 
+;; Verify that latest revision ids of virtual granules and the corresponding source granules
+;; are in sync as various ingest operations are performed on the source granules
+(deftest revision-ids-in-sync-test
+  (let [ast-coll (d/ingest "LPDAAC_ECS"
+                           (dc/collection
+                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+        vp-colls (ingest-virtual-collections [ast-coll])
+        granule-ur "SC:AST_L1A.003:2006227720"
+        ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
+        ingest-result (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
+        _ (index/wait-until-indexed)
+        vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
+                                                :granule {:entry-title (:entry-title %)
+                                                          :page-size 50}))) vp-colls)]
 
+    ;; check revision ids are in sync after ingest/update operations
+    (assert-virtual-gran-revision-id vp-colls 5)
+    (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
+    (index/wait-until-indexed)
+    (assert-virtual-gran-revision-id vp-colls 10)
 
-
-
-
+    ;; check revision ids are in sync after delete operations
+    (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
+    (index/wait-until-indexed)
+    (assert-tombstones vp-granule-ids 12)
+    (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
+    (index/wait-until-indexed)
+    (assert-tombstones vp-granule-ids 14)))

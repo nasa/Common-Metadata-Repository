@@ -74,5 +74,31 @@
            ;; Ignore case
            [] "epi" {}
            [coll5 coll6] "epi" {:ignore-case true}
-           [] "epi" {:ignore-case false}))))
+           [] "epi" {:ignore-case false}))
+
+    (testing "Search by project/campaign using JSON query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll3 coll4 coll6] {:project "ESI"}
+           [coll5 coll6] {:project "EVI"}
+           [coll5 coll6] {:project "EPI"}
+           [] {:project "BLAH"}
+
+           ;; Multiple values
+           [coll3 coll4 coll5 coll6] {:or [{:project "ESI"} {:project "EVI"}]}
+
+           ;; Wildcards
+           [coll3 coll4 coll5 coll6] {:project {:value "E*" :pattern true}}
+           [] {:project {:value "E*" :pattern false}}
+           [] {:project {:value "E*"}}
+           [coll3 coll4 coll5 coll6] {:project {:value "*I" :pattern true}}
+           [coll5 coll6] {:project {:value "EP?" :pattern true}}
+           [coll3 coll4 coll5 coll6] {:project {:value "E?*" :pattern true}}
+           [] {:project {:value "*Q*" :pattern true}}
+
+           ;; Ignore case
+           [coll5 coll6] {:project {:value "epi"}}
+           [coll5 coll6] {:project {:value "epi" :ignore-case true}}
+           [] {:project {:value "epi" :ignore-case false}}))))
 

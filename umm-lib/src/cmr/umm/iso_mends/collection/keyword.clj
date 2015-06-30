@@ -48,8 +48,7 @@
 (defn xml-elem->ScienceKeywords
   "Returns a UMM science-keywords from a parsed XML structure"
   [id-elem]
-  (map iso-keyword->umm-science-keyword (xml-elem->keywords "theme" id-elem)))
-
+  (seq (map iso-keyword->umm-science-keyword (xml-elem->keywords "theme" id-elem))))
 
 (defn- keyword-type-attributes
   "Returns the keyword type attributes"

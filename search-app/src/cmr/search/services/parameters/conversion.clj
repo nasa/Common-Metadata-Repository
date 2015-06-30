@@ -72,14 +72,14 @@
              :browsable :boolean
              :two-d-coordinate-system :two-d-coordinate-system}})
 
-(def always-case-sensitive
+(def always-case-sensitive-fields
   "A set of parameters that will always be case sensitive"
   #{:concept-id :collection-concept-id})
 
 (defn case-sensitive-field?
   "Return true if the given field is a case-sensitive field"
   [field options]
-  (or (some? (always-case-sensitive field))
+  (or (contains? always-case-sensitive-fields field)
       (= "false" (get-in options [field :ignore-case]))))
 
 (defn pattern-field?
@@ -127,10 +127,8 @@
   (string-parameter->condition param value options))
 
 (defmethod parameter->condition :keyword
-  [concept-type param value options]
-  (let [pattern (pattern-field? param options)
-        keywords (str/lower-case value)]
-    (qm/text-condition :keyword keywords)))
+  [_ _ value _]
+    (qm/text-condition :keyword (str/lower-case value)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id

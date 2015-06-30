@@ -18,7 +18,13 @@
 
 (def valid-string-conditions
   "A set of the valid JSON Query string conditions"
-  #{:provider :entry-id :entry-title :keyword})
+  #{:provider :entry-id :entry-title :keyword :short-name :version :processing-level-id :concept-id
+    :platform :instrument :sensor :project :archive-center :spatial-keyword
+    :two-d-coordinate-system-name})
+
+(def valid-option-conditions
+  "A set of the valid JSON Query option conditions"
+  #{:ignore-case :pattern :value})
 
 (def valid-grouping-conditions
   "A set of the valid JSON Query grouping conditions"
@@ -29,6 +35,7 @@
   {:collection (set/union #{:science-keywords :any}
                           psk/science-keyword-fields
                           valid-string-conditions
+                          valid-option-conditions
                           valid-grouping-conditions)})
 
 (def query-condition-name->condition-type-map
@@ -36,6 +43,17 @@
   {:entry-title :string
    :entry-id :string
    :provider :string
+   :short-name :string
+   :version :string
+   :processing-level-id :string
+   :concept-id :string
+   :platform :string
+   :instrument :string
+   :sensor :string
+   :project :string
+   :archive-center :string
+   :spatial-keyword :string
+   :two-d-coordinate-system-name :string
    :keyword :keyword
    :or :or
    :and :and
@@ -47,6 +65,14 @@
   [condition-name]
   (condition-name query-condition-name->condition-type-map))
 
+(defn- case-sensitive-field?
+  "Return true if the given field should be searched case-sensitive"
+  ([field]
+   (case-sensitive-field? field {}))
+  ([field value-map]
+   (or (contains? pc/always-case-sensitive-fields field)
+       (= false (:ignore-case value-map)))))
+
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
   (fn [condition-name value]
@@ -55,13 +81,16 @@
 (defmethod parse-json-condition :default
   [condition-name value]
   (errors/internal-error!
-    (format "Could not find parameter handler for [%s]"
-            condition-name)))
+    (format "Could not find parameter handler for [%s]" condition-name)))
 
 (defmethod parse-json-condition :string
   [condition-name value]
-  ;; TODO handle case sensitivity and wildcards
-  (qm/string-condition condition-name value false false))
+  (if (map? value)
+    (qm/string-condition condition-name
+                         (:value value)
+                         (case-sensitive-field? condition-name value)
+                         (:pattern value))
+    (qm/string-condition condition-name value (case-sensitive-field? condition-name) false)))
 
 (defmethod parse-json-condition :keyword
   [_ value]
@@ -104,15 +133,17 @@
 (defn- validate-science-keywords
   "Validate that all of the keys in the science keyword search condition map are valid."
   [science-keywords-map]
-  (validate-names-helper (conj psk/science-keyword-fields :any)
+  (validate-names-helper (conj psk/science-keyword-fields :any :pattern :ignore-case)
                          (keys science-keywords-map)
                          msg/invalid-science-keyword-condition-msg))
 
 (defmethod parse-json-condition :science-keywords
-  [_ value]
+  [condition-name value]
   (validate-science-keywords value)
   ;; CMR-1765 extract case-sensitive and pattern
-  (psk/parse-nested-science-keyword-condition value false false))
+  (psk/parse-nested-science-keyword-condition value
+                                              (case-sensitive-field? condition-name value)
+                                              (:pattern value)))
 
 (defn- validate-json-conditions
   "Validates that the condition names in the query are valid"

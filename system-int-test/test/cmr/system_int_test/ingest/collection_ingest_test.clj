@@ -30,7 +30,13 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (ingest/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id)))))
+      (is (= 1 revision-id))))
+  (testing "ingest of a concept with a revision id"
+    (let [concept (dc/collection-concept {:revision-id 5})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+      (index/wait-until-indexed)
+      (is (= 5 revision-id))
+      (is (ingest/concept-exists-in-mdb? concept-id 5)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
@@ -245,16 +251,25 @@
     (is (= status 400))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
-;; Verify existing concept can be deleted and operation results in revision id 1 greater than
-;; max revision id of the concept prior to the delete
 (deftest delete-collection-test-old
-  (let [concept (dc/collection-concept {})
-        ingest-result (ingest/ingest-concept concept)
-        delete-result (ingest/delete-concept concept)
-        ingest-revision-id (:revision-id ingest-result)
-        delete-revision-id (:revision-id delete-result)]
-    (index/wait-until-indexed)
-    (is (= 1 (- delete-revision-id ingest-revision-id)))))
+  (testing "It should be possible to delete existing concept and the operation without revision id should
+           result in revision id 1 greater than max revision id of the concept prior to the delete"
+    (let [concept (dc/collection-concept {})
+          ingest-result (ingest/ingest-concept concept)
+          delete-result (ingest/delete-concept concept)
+          ingest-revision-id (:revision-id ingest-result)
+          delete-revision-id (:revision-id delete-result)]
+      (index/wait-until-indexed)
+      (is (= 1 (- delete-revision-id ingest-revision-id)))))
+  (testing "Deleting existing concept with a revision-id should respect the revision id"
+    (let [concept (dc/collection-concept {})
+          ingest-result (ingest/ingest-concept concept)
+          delete-result (ingest/delete-concept concept {:revision-id 5})
+          delete-revision-id (:revision-id delete-result)]
+      (index/wait-until-indexed)
+      (is (= 5 delete-revision-id))
+      (is (ingest/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
+
 
 (comment
 
@@ -388,11 +403,10 @@
                 "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
        :dif [(str "Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
-                  "starting with element 'Temporal_Coverage'. "
-                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_Citation, "
-                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel, "
-                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Discipline, "
-                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Parameters}' is expected.")]
+                  "starting with element 'Summary'. "
+                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_Language, "
+                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Originating_Center, "
+                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center}' is expected.")]
 
        :dif10 ["Line 1 - cvc-datatype-valid.1.2.3: 'A.000Z' is not a valid value of union type 'DateOrTimeOrEnumType'."
                "Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."

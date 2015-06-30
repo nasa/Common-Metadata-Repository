@@ -103,10 +103,10 @@
 (defn- search-response-headers
   "Generate headers for search response."
   [content-type results]
-  {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
-   CORS_ORIGIN_HEADER "*"
-   HITS_HEADER (str (:hits results))
-   TOOK_HEADER (str (:took results))})
+  (merge {CONTENT_TYPE_HEADER (mt/with-utf-8 content-type)
+          CORS_ORIGIN_HEADER "*"}
+         (when (:hits results) {HITS_HEADER (str (:hits results))})
+         (when (:took results) {TOOK_HEADER (str (:took results))})))
 
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
@@ -152,10 +152,10 @@
 
 (defn- search-response
   "Generate the response map for finding concepts by params or AQL."
-  [params results]
+  [{:keys [results result-format] :as response}]
   {:status 200
-   :headers (search-response-headers (mt/format->mime-type (:result-format params)) results)
-   :body (:results results)})
+   :headers (search-response-headers (mt/format->mime-type result-format) response)
+   :body results})
 
 (def options-response
   "Generate the response map for finding concepts by params or AQL."
@@ -176,7 +176,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with JSON %s and query parameters %s."
                         (:client-id context) (:result-format params) json-query params))
         results (query-svc/find-concepts-by-json-query context concept-type params json-query)]
-    (search-response params results)))
+    (search-response results)))
 
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and return the response"
@@ -190,7 +190,7 @@
                         (pr-str params)))
         search-params (lp/process-legacy-psa params body)
         results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-    (search-response params results)))
+    (search-response results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -229,7 +229,7 @@
         _ (info (format "Searching for concepts from client %s in format %s with AQL: %s and query parameters %s."
                         (:client-id context) (:result-format params) aql params))
         results (query-svc/find-concepts-by-aql context params aql)]
-    (search-response params results)))
+    (search-response results)))
 
 (defn- find-concept-by-cmr-concept-id
   "Invokes query service to find concept metadata by cmr concept id and returns the response"
@@ -239,9 +239,8 @@
                                                  mt/xml)
         params (assoc params :result-format result-format)
         concept-id (path-w-extension->concept-id path-w-extension)
-        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
-        {:keys [metadata results format]} (query-svc/find-concept-by-id context result-format concept-id)]
-    (search-response params {:results (or results metadata)})))
+        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))]
+    (search-response (query-svc/find-concept-by-id context result-format concept-id))))
 
 (defn- find-concept-revisions
   "Calls query service to get concept revisions for the given parameters"

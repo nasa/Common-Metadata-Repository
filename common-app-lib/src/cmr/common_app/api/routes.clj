@@ -99,6 +99,20 @@
        (= "true" (get params "pretty"))
        (= "true" (get headers "cmr-pretty"))))))
 
+(defn pretty-print-json
+  [json-str]
+  (-> json-str
+      json/parse-string
+      (json/generate-string {:pretty true})))
+
+(defn update-response-body-with-fn
+  [response f]
+  (let [new-body (f (:body response))]
+    (-> response
+        (assoc-in [:body] new-body)
+        (assoc-in [:headers "Content-Length"] (str (count new-body))))))
+
+
 (defn- pretty-print-body
   "Update the body of the response to a pretty printed string based on the content type"
   [response]
@@ -106,14 +120,15 @@
         find-re (fn [re] (and mime-type (re-find re mime-type)))]
     (if (string? (:body response))
       (cond
-        (find-re #"application/.*json.*") (update-in response [:body]
-                                                     (fn [json-str]
-                                                       (-> json-str
-                                                           json/parse-string
-                                                           (json/generate-string {:pretty true}))))
-        (find-re #"application/.*xml.*") (update-in response [:body] cx/pretty-print-xml)
+        (find-re #"application/.*json.*")
+        (update-response-body-with-fn response pretty-print-json)
+
+        (find-re #"application/.*xml.*")
+        (update-response-body-with-fn response cx/pretty-print-xml)
+
         :else response)
-      ((ring-json/wrap-json-response identity {:pretty true}) response))))
+
+      (update-response-body-with-fn response #(json/generate-string % {:pretty true})))))
 
 (defn pretty-print-response-handler
   "Middleware which pretty prints the response if the parameter pretty in the

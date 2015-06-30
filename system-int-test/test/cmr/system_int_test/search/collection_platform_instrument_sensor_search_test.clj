@@ -63,7 +63,22 @@
            [coll7] ["platform_x"] {:ignore-case false}
            [coll1 coll2 coll3] "platform_Sn %" {:pattern true}
            [coll4 coll5] "platform_Sn_" {:pattern true}
-           [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))))
+           [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
+
+    (testing "Search collections by platform using JSON query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll1 coll2] {:platform "platform_Sn A"}
+           [coll6 coll7] {:platform "platform_x"}
+           [] {:platform "BLAH"}
+           [coll9] {:platform "SMAP"}
+           [coll1 coll2 coll4] {:or [{:platform "platform_SnA"} {:platform "platform_Sn A"}]}
+           [coll2] {:and [{:platform "platform_Sn B"} {:platform "platform_Sn A"}]}
+           [coll6 coll7] {:platform {:value "platform_x" :ignore-case true}}
+           [coll7] {:platform {:value "platform_x" :ignore-case false}}
+           [coll1 coll2 coll3] {:platform {:value "platform_Sn *" :pattern true}}
+           [coll4 coll5] {:platform {:value "platform_Sn?" :pattern true}}))))
 
 (deftest search-by-instrument-short-names
   (let [i1 (dc/instrument {:short-name "instrument_Sn A"})
@@ -127,7 +142,25 @@
            [coll8] ["instrument_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6] "instrument_Sn %" {:pattern true}
            [coll4 coll5] "instrument_Sn_" {:pattern true}
-           [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))))
+           [coll2 coll6] ["instrument_Sn B" "instrument_Sn A"] {:and true}))
+
+    (testing "Search collections by instrument using JSON query"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll1 coll2 coll6] {:instrument "instrument_Sn A"}
+           [coll7 coll8] {:instrument "instrument_x"}
+           [] {:instrument "BLAH"}
+           [coll10] {:instrument "SMAP L-BAND RADAR"}
+           [coll10] {:and [{:instrument "SMAP L-BAND RADAR"}
+                           {:instrument "SMAP L-BAND RADIOMETER"}]}
+           [coll1 coll2 coll4 coll6] {:or [{:instrument "instrument_SnA"}
+                                           {:instrument "instrument_Sn A"}]}
+           [coll2 coll6] {:and [{:instrument "instrument_Sn B"} {:instrument "instrument_Sn A"}]}
+           [coll7 coll8] {:instrument {:value "instrument_x" :ignore-case true}}
+           [coll8] {:instrument {:value "instrument_x" :ignore-case false}}
+           [coll1 coll2 coll3 coll6] {:instrument {:value "instrument_Sn *" :pattern true}}
+           [coll4 coll5] {:instrument {:value "instrument_Sn?" :pattern true}}))))
 
 (deftest search-by-sensor-short-names
   (let [s1 (dc/sensor {:short-name "sensor_Sn A"})
@@ -194,5 +227,19 @@
            [coll8] ["sensor_x"] {:ignore-case false}
            [coll1 coll2 coll3 coll6 coll7] "sensor_Sn %" {:pattern true}
            [coll4 coll5] "sensor_Sn_" {:pattern true}
-           [coll2 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:and true}))))
+           [coll2 coll6 coll7] ["sensor_Sn B" "sensor_Sn A"] {:and true}))
+
+    (testing "Search collections by sensor with JSON query"
+      (are [items search]
+             (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll1 coll2 coll6 coll7] {:sensor "sensor_Sn A"}
+           [coll8 coll9] {:sensor "sensor_x"}
+           [] {:sensor "BLAH"}
+           [coll1 coll2 coll4 coll6 coll7] {:or [{:sensor "sensor_SnA"} {:sensor "sensor_Sn A"}]}
+           [coll2 coll6 coll7] {:and [{:sensor "sensor_Sn B"} {:sensor "sensor_Sn A"}]}
+           [coll8 coll9] {:sensor {:value "sensor_x" :ignore-case true}}
+           [coll8] {:sensor {:value "sensor_x" :ignore-case false}}
+           [coll1 coll2 coll3 coll6 coll7] {:sensor {:value "sensor_Sn *" :pattern true}}
+           [coll4 coll5] {:sensor {:value "sensor_Sn?" :pattern true}}))))
 

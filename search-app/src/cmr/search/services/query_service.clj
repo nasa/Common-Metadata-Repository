@@ -13,6 +13,7 @@
   - Convert query results into requested format"
   (:require [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.models.query :as qm]
+            [cmr.common.mime-types :as mt]
 
             ;; parameter-converters
             ;; These must be required here to make multimethod implementations available.
@@ -143,7 +144,8 @@
     (debug "query-creation-time:" query-creation-time
            "query-execution-time:" query-execution-time
            "result-gen-time:" result-gen-time)
-    {:results result-str :hits (:hits results) :took took :total-took total-took}))
+    {:results result-str :hits (:hits results) :took took :total-took total-took
+     :result-format (:result-format query)}))
 
 (deftracefn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
@@ -213,12 +215,13 @@
           results (qe/execute-query context query)]
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
-      {:results (single-result->response context query results)})
+      {:results (single-result->response context query results)
+       :result-format result-format})
     ;; else
     (let [concept (first (t/get-latest-formatted-concepts context [concept-id] result-format))]
       (when-not concept
         (throw-id-not-found concept-id))
-      concept)))
+      {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))})))
 
 (deftracefn find-concept-revisions
   "Uses the metadata-db to find concept revisions for the given parameters"

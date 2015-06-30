@@ -42,7 +42,7 @@
                  :raw? is-raw
                  :http-options {:body metadata
                                 :content-type (:format concept)
-                                :headers {"Revision-Id" revision-id}
+                                :headers {"cmr-revision-id" revision-id}
                                 :accept :json}}))))
 (defn-timed delete-concept
   ([context concept]
@@ -53,7 +53,7 @@
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
                  :raw? is-raw
-                 :http-options {:headers {"Revision-Id" revision-id}
+                 :http-options {:headers {"cmr-revision-id" revision-id}
                                 :accept :json}}))))
 
 (defn get-ingest-health-fn

@@ -76,5 +76,25 @@
            ;;ignore case
            [coll7] "detroit" {}
            [coll5 coll7] "detroit" {:ignore-case true}
-           [coll7] "detroit" {:ignore-case false}))))
+           [coll7] "detroit" {:ignore-case false}))
 
+    (testing "Search collections by spatial keywords using JSON Query."
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           [coll3 coll4] {:spatial-keyword "DC"}
+           [coll6] {:spatial-keyword "LL"}
+           [coll4] {:spatial-keyword "LA"}
+           [coll5 coll7] {:and [{:spatial-keyword "Detroit"}]}
+           [coll5 coll6 coll7] {:or [{:spatial-keyword "LL"} {:spatial-keyword "Detroit"}]}
+           [] {:and [{:spatial-keyword "LL"} {:spatial-keyword "Detroit"}]}
+           [coll1 coll2 coll5 coll6 coll7] {:not {:spatial-keyword "DC"}}
+           [] {:spatial-keyword "BLAH"}
+
+           ;; pattern
+           [coll3 coll4 coll5 coll7] {:spatial-keyword {:value "D*" :pattern true}}
+           [coll4 coll6] {:spatial-keyword {:value "L?" :pattern true}}
+           ;;ignore case
+           [coll5 coll7] {:spatial-keyword {:value "detroit"}}
+           [coll5 coll7] {:spatial-keyword {:value "detroit" :ignore-case true}}
+           [coll7] {:spatial-keyword {:value "detroit" :ignore-case false}}))))
