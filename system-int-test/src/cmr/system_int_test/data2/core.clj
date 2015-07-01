@@ -58,6 +58,28 @@
             (when (:revision-id item)
               {:revision-id (:revision-id item)})))))
 
+(defn delete
+  "Delete the catalog item."
+  ([provider-id item]
+   (delete provider-id item {}))
+  ([provider-id item options]
+   (let [{:keys [token allow-failure?]} options
+         response (ingest/tombstone-concept (item->concept (assoc item :provider-id provider-id)))
+         status (:status response)]
+     ;; This allows this to be used from many places where we don't expect a failure but if there is
+     ;; one we'll be alerted immediately instead of through a side effect like searches failing.
+     (when (and (not allow-failure?) (not= status 200))
+       (throw (Exception. (str "Ingest failed when expected to succeed: "
+                               (pr-str response)))))
+
+     (if (= 200 status)
+       (assoc item
+              :status status
+              :provider-id provider-id
+              :concept-id (:concept-id response)
+              :revision-id (:revision-id response))
+       response))))
+
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it.
   Accepts a map of some optional arguments. The options are:
