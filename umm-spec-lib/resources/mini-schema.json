@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "EntryIdType": {
+      "type": "object",
+      "properties": {
+        "Version": {
+          "description": "The version of the unique identifier.",
+          "$ref": "#/definitions/VersionType"
+        },
+        "Id": {
+          "$ref": "#/definitions/IdType"
+        },
+        "Authority": {
+          "description": "The Authority (who created it or owns it) of the unique identifier.",
+          "$ref": "#/definitions/AuthorityType"
+        }
+      },
+      "required": ["Id"]
+    },
+    "VersionType": {
+      "description": "The version of the unique identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "AuthorityType": {
+      "description": "The Authority (who created it or owns it) of a unique identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "IdType": {
+      "description": "The unique identifier.",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

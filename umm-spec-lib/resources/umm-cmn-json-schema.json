@@ -1,0 +1,1361 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "LanguageType": {
+      "type": "object",
+      "description": "Describes the language used in the preparation, storage, and description of the data. It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
+      "properties": {}
+    },
+    "MetadataStandardType": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "$ref": "#/definitions/MetadataStandardNameEnum"
+        },
+        "Version": {
+          "$ref": "#/definitions/MetadataStandardVersionEnum"
+        }
+      },
+      "required": ["Name", "Version"]
+    },
+    "LineageType": {
+      "type": "object",
+      "description": "Describes the Records the data and the changes that happened on that date for the metadata or data (the metadata or data is described by the scope element.)",
+      "properties": {
+        "Scope": {
+          "description": "Describes the data held as either describing the metadata or data.",
+          "$ref": "#/definitions/LineageScopeEnum"
+        },
+        "Date": {
+          "description": "This encaptulates all of the changes for a specific date.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LineageDateType"
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["Scope"]
+    },
+    "LineageDateType": {
+      "type": "object",
+      "description": "Encapsulates the data that describes the change that was made to either the metadata or data.",
+      "properties": {
+        "Date": {
+          "description": "The date something changed with the metadata or data.",
+          "format": "date",
+          "type": "string"
+        },
+        "Type": {
+          "description": "Documents the type of change that happened.",
+          "$ref": "#/definitions/LineageDateEnum"
+        },
+        "Description": {
+          "description": "Describes the change.",
+          "type": "string"
+        },
+        "Responsibility": {
+          "description": "Documents who made the change.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResponsibilityType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Date", "Type", "Responsibility"]
+    },
+    "DatesType": {
+      "type": "object",
+      "description": "Specifies the date and its type.",
+      "properties": {
+        "Date": {
+          "description": "This is the date a creation, update, or deletion occurred.",
+          "format": "date",
+          "type": "string"
+        },
+        "Type": {
+          "description": "This is the type of date: create, update, review, delete.",
+          "$ref": "#/definitions/LineageDateEnum"
+        }
+      },
+      "required": ["Date", "Type"]
+    },
+    "EntryIdType": {
+      "type": "object",
+      "properties": {
+        "Version": {
+          "description": "The version of the unique identifier.",
+          "$ref": "#/definitions/VersionType"
+        },
+        "Id": {
+          "$ref": "#/definitions/IdType"
+        },
+        "Authority": {
+          "description": "The Authority (who created it or owns it) of the unique identifier.",
+          "$ref": "#/definitions/AuthorityType"
+        }
+      },
+      "required": ["Id"]
+    },
+    "ResponsibilityType": {
+      "type": "object",
+      "description": "Defines a responsibility by role which is either an organization such as a data center, or institution responsible for distributing, archiving, or processing the data, etc., or a person such as an Investigator, a Technical Contact, Metadata Author, etc.",
+      "properties": {
+        "Role": {
+          "description": "This is the responsibility role.",
+          "$ref": "#/definitions/ResponsibilityRoleEnum"
+        },
+        "Party": {
+          "description": "This is the responsibility party - either a person or an organization.",
+          "$ref": "#/definitions/PartyType"
+        }
+      },
+      "required": ["Role", "Party"]
+    },
+    "PartyType": {
+      "type": "object",
+      "properties": {
+        "OrganizationName": {
+          "$ref": "#/definitions/OrganizationNameType"
+        },
+        "Person": {
+          "$ref": "#/definitions/PersonType"
+        },
+        "ServiceHours": {
+          "description": "Time period when individuals can speak to the organization or person.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "ContactInstructions": {
+          "description": "Supplemental instructions on how or when to contact the organization or person.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Contact": {
+          "description": "Contacts including phone, fax, email, url, etc.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContactType"
+          },
+          "minItems": 0
+        },
+        "Address": {
+          "description": "The address of the organization or person",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AddressType"
+          },
+          "minItems": 0
+        },
+        "RelatedUrl": {
+          "description": "The URL of the organization or individual",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RelatedUrlType"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "OrganizationNameType": {
+      "type": "object",
+      "description": "consists of the organization ShortName and LongName, which is the name of the organization that distributes, archives, or processes the data.",
+      "properties": {
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "LongName": {
+          "$ref": "#/definitions/LongNameType"
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "PersonType": {
+      "type": "object",
+      "description": "defines the point of contact for more information about the data set or the metadata. The contact personnel are defined by the Role, which include: Investigator: The person who headed the investigation or experiment that resulted in the acquisition of the data described (i.e., Principal Investigator, Experiment Team Leader) Technical Contact: The person who is knowledgeable about the technical content of the data (quality, processing methods, units, available software for further processing) Metadata Author: The person who is responsible for the content of the Metadata. If the responsibility shifts from the original author to another person, the Metadata Author field should be updated to the new responsible person.",
+      "properties": {
+        "FirstName": {
+          "description": "First name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "MiddleName": {
+          "description": "Middle name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "LastName": {
+          "description": "Last name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      },
+      "required": ["LastName"]
+    },
+    "ContactType": {
+      "type": "object",
+      "description": "consists of a contact. A contact, can be phone, fax, email, url, etc.",
+      "properties": {
+        "Type": {
+          "description": "This states the type of contact - phone, fax, email, url, etc.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Value": {
+          "description": "This is the contact phone number, email address, url, etc.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "AddressType": {
+      "type": "object",
+      "description": "This entity contains the address details for each contact.",
+      "properties": {
+        "StreetAddress": {
+          "description": "An address line for the address, used for mailing or physical addresses of organizations or individuals who serve as points of contact.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 0
+        },
+        "City": {
+          "description": "The city of the person or organization.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "StateProvince": {
+          "description": "The state or province of the address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "PostalCode": {
+          "description": "The zip or other postal code of the address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "Country": {
+          "description": "The country of the address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      }
+    },
+    "RelatedUrlType": {
+      "type": "object",
+      "description": "Field specifies links to Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "properties": {
+        "Description": {
+          "description": "Provides information about the resource defined by the URL",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "ContentType": {
+          "$ref": "#/definitions/ContentTypeType"
+        },
+        "Protocol": {
+          "description": "The protocol to the resource associated with the URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "URL": {
+          "description": "The URL to the resource associated with the data set.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 1
+        },
+        "Title": {
+          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
+          "$ref": "#/definitions/TitleType"
+        },
+        "MimeType": {
+          "description": "The mime type of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "Caption": {
+          "description": "The caption of the online resource.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "FileSize": {
+          "description": "The size of a download or site.",
+          "$ref": "#/definitions/FileSizeType"
+        }
+      },
+      "required": ["URL"]
+    },
+    "ContentTypeType": {
+      "type": "object",
+      "description": "Describes the type of the URL.",
+      "properties": {
+        "Type": {
+          "description": "The type of URL. These are keywords that a user selects",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Subtype": {
+          "description": "Describes the sub type of the URL. These are keywords that a user selects",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Type"]
+    },
+    "FileSizeType": {
+      "type": "object",
+      "properties": {
+        "Size": {
+          "description": "The size of the download or site.",
+          "type": "number"
+        },
+        "Unit": {
+          "description": "Unit of the size type. If no size is specified MegaBytes is assumed. This should be changed to an enumeration type",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4
+        }
+      },
+      "required": ["Size"]
+    },
+    "ResourceCitationType": {
+      "type": "object",
+      "description": "This element permits the user to properly cite the provider and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the service is listed here.",
+      "properties": {
+        "Version": {
+          "description": "The version of the citation.",
+          "$ref": "#/definitions/VersionType"
+        },
+        "RelatedUrl": {
+          "description": "The URL of the online resource containing the data set.",
+          "$ref": "#/definitions/RelatedUrlType"
+        },
+        "Title": {
+          "description": "The title of the data; this may be the same as Entry Title.",
+          "$ref": "#/definitions/TitleType"
+        },
+        "Creator": {
+          "description": "The name of the organization(s) or individual(s) with primary intellectual responsibility for the data's development.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Editor": {
+          "description": "The individual(s) responsible for changing the data.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "SeriesName": {
+          "description": "The name of the data series, or aggregate data of which the data is a part.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "ReleaseDate": {
+          "description": "The date when the data was made available for release.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "ReleasePlace": {
+          "description": "The name of the city (and state or province and country if needed) where the data set was made available for release.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Publisher": {
+          "description": "The name of the individual or organization that made the data available for release.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "IssueIdentification": {
+          "description": "The volume or issue number of the publication (if applicable).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "DataPresentationForm": {
+          "description": "The mode in which the data are represented, e.g. atlas, image, profile, text, etc.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "OtherCitationDetails": {
+          "description": "Additional free-text citation information.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "DOI": {
+          "description": "The Digital Object Identifier (DOI) of a data set.",
+          "$ref": "#/definitions/DoiType"
+        }
+      }
+    },
+    "DoiType": {
+      "type": "object",
+      "description": "This element describes the digital object identifier.",
+      "properties": {
+        "Authority": {
+          "description": "The authority who created the DOI.",
+          "$ref": "#/definitions/AuthorityType"
+        },
+        "DOI": {
+          "description": "The Digitial Object Identifier.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["DOI"]
+    },
+    "AccessConstraintsType": {
+      "type": "object",
+      "description": "Field allows the author to provide information about any constraints for accessing the data set. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the data set. Some words that may be used in this field include: Public, In-house, Limited, Additional detailed instructions on how to access the data can be entered in this field.",
+      "properties": {
+        "Description": {
+          "description": "Description of the constraint",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "Value": {
+          "description": "Value of the constraint",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["Description", "Value"]
+    },
+    "MetadataAssociationType": {
+      "type": "object",
+      "description": "This element is used to identify other services, collections, visualizations, granules, and other metadata types and resources that are associated with or dependent on the data described by the metadata. This element is also used to identify a parent metadata record if it exists. This usage should be reserved for instances where a group of metadata records are subsets that can be better represented by one parent metadata record, which describes the entire set. In some instances, a child may point to more than one parent. The EntryId is the same as the element described elsewhere in this document where it contains and ID, and Version.",
+      "properties": {
+        "Type": {
+          "description": "Type is used to indicate the basis (justification) for relating one resource to another",
+          "$ref": "#/definitions/MetadataAssociateTypeEnum"
+        },
+        "Description": {
+          "description": "The ProviderName of the metadata record that is associated with this record.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "EntryId": {
+          "description": "ID of the metadata record that is associated with this record.",
+          "$ref": "#/definitions/EntryIdType"
+        },
+        "ProviderId": {
+          "description": "The ProviderName of the metadata record that is associated with this record.",
+          "$ref": "#/definitions/ProviderIdEnum"
+        }
+      },
+      "required": ["EntryId", "ProviderId"]
+    },
+    "PublicationReferenceType": {
+      "type": "object",
+      "description": "This element describes key bibliographic citations pertaining to the data.",
+      "properties": {
+        "RelatedUrl": {
+          "description": "The URL of the online resource containing the data set.",
+          "$ref": "#/definitions/RelatedUrlType"
+        },
+        "Title": {
+          "description": "The title of the publication.",
+          "$ref": "#/definitions/TitleType"
+        },
+        "Publisher": {
+          "description": "The publisher of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "DOI": {
+          "description": "The Digital Object Identifier (DOI) of the publication.",
+          "$ref": "#/definitions/DoiType"
+        },
+        "Author": {
+          "description": "The author of the publication reference.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "PublicationDate": {
+          "description": "The date of the publication.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Series": {
+          "description": "The name of the series.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Edition": {
+          "description": "The edition of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Volume": {
+          "description": "The publication volume number.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Issue": {
+          "description": "The issue of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ReportNumber": {
+          "description": "The report number of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "PublicationPlace": {
+          "description": "The pubication place of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Pages": {
+          "description": "The publication pages that are relevant.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ISBN": {
+          "description": "The ISBN of the publication.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 13
+        },
+        "OtherReferenceDetails": {
+          "description": "Additional free-text reference information.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    },
+    "KeywordUuidStringType": {
+      "type": "object",
+      "properties": {}
+    },
+    "ScienceKeywordType": {
+      "type": "object",
+      "description": "This element enables specification of Earth science keywords.",
+      "properties": {
+        "Category": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Topic": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Term": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel1": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel2": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel3": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "DetailedVariable": {
+          "$ref": "#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Category", "Topic", "Term"]
+    },
+    "AdditionalAttributeType": {
+      "type": "object",
+      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined in this mapping).",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Description": {
+          "description": "This attribute provides a description for the additional_attribute_name.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Value": {
+          "description": "This attribute contains the value ofthe product specific attribute (additional attribute) for all granules across a given collection",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "DataType": {
+          "description": "Data type of parameter value",
+          "$ref": "#/definitions/DataTypeEnum"
+        },
+        "MeasurementResolution": {
+          "description": "This attribute will be used to identify the smallest unit increment to which the parameter value is measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterRangeBegin": {
+          "description": "This attribute provides the minimum value of parameter over whole collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterRangeEnd": {
+          "description": "This attribute provides the maximum value of parameter over whole collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterUnitsOfMeasure": {
+          "description": "The standard unit of measurement for a not-core attribute. AVHRR: unit of geophysical parameter-units of geophysical parameter.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterValueAccuracy": {
+          "description": "An estimate of the accuracy of the assignment of attribute value. AVHRR: Measurement error or precision-measurement error or precision of a data product parameter. This can be specified in percent or the unit with which the parameter is measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ValueAccuracyExplanation": {
+          "description": "This defines the method used for determining the parameter value accuracy that is given for this non core attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Group": {
+          "description": "Group identifies a namespace for the value.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "UpdateDate": {
+          "description": "The date this attribute was updated.",
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "DistributionType": {
+      "type": "object",
+      "description": "This element describes media options, size, data format, and fees involved in distributing or accessing the data.",
+      "properties": {
+        "DistributionMedia": {
+          "description": "The distribution media of the data or service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "DistributionSize": {
+          "description": "The size of the distribution package of the data or service.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "DistributionFormat": {
+          "description": "The distribution format of the data.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Fees": {
+          "description": "The fee for ordering the data or service.",
+          "$ref": "#/definitions/DollarAmountType"
+        }
+      }
+    },
+    "PlatformType": {
+      "type": "object",
+      "description": "This element describes the relevant platforms used to acquire the data. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "properties": {
+        "Type": {
+          "description": "The most relevant platform type.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "LongName": {
+          "$ref": "#/definitions/LongNameType"
+        },
+        "Characteristics": {
+          "description": "The characteristics of platform specific attributes. The characteristic names must be unique on this platform; however the names do not have to be unique across platforms.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CharacteristicType"
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "CharacteristicType": {
+      "type": "object",
+      "description": "This entity is used to define characteristics.",
+      "properties": {
+        "Name": {
+          "description": "The name of the characteristic attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Description": {
+          "description": "Description of the Characteristic attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Value": {
+          "description": "The value of the Characteristic attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Unit": {
+          "description": "Units associated with the Characteristic attribute value.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "DataType": {
+          "description": "The datatype of the Characteristic/attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["Name", "Description", "DataType", "Unit", "Value"]
+    },
+    "InstrumentType": {
+      "type": "object",
+      "description": "This entity registers the device used to measure or record data, including direct human observation. In cases where instruments have a single sensor or the instrument and sensor are used synonymously (e.g. AVHRR) the both Instrument and Sensor should be recorded. The Sensor information is represented by some other entities.",
+      "properties": {
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "LongName": {
+          "$ref": "#/definitions/LongNameType"
+        },
+        "Characteristics": {
+          "description": "The characteristics of this instrument expressed as custom attributes. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CharacteristicType"
+          },
+          "minItems": 0
+        },
+        "Technique": {
+          "description": "The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal Emission and Reflective Radiometer, Clouds and the Earth's Radiant Energy System, Human Observation).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "NumberOfSensors": {
+          "description": "Number of sensors used on the instrument when acquire the granule data.",
+          "type": "integer"
+        },
+        "Sensors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SensorType"
+          },
+          "minItems": 0
+        },
+        "OperationalMode": {
+          "description": "The operation mode applied on the instrument when acquire the granule data.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "SensorType": {
+      "type": "object",
+      "description": "This entity holds the referential information for collection source/sensor configuration including sensor parameters setting such as technique etc.",
+      "properties": {
+        "ShortName": {
+          "$ref": "#/definitions/ShortNameType"
+        },
+        "LongName": {
+          "$ref": "#/definitions/LongNameType"
+        },
+        "Characteristics": {
+          "description": "The characteristics of this sensor expressed as custom attributes. The characteristic names must be unique on this sensor; however the names do not have to be unique across sensors.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CharacteristicType"
+          },
+          "minItems": 0
+        },
+        "Technique": {
+          "description": "Technique applied for this sensor in the configuration.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "ProjectType": {
+      "type": "object",
+      "description": "This entity contains attributes describing the scientific endeavor(s) to which the collection is associated. Scientific endeavors include campaigns, projects, interdisciplinary science investigations, missions, field experiments, etc.",
+      "properties": {
+        "ShortName": {
+          "description": "The unique identifier by which a project or campaign/experiment is known. The campain/project is the scientific endeavor associated with the acquisition of the collection. Collections may be associated with multiple campaigns.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "LongName": {
+          "description": "The expanded name of the campaign/experiment (e.g. Global climate observing system).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Campaign": {
+          "description": "The name of the campaign/experiment (e.g. Global climate observing system).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 0
+        },
+        "StartDate": {
+          "description": "The starting date of the campaign.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndDate": {
+          "description": "The ending data of the campaign.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "TemporalExtentType": {
+      "type": "object",
+      "description": "This class contains attributes, which describe the temporal range of a specific collection. This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date Time",
+      "properties": {
+        "TemporalRangeType": {
+          "description": "This attribute tells the system and ultimately the end user how temporal coverage is specified for the collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "PrecisionOfSeconds": {
+          "description": "The precision (position in number of places to right of decimal point) of seconds used in measurement.",
+          "type": "integer"
+        },
+        "EndsAtPresentFlag": {
+          "description": "This attribute will denote that a data collection which covers, temporally, a discontinuous range, currently ends at the present date. This way, the granules, which comprise the data collection, that are continuously being added to inventory need not update the data collection metadata for each one.",
+          "type": "boolean"
+        },
+        "RangeDateTime": {
+          "description": "Stores the start and end date/time of a collection.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RangeDateTimeType"
+          },
+          "minItems": 1
+        },
+        "SingleDateTime": {
+          "type": "array",
+          "items": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "PeriodicDateTime": {
+          "description": "This entity contains the name of the temporal period in addition to the date, time, duration unit, and value, and cycle duration unit and value. Used at the collection level to describe a collection having granules, which cover a regularly occurring period.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PeriodicDateTimeType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "RangeDateTimeType": {
+      "type": "object",
+      "description": "Stores the start and end date/time of a collection.",
+      "properties": {
+        "BeginningDateTime": {
+          "description": "The time when the temporal coverage period being described began.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndingDateTime": {
+          "description": "The time of the temporal coverage period being described ended.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": ["BeginningDateTime"]
+    },
+    "PeriodicDateTimeType": {
+      "type": "object",
+      "description": "This entity contains the name of the temporal period in addition to the date, time, duration unit, and value, and cycle duration unit and value. Used at the collection level to describe a collection having granules, which cover a regularly occurring period.",
+      "properties": {
+        "Name": {
+          "description": "The name given to the recurring time period. e.g. 'spring - north hemi.'",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "StartDate": {
+          "description": "This attribute provides the date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "EndDate": {
+          "description": "This attribute provides the date (day and time) of the end occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "DurationUnit": {
+          "description": "The unit specification for the period duration.",
+          "$ref": "#/definitions/DurationUnitEnum"
+        },
+        "DurationValue": {
+          "description": "The number of PeriodDurationUnits in the RegularPeriodic period. e.g. the RegularPeriodic event 'Spring-North Hemi' might have a PeriodDurationUnit='MONTH' PeriodDurationValue='3' PeriodCycleDurationUnit='YEAR' PeriodCycleDurationValue='1' indicating that Spring-North Hemi lasts for 3 months and has a cycle duration of 1 year. The unit for the attribute is the value of the attribute PeriodDurationValue.",
+          "type": "integer"
+        },
+        "PeriodCycleDurationUnit": {
+          "description": "The unit specification of the period cycle duration.",
+          "$ref": "#/definitions/DurationUnitEnum"
+        },
+        "PeriodCycleDurationValue": {
+          "type": "integer"
+        }
+      },
+      "required": ["Name", "StartDate", "EndDate", "DurationUnit", "DurationValue", "PeriodCycleDurationUnit", "PeriodCycleDurationValue"]
+    },
+    "SpatialExtentType": {
+      "type": "object",
+      "description": "Specifies the geographic and vertical (altitude, depth) coverage of the data.",
+      "properties": {
+        "SpatialCoverageType": {
+          "description": "This attribute denotes whether the collection's spatial coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.",
+          "$ref": "#/definitions/SpatialCoverageTypeEnum"
+        },
+        "HorizontalSpatialDomain": {
+          "$ref": "#/definitions/HorizontalSpatialDomainType"
+        },
+        "VerticalSpatialDomain": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerticalSpatialDomainType"
+          },
+          "minItems": 0
+        },
+        "OrbitParameters": {
+          "$ref": "#/definitions/OrbitParametersType"
+        },
+        "GranuleSpatialRepresentation": {
+          "$ref": "#/definitions/GranuleSpatialRepresentationEnum"
+        }
+      },
+      "required": ["GranuleSpatialRepresentation"]
+    },
+    "HorizontalSpatialDomainType": {
+      "type": "object",
+      "description": "This entity holds collection horizontal spatial coverage data.",
+      "properties": {
+        "ZoneIdentifier": {
+          "description": "The appropriate numeric or alpha code used to identify the various zones in this grid coordinate system.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Geometry": {
+          "$ref": "#/definitions/GeometryType"
+        }
+      },
+      "required": ["Geometry"]
+    },
+    "GeometryType": {
+      "type": "object",
+      "properties": {
+        "CoordinateSystem": {
+          "$ref": "#/definitions/CoordinateSystemEnum"
+        },
+        "TODOMultiChoice": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "Point": {
+                "$ref": "#/definitions/PointType"
+              },
+              "BoundingRectangle": {
+                "$ref": "#/definitions/BoundingRectangleType"
+              },
+              "GPolygon": {
+                "$ref": "#/definitions/GPolygonType"
+              },
+              "Line": {
+                "$ref": "#/definitions/LineType"
+              }
+            }
+          }
+        }
+      }
+    },
+    "PointType": {
+      "type": "object",
+      "description": "The longitude and latitude value of a spatially referenced pointer in degree.",
+      "properties": {
+        "Longitude": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "Latitude": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["Longitude", "Latitude"]
+    },
+    "BoundingRectangleType": {
+      "type": "object",
+      "properties": {
+        "CenterPoint": {
+          "$ref": "#/definitions/PointType"
+        },
+        "WestBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "NorthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        },
+        "EastBoundingCoordinate": {
+          "$ref": "#/definitions/LongitudeType"
+        },
+        "SouthBoundingCoordinate": {
+          "$ref": "#/definitions/LatitudeType"
+        }
+      },
+      "required": ["WestBoundingCoordinate", "NorthBoundingCoordinate", "EastBoundingCoordinate", "SouthBoundingCoordinate"]
+    },
+    "GPolygonType": {
+      "type": "object",
+      "properties": {
+        "CenterPoint": {
+          "$ref": "#/definitions/PointType"
+        },
+        "Boundary": {
+          "$ref": "#/definitions/BoundaryType"
+        },
+        "ExclusiveZone": {
+          "$ref": "#/definitions/ExclusiveZoneType"
+        }
+      },
+      "required": ["Boundary"]
+    },
+    "BoundaryType": {
+      "type": "object",
+      "description": "The boundary representing the outer ring of the GPolygon.",
+      "properties": {
+        "Point": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 3
+        }
+      }
+    },
+    "ExclusiveZoneType": {
+      "type": "object",
+      "description": "Contains the excluded boundaries from the GPolygon.",
+      "properties": {
+        "Boundary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundaryType"
+          },
+          "minItems": 1
+        }
+      },
+      "required": ["Boundary"]
+    },
+    "LineType": {
+      "type": "object",
+      "properties": {
+        "Point": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PointType"
+          },
+          "minItems": 2
+        },
+        "CenterPoint": {
+          "$ref": "#/definitions/PointType"
+        }
+      }
+    },
+    "VerticalSpatialDomainType": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "description": "This attribute describes the type of the area of vertical space covered by the locality.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Value": {
+          "description": "This attribute describes the extent of the area of vertical space covered by the granule. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["Type", "Value"]
+    },
+    "OrbitParametersType": {
+      "type": "object",
+      "description": "Orbit parameters for the collection used by the Orbital Backtrack Algorithm.",
+      "properties": {
+        "SwathWidth": {
+          "description": "Width of the swath at the equator in Kilometers.",
+          "type": "number"
+        },
+        "Period": {
+          "description": "Orbital period in decimal minutes.",
+          "type": "number"
+        },
+        "InclinationAngle": {
+          "description": "Inclination of the orbit. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite. Data Unit: Degree.",
+          "type": "number"
+        },
+        "NumberOfOrbits": {
+          "description": "Indicates the number of orbits.",
+          "type": "number"
+        },
+        "StartCircularLatitude": {
+          "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+          "type": "number"
+        }
+      },
+      "required": ["SwathWidth", "Period", "InclinationAngle", "NumberOfOrbits"]
+    },
+    "TilingIdentificationSystemType": {
+      "type": "object",
+      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc. This platform includes zero or more instruments",
+      "properties": {
+        "TilingIdentificationSystemName": {
+          "type": "string"
+        },
+        "Coordinate1": {
+          "$ref": "#/definitions/TilingCoordinateType"
+        },
+        "Coordinate2": {
+          "$ref": "#/definitions/TilingCoordinateType"
+        }
+      },
+      "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
+    },
+    "TilingCoordinateType": {
+      "type": "object",
+      "description": "Defines the minimum and maximum value for one dimension of a two dimensional coordinate.",
+      "properties": {
+        "MinimumValue": {
+          "type": "number"
+        },
+        "MaximumValue": {
+          "type": "number"
+        }
+      }
+    },
+    "UuidType": {
+      "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",
+      "type": "string"
+    },
+    "MetadataStandardNameEnum": {
+      "description": "The name of supported metadata conventions",
+      "type": "string",
+      "enum": ["SERF", "UMM", "ECHO10", "DIF", "ISO 19115-2", "ISO 19115-1"]
+    },
+    "MetadataStandardVersionEnum": {
+      "description": "The value of the metadata version.",
+      "type": "string"
+    },
+    "LineageScopeEnum": {
+      "description": "The name of supported lineage date types",
+      "type": "string",
+      "enum": ["METADATA", "DATA"]
+    },
+    "LineageDateEnum": {
+      "description": "The name of supported lineage date types",
+      "type": "string",
+      "enum": ["CREATE", "UPDATE", "DELETE", "REVIEW"]
+    },
+    "IdType": {
+      "description": "The unique identifier.",
+      "type": "string",
+      "minLength": 1
+    },
+    "VersionType": {
+      "description": "The version of the unique identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "AuthorityType": {
+      "description": "The Authority (who created it or owns it) of a unique identifier.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "EntryTitleType": {
+      "description": "The title of the data described by the metadata.",
+      "$ref": "#/definitions/TitleType"
+    },
+    "TitleType": {
+      "description": "A title type that defines the min and max lengths of all titles.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1030
+    },
+    "AbstractType": {
+      "description": "Field provides a brief description of the data set. This allows potential users to determine if the data set is useful for their needs.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "PurposeType": {
+      "description": "Describe the purpose and/or intended use of data.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "ResponsibilityRoleEnum": {
+      "type": "string",
+      "enum": ["RESOURCEPROVIDER", "CUSTODIAN", "OWNER", "USER", "DISTRIBUTOR", "ORIGINATOR", "POINTOFCONTACT", "PRINCIPALINVESTIGATOR", "PROCESSOR", "PUBLISHER", "AUTHOR", "SPONSOR", "COAUTHOR", "COLLABORATOR", "EDITOR", "MEDIATOR", "RIGHTSHOLDER", "CONTRIBUTOR", "FUNDER", "STAKEHOLDER"]
+    },
+    "ShortNameType": {
+      "description": "The unique name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "LongNameType": {
+      "description": "The expanded or long name of the short name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "QualityType": {
+      "description": "Field allows the author to provide information about the quality of the data or any quality assurance procedures followed in producing the data described in the metadata. Suggestions for information to include in the Quality field: Description should be succinct. Include indicators of data quality or quality flags. Include recognized or potential problems with quality. Established quality control mechanisms should be included. Established quantitative quality measurements should be included.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "UseConstraintsType": {
+      "description": "Field allows the author to describe how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "ProviderIdEnum": {
+      "description": "The name of supported lineage date types",
+      "type": "string",
+      "enum": ["ASF", "CDDIS", "ORNL_DAAC", "GHRC", "GSFCS4PA", "LAADS", "LANCEAMSR2", "LANCEMODIS", "LARC", "LARC_ASDC", "LPDAAC_ECS", "NSIDC_ECS", "NSIDCV0", "OBPG", "OMINRT", "PODAAC", "SEDAC", "USGS_EROS"]
+    },
+    "MetadataAssociateTypeEnum": {
+      "description": "The name of supported lineage date types",
+      "type": "string",
+      "enum": ["SCIENCE ASSOCIATED", "LARGER CITATION WORKS"]
+    },
+    "KeywordStringType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "DataTypeEnum": {
+      "description": "This entity contains the additional attribute data types.",
+      "type": "string",
+      "enum": ["STRING", "FLOAT", "INT", "BOOLEAN", "DATE", "TIME", "DATETIME", "DATESTRING", "TIMESTRING", "DATETIMESTRING"]
+    },
+    "DollarAmountType": {
+      "type": "number",
+      "minimum": -9999999.0,
+      "maximum": 9999999.0
+    },
+    "DurationUnitEnum": {
+      "type": "string",
+      "enum": ["DAY", "MONTH", "YEAR"]
+    },
+    "SpatialCoverageTypeEnum": {
+      "type": "string",
+      "enum": ["HORIZONTAL", "VERTICAL", "ORBITAL"]
+    },
+    "CoordinateSystemEnum": {
+      "type": "string",
+      "enum": ["CARTESIAN", "GEODETIC"]
+    },
+    "LatitudeType": {
+      "description": "The latitude value of a spatially referenced pointer in degree.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "LongitudeType": {
+      "description": "The longitude value of a spatially referenced pointer in degree.",
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "GranuleSpatialRepresentationEnum": {
+      "type": "string",
+      "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
+    }
+  }
+}
