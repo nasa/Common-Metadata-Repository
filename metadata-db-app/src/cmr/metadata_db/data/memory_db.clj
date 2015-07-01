@@ -107,22 +107,22 @@
                             pid :provider-id
                             nid :native-id :as concept}]
                         (let [query-map (util/remove-nil-keys {:concept-type concept-type
-                                                        :provider-id provider-id
-                                                        :native-id native-id
-                                                        :extra-fields extra-field-params})
+                                                               :provider-id provider-id
+                                                               :native-id native-id
+                                                               :extra-fields extra-field-params})
                               full-concept-map {:concept-type ct
-                                  :provider-id pid
-                                  :native-id nid
-                                  :extra-fields (select-keys extra-fields
-                                                                      (keys extra-field-params))}
-                              concept-map (select-keys  full-concept-map (keys query-map))]
-                        (when (= query-map concept-map)
-                          (dissoc (if (and (= :granule concept-type)
-                                           (nil? (get-in concept [:extra-fields :granule-ur])))
-                                    (assoc-in concept [:extra-fields :granule-ur]
-                                              (:native-id concept))
-                                    concept)
-                                  (when exclude-metadata? :metadata)))))
+                                                :provider-id pid
+                                                :native-id nid
+                                                :extra-fields (select-keys extra-fields
+                                                                           (keys extra-field-params))}
+                              concept-map (select-keys full-concept-map (keys query-map))]
+                          (when (= query-map concept-map)
+                            (dissoc (if (and (= :granule concept-type)
+                                             (nil? (get-in concept [:extra-fields :granule-ur])))
+                                      (assoc-in concept [:extra-fields :granule-ur]
+                                                (:native-id concept))
+                                      concept)
+                                    (when exclude-metadata? :metadata)))))
                       @concepts-atom)))
             providers))
 
