@@ -72,7 +72,7 @@
 
         coll1-tombstone (merge coll1-2 {:deleted true :revision-id (inc (:revision-id coll1-2))})
 
-        ;; Ingest collection once, tombstone, then ingest again (latest should deleted=false.
+        ;; Ingest collection once, tombstone, then ingest again - latest should be deleted=false.
         coll2-1 (d/ingest "PROV1" umm-coll2)
 
         coll2-tombstone {:concept-id (:concept-id coll2-1)
