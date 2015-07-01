@@ -109,12 +109,6 @@
     (get-search-failure-data
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
-(comment
-
-  (cmr.common.dev.capture-reveal/reveal response)
-
-  )
-
 (defn find-concept-revisions
   "Returns the response of finding concept revisions from search"
   ([concept-type params]
