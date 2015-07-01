@@ -225,12 +225,10 @@
 
 (deftracefn find-concept-revisions
   "Uses the metadata-db to find concept revisions for the given parameters"
-  ([context params]
-   (find-concept-revisions context params true))
-  ([context params latest-only?]
-   ;; Prepare params as if they were sent over HTTP to metadata db
-   (let [params (u/map-keys->kebab-case params)]
-     (mdb-search/find-concepts (t/context->metadata-db-context context) params))))
+  [context params]
+  ;; Prepare params as if they were sent over HTTP to metadata db
+  (let [params (u/map-keys->kebab-case params)]
+    (mdb-search/find-concepts (t/context->metadata-db-context context) params)))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
