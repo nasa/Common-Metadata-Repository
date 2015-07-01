@@ -10,6 +10,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
             [cmr.common.time-keeper :as tk]
+            [cmr.umm.core :as umm]
             [clj-time.format :as f]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -47,12 +48,6 @@
         umm-concept-map-set (do (set (map umm->concept-map umms)))]
     ;; Added the 'is' wrapper so I can see the respective sets + difference when a test fails.
     (is (= umm-concept-map-set result-set))))
-
-(comment
-
-  (cmr.common.dev.capture-reveal/reveal coll3+metadata)
-
-  )
 
 (deftest retrieve-collection-concept-revisions-by-params
 
@@ -95,17 +90,15 @@
                                                 :version-id "v3"
                                                 :short-name "s1"}))
 
-        coll3+metadata (assoc coll3
-                              :metadata
-                              "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Collection><ShortName>s1</ShortName><VersionId>v3</VersionId><InsertTime>2012-01-11T10:00:00.000Z</InsertTime><LastUpdate>2012-01-19T18:00:00.000Z</LastUpdate><LongName>long-name8</LongName><DataSetId>et3</DataSetId><Description>long-name8</Description><Orderable>true</Orderable><Visible>true</Visible></Collection>")
-        _ (cmr.common.dev.capture-reveal/capture coll3+metadata)
+        coll3+metadata (assoc coll3 :metadata (umm/umm->xml coll3 :echo10))
+
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
                                                 :version-id "v3"
                                                 :short-name "s4"}))]
     (index/wait-until-indexed)
 
     (testing "find-with-parameters"
-      (testing "latest revisions"
+      (testing "various parameter combinations"
         (are2 [collections params]
               (search-results-match collections (search/find-concept-revisions
                                                   :collection
@@ -164,6 +157,14 @@
               "find none - provider-id, bad version-id"
               []
               {:provider-id "PROV1" :version-id "v7" :exclude_metadata true :latest true}))
+
+      (testing "granule finds are not supported"
+        (is (= 400
+               (:status (search/find-concept-revisions :granule
+                                                       {:provider-id "PROV1"}
+                                                       {:headers {transmit-config/token-header
+                                                                  (transmit-config/echo-system-token)
+                                                                  "Accept" "application/json"}})))))
       (testing "ACLs"
         ;; no token - This is temporary and will be updated in issue CMR-1771.
         (is (= 401

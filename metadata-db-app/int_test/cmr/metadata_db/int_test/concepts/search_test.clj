@@ -166,6 +166,9 @@
               "exclude-metadata=true"
               [(dissoc coll3 :metadata)] {:provider-id "SMAL_PROV1" :exclude-metadata "true"}
 
+              "exclude-metadata=false"
+              [coll3] {:provider-id "SMAL_PROV1" :exclude-metadata "false"}
+
               "find none - bad provider-id"
               [] {:provider-id "PROV_NONE"}
 
