@@ -48,12 +48,6 @@
     ;; Added the 'is' wrapper so I can see the respective sets + difference when a test fails.
     (is (= umm-concept-map-set result-set))))
 
-(comment
-
-  (cmr.common.dev.capture-reveal/reveal coll1-tombstone)
-
-  )
-
 (deftest retrieve-collection-concept-revisions-by-params
 
   (let [umm-coll1-1 (dc/collection {:entry-title "et1"
@@ -77,8 +71,6 @@
         _ (ingest/tombstone-concept {:concept-id (:concept-id coll1-2)
                                      :revision-id (inc (:revision-id coll1-2))})
         coll1-tombstone (merge coll1-2 {:deleted true :revision-id (inc (:revision-id coll1-2))})
-
-        _ (cmr.common.dev.capture-reveal/capture coll1-tombstone)
 
         ;; Ingest collection once, tombstone, then ingest again - latest should be deleted=false.
         coll2-1 (d/ingest "PROV1" umm-coll2-1)
@@ -149,10 +141,6 @@
               "entry-title - exclude_metadata unspecified"
               [coll3+metadata]
               {:entry-title "et3" :latest true}
-
-              "entry-id - latest=true"
-              [coll2-3]
-              {:entry-id "s2_v6" :exclude-metadata true :latest true}
 
               "find none - bad provider-id"
               []
