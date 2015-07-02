@@ -269,20 +269,20 @@
 
 (deftest find-collections-with-invalid-parameters
   (testing "extra parameters"
-    (= {:status 400
-        :errors [(msg/find-not-supported :collection [:provider-id :short-name :version-id :foo])]}
-       (util/find-concepts :collection {:provider-id "REG_PROV"
-                                        :short-name "f"
-                                        :version-id "v"
-                                        :foo "foo"}))))
+    (is (= {:status 400
+            :errors ["Finding concept type [collection] with parameters [foo] is not supported."]}
+           (util/find-concepts :collection {:provider-id "REG_PROV"
+                                            :short-name "f"
+                                            :version-id "v"
+                                            :foo "foo"})))))
 
 (deftest find-granules-with-invalid-parameters
   (testing "invalid combination"
-    (= {:status 400
-        :errors [(msg/find-not-supported-combination :granule [:provider-id :granule-ur :native-id])]}
-       (util/find-concepts :granule {:provider-id "REG_PROV"
-                                     :granule-ur "GRAN_UR"
-                                     :native-id "NV1"}))))
+    (is (= {:status 400
+            :errors ["Finding concept type [granule] with parameter combination [native-id, provider-id, granule-ur] is not supported."]}
+           (util/find-concepts :granule {:provider-id "REG_PROV"
+                                         :granule-ur "GRAN_UR"
+                                         :native-id "NV1"})))))
 
 
 

@@ -1377,7 +1377,7 @@ This allows retrieving of basic concept maps with or without metadata. The only 
   curl -i "%CMR-ENDPOINT%/concept-revisions/collections?provider_id=PROV1"
   curl -i "%CMR-ENDPOINT%/concept-revisions/granules?provider_id=PROV1&native_id="s1_v1"
 
- The following parameters are supported for collections:
+ The following parameters in any combination are supported for collections:
 
   * `provider_id`
   * `entry_title`
