@@ -107,8 +107,29 @@
   [concept-type query]
   (let [url (url/search-url concept-type)]
     (get-search-failure-data
-
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
+
+(defn find-concept-revisions
+  "Returns the response of finding concept revisions from search"
+  ([concept-type params]
+   (find-concept-revisions concept-type params {}))
+  ([concept-type params options]
+   (let [url (url/concept-revisions-url concept-type)
+         headers (:headers options)
+         response (client/get url {:throw-exceptions false
+                                   :query-params (params->snake_case
+                                                   (util/map-keys csk/->snake_case_keyword params))
+                                   :headers headers})]
+     (if (= 200 (:status response))
+       (let [response (update-in response [:body] #(json/decode % true))]
+         ;; Only JSON response is supported.
+         (is (= "application/json; charset=utf-8"
+                (get-in response [:headers "Content-Type"])))
+         ;; Assert that revision-date was returned in the found concepts (if any)
+         (when (seq (:body response))
+           (is (some :revision-date (:body response))))
+         response)
+       response))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."

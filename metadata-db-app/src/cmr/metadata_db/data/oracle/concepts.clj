@@ -4,21 +4,20 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.services.errors :as errors]
             [cmr.common.log :refer (debug info warn error)]
-            [clojure.java.jdbc :as j]
             [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]
+            [cmr.common.date-time-parser :as p]
+            [cmr.common.concepts :as cc]
+            [cmr.common.util :as util]
+            [clojure.java.jdbc :as j]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.set :as set]
-            [cmr.metadata-db.services.util :as util]
-            [cmr.metadata-db.data.oracle.sql-helper :as sh]
-            [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.common.date-time-parser :as p]
             [clj-time.format :as f]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
-            [cmr.common.concepts :as cc]
             [cmr.oracle.connection :as oracle]
+            [cmr.metadata-db.data.oracle.sql-helper :as sh]
+            [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore
            java.util.zip.GZIPInputStream
@@ -148,15 +147,15 @@
                   revision_id
                   revision_date
                   deleted]} result]
-      {:concept-type concept-type
-       :native-id native_id
-       :concept-id concept_id
-       :provider-id provider-id
-       :metadata (blob->string metadata)
-       :format (db-format->mime-type format)
-       :revision-id (int revision_id)
-       :revision-date (oracle-timestamp->str-time db revision_date)
-       :deleted (not= (int deleted) 0)})))
+      (util/remove-nil-keys {:concept-type concept-type
+                             :native-id native_id
+                             :concept-id concept_id
+                             :provider-id provider-id
+                             :metadata (when metadata (blob->string metadata))
+                             :format (db-format->mime-type format)
+                             :revision-id (int revision_id)
+                             :revision-date (oracle-timestamp->str-time db revision_date)
+                             :deleted (not= (int deleted) 0)}))))
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
@@ -217,9 +216,9 @@
       ;; instead of using group-by in SQL
       (let [table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:c.concept-id :c.revision-id]
-                                   (from (as (keyword table) :c)
-                                         (as :get-concepts-work-area :t))
-                                   (where `(and (= :c.concept-id :t.concept-id)))))
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)))))
             cid-rid-maps (su/query conn stmt)
             concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
                                            cid-rid-maps)
@@ -238,11 +237,11 @@
   (let [{:keys [concept-type provider-id concept-id native-id]} concept
         table (tables/get-table-name provider concept-type)
         {:keys [concept_id native_id]} (or (su/find-one db (select [:concept-id :native-id]
-                                                                   (from table)
-                                                                   (where (by-provider provider `(= :native-id ~native-id)))))
+                                                             (from table)
+                                                             (where (by-provider provider `(= :native-id ~native-id)))))
                                            (su/find-one db (select [:concept-id :native-id]
-                                                                   (from table)
-                                                                   (where `(= :concept-id ~concept-id)))))]
+                                                             (from table)
+                                                             (where `(= :concept-id ~concept-id)))))]
     (when (and (and concept_id native_id)
                (or (not= concept_id concept-id) (not= native_id native-id)))
       {:error :concept-id-concept-conflict

@@ -210,6 +210,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
+(defn concept-revisions-url
+  [type]
+  (format "http://localhost:%s/concept-revisions/%ss" (transmit-config/search-port) (name type)))
+
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))

@@ -122,7 +122,7 @@
                                                                                 :version-id "v3"
                                                                                 :short-name "s4"}})]
     (testing "find-with-parameters"
-      (testing "latest concepts"
+      (testing "latest revisions"
         (are2 [collections params]
               (= (set collections)
                  (set (-> (util/find-latest-concepts :collection params)
@@ -163,6 +163,12 @@
               "mixed providers - entry-title"
               [coll1 coll4] {:entry-title "et1"}
 
+              "exclude-metadata=true"
+              [(dissoc coll3 :metadata)] {:provider-id "SMAL_PROV1" :exclude-metadata "true"}
+
+              "exclude-metadata=false"
+              [coll3] {:provider-id "SMAL_PROV1" :exclude-metadata "false"}
+
               "find none - bad provider-id"
               [] {:provider-id "PROV_NONE"}
 
@@ -171,9 +177,9 @@
       (testing "all revisions"
         (are2 [rev-count params]
 
-              (is (= rev-count
-                     (count (-> (util/find-concepts :collection params)
-                                :concepts))))
+              (= rev-count
+                 (count (-> (util/find-concepts :collection params)
+                            :concepts)))
               "provider-id - three revisions"
               3 {:provider-id "SMAL_PROV2"}
 
@@ -202,12 +208,12 @@
 
     (testing "get expired collection concept ids"
       (are [provider-id collections]
-      (let [{:keys [status concept-ids]} (util/get-expired-collection-concept-ids provider-id)]
-        (= [200 (set (map :concept-id collections))]
-               [status (set concept-ids)]))
-      "REG_PROV" [coll1 coll2]
-      "SMAL_PROV1" [coll5]
-      "SMAL_PROV2" [coll7]))
+           (let [{:keys [status concept-ids]} (util/get-expired-collection-concept-ids provider-id)]
+             (= [200 (set (map :concept-id collections))]
+                [status (set concept-ids)]))
+           "REG_PROV" [coll1 coll2]
+           "SMAL_PROV1" [coll5]
+           "SMAL_PROV2" [coll7]))
 
     (testing "invalid or missing provider id"
       (is (= {:status 404, :errors ["Provider with provider-id [PROVNONE] does not exist."]}
@@ -216,19 +222,67 @@
       (is (= {:status 400, :errors ["A provider parameter was required but was not provided."]}
              (util/get-expired-collection-concept-ids nil))))))
 
+(deftest find-granules
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
+        gran1 (util/create-and-save-granule "REG_PROV"
+                                            (:concept-id coll1)
+                                            1
+                                            3
+                                            {:native-id "G1-NAT"
+                                             :extra-fields {:granule-ur "G1-UR"}})
+        gran2 (util/create-and-save-granule "REG_PROV"
+                                            (:concept-id coll1)
+                                            2
+                                            2
+                                            {:native-id "G2-NAT"
+                                             :extra-fields {:granule-ur "G2-UR"}})]
+    (testing "find with parameters"
+      (testing "latest revsions"
+        (are2 [granules params]
+              (= (set granules)
+                 (set (-> (util/find-latest-concepts :granule params)
+                          :concepts
+                          concepts-for-comparison)))
+              ;; These are the only valid combinations for granules
+              "provider-id, granule-ur"
+              [gran1] {:provider-id "REG_PROV" :granule-ur "G1-UR"}
+
+              "provider-id, native-id"
+              [gran2] {:provider-id "REG_PROV" :native-id "G2-NAT"}
+
+              "no metadata"
+              [(dissoc gran1 :metadata)] {:provider-id "REG_PROV"
+                                          :granule-ur "G1-UR"
+                                          :exclude-metadata true}))
+
+      (testing "all revisions"
+        (are2 [rev-count params]
+              (= rev-count
+                 (count (-> (util/find-concepts :granules params)
+                            :concepts)))
+              "provider-id, granule-ur - two revisions"
+              2 {:provider-id "REG_PROV" :granule-ur "G2-UR"}
+
+              "provider-id, native-id - three revisons"
+              3 {:provider-id "REG_PROV":native-id "G1-NAT"})))))
+
+
 (deftest find-collections-with-invalid-parameters
   (testing "extra parameters"
-    (= {:status 400
-        :errors [(msg/find-not-supported :collection [:provider-id :short-name :version-id :foo])]}
-       (util/find-concepts :collection {:provider-id "REG_PROV"
-                                        :short-name "f"
-                                        :version-id "v"
-                                        :foo "foo"}))))
+    (is (= {:status 400
+            :errors ["Finding concept type [collection] with parameters [foo] is not supported."]}
+           (util/find-concepts :collection {:provider-id "REG_PROV"
+                                            :short-name "f"
+                                            :version-id "v"
+                                            :foo "foo"})))))
 
-(deftest find-granules-is-not-supported
-  (= {:status 400
-      :errors [(msg/find-not-supported :granule [])]}
-     (util/find-concepts :granule {})))
+(deftest find-granules-with-invalid-parameters
+  (testing "invalid combination"
+    (is (= {:status 400
+            :errors ["Finding concept type [granule] with parameter combination [native-id, provider-id, granule-ur] is not supported."]}
+           (util/find-concepts :granule {:provider-id "REG_PROV"
+                                         :granule-ur "GRAN_UR"
+                                         :native-id "NV1"})))))
 
 
 

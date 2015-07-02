@@ -4,6 +4,7 @@
             [cmr.metadata-db.data.providers :as providers]
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
+            [cmr.common.util :as util]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
@@ -98,19 +99,30 @@
     (mapcat (fn [provider]
               (let [provider-id (:provider-id provider)
                     {:keys [concept-type native-id]} params
-                    extra-field-params (dissoc params :concept-type :provider-id :native-id)]
+                    exclude-metadata? (= "true" (:exclude-metadata params))
+                    extra-field-params (dissoc params :concept-type :provider-id :native-id
+                                               :exclude-metadata)]
                 (keep (fn [{extra-fields :extra-fields
                             ct :concept-type
-                            pid :provider-id :as concept}]
-                        (when (and (= concept-type ct)
-                                   (= provider-id pid)
-                                   (= extra-field-params (select-keys extra-fields
-                                                                      (keys extra-field-params))))
-                          (if (and (= :granule concept-type)
-                                   (nil? (get-in concept [:extra-fields :granule-ur])))
-                            (assoc-in concept [:extra-fields :granule-ur]
-                                      (:native-id concept))
-                            concept)))
+                            pid :provider-id
+                            nid :native-id :as concept}]
+                        (let [query-map (util/remove-nil-keys {:concept-type concept-type
+                                                               :provider-id provider-id
+                                                               :native-id native-id
+                                                               :extra-fields extra-field-params})
+                              full-concept-map {:concept-type ct
+                                                :provider-id pid
+                                                :native-id nid
+                                                :extra-fields (select-keys extra-fields
+                                                                           (keys extra-field-params))}
+                              concept-map (select-keys full-concept-map (keys query-map))]
+                          (when (= query-map concept-map)
+                            (dissoc (if (and (= :granule concept-type)
+                                             (nil? (get-in concept [:extra-fields :granule-ur])))
+                                      (assoc-in concept [:extra-fields :granule-ur]
+                                                (:native-id concept))
+                                      concept)
+                                    (when exclude-metadata? :metadata)))))
                       @concepts-atom)))
             providers))
 
