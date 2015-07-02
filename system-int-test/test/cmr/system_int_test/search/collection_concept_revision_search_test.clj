@@ -150,6 +150,10 @@
               [coll3+metadata]
               {:entry-title "et3" :latest true}
 
+              "entry-id - latest=true"
+              [coll2-3]
+              {:entry-id "s2_v6" :exclude-metadata true :latest true}
+
               "find none - bad provider-id"
               []
               {:provider-id "PROV_NONE" :exclude-metadata true :latest true}
