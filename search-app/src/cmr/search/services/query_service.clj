@@ -70,7 +70,7 @@
             [cmr.metadata-db.services.concept-service :as meta-db]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.concepts :as cc]
-            [cmr.common.services.errors :as err]
+            [cmr.common.services.errors :as errors]
             [cmr.common.util :as u]
             [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
@@ -85,7 +85,7 @@
   [context query]
   (let [errors (v/validate query)]
     (when-not (empty? errors)
-      (err/throw-service-errors :bad-request errors))
+      (errors/throw-service-errors :bad-request errors))
     query))
 
 (defmulti search-results->response
@@ -199,7 +199,7 @@
 
 (defn- throw-id-not-found
   [concept-id]
-  (err/throw-service-error
+  (errors/throw-service-error
     :not-found
     (format "Concept with concept-id: %s could not be found" concept-id)))
 

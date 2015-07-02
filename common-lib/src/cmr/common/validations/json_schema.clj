@@ -1,43 +1,89 @@
 (ns cmr.common.validations.json-schema
-  "Functions used to perform JSON schema validation."
+  "Functions used to perform JSON schema validation. See http://json-schema.org/ for more details."
   (:require [cheshire.core :as json]
-            [cmr.common.services.errors :as err])
+            [cmr.common.services.errors :as errors]
+            [cmr.common.log :as log :refer (warn)])
   (:import com.github.fge.jsonschema.main.JsonSchemaFactory
            com.github.fge.jackson.JsonLoader))
 
-(defn- multiple-potential-types-validation
-  "Parses error responses which have a field that could have multiple potential types. For example
-  some values may accept a string or a map."
-  [error-map]
-  (when-let [report-keys (keys (:reports error-map))]
-    (let [one-of-errors (filter #(re-matches #".*oneOf.*" (name %)) report-keys)]
-      (mapcat (fn [one-of-error-key] (for [sub-error (one-of-error-key (:reports error-map))]
-                                       (str (:pointer (:instance sub-error)) " "
-                                            (:message sub-error))))
-              one-of-errors))))
+(defn parse-error-report
+  "Parses the error-report to return a human friendly error message.
+
+  Example:
+  {:instance {:pointer \"/provider\"}
+   :message \"object instance has properties which are not allowed by the schema: [\"123\"]\"
+  ... other keys ignored}"
+  [error-report]
+  (str (get-in error-report [:instance :pointer]) " " (:message error-report)))
+
+(defn parse-nested-error-report
+  "Parses nested error messages from within an error report. See comment block at bottom of file
+  for an example nested error report."
+  [nested-error-report]
+  (for [map-key (keys nested-error-report)
+        :when (re-matches #".*oneOf.*" (name map-key))
+        sub-error-report (map-key nested-error-report)]
+    (parse-error-report sub-error-report)))
 
 (defn- parse-validation-report
   "Takes a validation report and returns a sequence of any errors contained in the report. Returns
   nil if there are no errors. Takes a com.github.fge.jsonschema.core.report.ListProcessingReport.
   See http://fge.github.io/json-schema-validator/2.2.x/index.html for details."
   [report]
-  (when-let [error-reports (seq (.asJson report))]
-    (flatten (map (fn [error-report]
-                    (let [json-error (json/decode (.toString error-report) true)]
-                      (conj (multiple-potential-types-validation json-error)
-                            (str (:pointer (:instance json-error)) " " (:message json-error)))))
-                  error-reports))))
+  (flatten
+    (for [error-report (seq (.asJson report))]
+      (let [json-error-report (json/decode (.toString error-report) true)]
+        (conj (parse-nested-error-report (:reports json-error-report))
+              (parse-error-report json-error-report))))))
+
+(defn- json->JsonNode
+  "Takes JSON as a string or as EDN and returns a com.fasterxml.jackson.databind.JsonNode. Throws
+  an exception if the provided JSON is not valid JSON."
+  [json]
+  (try
+    (let [json-string (if (string? json)
+                        json
+                        (json/generate-string json))]
+      (JsonLoader/fromString json-string))
+    (catch Exception e
+      (warn "Invalid JSON when trying to validate" json e)
+      (errors/throw-service-error :bad-request (str "Invalid JSON: " (.getMessage e))))))
 
 (defn validate-against-json-schema
   "Performs schema validation using the provided JSON schema and the given json string to validate.
   Uses com.github.fge.jsonschema to perform the validation. Throws a bad request service error when
-  validation fails."
-  [json-schema-str json-to-validate-str]
+  validation fails.
+
+  Note that the provided schema is expected to always be valid. If the schema is invalid an
+  exception will be raised. The intent of this function is only to validate the incoming JSON
+  against the schema."
+  [json-schema-str json-to-validate]
   (let [json-schema (->> json-schema-str
                          JsonLoader/fromString
                          (.getJsonSchema (JsonSchemaFactory/byDefault)))
-        json-to-validate (JsonLoader/fromString (json/generate-string json-to-validate-str))
-        validation-report (.validate json-schema json-to-validate)
+        json-node-to-validate (json->JsonNode json-to-validate)
+        validation-report (.validate json-schema json-node-to-validate)
         errors (parse-validation-report validation-report)]
     (when (seq errors)
-      (err/throw-service-errors :bad-request errors))))
+      (errors/throw-service-errors :bad-request errors))))
+
+(comment
+  ;; Sample nested error report to pass into parse-nested-error-report
+  ;; {:/properties/provider/oneOf/0
+  ;;  [{:level "error"
+  ;;    :schema {:loadingURI "#" :pointer "/properties/provider/oneOf/0"}
+  ;;    :instance {:pointer "/provider"}
+  ;;    :domain "validation"
+  ;;    :keyword "type"
+  ;;    :message "instance type (object) does not match any allowed primitive type (allowed: ["string"])"
+  ;;    :found "object"
+  ;;    :expected ["string"]}]
+  ;;  :/properties/provider/oneOf/1
+  ;;  [{:level "error"
+  ;;    :schema {:loadingURI "#" :pointer "/definitions/valueOptionMap"}
+  ;;    :instance {:pointer "/provider"}
+  ;;    :domain "validation"
+  ;;    :keyword "additionalProperties"
+  ;;    :message "object instance has properties which are not allowed by the schema: ["123"]"
+  ;;    :unwanted ["123"]}]}
+  )
