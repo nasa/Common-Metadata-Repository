@@ -24,20 +24,31 @@
                                         "properties" {"zeta" {"type" "integer"}}
                                         "required" ["zeta"]}}}))
 
-(deftest json-schema-validations-test
+(deftest perform-validations-test
   (testing "Valid json"
     (are [json]
-      (nil? (js/validate-against-json-schema sample-json-schema json))
+         (nil? (js/perform-validations sample-json-schema json))
 
-      {"bar" true}
-      {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
+         {"bar" true}
+         {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
+
+  (testing "Validation failure throws bad-request exception"
+    (tu/assert-exception-thrown-with-errors
+      :bad-request
+      [" object has missing required properties ([\"bar\"])"]
+      (js/perform-validations sample-json-schema {"alpha" "omega"}))))
+
+(deftest validate-against-json-schema-test
+  (testing "Valid json"
+    (are [json]
+         (nil? (seq (js/validate-against-json-schema sample-json-schema json)))
+
+         {"bar" true}
+         {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
 
   (testing "Validation failures"
     (u/are2 [invalid-json errors]
-            (tu/assert-exception-thrown-with-errors
-              :bad-request
-              errors
-              (js/validate-against-json-schema sample-json-schema invalid-json))
+            (= errors (js/validate-against-json-schema sample-json-schema invalid-json))
 
             "Missing required property"
             {"alpha" "omega"}
@@ -74,16 +85,3 @@
           (js/validate-against-json-schema (json/encode {"$schema" "http://json-schema.org/draft-04/schema#"
                                                          "title" "The title"
                                                          "description" ["A description" "B description"]}) {})))))
-
-
-(comment
-  (def query-schema (slurp (clojure.java.io/resource "schema/JSONQueryLanguage.json")))
-  (js/validate-against-json-schema query-schema {"provider" {"prov" "PROV1"
-                                                             "123" "567"
-                                                             "value" "44"}})
-
-  (js/validate-against-json-schema query-schema {"and" [{"provider" {"prov" "PROV1"
-                                                                     "123" "567"
-                                                                     "value" "44"}
-                                                         "bad" "key"}]})
-  )
