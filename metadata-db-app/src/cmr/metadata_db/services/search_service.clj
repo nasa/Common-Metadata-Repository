@@ -21,7 +21,7 @@
 
 (def supported-collection-parameters
   "Set of parameters supported by find for collections"
-  #{:provider-id :entry-title :entry-id :short-name :version-id})
+  #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags

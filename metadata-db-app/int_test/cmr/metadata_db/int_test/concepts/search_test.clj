@@ -169,6 +169,12 @@
               "exclude-metadata=false"
               [coll3] {:provider-id "SMAL_PROV1" :exclude-metadata "false"}
 
+              "regular provider - concept-id"
+              [coll1] {:concept-id (:concept-id coll1)}
+
+              "small provider - concept-id"
+              [coll4] {:concept-id (:concept-id coll4)}
+
               "find none - bad provider-id"
               [] {:provider-id "PROV_NONE"}
 
@@ -184,7 +190,10 @@
               3 {:provider-id "SMAL_PROV2"}
 
               "entry-title - two revisons"
-              2 {:entry-title "et2"})))))
+              2 {:entry-title "et2"}
+
+              "concept-id - three revisons"
+              3 {:concept-id (:concept-id coll4)})))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)

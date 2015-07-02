@@ -98,19 +98,22 @@
     [db providers params]
     (mapcat (fn [provider]
               (let [provider-id (:provider-id provider)
-                    {:keys [concept-type native-id]} params
+                    {:keys [concept-type concept-id native-id]} params
                     exclude-metadata? (= "true" (:exclude-metadata params))
                     extra-field-params (dissoc params :concept-type :provider-id :native-id
-                                               :exclude-metadata)]
+                                               :concept-id :exclude-metadata)]
                 (keep (fn [{extra-fields :extra-fields
                             ct :concept-type
                             pid :provider-id
+                            cid :concept-id
                             nid :native-id :as concept}]
-                        (let [query-map (util/remove-nil-keys {:concept-type concept-type
+                        (let [query-map (util/remove-nil-keys {:concept-id concept-id
+                                                               :concept-type concept-type
                                                                :provider-id provider-id
                                                                :native-id native-id
                                                                :extra-fields extra-field-params})
                               full-concept-map {:concept-type ct
+                                                :concept-id cid
                                                 :provider-id pid
                                                 :native-id nid
                                                 :extra-fields (select-keys extra-fields

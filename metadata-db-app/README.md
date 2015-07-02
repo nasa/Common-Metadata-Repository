@@ -186,7 +186,7 @@ This returns all revisions of the concept that matches the search parameters by 
 Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.
 
 Supported combinations of concept type and parameters:
-  * collections with any combination of provider-id, entry-id, entry-title, short-name, version-id
+  * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
 
