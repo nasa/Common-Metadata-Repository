@@ -31,10 +31,10 @@
   See http://fge.github.io/json-schema-validator/2.2.x/index.html for details."
   [report]
   (flatten
-    (for [error-report (seq (.asJson report))]
-      (let [json-error-report (json/decode (.toString error-report) true)]
-        (conj (parse-nested-error-report (:reports json-error-report))
-              (parse-error-report json-error-report))))))
+    (for [error-report (seq (.asJson report))
+          :let [json-error-report (json/decode (.toString error-report) true)]]
+      (conj (parse-nested-error-report (:reports json-error-report))
+            (parse-error-report json-error-report)))))
 
 (defn- json->JsonNode
   "Takes JSON as a string or as EDN and returns a com.fasterxml.jackson.databind.JsonNode. Throws
@@ -75,24 +75,3 @@
   (let [errors (mapcat #(% json-schema-str json-to-validate) validations-to-perform)]
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors))))
-
-(comment
-  ;; Sample nested error report to pass into parse-nested-error-report
-  ;; {:/properties/provider/oneOf/0
-  ;;  [{:level "error"
-  ;;    :schema {:loadingURI "#" :pointer "/properties/provider/oneOf/0"}
-  ;;    :instance {:pointer "/provider"}
-  ;;    :domain "validation"
-  ;;    :keyword "type"
-  ;;    :message "instance type (object) does not match any allowed primitive type (allowed: ["string"])"
-  ;;    :found "object"
-  ;;    :expected ["string"]}]
-  ;;  :/properties/provider/oneOf/1
-  ;;  [{:level "error"
-  ;;    :schema {:loadingURI "#" :pointer "/definitions/valueOptionMap"}
-  ;;    :instance {:pointer "/provider"}
-  ;;    :domain "validation"
-  ;;    :keyword "additionalProperties"
-  ;;    :message "object instance has properties which are not allowed by the schema: ["123"]"
-  ;;    :unwanted ["123"]}]}
-  )

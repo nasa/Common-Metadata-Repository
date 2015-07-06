@@ -78,7 +78,7 @@
           #"Invalid JSON: Unexpected character \('\}' \(code 125\)\): expected a value"
           (js/validate-against-json-schema sample-json-schema "{\"bar\":}"))))
 
-  (testing "Invalid schema - description is a string field"
+  (testing "Invalid schema - description cannot be an array"
     (is (thrown-with-msg?
           InvalidSchemaException
           #"value has incorrect type \(found array, expected one of \[string\]\)"
