@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.parameter-validation
   "Contains functions for validating query parameters"
   (:require [clojure.set :as set]
-            [cmr.common.services.errors :as err]
+            [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
             [clojure.string :as s]
@@ -679,7 +679,7 @@
         errors (concat type-errors
                        (mapcat #(% concept-type safe-params) parameter-validations))]
     (when (seq errors)
-      (err/throw-service-errors :bad-request errors)))
+      (errors/throw-service-errors :bad-request errors)))
   params)
 
 (defn validate-standard-query-parameters
@@ -689,7 +689,7 @@
   [concept-type params]
   (let [errors (mapcat #(% concept-type params) standard-query-parameter-validations)]
     (when (seq errors)
-      (err/throw-service-errors :bad-request errors)))
+      (errors/throw-service-errors :bad-request errors)))
   params)
 
 (defn validate-timeline-parameters
@@ -704,7 +704,7 @@
                        (mapcat #(% :granule regular-params) parameter-validations)
                        (mapcat #(% :granule timeline-params) timeline-parameter-validations))]
     (when (seq errors)
-      (err/throw-service-errors :bad-request errors)))
+      (errors/throw-service-errors :bad-request errors)))
   params)
 
 (def valid-tile-search-params
@@ -731,5 +731,5 @@
                         point-validation
                         line-validation])]
     (when (seq errors)
-      (err/throw-service-errors :bad-request errors)))
+      (errors/throw-service-errors :bad-request errors)))
   params)

@@ -2,7 +2,7 @@
   "Provides methods to insert migration requets on the approriate channels."
   (:require [clojure.core.async :as async :refer [go >!]]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as err]
+            [cmr.common.services.errors :as errors]
             [cmr.bootstrap.data.bulk-index :as bulk]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.db-synchronization :as dbs]))
@@ -33,7 +33,7 @@
   [context provider-id]
   (if-let [provider (bulk/get-provider-by-id context provider-id)]
     provider
-    (err/throw-service-errors :bad-request
+    (errors/throw-service-errors :bad-request
                               [(format "Provider: [%s] does not exist in the system" provider-id)])))
 
 (defn validate-collection
@@ -41,7 +41,7 @@
   [context provider-id collection-id]
   (let [provider (get-provider context provider-id)]
     (when-not (bulk/get-collection context provider collection-id)
-      (err/throw-service-errors :bad-request
+      (errors/throw-service-errors :bad-request
                                 [(format "Collection [%s] does not exist." collection-id)]))))
 
 (defn index-provider
