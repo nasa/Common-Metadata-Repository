@@ -395,7 +395,7 @@
     (let [response (client/post (url/search-url concept-type)
                                 {:accept mime-types/xml
                                  :content-type mime-types/json
-                                 :body (json/generate-string json-as-map)
+                                 :body (json/generate-string {:condition json-as-map})
                                  :query-params query-params
                                  :throw-exceptions true
                                  :connection-manager (s/conn-mgr)})]

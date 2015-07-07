@@ -10,7 +10,7 @@
 
 (def sample-json-schema
   "Schema to test validation against"
-  (js/json-string->JsonSchema
+  (js/parse-json-schema
     (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                            "title" "The title"
                            "description" "A description"
@@ -74,7 +74,7 @@
           InvalidSchemaException
           #"value has incorrect type \(found array, expected one of \[string\]\)"
           (js/validate-json
-            (js/json-string->JsonSchema
+            (js/parse-json-schema
               (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                                      "title" "The title"
                                      "description" ["A description" "B description"]}))

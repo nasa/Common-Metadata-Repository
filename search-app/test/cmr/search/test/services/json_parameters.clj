@@ -8,15 +8,18 @@
 
 (deftest parse-json-query-test
   (testing "Empty JSON is valid"
-    (is (= (q/query {:concept-type :collection})
-           (jp/parse-json-query :collection {} "{}"))))
+    (are [empty-string]
+         (= (q/query {:concept-type :collection})
+            (jp/parse-json-query :collection {} empty-string))
+
+         "{}" (json/generate-string {:condition {}})))
 
   (testing "Combination of query and JSON parameters"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "ET")
                      :page-size 15})
            (jp/parse-json-query :collection {:page-size 15, :include-facets true}
-                                (json/generate-string {:entry_title "ET"})))))
+                                (json/generate-string {:condition {:entry_title "ET"}})))))
   (testing "Multiple nested JSON parameter conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/or-conds
@@ -29,17 +32,17 @@
            (jp/parse-json-query
              :collection
              {}
-             (json/generate-string {:or [{:entry_title "foo"
+             (json/generate-string {:condition {:or [{:entry_title "foo"
                                           :provider "bar"}
                                          {:provider "soap"
                                           :and [{:not {:provider "alpha"}}
-                                                {:entry_title "ET"}]}]})))))
+                                                {:entry_title "ET"}]}]}})))))
   (testing "Implicit ANDing of conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :entry-title "foo")
                                                (q/string-condition :provider "bar")])})
-           (jp/parse-json-query :collection {} (json/generate-string {:entry_title "foo"
-                                                                      :provider "bar"}))))))
+           (jp/parse-json-query :collection {} (json/generate-string {:condition {:entry_title "foo"
+                                                                      :provider "bar"}}))))))
 
 (deftest parse-json-condition-test
   (testing "OR condition"

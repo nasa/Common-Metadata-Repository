@@ -11,6 +11,7 @@
 	"definitions": {
 		"QueryCondition": {
 			"description": "Condition used to filter collection search results from the CMR. If multiple properties are provided in a single condition they will be implicitly AND'ed.",
+			"additionalProperties": false,
 			"properties": {
 				"and": {
 					"description": "Groups together conditions to return the intersection of the results.",
@@ -76,19 +77,19 @@
 					}]
 				},
 				"platform": {
-					"description": "UMM platform",
+					"description": "UMM platform short name",
 					"$ref": "#/definitions/StringCondition"
 				},
 				"instrument": {
-					"description": "UMM instrument",
+					"description": "UMM instrument short name",
 					"$ref": "#/definitions/StringCondition"
 				},
 				"sensor": {
-					"description": "UMM sensor",
+					"description": "UMM sensor short name",
 					"$ref": "#/definitions/StringCondition"
 				},
 				"project": {
-					"description": "UMM project",
+					"description": "UMM project short name",
 					"$ref": "#/definitions/StringCondition"
 				},
 				"archive_center": {
@@ -141,8 +142,8 @@
 							"$ref": "#/definitions/PatternOption"
 						},
 						"any": {
-							"type": "string",
-							"description": "Search against any of the science keyword fields for the provided value"
+							"description": "Search against any of the science keyword sub-fields (category, term, etc.) for the provided value.",
+							"type": "string"
 						}
 					}
 				}

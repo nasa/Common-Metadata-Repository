@@ -21,7 +21,7 @@
   "JSON Schema for querying for collections."
   (-> (io/resource "schema/JSONQueryLanguage.json")
       slurp
-      js/json-string->JsonSchema))
+      js/parse-json-schema))
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."
@@ -129,4 +129,5 @@
                      :concept-type concept-type
                      :condition (-> (json/parse-string json-string true)
                                     util/map-keys->kebab-case
+                                    :condition
                                     parse-json-condition-map)))))

@@ -51,7 +51,7 @@
       (warn "Invalid JSON when trying to validate" json-string e)
       (errors/throw-service-error :bad-request (str "Invalid JSON: " (.getMessage e))))))
 
-(defn json-string->JsonSchema
+(defn parse-json-schema
   "Convert a JSON string into a com.github.fge.jsonschema.main.JsonSchema object."
   [json-string]
   (->> json-string
