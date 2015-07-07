@@ -75,8 +75,8 @@
            [coll9] {:platform "SMAP"}
            [coll1 coll2 coll4] {:or [{:platform "platform_SnA"} {:platform "platform_Sn A"}]}
            [coll2] {:and [{:platform "platform_Sn B"} {:platform "platform_Sn A"}]}
-           [coll6 coll7] {:platform {:value "platform_x" :ignore-case true}}
-           [coll7] {:platform {:value "platform_x" :ignore-case false}}
+           [coll6 coll7] {:platform {:value "platform_x" :ignore_case true}}
+           [coll7] {:platform {:value "platform_x" :ignore_case false}}
            [coll1 coll2 coll3] {:platform {:value "platform_Sn *" :pattern true}}
            [coll4 coll5] {:platform {:value "platform_Sn?" :pattern true}}))))
 
@@ -157,8 +157,8 @@
            [coll1 coll2 coll4 coll6] {:or [{:instrument "instrument_SnA"}
                                            {:instrument "instrument_Sn A"}]}
            [coll2 coll6] {:and [{:instrument "instrument_Sn B"} {:instrument "instrument_Sn A"}]}
-           [coll7 coll8] {:instrument {:value "instrument_x" :ignore-case true}}
-           [coll8] {:instrument {:value "instrument_x" :ignore-case false}}
+           [coll7 coll8] {:instrument {:value "instrument_x" :ignore_case true}}
+           [coll8] {:instrument {:value "instrument_x" :ignore_case false}}
            [coll1 coll2 coll3 coll6] {:instrument {:value "instrument_Sn *" :pattern true}}
            [coll4 coll5] {:instrument {:value "instrument_Sn?" :pattern true}}))))
 
@@ -238,8 +238,8 @@
            [] {:sensor "BLAH"}
            [coll1 coll2 coll4 coll6 coll7] {:or [{:sensor "sensor_SnA"} {:sensor "sensor_Sn A"}]}
            [coll2 coll6 coll7] {:and [{:sensor "sensor_Sn B"} {:sensor "sensor_Sn A"}]}
-           [coll8 coll9] {:sensor {:value "sensor_x" :ignore-case true}}
-           [coll8] {:sensor {:value "sensor_x" :ignore-case false}}
+           [coll8 coll9] {:sensor {:value "sensor_x" :ignore_case true}}
+           [coll8] {:sensor {:value "sensor_x" :ignore_case false}}
            [coll1 coll2 coll3 coll6 coll7] {:sensor {:value "sensor_Sn *" :pattern true}}
            [coll4 coll5] {:sensor {:value "sensor_Sn?" :pattern true}}))))
 

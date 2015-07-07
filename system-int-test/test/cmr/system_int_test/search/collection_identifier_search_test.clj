@@ -20,7 +20,7 @@
 
   ;; Create 4 collections in each provider that are identical.
   ;; The first collection will have data:
-  ;; {:entry-id "S1_V1", :entry-title "ET1", :short-name "S1", :version-id "V1"}
+  ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2] (for [p ["PROV1" "PROV2"]
                                         n (range 1 5)]
@@ -48,15 +48,15 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [c1-p1] {:concept-id (:concept-id c1-p1)}
-           [c1-p2] {:concept-id (:concept-id c1-p2)}
-           [c1-p1 c1-p2] {:or [{:concept-id (:concept-id c1-p1)}
-                               {:concept-id (:concept-id c1-p2)}]}
-           [c1-p1] {:or [{:concept-id (:concept-id c1-p1)}
-                         {:concept-id "C2200-PROV1"}]}
-           [c1-p1] {:or [{:concept-id (:concept-id c1-p1)}
-                         {:concept-id "FOO"}]}
-           [] {:concept-id "FOO"}))
+           [c1-p1] {:concept_id (:concept-id c1-p1)}
+           [c1-p2] {:concept_id (:concept-id c1-p2)}
+           [c1-p1 c1-p2] {:or [{:concept_id (:concept-id c1-p1)}
+                               {:concept_id (:concept-id c1-p2)}]}
+           [c1-p1] {:or [{:concept_id (:concept-id c1-p1)}
+                         {:concept_id "C2200-PROV1"}]}
+           [c1-p1] {:or [{:concept_id (:concept-id c1-p1)}
+                         {:concept_id "FOO"}]}
+           [] {:concept_id "FOO"}))
 
     (testing "provider with parameters"
       (are [items p options]
@@ -137,9 +137,9 @@
 
            ;; Ignore case
            all-prov1-colls {:provider {:value "pRoV1"}}
-           all-prov1-colls {:provider {:value "pRoV1" :ignore-case true}}
-           [] {:provider {:value "prov1" :ignore-case false}}
-           all-colls {:not {:provider {:value "prov1" :ignore-case false}}}))
+           all-prov1-colls {:provider {:value "pRoV1" :ignore_case true}}
+           [] {:provider {:value "prov1" :ignore_case false}}
+           all-colls {:not {:provider {:value "prov1" :ignore_case false}}}))
 
     (testing "short name"
       (are [items sn options]
@@ -200,25 +200,25 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [c1-p1 c1-p2] {:short-name "S1"}
-           [] {:short-name "S44"}
+           [c1-p1 c1-p2] {:short_name "S1"}
+           [] {:short_name "S44"}
            ;; Multiple values
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:short-name "S1"} {:short-name "S2"}]}
-           [c1-p1 c1-p2] {:or [{:short-name "S1"} {:short-name "S44"}]}
-           [] {:and [{:short-name "S1"} {:short-name "S2"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:short_name "S1"} {:short_name "S2"}]}
+           [c1-p1 c1-p2] {:or [{:short_name "S1"} {:short_name "S44"}]}
+           [] {:and [{:short_name "S1"} {:short_name "S2"}]}
 
            ;; Wildcards
-           all-colls {:short-name {:value "S*" :pattern true}}
-           [] {:short-name {:value "S*" :pattern false}}
-           [] {:short-name {:value "S*"}}
-           [c1-p1 c1-p2] {:short-name {:value "*1" :pattern true}}
-           [c1-p1 c1-p2] {:short-name {:value "?1" :pattern true}}
-           [] {:short-name {:value "*Q*" :pattern true}}
+           all-colls {:short_name {:value "S*" :pattern true}}
+           [] {:short_name {:value "S*" :pattern false}}
+           [] {:short_name {:value "S*"}}
+           [c1-p1 c1-p2] {:short_name {:value "*1" :pattern true}}
+           [c1-p1 c1-p2] {:short_name {:value "?1" :pattern true}}
+           [] {:short_name {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c1-p1 c1-p2] {:short-name {:value "s1"}}
-           [c1-p1 c1-p2] {:short-name {:value "s1" :ignore-case true}}
-           [] {:short-name {:value "s1" :ignore-case false}}))
+           [c1-p1 c1-p2] {:short_name {:value "s1"}}
+           [c1-p1 c1-p2] {:short_name {:value "s1" :ignore_case true}}
+           [] {:short_name {:value "s1" :ignore_case false}}))
 
     (testing "version"
       (are [items v options]
@@ -288,8 +288,8 @@
            [] {:version {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c1-p1 c1-p2] {:version {:value "v1" :ignore-case true}}
-           [] {:version {:value "v1" :ignore-case false}}))
+           [c1-p1 c1-p2] {:version {:value "v1" :ignore_case true}}
+           [] {:version {:value "v1" :ignore_case false}}))
 
     (testing "Entry id"
       (are [items ids options]
@@ -322,42 +322,42 @@
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
-           [c1-p1 c1-p2] {:entry-id "S1_V1"}
-           [] {:entry-id "S44_V44"}
+           [c1-p1 c1-p2] {:entry_id "S1_V1"}
+           [] {:entry_id "S44_V44"}
            ;; Multiple values
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-id "S1_V1"}
-                                           {:entry-id "S2_V2"}]}
-           [c1-p1 c1-p2] {:or [{:entry-id "S1_V1"}
-                               {:entry-id "S44_V44"}]}
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-id "S1_V1"}
-                                           {:entry-id "S2_V2"}]}
-           [] {:and [{:entry-id "S1_V1"}
-                     {:entry-id "S2_V2"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V1"}
+                                           {:entry_id "S2_V2"}]}
+           [c1-p1 c1-p2] {:or [{:entry_id "S1_V1"}
+                               {:entry_id "S44_V44"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V1"}
+                                           {:entry_id "S2_V2"}]}
+           [] {:and [{:entry_id "S1_V1"}
+                     {:entry_id "S2_V2"}]}
 
            ;; Not with multiple entry-ids
-           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry-id "S2_V2"}
-                                                 {:entry-id "S1_V1"}]}}
+           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry_id "S2_V2"}
+                                                 {:entry_id "S1_V1"}]}}
 
            ;; Not with multiple entry-ids and provider
-           [c3-p1 c4-p1] {:not {:or [{:entry-id "S2_V2"}
-                                     {:entry-id "S1_V1"}
+           [c3-p1 c4-p1] {:not {:or [{:entry_id "S2_V2"}
+                                     {:entry_id "S1_V1"}
                                      {:provider "PROV2"}]}}
 
            ;; Wildcards
-           all-colls {:entry-id {:value "S*_V*" :pattern true}}
-           [] {:entry-id {:value "S*_V*" :pattern false}}
-           [] {:entry-id {:value "S*_V*"}}
-           [c1-p1 c1-p2] {:entry-id {:value "*1" :pattern true}}
-           [c1-p1 c1-p2] {:entry-id {:value "S1_?1" :pattern true}}
-           [] {:entry-id {:value "*Q*" :pattern true}}
+           all-colls {:entry_id {:value "S*_V*" :pattern true}}
+           [] {:entry_id {:value "S*_V*" :pattern false}}
+           [] {:entry_id {:value "S*_V*"}}
+           [c1-p1 c1-p2] {:entry_id {:value "*1" :pattern true}}
+           [c1-p1 c1-p2] {:entry_id {:value "S1_?1" :pattern true}}
+           [] {:entry_id {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c1-p1 c1-p2] {:entry-id {:value "S1_v1" :ignore-case true}}
-           [] {:entry-id {:value "S1_v1" :ignore-case false}}))
+           [c1-p1 c1-p2] {:entry_id {:value "S1_v1" :ignore_case true}}
+           [] {:entry_id {:value "S1_v1" :ignore_case false}}))
 
     (testing "Entry title"
       (are [items v options]
-           (let [params (merge {:entry-title v}
+           (let [params (merge {:entry_title v}
                                (when options
                                  {"options[entry-title]" options}))]
              (d/refs-match? items (search/find-refs :collection params)))
@@ -379,8 +379,8 @@
            [] "*Q*" {:pattern true}
 
            ;; Ignore case
-           [c1-p1 c1-p2] "et1" {:ignore-case true}
-           [] "et1" {:ignore-case false})
+           [c1-p1 c1-p2] "et1" {:ignore_case true}
+           [] "et1" {:ignore_case false})
 
       (is (d/refs-match?
             [c1-p1 c1-p2]
@@ -391,29 +391,29 @@
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
-           [c1-p1 c1-p2] {:entry-title "ET1"}
-           [] {:entry-title "ET44"}
+           [c1-p1 c1-p2] {:entry_title "ET1"}
+           [] {:entry_title "ET44"}
            ;; Multiple values
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-title "ET1"}
-                                           {:entry-title "ET2"}]}
-           [c1-p1 c1-p2] {:or [{:entry-title "ET1"}
-                               {:entry-title "ET44"}]}
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry-title "ET1"}
-                                           {:entry-title "ET2"}]}
-           [] {:and [{:entry-title "ET1"}
-                     {:entry-title "ET2"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_title "ET1"}
+                                           {:entry_title "ET2"}]}
+           [c1-p1 c1-p2] {:or [{:entry_title "ET1"}
+                               {:entry_title "ET44"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_title "ET1"}
+                                           {:entry_title "ET2"}]}
+           [] {:and [{:entry_title "ET1"}
+                     {:entry_title "ET2"}]}
 
            ;; Wildcards
-           all-colls {:entry-title {:value "ET*" :pattern true}}
-           [] {:entry-title {:value "ET*" :pattern false}}
-           [] {:entry-title {:value "ET*"}}
-           [c1-p1 c1-p2] {:entry-title {:value "*1" :pattern true}}
-           [c1-p1 c1-p2] {:entry-title {:value "?T1" :pattern true}}
-           [] {:entry-title {:value "*Q*" :pattern true}}
+           all-colls {:entry_title {:value "ET*" :pattern true}}
+           [] {:entry_title {:value "ET*" :pattern false}}
+           [] {:entry_title {:value "ET*"}}
+           [c1-p1 c1-p2] {:entry_title {:value "*1" :pattern true}}
+           [c1-p1 c1-p2] {:entry_title {:value "?T1" :pattern true}}
+           [] {:entry_title {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c1-p1 c1-p2] {:entry-title {:value "et1" :ignore-case true}}
-           [] {:entry-title {:value "et1" :ignore-case false}}))
+           [c1-p1 c1-p2] {:entry_title {:value "et1" :ignore_case true}}
+           [] {:entry_title {:value "et1" :ignore_case false}}))
 
     (testing "dataSetId with aql"
       (are [items v options]
@@ -446,16 +446,16 @@
               :errors ["Parameter [unsupported] with option was not recognized."]}
              (search/find-refs :collection {"options[unsupported][ignore-case]" true})))
       (is (= {:status 400,
-              :errors [(smsg/invalid-opt-for-param :entry-title :unsupported)]}
+              :errors [(smsg/invalid-opt-for-param :entry_title :unsupported)]}
              (search/find-refs
                :collection
-               {:entry-title "dummy" "options[entry-title][unsupported]" "unsupported"}))))
+               {:entry_title "dummy" "options[entry-title][unsupported]" "unsupported"}))))
 
     (testing "empty parameters are ignored"
       (is (d/refs-match? [c1-p1] (search/find-refs :collection {:concept-id (:concept-id c1-p1)
                                                                 :short-name ""
                                                                 :version "    "
-                                                                :entry-title "  \n \t"}))))))
+                                                                :entry_title "  \n \t"}))))))
 
 ;; Create 2 collection sets of which only 1 set has processing-level-id
 (deftest processing-level-search-test
@@ -520,27 +520,27 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [c1-p2] {:processing-level-id "1B"}
-           [] {:processing-level-id "1C"}
+           [c1-p2] {:processing_level_id "1B"}
+           [] {:processing_level_id "1C"}
            ;; Multiple values
-           [c1-p2 c2-p2 c3-p2] {:or [{:processing-level-id "1B"}
-                                     {:processing-level-id "2B"}
-                                     {:processing-level-id "3B"}]}
-           [c4-p2] {:or [{:processing-level-id "4B"} {:processing-level-id "4C"}]}
-           [c1-p1 c2-p1 c3-p1 c4-p1 c4-p2] {:not {:or [{:processing-level-id "1B"}
-                                                       {:processing-level-id "2B"}
-                                                       {:processing-level-id "3B"}]}}
+           [c1-p2 c2-p2 c3-p2] {:or [{:processing_level_id "1B"}
+                                     {:processing_level_id "2B"}
+                                     {:processing_level_id "3B"}]}
+           [c4-p2] {:or [{:processing_level_id "4B"} {:processing_level_id "4C"}]}
+           [c1-p1 c2-p1 c3-p1 c4-p1 c4-p2] {:not {:or [{:processing_level_id "1B"}
+                                                       {:processing_level_id "2B"}
+                                                       {:processing_level_id "3B"}]}}
 
            ;; Wildcards
-           all-prov2-colls {:processing-level-id {:value "*B" :pattern true}}
-           [] {:processing-level-id {:value "B*" :pattern false}}
-           [] {:processing-level-id {:value "B*"}}
-           all-prov2-colls {:processing-level-id {:value "?B" :pattern true}}
-           [] {:processing-level-id {:value "*Q*" :pattern true}}
+           all-prov2-colls {:processing_level_id {:value "*B" :pattern true}}
+           [] {:processing_level_id {:value "B*" :pattern false}}
+           [] {:processing_level_id {:value "B*"}}
+           all-prov2-colls {:processing_level_id {:value "?B" :pattern true}}
+           [] {:processing_level_id {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c2-p2] {:processing-level-id {:value "2b" :ignore-case true}}
-           [] {:processing-level-id {:value "2b" :ignore-case false}}))))
+           [c2-p2] {:processing_level_id {:value "2b" :ignore_case true}}
+           [] {:processing_level_id {:value "2b" :ignore_case false}}))))
 
 ;; Find collections by echo_collection_id and concept_id params
 (deftest echo-coll-id-search-test
