@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.models.collection
-    "Defines UMM-C clojure records.")
+   "Defines UMM-C clojure records."
+ (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord UMM-C
   [
@@ -187,6 +188,7 @@
    ;; Station, Network, Human, etc.
    Project
   ])
+(record-pretty-printer/enable-record-pretty-printing UMM-C)
 
 ;; This element describes the relevant platforms used to acquire the data related to the service.
 ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
@@ -195,6 +197,7 @@
   [
 
   ])
+(record-pretty-printer/enable-record-pretty-printing PlatformType)
 
 ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the
 ;; data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than
@@ -210,6 +213,7 @@
    ;; The number of years closest to the present time including units Ga, Ma, ka or ybp.
    EndDate
   ])
+(record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
 
 (defrecord LocalCoordinateSystemType
   [
@@ -220,6 +224,7 @@
    ;; This class contains a description of the coordinate system and geo-reference information.
    Description
   ])
+(record-pretty-printer/enable-record-pretty-printing LocalCoordinateSystemType)
 
 (defrecord ChronostratigraphicUnitType
   [
@@ -235,6 +240,7 @@
 
    Period
   ])
+(record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
 ;; Describes a list of resolutions.
 (defrecord ResolutionsType
@@ -243,6 +249,7 @@
    ;; distance units of measure for collection.
    Resolution
   ])
+(record-pretty-printer/enable-record-pretty-printing ResolutionsType)
 
 ;; This element contains the level identifier as described here:
 ;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
@@ -255,6 +262,7 @@
    ;; collection.
    Id
   ])
+(record-pretty-printer/enable-record-pretty-printing ProcessingLevelType)
 
 (defrecord GeographicCoordinateSystemType
   [
@@ -271,6 +279,7 @@
    ;; Coordinate Units of measure.
    LongitudeResolution
   ])
+(record-pretty-printer/enable-record-pretty-printing GeographicCoordinateSystemType)
 
 ;; The reference frame or system from which altitude or depths are measured. The term 'altitude' is
 ;; used instead of the common term 'elevation' to conform to the terminology in Federal Information
@@ -291,6 +300,7 @@
    ;; Describes a list of resolutions.
    Resolution
   ])
+(record-pretty-printer/enable-record-pretty-printing VerticalSystemDefinitionType)
 
 (defrecord GeodeticModelType
   [
@@ -306,6 +316,7 @@
    ;; The ratios of the Earth's major axis to the difference between the major and the minor.
    DenominatorOfFlatteningRatio
   ])
+(record-pretty-printer/enable-record-pretty-printing GeodeticModelType)
 
 ;; This entity stores the reference frame or system from which altitudes (elevations) are measured.
 ;; The information contains the datum name, distance units and encoding method, which provide the
@@ -322,6 +333,7 @@
    ;; the spatial domain and coordinate system definitions.
    SpatialCoverageType
   ])
+(record-pretty-printer/enable-record-pretty-printing SpatialInformationType)
 
 (defrecord HorizontalCoordinateSystemType
   [
@@ -329,6 +341,7 @@
 
    TODOMultiChoice
   ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalCoordinateSystemType)
 
 ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
 ;; historically by the GCMD internally to identify association, responsibility and/or ownership of
@@ -340,6 +353,7 @@
 
    LongName
   ])
+(record-pretty-printer/enable-record-pretty-printing DirectoryNameType)
 
 (defrecord VerticalCoordinateSystemType
   [
@@ -347,3 +361,4 @@
 
    DepthSystemDefinition
   ])
+(record-pretty-printer/enable-record-pretty-printing VerticalCoordinateSystemType)

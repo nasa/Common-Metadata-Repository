@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.scratch
+(ns cmr.umm-spec.record-generator
   (:require [clojure.java.io :as io]
             [cheshire.core :as json]
             [clojure.string :as str]))
@@ -7,8 +7,6 @@
 (def umm-cmn-schema (io/resource "umm-cmn-json-schema.json"))
 
 (def umm-c-schema (io/resource "umm-c-json-schema.json"))
-
-(def mini-schema (io/resource "mini-schema.json"))
 
 (defn- load-schema
   [schema-resource]
@@ -91,7 +89,8 @@
       [(str "(defrecord " record-name)
        "  ["]
       [(str/join "\n\n" (map generate-record-field fields))]
-      ["  ])"])))
+      ["  ])"
+       (str "(record-pretty-printer/enable-record-pretty-printing " record-name ")")])))
 
 (defn definition->record
   "Converts a JSON Schema definition into a record description if it's appropriate to have a record
@@ -120,9 +119,9 @@
 
 (defn generate-ns-declaration
   [{:keys [the-ns description]}]
-  (format "(ns %s\n  %s)"
-       (name the-ns)
-       (generate-doc-string description)))
+  (format "(ns %s\n %s\n (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))"
+          (name the-ns)
+          (generate-doc-string description)))
 
 (defn generate-clojure-records-file
   [{:keys [the-ns] :as ns-def} schema]
@@ -142,13 +141,18 @@
 (comment
 
 
-  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.common
-                                  :description "Defines UMM Common clojure records."}
-                                 (load-schema umm-cmn-schema))
+  ;; TODOs
+  ;; - generate records with fields in the same order as they are defined in the file.
 
-  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
-                                  :description "Defines UMM-C clojure records."}
-                                 (load-schema umm-c-schema))
+
+  (do
+    (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.common
+                                    :description "Defines UMM Common clojure records."}
+                                   (load-schema umm-cmn-schema))
+
+    (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
+                                    :description "Defines UMM-C clojure records."}
+                                   (load-schema umm-c-schema)))
   (-> umm-c-schema
       load-schema
       (dissoc :definitions

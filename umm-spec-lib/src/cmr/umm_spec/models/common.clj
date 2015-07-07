@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.models.common
-    "Defines UMM Common clojure records.")
+   "Defines UMM Common clojure records."
+   (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 ;; This element describes the relevant platforms used to acquire the data. Platform types are
 ;; controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human,
@@ -17,6 +18,7 @@
    ;; on this platform; however the names do not have to be unique across platforms.
    Characteristics
   ])
+(record-pretty-printer/enable-record-pretty-printing PlatformType)
 
 ;; This entity contains attributes describing the scientific endeavor(s) to which the collection is
 ;; associated. Scientific endeavors include campaigns, projects, interdisciplinary science
@@ -40,6 +42,7 @@
    ;; The ending data of the campaign.
    EndDate
   ])
+(record-pretty-printer/enable-record-pretty-printing ProjectType)
 
 ;; This entity registers the device used to measure or record data, including direct human
 ;; observation. In cases where instruments have a single sensor or the instrument and sensor are
@@ -69,6 +72,7 @@
    ;; The operation mode applied on the instrument when acquire the granule data.
    OperationalMode
   ])
+(record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
 ;; This entity holds collection horizontal spatial coverage data.
 (defrecord HorizontalSpatialDomainType
@@ -79,12 +83,14 @@
 
    Geometry
   ])
+(record-pretty-printer/enable-record-pretty-printing HorizontalSpatialDomainType)
 
 ;; Contains the excluded boundaries from the GPolygon.
 (defrecord ExclusiveZoneType
   [
    Boundary
   ])
+(record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
 
 ;; This element describes the relevant platforms used to acquire the data related to the service.
 ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
@@ -97,6 +103,7 @@
 
    Coordinate2
   ])
+(record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
 
 ;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
 (defrecord SpatialExtentType
@@ -113,6 +120,7 @@
 
    GranuleSpatialRepresentation
   ])
+(record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
 (defrecord EntryIdType
   [
@@ -124,6 +132,7 @@
    ;; The Authority (who created it or owns it) of the unique identifier.
    Authority
   ])
+(record-pretty-printer/enable-record-pretty-printing EntryIdType)
 
 ;; Describes the Records the data and the changes that happened on that date for the metadata or
 ;; data (the metadata or data is described by the scope element.)
@@ -135,6 +144,7 @@
    ;; This encaptulates all of the changes for a specific date.
    Date
   ])
+(record-pretty-printer/enable-record-pretty-printing LineageType)
 
 ;; This element describes media options, size, data format, and fees involved in distributing or
 ;; accessing the data.
@@ -152,6 +162,7 @@
    ;; The fee for ordering the data or service.
    Fees
   ])
+(record-pretty-printer/enable-record-pretty-printing DistributionType)
 
 ;; Specifies the date and its type.
 (defrecord DatesType
@@ -162,6 +173,7 @@
    ;; This is the type of date: create, update, review, delete.
    Type
   ])
+(record-pretty-printer/enable-record-pretty-printing DatesType)
 
 (defrecord PartyType
   [
@@ -184,6 +196,7 @@
    ;; The URL of the organization or individual
    RelatedUrl
   ])
+(record-pretty-printer/enable-record-pretty-printing PartyType)
 
 ;; This element permits the user to properly cite the provider and specifies how the data should be
 ;; cited in professional scientific literature. This element provides a citation for the item
@@ -233,6 +246,7 @@
    ;; Additional free-text citation information.
    OtherCitationDetails
   ])
+(record-pretty-printer/enable-record-pretty-printing ResourceCitationType)
 
 ;; This element describes the digital object identifier.
 (defrecord DoiType
@@ -243,6 +257,7 @@
    ;; The Digitial Object Identifier.
    DOI
   ])
+(record-pretty-printer/enable-record-pretty-printing DoiType)
 
 ;; Stores the start and end date/time of a collection.
 (defrecord RangeDateTimeType
@@ -253,6 +268,7 @@
    ;; The time of the temporal coverage period being described ended.
    EndingDateTime
   ])
+(record-pretty-printer/enable-record-pretty-printing RangeDateTimeType)
 
 (defrecord BoundingRectangleType
   [
@@ -266,6 +282,7 @@
 
    SouthBoundingCoordinate
   ])
+(record-pretty-printer/enable-record-pretty-printing BoundingRectangleType)
 
 (defrecord LineType
   [
@@ -273,6 +290,7 @@
 
    CenterPoint
   ])
+(record-pretty-printer/enable-record-pretty-printing LineType)
 
 ;; This element enables specification of Earth science keywords.
 (defrecord ScienceKeywordType
@@ -291,6 +309,7 @@
 
    DetailedVariable
   ])
+(record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
 ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique
 ;; characteristics of the service which extend beyond those defined in this mapping).
@@ -337,6 +356,7 @@
    ;; Data type of parameter value
    DataType
   ])
+(record-pretty-printer/enable-record-pretty-printing AdditionalAttributeType)
 
 ;; Field allows the author to provide information about any constraints for accessing the data set.
 ;; This includes any special restrictions, legal prerequisites, limitations and/or warnings on
@@ -350,6 +370,7 @@
    ;; Value of the constraint
    Value
   ])
+(record-pretty-printer/enable-record-pretty-printing AccessConstraintsType)
 
 (defrecord VerticalSpatialDomainType
   [
@@ -362,6 +383,7 @@
    ;; of either DepthDistanceUnits or AltitudeDistanceUnits.
    Value
   ])
+(record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
 
 ;; consists of a contact. A contact, can be phone, fax, email, url, etc.
 (defrecord ContactType
@@ -372,6 +394,7 @@
    ;; This is the contact phone number, email address, url, etc.
    Value
   ])
+(record-pretty-printer/enable-record-pretty-printing ContactType)
 
 (defrecord GeometryType
   [
@@ -379,6 +402,7 @@
 
    TODOMultiChoice
   ])
+(record-pretty-printer/enable-record-pretty-printing GeometryType)
 
 ;; This entity holds the referential information for collection source/sensor configuration
 ;; including sensor parameters setting such as technique etc.
@@ -395,6 +419,7 @@
    ;; Technique applied for this sensor in the configuration.
    Technique
   ])
+(record-pretty-printer/enable-record-pretty-printing SensorType)
 
 ;; The longitude and latitude value of a spatially referenced pointer in degree.
 (defrecord PointType
@@ -403,6 +428,7 @@
 
    Latitude
   ])
+(record-pretty-printer/enable-record-pretty-printing PointType)
 
 ;; This element describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType
@@ -452,11 +478,13 @@
    ;; The pubication place of the publication.
    PublicationPlace
   ])
+(record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
 (defrecord KeywordUuidStringType
   [
 
   ])
+(record-pretty-printer/enable-record-pretty-printing KeywordUuidStringType)
 
 ;; This element is used to identify other services, collections, visualizations, granules, and other
 ;; metadata types and resources that are associated with or dependent on the data described by the
@@ -479,6 +507,7 @@
    ;; The ProviderName of the metadata record that is associated with this record.
    ProviderId
   ])
+(record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
 (defrecord FileSizeType
   [
@@ -489,6 +518,7 @@
    ;; an enumeration type
    Unit
   ])
+(record-pretty-printer/enable-record-pretty-printing FileSizeType)
 
 ;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate.
 (defrecord TilingCoordinateType
@@ -497,6 +527,7 @@
 
    MaximumValue
   ])
+(record-pretty-printer/enable-record-pretty-printing TilingCoordinateType)
 
 (defrecord GPolygonType
   [
@@ -506,12 +537,14 @@
 
    ExclusiveZone
   ])
+(record-pretty-printer/enable-record-pretty-printing GPolygonType)
 
 ;; The boundary representing the outer ring of the GPolygon.
 (defrecord BoundaryType
   [
    Point
   ])
+(record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
 ;; This entity is used to define characteristics.
 (defrecord CharacteristicType
@@ -531,6 +564,7 @@
    ;; The datatype of the Characteristic/attribute.
    DataType
   ])
+(record-pretty-printer/enable-record-pretty-printing CharacteristicType)
 
 ;; defines the point of contact for more information about the data set or the metadata. The contact
 ;; personnel are defined by the Role, which include: Investigator: The person who headed the
@@ -551,6 +585,7 @@
    ;; Last name of the individual.
    LastName
   ])
+(record-pretty-printer/enable-record-pretty-printing PersonType)
 
 ;; This class contains attributes, which describe the temporal range of a specific collection. This
 ;; extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date
@@ -581,6 +616,7 @@
    ;; collection having granules, which cover a regularly occurring period.
    PeriodicDateTime
   ])
+(record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
 ;; Field specifies links to Internet sites that contain information related to the data, as well as
 ;; related Internet sites such as project home pages, related data archives/servers, metadata
@@ -611,6 +647,7 @@
    ;; The size of a download or site.
    FileSize
   ])
+(record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
 
 ;; Defines a responsibility by role which is either an organization such as a data center, or
 ;; institution responsible for distributing, archiving, or processing the data, etc., or a person
@@ -623,6 +660,7 @@
    ;; This is the responsibility party - either a person or an organization.
    Party
   ])
+(record-pretty-printer/enable-record-pretty-printing ResponsibilityType)
 
 ;; Encapsulates the data that describes the change that was made to either the metadata or data.
 (defrecord LineageDateType
@@ -639,6 +677,7 @@
    ;; Documents who made the change.
    Responsibility
   ])
+(record-pretty-printer/enable-record-pretty-printing LineageDateType)
 
 ;; Describes the language used in the preparation, storage, and description of the data. It is the
 ;; language of the information object, not the language used to describe or interact with the
@@ -647,6 +686,7 @@
   [
 
   ])
+(record-pretty-printer/enable-record-pretty-printing LanguageType)
 
 ;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
 (defrecord OrbitParametersType
@@ -669,6 +709,7 @@
    ;; will default to 0 if not specified.
    StartCircularLatitude
   ])
+(record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
 ;; This entity contains the name of the temporal period in addition to the date, time, duration
 ;; unit, and value, and cycle duration unit and value. Used at the collection level to describe a
@@ -701,6 +742,7 @@
 
    PeriodCycleDurationValue
   ])
+(record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
 (defrecord MetadataStandardType
   [
@@ -708,6 +750,7 @@
 
    Version
   ])
+(record-pretty-printer/enable-record-pretty-printing MetadataStandardType)
 
 ;; consists of the organization ShortName and LongName, which is the name of the organization that
 ;; distributes, archives, or processes the data.
@@ -717,6 +760,7 @@
 
    LongName
   ])
+(record-pretty-printer/enable-record-pretty-printing OrganizationNameType)
 
 ;; This entity contains the address details for each contact.
 (defrecord AddressType
@@ -737,6 +781,7 @@
    ;; The country of the address.
    Country
   ])
+(record-pretty-printer/enable-record-pretty-printing AddressType)
 
 ;; Describes the type of the URL.
 (defrecord ContentTypeType
@@ -747,3 +792,4 @@
    ;; Describes the sub type of the URL. These are keywords that a user selects
    Subtype
   ])
+(record-pretty-printer/enable-record-pretty-printing ContentTypeType)

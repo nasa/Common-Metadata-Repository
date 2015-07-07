@@ -1,0 +1,65 @@
+{
+  "to-umm": {
+    "root": "UMM-C",
+    "definitions": {
+      "UMM-C": {
+        "type": "object",
+        "properties": {
+          // "MetadataLanguage": null,
+          // "MetadataStandard": null,
+          // "MetadataLineage": null,
+          // "DirectoryName": null,
+          "EntryTitle": {
+            "type": "xpath",
+            "value": "/Collection/DataSetId"
+          }
+          // "Abstract": null,
+          // "Purpose": null,
+          // "DataLanguage": null,
+          // "DataLineage": null,
+          // "ResponsibleOrganization": null,
+          // "ResponsiblePersonnel": null,
+          // "CollectionDataType": null,
+          // "ProcessingLevel": null,
+          // "CollectionCitation": null,
+          // "CollectionProgress": null,
+          // "Quality": null,
+          // "UseConstraints": null,
+          // "AccessConstraints": null,
+          // "Distribution": null,
+          // "PublicationReference": null,
+          // "ISOTopicCategory": null,
+          // "ScienceKeyword": null,
+          // "AncillaryKeyword": null,
+          // "AdditionalAttribute": null,
+          // "MetadataAssociation": null,
+          // "TemporalExtent": null,
+          // "PaleoTemporalCoverage": null,
+          // "TemporalKeyword": null,
+          // "SpatialExtent": null,
+          // "TilingIdentificationSystem": null,
+          // "SpatialInformation": null,
+          // "SpatialKeyword": null,
+          // "Platform": null,
+          // "Project": null,
+          // "RelatedUrl": null,
+          // "EntryId": null
+        }
+      }
+    }
+  },
+  "to-xml": {
+    "root": "Collection",
+    "definitions": {
+      "Collection": {
+        "type": "object",
+        "properties": [
+          ["DataSetId", {
+            "type": "mpath",
+            "value": "/UMM-C/EntryTitle"
+          }]
+        ]
+      }
+    }
+  }
+}
