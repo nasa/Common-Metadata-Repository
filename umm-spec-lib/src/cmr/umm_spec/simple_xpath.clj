@@ -5,6 +5,8 @@
 
 ;; Based on https://github.com/candera/clojuredc-xml/blob/master/slides.org
 
+;; TODO unit tests
+
 (defn- matches?
   "TODO"
   [element step]

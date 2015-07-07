@@ -1,16 +1,7 @@
 (ns cmr.umm-spec.record-generator
-  (:require [clojure.java.io :as io]
-            [cheshire.core :as json]
+  (:require [cmr.umm-spec.json-schema :as js]
+            [clojure.java.io :as io]
             [clojure.string :as str]))
-
-
-(def umm-cmn-schema (io/resource "umm-cmn-json-schema.json"))
-
-(def umm-c-schema (io/resource "umm-c-json-schema.json"))
-
-(defn- load-schema
-  [schema-resource]
-  (json/decode (slurp schema-resource) true))
 
 (defn wrap-line
   "Wraps lines so they are at most line-size characters long. Returns a list of lines"
@@ -38,11 +29,9 @@
       :else
       (recur word (conj lines line) words))))
 
-
-(def sample-text
-  "In olden times when wishing still helped one, there lived a king whose daughters were all beautiful, but the youngest was so beautiful that the sun itself, which has seen so much, was astonished whenever it shone in her face. Close by the king's castle lay a great dark forest, and under an old lime-tree in the forest was a well, and when the day was very warm, the king's child went out into the forest and sat down by the side of the cool fountain, and when she was bored she took a golden ball, and threw it up on high and caught it, and this ball was her favorite")
-
-(def MAX_LINE_SIZE 100)
+(def MAX_LINE_SIZE
+  "TODO"
+  100)
 
 (defn- generate-comment
   [indent-size text]
@@ -148,41 +137,11 @@
   (do
     (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.common
                                     :description "Defines UMM Common clojure records."}
-                                   (load-schema umm-cmn-schema))
+                                   (js/load-schema js/umm-cmn-schema))
 
     (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
                                     :description "Defines UMM-C clojure records."}
-                                   (load-schema umm-c-schema)))
-  (-> umm-c-schema
-      load-schema
-      (dissoc :definitions
-              :properties))
-  (dissoc (load-schema umm-c-schema) :definitions)
-
-  (let [schema (load-schema umm-c-schema)]
-    (->> schema
-         :definitions
-         ;; The schema itself can define a top level object
-         (cons [(:title schema) schema])
-
-         (drop 1)
-         ))
-
-  (do
-    (println)
-    (println (generate-clojure-records (load-schema mini-schema))))
-
-  (do
-    (println)
-    (println (generate-clojure-records (load-schema umm-cmn-schema))))
-
-  (do
-    (println)
-    (println (generate-clojure-records (load-schema umm-c-schema))))
+                                   (js/load-schema js/umm-c-schema)))
 
 
-
-
-  )
-
-
+)
