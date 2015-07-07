@@ -102,8 +102,18 @@
   [_ value]
   (qm/negated-condition (parse-json-condition-map value)))
 
+(defn- validate-science-keywords
+  "Custom validation to make sure there is at least one science keyword field being searched on.
+  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
+  present."
+  [value]
+  (when-not (seq (set/intersection (set (keys value))
+                                   (conj psk/science-keyword-fields :any)))
+    (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
+
 (defmethod parse-json-condition :science-keywords
   [condition-name value]
+  (validate-science-keywords value)
   (psk/parse-nested-science-keyword-condition value
                                               (case-sensitive-field? condition-name value)
                                               (:pattern value)))

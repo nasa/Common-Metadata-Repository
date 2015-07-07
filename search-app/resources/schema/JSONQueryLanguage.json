@@ -1,8 +1,9 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
-	"title": "CMR Search Query Conditions",
+	"title": "Query",
 	"description": "A JSON format to support searching for collections in the CMR.",
 	"additionalProperties": false,
+	"type": "object",
 	"properties": {
 		"condition": {
 			"$ref": "#/definitions/QueryCondition"
@@ -12,6 +13,8 @@
 		"QueryCondition": {
 			"description": "Condition used to filter collection search results from the CMR. If multiple properties are provided in a single condition they will be implicitly AND'ed.",
 			"additionalProperties": false,
+			"minProperties": 1,
+			"type": "object",
 			"properties": {
 				"and": {
 					"description": "Groups together conditions to return the intersection of the results.",
