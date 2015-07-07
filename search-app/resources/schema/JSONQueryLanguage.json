@@ -1,0 +1,187 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Query",
+	"description": "A JSON format to support searching for collections in the CMR.",
+	"additionalProperties": false,
+	"type": "object",
+	"properties": {
+		"condition": {
+			"$ref": "#/definitions/QueryCondition"
+		}
+	},
+	"definitions": {
+		"QueryCondition": {
+			"description": "Condition used to filter collection search results from the CMR. If multiple properties are provided in a single condition they will be implicitly AND'ed.",
+			"additionalProperties": false,
+			"minProperties": 1,
+			"type": "object",
+			"properties": {
+				"and": {
+					"description": "Groups together conditions to return the intersection of the results.",
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/QueryCondition"
+					},
+					"minItems": 1
+				},
+				"or": {
+					"description": "Groups together conditions to return the union of the results.",
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/QueryCondition"
+					},
+					"minItems": 1
+				},
+				"not": {
+					"description": "Negates the provided condition.",
+					"$ref": "#/definitions/QueryCondition"
+				},
+				"entry_title": {
+					"description": "UMM Entry Title",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"entry_id": {
+					"description": "UMM Entry ID",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"provider": {
+					"description": "UMM Provider",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"short_name": {
+					"description": "UMM Short Name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"version": {
+					"description": "UMM Version",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"processing_level_id": {
+					"description": "UMM Processing Level ID",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"concept_id": {
+					"description": "CMR concept ID",
+					"oneOf": [{
+						"type": "string"
+					}, {
+						"type": "object",
+						"additionalProperties": false,
+						"description": "Concept ID searches are always case sensitive",
+						"properties": {
+							"value": {
+								"type": "string"
+							},
+							"pattern": {
+								"$ref": "#/definitions/PatternOption"
+							}
+						},
+						"required": ["value"]
+					}]
+				},
+				"platform": {
+					"description": "UMM platform short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"instrument": {
+					"description": "UMM instrument short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"sensor": {
+					"description": "UMM sensor short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"project": {
+					"description": "UMM project short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"archive_center": {
+					"description": "UMM archive center",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"spatial_keyword": {
+					"description": "UMM spatial keyword",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"two_d_coordinate_system_name": {
+					"description": "UMM two dimensional coordinate system name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"keyword": {
+					"description": "Used for free text search across most search fields. Refer to the section 'Find collections by keyword search' on https://cmr.earthdata.nasa.gov/search/site/search_api_docs.html for a list of all fields searched against. Searches are always case insensitive and treat '?' and '*' as wild-cards.",
+					"type": "string"
+				},
+				"science_keywords": {
+					"description": "UMM Science keywords",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"category": {
+							"type": "string"
+						},
+						"topic": {
+							"type": "string"
+						},
+						"term": {
+							"type": "string"
+						},
+						"variable_level_1": {
+							"type": "string"
+						},
+						"variable_level_2": {
+							"type": "string"
+						},
+						"variable_level_3": {
+							"type": "string"
+						},
+						"detailed_variable": {
+							"type": "string"
+						},
+						"ignore_case": {
+							"$ref": "#/definitions/IgnoreCaseOption"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						},
+						"any": {
+							"description": "Search against any of the science keyword sub-fields (category, term, etc.) for the provided value.",
+							"type": "string"
+						}
+					}
+				}
+			}
+		},
+		"StringCondition": {
+			"description": "String searches can take either a string or an object with a value to search for and options to apply for the search.",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"description": "Used to specify the value and options to apply when searching against a particular field. 'value' is required.",
+				"type": "object",
+				"properties": {
+					"value": {
+						"description": "The value to search for the given field.",
+						"type": "string"
+					},
+					"ignore_case": {
+						"$ref": "#/definitions/IgnoreCaseOption"
+					},
+					"pattern": {
+						"$ref": "#/definitions/PatternOption"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["value"]
+			}]
+		},
+		"IgnoreCaseOption": {
+			"description": "If set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.",
+			"type": "boolean"
+		},
+		"PatternOption": {
+			"description": "if set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
+			"type": "boolean"
+		}
+	}
+}

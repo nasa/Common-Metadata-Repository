@@ -46,11 +46,16 @@
              :aot :all}}
 
   :aliases {"generate-docs"
-            ["exec" "-ep" (pr-str '(do
-                                    (use 'cmr.common-app.api-docs)
-                                    (generate
-                                      "CMR Search"
-                                      "api_docs.md"
-                                      "resources/public/site/search_api_docs.html")))]
+            ["exec" "-ep"
+             (pr-str '(do
+                       (use 'cmr.common-app.api-docs)
+                       (use 'clojure.java.io)
+                       ;; Copying Query Language Schema to make available on the public API
+                       (copy (file "resources/schema/JSONQueryLanguage.json")
+                             (file "resources/public/site/JSONQueryLanguage.json"))
+                       (generate
+                         "CMR Search"
+                         "api_docs.md"
+                         "resources/public/site/search_api_docs.html")))]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})

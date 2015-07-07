@@ -99,6 +99,6 @@
 
            ;; Ignore case
            [coll5 coll6] {:project {:value "epi"}}
-           [coll5 coll6] {:project {:value "epi" :ignore-case true}}
-           [] {:project {:value "epi" :ignore-case false}}))))
+           [coll5 coll6] {:project {:value "epi" :ignore_case true}}
+           [] {:project {:value "epi" :ignore_case false}}))))
 

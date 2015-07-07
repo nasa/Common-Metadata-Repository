@@ -82,19 +82,19 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll3 coll4] {:spatial-keyword "DC"}
-           [coll6] {:spatial-keyword "LL"}
-           [coll4] {:spatial-keyword "LA"}
-           [coll5 coll7] {:and [{:spatial-keyword "Detroit"}]}
-           [coll5 coll6 coll7] {:or [{:spatial-keyword "LL"} {:spatial-keyword "Detroit"}]}
-           [] {:and [{:spatial-keyword "LL"} {:spatial-keyword "Detroit"}]}
-           [coll1 coll2 coll5 coll6 coll7] {:not {:spatial-keyword "DC"}}
-           [] {:spatial-keyword "BLAH"}
+           [coll3 coll4] {:spatial_keyword "DC"}
+           [coll6] {:spatial_keyword "LL"}
+           [coll4] {:spatial_keyword "LA"}
+           [coll5 coll7] {:and [{:spatial_keyword "Detroit"}]}
+           [coll5 coll6 coll7] {:or [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
+           [] {:and [{:spatial_keyword "LL"} {:spatial_keyword "Detroit"}]}
+           [coll1 coll2 coll5 coll6 coll7] {:not {:spatial_keyword "DC"}}
+           [] {:spatial_keyword "BLAH"}
 
            ;; pattern
-           [coll3 coll4 coll5 coll7] {:spatial-keyword {:value "D*" :pattern true}}
-           [coll4 coll6] {:spatial-keyword {:value "L?" :pattern true}}
+           [coll3 coll4 coll5 coll7] {:spatial_keyword {:value "D*" :pattern true}}
+           [coll4 coll6] {:spatial_keyword {:value "L?" :pattern true}}
            ;;ignore case
-           [coll5 coll7] {:spatial-keyword {:value "detroit"}}
-           [coll5 coll7] {:spatial-keyword {:value "detroit" :ignore-case true}}
-           [coll7] {:spatial-keyword {:value "detroit" :ignore-case false}}))))
+           [coll5 coll7] {:spatial_keyword {:value "detroit"}}
+           [coll5 coll7] {:spatial_keyword {:value "detroit" :ignore_case true}}
+           [coll7] {:spatial_keyword {:value "detroit" :ignore_case false}}))))
