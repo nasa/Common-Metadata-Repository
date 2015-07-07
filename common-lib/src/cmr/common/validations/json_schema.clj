@@ -2,7 +2,8 @@
   "Functions used to perform JSON schema validation. See http://json-schema.org/ for more details."
   (:require [cheshire.core :as json]
             [cmr.common.services.errors :as errors]
-            [cmr.common.log :as log :refer (warn)])
+            [cmr.common.log :as log :refer (warn)]
+            [clojure.string :as str])
   (:import com.github.fge.jsonschema.main.JsonSchemaFactory
            com.github.fge.jackson.JsonLoader))
 
@@ -14,7 +15,10 @@
    :message \"object instance has properties which are not allowed by the schema: [\"123\"]\"
   ... other keys ignored}"
   [error-report]
-  (str (get-in error-report [:instance :pointer]) " " (:message error-report)))
+  (let [pointer (get-in error-report [:instance :pointer])]
+    (str (when-not (str/blank? pointer)
+           (str pointer " "))
+         (:message error-report))))
 
 (defn- parse-nested-error-report
   "Parses nested error messages from within an error report. See comment block at bottom of file
@@ -41,7 +45,7 @@
   an exception if the provided JSON is not valid JSON."
   [json]
   (try
-    (let [json-string (if (string? json)
+    (let [json-string (if (and (string? json) (not (str/blank? json)))
                         json
                         (json/generate-string json))]
       (JsonLoader/fromString json-string))

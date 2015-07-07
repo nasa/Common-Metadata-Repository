@@ -1,0 +1,226 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "QueryCondition",
+	"description": "CMR JSON Query Language for collections",
+	"additionalProperties": false,
+	"properties": {
+		"and": {
+			"description": "Groups together conditions to return the intersection of the results.",
+			"type": "array",
+			"items": {
+				"$ref": "#"
+			},
+			"minItems": 1
+		},
+		"or": {
+			"description": "Groups together conditions to return the union of the results.",
+			"type": "array",
+			"items": {
+				"$ref": "#"
+			},
+			"minItems": 1
+		},
+		"not": {
+			"description": "Negates the provided condition.",
+			"$ref": "#"
+		},
+		"entry_title": {
+			"description": "UMM Entry Title",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"entry_id": {
+			"description": "UMM Entry ID",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"provider": {
+			"description": "UMM Provider",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"short_name": {
+			"description": "UMM Short Name",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"version": {
+			"description": "UMM Version",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"processing_level_id": {
+			"description": "UMM Processing Level ID",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"concept_id": {
+			"description": "CMR concept ID",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"type": "object",
+				"additionalProperties": false,
+				"description": "Concept ID searches are always case sensitive",
+				"properties": {
+					"value": {
+						"type": "string"
+					},
+					"pattern": {
+						"$ref": "#/definitions/PatternType"
+					}
+				},
+				"required": ["value"]
+			}]
+		},
+		"platform": {
+			"description": "UMM platform",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"instrument": {
+			"description": "UMM instrument",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"sensor": {
+			"description": "UMM sensor",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"project": {
+			"description": "UMM project",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"archive_center": {
+			"description": "UMM archive center",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"spatial_keyword": {
+			"description": "UMM spatial keyword",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"two_d_coordinate_system_name": {
+			"description": "UMM two dimensional coordinate system name",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"$ref": "#/definitions/ValueOptionMap"
+			}]
+		},
+		"keyword": {
+			"description": "Used for free text search across all fields. Searches are always case insensitive and treat '?' and '*' as wild-cards.",
+			"type": "string"
+		},
+		"science_keywords": {
+			"description": "UMM Science keywords",
+			"$ref": "#/definitions/ScienceKeywords"
+		}
+	},
+	"definitions": {
+		"ValueOptionMap": {
+			"description": "Used to specify the value and options to apply when searching against a particular field.",
+			"type": "object",
+			"properties": {
+				"value": {
+					"description": "The value to search for the given field.",
+					"type": "string"
+				},
+				"ignore_case": {
+					"$ref": "#/definitions/CaseSensitiveType"
+				},
+				"pattern": {
+					"$ref": "#/definitions/PatternType"
+				}
+			},
+			"additionalProperties": false,
+			"required": ["value"]
+		},
+		"ScienceKeywords": {
+			"description": "UMM Science keywords",
+			"type": "object",
+			"additionalProperties": false,
+			"minProperties": 1,
+			"properties": {
+				"category": {
+					"type": "string"
+				},
+				"topic": {
+					"type": "string"
+				},
+				"term": {
+					"type": "string"
+				},
+				"variable_level_1": {
+					"type": "string"
+				},
+				"variable_level_2": {
+					"type": "string"
+				},
+				"variable_level_3": {
+					"type": "string"
+				},
+				"detailed_variable": {
+					"type": "string"
+				},
+				"ignore_case": {
+					"$ref": "#/definitions/CaseSensitiveType"
+				},
+				"pattern": {
+					"$ref": "#/definitions/PatternType"
+				},
+				"any": {
+					"type": "string",
+					"description": "Search against any of the science keyword fields for the provided value"
+				}
+			}
+		},
+		"CaseSensitiveType": {
+			"description": "If set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.",
+			"type": "boolean"
+		},
+		"PatternType": {
+			"description": "if set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
+			"type": "boolean"
+		}
+	}
+}

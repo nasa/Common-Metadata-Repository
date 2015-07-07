@@ -48,6 +48,9 @@
   :aliases {"generate-docs"
             ["exec" "-ep" (pr-str '(do
                                     (use 'cmr.common-app.api-docs)
+                                    (use 'clojure.java.io)
+                                    (copy (file "resources/schema/JSONQueryLanguage.json")
+                                          (file "resources/public/site/JSONQueryLanguage.json"))
                                     (generate
                                       "CMR Search"
                                       "api_docs.md"

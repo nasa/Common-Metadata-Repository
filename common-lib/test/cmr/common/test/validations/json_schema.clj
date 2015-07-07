@@ -35,7 +35,7 @@
   (testing "Validation failure throws bad-request exception"
     (tu/assert-exception-thrown-with-errors
       :bad-request
-      [" object has missing required properties ([\"bar\"])"]
+      ["object has missing required properties ([\"bar\"])"]
       (js/perform-validations sample-json-schema {"alpha" "omega"}))))
 
 (deftest validate-against-json-schema-test
@@ -52,7 +52,7 @@
 
             "Missing required property"
             {"alpha" "omega"}
-            [" object has missing required properties ([\"bar\"])"]
+            ["object has missing required properties ([\"bar\"])"]
 
             "Missing required property from subfield"
             {"bar" true "subfield" {"gamma" "ray"}}
@@ -70,7 +70,7 @@
 
             "Unknown property"
             {"bad-property" "bad-value" "bar" true}
-            [" object instance has properties which are not allowed by the schema: [\"bad-property\"]"]))
+            ["object instance has properties which are not allowed by the schema: [\"bad-property\"]"]))
 
   (testing "Invalid JSON structure"
     (is (thrown-with-msg?
