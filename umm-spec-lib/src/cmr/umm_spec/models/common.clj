@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.models.common
    "Defines UMM Common clojure records."
-   (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+ (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 ;; This element describes the relevant platforms used to acquire the data. Platform types are
 ;; controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human,

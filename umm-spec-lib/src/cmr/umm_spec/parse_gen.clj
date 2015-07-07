@@ -22,96 +22,6 @@
                                      {:allow-comments true})]
     (json/decode (slurp mappings-resource) true)))
 
-
-(defmulti add-parse-type
-  "TODO"
-  (fn [schema type-name schema-type mapping-type]
-    (cond
-      (:type schema-type) (:type schema-type)
-      (:$ref schema-type) :$ref
-
-      ;; Allow default to fall through and find unaccounted for implementations
-
-      )))
-
-(defmethod add-parse-type :default
-  [schema type-name schema-type mapping-type]
-  (throw (Exception. (str "No method for " (pr-str schema-type) " with " (pr-str mapping-type)))))
-
-(defmethod add-parse-type :$ref
-  [schema type-name schema-type mapping-type]
-  (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)]
-    (add-parse-type ref-schema
-                    (or type-name (get-in schema-type [:$ref type-name]))
-                    ref-schema-type
-                    mapping-type)))
-
-;; Simple types
-(doseq [simple-type ["string" "number" "integer" "boolean"]]
-  (defmethod add-parse-type simple-type
-    [_ _ schema-type mapping-type]
-    (assoc mapping-type :parse-type (update-in schema-type [:type] keyword))))
-
-
-(defmethod add-parse-type "object"
-  [schema type-name schema-type mapping-type]
-  (let [properties (into
-                     {}
-                     (for [[prop-name sub-mapping] (:properties mapping-type)
-                           :let [sub-type-def (get-in schema-type [:properties prop-name])]]
-                       [prop-name (add-parse-type schema nil sub-type-def sub-mapping)]))
-        record-ns (js/schema-name->namespace (:schema-name schema))
-        constructor-fn-var (find-var
-                             (symbol (str (name record-ns)
-                                          "/map->"
-                                          (name type-name))))]
-    (assoc mapping-type
-           :properties properties
-           :parse-type {:type :record
-                        :constructor-fn (var-get constructor-fn-var)})))
-
-(defn get-to-umm-mappings
-  "Gets the mappings to umm with extra information to aid in parsing"
-  [schema mappings]
-  (let [{:keys [to-umm]} mappings
-        root-type-def (get-in schema [:definitions (:root schema)])
-        new-definitions (util/map-values #(add-parse-type schema (:root schema) root-type-def %)
-                                         (:definitions to-umm))]
-    (assoc to-umm :definitions new-definitions)))
-
-(defn cleanup-schema
-  "For debugging purposes. Removes extraneous fields"
-  [schema]
-  (clojure.walk/postwalk
-    (fn [v]
-      (if (map? v)
-        (dissoc v :description :required :minItems :maxItems :minLength :maxLength)
-        v))
-    schema))
-
-(comment
-
-  (do
-    (def mappings (load-mappings echo10-mappings))
-
-    (def schema (cleanup-schema (js/load-schema-for-parsing "umm-c-json-schema.json")))
-
-    )
-
-
-  (get-to-umm-mappings schema mappings)
-
-  (:root schema)
-
-  (get-in schema [:definitions (:root schema)])
-
-  (keys (get-in schema [:definitions]))
-
-
-
-  )
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Generation
 
@@ -153,7 +63,78 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML -> UMM
 
+;;; Code necessary for making mapping easier to parse. When we parse XML into UMM we have to convert
+;;; things into the appropriate types. We splice together the schema and the mapping information in
+;;; order to have enough information to parse into appropriate types.
+;;;
+
+(defmulti add-parse-type
+  "TODO"
+  (fn [schema type-name schema-type mapping-type]
+    (cond
+      (:type schema-type) (:type schema-type)
+      (:$ref schema-type) :$ref
+      :else :default
+      ;; Allow default to fall through and find unaccounted for implementations
+
+      )))
+
+(defmethod add-parse-type :default
+  [schema type-name schema-type mapping-type]
+  (throw (Exception. (str "No method for " (pr-str schema-type) " with " (pr-str mapping-type)))))
+
+(defmethod add-parse-type :$ref
+  [schema type-name schema-type mapping-type]
+  (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)]
+    (add-parse-type ref-schema
+                    (or type-name (get-in schema-type [:$ref :type-name]))
+                    ref-schema-type
+                    mapping-type)))
+
+;; Simple types
+(doseq [simple-type ["string" "number" "integer" "boolean"]]
+  (defmethod add-parse-type simple-type
+    [_ _ schema-type mapping-type]
+    (assoc mapping-type :parse-type (update-in schema-type [:type] keyword))))
+
+(defmethod add-parse-type "object"
+  [schema type-name schema-type mapping-type]
+  (let [record-ns (js/schema-name->namespace (:schema-name schema))
+        constructor-fn-var (find-var
+                             (symbol (str (name record-ns)
+                                          "/map->"
+                                          (name type-name))))
+        properties (into
+                     {}
+                     (for [[prop-name sub-mapping] (:properties mapping-type)
+                           :let [sub-type-def (get-in schema-type [:properties prop-name])]]
+                       [prop-name (add-parse-type schema nil sub-type-def sub-mapping)]))]
+    (assoc mapping-type
+           :properties properties
+           :parse-type {:type :record
+                        :constructor-fn (var-get constructor-fn-var)})))
+
+(defn get-to-umm-mappings
+  "Gets the mappings to umm with extra information to aid in parsing"
+  [schema mappings]
+  (let [{:keys [to-umm]} mappings
+        root-type-def (get-in schema [:definitions (:root schema)])
+        new-definitions (util/map-values #(add-parse-type schema (:root schema) root-type-def %)
+                                         (:definitions to-umm))]
+    (assoc to-umm :definitions new-definitions)))
+
+(defn cleanup-schema
+  "For debugging purposes. Removes extraneous fields"
+  [schema]
+  (clojure.walk/postwalk
+    (fn [v]
+      (if (map? v)
+        (dissoc v :description :required :minItems :maxItems :minLength :maxLength)
+        v))
+    schema))
+
 (defmulti parse-value
+  "TODO"
   ;; TODO this will probably change to a parse context
   (fn [definitions xml-root umm-def]
     (:type umm-def)))
@@ -165,15 +146,32 @@
       (into {} (for [[prop-name sub-def] properties]
                  [prop-name (parse-value definitions xml-root sub-def)])))))
 
+(defmulti parse-xpath-results
+  "TODO"
+  (fn [parse-type result]
+    (:type parse-type)))
+
+(defmethod parse-xpath-results :string
+  [parse-type result]
+  (->> result first :content first))
+
 
 (defmethod parse-value "xpath"
-  [definitions xml-root {:keys [value]}]
+  [definitions xml-root {:keys [parse-type value]}]
   ;; TODO XPaths could be parsed ahead of time when loading mappings.
-  (->> (sxp/evaluate xml-root (sxp/parse-xpath value))
-       ;; TODO parse the XPath value that's returned as the type from the JSON schema
-       first
-       :content
-       first))
+  (parse-xpath-results parse-type (sxp/evaluate xml-root (sxp/parse-xpath value))))
+
+
+(defmethod parse-value "concat"
+  [definitions xml-root {:keys [parts]}]
+  (->> parts
+       (mapv #(assoc % :parse-type {:type :string}))
+       (mapv #(parse-value definitions xml-root %))
+       str/join))
+
+(defmethod parse-value "constant"
+  [_ _ {:keys [value]}]
+  value)
 
 (defn parse-xml
   "TODO"

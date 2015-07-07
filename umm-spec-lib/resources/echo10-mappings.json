@@ -12,8 +12,11 @@
           "EntryTitle": {
             "type": "xpath",
             "value": "/Collection/DataSetId"
-          }
-          // "Abstract": null,
+          },
+          "Abstract": {
+            "type": "xpath",
+            "value": "/Collection/Description"
+          },
           // "Purpose": null,
           // "DataLanguage": null,
           // "DataLineage": null,
@@ -43,7 +46,37 @@
           // "Platform": null,
           // "Project": null,
           // "RelatedUrl": null,
-          // "EntryId": null
+          "EntryId": {
+            "type": "object",
+            "properties": {
+              "Id": {
+                "type": "concat",
+                "parts": [{
+                  "type": "xpath",
+                  "value": "/Collection/ShortName"
+                }, {
+                  "type": "constant",
+                  "value": "_"
+                }, {
+                  "type": "xpath",
+                  "value": "/Collection/VersionId"
+                }]
+              }
+            }
+          },
+          "Product": {
+            "type": "object",
+            "properties": {
+              "ShortName": {
+                "type": "xpath",
+                "value": "/Collection/ShortName"
+              },
+              "VersionId": {
+                "type": "xpath",
+                "value": "/Collection/VersionId"
+              }
+            }
+          }
         }
       }
     }
@@ -54,9 +87,21 @@
       "Collection": {
         "type": "object",
         "properties": [
+          ["ShortName", {
+            "type": "mpath",
+            "value": "/UMM-C/Product/ShortName"
+          }],
+          ["VersionId", {
+            "type": "mpath",
+            "value": "/UMM-C/Product/VersionId"
+          }],
           ["DataSetId", {
             "type": "mpath",
             "value": "/UMM-C/EntryTitle"
+          }],
+          ["Description", {
+            "type": "mpath",
+            "value": "/UMM-C/Abstract"
           }]
         ]
       }
