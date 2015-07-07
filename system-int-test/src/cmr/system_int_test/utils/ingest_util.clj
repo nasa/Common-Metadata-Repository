@@ -5,6 +5,7 @@
             [cheshire.core :as json]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
+            [cmr.common.mime-types :as mt]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.granule :as g]
             [cmr.system-int-test.data2.provider-holdings :as ph]
@@ -55,25 +56,28 @@
 (defn delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [provider-id]
-  (let [response (client/delete (url/delete-provider-url provider-id)
-                                {:throw-exceptions false
-                                 :connection-manager (s/conn-mgr)
-                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-        status (:status response)]
-    (is (some #{200 404} [status]))))
+  (let [{:keys [status]} (client/delete
+                           (url/delete-provider-url provider-id)
+                           {:throw-exceptions false
+                            :connection-manager (s/conn-mgr)
+                            :headers {transmit-config/token-header (transmit-config/echo-system-token)}})]
+    (is (contains? #{204 404} status))))
 
 (defn delete-ingest-provider
   "Delete the provider with the matching provider-id through the CMR ingest app."
   [provider-id]
-  (let [response (client/delete (url/ingest-provider-url provider-id)
-                                {:throw-exceptions false
-                                 :connection-manager (s/conn-mgr)
-                                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
-        {:keys [status body]} response
-        errors (:errors (json/decode body true))]
-    (if (= 200 status)
-      status
-      [status errors])))
+  (let [{:keys [status body] :as response}
+        (client/delete (url/ingest-provider-url provider-id)
+                       {:throw-exceptions false
+                        :connection-manager (s/conn-mgr)
+                        :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+        errors (:errors (json/decode body true))
+        content-type (get-in response [:headers :content-type])
+        content-length (get-in response [:headers :content-length])]
+    {:status status
+     :errors errors
+     :content-type (first (mt/extract-mime-types content-type))
+     :content-length content-length}))
 
 (defn update-ingest-provider
   "Updates the ingest provider with the given parameters, which is a map of key and value for
