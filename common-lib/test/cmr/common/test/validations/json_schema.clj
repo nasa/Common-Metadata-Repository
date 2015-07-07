@@ -5,50 +5,41 @@
             [cmr.common.validations.json-schema :as js]
             [cmr.common.test.test-util :as tu]
             [cmr.common.util :as u])
-  (:import com.github.fge.jsonschema.core.exceptions.InvalidSchemaException))
+  (:import com.github.fge.jsonschema.core.exceptions.InvalidSchemaException
+           clojure.lang.ExceptionInfo))
 
 (def sample-json-schema
   "Schema to test validation against"
-  (json/encode {"$schema" "http://json-schema.org/draft-04/schema#"
-                "title" "The title"
-                "description" "A description"
-                "type" "object"
-                "additionalProperties" false
-                "properties" {"foo" {"oneOf" [{ "type" "string"}
-                                              { "type" "integer"}]}
-                              "bar" {"type" "boolean"}
-                              "alpha" {"type" "string"}
-                              "subfield" {"$ref" "#/definitions/omega"}}
-                "required" ["bar"]
-                "definitions" {"omega" {"type" "object"
-                                        "properties" {"zeta" {"type" "integer"}}
-                                        "required" ["zeta"]}}}))
+  (js/json-string->JsonSchema
+    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
+                           "title" "The title"
+                           "description" "A description"
+                           "type" "object"
+                           "additionalProperties" false
+                           "properties" {"foo" {"oneOf" [{ "type" "string"}
+                                                         { "type" "integer"}]}
+                                         "bar" {"type" "boolean"}
+                                         "alpha" {"type" "string"}
+                                         "subfield" {"$ref" "#/definitions/omega"}}
+                           "required" ["bar"]
+                           "definitions" {"omega" {"type" "object"
+                                                   "properties" {"zeta" {"type" "integer"}}
+                                                   "required" ["zeta"]}}})))
 
-(deftest perform-validations-test
+(deftest validate-json-test
   (testing "Valid json"
     (are [json]
-         (nil? (js/perform-validations sample-json-schema json))
-
-         {"bar" true}
-         {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
-
-  (testing "Validation failure throws bad-request exception"
-    (tu/assert-exception-thrown-with-errors
-      :bad-request
-      ["object has missing required properties ([\"bar\"])"]
-      (js/perform-validations sample-json-schema {"alpha" "omega"}))))
-
-(deftest validate-against-json-schema-test
-  (testing "Valid json"
-    (are [json]
-         (nil? (seq (js/validate-against-json-schema sample-json-schema json)))
+         (nil? (seq (js/validate-json sample-json-schema (json/generate-string json))))
 
          {"bar" true}
          {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
 
   (testing "Validation failures"
     (u/are2 [invalid-json errors]
-            (= errors (js/validate-against-json-schema sample-json-schema invalid-json))
+            (tu/assert-exception-thrown-with-errors
+              :bad-request
+              errors
+              (js/validate-json sample-json-schema (json/generate-string invalid-json)))
 
             "Missing required property"
             {"alpha" "omega"}
@@ -74,14 +65,17 @@
 
   (testing "Invalid JSON structure"
     (is (thrown-with-msg?
-          Exception
+          ExceptionInfo
           #"Invalid JSON: Unexpected character \('\}' \(code 125\)\): expected a value"
-          (js/validate-against-json-schema sample-json-schema "{\"bar\":}"))))
+          (js/validate-json sample-json-schema "{\"bar\":}"))))
 
   (testing "Invalid schema - description cannot be an array"
     (is (thrown-with-msg?
           InvalidSchemaException
           #"value has incorrect type \(found array, expected one of \[string\]\)"
-          (js/validate-against-json-schema (json/encode {"$schema" "http://json-schema.org/draft-04/schema#"
-                                                         "title" "The title"
-                                                         "description" ["A description" "B description"]}) {})))))
+          (js/validate-json
+            (js/json-string->JsonSchema
+              (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
+                                     "title" "The title"
+                                     "description" ["A description" "B description"]}))
+            "{}")))))

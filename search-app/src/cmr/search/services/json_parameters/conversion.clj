@@ -2,6 +2,7 @@
   "Contains functions for parsing and converting JSON queries into query conditions"
   (:require [clojure.string :as str]
             [clojure.set :as set]
+            [clojure.java.io :as io]
             [cheshire.core :as json]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as util]
@@ -18,7 +19,9 @@
 
 (def json-query-schema
   "JSON Schema for querying for collections."
-  (slurp (clojure.java.io/resource "schema/JSONQueryLanguage.json")))
+  (-> (io/resource "schema/JSONQueryLanguage.json")
+      slurp
+      js/json-string->JsonSchema))
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."
@@ -115,7 +118,7 @@
   "Perform all validations against the provided JSON query."
   [concept-type json-query]
   (concept-type-validation concept-type)
-  (js/perform-validations json-query-schema json-query))
+  (js/validate-json json-query-schema json-query))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

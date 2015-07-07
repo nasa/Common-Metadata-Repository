@@ -8,9 +8,9 @@
 
 (deftest parse-json-query-test
   (testing "Empty JSON is valid"
-    (are [empty-string] (= (q/query {:concept-type :collection})
-                           (jp/parse-json-query :collection {} empty-string))
-         "{}" nil ""))
+    (is (= (q/query {:concept-type :collection})
+           (jp/parse-json-query :collection {} "{}"))))
+
   (testing "Combination of query and JSON parameters"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "ET")

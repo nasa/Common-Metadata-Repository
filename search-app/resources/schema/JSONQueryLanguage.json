@@ -85,7 +85,7 @@
 						"type": "string"
 					},
 					"pattern": {
-						"$ref": "#/definitions/PatternType"
+						"$ref": "#/definitions/Pattern"
 					}
 				},
 				"required": ["value"]
@@ -166,10 +166,10 @@
 					"type": "string"
 				},
 				"ignore_case": {
-					"$ref": "#/definitions/CaseSensitiveType"
+					"$ref": "#/definitions/IgnoreCase"
 				},
 				"pattern": {
-					"$ref": "#/definitions/PatternType"
+					"$ref": "#/definitions/Pattern"
 				}
 			},
 			"additionalProperties": false,
@@ -203,10 +203,10 @@
 					"type": "string"
 				},
 				"ignore_case": {
-					"$ref": "#/definitions/CaseSensitiveType"
+					"$ref": "#/definitions/IgnoreCase"
 				},
 				"pattern": {
-					"$ref": "#/definitions/PatternType"
+					"$ref": "#/definitions/Pattern"
 				},
 				"any": {
 					"type": "string",
@@ -214,11 +214,11 @@
 				}
 			}
 		},
-		"CaseSensitiveType": {
+		"IgnoreCase": {
 			"description": "If set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.",
 			"type": "boolean"
 		},
-		"PatternType": {
+		"Pattern": {
 			"description": "if set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
 			"type": "boolean"
 		}
