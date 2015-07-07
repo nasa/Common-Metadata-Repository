@@ -3,7 +3,7 @@
   (:require [compojure.core :refer :all]
             [cmr.metadata-db.api.route-helpers :as rh]
             [clojure.string :as str]
-            [cmr.common.services.errors :as serv-err]
+            [cmr.common.services.errors :as errors]
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cheshire.core :as json]
@@ -17,7 +17,7 @@
   (try
     (when v (Integer. v))
     (catch NumberFormatException e
-      (serv-err/throw-service-error :invalid-data (.getMessage e)))))
+      (errors/throw-service-error :invalid-data (.getMessage e)))))
 
 (defn- get-concept
   "Get a concept by concept-id and optional revision"
@@ -56,7 +56,7 @@
     {:status 200
      :body (json/generate-string (concept-service/get-expired-collections-concept-ids context provider))
      :headers rh/json-header}
-    (serv-err/throw-service-error :bad-request (msg/provider-id-parameter-required))))
+    (errors/throw-service-error :bad-request (msg/provider-id-parameter-required))))
 
 (defn- find-concepts
   "Find concepts for a concept type with specific params"

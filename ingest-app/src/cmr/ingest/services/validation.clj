@@ -1,7 +1,7 @@
 (ns cmr.ingest.services.validation
   "Provides functions to validate concept"
   (:require [clojure.string :as s]
-            [cmr.common.services.errors :as err]
+            [cmr.common.services.errors :as errors]
             [cmr.umm.mime-types :as umm-mime-types]
             [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
@@ -34,7 +34,7 @@
   "Throws an error if there are any errors."
   [errors]
   (when (seq errors)
-    (err/throw-service-errors :bad-request errors)))
+    (errors/throw-service-errors :bad-request errors)))
 
 (defn validate-concept-request
   "Validates the initial request to ingest a concept. "
