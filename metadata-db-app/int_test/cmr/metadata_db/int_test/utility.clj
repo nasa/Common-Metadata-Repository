@@ -379,7 +379,7 @@
   (some #{(merge {:short-name (:provider-id provider-map)
                   :cmr-only false
                   :small false}
-                 provider-map)}
+                 (util/remove-nil-keys provider-map))}
         (:providers (get-providers))))
 
 ;;; miscellaneous
