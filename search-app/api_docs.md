@@ -1375,7 +1375,6 @@ This allows retrieving of basic concept maps with or without metadata. The only 
 
   curl -i "%CMR-ENDPOINT%/concept-revisions/collections"
   curl -i "%CMR-ENDPOINT%/concept-revisions/collections?provider_id=PROV1"
-  curl -i "%CMR-ENDPOINT%/concept-revisions/granules?provider_id=PROV1&native_id="s1_v1"
 
  The following parameters in any combination are supported for collections:
 
@@ -1384,11 +1383,9 @@ This allows retrieving of basic concept maps with or without metadata. The only 
   * `entry_id`
   * `short_name`
   * `version_id`
+  * `concept_id`
 
-The following combinations of paramters are supported for granules:
-
-  * `provider_id` `native_id`
-  * `provider_id` `granule_ur`
+Granules are _not_ supported.
 
 Note that `provider_id` is required for retrieving granule concept maps.
 
