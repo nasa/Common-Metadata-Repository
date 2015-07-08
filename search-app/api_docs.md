@@ -1384,6 +1384,7 @@ This allows retrieving of basic concept maps with or without metadata. The only 
   * `entry_id`
   * `short_name`
   * `version_id`
+  * `concept_id`
 
 The following combinations of paramters are supported for granules:
 
