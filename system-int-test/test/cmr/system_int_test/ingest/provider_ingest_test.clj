@@ -28,7 +28,8 @@
          "PROV4" "S4" true false
          "PROV5" "S5" false true
          "PROV6" "S6" true true
-         "PROV7" "S7" nil nil))
+         "PROV7" "S7" nil nil
+         "PROV8" nil nil nil))
   (testing "create provider invalid value"
     (u/are2
       [provider error]
@@ -37,11 +38,11 @@
         (= [400 [error]] [status errors]))
 
       "cmr-only invalid value"
-      {:provider-id "PROV8" :short-name "S8" :cmr-only "" :small false}
+      {:provider-id "PROV9" :short-name "S8" :cmr-only "" :small false}
       "Cmr Only must be either true or false but was [\"\"]"
 
       "small invalid value"
-      {:provider-id "PROV8" :short-name "S8" :cmr-only false :small ""}
+      {:provider-id "PROV9" :short-name "S8" :cmr-only false :small ""}
       "Small must be either true or false but was [\"\"]")))
 
 (deftest update-provider-test

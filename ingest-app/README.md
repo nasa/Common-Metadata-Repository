@@ -90,8 +90,8 @@ This could happen because queueing the message times out, RabbitMQ has surpassed
 
 The providers that exist in the CMR are administered through the Ingest API. A provider consists of the following fields
 
- * `provider-id` - The alpha numeric upper case string identifying the provider. See [provider id](#provider-id).
- * `short-name` - An unique identifier of the provider. It is similar to `provider-id`, but more descriptive. It allows spaces and other special characters.
+ * `provider-id` - The alpha numeric upper case string identifying the provider. The maximum length of `provider-id` is 10 characters. See [provider id](#provider-id).
+ * `short-name` - A unique identifier of the provider. It is similar to `provider-id`, but more descriptive. It allows spaces and other special characters. The maximum length of `short-name` is 128 characters. `short-name` defaults to `provider-id`.
  * `cmr-only` - True or false value that indicates if this is a provider that ingests directly through the CMR Ingest API or the legacy ECHO Catalog REST Ingest API. A CMR Only provider will still have ACLs configured in ECHO and support ordering through ECHO. A CMR Only provider may even still have data in Catalog REST but it will not be kept in sync with the CMR. `cmr-only` defaults to false.
  * `small` - True or false value that indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
 
