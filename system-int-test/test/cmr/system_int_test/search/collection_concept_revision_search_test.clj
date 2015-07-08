@@ -142,6 +142,28 @@
               [coll3+metadata]
               {:entry-title "et3" :latest true}
 
+              "concept-id - latest=true"
+              [coll2-3]
+              {:concept-id (:concept-id coll2-1) :exclude-metadata true :latest true}
+
+              "concept-id - all revisions"
+              [coll2-1 coll2-tombstone coll2-3]
+              {:concept-id (:concept-id coll2-1) :exclude-metadata true :latest false}
+
+              "concept-id, version-id - latest=true"
+              ;; TODO - this should find nothing when the "find latest" logic is updated
+              [coll1-1] {:concept-id (:concept-id coll1-1)
+                         :version-id "v1"
+                         :exclude-metadata true
+                         :latest true}
+
+              "concept-id, version-id - all revisions"
+              [coll2-1 coll2-tombstone]
+              {:concept-id (:concept-id coll2-1)
+               :version-id "v2"
+               :exclude-metadata true
+               :latest false}
+
               "find none - bad provider-id"
               []
               {:provider-id "PROV_NONE" :exclude-metadata true :latest true}
