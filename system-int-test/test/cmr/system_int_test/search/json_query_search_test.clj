@@ -3,7 +3,8 @@
   included in other files by condition."
   (:require [clojure.test :refer :all]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.system-int-test.utils.search-util :as search]))
+            [cmr.system-int-test.utils.search-util :as search]
+            [cmr.common.util :as util]))
 
 (deftest validation-test
   (testing "Invalid JSON condition names"
@@ -19,12 +20,6 @@
          :granule {:provider "PROV1"}
          ["Searching using JSON query conditions is not supported for granules."]))
 
-  (testing "Invalid science keyword parameters"
-    (is (= {:status 400
-            :errors ["/condition/science_keywords object instance has properties which are not allowed by the schema: [\"and\",\"not\"]"]}
-           (search/find-refs-with-json-query :collection {} {:science_keywords {:category "cat"
-                                                                                :and "bad1"
-                                                                                :not "bad2"}}))))
 
   (testing "Concept-id does not support case-insensitive searches"
     (is (= {:status 400
@@ -46,6 +41,50 @@
     (is (= {:status 400
             :errors ["/condition object has too few properties (found 0 but schema requires at least 1)"]}
             (search/find-refs-with-json-query :collection {} {}))))
+
+  (testing "Invalid bounding boxes"
+    (util/are2
+      [search errors]
+      (= {:status 400 :errors errors}
+         (search/find-refs-with-json-query :collection {} search))
+
+      "Only 3 out of 4 coordinates"
+      {:bounding_box [-10, -10, 0]}
+      ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
+       "/condition/bounding_box array is too short: must have at least 4 elements but instance has 3 elements"
+       "/condition/bounding_box instance type (array) does not match any allowed primitive type (allowed: [\"object\"])"]
+
+      "Not all numbers"
+      {:bounding_box [-10, "foo" [14 7] 0]}
+      ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
+       "/condition/bounding_box/1 instance type (string) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"
+       "/condition/bounding_box/2 instance type (array) does not match any allowed primitive type (allowed: [\"integer\",\"number\"])"
+       "/condition/bounding_box instance type (array) does not match any allowed primitive type (allowed: [\"object\"])"]
+
+      "Missing east coordinate"
+      {:bounding_box {:north 10
+                      :south 0
+                      :west -20}}
+      ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
+       "/condition/bounding_box instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"
+       "/condition/bounding_box object has missing required properties ([\"east\"])"]
+
+      "Extra invalid property"
+      {:bounding_box {:north 10
+                      :south 0
+                      :west -20
+                      :east 20
+                      :north-east 15}}
+      ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
+       "/condition/bounding_box instance type (object) does not match any allowed primitive type (allowed: [\"array\"])"
+       "/condition/bounding_box object instance has properties which are not allowed by the schema: [\"north-east\"]"]))
+
+  (testing "Invalid science keyword parameters"
+    (is (= {:status 400
+            :errors ["/condition/science_keywords object instance has properties which are not allowed by the schema: [\"and\",\"not\"]"]}
+           (search/find-refs-with-json-query :collection {} {:science_keywords {:category "cat"
+                                                                                :and "bad1"
+                                                                                :not "bad2"}}))))
 
   (testing "Science keywords must contain one of the sub-fields as part of the search"
     (is (= {:status 400

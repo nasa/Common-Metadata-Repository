@@ -149,6 +149,10 @@
 							"type": "string"
 						}
 					}
+				},
+				"bounding_box": {
+					"description": "Specifies a bounding rectangle search.",
+					"$ref": "#/definitions/BoundingBoxCondition"
 				}
 			}
 		},
@@ -173,6 +177,36 @@
 				},
 				"additionalProperties": false,
 				"required": ["value"]
+			}]
+		},
+		"BoundingBoxCondition": {
+			"description": "Specifies a bounding rectangle search.",
+			"oneOf": [{
+				"type": "array",
+				"description": "Must contain 4 numbers in the following order: west, south, east, north.",
+				"items": {
+					"type": "number"
+				},
+				"minItems": 4,
+				"maxItems": 4
+			}, {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"north": {
+						"type": "number"
+					},
+					"south": {
+						"type": "number"
+					},
+					"east": {
+						"type": "number"
+					},
+					"west": {
+						"type": "number"
+					}
+				},
+				"required": ["north", "south", "east", "west"]
 			}]
 		},
 		"IgnoreCaseOption": {
