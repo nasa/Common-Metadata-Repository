@@ -2,7 +2,7 @@
   "Defines the HTTP URL routes for the application."
   (:require [clojure.walk :as walk]
             [compojure.core :refer :all]
-            [cheshire.core :as json]
+            [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.provider-service :as ps]))
 
@@ -10,7 +10,9 @@
   "Returns the response map of the given result"
   [result]
   (let [{:keys [status body]} result]
-    {:status status :body (json/decode body true)}))
+    {:status status
+     :headers {"Content-Type" (mt/with-utf-8 mt/json)}
+     :body body}))
 
 (def provider-api-routes
   (context "/providers" []

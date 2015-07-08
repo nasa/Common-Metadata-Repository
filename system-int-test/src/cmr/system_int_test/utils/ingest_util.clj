@@ -76,7 +76,7 @@
         content-length (get-in response [:headers :content-length])]
     {:status status
      :errors errors
-     :content-type (first (mt/extract-mime-types content-type))
+     :content-type content-type
      :content-length content-length}))
 
 (defn update-ingest-provider
