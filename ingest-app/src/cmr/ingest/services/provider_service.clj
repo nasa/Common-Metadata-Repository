@@ -8,7 +8,7 @@
 (defn- successful?
   "Returns true if the mdb response was successful."
   [response]
-  (< 199 (:status response) 300))
+  (<= 200 (:status response) 299))
 
 (defn create-provider
   "Create a provider."
