@@ -50,9 +50,11 @@
              (pr-str '(do
                        (use 'cmr.common-app.api-docs)
                        (use 'clojure.java.io)
-                       ;; Copying Query Language Schema to make available on the public API
-                       (copy (file "resources/schema/JSONQueryLanguage.json")
-                             (file "resources/public/site/JSONQueryLanguage.json"))
+                       (let [target (file "resources/public/site/JSONQueryLanguage.json")]
+                         (println "Copying Query Language Schema to" (str target))
+                         (make-parents target)
+                         (copy (file "resources/schema/JSONQueryLanguage.json")
+                               target))
                        (generate
                          "CMR Search"
                          "api_docs.md"
