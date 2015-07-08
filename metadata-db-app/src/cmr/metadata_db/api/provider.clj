@@ -28,7 +28,7 @@
   "Delete a provider and all its concepts."
   [context params provider-id]
   (provider-service/delete-provider context provider-id)
-  {:status 200})
+  {:status 204})
 
 (defn- get-providers
   "Get a list of provider ids"
