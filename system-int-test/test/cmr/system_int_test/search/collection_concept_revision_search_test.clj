@@ -185,7 +185,7 @@
           (is (= #{"Concept revision searches are not supported for granules."}
                  (set errors)))))
 
-      (testing "uknown parameter"
+      (testing "unknown parameter"
         (let [{:keys [status errors]} (search/get-search-failure-data
                                         (search/find-concept-revisions
                                           :collection
