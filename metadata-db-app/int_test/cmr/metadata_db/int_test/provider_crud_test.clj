@@ -23,14 +23,15 @@
                                                   :small small})]
         (and (= status 201)
              (util/verify-provider-was-saved provider-id
-                                             short-name
+                                             (if short-name short-name provider-id)
                                              (if cmr-only true false)
                                              (if small true false))))
       "cmr-only false small false" "PROV1" "S1" false false
       "cmr-only true small false" "PROV2" "S2" true false
       "cmr-only false small true" "PROV3" "S3" false true
       "cmr-only true small true" "PROV4" "S4" true true
-      "cmr-only and small default to false" "PROV5" "S5" nil nil))
+      "cmr-only and small default to false" "PROV5" "S5" nil nil
+      "only provider-id is present" "PROV6" nil nil nil))
   (testing "save provider twice"
     (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV1"
                                                        :short-name "S1"
@@ -39,7 +40,7 @@
       (is (= [409 ["Provider with provider id [PROV1] already exists."]]
              [status errors]))))
   (testing "save provider with a conflict on short name"
-    (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV6"
+    (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV7"
                                                        :short-name "S1"
                                                        :cmr-only false
                                                        :small false})]
@@ -117,13 +118,12 @@
                        :cmr-only false
                        :small false})
   (util/save-provider {:provider-id "PROV2"
-                       :short-name "S2"
                        :cmr-only true
                        :small true})
   (let [{:keys [status providers]} (util/get-providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV1" :short-name "S1" :cmr-only false :small false}
-            {:provider-id "PROV2" :short-name "S2" :cmr-only true :small true}]
+            {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small true}]
            (sort-by :provider-id providers)))))
 
 (deftest delete-provider-test

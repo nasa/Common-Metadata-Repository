@@ -288,7 +288,7 @@ Synchronously runs the expired concept cleanup job. Requires token with UPDATE i
 
 ### Create provider
 
-Creates a provider in Metadata DB. The `short-name` parameter uniquely identifies a provider. It is similar to `provider-id`, but more descriptive. It allows spaces and other special characters. The `cmr-only` parameter indicates if this is a provider that ingests directly to the CMR and not through Catalog REST. `cmr-only` defaults to false. The `small` parameter indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
+Creates a provider in Metadata DB. The `short-name` parameter uniquely identifies a provider. It is similar to `provider-id`, but more descriptive. It allows spaces and other special characters. `short-name` defaults to `provider-id`. The `cmr-only` parameter indicates if this is a provider that ingests directly to the CMR and not through Catalog REST. `cmr-only` defaults to false. The `small` parameter indicates if this is a provider that has a small amount of data and its collections and granules will be ingested into the `SMALL_PROV` tables. `small` defaults to false.
 
     curl -v -XPOST -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" -d '{"provider-id": "PROV1", "short-name": "Test Provider", "cmr-only":false, "small":false}' http://localhost:3001/providers
 
