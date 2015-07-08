@@ -374,12 +374,12 @@
 
 
 (defn verify-provider-was-saved
-  "Verify that the given provider-id is in the list of providers."
-  [provider-id short-name cmr-only small]
-  (some #{{:provider-id provider-id
-           :short-name short-name
-           :cmr-only cmr-only
-           :small small}}
+  "Verify that the given provider-map is in the list of providers."
+  [provider-map]
+  (some #{(merge {:short-name (:provider-id provider-map)
+                  :cmr-only false
+                  :small false}
+                 provider-map)}
         (:providers (get-providers))))
 
 ;;; miscellaneous

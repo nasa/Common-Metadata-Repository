@@ -50,7 +50,7 @@
             small (get body "small")]
         (save-provider request-context params
                        {:provider-id provider-id
-                        :short-name (if (some? short-name) short-name provider-id)
+                        :short-name (or short-name provider-id)
                         :cmr-only (if (some? cmr-only) cmr-only false)
                         :small (if (some? small) small false)})))
 
