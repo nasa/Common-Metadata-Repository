@@ -273,9 +273,9 @@
             :south -90
             :east 10
             :north 90} [whole-world on-np on-sp wide-north wide-south polygon-with-holes
-                            normal-poly normal-brs north-pole south-pole normal-point
-                            very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
-                            polygon-with-holes-cart]
+                        normal-poly normal-brs north-pole south-pole normal-point
+                        very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
+                        polygon-with-holes-cart]
 
            ;; crosses am
            [166.11,-19.14,-166.52,53.04] [whole-world across-am-poly across-am-br am-point
@@ -284,7 +284,7 @@
             :south -19.14
             :east -166.52
             :north 53.04} [whole-world across-am-poly across-am-br am-point
-                                          very-wide-cart along-am-line]
+                           very-wide-cart along-am-line]
            ;; Matches geodetic line
            [17.67,-6.94,25.56,-4] [whole-world normal-line]
            {:west 17.67
