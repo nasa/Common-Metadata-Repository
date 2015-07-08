@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cmr.common.util :as u]
+            [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
@@ -102,7 +103,9 @@
       (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
 
       ;; delete provider PROV1
-      (is (= 200 (ingest/delete-ingest-provider "PROV1")))
+      (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
+        (is (= 204 status))
+        (is (nil? content-length)))
       (index/wait-until-indexed)
 
       ;; PROV1 concepts are not in metadata-db
@@ -137,12 +140,14 @@
             (search/find-refs :granule {:provider-id "PROV2"})))))
 
   (testing "delete non-existent provider"
-    (let [[status errors] (ingest/delete-ingest-provider "NON_EXIST")]
+    (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
+      (is (= (mt/with-utf-8 mt/json) content-type))
       (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
              [status errors]))))
 
   (testing "delete SMALL_PROV provider"
-    (let [[status errors] (ingest/delete-ingest-provider "SMALL_PROV")]
+    (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
+      (is (= (mt/with-utf-8 mt/json) content-type))
       (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
              [status errors]))))
 
