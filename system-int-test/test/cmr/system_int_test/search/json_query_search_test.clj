@@ -50,10 +50,12 @@
 
       "Invalid coordinates"
       {:bounding_box [-195, -200, 350, 425]}
-      ["West must be within [-180.0] and [180.0] but was [-195.0]."
-       "North must be within [-90.0] and [90.0] but was [425.0]."
-       "East must be within [-180.0] and [180.0] but was [350.0]."
-       "South must be within [-90.0] and [90.0] but was [-200.0]."]
+      ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
+       "/condition/bounding_box/0 numeric instance is lower than the required minimum (minimum: -180, found: -195)"
+       "/condition/bounding_box/1 numeric instance is lower than the required minimum (minimum: -180, found: -200)"
+       "/condition/bounding_box/2 numeric instance is greater than the required maximum (maximum: 180, found: 350)"
+       "/condition/bounding_box/3 numeric instance is greater than the required maximum (maximum: 180, found: 425)"
+       "/condition/bounding_box instance type (array) does not match any allowed primitive type (allowed: [\"object\"])"]
 
       "Only 3 out of 4 coordinates"
       {:bounding_box [-10, -10, 0]}

@@ -227,7 +227,6 @@
   [context provider-id]
   (let [{:keys [status body]} (delete-provider-raw context provider-id)]
     (when-not (or (> 300 status 199) (= status 404))
-      (cmr.common.dev.capture-reveal/capture status)
       (errors/internal-error!
         (format "Failed to delete provider status: %s body: %s"
                 status body)))))
