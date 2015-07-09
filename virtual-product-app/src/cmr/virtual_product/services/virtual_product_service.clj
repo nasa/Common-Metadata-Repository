@@ -202,7 +202,7 @@
             (apply-source-granule-delete-event context annotated-delete-event)))))))
 
 (def order-fullfillment-request-schema
-  "Schema for the JSON request to the keep-virtual"
+  "Schema for the JSON request to the keep-virtual end-point"
   (js/parse-json-schema
     (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                            "title" "Order fullfillment request"
@@ -218,12 +218,13 @@
 (defn filter-virtual-granules
   "Remove all the granules which are not virutal granules from the JSON body which conforms to
   the schema defined above. Note that the existence of the virtual granule in the database is not
-  checked. Only the provider id and entry-title are checked to see if the granule is virtual."
-  [context body]
-  (let [body (if (seq? body) (vec body)  (doall body))
-        _ (js/validate-json order-fullfillment-request-schema (json/generate-string body))
+  checked. Only the provider id and entry-title are checked with the virtual products configuration
+  to see if the granule is virtual if it does exist."
+  [context json-body]
+  (let [body (if (seq? json-body) (vec json-body) json-body)
+        _ (js/validate-json order-fullfillment-request-schema (json/generate-string json-body))
         is-virtual? (fn [item]
                       (virtual-granule?
                         (merge (walk/keywordize-keys item)
                                (concepts/parse-concept-id  (get item "concept-id")))))]
-    (json/generate-string (filter (partial is-virtual?) body))))
+    (json/generate-string (filter (partial is-virtual?) json-body))))

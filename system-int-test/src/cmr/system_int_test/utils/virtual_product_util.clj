@@ -8,7 +8,7 @@
 
 
 (defn keep-virtual
-  "Filter the granules which are not virtual from the input json"
+  "Remove the granules which are not virtual from the input json and return the remaining"
   [json-str]
   (client/post (url/virtual-product-keep-virtual-url)
                {:throw-exceptions false
