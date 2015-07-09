@@ -8,6 +8,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [clojure.data.xml :as x]
             [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dtp]
             [cmr.umm-spec.simple-xpath :as sxp]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -25,30 +26,47 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Generation
 
-(defmulti generate-value
+(defmulti generate-element
   "TODO
   should return nil if no value"
-  (fn [definitions record xml-def]
+  (fn [xpath-context element-name xml-def]
     (:type xml-def)))
 
-(defn generate-element
-  "TODO"
-  [definitions record xml-def-name xml-def]
-  (when-let [value (generate-value definitions record xml-def)]
-    (x/element xml-def-name {} value)))
+(defmethod generate-element "object"
+  [xpath-context element-name {:keys [properties]}]
+  (when-let [content (seq (for [[sub-def-name sub-def] properties
+                                :let [element (generate-element xpath-context sub-def-name sub-def)]
+                                :when element]
+                            element))]
+    (x/element element-name {} content)))
 
-(defmethod generate-value "object"
-  [definitions record {:keys [properties]}]
-  (seq (for [[sub-def-name sub-def] properties
-             :let [element (generate-element definitions record sub-def-name sub-def)]
-             :when element]
-         element)))
+(defmethod generate-element "mpath"
+  [xpath-context element-name {:keys [value]}]
+  (when-let [value (->> (sxp/parse-xpath value)
+                        (sxp/evaluate xpath-context)
+                        :context
+                        first)]
+    (x/element element-name {} (str value))))
 
-(defmethod generate-value "mpath"
-  [definitions record {:keys [value]}]
-  ;; TODO mpaths should all start with the root object. We'll ignore that when evaluating them but
-  ;; then how do we ensure that?
-  (get-in record (vec (drop 1 (sxp/parse-xpath value)))))
+(defmethod generate-element "array"
+  [xpath-context element-name {:keys [items-mpath items]}]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-mpath))]
+    (for [data (:context new-xpath-context)
+          :let [single-item-xpath-context (assoc new-xpath-context :context [data])]]
+      (if items
+        (generate-element single-item-xpath-context element-name items)
+        (x/element element-name {} (str data))))))
+
+(defmethod generate-element "matches-umm"
+  [xpath-context element-name _]
+  (letfn [(record-to-xml
+            [record]
+            (for [[prop-name prop-value] record]
+              (x/element prop-name {}
+                         (if (map? prop-value)
+                           (record-to-xml prop-value)
+                           (str prop-value)))))]
+    (x/element element-name {} (record-to-xml (-> xpath-context :context first)))))
 
 (defn generate-xml
   "TODO"
@@ -58,15 +76,14 @@
         root-def (get definitions (keyword root-def-name))]
     ;; TODO using indent-str for readability while testing.
     (x/indent-str
-      (generate-element definitions record root-def-name root-def))))
+      (generate-element (sxp/wrap-data-for-xpath record) root-def-name root-def))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; XML -> UMM
+;; Parsing prep
 
 ;;; Code necessary for making mapping easier to parse. When we parse XML into UMM we have to convert
 ;;; things into the appropriate types. We splice together the schema and the mapping information in
 ;;; order to have enough information to parse into appropriate types.
-;;;
 
 (defmulti add-parse-type
   "TODO"
@@ -91,11 +108,15 @@
                     ref-schema-type
                     mapping-type)))
 
+(defmethod add-parse-type "array"
+  [schema type-name schema-type mapping-type]
+  (update-in mapping-type [:items] #(add-parse-type schema type-name (:items schema-type) %)))
+
 ;; Simple types
 (doseq [simple-type ["string" "number" "integer" "boolean"]]
   (defmethod add-parse-type simple-type
     [_ _ schema-type mapping-type]
-    (assoc mapping-type :parse-type (update-in schema-type [:type] keyword))))
+    (assoc mapping-type :parse-type schema-type)))
 
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
@@ -129,58 +150,102 @@
   (clojure.walk/postwalk
     (fn [v]
       (if (map? v)
-        (dissoc v :description :required :minItems :maxItems :minLength :maxLength)
+        (dissoc v :description :required :minItems :maxItems :minLength :maxLength :constructor-fn)
         v))
     schema))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Parsing
 
 (defmulti parse-value
   "TODO"
   ;; TODO this will probably change to a parse context
-  (fn [definitions xml-root umm-def]
+  (fn [xpath-context umm-def]
     (:type umm-def)))
 
 (defmethod parse-value "object"
-  [definitions xml-root {:keys [parse-type properties]}]
+  [xpath-context {:keys [parse-type properties]}]
   (let [{:keys [constructor-fn]} parse-type]
     (constructor-fn
       (into {} (for [[prop-name sub-def] properties]
-                 [prop-name (parse-value definitions xml-root sub-def)])))))
+                 [prop-name (parse-value xpath-context sub-def)])))))
 
 (defmulti parse-xpath-results
   "TODO"
-  (fn [parse-type result]
-    (:type parse-type)))
+  (fn [parse-type xpath-context]
+    (or (:format parse-type) (:type parse-type))))
 
-(defmethod parse-xpath-results :string
-  [parse-type result]
-  (->> result first :content first))
+(defn extract-xpath-context-value
+  [xpath-context]
+  (->> xpath-context :context first :content first))
 
+(defmethod parse-xpath-results "string"
+  [_ xpath-context]
+  (extract-xpath-context-value xpath-context))
+
+(defmethod parse-xpath-results "date-time"
+  [_ xpath-context]
+  (dtp/parse-datetime (extract-xpath-context-value xpath-context)))
+
+(defmethod parse-xpath-results "integer"
+  [parse-type xpath-context]
+  (Long/parseLong ^String (extract-xpath-context-value xpath-context)))
+
+(defmethod parse-xpath-results "boolean"
+  [parse-type xpath-context]
+  (= "true" (extract-xpath-context-value xpath-context)))
 
 (defmethod parse-value "xpath"
-  [definitions xml-root {:keys [parse-type value]}]
+  [xpath-context {:keys [parse-type value]}]
   ;; TODO XPaths could be parsed ahead of time when loading mappings.
-  (parse-xpath-results parse-type (sxp/evaluate xml-root (sxp/parse-xpath value))))
-
+  (parse-xpath-results parse-type (sxp/evaluate xpath-context (sxp/parse-xpath value))))
 
 (defmethod parse-value "concat"
-  [definitions xml-root {:keys [parts]}]
+  [xpath-context {:keys [parts]}]
   (->> parts
-       (mapv #(assoc % :parse-type {:type :string}))
-       (mapv #(parse-value definitions xml-root %))
+       (mapv #(assoc % :parse-type {:type "string"}))
+       (mapv #(parse-value xpath-context %))
        str/join))
 
+(defmethod parse-value "array"
+  [xpath-context {:keys [items-xpath items]}]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-xpath))]
+    (for [element (:context new-xpath-context)
+          :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
+      (if (and items (:type items))
+        (parse-value single-item-xpath-context items)
+        (parse-xpath-results (:parse-type items "string") single-item-xpath-context)))))
+
+(defmethod parse-value "matches-xml"
+  [xpath-context _]
+  (letfn [(content-to-data
+            [content]
+            (cond
+              (map? content)
+              {(:tag content) (content-to-data (:content content))}
+
+              (sequential? content)
+              (if (= 1 (count content))
+                (content-to-data (first content))
+                (mapv content-to-data content))
+
+              :else
+              content))]
+    (content-to-data (:context xpath-context))))
+
+
 (defmethod parse-value "constant"
-  [_ _ {:keys [value]}]
+  [_ {:keys [value]}]
   value)
 
 (defn parse-xml
   "TODO"
   [mappings xml-string]
-  (let [parsed-xml (sxp/parse-xml xml-string)
+  (let [xpath-context (sxp/parse-xml xml-string)
         root-def-name (:root mappings)
         definitions (:definitions mappings)
         root-def (get definitions (keyword root-def-name))]
-    (parse-value definitions parsed-xml root-def)))
+    (parse-value xpath-context root-def)))
 
 
 

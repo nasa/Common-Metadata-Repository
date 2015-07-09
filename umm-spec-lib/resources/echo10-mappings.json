@@ -1,5 +1,7 @@
 {
   "to-umm": {
+    // TODO there's no need to have a definitions map if we only nest things and have no refs.
+    // We may want to
     "root": "UMM-C",
     "definitions": {
       "UMM-C": {
@@ -36,7 +38,47 @@
           // "AncillaryKeyword": null,
           // "AdditionalAttribute": null,
           // "MetadataAssociation": null,
-          // "TemporalExtent": null,
+          "TemporalExtent": {
+            // I don't think this element should be an array.
+            "type": "array",
+            // There's only one of these but this still works.
+            "items-xpath": "/Collection/Temporal",
+            "items": {
+              "type": "object",
+              "properties": {
+                "TemporalRangeType": {
+                  "type": "xpath",
+                  "value": "TemporalRangeType"
+                },
+                "PrecisionOfSeconds": {
+                  "type": "xpath",
+                  "value": "PrecisionOfSeconds"
+                },
+                "EndsAtPresentFlag": {
+                  "type": "xpath",
+                  "value": "EndsAtPresentFlag"
+                },
+                "RangeDateTime": {
+                  "type": "array",
+                  "items-xpath": "RangeDateTime",
+                  "items": {
+                    "type": "matches-xml"
+                  }
+                },
+                "SingleDateTime": {
+                  "type": "array",
+                  "items-xpath": "SingleDateTime"
+                },
+                "PeriodicDateTime": {
+                  "type": "array",
+                  "items-xpath": "PeriodicDateTime",
+                  "items": {
+                    "type": "matches-xml"
+                  }
+                }
+              }
+            }
+          },
           // "PaleoTemporalCoverage": null,
           // "TemporalKeyword": null,
           // "SpatialExtent": null,
@@ -102,6 +144,47 @@
           ["Description", {
             "type": "mpath",
             "value": "/UMM-C/Abstract"
+          }],
+          ["Temporal", {
+            // TODO I'm not sure if array is appropriate here since there won't be multiple
+            "type":"array",
+            // ECHO10 only has one Temporal element so we can only select the first one.
+            "items-mpath":"/UMM-C/TemporalExtent[1]",
+            "items": {
+              "type": "object",
+              "properties": {
+                "TemporalRangeType": {
+                  "type": "mpath",
+                  "value": "TemporalRangeType"
+                },
+                "PrecisionOfSeconds": {
+                  "type": "mpath",
+                  "value": "PrecisionOfSeconds"
+                },
+                "EndsAtPresentFlag": {
+                  "type": "mpath",
+                  "value": "EndsAtPresentFlag"
+                },
+                "RangeDateTime": {
+                  "type": "array",
+                  "items-mpath": "RangeDateTime",
+                  "items": {
+                    "type": "matches-umm"
+                  }
+                },
+                "SingleDateTime": {
+                  "type": "array",
+                  "items-mpath": "SingleDateTime"
+                },
+                "PeriodicDateTime": {
+                  "type": "array",
+                  "items-mpath": "PeriodicDateTime",
+                  "items": {
+                    "type": "matches-umm"
+                  }
+                }
+              }
+            }
           }]
         ]
       }
