@@ -52,11 +52,15 @@
              (pr-str '(do
                        (use 'cmr.common-app.api-docs)
                        (use 'clojure.java.io)
-                       (let [target (file "resources/public/site/JSONQueryLanguage.json")]
-                         (println "Copying Query Language Schema to" (str target))
-                         (make-parents target)
+                       (let [json-target (file "resources/public/site/JSONQueryLanguage.json")
+                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")]
+                         (println "Copying JSON Query Language Schema to" (str json-target))
+                         (make-parents json-target)
                          (copy (file "resources/schema/JSONQueryLanguage.json")
-                               target))
+                               json-target)
+                         (println "Copying AQL Schema to" (str aql-target))
+                         (copy (file "resources/schema/IIMSAQLQueryLanguage.xsd")
+                               aql-target))
                        (generate
                          "CMR Search"
                          "api_docs.md"
