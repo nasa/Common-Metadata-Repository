@@ -16,7 +16,8 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.science-keyword :as psk]
-            [cmr.spatial.mbr :as mbr]))
+            [cmr.spatial.mbr :as mbr]
+            [cmr.spatial.validation :as sv]))
 
 (def json-query-schema
   "JSON Schema for querying for collections."
@@ -122,11 +123,12 @@
 
 (defmethod parse-json-condition :bounding-box
   [condition-name value]
-  (qm/->SpatialCondition
-    (if (map? value)
-      (mbr/mbr (:west value) (:north value) (:east value) (:south value))
-      (let [[west south east north] value]
-        (mbr/mbr west north east south)))))
+  (let [bounding-box (if (map? value)
+                       (mbr/mbr (:west value) (:north value) (:east value) (:south value))
+                       (let [[west south east north] value]
+                         (mbr/mbr west north east south)))]
+    (sv/validate bounding-box)
+    (qm/->SpatialCondition bounding-box)))
 
 (defn- concept-type-validation
   "Validates the provided concept type is valid for JSON query."

@@ -48,6 +48,13 @@
       (= {:status 400 :errors errors}
          (search/find-refs-with-json-query :collection {} search))
 
+      "Invalid coordinates"
+      {:bounding_box [-195, -200, 350, 425]}
+      ["West must be within [-180.0] and [180.0] but was [-195.0]."
+       "North must be within [-90.0] and [90.0] but was [425.0]."
+       "East must be within [-180.0] and [180.0] but was [350.0]."
+       "South must be within [-90.0] and [90.0] but was [-200.0]."]
+
       "Only 3 out of 4 coordinates"
       {:bounding_box [-10, -10, 0]}
       ["/condition/bounding_box instance failed to match exactly one schema (matched 0 out of 2)"
