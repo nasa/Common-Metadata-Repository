@@ -366,3 +366,8 @@
   []
   (format "http://localhost:%s/health" (transmit-config/virtual-product-port)))
 
+(defn virtual-product-keep-virtual-url
+  "URL to remove non-virtual granules from the input JSON body"
+  []
+  (format "http://localhost:%s/keep-virtual" (transmit-config/virtual-product-port)))
+

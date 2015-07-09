@@ -12,6 +12,9 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
+            [cheshire.core :as json]
+            [cmr.common.validations.json-schema :as js]
+            [clojure.walk :as walk]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -46,7 +49,7 @@
         (update-in [:action] keyword)
         (assoc :provider-id provider-id :concept-type concept-type))))
 
-(defn- virtual-granule-event?
+(defn- virtual-granule?
   "Returns true if this is an event that should apply to virtual granules"
   [{:keys [concept-type provider-id entry-title]}]
   (and (= :granule concept-type)
@@ -108,7 +111,7 @@
   [context event]
   (when (config/virtual-products-enabled)
     (let [annotated-event (annotate-event event)]
-      (when (virtual-granule-event? annotated-event)
+      (when (virtual-granule? annotated-event)
         (apply-source-granule-update-event context annotated-event)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -195,5 +198,32 @@
     (let [annotated-event (annotate-event event)]
       (when (= :granule (:concept-type annotated-event))
         (let [annotated-delete-event (annotate-granule-delete-event context annotated-event)]
-          (when (virtual-granule-event? annotated-delete-event)
+          (when (virtual-granule? annotated-delete-event)
             (apply-source-granule-delete-event context annotated-delete-event)))))))
+
+(def order-fullfillment-request-schema
+  "Schema for the JSON request to the keep-virtual"
+  (js/parse-json-schema
+    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
+                           "title" "Order fullfillment request"
+                           "description" "Input request from ECHO order fullfillment service"
+                           "type" "array"
+                           "items" {"title" "A granule in the order"
+                                    "type" "object"
+                                    "properties" {"concept-id" {"type" "string"}
+                                                  "entry-title" {"type" "string"}
+                                                  "granule-ur" {"type" "string"}}
+                                    "required" ["concept-id" "entry-title" "granule-ur"]}})))
+
+(defn filter-virtual-granules
+  "Remove all the granules which are not virutal granules from the JSON body which conforms to
+  the schema defined above. Note that the existence of the virtual granule in the database is not
+  checked. Only the provider id and entry-title are checked to see if the granule is virtual."
+  [context body]
+  (let [body (if (seq? body) (vec body)  (doall body))
+        _ (js/validate-json order-fullfillment-request-schema (json/generate-string body))
+        is-virtual? (fn [item]
+                      (virtual-granule?
+                        (merge (walk/keywordize-keys item)
+                               (concepts/parse-concept-id  (get item "concept-id")))))]
+    (json/generate-string (filter (partial is-virtual?) body))))

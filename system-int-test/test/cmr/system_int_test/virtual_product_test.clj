@@ -1,8 +1,10 @@
 (ns cmr.system-int-test.virtual-product-test
   (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.virtual-product-util :as vp]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
@@ -10,6 +12,8 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.system-int-test.system :as s]
             [cmr.common.time-keeper :as tk]
+            [cheshire.core :as json]
+            [cmr.common.util :as util]
             [clj-time.core :as t]))
 
 (def virtual-product-providers
@@ -227,3 +231,41 @@
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
     (index/wait-until-indexed)
     (assert-tombstones vp-granule-ids 14)))
+
+
+(deftest keep-virtual-test
+  (let [virtual-granule {"concept-id" "G10000-LPDAAC_ECS"
+                         "entry-title" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                         "granule-ur" "granule-ur"}]
+    (testing "Valid input to keep-virtual end-point"
+      (util/are2 [input expected]
+                 (let [response (vp/keep-virtual (json/generate-string input))]
+                   (= (set expected) (set (json/parse-string (:body response true)))))
+
+                 "Granule which do not belong to a virtual collection should be removed"
+                 [(assoc virtual-granule "concept-id" "G10000-PROV") virtual-granule]
+                 [virtual-granule]
+
+                 "Granules with invalid entry title should be removed"
+                 [(assoc virtual-granule "entry-title" "invalid entry title") virtual-granule]
+                 [virtual-granule]
+
+                 "All virtual granules should be preserved"
+                 [virtual-granule (assoc virtual-granule "concept-id" "G10001-LPDAAC_ECS")]
+                 [virtual-granule (assoc virtual-granule "concept-id" "G10001-LPDAAC_ECS")]))
+
+    (testing "Invalid input to keep-virtual end-point"
+      (util/are2 [input expected-errors]
+                 (let [response (vp/keep-virtual input)
+                       errors ( :errors (json/parse-string (:body response) true))]
+                   (and (= 400 (:status response))
+                        (= expected-errors errors)))
+
+                 "malformed json should cause error"
+                 (str/replace (json/generate-string [virtual-granule]) #"}" "]")
+                 ["Malformed JSON in request body"]
+
+
+                 "invalid-json should cause error"
+                 (json/generate-string [virtual-granule (dissoc virtual-granule "concept-id")])
+                 ["/1 object has missing required properties ([\"concept-id\"])"]))))
