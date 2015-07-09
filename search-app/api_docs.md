@@ -1435,10 +1435,22 @@ Provider holdings for a list of providers
 
     curl "%CMR-ENDPOINT%/provider_holdings.json?provider-id\[\]=PROV1&provider-id\[\]=PROV2"
 
+### Search with JSON Query
+
+Search for collections with JSON in a POST request body. The JSON must conform to the schema
+that is defined in `%CMR-ENDPOINT%/site/JSONQueryLanguage.json`. Only collection search is
+supported, not granule search.
+
+    curl -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/collections
+    -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
+                                                  { "and": [{ "project": "test-project",
+                                                              "platform": "mars-satellite" }]}]}},
+                                { "bounding_box": [-45,15,0,25],
+                                  "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
 ### Search with AQL
 
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema
-that is defined in `cmr-search-app/resources/schema/IIMSAQLQueryLanguage.xsd`.
+that is defined in `%CMR-ENDPOINT%/site/IIMSAQLQueryLanguage.xsd`.
 
     curl -i -XPOST -H "Content-Type: application/xml" %CMR-ENDPOINT%/concepts/search -d '<?xml version="1.0" encoding="UTF-8"?>
     <query><for value="collections"/><dataCenterId><all/></dataCenterId>

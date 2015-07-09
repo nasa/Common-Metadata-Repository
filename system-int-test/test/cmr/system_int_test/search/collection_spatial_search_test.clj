@@ -241,6 +241,64 @@
            ;; whole world
            [-180 90 180 -90] all-colls))
 
+    (testing "bounding rectangle searches using JSON query"
+      (are [value items]
+           (let [found (search/find-refs-with-json-query :collection {:page-size 50} {:bounding_box value})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :entry-title) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
+
+           [-23.43 -6.31 25.54 5] [whole-world polygon-with-holes normal-poly normal-brs]
+           {:west -23.43
+            :south -6.31
+            :east 25.54
+            :north 5} [whole-world polygon-with-holes normal-poly normal-brs]
+
+
+           ;; inside different holes in cartesian polygon
+           [3.57,-18.63,3.84,-14.38] [whole-world normal-poly-cart polygon-with-holes-cart]
+           {:west 3.57
+            :south -18.63
+            :east 3.84
+            :north -14.38} [whole-world normal-poly-cart polygon-with-holes-cart]
+
+           ;; vertical slice of earth
+           [-10 -90 10 90] [whole-world on-np on-sp wide-north wide-south polygon-with-holes
+                            normal-poly normal-brs north-pole south-pole normal-point
+                            very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
+                            polygon-with-holes-cart]
+           {:west -10
+            :south -90
+            :east 10
+            :north 90} [whole-world on-np on-sp wide-north wide-south polygon-with-holes
+                        normal-poly normal-brs north-pole south-pole normal-point
+                        very-wide-cart wide-north-cart wide-south-cart normal-poly-cart
+                        polygon-with-holes-cart]
+
+           ;; crosses am
+           [166.11,-19.14,-166.52,53.04] [whole-world across-am-poly across-am-br am-point
+                                          very-wide-cart along-am-line]
+           {:west 166.11
+            :south -19.14
+            :east -166.52
+            :north 53.04} [whole-world across-am-poly across-am-br am-point
+                           very-wide-cart along-am-line]
+           ;; Matches geodetic line
+           [17.67,-6.94,25.56,-4] [whole-world normal-line]
+           {:west 17.67
+            :south -6.94
+            :east 25.56
+            :north -4} [whole-world normal-line]
+
+           ;; whole world
+           [-180 -90 180 90] all-colls
+           {:west -180
+            :south -90
+            :east 180
+            :north 90} all-colls))
+
     (testing "polygon searches"
       (are [ords items]
            (let [found (search/find-refs :collection {:polygon (apply search-poly ords) })

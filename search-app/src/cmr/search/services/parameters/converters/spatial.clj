@@ -18,8 +18,8 @@
 
 (defn url-value->spatial-conditions
   [type value]
-  ;; Note: value can be a single string or a vector of strings. (flatten [value]) 
-  ;; converts the value to a sequence of strings irrespective of the type 
+  ;; Note: value can be a single string or a vector of strings. (flatten [value])
+  ;; converts the value to a sequence of strings irrespective of the type
   (gc/and-conds (map (partial url-value->spatial-condition type) (flatten [value]))))
 
 (defmethod p/parameter->condition :polygon
