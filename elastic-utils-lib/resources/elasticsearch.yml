@@ -4,8 +4,8 @@ http.cors.allow-origin : "*"
 http.cors.allow-methods : OPTIONS, HEAD, GET, POST, PUT, DELETE
 http.cors.allow-headers : X-Requested-With,X-Auth-Token,Content-Type, Content-Length
 
-script.file : off
-script.plugin : off
+script.file : on
+script.plugin : on
 script.aggs : off
 script.mapping : off
 script.update : off
