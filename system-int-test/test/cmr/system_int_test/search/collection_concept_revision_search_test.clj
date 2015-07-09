@@ -142,6 +142,29 @@
               [coll3+metadata]
               {:entry-title "et3" :latest true}
 
+              "concept-id - latest=true"
+              [coll2-3]
+              {:concept-id (:concept-id coll2-1) :exclude-metadata true :latest true}
+
+              "concept-id - all revisions"
+              [coll2-1 coll2-tombstone coll2-3]
+              {:concept-id (:concept-id coll2-1) :exclude-metadata true :latest false}
+
+              "concept-id, version-id - latest=true"
+              ;; TODO - this should find nothing when the "find latest" logic is updated in
+              ;; CMR-1416.
+              [coll1-1] {:concept-id (:concept-id coll1-1)
+                         :version-id "v1"
+                         :exclude-metadata true
+                         :latest true}
+
+              "concept-id, version-id - all revisions"
+              [coll2-1 coll2-tombstone]
+              {:concept-id (:concept-id coll2-1)
+               :version-id "v2"
+               :exclude-metadata true
+               :latest false}
+
               "find none - bad provider-id"
               []
               {:provider-id "PROV_NONE" :exclude-metadata true :latest true}
@@ -151,14 +174,33 @@
               {:provider-id "PROV1" :version-id "v7" :exclude-metadata true :latest true}))
 
       (testing "granule finds are not supported"
-        (is (= 400
-               (:status (search/find-concept-revisions :granule
-                                                       {:provider-id "PROV1"}
-                                                       {:headers {transmit-config/token-header
-                                                                  (transmit-config/echo-system-token)
-                                                                  "Accept" "application/json"}})))))
+        (let [{:keys [status errors]}
+              (search/get-search-failure-data(search/find-concept-revisions
+                                               :granule
+                                               {:provider-id "PROV1" :native-id "abc"}
+                                               {:headers {transmit-config/token-header
+                                                          (transmit-config/echo-system-token)
+                                                          "Accept" "application/json"}}))]
+          (is (= 400 status))
+          (is (= #{"Concept revision searches are not supported for granules."}
+                 (set errors)))))
+
+      (testing "unknown parameter"
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                        (search/find-concept-revisions
+                                          :collection
+                                          {:foo "FOO"}
+                                          {:headers {transmit-config/token-header
+                                                     (transmit-config/echo-system-token)
+                                                     "Accept" "application/json"}}))]
+          (is (= 400 status))
+          (is (= #{"Finding concept type [collection] with parameters [foo] is not supported."}
+                 (set errors)))))
+
       (testing "ACLs"
         ;; no token - This is temporary and will be updated in issue CMR-1771.
-        (is (= 401
-               (:status (search/find-concept-revisions :collection {:provider-id "PROV1"}))))))))
-
+        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                        (search/find-concept-revisions :collection {:provider-id "PROV1"}))]
+          (is (= 401 status))
+          (is(= #{"You do not have permission to perform that action."}
+                (set errors))))))))

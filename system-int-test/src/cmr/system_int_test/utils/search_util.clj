@@ -116,8 +116,7 @@
   ([concept-type params options]
    (let [url (url/concept-revisions-url concept-type)
          headers (:headers options)
-         response (client/get url {:throw-exceptions false
-                                   :query-params (params->snake_case
+         response (client/get url {:query-params (params->snake_case
                                                    (util/map-keys csk/->snake_case_keyword params))
                                    :headers headers})]
      (if (= 200 (:status response))

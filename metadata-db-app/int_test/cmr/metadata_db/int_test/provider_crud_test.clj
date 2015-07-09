@@ -16,21 +16,28 @@
 (deftest save-provider-test
   (testing "successful saves"
     (u/are2
-      [provider-id short-name cmr-only small]
-      (let [{:keys [status]} (util/save-provider {:provider-id provider-id
-                                                  :short-name short-name
-                                                  :cmr-only cmr-only
-                                                  :small small})]
+      [provider-map]
+      (let [{:keys [status]} (util/save-provider provider-map)]
         (and (= status 201)
-             (util/verify-provider-was-saved provider-id
-                                             short-name
-                                             (if cmr-only true false)
-                                             (if small true false))))
-      "cmr-only false small false" "PROV1" "S1" false false
-      "cmr-only true small false" "PROV2" "S2" true false
-      "cmr-only false small true" "PROV3" "S3" false true
-      "cmr-only true small true" "PROV4" "S4" true true
-      "cmr-only and small default to false" "PROV5" "S5" nil nil))
+             (util/verify-provider-was-saved provider-map)))
+      "cmr-only false small false"
+      {:provider-id "PROV1" :short-name "S1" :cmr-only false :small false}
+
+      "cmr-only true small false"
+      {:provider-id "PROV2" :short-name "S2" :cmr-only true :small false}
+
+      "cmr-only false small true"
+      {:provider-id "PROV3" :short-name "S3" :cmr-only false :small true}
+
+      "cmr-only true small true"
+      {:provider-id "PROV4" :short-name "S4" :cmr-only true :small true}
+
+      "cmr-only and small default to false"
+      {:provider-id "PROV5" :short-name "S5"}
+
+      "only provider-id is present"
+      {:provider-id "PROV6"}))
+
   (testing "save provider twice"
     (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV1"
                                                        :short-name "S1"
@@ -39,7 +46,7 @@
       (is (= [409 ["Provider with provider id [PROV1] already exists."]]
              [status errors]))))
   (testing "save provider with a conflict on short name"
-    (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV6"
+    (let [{:keys [status errors]} (util/save-provider {:provider-id "PROV7"
                                                        :short-name "S1"
                                                        :cmr-only false
                                                        :small false})]
@@ -55,16 +62,15 @@
 
 (deftest update-provider-test
   (testing "basic update"
-    (util/save-provider {:provider-id "PROV1"
-                         :short-name "S1"
-                         :cmr-only false
-                         :small false})
-    (is (util/verify-provider-was-saved "PROV1" "S1" false false))
-    (util/update-provider {:provider-id "PROV1"
-                           :short-name "S1"
-                           :cmr-only true
-                           :small false})
-    (is (util/verify-provider-was-saved "PROV1" "S1" true false)))
+    (let [provider {:provider-id "PROV1"
+                    :short-name "S1"
+                    :cmr-only false
+                    :small false}
+          updated-provider (assoc provider :cmr-only true)]
+      (util/save-provider provider)
+      (is (util/verify-provider-was-saved provider))
+      (util/update-provider updated-provider)
+      (is (util/verify-provider-was-saved updated-provider))))
   (testing "cannot modify small field of a provider"
     (let [{:keys [status errors]} (util/update-provider {:provider-id "PROV1"
                                                          :short-name "S1"
@@ -73,11 +79,12 @@
       (is (= [400 ["Provider [PROV1] small field cannot be modified."]]
              [status errors]))))
   (testing "modify short name of a provider without conflict is OK"
-    (util/update-provider {:provider-id "PROV1"
-                           :short-name "S5"
-                           :cmr-only true
-                           :small false})
-    (is (util/verify-provider-was-saved "PROV1" "S5" true false)))
+    (let [provider {:provider-id "PROV1"
+                    :short-name "S5"
+                    :cmr-only true
+                    :small false}]
+      (util/update-provider provider)
+      (is (util/verify-provider-was-saved provider))))
   (testing "modify short name of a provider with conflict is not OK"
     (util/save-provider {:provider-id "PROV6"
                          :short-name "S6"
@@ -117,13 +124,12 @@
                        :cmr-only false
                        :small false})
   (util/save-provider {:provider-id "PROV2"
-                       :short-name "S2"
                        :cmr-only true
                        :small true})
   (let [{:keys [status providers]} (util/get-providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV1" :short-name "S1" :cmr-only false :small false}
-            {:provider-id "PROV2" :short-name "S2" :cmr-only true :small true}]
+            {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small true}]
            (sort-by :provider-id providers)))))
 
 (deftest delete-provider-test
