@@ -15,7 +15,9 @@
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.services.parameters.converters.science-keyword :as psk]))
+            [cmr.search.services.parameters.converters.science-keyword :as psk]
+            [cmr.spatial.mbr :as mbr]
+            [cmr.spatial.validation :as sv]))
 
 (def json-query-schema
   "JSON Schema for querying for collections."
@@ -40,6 +42,7 @@
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :keyword :keyword
+   :bounding-box :bounding-box
    :or :or
    :and :and
    :not :not
@@ -117,6 +120,15 @@
   (psk/parse-nested-science-keyword-condition value
                                               (case-sensitive-field? condition-name value)
                                               (:pattern value)))
+
+(defmethod parse-json-condition :bounding-box
+  [condition-name value]
+  (let [bounding-box (if (map? value)
+                       (mbr/mbr (:west value) (:north value) (:east value) (:south value))
+                       (let [[west south east north] value]
+                         (mbr/mbr west north east south)))]
+    (sv/validate bounding-box)
+    (qm/->SpatialCondition bounding-box)))
 
 (defn- concept-type-validation
   "Validates the provided concept type is valid for JSON query."
