@@ -104,81 +104,117 @@
     (is (= 200 status ))
     (is (= [(:concept-id coll1)] (map :concept-id concepts)))))
 
+(defn- save-collection
+  "Given a provider-id, unique number, and attribute map, save a version of the collection."
+  [provider-id uniq-num attributes]
+  (let [concept (util/collection-concept provider-id uniq-num attributes)
+        {:keys [concept-id revision-id]} (util/save-concept concept)]
+    (assoc concept :revision-id revision-id :concept-id concept-id)))
+
 (deftest find-collections
-  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1 {:extra-fields {:entry-id "entry-1"
-                                                                              :entry-title "et1"
-                                                                              :version-id "v1"
-                                                                              :short-name "s1"}})
-        coll2 (util/create-and-save-collection "REG_PROV" 2 2 {:extra-fields {:entry-id "entry-2"
-                                                                              :entry-title "et2"
-                                                                              :version-id "v1"
-                                                                              :short-name "s2"}})
-        coll3 (util/create-and-save-collection "SMAL_PROV1" 3 1 {:extra-fields {:entry-id "entry-3"
-                                                                                :entry-title "et3"
-                                                                                :version-id "v3"
-                                                                                :short-name "s3"}})
-        coll4 (util/create-and-save-collection "SMAL_PROV2" 4 3 {:extra-fields {:entry-id "entry-1"
-                                                                                :entry-title "et1"
-                                                                                :version-id "v3"
-                                                                                :short-name "s4"}})]
+  (let [coll1 (save-collection "REG_PROV" 1 {:extra-fields {:entry-id "entry-1"
+                                                            :entry-title "et1"
+                                                            :version-id "v1"
+                                                            :short-name "s1"}})
+        coll2-1 (save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
+                                                              :entry-title "et2"
+                                                              :version-id "v1"
+                                                              :short-name "s2"}})
+        coll2-2 (save-collection "REG_PROV" 2 {:extra-fields {:entry-id "entry-2"
+                                                              :entry-title "et2"
+                                                              :version-id "v2"
+                                                              :short-name "s2"}})
+        coll3 (save-collection "SMAL_PROV1" 3 {:extra-fields {:entry-id "entry-3"
+                                                              :entry-title "et3"
+                                                              :version-id "v3"
+                                                              :short-name "s3"}})
+        coll4-1 (save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
+                                                                :entry-title "et1"
+                                                                :version-id "v3"
+                                                                :short-name "s4"}})
+        coll4-2 (save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
+                                                                :entry-title "et1"
+                                                                :version-id "v4"
+                                                                :short-name "s4"}})
+        coll4-3 (save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
+                                                                :entry-title "et1"
+                                                                :version-id "v5"
+                                                                :short-name "s4"}})]
     (testing "find-with-parameters"
-      (testing "latest concepts"
-        (are2 [collections params]
-              (= (set collections)
-                 (set (-> (util/find-latest-concepts :collection params)
-                          :concepts
-                          concepts-for-comparison)))
-              "regular provider - provider-id"
-              [coll1 coll2] {:provider-id "REG_PROV"}
+      (are2 [collections params]
+            (= (set collections)
+               (set (-> (util/find-concepts :collection params)
+                        :concepts
+                        concepts-for-comparison)))
+            "regular provider - provider-id"
+            [coll1 coll2-2] {:provider-id "REG_PROV" :latest true}
 
-              "small provider - provider-id"
-              [coll3] {:provider-id "SMAL_PROV1"}
+            "small provider - provider-id"
+            [coll3] {:provider-id "SMAL_PROV1"  :latest true}
 
-              "regular provider - provider-id, entry-title"
-              [coll1] {:provider-id "REG_PROV" :entry-title "et1"}
+            "regular provider - provider-id, entry-title"
+            [coll1] {:provider-id "REG_PROV" :entry-title "et1"  :latest true}
 
-              "small provider - provider-id, entry-title"
-              [coll3] {:provider-id "SMAL_PROV1" :entry-title "et3"}
+            "small provider - provider-id, entry-title"
+            [coll3] {:provider-id "SMAL_PROV1" :entry-title "et3" :latest true}
 
-              "regular provider - provider-id, entry-id"
-              [coll2] {:provider-id "REG_PROV" :entry-id "entry-2"}
+            "regular provider - provider-id, entry-id"
+            [coll2-2] {:provider-id "REG_PROV" :entry-id "entry-2" :latest true}
 
-              "small provider - provider-id, entry-id"
-              [coll4] {:provider-id "SMAL_PROV2" :entry-id "entry-1"}
+            "small provider - provider-id, entry-id"
+            [coll4-3] {:provider-id "SMAL_PROV2" :entry-id "entry-1" :latest true}
 
-              "regular provider - short-name, version-id"
-              [coll2] {:short-name "s2" :version-id "v1"}
+            "regular provider - short-name, version-id"
+            [coll2-2] {:short-name "s2" :version-id "v2" :latest true}
 
-              "small provider - short-name, version-id"
-              [coll4] {:short-name "s4" :version-id "v3"}
+            "small provider - short-name, version-id"
+            [coll4-3] {:short-name "s4" :version-id "v5" :latest true}
 
-              "small provider - match multiple - version-id"
-              [coll3 coll4] {:version-id "v3"}
+            ;; TODO - this should change when the "find latest" logic is updated in CMR-1416.
+            "small provider - match multiple - version-id"
+            [coll3 coll4-1] {:version-id "v3" :latest true}
 
-              ;; This test verifies that the provider-id is being used with the small_providers
-              ;; table. Otherwise we would get both coll3 and coll4 back (see previous test).
-              "small provider - provider-id, version-id"
-              [coll4] {:provider-id "SMAL_PROV2" :version-id "v3"}
+            ;; This test verifies that the provider-id is being used with the small_providers
+            ;; table. Otherwise we would get both coll3 and coll4 back (see previous test).
+            "small provider - provider-id, version-id"
+            [coll4-3] {:provider-id "SMAL_PROV2" :version-id "v5" :latest true}
 
-              "mixed providers - entry-title"
-              [coll1 coll4] {:entry-title "et1"}
+            "mixed providers - entry-title"
+            [coll1 coll4-3] {:entry-title "et1" :latest true}
 
-              "find none - bad provider-id"
-              [] {:provider-id "PROV_NONE"}
+            "exclude-metadata=true"
+            [(dissoc coll3 :metadata)] {:provider-id "SMAL_PROV1" :exclude-metadata "true" :latest true}
 
-              "find none - provider-id, bad version-id"
-              [] {:provider-id "REG_PROV" :version-id "v7"}))
-      (testing "all revisions"
-        (are2 [rev-count params]
+            "exclude-metadata=false"
+            [coll3] {:provider-id "SMAL_PROV1" :exclude-metadata "false" :latest true}
 
-              (is (= rev-count
-                     (count (-> (util/find-concepts :collection params)
-                                :concepts))))
-              "provider-id - three revisions"
-              3 {:provider-id "SMAL_PROV2"}
+            "regular provider - concept-id"
+            [coll1] {:concept-id (:concept-id coll1) :latest true}
 
-              "entry-title - two revisons"
-              2 {:entry-title "et2"})))))
+            "small provider - concept-id"
+            [coll4-3] {:concept-id (:concept-id coll4-1) :latest true}
+
+            "concept-id and version-id - latest"
+            [coll4-3] {:concept-id (:concept-id coll4-1) :version-id "v5" :latest true}
+
+            "find none - bad provider-id"
+            [] {:provider-id "PROV_NONE" :latest true}
+
+            "find none - provider-id, bad version-id"
+            [] {:provider-id "REG_PROV" :version-id "v7" :latest true}
+
+            ;; all revisions
+            "provider-id - all revisions"
+            [coll4-1 coll4-2 coll4-3] {:provider-id "SMAL_PROV2"}
+
+            "entry-title - all revisions"
+            [coll2-1 coll2-2] {:entry-title "et2"}
+
+            "concept-id - all revisions"
+            [coll4-1 coll4-2 coll4-3] {:concept-id (:concept-id coll4-1)}
+
+            "concept-id and version-id - all revisions"
+            [coll4-1] {:concept-id (:concept-id coll4-1) :version-id "v3"}))))
 
 (deftest get-expired-collections-concept-ids
   (let [time-now (tk/now)
@@ -202,12 +238,12 @@
 
     (testing "get expired collection concept ids"
       (are [provider-id collections]
-      (let [{:keys [status concept-ids]} (util/get-expired-collection-concept-ids provider-id)]
-        (= [200 (set (map :concept-id collections))]
-               [status (set concept-ids)]))
-      "REG_PROV" [coll1 coll2]
-      "SMAL_PROV1" [coll5]
-      "SMAL_PROV2" [coll7]))
+           (let [{:keys [status concept-ids]} (util/get-expired-collection-concept-ids provider-id)]
+             (= [200 (set (map :concept-id collections))]
+                [status (set concept-ids)]))
+           "REG_PROV" [coll1 coll2]
+           "SMAL_PROV1" [coll5]
+           "SMAL_PROV2" [coll7]))
 
     (testing "invalid or missing provider id"
       (is (= {:status 404, :errors ["Provider with provider-id [PROVNONE] does not exist."]}
@@ -216,19 +252,67 @@
       (is (= {:status 400, :errors ["A provider parameter was required but was not provided."]}
              (util/get-expired-collection-concept-ids nil))))))
 
+(deftest find-granules
+  (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
+        gran1 (util/create-and-save-granule "REG_PROV"
+                                            (:concept-id coll1)
+                                            1
+                                            3
+                                            {:native-id "G1-NAT"
+                                             :extra-fields {:granule-ur "G1-UR"}})
+        gran2 (util/create-and-save-granule "REG_PROV"
+                                            (:concept-id coll1)
+                                            2
+                                            2
+                                            {:native-id "G2-NAT"
+                                             :extra-fields {:granule-ur "G2-UR"}})]
+    (testing "find with parameters"
+      (testing "latest revsions"
+        (are2 [granules params]
+              (= (set granules)
+                 (set (-> (util/find-latest-concepts :granule params)
+                          :concepts
+                          concepts-for-comparison)))
+              ;; These are the only valid combinations for granules
+              "provider-id, granule-ur"
+              [gran1] {:provider-id "REG_PROV" :granule-ur "G1-UR"}
+
+              "provider-id, native-id"
+              [gran2] {:provider-id "REG_PROV" :native-id "G2-NAT"}
+
+              "no metadata"
+              [(dissoc gran1 :metadata)] {:provider-id "REG_PROV"
+                                          :granule-ur "G1-UR"
+                                          :exclude-metadata true}))
+
+      (testing "all revisions"
+        (are2 [rev-count params]
+              (= rev-count
+                 (count (-> (util/find-concepts :granules params)
+                            :concepts)))
+              "provider-id, granule-ur - two revisions"
+              2 {:provider-id "REG_PROV" :granule-ur "G2-UR"}
+
+              "provider-id, native-id - three revisons"
+              3 {:provider-id "REG_PROV":native-id "G1-NAT"})))))
+
+
 (deftest find-collections-with-invalid-parameters
   (testing "extra parameters"
-    (= {:status 400
-        :errors [(msg/find-not-supported :collection [:provider-id :short-name :version-id :foo])]}
-       (util/find-concepts :collection {:provider-id "REG_PROV"
-                                        :short-name "f"
-                                        :version-id "v"
-                                        :foo "foo"}))))
+    (is (= {:status 400
+            :errors ["Finding concept type [collection] with parameters [foo] is not supported."]}
+           (util/find-concepts :collection {:provider-id "REG_PROV"
+                                            :short-name "f"
+                                            :version-id "v"
+                                            :foo "foo"})))))
 
-(deftest find-granules-is-not-supported
-  (= {:status 400
-      :errors [(msg/find-not-supported :granule [])]}
-     (util/find-concepts :granule {})))
+(deftest find-granules-with-invalid-parameters
+  (testing "invalid combination"
+    (is (= {:status 400
+            :errors ["Finding concept type [granule] with parameter combination [native-id, provider-id, granule-ur] is not supported."]}
+           (util/find-concepts :granule {:provider-id "REG_PROV"
+                                         :granule-ur "GRAN_UR"
+                                         :native-id "NV1"})))))
 
 
 

@@ -13,12 +13,14 @@
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.10"]
                  [ring/ring-core "1.3.2" :exclusions [clj-time]]
                  [ring/ring-json "0.3.1"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/data.csv "0.1.2"]
-                 [net.sf.saxon/Saxon-HE "9.6.0-4"]]
+                 [net.sf.saxon/Saxon-HE "9.6.0-4"]
+                 [com.github.fge/json-schema-validator "2.2.6"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
   :repl-options {:init-ns user
@@ -46,11 +48,22 @@
              :aot :all}}
 
   :aliases {"generate-docs"
-            ["exec" "-ep" (pr-str '(do
-                                    (use 'cmr.common-app.api-docs)
-                                    (generate
-                                      "CMR Search"
-                                      "api_docs.md"
-                                      "resources/public/site/search_api_docs.html")))]
+            ["exec" "-ep"
+             (pr-str '(do
+                       (use 'cmr.common-app.api-docs)
+                       (use 'clojure.java.io)
+                       (let [json-target (file "resources/public/site/JSONQueryLanguage.json")
+                             aql-target (file "resources/public/site/IIMSAQLQueryLanguage.xsd")]
+                         (println "Copying JSON Query Language Schema to" (str json-target))
+                         (make-parents json-target)
+                         (copy (file "resources/schema/JSONQueryLanguage.json")
+                               json-target)
+                         (println "Copying AQL Schema to" (str aql-target))
+                         (copy (file "resources/schema/IIMSAQLQueryLanguage.xsd")
+                               aql-target))
+                       (generate
+                         "CMR Search"
+                         "api_docs.md"
+                         "resources/public/site/search_api_docs.html")))]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})

@@ -21,12 +21,17 @@
 
 (def supported-collection-parameters
   "Set of parameters supported by find for collections"
-  #{:provider-id :entry-title :entry-id :short-name :version-id})
+  #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id})
 
 (def granule-supported-parameter-combinations
-  "Supported parameter combination sets for granule find"
+  "Supported search parameter combination sets for granule find. This does not include flags
+  like 'exclude-metadata' or 'latest'."
   #{#{:provider-id :granule-ur}
     #{:provider-id :native-id}})
+
+(def find-concepts-flags
+  "Flags that affect find concepts but aren't part of the actual search parameters."
+  #{:exclude-metadata :latest})
 
 (defmulti supported-parameter-combinations-validation
   "Validates the find parameters for a concept type"
@@ -35,14 +40,17 @@
 
 (defmethod supported-parameter-combinations-validation :collection
   [params]
-  (let [params (dissoc params :concept-type)]
-    (when-let [unsupported-params (seq (set/difference (set (keys params)) supported-collection-parameters))]
+  (let [params (dissoc params :concept-type)
+        supported-params (set/union supported-collection-parameters find-concepts-flags)]
+    (when-let [unsupported-params (seq (set/difference (set (keys params))
+                                                       supported-params))]
       [(msg/find-not-supported :collection unsupported-params)])))
 
 (defmethod supported-parameter-combinations-validation :granule
   [{:keys [concept-type] :as params}]
-  (let [params (dissoc params :concept-type)]
-    (when-not (contains? granule-supported-parameter-combinations (set (keys params)))
+  (let [params (dissoc params :concept-type)
+        search-params (set (keys (apply dissoc params find-concepts-flags)))]
+    (when-not (contains? granule-supported-parameter-combinations search-params)
       [(msg/find-not-supported-combination concept-type (keys params))])))
 
 (defmethod supported-parameter-combinations-validation :default
@@ -74,10 +82,10 @@
 (deftracefn find-concepts
   "Find concepts with specific parameters"
   [context params]
+  (validate-find-params params)
   (let [db (db-util/context->db context)
         latest-only? (= "true" (:latest params))
         params (dissoc params :latest)
-        _ (validate-find-params params)
         providers (find-providers-for-params context params)]
     (when (seq providers)
       (do

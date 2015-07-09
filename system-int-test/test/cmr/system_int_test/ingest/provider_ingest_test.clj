@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cmr.common.util :as u]
+            [cmr.common.mime-types :as mt]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
@@ -27,7 +28,8 @@
          "PROV4" "S4" true false
          "PROV5" "S5" false true
          "PROV6" "S6" true true
-         "PROV7" "S7" nil nil))
+         "PROV7" "S7" nil nil
+         "PROV8" nil nil nil))
   (testing "create provider invalid value"
     (u/are2
       [provider error]
@@ -36,11 +38,11 @@
         (= [400 [error]] [status errors]))
 
       "cmr-only invalid value"
-      {:provider-id "PROV8" :short-name "S8" :cmr-only "" :small false}
+      {:provider-id "PROV9" :short-name "S8" :cmr-only "" :small false}
       "Cmr Only must be either true or false but was [\"\"]"
 
       "small invalid value"
-      {:provider-id "PROV8" :short-name "S8" :cmr-only false :small ""}
+      {:provider-id "PROV9" :short-name "S8" :cmr-only false :small ""}
       "Small must be either true or false but was [\"\"]")))
 
 (deftest update-provider-test
@@ -102,7 +104,9 @@
       (is (= 3 (count (:refs (search/find-refs :granule {:provider-id "PROV1"})))))
 
       ;; delete provider PROV1
-      (is (= 200 (ingest/delete-ingest-provider "PROV1")))
+      (let [{:keys [status content-length]} (ingest/delete-ingest-provider "PROV1")]
+        (is (= 204 status))
+        (is (nil? content-length)))
       (index/wait-until-indexed)
 
       ;; PROV1 concepts are not in metadata-db
@@ -137,12 +141,14 @@
             (search/find-refs :granule {:provider-id "PROV2"})))))
 
   (testing "delete non-existent provider"
-    (let [[status errors] (ingest/delete-ingest-provider "NON_EXIST")]
+    (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
+      (is (= (mt/with-utf-8 mt/json) content-type))
       (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
              [status errors]))))
 
   (testing "delete SMALL_PROV provider"
-    (let [[status errors] (ingest/delete-ingest-provider "SMALL_PROV")]
+    (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
+      (is (= (mt/with-utf-8 mt/json) content-type))
       (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
              [status errors]))))
 

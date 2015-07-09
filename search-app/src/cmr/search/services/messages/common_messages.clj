@@ -53,14 +53,13 @@
        (csk/->snake_case_string param)
        "] may be either single valued or multivalued, but not both."))
 
-(defn invalid-json-condition-names-msg
-  "Creates a message indicating the provided JSON condition names are invalid."
-  [concept-type condition-names]
-  (format "Invalid JSON condition name(s) %s for %s search."
-          (mapv name condition-names)
-          (name concept-type)))
+(defn json-query-unsupported-msg
+  "Creates a message indicating the JSON query searching is not supported for the given concept
+  type."
+  [concept-type]
+  (format "Searching using JSON query conditions is not supported for %ss." (name concept-type)))
 
-(defn invalid-science-keyword-condition-msg
-  "Creates a message indicating the provided science keyword conditions are invalid."
-  [invalid-keys]
-  (format "Invalid science keyword parameter(s) %s." (mapv name invalid-keys)))
+(defn invalid-science-keyword-json-query
+  "Creates a message indicating the JSON query condition provided for science_keywords is invalid."
+  [science-keyword-condition]
+  (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any" science-keyword-condition))

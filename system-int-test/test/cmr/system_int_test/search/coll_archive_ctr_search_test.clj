@@ -68,21 +68,21 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll4 coll6] {:archive-center "Larc"}
-           [coll5 coll7] {:archive-center "SEDAC AC"}
-           [coll5 coll7] {:archive-center "Sedac AC"}
-           [] {:archive-center "SEDAC PC"}
-           [] {:archive-center "BLAH"}
-           [coll4 coll5 coll6 coll7] {:or [{:archive-center "SEDAC AC"} {:archive-center "Larc"}]}
-           [] {:and [{:archive-center "SEDAC AC"} {:archive-center "Larc"}]}
-           [coll1 coll2 coll3 coll4 coll6] {:not {:archive-center "SEDAC AC"}}
+           [coll4 coll6] {:archive_center "Larc"}
+           [coll5 coll7] {:archive_center "SEDAC AC"}
+           [coll5 coll7] {:archive_center "Sedac AC"}
+           [] {:archive_center "SEDAC PC"}
+           [] {:archive_center "BLAH"}
+           [coll4 coll5 coll6 coll7] {:or [{:archive_center "SEDAC AC"} {:archive_center "Larc"}]}
+           [] {:and [{:archive_center "SEDAC AC"} {:archive_center "Larc"}]}
+           [coll1 coll2 coll3 coll4 coll6] {:not {:archive_center "SEDAC AC"}}
 
            ;; Wildcards
-           [coll5 coll7] {:archive-center {:value "S*" :pattern true}}
-           [coll5 coll7] {:archive-center {:value "SEDAC ?C" :pattern true}}
-           [coll5] {:archive-center {:value "SEDAC ?C" :pattern true :ignore-case false}}
-           [] {:archive-center {:value "*Q*" :pattern true}}
+           [coll5 coll7] {:archive_center {:value "S*" :pattern true}}
+           [coll5 coll7] {:archive_center {:value "SEDAC ?C" :pattern true}}
+           [coll5] {:archive_center {:value "SEDAC ?C" :pattern true :ignore_case false}}
+           [] {:archive_center {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [coll5 coll7] {:archive-center {:value "sedac ac" :ignore-case true}}
-           [] {:archive-center {:value "sedac ac" :ignore-case false}}))))
+           [coll5 coll7] {:archive_center {:value "sedac ac" :ignore_case true}}
+           [] {:archive_center {:value "sedac ac" :ignore_case false}}))))

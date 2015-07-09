@@ -97,11 +97,11 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll1] {:two-d-coordinate-system-name "one CALIPSO"}
-           [coll1 coll4] {:or [{:two-d-coordinate-system-name "one CALIPSO"}
-                               {:two-d-coordinate-system-name "three Bravo"}]}
-           [] {:two-d-coordinate-system-name "NO MATCH"}
-           [coll2 coll5] {:two-d-coordinate-system-name "two CALIPSO"}
-           [coll3 coll4] {:two-d-coordinate-system-name {:value "three *"
+           [coll1] {:two_d_coordinate_system_name "one CALIPSO"}
+           [coll1 coll4] {:or [{:two_d_coordinate_system_name "one CALIPSO"}
+                               {:two_d_coordinate_system_name "three Bravo"}]}
+           [] {:two_d_coordinate_system_name "NO MATCH"}
+           [coll2 coll5] {:two_d_coordinate_system_name "two CALIPSO"}
+           [coll3 coll4] {:two_d_coordinate_system_name {:value "three *"
                                                          :pattern true
-                                                         :ignore-case false}}))))
+                                                         :ignore_case false}}))))

@@ -11,6 +11,8 @@
             [ring.middleware.nested-params :as nested-params]
             [ring.middleware.keyword-params :as keyword-params]
             [cheshire.core :as json]
+            [inflections.core :as inf]
+
             [cmr.common.concepts :as concepts]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
@@ -180,15 +182,15 @@
   "Invokes query service to parse the parameters query, find results, and return the response"
   [context path-w-extension params headers body]
   (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
-            context (assoc context :query-string body)
-            params (process-params params path-w-extension headers mt/xml)
-            result-format (:result-format params)
-            _ (info (format "Searching for %ss from client %s in format %s with params %s."
-                            (name concept-type) (:client-id context) result-format
-                            (pr-str params)))
-            search-params (lp/process-legacy-psa params body)
-            results (query-svc/find-concepts-by-parameters context concept-type search-params)]
-        (search-response results)))
+        context (assoc context :query-string body)
+        params (process-params params path-w-extension headers mt/xml)
+        result-format (:result-format params)
+        _ (info (format "Searching for %ss from client %s in format %s with params %s."
+                        (name concept-type) (:client-id context) result-format
+                        (pr-str params)))
+        search-params (lp/process-legacy-psa params body)
+        results (query-svc/find-concepts-by-parameters context concept-type search-params)]
+    (search-response results)))
 
 (defn- find-concepts
   "Invokes query service to find results and returns the response"
@@ -240,6 +242,19 @@
         _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))]
     (search-response (query-svc/find-concept-by-id context result-format concept-id))))
 
+(defn- find-concept-revisions
+  "Calls query service to get concept revisions for the given parameters"
+  [context params headers]
+  (let [params (-> params
+                   (dissoc params :token)
+                   (update-in [:concept-type] (comp keyword inf/singular)))
+        _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
+                        (:client-id context) (pr-str params)))
+        results (query-svc/find-concept-revisions context params)]
+    {:status 200
+     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
+     :body results}))
+
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
@@ -273,6 +288,14 @@
         (get-in system [:search-public-conf :protocol])
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
+
+      ;; Retrieve concept maps with basic data in metadata-db (possibly excluding metadata)
+      ;; We are limiting this to admin acccess for now and will add access to users who have
+      ;; been granted read access to the providers' data in CMR-1771.
+      (context "/concept-revisions" []
+        (GET "/:concept-type" {:keys [params headers request-context]}
+          (acl/verify-ingest-management-permission request-context :read)
+          (find-concept-revisions request-context params headers)))
 
       ;; Retrieve by cmr concept id -
       (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]

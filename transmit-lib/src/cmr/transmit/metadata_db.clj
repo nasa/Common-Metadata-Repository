@@ -226,7 +226,7 @@
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [context provider-id]
   (let [{:keys [status body]} (delete-provider-raw context provider-id)]
-    (when-not (or (= status 200) (= status 404))
+    (when-not (or (> 300 status 199) (= status 404))
       (errors/internal-error!
         (format "Failed to delete provider status: %s body: %s"
                 status body)))))
