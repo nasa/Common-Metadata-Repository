@@ -65,7 +65,7 @@
 (def virtual-product-config-derived
   "A map derived from the above map. This map consists of keys which are a combination of provider
   id and entry title for each virtual product and values which are made up of short name,
-  source entry title and source short name for the corresponing key"
+  source entry title and source short name for the corresponding key"
   (into
     {}
     (apply concat

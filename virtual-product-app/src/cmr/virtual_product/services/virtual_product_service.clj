@@ -11,7 +11,6 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
-            [clojure.walk :as walk]
             [clojure.set :as set]
             [cmr.transmit.search :as search]
             [cmr.common.util :as u :refer [defn-timed]]))

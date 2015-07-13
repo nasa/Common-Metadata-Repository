@@ -62,6 +62,5 @@
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site
-      ring-json/wrap-json-response
-      ))
+      ring-json/wrap-json-response))
 
