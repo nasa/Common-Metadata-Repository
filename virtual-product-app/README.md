@@ -212,6 +212,42 @@ Example unhealthy response body:
 }
 ```
 
+### <a name="translate-granule-entries"></a> Translate Granule Entries
+
+Translate virtual granule entries within a list of granule-entries into the corresponding source granule entries. The list of granule-entries should be supplied in the request body as a JSON with this schema:
+
+```
+{"$schema" "http://json-schema.org/draft-04/schema#"
+"title" "Granule Entries"
+"description" "Input request from ECHO ordering service for translating virtual granule entries to the corresponding source granule entries"
+"type" "array"
+"items" {"title" "A granule entry in the order"
+         "type" "object"
+         "properties" {"concept-id" {"type" "string"}
+                       "entry-title" {"type" "string"}
+                       "granule-ur" {"type" "string"}}
+         "required" ["concept-id" "entry-title" "granule-ur"]}}
+```
+
+The response body has the same schema but with virtual granule entries substituted by the corresponding source granule entries and any duplicate entries removed. All non-virtual granule entries in the request JSON are preserved in the response JSON. This end-point will be called by ECHO during ordering process.
+
+Sample Request:
+
+```
+curl -i -XPOST %CMR-ENDPOINT%/translate-granule-entries -d
+[{:concept-id "G5-PROV1" :entry-title "A dataset" :granule-ur "foo"}
+ {:concept-id "G7-LPDAAC_ECS" :entry-title "Some virtual granule dataset" :granule-ur "the virtual granule"}
+ {:concept-id "G6-PROV1" :entry-title "A dataset" :granule-ur "bar"}]
+```
+
+Response:
+
+```
+[{:concept-id "G5-PROV1" :entry-title "A dataset" :granule-ur "foo"}
+ {:concept-id "G1-LPDAAC_ECS" :entry-title "The source dataset" :granule-ur "the source granule"}
+ {:concept-id "G6-PROV1" :entry-title "A dataset" :granule-ur "bar"}]
+```
+
 ***
 
 ## License

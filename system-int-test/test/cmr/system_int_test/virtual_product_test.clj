@@ -232,40 +232,65 @@
     (index/wait-until-indexed)
     (assert-tombstones vp-granule-ids 14)))
 
+(defn- get-sample-virtual-granule-entry
+  "Get any virtual granule entry for a given virtual-entry-title"
+  [virtual-entry-title]
+  (let [virtual-granule-refs (:refs (search/find-refs
+                                      :granule {:entry-title virtual-entry-title
+                                                :page-size 1}))
+        [virtual-granule-id virtual-granule-ur] ((juxt :id :name) (first virtual-granule-refs))]
+    {:entry-title virtual-entry-title
+     :concept-id virtual-granule-id
+     :granule-ur virtual-granule-ur}))
 
-(deftest keep-virtual-test
-  (let [virtual-granule {"concept-id" "G10000-LPDAAC_ECS"
-                         "entry-title" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                         "granule-ur" "granule-ur"}]
-    (testing "Valid input to keep-virtual end-point"
+
+(deftest translate-granule-entries-test
+  (let [ast-coll (d/ingest "LPDAAC_ECS"
+                           (dc/collection
+                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+        vp-colls (ingest-virtual-collections [ast-coll])
+        granule-ur "SC:AST_L1A.003:2006227720"
+        ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
+        ingest-result (d/ingest "LPDAAC_ECS" ast-l1a-gran)
+        _ (index/wait-until-indexed)
+        source-granule {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                        :concept-id (:concept-id ingest-result)
+                        :granule-ur granule-ur}
+        virtual-granule1 (get-sample-virtual-granule-entry (:entry-title (first vp-colls)))
+        virtual-granule2 (get-sample-virtual-granule-entry (:entry-title (second vp-colls)))
+        other-granule {:entry-title "entry-title"
+                       :concept-id "G1234-PROV1"
+                       :granule-ur "granule-ur"}]
+
+    (testing "Valid input to translate-granule-entries end-point"
       (util/are2 [input expected]
-                 (let [response (vp/keep-virtual (json/generate-string input))]
-                   (= (set expected) (set (json/parse-string (:body response true)))))
+                 (let [response (vp/translate-granule-entries (json/generate-string input))]
+                   (= (set expected) (set (json/parse-string (:body response) true))))
 
-                 "Granule which do not belong to a virtual collection should be removed"
-                 [(assoc virtual-granule "concept-id" "G10000-PROV") virtual-granule]
-                 [virtual-granule]
+                 "Input with no virtual granules should return the original response"
+                 [other-granule]
+                 [other-granule]
 
-                 "Granules with invalid entry title should be removed"
-                 [(assoc virtual-granule "entry-title" "invalid entry title") virtual-granule]
-                 [virtual-granule]
+                 "Virtual granule should be translated to corresponding source granule"
+                 [other-granule virtual-granule1]
+                 [other-granule source-granule]
 
-                 "All virtual granules should be preserved"
-                 [virtual-granule (assoc virtual-granule "concept-id" "G10001-LPDAAC_ECS")]
-                 [virtual-granule (assoc virtual-granule "concept-id" "G10001-LPDAAC_ECS")]))
+                 "Multiple virtual granules based on same source granule should result in a single
+                 entry for the source granule in the translated response"
+                 [virtual-granule1 virtual-granule2]
+                 [source-granule]))
 
-    (testing "Invalid input to keep-virtual end-point"
-      (util/are2 [input expected-errors]
-                 (let [response (vp/keep-virtual input)
-                       errors ( :errors (json/parse-string (:body response) true))]
-                   (and (= 400 (:status response))
-                        (= expected-errors errors)))
+    (testing "Malformed JSON"
+      (let [malformed-json (str/replace (json/generate-string [virtual-granule1]) #"}" "]")
+            response (vp/translate-granule-entries malformed-json)
+            errors (:errors (json/parse-string (:body response) true))]
+        (is (= 1 (count errors)))
+        (is (.startsWith (first errors) "Invalid JSON: Unexpected close marker ']': expected '}'"))))
 
-                 "malformed json should cause error"
-                 (str/replace (json/generate-string [virtual-granule]) #"}" "]")
-                 ["Malformed JSON in request body"]
-
-
-                 "invalid-json should cause error"
-                 (json/generate-string [virtual-granule (dissoc virtual-granule "concept-id")])
-                 ["/1 object has missing required properties ([\"concept-id\"])"]))))
+    (testing "Invalid input to translate-granule-items end-point should result in error"
+      (let [invalid-json (json/generate-string [virtual-granule1
+                                                (dissoc virtual-granule1 :concept-id)])
+            response (vp/translate-granule-entries invalid-json)
+            errors (:errors (json/parse-string (:body response) true))]
+        (and (= 400 (:status response))
+             (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))

@@ -62,6 +62,21 @@
                           {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
                            :short-name "AST14DMO"}]}})
 
+(def virtual-product-config-derived
+  "A map derived from the above map. This map consists of keys which are a combination of provider
+  id and entry title for each virtual product and values which are made up of short name,
+  source entry title and source short name for the corresponing key"
+  (into
+    {}
+    (apply concat
+           (for [[[provider-id source-entry-title]
+                  {:keys [source-short-name virtual-collections]}] source-to-virtual-product-config]
+             (for [virtual-collection virtual-collections]
+               [[provider-id (:entry-title virtual-collection)]
+                {:short-name (:short-name virtual-collection)
+                 :source-entry-title source-entry-title
+                 :source-short-name source-short-name}])))))
+
 (def sample-source-granule-urs
   "This contains a map of source collection provider id and entry title tuples to sample granule
   urs. This is included both for testing and documentation of what the sample URs look like"
@@ -80,3 +95,13 @@
 (defmethod generate-granule-ur ["LPDAAC_ECS" "AST_L1A"]
   [provider-id source-short-name virtual-short-name granule-ur]
   (str/replace granule-ur source-short-name virtual-short-name))
+
+(defmulti compute-source-granule-ur
+  "Compute source granule ur from the virtual granule ur. This function should be the inverse
+  of generate-granule-ur."
+  (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
+    [provider-id source-short-name]))
+
+(defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
+  [provider-id source-short-name virtual-short-name virtual-granule-ur]
+  (str/replace virtual-granule-ur virtual-short-name source-short-name))

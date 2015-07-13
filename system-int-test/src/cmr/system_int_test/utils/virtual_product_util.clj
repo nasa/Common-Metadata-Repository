@@ -7,10 +7,10 @@
 
 
 
-(defn keep-virtual
-  "Remove the granules which are not virtual from the input json and return the remaining"
+(defn translate-granule-entries
+  "Translate the virtual granule entries to the corresponding source entries in the input json"
   [json-str]
-  (client/post (url/virtual-product-keep-virtual-url)
+  (client/post (url/virtual-product-translate-granule-entries-url)
                {:throw-exceptions false
                 :content-type mt/json
                 :body json-str

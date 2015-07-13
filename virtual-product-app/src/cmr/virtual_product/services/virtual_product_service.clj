@@ -8,13 +8,12 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.core :as umm]
             [cmr.umm.granule :as umm-g]
-            [clojure.string :as str]
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
-            [cheshire.core :as json]
-            [cmr.common.validations.json-schema :as js]
             [clojure.walk :as walk]
+            [clojure.set :as set]
+            [cmr.transmit.search :as search]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -49,8 +48,8 @@
         (update-in [:action] keyword)
         (assoc :provider-id provider-id :concept-type concept-type))))
 
-(defn- virtual-granule?
-  "Returns true if this is an event that should apply to virtual granules"
+(defn- virtual-granule-event?
+  "Returns true if the granule identified by concept-type, provider-id and entry-title is virtual"
   [{:keys [concept-type provider-id entry-title]}]
   (and (= :granule concept-type)
        (contains? source-provider-id-entry-titles [provider-id entry-title])))
@@ -111,7 +110,7 @@
   [context event]
   (when (config/virtual-products-enabled)
     (let [annotated-event (annotate-event event)]
-      (when (virtual-granule? annotated-event)
+      (when (virtual-granule-event? annotated-event)
         (apply-source-granule-update-event context annotated-event)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -198,33 +197,70 @@
     (let [annotated-event (annotate-event event)]
       (when (= :granule (:concept-type annotated-event))
         (let [annotated-delete-event (annotate-granule-delete-event context annotated-event)]
-          (when (virtual-granule? annotated-delete-event)
+          (when (virtual-granule-event? annotated-delete-event)
             (apply-source-granule-delete-event context annotated-delete-event)))))))
 
-(def order-fullfillment-request-schema
-  "Schema for the JSON request to the keep-virtual end-point"
-  (js/parse-json-schema
-    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
-                           "title" "Order fullfillment request"
-                           "description" "Input request from ECHO order fullfillment service"
-                           "type" "array"
-                           "items" {"title" "A granule in the order"
-                                    "type" "object"
-                                    "properties" {"concept-id" {"type" "string"}
-                                                  "entry-title" {"type" "string"}
-                                                  "granule-ur" {"type" "string"}}
-                                    "required" ["concept-id" "entry-title" "granule-ur"]}})))
+(defn- annotate-entries
+  "Annotate entries with provider id derived from concept-id present in the entry"
+  [entries]
+  (for [entry entries
+        :let [{:keys [provider-id]} (concepts/parse-concept-id (:concept-id entry))]]
+    (with-meta entry {:provider-id provider-id})))
 
-(defn filter-virtual-granules
-  "Remove all the granules which are not virutal granules from the JSON body which conforms to
-  the schema defined above. Note that the existence of the virtual granule in the database is not
-  checked. Only the provider id and entry-title are checked with the virtual products configuration
-  to see if the granule is virtual if it does exist."
-  [context json-body]
-  (let [body (if (seq? json-body) (vec json-body) json-body)
-        _ (js/validate-json order-fullfillment-request-schema (json/generate-string json-body))
-        is-virtual? (fn [item]
-                      (virtual-granule?
-                        (merge (walk/keywordize-keys item)
-                               (concepts/parse-concept-id  (get item "concept-id")))))]
-    (json/generate-string (filter (partial is-virtual?) json-body))))
+(defn- filter-virtual-entries
+  "Filter to retrieve virtual entries from the input entries."
+  [entries]
+  (for [entry entries
+        :let [entry-title (:entry-title entry)
+              provider-id (:provider-id (meta entry))]
+        :when (contains? config/virtual-product-config-derived [provider-id entry-title])]
+    entry))
+
+(defn- group-by-source-entry-title
+  "Group a list of entries by entry title"
+  [groups entry]
+  (let [provider-id (:provider-id (meta entry))
+        source-entry-title (get-in config/virtual-product-config-derived
+                                   [[provider-id (:entry-title entry)] :source-entry-title])]
+    (if (contains? groups source-entry-title)
+      (update-in groups [[provider-id source-entry-title]] conj entry)
+      (assoc groups [provider-id source-entry-title] [entry]))))
+
+(defn- compute-source-granule-urs
+  "Compute source granule-urs from virtual granule-urs"
+  [provider-id virtual-granule-entries]
+  (for [{:keys [granule-ur entry-title]} virtual-granule-entries]
+    (let [{:keys [source-short-name short-name]}
+          (get config/virtual-product-config-derived [provider-id entry-title])]
+      (config/compute-source-granule-ur
+        provider-id source-short-name short-name granule-ur))))
+
+(defn- create-source-entries
+  "Fetch granule ids from the granule urs of granules that belong to a collection with the given
+  provider id and entry title"
+  [context provider-id granule-urs entry-title]
+  (for [[granule-ur granule-id] (search/find-granule-ids
+                                  context provider-id entry-title granule-urs)]
+    {:concept-id granule-id
+     :entry-title entry-title
+     :granule-ur granule-ur}))
+
+(defn- virtual-entries->source-entries
+  "Translate the virtual entries to the corresponding source entries."
+  [context virtual-entries]
+  (flatten
+    (let [entries-by-source-entry-title (reduce group-by-source-entry-title {} virtual-entries)]
+      (for [[[provider-id source-entry-title] granule-entries] entries-by-source-entry-title]
+        (let [source-granule-urs (compute-source-granule-urs provider-id granule-entries)]
+          (create-source-entries context provider-id
+                                 (set source-granule-urs) source-entry-title))))))
+
+(defn translate-granule-entries
+  "Translate virtual granules in the granule-entries into the corresponding source entries.
+  Remove the duplicates from the final set of entries."
+  [context granule-entries]
+  (let [annoted-entries (set (annotate-entries granule-entries))
+        virtual-entries (set (filter-virtual-entries annoted-entries))
+        non-virtual-entries (set/difference annoted-entries virtual-entries)
+        translated-virtual-entries (set (virtual-entries->source-entries context virtual-entries))]
+    (set/union non-virtual-entries translated-virtual-entries)))

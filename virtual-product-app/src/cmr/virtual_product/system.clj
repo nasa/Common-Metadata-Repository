@@ -33,7 +33,7 @@
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
              :zipkin (context/zipkin-config "virtual-product" false)
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
-    (transmit-config/system-with-connections sys [:metadata-db :ingest])))
+    (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
