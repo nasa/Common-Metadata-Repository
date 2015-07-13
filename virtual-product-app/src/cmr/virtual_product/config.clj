@@ -65,7 +65,7 @@
 (def virtual-product-config-derived
   "A map derived from the above map. This map consists of keys which are a combination of provider
   id and entry title for each virtual product and values which are made up of short name,
-  source entry title and source short name for the corresponding key"
+  source entry title and source short name for each of the keys"
   (into
     {}
     (apply concat
@@ -96,6 +96,13 @@
   [provider-id source-short-name virtual-short-name granule-ur]
   (str/replace granule-ur source-short-name virtual-short-name))
 
+;; The granule urs of granules in the virtual collection based on AST_L1A is a simple
+;; transformation of the granule urs of the corresponding source granules and its inverse is trivial.
+;; It is possible that future collections use a different scheme to generate virtual granule urs. In
+;; those cases it might not even be possible to compute the inverse. We might take different approach
+;; to find source granule ur from virtual granule ur to accommodate those cases.
+;; We could, for example, add source granule ur as an additional attribute in the virtual granule
+;; metadata which will be looked up instead of computing on the fly.
 (defmulti compute-source-granule-ur
   "Compute source granule ur from the virtual granule ur. This function should be the inverse
   of generate-granule-ur."

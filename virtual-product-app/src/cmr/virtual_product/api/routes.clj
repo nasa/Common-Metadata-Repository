@@ -33,8 +33,8 @@
 (defn- translate
   [context json-str]
   ;; Checks the json-str for validity as well as well-formedness
-  (let [_ (js/validate-json granule-entries-schema json-str)]
-    (vps/translate-granule-entries context (json/parse-string json-str true))))
+  (js/validate-json granule-entries-schema json-str)
+  (vps/translate-granule-entries context (json/parse-string json-str true)))
 
 (defn- build-routes [system]
   (routes

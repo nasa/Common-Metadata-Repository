@@ -236,7 +236,7 @@
 
 (defn- create-source-entries
   "Fetch granule ids from the granule urs of granules that belong to a collection with the given
-  provider id and entry title"
+  provider id and entry title and create the source entries using the information."
   [context provider-id granule-urs entry-title]
   (for [[granule-ur granule-id] (search/find-granule-ids
                                   context provider-id entry-title granule-urs)]
@@ -258,8 +258,8 @@
   "Translate virtual granules in the granule-entries into the corresponding source entries.
   Remove the duplicates from the final set of entries."
   [context granule-entries]
-  (let [annoted-entries (set (annotate-entries granule-entries))
-        virtual-entries (set (filter-virtual-entries annoted-entries))
-        non-virtual-entries (set/difference annoted-entries virtual-entries)
+  (let [annotated-entries (set (annotate-entries granule-entries))
+        virtual-entries (set (filter-virtual-entries annotated-entries))
+        non-virtual-entries (set/difference annotated-entries virtual-entries)
         translated-virtual-entries (set (virtual-entries->source-entries context virtual-entries))]
     (set/union non-virtual-entries translated-virtual-entries)))

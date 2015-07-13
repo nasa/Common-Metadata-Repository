@@ -247,6 +247,7 @@ Response:
  {:concept-id "G1-LPDAAC_ECS" :entry-title "The source dataset" :granule-ur "the source granule"}
  {:concept-id "G6-PROV1" :entry-title "A dataset" :granule-ur "bar"}]
 ```
+Note: The order of entries in the response is not same as in the request.
 
 ***
 
