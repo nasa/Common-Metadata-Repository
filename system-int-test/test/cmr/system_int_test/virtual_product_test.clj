@@ -10,63 +10,27 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.virtual-product.config :as vp-config]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.system-int-test.system :as s]
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [clj-time.core :as t]))
 
-(def virtual-product-providers
-  "Returns a list of the provider ids of the providers with virtual products."
-  (->> vp-config/source-to-virtual-product-config
-       keys
-       (map first)))
-
-
-(use-fixtures :each (ingest/reset-fixture (into {} (for [p virtual-product-providers]
+(use-fixtures :each (ingest/reset-fixture (into {} (for [p vp/virtual-product-providers]
                                                      [(str p "_guid") p]))))
-
-(defn source-collections
-  "Returns a sequence of UMM collection records that are sources of virtual products."
-  []
-  (for [[[provider-id entry-title] {short-name :source-short-name}] vp-config/source-to-virtual-product-config]
-    (assoc (dc/collection {:entry-title entry-title :short-name short-name})
-           :provider-id provider-id)))
 
 (defn ingest-source-collections
   "Ingests the source collections and returns their UMM records with some extra information."
   ([]
-   (ingest-source-collections (source-collections)))
+   (ingest-source-collections (vp/source-collections)))
   ([source-collections]
    (mapv #(d/ingest (:provider-id %) %) source-collections)))
-
-(defn virtual-collections
-  "Returns virtual collections from a source collection"
-  [source-collection]
-  (for [virtual-coll-attribs (-> vp-config/source-to-virtual-product-config
-                                 (get [(:provider-id source-collection) (:entry-title source-collection)])
-                                 :virtual-collections)]
-    (assoc (dc/collection (merge (dissoc source-collection
-                                         :revision-id :native-id :concept-id :entry-id :product)
-                                 virtual-coll-attribs ))
-           :provider-id (:provider-id source-collection))))
 
 (defn ingest-virtual-collections
   "Ingests the virtual collections for the given set of source collections."
   [source-collections]
   (->> source-collections
-       (mapcat virtual-collections)
+       (mapcat vp/virtual-collections)
        (mapv #(d/ingest (:provider-id %) %))))
-
-(defn granule->expected-virtual-granule-urs
-  "Returns the set of expected granule URs for the given source granule."
-  [granule]
-  (let [{:keys [provider-id granule-ur]
-         {:keys [entry-title]} :collection-ref} granule
-        vp-config (get vp-config/source-to-virtual-product-config [provider-id entry-title])]
-    (for [virtual-coll (:virtual-collections vp-config)]
-      (vp-config/generate-granule-ur
-        provider-id (:source-short-name vp-config) (:short-name virtual-coll) granule-ur))))
 
 (defn assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
@@ -100,7 +64,7 @@
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur
                                                                   :project-refs ["proj1"]}))
-        expected-granule-urs (granule->expected-virtual-granule-urs ast-l1a-gran)
+        expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
 
@@ -168,7 +132,7 @@
                                      granule-ur (vp-config/sample-source-granule-urs
                                                   [provider-id entry-title])]
                                  (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))
-        all-expected-granule-urs (concat (mapcat granule->expected-virtual-granule-urs source-granules)
+        all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
     (index/wait-until-indexed)
 

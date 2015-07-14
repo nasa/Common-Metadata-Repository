@@ -5,6 +5,7 @@
             [ring.util.codec :as codec]
             [cmr.transmit.http-helper :as h]
             [camel-snake-kebab.core :as csk]
+            [cmr.transmit.config :as transmit-config]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 
@@ -35,25 +36,29 @@
   ([context concept]
    (ingest-concept context concept false))
   ([context concept is-raw]
-   (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept]
+   (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept
+         system-token (transmit-config/echo-system-token)]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :put
                  :raw? is-raw
                  :http-options {:body metadata
                                 :content-type (:format concept)
-                                :headers {"cmr-revision-id" revision-id}
+                                :headers {"cmr-revision-id" revision-id
+                                          transmit-config/token-header system-token}
                                 :accept :json}}))))
 (defn-timed delete-concept
   ([context concept]
    (delete-concept context concept false))
   ([context concept is-raw]
-   (let [{:keys [provider-id concept-type native-id revision-id]} concept]
+   (let [{:keys [provider-id concept-type native-id revision-id]} concept
+         system-token (transmit-config/echo-system-token)]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
                  :raw? is-raw
-                 :http-options {:headers {"cmr-revision-id" revision-id}
+                 :http-options {:headers {"cmr-revision-id" revision-id
+                                          transmit-config/token-header system-token}
                                 :accept :json}}))))
 
 (defn get-ingest-health-fn
