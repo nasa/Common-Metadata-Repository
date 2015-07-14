@@ -12,6 +12,7 @@
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
             [clojure.set :as set]
+            [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
             [cmr.common.util :as u :refer [defn-timed]]))
 
@@ -94,16 +95,20 @@
                                                        (:short-name virtual-coll)
                                                        (:granule-ur orig-umm))
             new-umm (assoc orig-umm
-                      :granule-ur new-granule-ur
-                      :collection-ref (umm-g/map->CollectionRef
-                                        (select-keys virtual-coll [:entry-title])))
+                           :granule-ur new-granule-ur
+                           :collection-ref (umm-g/map->CollectionRef
+                                             (select-keys virtual-coll [:entry-title])))
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
             new-concept (-> orig-concept
-                            (select-keys [:revision-id :format :provider-id :concept-type])
+                            (select-keys [:format :provider-id :concept-type])
                             (assoc :native-id new-granule-ur
-                              :metadata new-metadata))]
-        (handle-update-response (ingest/ingest-concept context new-concept true) new-granule-ur)))))
+                                   :metadata new-metadata))
+            headers     {"cmr-revision-id" revision-id
+                         transmit-config/token-header (transmit-config/echo-system-token)}]
+        (handle-update-response
+          (ingest/ingest-concept context new-concept :is-raw true :headers headers)
+          new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-update
   [context event]
@@ -184,10 +189,12 @@
                                                        (:source-short-name vp-config)
                                                        (:short-name virtual-coll)
                                                        granule-ur)
+            headers     {"cmr-revision-id" revision-id
+                         transmit-config/token-header (transmit-config/echo-system-token)}
             resp (ingest/delete-concept context {:provider-id provider-id
                                                  :concept-type :granule
-                                                 :native-id new-granule-ur
-                                                 :revision-id revision-id} true)]
+                                                 :native-id new-granule-ur}
+                                        :is-raw true :headers headers)]
         (handle-delete-response resp new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-delete

@@ -12,8 +12,7 @@
             [cmr.common.time-keeper :as tk]
             [clj-time.core :as t]))
 
-(use-fixtures :each (ingest/reset-fixture (into {} (for [p vp/virtual-product-providers]
-                                                     [(str p "_guid") p])) true false))
+(use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} true false))
 
 (defn assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
