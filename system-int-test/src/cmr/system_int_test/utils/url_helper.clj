@@ -366,3 +366,8 @@
   []
   (format "http://localhost:%s/health" (transmit-config/virtual-product-port)))
 
+(defn virtual-product-translate-granule-entries-url
+  "URL to translate virtual product entries to the corresponding source entries."
+  []
+  (format "http://localhost:%s/translate-granule-entries" (transmit-config/virtual-product-port)))
+
