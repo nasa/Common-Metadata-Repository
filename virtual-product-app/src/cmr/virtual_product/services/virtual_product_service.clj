@@ -212,37 +212,40 @@
   (for [entry entries
         :let [entry-title (:entry-title entry)
               provider-id (:provider-id (meta entry))]
-        :when (contains? config/virtual-product-config-derived [provider-id entry-title])]
+        :when (contains? config/virtual-product-to-source-config [provider-id entry-title])]
     entry))
-
-(defn- group-by-source-entry-title
-  "Group a list of entries by entry title"
-  [groups entry]
-  (let [provider-id (:provider-id (meta entry))
-        source-entry-title (get-in config/virtual-product-config-derived
-                                   [[provider-id (:entry-title entry)] :source-entry-title])]
-    (if (contains? groups source-entry-title)
-      (update-in groups [[provider-id source-entry-title]] conj entry)
-      (assoc groups [provider-id source-entry-title] [entry]))))
 
 (defn- compute-source-granule-urs
   "Compute source granule-urs from virtual granule-urs"
   [provider-id virtual-granule-entries]
   (for [{:keys [granule-ur entry-title]} virtual-granule-entries]
     (let [{:keys [source-short-name short-name]}
-          (get config/virtual-product-config-derived [provider-id entry-title])]
+          (get config/virtual-product-to-source-config [provider-id entry-title])]
       (config/compute-source-granule-ur
         provider-id source-short-name short-name granule-ur))))
 
 (defn- create-source-entries
   "Fetch granule ids from the granule urs of granules that belong to a collection with the given
-  provider id and entry title and create the source entries using the information."
-  [context provider-id granule-urs entry-title]
+  provider id and entry title and create the entries using the information."
+  [context provider-id entry-title granule-urs]
   (for [[granule-ur granule-id] (search/find-granule-ids
                                   context provider-id entry-title granule-urs)]
     {:concept-id granule-id
      :entry-title entry-title
      :granule-ur granule-ur}))
+
+(defn- group-by-source-entry-title
+  "Function used for grouping granule entries by entry title. groups is a map with keys like this:
+  [provider-id entry-title] and values which are an array of granule entries all of which have the
+  same entry-title as in the key. This function adds the given entry into the right key group. This
+  function is used with-in a reduce function."
+  [groups entry]
+  (let [provider-id (:provider-id (meta entry))
+        source-entry-title (get-in config/virtual-product-to-source-config
+                                   [[provider-id (:entry-title entry)] :source-entry-title])]
+    (if (contains? groups source-entry-title)
+      (update-in groups [[provider-id source-entry-title]] conj entry)
+      (assoc groups [provider-id source-entry-title] [entry]))))
 
 (defn- virtual-entries->source-entries
   "Translate the virtual entries to the corresponding source entries."
@@ -250,13 +253,13 @@
   (flatten
     (let [entries-by-source-entry-title (reduce group-by-source-entry-title {} virtual-entries)]
       (for [[[provider-id source-entry-title] granule-entries] entries-by-source-entry-title]
-        (let [source-granule-urs (compute-source-granule-urs provider-id granule-entries)]
-          (create-source-entries context provider-id
-                                 (set source-granule-urs) source-entry-title))))))
+        (let [source-granule-urs (set (compute-source-granule-urs provider-id granule-entries))]
+          (create-source-entries context provider-id source-entry-title source-granule-urs))))))
 
 (defn translate-granule-entries
-  "Translate virtual granules in the granule-entries into the corresponding source entries.
-  Remove the duplicates from the final set of entries."
+  "Translate virtual granules in the granule-entries into the corresponding source entries. Remove
+  the duplicates from the final set of entries.See routes.clj for the JSON schema of
+  granule-entries."
   [context granule-entries]
   (let [annotated-entries (set (annotate-entries granule-entries))
         virtual-entries (set (filter-virtual-entries annotated-entries))

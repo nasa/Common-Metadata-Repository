@@ -5,8 +5,6 @@
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.common.mime-types :as mt]))
 
-
-
 (defn translate-granule-entries
   "Translate the virtual granule entries to the corresponding source entries in the input json"
   [json-str]

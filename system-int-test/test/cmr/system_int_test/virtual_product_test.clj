@@ -232,32 +232,34 @@
     (index/wait-until-indexed)
     (assert-tombstones vp-granule-ids 14)))
 
-(defn- get-sample-virtual-granule-entry
-  "Get any virtual granule entry for a given virtual-entry-title"
-  [virtual-entry-title]
-  (let [virtual-granule-refs (:refs (search/find-refs
-                                      :granule {:entry-title virtual-entry-title
-                                                :page-size 1}))
-        [virtual-granule-id virtual-granule-ur] ((juxt :id :name) (first virtual-granule-refs))]
-    {:entry-title virtual-entry-title
-     :concept-id virtual-granule-id
-     :granule-ur virtual-granule-ur}))
+(defn- get-sample-granule-entry-triplet
+  "Get granule entry triplet consisting of entry title, concept id and granule ur for any one
+  granule in the collection with the given entry-title."
+  [entry-title]
+  (let [granule-refs (:refs (search/find-refs
+                              :granule {:entry-title entry-title
+                                        :page-size 1}))
+        [granule-id granule-ur] ((juxt :id :name) (first granule-refs))]
+    {:entry-title entry-title
+     :concept-id granule-id
+     :granule-ur granule-ur}))
 
 
 (deftest translate-granule-entries-test
-  (let [ast-coll (d/ingest "LPDAAC_ECS"
+  (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+        ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+                             {:entry-title ast-entry-title}))
         vp-colls (ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
         ingest-result (d/ingest "LPDAAC_ECS" ast-l1a-gran)
         _ (index/wait-until-indexed)
-        source-granule {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+        source-granule {:entry-title ast-entry-title
                         :concept-id (:concept-id ingest-result)
                         :granule-ur granule-ur}
-        virtual-granule1 (get-sample-virtual-granule-entry (:entry-title (first vp-colls)))
-        virtual-granule2 (get-sample-virtual-granule-entry (:entry-title (second vp-colls)))
+        virtual-granule1 (get-sample-granule-entry-triplet (:entry-title (first vp-colls)))
+        virtual-granule2 (get-sample-granule-entry-triplet (:entry-title (second vp-colls)))
         other-granule {:entry-title "entry-title"
                        :concept-id "G1234-PROV1"
                        :granule-ur "granule-ur"}]

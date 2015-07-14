@@ -47,7 +47,7 @@
                                            :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)
-      (let [gran-refs (get-in (json/parse-string (:body response) true) [:feed :entry])]
+      (let [gran-refs (get-in (json/parse-string body true) [:feed :entry])]
         (reduce #(assoc %1 (:title %2)(:id %2)) {} gran-refs))
       (errors/internal-error!
         (format "Granule-id search failed. status: %s body: %s" status body)))))

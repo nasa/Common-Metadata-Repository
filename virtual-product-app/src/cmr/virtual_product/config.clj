@@ -62,10 +62,10 @@
                           {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
                            :short-name "AST14DMO"}]}})
 
-(def virtual-product-config-derived
-  "A map derived from the above map. This map consists of keys which are a combination of provider
-  id and entry title for each virtual product and values which are made up of short name,
-  source entry title and source short name for each of the keys"
+(def virtual-product-to-source-config
+  "A map derived from the map source-to-virtual-product-config. This map consists of keys which are
+  a combination of provider id and entry title for each virtual product and values which are made up
+  of short name, source entry title and source short name for each of the keys"
   (into
     {}
     (apply concat
