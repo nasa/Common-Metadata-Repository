@@ -82,6 +82,12 @@
                      "ingesting the virtual granule [%s] : [%s]")
                 status granule-ur (pr-str response))))))
 
+(defn- build-ingest-headers
+  "Create http headers which will be part of ingest requests send to ingest service"
+  [revision-id]
+  {"cmr-revision-id" revision-id
+   transmit-config/token-header (transmit-config/echo-system-token)})
+
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
@@ -103,11 +109,9 @@
             new-concept (-> orig-concept
                             (select-keys [:format :provider-id :concept-type])
                             (assoc :native-id new-granule-ur
-                                   :metadata new-metadata))
-            headers     {"cmr-revision-id" revision-id
-                         transmit-config/token-header (transmit-config/echo-system-token)}]
+                                   :metadata new-metadata))]
         (handle-update-response
-          (ingest/ingest-concept context new-concept :is-raw true :headers headers)
+          (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
           new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-update
@@ -189,12 +193,10 @@
                                                        (:source-short-name vp-config)
                                                        (:short-name virtual-coll)
                                                        granule-ur)
-            headers     {"cmr-revision-id" revision-id
-                         transmit-config/token-header (transmit-config/echo-system-token)}
             resp (ingest/delete-concept context {:provider-id provider-id
                                                  :concept-type :granule
                                                  :native-id new-granule-ur}
-                                        :is-raw true :headers headers)]
+                                        (build-ingest-headers revision-id) true)]
         (handle-delete-response resp new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-delete

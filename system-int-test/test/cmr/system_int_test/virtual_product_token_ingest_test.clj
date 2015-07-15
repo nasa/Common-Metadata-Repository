@@ -14,13 +14,13 @@
 
 (use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} true false))
 
-(defn assert-matching-granule-urs
+(defn- assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
   [expected-granule-urs {:keys [refs]}]
   (is (= (set expected-granule-urs)
          (set (map :name refs)))))
 
-(defn ingest-virtual-collections
+(defn- ingest-virtual-collections
   "Ingests the virtual collections for the given set of source collections."
   [source-collections options]
   (->> source-collections

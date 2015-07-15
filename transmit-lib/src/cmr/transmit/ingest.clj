@@ -32,8 +32,10 @@
 ;; Request functions
 
 (defn-timed ingest-concept
-  "Send a request to ingest service to ingest the concept using the optional headers"
-  ([context concept & {:keys [is-raw headers] or {is-raw false headers {}}}]
+  "Send a request to ingest service to ingest a concept using the optional headers"
+  ([context concept headers]
+   (ingest-concept context concept headers false))
+  ([context concept headers is-raw]
    (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
@@ -44,8 +46,10 @@
                                 :headers headers
                                 :accept :json}}))))
 (defn-timed delete-concept
-  "Send a request to ingest service to delete the concept using the optional headers"
-  ([context concept & {:keys [is-raw headers] or {is-raw false headers {}}}]
+  "Send a request to ingest service to delete a concept using the optional headers"
+  ([context concept headers]
+   (ingest-concept context concept headers false))
+  ([context concept headers is-raw]
    (let [{:keys [provider-id concept-type native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)

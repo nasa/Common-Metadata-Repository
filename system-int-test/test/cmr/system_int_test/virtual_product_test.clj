@@ -18,21 +18,21 @@
 (use-fixtures :each (ingest/reset-fixture (into {} (for [p vp/virtual-product-providers]
                                                      [(str p "_guid") p]))))
 
-(defn ingest-source-collections
+(defn- ingest-source-collections
   "Ingests the source collections and returns their UMM records with some extra information."
   ([]
    (ingest-source-collections (vp/source-collections)))
   ([source-collections]
    (mapv #(d/ingest (:provider-id %) %) source-collections)))
 
-(defn ingest-virtual-collections
+(defn- ingest-virtual-collections
   "Ingests the virtual collections for the given set of source collections."
   [source-collections]
   (->> source-collections
        (mapcat vp/virtual-collections)
        (mapv #(d/ingest (:provider-id %) %))))
 
-(defn assert-matching-granule-urs
+(defn- assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
   [expected-granule-urs {:keys [refs]}]
   (is (= (set expected-granule-urs)
