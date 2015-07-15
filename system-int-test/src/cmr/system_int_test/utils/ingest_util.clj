@@ -170,6 +170,12 @@
     (assoc (parse-ingest-body (or (:accept-format options) :xml) response)
            :status (:status response))))
 
+(defn exec-ingest-http-request
+  "Execute the http request defined by the given params map and returns the parsed ingest response."
+  [params]
+  (parse-ingest-response
+    (client/request (assoc params :throw-exceptions false :connection-manager (s/conn-mgr))) {}))
+
 (defn ingest-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]
