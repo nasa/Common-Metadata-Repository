@@ -1,5 +1,5 @@
 (ns cmr.common.api.errors
-  (:require [cmr.common.log :refer [error]]
+  (:require [cmr.common.log :refer [error warn]]
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
@@ -100,8 +100,9 @@
         status-code (type->http-status-code type)
         [content-type response-body] (response-type-body errors results-format)]
     ;; Log exceptions for server errors
-    (when (>= status-code 500)
-      (error e))
+    (if (>= status-code 500)
+      (error e)
+      (warn "Failed with status code [" status-code "], response body: " response-body))
     {:status status-code
      :headers {CONTENT_TYPE_HEADER content-type
                CORS_ORIGIN_HEADER "*"}
