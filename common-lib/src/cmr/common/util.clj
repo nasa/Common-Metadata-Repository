@@ -325,9 +325,9 @@
   "Recursively delete the directory or file by the given name. Does nothing if the file does not exist."
   [fname]
   (when (.exists (io/file fname))
-    (let [func (fn [func f]
-                 (when (.isDirectory f)
-                   (doseq [f2 (.listFiles f)]
-                     (func func f2)))
-                 (io/delete-file f))]
-      (func func (io/file fname)))))
+    (letfn [(delete-recursive
+              [^java.io.File file]
+              (when (.isDirectory file)
+                (dorun (map delete-recursive (.listFiles file))))
+              (io/delete-file file))]
+      (delete-recursive (io/file fname)))))
