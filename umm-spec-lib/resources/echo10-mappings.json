@@ -62,7 +62,17 @@
                   "type": "array",
                   "items-xpath": "RangeDateTime",
                   "items": {
-                    "type": "matches-xml"
+                    "type": "object",
+                    "properties": {
+                      "BeginningDateTime": {
+                        "type": "xpath",
+                        "value": "BeginningDateTime"
+                      },
+                      "EndingDateTime": {
+                        "type": "xpath",
+                        "value": "EndingDateTime"
+                      }
+                    }
                   }
                 },
                 "SingleDateTime": {
@@ -73,7 +83,37 @@
                   "type": "array",
                   "items-xpath": "PeriodicDateTime",
                   "items": {
-                    "type": "matches-xml"
+                    "type": "object",
+                    "properties": {
+                      "Name": {
+                        "type": "xpath",
+                        "value": "Name"
+                      },
+                      "StartDate": {
+                        "type": "xpath",
+                        "value": "StartDate"
+                      },
+                      "EndDate": {
+                        "type": "xpath",
+                        "value": "EndDate"
+                      },
+                      "DurationUnit": {
+                        "type": "xpath",
+                        "value": "DurationUnit"
+                      },
+                      "DurationValue": {
+                        "type": "xpath",
+                        "value": "DurationValue"
+                      },
+                      "PeriodCycleDurationUnit": {
+                        "type": "xpath",
+                        "value": "PeriodCycleDurationUnit"
+                      },
+                      "PeriodCycleDurationValue": {
+                        "type": "xpath",
+                        "value": "PeriodCycleDurationValue"
+                      }
+                    }
                   }
                 }
               }
@@ -147,43 +187,83 @@
           }],
           ["Temporal", {
             // TODO I'm not sure if array is appropriate here since there won't be multiple
-            "type":"array",
+            "type": "array",
             // ECHO10 only has one Temporal element so we can only select the first one.
-            "items-mpath":"/UMM-C/TemporalExtent[1]",
+            "items-mpath": "/UMM-C/TemporalExtent[1]",
             "items": {
               "type": "object",
-              "properties": {
-                "TemporalRangeType": {
+              "properties": [
+                ["TemporalRangeType", {
                   "type": "mpath",
                   "value": "TemporalRangeType"
-                },
-                "PrecisionOfSeconds": {
+                }],
+                ["PrecisionOfSeconds", {
                   "type": "mpath",
                   "value": "PrecisionOfSeconds"
-                },
-                "EndsAtPresentFlag": {
+                }],
+                ["EndsAtPresentFlag", {
                   "type": "mpath",
                   "value": "EndsAtPresentFlag"
-                },
-                "RangeDateTime": {
+                }],
+                ["RangeDateTime", {
                   "type": "array",
                   "items-mpath": "RangeDateTime",
                   "items": {
-                    "type": "matches-umm"
+                    "type": "object",
+                    "properties": [
+                      ["BeginningDateTime", {
+                        "type": "mpath",
+                        "value": "BeginningDateTime"
+                      }],
+                      ["EndingDateTime", {
+                        "type": "mpath",
+                        "value": "EndingDateTime"
+                      }]
+                    ]
                   }
-                },
-                "SingleDateTime": {
+                }],
+                ["SingleDateTime", {
                   "type": "array",
                   "items-mpath": "SingleDateTime"
-                },
-                "PeriodicDateTime": {
+                }],
+                ["PeriodicDateTime", {
                   "type": "array",
                   "items-mpath": "PeriodicDateTime",
                   "items": {
-                    "type": "matches-umm"
+                    "type": "object",
+                    "properties": [
+                      ["Name", {
+                        "type": "mpath",
+                        "value": "Name"
+                      }],
+                      ["StartDate", {
+                        "type": "mpath",
+                        "value": "StartDate"
+                      }],
+                      ["EndDate", {
+                        "type": "mpath",
+                        "value": "EndDate"
+                      }],
+                      ["DurationUnit", {
+                        "type": "mpath",
+                        "value": "DurationUnit"
+                      }],
+                      ["DurationValue", {
+                        "type": "mpath",
+                        "value": "DurationValue"
+                      }],
+                      ["PeriodCycleDurationUnit", {
+                        "type": "mpath",
+                        "value": "PeriodCycleDurationUnit"
+                      }],
+                      ["PeriodCycleDurationValue", {
+                        "type": "mpath",
+                        "value": "PeriodCycleDurationValue"
+                      }]
+                    ]
                   }
-                }
-              }
+                }]
+              ]
             }
           }]
         ]

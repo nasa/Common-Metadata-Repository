@@ -57,17 +57,6 @@
         (generate-element single-item-xpath-context element-name items)
         (x/element element-name {} (str data))))))
 
-(defmethod generate-element "matches-umm"
-  [xpath-context element-name _]
-  (letfn [(record-to-xml
-            [record]
-            (for [[prop-name prop-value] record]
-              (x/element prop-name {}
-                         (if (map? prop-value)
-                           (record-to-xml prop-value)
-                           (str prop-value)))))]
-    (x/element element-name {} (record-to-xml (-> xpath-context :context first)))))
-
 (defn generate-xml
   "TODO"
   [mappings record]
@@ -157,6 +146,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing
 
+;; TODO the name here doesn't make any sense
 (defmulti parse-value
   "TODO"
   ;; TODO this will probably change to a parse context
@@ -170,7 +160,7 @@
       (into {} (for [[prop-name sub-def] properties]
                  [prop-name (parse-value xpath-context sub-def)])))))
 
-(defmulti parse-xpath-results
+(defmulti parse-xml-value
   "TODO"
   (fn [parse-type xpath-context]
     (or (:format parse-type) (:type parse-type))))
@@ -179,26 +169,26 @@
   [xpath-context]
   (->> xpath-context :context first :content first))
 
-(defmethod parse-xpath-results "string"
+(defmethod parse-xml-value "string"
   [_ xpath-context]
   (extract-xpath-context-value xpath-context))
 
-(defmethod parse-xpath-results "date-time"
+(defmethod parse-xml-value "date-time"
   [_ xpath-context]
   (dtp/parse-datetime (extract-xpath-context-value xpath-context)))
 
-(defmethod parse-xpath-results "integer"
+(defmethod parse-xml-value "integer"
   [parse-type xpath-context]
   (Long/parseLong ^String (extract-xpath-context-value xpath-context)))
 
-(defmethod parse-xpath-results "boolean"
+(defmethod parse-xml-value "boolean"
   [parse-type xpath-context]
   (= "true" (extract-xpath-context-value xpath-context)))
 
 (defmethod parse-value "xpath"
   [xpath-context {:keys [parse-type value]}]
   ;; TODO XPaths could be parsed ahead of time when loading mappings.
-  (parse-xpath-results parse-type (sxp/evaluate xpath-context (sxp/parse-xpath value))))
+  (parse-xml-value parse-type (sxp/evaluate xpath-context (sxp/parse-xpath value))))
 
 (defmethod parse-value "concat"
   [xpath-context {:keys [parts]}]
@@ -210,29 +200,12 @@
 (defmethod parse-value "array"
   [xpath-context {:keys [items-xpath items]}]
   (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-xpath))]
-    (for [element (:context new-xpath-context)
-          :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
-      (if (and items (:type items))
-        (parse-value single-item-xpath-context items)
-        (parse-xpath-results (:parse-type items "string") single-item-xpath-context)))))
-
-(defmethod parse-value "matches-xml"
-  [xpath-context _]
-  (letfn [(content-to-data
-            [content]
-            (cond
-              (map? content)
-              {(:tag content) (content-to-data (:content content))}
-
-              (sequential? content)
-              (if (= 1 (count content))
-                (content-to-data (first content))
-                (mapv content-to-data content))
-
-              :else
-              content))]
-    (content-to-data (:context xpath-context))))
-
+    (when-let [elements (seq (:context new-xpath-context))]
+      (for [element elements
+            :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
+        (if (and items (:type items))
+          (parse-value single-item-xpath-context items)
+          (parse-xml-value (:parse-type items "string") single-item-xpath-context))))))
 
 (defmethod parse-value "constant"
   [_ {:keys [value]}]

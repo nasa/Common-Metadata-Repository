@@ -42,7 +42,8 @@
                                                    :DurationUnit "YEAR"
                                                    :DurationValue 4
                                                    :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}])})]}))
+                                                  :PeriodCycleDurationValue 3}])
+                         })]}))
 
 (comment
 

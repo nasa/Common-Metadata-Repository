@@ -94,15 +94,12 @@
   (fn [elements selector]
     (:type selector)))
 
-(def captured-output (atom []))
 
 (defn- process-selectors
   "Applies multiple selectors to a set of elements"
   [source selectors processor-fn]
   (reduce (fn [input selector]
-            (let [result (processor-fn input selector)]
-              (swap! captured-output conj [selector result])
-              result))
+            (processor-fn input selector))
           source
           selectors))
 
@@ -139,9 +136,10 @@
 (defn as-vector
   "Returns data as a vector if it's not one already"
   [data]
-  (if (vector? data)
-    data
-    [data]))
+  (cond
+    (nil? data) []
+    (vector? data) data
+    :else [data]))
 
 (defmulti process-data-selector
   "TODO"
@@ -172,7 +170,6 @@
 (defmethod process-data-selector :nth-matcher
   [data {:keys [index]}]
   [(nth (as-vector data) index)])
-
 
 (defn parse-xpath
   "TODO"
