@@ -7,6 +7,7 @@
            org.elasticsearch.node.Node)
   (:require [cmr.common.lifecycle :as lifecycle]
             [clj-http.client :as client]
+            [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
 
@@ -20,7 +21,7 @@
 
   (.configFile env)
 
-)
+  )
 
 (defn- setup-logging
   "Sets up elastic search logging."
@@ -37,9 +38,12 @@
       (put "http.port" (str http-port))
       (put "transport.tcp.port" (str transport-port))
       (put "index.store.type" "memory")
-      ;; Disable dynamic scripting to prevent attacks on developer machines
-      ;; See http://bouk.co/blog/elasticsearch-rce/
-      (put "script.disable_dynamic" "true")
+      ;; dynamic scripting configurations
+      (put "script.file" "off")
+      (put "script.plugin" "off")
+      (put "script.aggs" "off")
+      (put "script.mapping" "off")
+      (put "script.update" "off")
       build))
 
 (defn- build-node
@@ -86,7 +90,9 @@
   (stop
     [this system]
     (when-let [^Node node (:node this)]
-      (.close node))
+      (do
+        (.close node)
+        (util/delete-recursively (:data-dir this))))
     (assoc this :node nil)))
 
 (defn create-server
@@ -104,5 +110,5 @@
 
   (def stopped-server (lifecycle/stop started-server nil))
 
-)
+  )
 

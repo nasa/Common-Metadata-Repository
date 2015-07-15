@@ -5,6 +5,7 @@
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.template :as template]
             [clojure.test :as test])
@@ -319,3 +320,14 @@
 
      (sequential? m)
      (reduce #(into %1 (get-keys-in %2)) key-set m))))
+
+(defn delete-recursively
+  "Recursively delete the directory or file by the given name. Does nothing if the file does not exist."
+  [fname]
+  (when (.exists (io/file fname))
+    (let [func (fn [func f]
+                 (when (.isDirectory f)
+                   (doseq [f2 (.listFiles f)]
+                     (func func f2)))
+                 (io/delete-file f))]
+      (func func (io/file fname)))))
