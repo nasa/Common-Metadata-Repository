@@ -6,7 +6,7 @@
 
 ;; From Microsoft sample XML online
 (def sample-xml
-  (sx/parse-xml
+  (sx/create-xpath-context-for-xml
     "<catalog>
       <book id=\"bk101\">
         <author>Gambardella, Matthew</author>
@@ -54,7 +54,7 @@
   ;; So /catalog/book = [a b]
   ;; So /catalog/book means ignore the first two. Then look for a key in what's passed in called book
 
-  (sx/wrap-data-for-xpath
+  (sx/create-xpath-context-for-data
     {:books
       [{:id "bk101"
         :author "Gambardella, Matthew"

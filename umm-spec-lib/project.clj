@@ -1,11 +1,7 @@
 (defproject nasa-cmr/umm-spec-lib "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "TODO: write description"
+  :url "http://example.com/TODO"
   :dependencies [[org.clojure/clojure "1.6.0"]
-
-                 ;; TODO this is probably going to be added to cmr common by Chris
-                 [com.github.fge/json-schema-validator "2.2.6"]
-
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]]
 

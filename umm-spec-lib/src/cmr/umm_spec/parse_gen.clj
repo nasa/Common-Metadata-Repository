@@ -65,7 +65,7 @@
         root-def (get definitions (keyword root-def-name))]
     ;; TODO using indent-str for readability while testing.
     (x/indent-str
-      (generate-element (sxp/wrap-data-for-xpath record) root-def-name root-def))))
+      (generate-element (sxp/create-xpath-context-for-data record) root-def-name root-def))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing prep
@@ -214,7 +214,7 @@
 (defn parse-xml
   "TODO"
   [mappings xml-string]
-  (let [xpath-context (sxp/parse-xml xml-string)
+  (let [xpath-context (sxp/create-xpath-context-for-xml xml-string)
         root-def-name (:root mappings)
         definitions (:definitions mappings)
         root-def (get definitions (keyword root-def-name))]
