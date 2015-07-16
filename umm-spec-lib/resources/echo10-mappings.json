@@ -1,4 +1,7 @@
 {
+// TODO break this out into two files in one nested folder for echo10
+// for to-umm below simplify the definitions as indicated.
+
   "to-umm": {
     // TODO there's no need to have a definitions map if we only nest things and have no refs.
     // We may want to

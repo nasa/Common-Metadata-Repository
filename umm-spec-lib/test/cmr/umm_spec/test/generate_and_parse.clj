@@ -1,6 +1,10 @@
-(ns cmr.umm-spec.test.parse-gen
+(ns cmr.umm-spec.test.generate-and-parse
+  "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
+  is returned."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.parse-gen :as p]
+            [cmr.umm-spec.xml-generation :as xg]
+            [cmr.umm-spec.xml-mappings :as xm]
+            [cmr.umm-spec.xml-parsing :as xp]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
@@ -47,15 +51,13 @@
 
 (comment
 
-  (p/cleanup-schema
-    (p/get-to-umm-mappings
+  (xm/cleanup-schema
+    (xm/get-to-umm-mappings
       (js/load-schema-for-parsing "umm-c-json-schema.json")
-      (p/load-mappings p/echo10-mappings)))
+      (xm/load-mappings xm/echo10-mappings)))
 
-  (let [mappings (p/load-mappings p/echo10-mappings)]
-    (println (p/generate-xml mappings example-record)))
-
-  (:to-xml (p/load-mappings p/echo10-mappings))
+  (let [mappings (xm/load-mappings xm/echo10-mappings)]
+    (println (xg/generate-xml mappings example-record)))
 
   (require '[cmr.umm-spec.simple-xpath :as sx])
 
@@ -63,10 +65,9 @@
   )
 
 (deftest roundtrip-gen-parse
-  (let [mappings (p/load-mappings p/echo10-mappings)
-        xml (p/generate-xml mappings example-record)
+  (let [mappings (xm/load-mappings xm/echo10-mappings)
+        xml (xg/generate-xml mappings example-record)
         umm-c-schema (js/load-schema-for-parsing "umm-c-json-schema.json")
-        umm-mappings (p/get-to-umm-mappings umm-c-schema mappings)
-        ; _ (cmr.common.dev.capture-reveal/capture umm-mappings mappings)
-        parsed (p/parse-xml umm-mappings xml)]
+        umm-mappings (xm/get-to-umm-mappings umm-c-schema mappings)
+        parsed (xp/parse-xml umm-mappings xml)]
     (is (= example-record parsed))))
