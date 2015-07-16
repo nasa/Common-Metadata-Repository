@@ -66,16 +66,14 @@
   "A map derived from the map source-to-virtual-product-config. This map consists of keys which are
   a combination of provider id and entry title for each virtual product and values which are made up
   of short name, source entry title and source short name for each of the keys"
-  (into
-    {}
-    (apply concat
-           (for [[[provider-id source-entry-title]
-                  {:keys [source-short-name virtual-collections]}] source-to-virtual-product-config]
-             (for [virtual-collection virtual-collections]
-               [[provider-id (:entry-title virtual-collection)]
-                {:short-name (:short-name virtual-collection)
-                 :source-entry-title source-entry-title
-                 :source-short-name source-short-name}])))))
+  (into {}
+        (for [[[provider-id source-entry-title] vp-config] source-to-virtual-product-config
+              :let [{:keys [source-short-name virtual-collections]} vp-config]
+              virtual-collection virtual-collections]
+          [[provider-id (:entry-title virtual-collection)]
+           {:short-name (:short-name virtual-collection)
+            :source-entry-title source-entry-title
+            :source-short-name source-short-name}])))
 
 (def sample-source-granule-urs
   "This contains a map of source collection provider id and entry title tuples to sample granule

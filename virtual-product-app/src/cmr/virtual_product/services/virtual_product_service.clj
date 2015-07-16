@@ -11,7 +11,6 @@
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
-            [clojure.set :as set]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
             [cmr.common.util :as u :refer [defn-timed]]))
@@ -215,6 +214,11 @@
         :let [{:keys [provider-id]} (concepts/parse-concept-id (:concept-id entry))]]
     (with-meta entry {:provider-id provider-id})))
 
+(defn- get-prov-id-gran-ur
+  "Get a vector consisting of provider id and granule ur for an annotated entry"
+  [entry]
+  (vector (:provider-id (meta entry)) (:granule-ur entry)))
+
 (defn- filter-virtual-entries
   "Filter to retrieve virtual entries from the input entries."
   [entries]
@@ -226,52 +230,80 @@
 
 (defn- compute-source-granule-urs
   "Compute source granule-urs from virtual granule-urs"
-  [provider-id virtual-granule-entries]
-  (for [{:keys [granule-ur entry-title]} virtual-granule-entries]
-    (let [{:keys [source-short-name short-name]}
-          (get config/virtual-product-to-source-config [provider-id entry-title])]
-      (config/compute-source-granule-ur
-        provider-id source-short-name short-name granule-ur))))
+  [provider-id virt-gran-entries]
+  (into {}
+        (for [{:keys [granule-ur entry-title]} virt-gran-entries]
+          (let [{:keys [source-short-name short-name]}
+                (get config/virtual-product-to-source-config [provider-id entry-title])]
+            [granule-ur
+             (config/compute-source-granule-ur
+               provider-id source-short-name short-name granule-ur)]))))
 
 (defn- create-source-entries
   "Fetch granule ids from the granule urs of granules that belong to a collection with the given
   provider id and entry title and create the entries using the information."
   [context provider-id entry-title granule-urs]
-  (for [[granule-ur granule-id] (search/find-granule-ids
-                                  context provider-id entry-title granule-urs)]
-    {:concept-id granule-id
-     :entry-title entry-title
-     :granule-ur granule-ur}))
+  (let [gran-refs (search/find-granules-by-granule-urs
+                    context provider-id entry-title (set granule-urs))]
+    (for [[granule-ur granule-id] (reduce #(assoc %1 (:name %2)(:id %2)) {} gran-refs)]
+      {:concept-id granule-id
+       :entry-title entry-title
+       :granule-ur granule-ur})))
 
-(defn- group-by-source-entry-title
-  "Function used for grouping granule entries by entry title. groups is a map with keys like this:
-  [provider-id entry-title] and values which are an array of granule entries all of which have the
-  same entry-title as in the key. This function adds the given entry into the right key group. This
-  function is used with-in a reduce function."
-  [groups entry]
-  (let [provider-id (:provider-id (meta entry))
-        source-entry-title (get-in config/virtual-product-to-source-config
-                                   [[provider-id (:entry-title entry)] :source-entry-title])]
-    (if (contains? groups source-entry-title)
-      (update-in groups [[provider-id source-entry-title]] conj entry)
-      (assoc groups [provider-id source-entry-title] [entry]))))
+(defn- get-provider-id-src-entry-title
+  "Get a vector consisting of provider id and source entry title for a given virtual entry"
+  [virt-entry]
+  (let [provider-id (:provider-id (meta virt-entry))
+        entry-title (:entry-title virt-entry)]
+    [provider-id (get-in config/virtual-product-to-source-config
+                         [[provider-id entry-title] :source-entry-title])]))
+
+(defn- map-virt-gran-ur-to-src-entry
+  "For each key in virt-to-src-gran-ur-map, find the corresponding source entry in src-entries.
+  The output is a map of entries each of whose keys is a combination of provider id and virtual
+  granule ur and whose value is the source entry corresponding to the virtual granule ur."
+  [provider-id src-entries virt-to-src-gran-ur-map]
+  (let [src-gran-ur-entry-map (reduce #(assoc %1 (:granule-ur %2) %2) {} src-entries)]
+    (into {}
+          (for [[virtual-gran-ur src-gran-ur] virt-to-src-gran-ur-map]
+            [[provider-id virtual-gran-ur] (get src-gran-ur-entry-map src-gran-ur)]))))
 
 (defn- virtual-entries->source-entries
   "Translate the virtual entries to the corresponding source entries."
-  [context virtual-entries]
-  (flatten
-    (let [entries-by-source-entry-title (reduce group-by-source-entry-title {} virtual-entries)]
-      (for [[[provider-id source-entry-title] granule-entries] entries-by-source-entry-title]
-        (let [source-granule-urs (set (compute-source-granule-urs provider-id granule-entries))]
-          (create-source-entries context provider-id source-entry-title source-granule-urs))))))
+  [context entries]
+  (apply merge
+    (let [entries-by-src-entry-title (group-by get-provider-id-src-entry-title entries)]
+      (for [[[provider-id src-entry-title] virtual-entries] entries-by-src-entry-title]
+        (let [virt-to-src-gran-ur-map (compute-source-granule-urs provider-id virtual-entries)
+              src-entries (create-source-entries
+                            context provider-id src-entry-title (vals virt-to-src-gran-ur-map))]
+              (map-virt-gran-ur-to-src-entry provider-id src-entries virt-to-src-gran-ur-map))))))
+
+(defn- merge-entries
+  "Merge non-virtual entries and translated entries while restoring the original ordering of the
+  entries"
+  [entries non-virtual-entry-map translated-entry-map]
+  (for [entry entries]
+    (let [prov-id-gran-ur (get-prov-id-gran-ur entry)]
+      ;; Every entry should be present in one of the two maps.
+      (or (get non-virtual-entry-map prov-id-gran-ur)
+          (get translated-entry-map prov-id-gran-ur)))))
 
 (defn translate-granule-entries
-  "Translate virtual granules in the granule-entries into the corresponding source entries. Remove
-  the duplicates from the final set of entries.See routes.clj for the JSON schema of
+  "Translate virtual granules in the granule-entries into the corresponding source entries.
+  Remove the duplicates from the final set of entries. See routes.clj for the JSON schema of
   granule-entries."
   [context granule-entries]
-  (let [annotated-entries (set (annotate-entries granule-entries))
-        virtual-entries (set (filter-virtual-entries annotated-entries))
-        non-virtual-entries (set/difference annotated-entries virtual-entries)
-        translated-virtual-entries (set (virtual-entries->source-entries context virtual-entries))]
-    (set/union non-virtual-entries translated-virtual-entries)))
+  (let [annotated-entries (annotate-entries granule-entries)
+        virtual-entries (filter-virtual-entries annotated-entries)
+        ;; A map of virtual granule ur in the original entries to the corresponding source
+        ;; entry
+        translated-entry-map (virtual-entries->source-entries context virtual-entries)
+        non-virtual-entries (remove
+                              #(contains? translated-entry-map (get-prov-id-gran-ur %))
+                              annotated-entries)
+        ;; A map of non-virtual granule ur in the orginal entries to the corresponding entry.
+        non-virtual-entry-map (into {}
+                                    (map #(vector (get-prov-id-gran-ur %) %) non-virtual-entries))]
+    (merge-entries annotated-entries non-virtual-entry-map translated-entry-map)))
+
