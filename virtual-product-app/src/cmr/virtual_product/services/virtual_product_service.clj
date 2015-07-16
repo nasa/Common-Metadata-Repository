@@ -270,11 +270,11 @@
 
 (defn- virtual-entries->source-entries
   "Translate the virtual entries to the corresponding source entries."
-  [context entries]
+  [context virtual-entries]
   (apply merge
-    (let [entries-by-src-entry-title (group-by get-provider-id-src-entry-title entries)]
-      (for [[[provider-id src-entry-title] virtual-entries] entries-by-src-entry-title]
-        (let [virt-to-src-gran-ur-map (compute-source-granule-urs provider-id virtual-entries)
+    (let [entries-by-src-entry-title (group-by get-provider-id-src-entry-title virtual-entries)]
+      (for [[[provider-id src-entry-title] virt-entries] entries-by-src-entry-title]
+        (let [virt-to-src-gran-ur-map (compute-source-granule-urs provider-id virt-entries)
               src-entries (create-source-entries
                             context provider-id src-entry-title (vals virt-to-src-gran-ur-map))]
               (map-virt-gran-ur-to-src-entry provider-id src-entries virt-to-src-gran-ur-map))))))
