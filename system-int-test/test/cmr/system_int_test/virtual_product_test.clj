@@ -230,7 +230,8 @@
         virtual-granule3 (get-any-granule-entry-triplet (:entry-title (nth vp-colls 2)))
         virtual-granule4 (get-any-granule-entry-triplet (:entry-title (nth vp-colls 3)))
 
-        ;; non-virtual granule with the same granule ur as a virtual granule but from a different provider than LPDAAC_ECS
+        ;; non-virtual granule with the same granule ur as a virtual granule but from a
+        ;; different provider than LPDAAC_ECS
         non-virtual-granule1 {:entry-title "entry-title1"
                               :concept-id "G1234-PROV1"
                               :granule-ur (:granule-ur virtual-granule1)}
@@ -255,9 +256,14 @@
                  [non-virtual-granule1 virtual-granule1]
                  [non-virtual-granule1 source-granule]
 
-                 "The order of the output granules should match the corresponding input"
-                 [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2 virtual-granule2 virtual-granule3 non-virtual-granule3 virtual-granule4]
-                 [source-granule non-virtual-granule1 source-granule non-virtual-granule2 source-granule source-granule non-virtual-granule3 source-granule]))
+                 "The order of the output granules should match the corresponding input. Duplicates
+                 in the source should be preserved."
+                 [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
+                  virtual-granule2 virtual-granule3 non-virtual-granule3 virtual-granule4
+                  source-granule non-virtual-granule1 virtual-granule1]
+                 [source-granule non-virtual-granule1 source-granule non-virtual-granule2
+                  source-granule source-granule non-virtual-granule3 source-granule
+                  source-granule non-virtual-granule1 source-granule]))
 
     (testing "Malformed JSON"
       (let [malformed-json (str/replace (json/generate-string [virtual-granule1]) #"}" "]")
