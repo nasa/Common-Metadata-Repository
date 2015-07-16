@@ -10,6 +10,8 @@
             [clojure.string :as str]
             [ring.util.codec :as codec]
             [cmr.common.mime-types :as mt]
+            [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 (defn-timed find-granule-hits
@@ -31,14 +33,20 @@
         (format "Granule search failed. status: %s body: %s"
                 status body)))))
 
-(defn-timed find-granules-by-granule-urs
+(defn- parse-response-body
+  "Parse the xml search response body and get the granule references"
+  [body]
+  (let [parsed  (x/parse-str body)
+        ref-elems (cx/elements-at-path parsed [:references :reference])]
+    (map (fn [ref-elem] (util/remove-nil-keys
+                          {:id (cx/string-at-path ref-elem [:id])
+                           :name (cx/string-at-path ref-elem [:name])})) ref-elems)))
+
+(defn-timed find-granules-by-params
   "Find granules by by provider id, entry title and granule urs"
-  [context provider-id entry-title granule-urs]
+  [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
-        params {"provider-id[]" provider-id
-                "entry_title" entry-title
-                "granule_ur[]" (str/join "," granule-urs)}
         response (client/post request-url {:body (codec/form-encode params)
                                            :content-type mt/form-url-encoded
                                            :throw-exceptions false
@@ -46,7 +54,7 @@
                                            :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)
-      body
+      (parse-response-body body)
       (errors/internal-error!
         (format "Granule-id search failed. status: %s body: %s" status body)))))
 

@@ -13,9 +13,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as util]
+            [clojure.string :as str]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -242,22 +240,15 @@
              (config/compute-source-granule-ur
                provider-id source-short-name short-name granule-ur)]))))
 
-(defn- parse-refs
-  "Parse the xml search response body and get the references to the concepts"
-  [body]
-  (let [parsed  (x/parse-str body)
-        ref-elems (cx/elements-at-path parsed [:references :reference])]
-    (map (fn [ref-elem] (util/remove-nil-keys
-                          {:id (cx/string-at-path ref-elem [:id])
-                           :name (cx/string-at-path ref-elem [:name])})) ref-elems)))
-
 (defn- create-source-entries
   "Fetch granule ids from the granule urs of granules that belong to a collection with the given
   provider id and entry title and create the entries using the information."
   [context provider-id entry-title granule-urs]
-  (let [gran-refs (search/find-granules-by-granule-urs
-                    context provider-id entry-title (set granule-urs))]
-    (for [{gran-ur :name gran-id :id} (parse-refs gran-refs)]
+  (let [params {"provider-id[]" provider-id
+                 "entry_title" entry-title
+                 "granule_ur[]" (str/join "," (set granule-urs))}
+        gran-refs (search/find-granules-by-params context params)]
+    (for [{gran-ur :name gran-id :id} gran-refs]
       {:concept-id gran-id
        :entry-title entry-title
        :granule-ur gran-ur})))
