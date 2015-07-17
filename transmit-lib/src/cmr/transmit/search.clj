@@ -47,11 +47,13 @@
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
-        response (client/post request-url {:body (codec/form-encode params)
-                                           :content-type mt/form-url-encoded
-                                           :throw-exceptions false
-                                           :headers (ch/context->http-headers context)
-                                           :connection-manager (conn/conn-mgr conn)})
+        response (client/post request-url
+                              {:body (codec/form-encode params)
+                               :content-type mt/form-url-encoded
+                               :throw-exceptions false
+                               :headers (assoc (ch/context->http-headers context)
+                                               config/token-header (config/echo-system-token))
+                               :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)
       (parse-response-body body)
