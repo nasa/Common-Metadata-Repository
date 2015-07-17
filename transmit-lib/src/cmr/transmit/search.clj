@@ -33,17 +33,17 @@
         (format "Granule search failed. status: %s body: %s"
                 status body)))))
 
-(defn- parse-response-body
-  "Parse the xml search response body and get the granule references"
-  [body]
-  (let [parsed  (x/parse-str body)
+(defn- parse-granule-response
+  "Parse xml search response body and return the granule references"
+  [xml]
+  (let [parsed  (x/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map (fn [ref-elem] (util/remove-nil-keys
                           {:id (cx/string-at-path ref-elem [:id])
                            :name (cx/string-at-path ref-elem [:name])})) ref-elems)))
 
 (defn-timed find-granules-by-params
-  "Find granules by by provider id, entry title and granule urs"
+  "Find granules by parameters in a post request."
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
@@ -56,7 +56,7 @@
                                :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)
-      (parse-response-body body)
+      (parse-granule-response body)
       (errors/internal-error!
-        (format "Granule-id search failed. status: %s body: %s" status body)))))
+        (format "Granule search failed. status: %s body: %s" status body)))))
 

@@ -244,10 +244,10 @@
   "Fetch granule ids from the granule urs of granules that belong to a collection with the given
   provider id and entry title and create the entries using the information."
   [context provider-id entry-title granule-urs]
-  (let [params {"provider-id[]" provider-id
-                 "entry_title" entry-title
-                 "granule_ur[]" (str/join "," (set granule-urs))}
-        gran-refs (search/find-granules-by-params context params)]
+  (let [query-params {"provider-id[]" provider-id
+                      "entry_title" entry-title
+                      "granule_ur[]" (str/join "," (set granule-urs))}
+        gran-refs (search/find-granules-by-params context query-params)]
     (for [{gran-ur :name gran-id :id} gran-refs]
       {:concept-id gran-id
        :entry-title entry-title
