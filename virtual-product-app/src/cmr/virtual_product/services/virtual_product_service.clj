@@ -218,7 +218,7 @@
 (defn- get-prov-id-gran-ur
   "Get a vector consisting of provider id and granule ur for an annotated entry"
   [entry]
-  (vector (:provider-id (meta entry)) (:granule-ur entry)))
+  [(:provider-id (meta entry)) (:granule-ur entry)])
 
 (defn- filter-virtual-entries
   "Filter to retrieve virtual entries from the input entries."
@@ -246,12 +246,13 @@
   [context provider-id entry-title granule-urs]
   (let [query-params {"provider-id[]" provider-id
                       "entry_title" entry-title
-                      "granule_ur[]" (str/join "," (set granule-urs))}
-        gran-refs (search/find-granules-by-params context query-params)]
-    (for [{gran-ur :name gran-id :id} gran-refs]
-      {:concept-id gran-id
+                      "granule_ur[]" (str/join "," (set granule-urs))
+                      "token" (transmit-config/echo-system-token)}
+        gran-refs (search/find-granule-references context query-params)]
+    (for [{:keys [concept-id granule-ur]} gran-refs]
+      {:concept-id concept-id
        :entry-title entry-title
-       :granule-ur gran-ur})))
+       :granule-ur granule-ur})))
 
 (defn- get-provider-id-src-entry-title
   "Get a vector consisting of provider id and source entry title for a given virtual entry"
@@ -275,22 +276,23 @@
   "Translate the virtual entries to the corresponding source entries."
   [context virtual-entries]
   (apply merge
-    (let [entries-by-src-entry-title (group-by get-provider-id-src-entry-title virtual-entries)]
-      (for [[[provider-id src-entry-title] virt-entries] entries-by-src-entry-title]
-        (let [virt-to-src-gran-ur-map (compute-source-granule-urs provider-id virt-entries)
-              src-entries (create-source-entries
-                            context provider-id src-entry-title (vals virt-to-src-gran-ur-map))]
-              (map-virt-gran-ur-to-src-entry provider-id src-entries virt-to-src-gran-ur-map))))))
+         (let [entries-by-src-entry-title (group-by
+                                            get-provider-id-src-entry-title virtual-entries)]
+           (for [[[provider-id src-entry-title] virt-entries] entries-by-src-entry-title
+                 :let [virt-to-src-gran-ur-map (compute-source-granule-urs provider-id virt-entries)
+                       src-entries (create-source-entries context provider-id src-entry-title
+                                                          (vals virt-to-src-gran-ur-map))]]
+             (map-virt-gran-ur-to-src-entry provider-id src-entries virt-to-src-gran-ur-map)))))
 
 (defn- merge-entries
   "Merge non-virtual entries and translated entries while restoring the original ordering of the
   entries"
   [entries non-virtual-entry-map translated-entry-map]
-  (for [entry entries]
-    (let [prov-id-gran-ur (get-prov-id-gran-ur entry)]
-      ;; Every entry should be present in one of the two maps.
-      (or (get non-virtual-entry-map prov-id-gran-ur)
-          (get translated-entry-map prov-id-gran-ur)))))
+  (for [entry entries
+        :let [prov-id-gran-ur (get-prov-id-gran-ur entry)]]
+    ;; Every entry should be present in one of the two maps.
+    (or (get non-virtual-entry-map prov-id-gran-ur)
+        (get translated-entry-map prov-id-gran-ur))))
 
 (defn translate-granule-entries
   "Translate virtual granules in the granule-entries into the corresponding source entries.

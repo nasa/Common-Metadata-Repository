@@ -36,14 +36,15 @@
 (defn- parse-granule-response
   "Parse xml search response body and return the granule references"
   [xml]
-  (let [parsed  (x/parse-str xml)
+  (let [parsed (x/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map (fn [ref-elem] (util/remove-nil-keys
-                          {:id (cx/string-at-path ref-elem [:id])
-                           :name (cx/string-at-path ref-elem [:name])})) ref-elems)))
+                          {:concept-id (cx/string-at-path ref-elem [:id])
+                           :granule-ur (cx/string-at-path ref-elem [:name])})) ref-elems)))
 
-(defn-timed find-granules-by-params
-  "Find granules by parameters in a post request."
+(defn-timed find-granule-references
+  "Find granules by parameters in a post request. The function returns an array of granule
+  references, each reference being a map having concept-id and granule-ur as the fields"
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
@@ -51,8 +52,7 @@
                               {:body (codec/form-encode params)
                                :content-type mt/form-url-encoded
                                :throw-exceptions false
-                               :headers (assoc (ch/context->http-headers context)
-                                               config/token-header (config/echo-system-token))
+                               :headers (ch/context->http-headers context)
                                :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)

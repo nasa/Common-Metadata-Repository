@@ -18,14 +18,14 @@
 (use-fixtures :each (ingest/reset-fixture (into {} (for [p vp/virtual-product-providers]
                                                      [(str p "_guid") p]))))
 
-(defn ingest-source-collections
+(defn- ingest-source-collections
   "Ingests the source collections and returns their UMM records with some extra information."
   ([]
    (ingest-source-collections (vp/source-collections)))
   ([source-collections]
    (mapv #(d/ingest (:provider-id %) %) source-collections)))
 
-(defn ingest-virtual-collections
+(defn- ingest-virtual-collections
   "Ingests the virtual collections for the given set of source collections."
   [source-collections]
   (->> source-collections
@@ -196,8 +196,8 @@
     (index/wait-until-indexed)
     (assert-tombstones vp-granule-ids 14)))
 
-(defn- get-any-granule-entry-triplet
-  "Get granule entry triplet consisting of entry title, concept id and granule ur for any one
+(defn- get-granule-entry-triplet
+  "Get granule entry triplet consisting of entry title, concept id and granule ur for the
   granule in the collection with the given entry-title."
   [entry-title]
   (let [granule-refs (:refs (search/find-refs
@@ -223,12 +223,13 @@
                            (dc/collection
                              {:entry-title ast-entry-title}))
         vp-colls (ingest-virtual-collections [ast-coll])
-        source-granule (ingest-ast-granule ast-coll "SC:AST_L1A.003:2006227720")
+        _ (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
         _ (index/wait-until-indexed)
-        virtual-granule1 (get-any-granule-entry-triplet (:entry-title (first vp-colls)))
-        virtual-granule2 (get-any-granule-entry-triplet (:entry-title (second vp-colls)))
-        virtual-granule3 (get-any-granule-entry-triplet (:entry-title (nth vp-colls 2)))
-        virtual-granule4 (get-any-granule-entry-triplet (:entry-title (nth vp-colls 3)))
+        source-granule   (get-granule-entry-triplet (:entry-title ast-coll))
+        virtual-granule1 (get-granule-entry-triplet (:entry-title (first vp-colls)))
+        virtual-granule2 (get-granule-entry-triplet (:entry-title (second vp-colls)))
+        virtual-granule3 (get-granule-entry-triplet (:entry-title (nth vp-colls 2)))
+        virtual-granule4 (get-granule-entry-triplet (:entry-title (nth vp-colls 3)))
 
         ;; non-virtual granule with the same granule ur as a virtual granule but from a
         ;; different provider than LPDAAC_ECS
