@@ -144,7 +144,7 @@
                (get-in response [:headers "Content-Type"])))
         ;; Assert that revision-date was returned in the found concepts (if any)
         (when (seq (:body response))
-          (is (some :revision-date (:body response))))
+          (is (:revision-date (:body response))))
         response)
       response)))
 

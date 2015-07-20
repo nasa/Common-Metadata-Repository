@@ -102,12 +102,12 @@
       (testing "Unknown concept-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
-                                                  "FOO"
+                                                  "C1234-PROV1"
                                                   1
                                                   {:headers {transmit-config/token-header
                                                              (transmit-config/echo-system-token)}}))]
           (is (= 404 status))
-          (is (= #{"Not Found"}
+          (is (= #{"Concept with concept-id [C1234-PROV1] and revision-id [1] does not exist."}
                  (set errors)))))
 
       (testing "Known concept-id with unavailable revision-id returns a 404 error"
@@ -118,7 +118,7 @@
                                                   {:headers {transmit-config/token-header
                                                              (transmit-config/echo-system-token)}}))]
           (is (= 404 status))
-          (is (= #{"Not Found"}
+          (is (= #{"Concept with concept-id [C1200000000-PROV1] and revision-id [1000000] does not exist."}
                  (set errors)))))
 
       (testing "ACLs"
