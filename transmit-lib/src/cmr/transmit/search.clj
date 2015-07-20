@@ -38,9 +38,9 @@
   [xml]
   (let [parsed (x/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
-    (map (fn [ref-elem] (util/remove-nil-keys
-                          {:concept-id (cx/string-at-path ref-elem [:id])
-                           :granule-ur (cx/string-at-path ref-elem [:name])})) ref-elems)))
+    (map #(util/remove-nil-keys
+            {:concept-id (cx/string-at-path % [:id])
+             :granule-ur (cx/string-at-path % [:name])}) ref-elems)))
 
 (defn-timed find-granule-references
   "Find granules by parameters in a post request. The function returns an array of granule
