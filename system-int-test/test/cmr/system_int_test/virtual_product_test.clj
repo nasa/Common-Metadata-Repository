@@ -15,8 +15,9 @@
             [cmr.common.util :as util]
             [clj-time.core :as t]))
 
-(use-fixtures :each (ingest/reset-fixture (into {} (for [p vp/virtual-product-providers]
-                                                     [(str p "_guid") p]))))
+(use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"}
+                                                (for [p vp/virtual-product-providers]
+                                                  [(str p "_guid") p]))))
 
 (defn- ingest-source-collections
   "Ingests the source collections and returns their UMM records with some extra information."
@@ -157,8 +158,8 @@
   "Assert that the revision ids of the granules of the collections vp-colls match expected-revision-id"
   [vp-colls expected-revision-id]
   (doseq [revision-id  (mapcat #(map :revision-id (:refs (search/find-refs
-                                                            :granule {:entry-title (:entry-title %)
-                                                                      :page-size 50}))) vp-colls)]
+                                                           :granule {:entry-title (:entry-title %)
+                                                                     :page-size 50}))) vp-colls)]
     (is (= expected-revision-id revision-id))))
 
 (defn- assert-tombstones
@@ -179,8 +180,8 @@
         ingest-result (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
         _ (index/wait-until-indexed)
         vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
-                                                :granule {:entry-title (:entry-title %)
-                                                          :page-size 50}))) vp-colls)]
+                                                  :granule {:entry-title (:entry-title %)
+                                                            :page-size 50}))) vp-colls)]
 
     ;; check revision ids are in sync after ingest/update operations
     (assert-virtual-gran-revision-id vp-colls 5)
@@ -196,18 +197,25 @@
     (index/wait-until-indexed)
     (assert-tombstones vp-granule-ids 14)))
 
-(defn- get-sample-granule-entry-triplet
-  "Get granule entry triplet consisting of entry title, concept id and granule ur for any one
+(defn- get-granule-entry-triplet
+  "Get granule entry triplet consisting of entry title, concept id and granule ur for the
   granule in the collection with the given entry-title."
-  [entry-title]
-  (let [granule-refs (:refs (search/find-refs
+  [coll]
+  (let [entry-title (:entry-title coll)
+        granule-refs (:refs (search/find-refs
                               :granule {:entry-title entry-title
+                                        :provider-id (:provider-id coll)
                                         :page-size 1}))
-        [granule-id granule-ur] ((juxt :id :name) (first granule-refs))]
+        {granule-id :id granule-ur :name} (first granule-refs)]
     {:entry-title entry-title
      :concept-id granule-id
      :granule-ur granule-ur}))
 
+(defn- granule->entry
+  [granule]
+  {:entry-title (get-in granule [:collection-ref :entry-title])
+   :concept-id (:concept-id granule)
+   :granule-ur (:granule-ur granule)})
 
 (deftest translate-granule-entries-test
   (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
@@ -215,36 +223,83 @@
                            (dc/collection
                              {:entry-title ast-entry-title}))
         vp-colls (ingest-virtual-collections [ast-coll])
-        granule-ur "SC:AST_L1A.003:2006227720"
-        ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
-        ingest-result (d/ingest "LPDAAC_ECS" ast-l1a-gran)
+        ast-gran (d/ingest "LPDAAC_ECS"
+                           (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
+
+        prov-ast-coll (d/ingest "PROV"
+                                (dc/collection
+                                  {:entry-title ast-entry-title}))
+        prov-ast-gran (d/ingest "PROV"
+                                (dg/granule prov-ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
+
+        lpdaac-non-ast-coll (d/ingest "LPDAAC_ECS"
+                               (dc/collection
+                                 {:entry-title "non virtual entry title"}))
+        lpdaac-non-ast-gran (d/ingest "LPDAAC_ECS"
+                                  (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
+
+        prov-coll (d/ingest "PROV"
+                            (dc/collection
+                              {:entry-title "some other entry title"}))
+        prov-gran (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
+
+
         _ (index/wait-until-indexed)
-        source-granule {:entry-title ast-entry-title
-                        :concept-id (:concept-id ingest-result)
-                        :granule-ur granule-ur}
-        virtual-granule1 (get-sample-granule-entry-triplet (:entry-title (first vp-colls)))
-        virtual-granule2 (get-sample-granule-entry-triplet (:entry-title (second vp-colls)))
-        other-granule {:entry-title "entry-title"
-                       :concept-id "G1234-PROV1"
-                       :granule-ur "granule-ur"}]
+        source-granule   (granule->entry ast-gran)
+        virtual-granule1 (get-granule-entry-triplet (first vp-colls))
+        virtual-granule2 (get-granule-entry-triplet (second vp-colls))
+        virtual-granule3 (get-granule-entry-triplet (nth vp-colls 2))
+        virtual-granule4 (get-granule-entry-triplet (nth vp-colls 3))
+
+        ;; Granule with same granule ur and entry title as an AST granule but belonging
+        ;; to a different provider than AST collection
+        non-virtual-granule1 (granule->entry prov-ast-gran)
+        ;; Another granule under the same provider as the AST collection but beloning to a
+        ;; a different collection
+        non-virtual-granule2 (granule->entry lpdaac-non-ast-gran)
+        ;; A random non-virtual granule
+        non-virtual-granule3 (granule->entry prov-gran)]
 
     (testing "Valid input to translate-granule-entries end-point"
-      (util/are2 [input expected]
-                 (let [response (vp/translate-granule-entries (json/generate-string input))]
-                   (= (set expected) (set (json/parse-string (:body response) true))))
+      (util/are2 [request-json expected-response-json]
+                 (let [response (vp/translate-granule-entries
+                                  (json/generate-string request-json))]
+                   (= expected-response-json (json/parse-string (:body response) true)))
 
                  "Input with no virtual granules should return the original response"
-                 [other-granule]
-                 [other-granule]
+                 [non-virtual-granule1 non-virtual-granule2]
+                 [non-virtual-granule1 non-virtual-granule2]
 
                  "Virtual granule should be translated to corresponding source granule"
-                 [other-granule virtual-granule1]
-                 [other-granule source-granule]
+                 [non-virtual-granule1 virtual-granule1]
+                 [non-virtual-granule1 source-granule]
 
-                 "Multiple virtual granules based on same source granule should result in a single
-                 entry for the source granule in the translated response"
-                 [virtual-granule1 virtual-granule2]
-                 [source-granule]))
+                 "The order of the output granules should match the corresponding input. Duplicates
+                 in the source should be preserved."
+                 [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
+                  virtual-granule2 virtual-granule3 non-virtual-granule3 virtual-granule4
+                  source-granule non-virtual-granule1 virtual-granule1]
+                 [source-granule non-virtual-granule1 source-granule non-virtual-granule2
+                  source-granule source-granule non-virtual-granule3 source-granule
+                  source-granule non-virtual-granule1 source-granule]))
+
+    (testing "Translating a granule which is deleted"
+      (util/are2 [deleted-granule request-json expected-response-json]
+                 (let [_ (ingest/delete-concept (d/item->concept deleted-granule))
+                       _ (index/wait-until-indexed)
+                       response (vp/translate-granule-entries
+                                  (json/generate-string request-json))]
+                   (= expected-response-json (json/parse-string (:body response) true)))
+
+                 "A non-virtual granule deleted while ordering"
+                 lpdaac-non-ast-gran
+                 [non-virtual-granule1 non-virtual-granule2 source-granule]
+                 [non-virtual-granule1 nil source-granule]
+
+                 "A source granule deleted while ordering"
+                 ast-gran
+                 [virtual-granule1 non-virtual-granule1 source-granule virtual-granule2]
+                 [nil non-virtual-granule1 nil nil]))
 
     (testing "Malformed JSON"
       (let [malformed-json (str/replace (json/generate-string [virtual-granule1]) #"}" "]")

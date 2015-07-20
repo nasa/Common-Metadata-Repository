@@ -10,6 +10,8 @@
             [clojure.string :as str]
             [ring.util.codec :as codec]
             [cmr.common.mime-types :as mt]
+            [clojure.data.xml :as x]
+            [cmr.common.xml :as cx]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 (defn-timed find-granule-hits
@@ -31,24 +33,30 @@
         (format "Granule search failed. status: %s body: %s"
                 status body)))))
 
-(defn-timed find-granule-ids
-  "Return the corresponding granule id for each granule ur in granule-urs. The output is a map of
-  granule-ur to the corresponding granule id"
-  [context provider-id entry-title granule-urs]
+(defn- parse-granule-response
+  "Parse xml search response body and return the granule references"
+  [xml]
+  (let [parsed (x/parse-str xml)
+        ref-elems (cx/elements-at-path parsed [:references :reference])]
+    (map #(util/remove-nil-keys
+            {:concept-id (cx/string-at-path % [:id])
+             :granule-ur (cx/string-at-path % [:name])}) ref-elems)))
+
+(defn-timed find-granule-references
+  "Find granules by parameters in a post request. The function returns an array of granule
+  references, each reference being a map having concept-id and granule-ur as the fields"
+  [context params]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules.json")
-        params {"provider-id[]" provider-id
-                "entry_title" entry-title
-                "granule_ur[]" (str/join "," granule-urs)}
-        response (client/post request-url {:body (codec/form-encode params)
-                                           :content-type mt/form-url-encoded
-                                           :throw-exceptions false
-                                           :headers (ch/context->http-headers context)
-                                           :connection-manager (conn/conn-mgr conn)})
+        request-url (str (conn/root-url conn) "/granules.xml")
+        response (client/post request-url
+                              {:body (codec/form-encode params)
+                               :content-type mt/form-url-encoded
+                               :throw-exceptions false
+                               :headers (ch/context->http-headers context)
+                               :connection-manager (conn/conn-mgr conn)})
         {:keys [status body]} response]
     (if (= status 200)
-      (let [gran-refs (get-in (json/parse-string body true) [:feed :entry])]
-        (reduce #(assoc %1 (:title %2)(:id %2)) {} gran-refs))
+      (parse-granule-response body)
       (errors/internal-error!
-        (format "Granule-id search failed. status: %s body: %s" status body)))))
+        (format "Granule search failed. status: %s body: %s" status body)))))
 
