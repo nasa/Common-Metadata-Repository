@@ -273,9 +273,7 @@
       [[provider-id gran-ur] (get src-gran-ur-entry-map src-gran-ur)])))
 
 (defn translate-granule-entries
-  "Translate virtual granules in the granule-entries into the corresponding source entries.
-  Remove the duplicates from the final set of entries. See routes.clj for the JSON schema of
-  granule-entries."
+  "Translate virtual granules in the granule-entries into the corresponding source entries. See routes.clj for the JSON schema of granule-entries."
   [context granule-entries]
   (let [annotated-entries (annotate-entries granule-entries)
         ;; Group entries by the combination of provider-id and entry-title of source collection for
