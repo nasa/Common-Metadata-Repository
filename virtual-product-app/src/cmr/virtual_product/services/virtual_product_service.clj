@@ -265,8 +265,7 @@
         ;; An array of vectors, each vector consisting of granule ur of an entry and the granule
         ;; ur of the corresponding source entry. If the original entry is not a virtual entry
         ;; the granule ur of the source entry is same as the granule ur of the original entry.
-        arr-gran-ur-src-gran-ur (compute-source-granule-urs
-                                  provider-id src-entry-title entries)
+        arr-gran-ur-src-gran-ur (compute-source-granule-urs provider-id src-entry-title entries)
         src-entries (create-source-entries context provider-id src-entry-title
                                            (map second arr-gran-ur-src-gran-ur))
         src-gran-ur-entry-map (reduce #(assoc %1 (:granule-ur %2) %2) {} src-entries)]
@@ -279,7 +278,9 @@
   granule-entries."
   [context granule-entries]
   (let [annotated-entries (annotate-entries granule-entries)
-        ;; Group entries by the combination of provider-id and entry-title of each entry
+        ;; Group entries by the combination of provider-id and entry-title of source collection for
+        ;; each entry. If the entry is not a virtual entry, source collection is the same as the
+        ;; collection to which the granule belongs
         entries-by-src-collection (group-by get-provider-id-src-entry-title annotated-entries)
         ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
         ;; corresponding to a group in entries-by-src-collection

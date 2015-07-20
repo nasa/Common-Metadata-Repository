@@ -217,15 +217,6 @@
    :concept-id (:concept-id granule)
    :granule-ur (:granule-ur granule)})
 
-(defn- ingest-ast-granule
-  "Ingest an AST-L1A granule with the given granule-ur"
-  [ast-coll gran-ur]
-  (let [ast-l1a-gran (dg/granule ast-coll {:granule-ur gran-ur})
-        ingest-result (d/ingest "LPDAAC_ECS" ast-l1a-gran)]
-    {:entry-title (:entry-title ast-coll)
-     :concept-id (:concept-id ingest-result)
-     :granule-ur gran-ur}))
-
 (deftest translate-granule-entries-test
   (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
         ast-coll (d/ingest "LPDAAC_ECS"

@@ -229,7 +229,7 @@ Translate virtual granule entries within a list of granule-entries into the corr
          "required" ["concept-id" "entry-title" "granule-ur"]}}
 ```
 
-The response body has the same schema but with virtual granule entries substituted by the corresponding source granule entries and non-virtual entries remaining unchanged. The ordering of the entries in the response remains the same as the corresponding entries in the request. Note that there can be duplicate entries in the response since multiple virtual granules could be mapped to the same source granule. This end-point will be called by ECHO during ordering process.
+The response body has the same schema but with virtual granule entries substituted by the corresponding source granule entries and non-virtual entries remaining unchanged. The ordering of the entries in the response remains the same as the corresponding entries in the request. Note that there can be duplicate entries in the response since multiple virtual granules could be mapped to the same source granule. If the request has an entry for a granule which is deleted, the entry is translated to "null" in the JSON response. This end-point will be called by ECHO during ordering process.
 
 Sample Request:
 
