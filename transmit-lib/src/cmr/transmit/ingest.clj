@@ -32,9 +32,10 @@
 ;; Request functions
 
 (defn-timed ingest-concept
-  ([context concept]
-   (ingest-concept context concept false))
-  ([context concept is-raw]
+  "Send a request to ingest service to ingest a concept using the optional headers"
+  ([context concept headers]
+   (ingest-concept context concept headers false))
+  ([context concept headers is-raw]
    (let [{:keys [provider-id concept-type metadata native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
@@ -42,18 +43,19 @@
                  :raw? is-raw
                  :http-options {:body metadata
                                 :content-type (:format concept)
-                                :headers {"cmr-revision-id" revision-id}
+                                :headers headers
                                 :accept :json}}))))
 (defn-timed delete-concept
-  ([context concept]
-   (delete-concept context concept false))
-  ([context concept is-raw]
+  "Send a request to ingest service to delete a concept using the optional headers"
+  ([context concept headers]
+   (ingest-concept context concept headers false))
+  ([context concept headers is-raw]
    (let [{:keys [provider-id concept-type native-id revision-id]} concept]
      (h/request context :ingest
                 {:url-fn #(concept-ingest-url provider-id concept-type native-id %)
                  :method :delete
                  :raw? is-raw
-                 :http-options {:headers {"cmr-revision-id" revision-id}
+                 :http-options {:headers headers
                                 :accept :json}}))))
 
 (defn get-ingest-health-fn

@@ -59,11 +59,12 @@
 (defn verify-provider-against-client-id
   "Verifies the given provider's CMR-ONLY flag matches the client-id in the request."
   [context provider-id]
-  (let [cmr-only (->> (pc/get-providers-from-cache context)
-                      (some #(when (= provider-id (:provider-id %)) %))
-                      :cmr-only)
-        client-id (:client-id context)]
-    (verify-provider-cmr-only-against-client-id provider-id cmr-only client-id)))
+  (if-let [provider (->> (pc/get-providers-from-cache context)
+                         (some #(when (= provider-id (:provider-id %)) %)))]
+    (verify-provider-cmr-only-against-client-id
+      provider-id (:cmr-only provider) (:client-id context))
+    (srvc-errors/throw-service-error
+      :bad-request (format "Provider with provider-id [%s] does not exist." provider-id))))
 
 (def valid-response-mime-types
   "Supported ingest response formats"
@@ -123,9 +124,9 @@
 
 (defmethod generate-ingest-response :xml
   [headers result]
-    {:status 200
-     :headers {"Content-Type" (mt/format->mime-type :xml)}
-     :body (result-map->xml result)})
+  {:status 200
+   :headers {"Content-Type" (mt/format->mime-type :xml)}
+   :body (result-map->xml result)})
 
 (defn- invalid-revision-id-error
   "Throw an error saying that revision is invalid"
@@ -256,8 +257,8 @@
             {:status 200})))
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context params]}
-          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
           (verify-provider-against-client-id request-context provider-id)
+          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
           (let [concept (body->concept :collection provider-id native-id body content-type headers)]
             (info (format "Ingesting collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
@@ -267,8 +268,8 @@
                                  :native-id native-id
                                  :concept-type :collection
                                  :revision-id (get headers "cmr-revision-id")}]
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting collection %s from client %s"
                           (pr-str concept-attribs) (:client-id request-context)))
             (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
@@ -281,8 +282,8 @@
 
       (context ["/granules/:native-id" :native-id #".*$"] [native-id]
         (PUT "/" {:keys [body content-type headers request-context params]}
-          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
           (verify-provider-against-client-id request-context provider-id)
+          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
           (let [concept (body->concept :granule provider-id native-id body content-type headers)]
             (info (format "Ingesting granule %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
@@ -292,8 +293,8 @@
                                  :native-id native-id
                                  :concept-type :granule
                                  :revision-id (get headers "cmr-revision-id")}]
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (verify-provider-against-client-id request-context provider-id)
+            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting granule %s from client %s"
                           (pr-str concept-attribs) (:client-id request-context)))
             (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))))))

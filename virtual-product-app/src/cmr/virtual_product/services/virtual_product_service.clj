@@ -8,10 +8,12 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.core :as umm]
             [cmr.umm.granule :as umm-g]
-            [clojure.string :as str]
             [cmr.common.mime-types :as mime-types]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
+            [cmr.transmit.config :as transmit-config]
+            [cmr.transmit.search :as search]
+            [clojure.string :as str]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -47,7 +49,7 @@
         (assoc :provider-id provider-id :concept-type concept-type))))
 
 (defn- virtual-granule-event?
-  "Returns true if this is an event that should apply to virtual granules"
+  "Returns true if the granule identified by concept-type, provider-id and entry-title is virtual"
   [{:keys [concept-type provider-id entry-title]}]
   (and (= :granule concept-type)
        (contains? source-provider-id-entry-titles [provider-id entry-title])))
@@ -80,6 +82,12 @@
                      "ingesting the virtual granule [%s] : [%s]")
                 status granule-ur (pr-str response))))))
 
+(defn- build-ingest-headers
+  "Create http headers which will be part of ingest requests send to ingest service"
+  [revision-id]
+  {"cmr-revision-id" revision-id
+   transmit-config/token-header (transmit-config/echo-system-token)})
+
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
@@ -93,16 +101,18 @@
                                                        (:short-name virtual-coll)
                                                        (:granule-ur orig-umm))
             new-umm (assoc orig-umm
-                      :granule-ur new-granule-ur
-                      :collection-ref (umm-g/map->CollectionRef
-                                        (select-keys virtual-coll [:entry-title])))
+                           :granule-ur new-granule-ur
+                           :collection-ref (umm-g/map->CollectionRef
+                                             (select-keys virtual-coll [:entry-title])))
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
             new-concept (-> orig-concept
-                            (select-keys [:revision-id :format :provider-id :concept-type])
+                            (select-keys [:format :provider-id :concept-type])
                             (assoc :native-id new-granule-ur
-                              :metadata new-metadata))]
-        (handle-update-response (ingest/ingest-concept context new-concept true) new-granule-ur)))))
+                                   :metadata new-metadata))]
+        (handle-update-response
+          (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
+          new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-update
   [context event]
@@ -185,8 +195,8 @@
                                                        granule-ur)
             resp (ingest/delete-concept context {:provider-id provider-id
                                                  :concept-type :granule
-                                                 :native-id new-granule-ur
-                                                 :revision-id revision-id} true)]
+                                                 :native-id new-granule-ur}
+                                        (build-ingest-headers revision-id) true)]
         (handle-delete-response resp new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-delete
@@ -197,3 +207,85 @@
         (let [annotated-delete-event (annotate-granule-delete-event context annotated-event)]
           (when (virtual-granule-event? annotated-delete-event)
             (apply-source-granule-delete-event context annotated-delete-event)))))))
+
+(defn- annotate-entries
+  "Annotate entries with provider id derived from concept-id present in the entry"
+  [entries]
+  (for [entry entries
+        :let [{:keys [provider-id]} (concepts/parse-concept-id (:concept-id entry))]]
+    (with-meta entry {:provider-id provider-id})))
+
+(defn- get-prov-id-gran-ur
+  "Get a vector consisting of provider id and granule ur for an annotated entry"
+  [entry]
+  [(:provider-id (meta entry)) (:granule-ur entry)])
+
+(defn- compute-source-granule-urs
+  "Compute source granule-urs from virtual granule-urs"
+  [provider-id src-entry-title gran-entries]
+  (for [{:keys [granule-ur entry-title]} gran-entries]
+    (if (= entry-title src-entry-title)
+      [granule-ur granule-ur]
+      (let [{:keys [source-short-name short-name]}
+            (get config/virtual-product-to-source-config [provider-id entry-title])]
+        [granule-ur
+         (config/compute-source-granule-ur
+           provider-id source-short-name short-name granule-ur)]))))
+
+(defn- create-source-entries
+  "Fetch granule ids from the granule urs of granules that belong to a collection with the given
+  provider id and entry title and create the entries using the information."
+  [context provider-id entry-title granule-urs]
+  (let [query-params {"provider-id[]" provider-id
+                      "entry_title" entry-title
+                      "granule_ur[]" (str/join "," (set granule-urs))
+                      "token" (transmit-config/echo-system-token)}
+        gran-refs (search/find-granule-references context query-params)]
+    (for [{:keys [concept-id granule-ur]} gran-refs]
+      {:concept-id concept-id
+       :entry-title entry-title
+       :granule-ur granule-ur})))
+
+(defn- get-provider-id-src-entry-title
+  "Get a vector consisting of provider id and source entry title for a given virtual entry"
+  [entry]
+  (let [provider-id (:provider-id (meta entry))
+        entry-title (:entry-title entry)
+        source-entry-title (get-in config/virtual-product-to-source-config
+                                   [[provider-id entry-title] :source-entry-title])]
+    ;; If source entry title is null, that means it is not a virtual entry in which case we use
+    ;; the entry title of the entry itself.
+    [provider-id (or source-entry-title entry-title)]))
+
+(defn- map-granule-ur-src-entry
+  "Map granule urs for the subset of original entries which correspond to a single
+  source collection to the corresponding source entry"
+  [context entries-for-src-collection]
+  (let [[[provider-id src-entry-title] entries] entries-for-src-collection
+        ;; An array of vectors, each vector consisting of granule ur of an entry and the granule
+        ;; ur of the corresponding source entry. If the original entry is not a virtual entry
+        ;; the granule ur of the source entry is same as the granule ur of the original entry.
+        arr-gran-ur-src-gran-ur (compute-source-granule-urs provider-id src-entry-title entries)
+        src-entries (create-source-entries context provider-id src-entry-title
+                                           (map second arr-gran-ur-src-gran-ur))
+        src-gran-ur-entry-map (reduce #(assoc %1 (:granule-ur %2) %2) {} src-entries)]
+    (for [[gran-ur src-gran-ur] arr-gran-ur-src-gran-ur]
+      [[provider-id gran-ur] (get src-gran-ur-entry-map src-gran-ur)])))
+
+(defn translate-granule-entries
+  "Translate virtual granules in the granule-entries into the corresponding source entries. See routes.clj for the JSON schema of granule-entries."
+  [context granule-entries]
+  (let [annotated-entries (annotate-entries granule-entries)
+        ;; Group entries by the combination of provider-id and entry-title of source collection for
+        ;; each entry. If the entry is not a virtual entry, source collection is the same as the
+        ;; collection to which the granule belongs
+        entries-by-src-collection (group-by get-provider-id-src-entry-title annotated-entries)
+        ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
+        ;; corresponding to a group in entries-by-src-collection
+        gran-ur-src-entry-map (into {} (mapcat (partial map-granule-ur-src-entry context)
+                                               entries-by-src-collection))]
+    (map #(get gran-ur-src-entry-map (get-prov-id-gran-ur %)) annotated-entries)))
+
+
+
+
