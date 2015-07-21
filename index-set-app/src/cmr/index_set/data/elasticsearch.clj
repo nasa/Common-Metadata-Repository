@@ -38,12 +38,8 @@
       (warn (.getMessage e))
       (cheshire/decode value true))))
 
-
 (comment
-  (decode-field (cheshire/generate-string {:a (range 5)}))
-
-
-  )
+  (decode-field (cheshire/generate-string {:a (range 5)})))
 
 (defn create-index
   "Create elastic index"
