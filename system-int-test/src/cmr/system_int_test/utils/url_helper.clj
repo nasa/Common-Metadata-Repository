@@ -212,7 +212,7 @@
 
 (defn concept-revision-metadata-url
   []
-  (format "http://localhost:%s/concept-revision-metadata" (transmit-config/search-port)))
+  (format "http://localhost:%s/concepts" (transmit-config/search-port)))
 
 (defn concept-revisions-url
   [type]

@@ -137,16 +137,7 @@
         url (str base-url "/" concept-id (when revision-id (str "/" revision-id)))
         headers (:headers options)
         response (client/get url {:headers headers})]
-    (if (= 200 (:status response))
-      (let [response (update-in response [:body] #(json/decode % true))]
-        ;; Only JSON response is supported.
-        (is (= "application/json; charset=utf-8"
-               (get-in response [:headers "Content-Type"])))
-        ;; Assert that revision-date was returned in the found concepts (if any)
-        (when (seq (:body response))
-          (is (:revision-date (:body response))))
-        response)
-      response)))
+    response))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."

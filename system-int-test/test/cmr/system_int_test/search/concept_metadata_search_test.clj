@@ -7,6 +7,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.umm.echo10.collection :as c]
             [cmr.common.util :refer [are2] :as util]
             [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
@@ -27,6 +28,8 @@
         expected (set (map :metadata concepts))]
     (is (= expected result-set))))
 
+(cmr.common.dev.capture-reveal/reveal coll2-1)
+
 (deftest retrieve-metadata-from-search-by-concept-id-concept-revision
 
   (let [umm-coll1-1 (dc/collection {:entry-title "et1"
@@ -46,18 +49,13 @@
 
         umm-gran1-1 (dg/granule umm-coll2-3)
 
-        ;; Ingest collection twice and then tombstone - latest should be deleted=true.
+        ;; Ingest collection twice.
         coll1-1 (d/ingest "PROV1" umm-coll1-1)
         coll1-2 (d/ingest "PROV1" umm-coll1-2)
-        _ (ingest/tombstone-concept {:concept-id (:concept-id coll1-2)
-                                     :revision-id (inc (:revision-id coll1-2))})
-        coll1-tombstone (merge coll1-2 {:deleted true :revision-id (inc (:revision-id coll1-2))})
 
-        ;; Ingest collection once, tombstone, then ingest again - latest should be deleted=false.
+        ; Ingest collection once, delete, then ingest again.
         coll2-1 (d/ingest "PROV1" umm-coll2-1)
-        _ (ingest/tombstone-concept {:concept-id (:concept-id coll2-1)
-                                     :revision-id (inc (:revision-id coll2-1))})
-        coll2-tombstone (merge coll2-1 {:deleted true :revision-id (inc (:revision-id coll2-1))})
+        _ (ingest/delete-concept (d/item->concept coll2-1))
         coll2-3 (d/ingest "PROV1" umm-coll2-3)
 
         ;; Ingest a couple of collections once each.
@@ -73,26 +71,30 @@
 
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
-        (are2 [concepts concept-id revision-id]
-              (search-results-match concepts (search/find-concept-metadata-by-id-and-revision
-                                                  concept-id
-                                                  revision-id
-                                                  {:headers {transmit-config/token-header
-                                                             (transmit-config/echo-system-token)
-                                                             "Accept" "application/json"}}))
-              "collection"
-              [coll1-tombstone]
-              (:concept-id coll1-tombstone) (:revision-id coll1-tombstone)
+        (are2 [item format-key accept concept-id revision-id]
+              (let [headers {transmit-config/token-header (transmit-config/echo-system-token)
+                             "Accept" accept}
+                    response (search/find-concept-metadata-by-id-and-revision
+                               concept-id
+                               revision-id
+                               {:headers headers})
+                    expected (:metadata (d/item->metadata-result false format-key item))]
+                (is (= expected (:body response))))
 
-              "granule"
-              [gran1-1]
-              (:concept-id gran1-1) (:revision-id gran1-1)))
+              "echo10 collection revision 1"
+              umm-coll1-1 :echo10 "application/echo10+xml" "C1200000000-PROV1" 1
+
+               "echo10 collection revision 2"
+              umm-coll1-2 :echo10 "application/echo10+xml" "C1200000000-PROV1" 2
+
+              " echo10 granule"
+              umm-gran1-1 :echo10 "application/echo10+xml" "G1200000004-PROV1" 1))
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
-                                                  (:concept-id coll2-tombstone)
-                                                  (:revision-id coll2-tombstone)
+                                                  (:concept-id coll2-1)
+                                                  (:revision-id 3)
                                                   {:headers {transmit-config/token-header
                                                              (transmit-config/echo-system-token)}}))]
           (is (= 400 status))
@@ -101,16 +103,16 @@
 
       (testing "Unknown concept-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                        (search/find-concept-metadata-by-id-and-revision
+                                        [(search/find-concept-metadata-by-id-and-revision
                                                   "C1234-PROV1"
                                                   1
                                                   {:headers {transmit-config/token-header
-                                                             (transmit-config/echo-system-token)}}))]
+                                                             (transmit-config/echo-system-token)}})])]
           (is (= 404 status))
           (is (= #{"Concept with concept-id [C1234-PROV1] and revision-id [1] does not exist."}
                  (set errors)))))
 
-      (testing "Known concept-id with unavailable revision-id returns a 404 error"
+      #_(testing "Known concept-id with unavailable revision-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
                                                   (:concept-id coll1-1)
@@ -121,7 +123,7 @@
           (is (= #{"Concept with concept-id [C1200000000-PROV1] and revision-id [1000000] does not exist."}
                  (set errors)))))
 
-      (testing "ACLs"
+      #_(testing "ACLs"
         ;; no token - This is temporary and will be updated in issue CMR-1771.
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-revisions :collection {:provider-id "PROV1"}))]
