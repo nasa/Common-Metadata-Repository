@@ -5,22 +5,14 @@
             [cmr.search.models.results :as r]
             [clojure.string :as str]))
 
-(comment
-  (def the-query (cmr.common.dev.capture-reveal/reveal query))
-
-  (get-keyword-conditions (:condition the-query))
-  (build-highlight-query the-query)
-  )
-
 (defn- get-keyword-conditions
   "Returns a list of the keyword text conditions from a condition"
   [condition]
   (let [sub-condition (:condition condition)
         sub-conditions (:conditions condition)
-        all-sub-conditions (if sub-condition
-                             (conj sub-conditions sub-condition)
-                             sub-conditions)
-        keyword-sub-conditions (for [a-condition (seq all-sub-conditions)
+        keyword-sub-conditions (for [a-condition (if sub-condition
+                                                   (conj sub-conditions sub-condition)
+                                                   sub-conditions)
                                  :let [keyword-condition (get-keyword-conditions a-condition)]
                                  :when keyword-condition]
                                  keyword-condition)
@@ -32,7 +24,6 @@
 (defn- build-highlight-query
   "Creates the highlight query that will be passed into elastic"
   [query]
-  (cmr.common.dev.capture-reveal/capture query)
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
     (let [conditions-as-string (str/join " " (map #(:query-str %) keyword-conditions))]
        {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}})))
@@ -42,11 +33,21 @@
   (assoc query :highlights (build-highlight-query query)))
 
 (defn- replace-fields-with-highlighted-fields
-  "Replaces the appropriate fields with the highlighted snippets for each field."
+  "Replaces the appropriate fields with the highlighted snippets for each field.
+
+  Note this algorithm requires that both the number of hits and the order of results is identical
+  in the query-results and elastic-results."
   [query-results elastic-results]
-  query-results)
+  (let [all-highlights (map #(get-in % [:highlight :summary])
+                            (get-in elastic-results [:hits :hits]))]
+    (for [item (:items query-results)
+          :let [highlight (first all-highlights)
+                all-highlights (rest all-highlights)]]
+      (if (seq highlight)
+        (assoc item :summary (str/join ";" highlight))
+        item))))
 
 (defmethod query-execution/post-process-query-result-feature :highlights
   [context query elastic-results query-results feature]
-  (cmr.common.dev.capture-reveal/capture-all)
-  (replace-fields-with-highlighted-fields query-results elastic-results))
+  (assoc query-results
+         :items (replace-fields-with-highlighted-fields query-results elastic-results)))
