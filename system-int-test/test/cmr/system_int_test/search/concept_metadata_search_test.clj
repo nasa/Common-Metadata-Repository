@@ -28,8 +28,6 @@
         expected (set (map :metadata concepts))]
     (is (= expected result-set))))
 
-(cmr.common.dev.capture-reveal/reveal coll2-1)
-
 (deftest retrieve-metadata-from-search-by-concept-id-concept-revision
 
   (let [umm-coll1-1 (dc/collection {:entry-title "et1"
@@ -91,10 +89,10 @@
               umm-gran1-1 :echo10 "application/echo10+xml" "G1200000004-PROV1" 1))
 
       (testing "Requests for tombstone revision returns a 400 error"
-        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+        (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
                                                   (:concept-id coll2-1)
-                                                  (:revision-id 3)
+                                                  2
                                                   {:headers {transmit-config/token-header
                                                              (transmit-config/echo-system-token)}}))]
           (is (= 400 status))
@@ -112,7 +110,7 @@
           (is (= #{"Concept with concept-id [C1234-PROV1] and revision-id [1] does not exist."}
                  (set errors)))))
 
-      #_(testing "Known concept-id with unavailable revision-id returns a 404 error"
+      (testing "Known concept-id with unavailable revision-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
                                                   (:concept-id coll1-1)

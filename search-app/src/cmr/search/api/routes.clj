@@ -326,16 +326,8 @@
           (acl/verify-ingest-management-permission request-context :read)
           (find-concept-revisions request-context params headers)))
 
-      ;; Retrieve by cmr concept id and revision id
-      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)/(?:[0-9]+)(?:\..+)?"] [path-w-extension]
-        ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
-        ;; In this case, the Echo-Token header is used in the GET request.
-        (OPTIONS "/" req options-response)
-        (GET "/" {params :params headers :headers context :request-context}
-          (find-concept-by-cmr-concept-id context path-w-extension params headers)))
-
-      ;; Retrieve by cmr concept id
-      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
+      ;; Retrieve by cmr concept id or concept-id and revision id
+      (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)

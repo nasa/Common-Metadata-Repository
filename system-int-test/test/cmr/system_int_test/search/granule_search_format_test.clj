@@ -33,10 +33,6 @@
     (dev-sys-util/reset)
     (ingest/create-provider "provguid1" "PROV1")
     (ingest/create-provider "provguid2" "PROV2"))
-
-
-  (mt/mime-type-from-headers (:headers (cmr.common.dev.capture-reveal/reveal resp)))
-
   )
 
 

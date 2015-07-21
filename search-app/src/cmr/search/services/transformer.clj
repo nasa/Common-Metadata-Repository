@@ -179,8 +179,7 @@
          concept (first concepts)
          ;; Throw a service error for deleted concepts
          _ (when (:deleted concept)
-             ;; TODO - throw service error with appropriate message about tombstones not having metadata
-             )
+             (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata"]))
          ;; format concept
          [t4 value] (u/time-execution (concept->value-map context concept format))]
      (debug "get-concept time:" t1
