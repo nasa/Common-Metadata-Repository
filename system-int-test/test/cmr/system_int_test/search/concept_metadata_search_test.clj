@@ -15,8 +15,12 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.umm.iso-mends.collection :as umm-c]
+            [cmr.umm.iso-smap.collection :as umm-iso-c]
+            [cmr.umm.iso-smap.granule :as umm-iso-g]
             [clojure.string :as str]
-            [clj-time.format :as f]))
+            [clj-time.format :as f])
+  (:import cmr.umm.collection.UmmCollection
+           cmr.umm.granule.UmmGranule))
 
 (use-fixtures
   :each
@@ -45,14 +49,14 @@
 
 (defmethod result-matches? :default
   [format-key umm response]
-  (let [expected (:metadata (d/item->metadata-result false format-key umm))
-        metadata (:body response)]
-    (is (= expected metadata))))
+  (let [expected (umm/umm->xml umm format-key);(:metadata (d/item->metadata-result false format-key umm))
+        metadata-xml (:body response)]
+    (is (= expected metadata-xml))))
 
 
 (deftest retrieve-metadata-from-search-by-concept-id-concept-revision
-  ;; Grant permissions before creating data
-  ;; all collections in prov1 granted to guests
+  ;; Grant permissions before creating data.
+  ;; All collections in PROV1 granted to registered users.
   (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
   (e/grant-registered-users (s/context) (e/gran-catalog-item-id "provguid1"))
 
@@ -149,7 +153,13 @@
               umm-gran1-1 :echo10 "application/echo10+xml" "G1200000003-PROV1" 1
 
               " echo10 granule revision 2"
-              umm-gran1-2 :echo10 "application/echo10+xml" "G1200000003-PROV1" 2))
+              umm-gran1-2 :echo10 "application/echo10+xml" "G1200000003-PROV1" 2
+
+               "iso-smap granule revision 1"
+              umm-gran1-1 :iso-smap "application/iso:smap+xml" "G1200000003-PROV1" 1
+
+              "iso-smap granule revision 2"
+              umm-gran1-2 :iso-smap "application/iso:smap+xml" "G1200000003-PROV1" 2))
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
