@@ -153,13 +153,7 @@
               umm-gran1-1 :echo10 "application/echo10+xml" "G1200000003-PROV1" 1
 
               " echo10 granule revision 2"
-              umm-gran1-2 :echo10 "application/echo10+xml" "G1200000003-PROV1" 2
-
-               "iso-smap granule revision 1"
-              umm-gran1-1 :iso-smap "application/iso:smap+xml" "G1200000003-PROV1" 1
-
-              "iso-smap granule revision 2"
-              umm-gran1-2 :iso-smap "application/iso:smap+xml" "G1200000003-PROV1" 2))
+              umm-gran1-2 :echo10 "application/echo10+xml" "G1200000003-PROV1" 2))
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
