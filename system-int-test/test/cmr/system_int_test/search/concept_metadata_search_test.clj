@@ -184,14 +184,14 @@
           (is (= #{"Concept with concept-id [C1200000000-PROV1] and revision-id [1000000] does not exist."}
                  (set errors)))))
 
-      (testing "Non-integer revision id returns a 400 error"
+      (testing "Non-integer revision id returns a 422 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
                                                   "C1200000000-PROV1"
                                                   "FOO"
                                                   {:headers {transmit-config/token-header
                                                              user1-token}}))]
-          (is (= 400 status))
+          (is (= 422 status))
           (is (= #{"Revision id [FOO] must be an integer greater than 0."}
                  (set errors)))))
 

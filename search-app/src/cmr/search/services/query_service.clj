@@ -81,14 +81,6 @@
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.log :refer (debug info warn error)]))
 
-(defn as-int
-  "Parses the string to return an integer"
-  [^String v]
-  (try
-    (when v (Integer. v))
-    (catch NumberFormatException e
-      (errors/throw-service-error :invalid-data (.getMessage e)))))
-
 (deftracefn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."

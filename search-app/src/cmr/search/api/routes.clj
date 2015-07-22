@@ -135,10 +135,11 @@
   [path-w-extension]
   (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
     (try
-      (Integer/parseInt revision-id)
+      (when revision-id
+        (Integer/parseInt revision-id))
       (catch NumberFormatException e
         (svc-errors/throw-service-error
-          :bad-request
+          :invalid-data
           (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
 
 (defn- get-search-results-format
@@ -320,7 +321,7 @@
           (acl/verify-ingest-management-permission request-context :read)
           (find-concept-revisions request-context params headers)))
 
-      ;; Retrieve by cmr concept id or concept-id and revision id
+      ;; Retrieve by cmr concept id or concept id and revision id
       (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
         ;; In this case, the Echo-Token header is used in the GET request.
