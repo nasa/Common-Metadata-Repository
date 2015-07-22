@@ -134,18 +134,12 @@
   "Parses the path-w-extension to extract the revision id"
   [path-w-extension]
   (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
-    ;; TODO add error handling
-    (Integer/parseInt revision-id)))
-
-
-(comment
-
-  (path-w-extension->revision-id "C1-PROV1/2.echo10")
-  (path-w-extension->concept-id "C1-PROV1/2.echo10")
-  (path-w-extension->revision-id "C1-PROV1.echo10")
-  (path-w-extension->concept-id "C1200000000-PROV1.dif")
-  (re-matches #"([^\.]+?)(?:/[0-9]+)?(?:\..+)?"  "C1-PROV1/2.echo10")
-  )
+    (try
+      (Integer/parseInt revision-id)
+      (catch NumberFormatException e
+        (svc-errors/throw-service-error
+          :bad-request
+          (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
