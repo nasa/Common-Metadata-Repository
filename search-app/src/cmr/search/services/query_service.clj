@@ -218,7 +218,7 @@
   (errors/throw-service-error
     :not-found
     (format
-      "Concept with concept-id [%s] revision-id [%s] could not be found" concept-id revision-id)))
+      "Concept with concept-id [%s] and revision-id [%s] could not be found." concept-id revision-id)))
 
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."

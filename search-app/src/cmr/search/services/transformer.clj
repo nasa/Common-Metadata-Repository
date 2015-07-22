@@ -181,7 +181,7 @@
          _ (when (:deleted concept)
              (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata"]))
          ;; format concept
-         [t4 value] (u/time-execution (concept->value-map context concept format))]
+         [t4 value] (u/time-execution (when concept (concept->value-map context concept format)))]
      (debug "get-concept time:" t1
             "acl-filter-concepts time:" t2
             "concept->value-map time:" t4)
