@@ -179,7 +179,7 @@
          concept (first concepts)
          ;; Throw a service error for deleted concepts
          _ (when (:deleted concept)
-             (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata"]))
+             (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata."]))
          ;; format concept
          [t4 value] (u/time-execution (when concept (concept->value-map context concept format)))]
      (debug "get-concept time:" t1
