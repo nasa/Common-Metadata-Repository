@@ -33,14 +33,14 @@
   [format-key umm response]
   (let [metadata-xml (:body response)
         metadata-umm (-> (umm-c/parse-collection metadata-xml)
-                             ;; parser prepends "gov.nasa.echo:" to entry-title for some reason
-                             (update-in [:entry-title]
-                                        (fn [entry-title]
-                                          (str/replace entry-title "gov.nasa.echo:" "")))
-                             ;; remove default added by parser
-                             (assoc :metadata-language nil)
-                             ;; remove default added by parser
-                             (assoc :use-constraints nil))]
+                         ;; parser prepends "gov.nasa.echo:" to entry-title for some reason
+                         (update-in [:entry-title]
+                                    (fn [entry-title]
+                                      (str/replace entry-title "gov.nasa.echo:" "")))
+                         ;; remove default added by parser
+                         (assoc :metadata-language nil)
+                         ;; remove default added by parser
+                         (assoc :use-constraints nil))]
     (is (= umm metadata-umm))))
 
 (defmethod result-matches? :default
@@ -153,11 +153,11 @@
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
-                                        (search/find-concept-metadata-by-id-and-revision
-                                                  (:concept-id coll2-1)
-                                                  2
-                                                  {:headers {transmit-config/token-header
-                                                             user1-token}}))]
+                                                     (search/find-concept-metadata-by-id-and-revision
+                                                       (:concept-id coll2-1)
+                                                       2
+                                                       {:headers {transmit-config/token-header
+                                                                  user1-token}}))]
           (is (= 400 status))
           (is (= #{"Deleted concepts do not contain metadata."}
                  (set errors)))))
@@ -165,10 +165,10 @@
       (testing "Unknown concept-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         [(search/find-concept-metadata-by-id-and-revision
-                                                  "C1234-PROV1"
-                                                  1
-                                                  {:headers {transmit-config/token-header
-                                                             user1-token}})])]
+                                           "C1234-PROV1"
+                                           1
+                                           {:headers {transmit-config/token-header
+                                                      user1-token}})])]
           (is (= 404 status))
           (is (= #{"Concept with concept-id [C1234-PROV1] and revision-id [1] does not exist."}
                  (set errors)))))
@@ -176,10 +176,10 @@
       (testing "Known concept-id with unavailable revision-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
-                                                  "C1200000000-PROV1"
-                                                  1000000
-                                                  {:headers {transmit-config/token-header
-                                                             user1-token}}))]
+                                          "C1200000000-PROV1"
+                                          1000000
+                                          {:headers {transmit-config/token-header
+                                                     user1-token}}))]
           (is (= 404 status))
           (is (= #{"Concept with concept-id [C1200000000-PROV1] and revision-id [1000000] does not exist."}
                  (set errors)))))
@@ -187,10 +187,10 @@
       (testing "Non-integer revision id returns a 422 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
                                         (search/find-concept-metadata-by-id-and-revision
-                                                  "C1200000000-PROV1"
-                                                  "FOO"
-                                                  {:headers {transmit-config/token-header
-                                                             user1-token}}))]
+                                          "C1200000000-PROV1"
+                                          "FOO"
+                                          {:headers {transmit-config/token-header
+                                                     user1-token}}))]
           (is (= 422 status))
           (is (= #{"Revision id [FOO] must be an integer greater than 0."}
                  (set errors)))))
