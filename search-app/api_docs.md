@@ -1344,17 +1344,28 @@ Example of sorting by start_date in descending order: (Most recent data first)
     curl "%CMR-ENDPOINT%/granules/sort_key\[\]=-start_date
 
 
-### Retrieve concept with a given cmr-concept-id
+### Retrieve concept with a given cmr-concept-id or concept-id & revision-id
 
 This allows retrieving the metadata for a single concept. If no format
 is specified the native format of the metadata will be returned.
+
+By concept id
+
+    curl -i  "%CMR-ENDPOINT%/concepts/:concept-id"
+
+By concept id and revision id
+
+    curl -i "%CMR-ENDPOINT%/concepts/:concept-id/:revision-id"
 
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.iso"
     curl -i -H 'Accept: application/xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i -H 'Accept: application/metadata+xml' "%CMR-ENDPOINT%/concepts/G100000-PROV1"
     curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1.json"
+    curl -i "%CMR-ENDPOINT%/concepts/C100000-PROV1/1"
+    curl -i "%CMR-ENDPOINT%/concepts/G100000-PROV1/2.echo10"
 
+Note that attempting to retrieve a revision that is a tombstone is an error and will return a 400 status code.
 
 The following extensions and MIME types are supported by the
 `/concepts/` resource:
