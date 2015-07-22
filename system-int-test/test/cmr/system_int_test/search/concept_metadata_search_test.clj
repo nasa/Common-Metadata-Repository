@@ -45,7 +45,7 @@
 
 (defmethod result-matches? :default
   [format-key umm response]
-  (let [expected (umm/umm->xml umm format-key);(:metadata (d/item->metadata-result false format-key umm))
+  (let [expected (umm/umm->xml umm format-key)
         metadata-xml (:body response)]
     (is (= expected metadata-xml))))
 
