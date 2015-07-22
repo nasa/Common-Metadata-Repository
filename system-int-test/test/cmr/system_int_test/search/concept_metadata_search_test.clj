@@ -15,12 +15,8 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
             [cmr.umm.iso-mends.collection :as umm-c]
-            [cmr.umm.iso-smap.collection :as umm-iso-c]
-            [cmr.umm.iso-smap.granule :as umm-iso-g]
             [clojure.string :as str]
-            [clj-time.format :as f])
-  (:import cmr.umm.collection.UmmCollection
-           cmr.umm.granule.UmmGranule))
+            [clj-time.format :as f]))
 
 (use-fixtures
   :each
