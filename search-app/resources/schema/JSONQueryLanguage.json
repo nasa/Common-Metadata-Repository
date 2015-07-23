@@ -174,16 +174,16 @@
 				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period starting on or after the given day.",
 				      "type": "number",
 				      "minimum": 0,
-				      "maximum": 365
+				      "maximum": 366
 				      },
 				    "recurring_end_day": {
 				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period ending on or before the given day.",
 				      "type": "number",
 				      "minimum": 0,
-				      "maximum": 365
+				      "maximum": 366
 				      },
 				    "exclude_boundary": {
-				      "description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches.",
+				      "description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches. Defaults to false.",
 				      "type": "boolean"
 				    }
 				  }

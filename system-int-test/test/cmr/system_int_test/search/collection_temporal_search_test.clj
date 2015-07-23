@@ -197,8 +197,16 @@
       (is (= "/condition/temporal object has too few properties (found 0 but schema requires at least 1)"
              (first errors)))))
 
+  (testing "search by temporal with only exclude_boundary"
+    (let [{:keys [status errors]} (search/find-refs-with-json-query
+                                    :collection {} {:temporal {:exclude_boundary false}})]
+      (is (= 400 status))
+      (is (= "Temporal condition with only exclude_boundary is invalid."
+             (first errors)))))
+
   (testing "search by invalid exclude_boundary format"
-    (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} {:temporal {:exclude_boundary "false"}})]
+    (let [{:keys [status errors]} (search/find-refs-with-json-query
+                                    :collection {} {:temporal {:exclude_boundary "false"}})]
       (is (= 400 status))
       (is (= "/condition/temporal/exclude_boundary instance type (string) does not match any allowed primitive type (allowed: [\"boolean\"])"
              (first errors))))))
