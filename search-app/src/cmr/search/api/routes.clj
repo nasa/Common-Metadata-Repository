@@ -247,14 +247,14 @@
   "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
   and returns the response"
   [context path-w-extension params headers]
-  (let [result-format (get-search-results-format path-w-extension headers
-                                                 supported-concept-id-retrieval-mime-types
-                                                 mt/xml)
-        params (assoc params :result-format result-format)
-        concept-id (path-w-extension->concept-id path-w-extension)
+  (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)]
     (if revision-id
-      (do
+      (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
+            result-format (get-search-results-format path-w-extension headers
+                                                     supported-mime-types
+                                                     mt/xml)
+            params (assoc params :result-format result-format)]
         (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
                       concept-id
                       revision-id))
@@ -262,7 +262,10 @@
                                                                     result-format
                                                                     concept-id
                                                                     revision-id)))
-      (do
+      (let [result-format (get-search-results-format path-w-extension headers
+                                                     supported-concept-id-retrieval-mime-types
+                                                     mt/xml)
+            params (assoc params :result-format result-format)]
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 

@@ -16,6 +16,7 @@
             [cmr.system-int-test.system :as s]
             [cmr.umm.iso-mends.collection :as umm-c]
             [clojure.string :as str]
+            [cmr.common.mime-types :as mt]
             [clj-time.format :as f]))
 
 (use-fixtures
@@ -110,46 +111,46 @@
                 (result-matches? format-key item response))
 
               "echo10 collection revision 1"
-              umm-coll1-1 :echo10 "application/echo10+xml" "C1200000000-PROV1" 1
+              umm-coll1-1 :echo10 mt/echo10 "C1200000000-PROV1" 1
 
               "echo10 collection revision 2"
-              umm-coll1-2 :echo10 "application/echo10+xml" "C1200000000-PROV1" 2
+              umm-coll1-2 :echo10 mt/echo10 "C1200000000-PROV1" 2
 
               "dif collection revision 1"
-              umm-coll2-1 :dif "application/dif+xml" "C1200000001-PROV1" 1
+              umm-coll2-1 :dif mt/dif "C1200000001-PROV1" 1
 
               "dif collection revision 3"
-              umm-coll2-3 :dif "application/dif+xml" "C1200000001-PROV1" 3
+              umm-coll2-3 :dif mt/dif "C1200000001-PROV1" 3
 
               "dif10 collection revision 1"
-              umm-coll2-1 :dif10 "application/dif10+xml" "C1200000001-PROV1" 1
+              umm-coll2-1 :dif10 mt/dif10 "C1200000001-PROV1" 1
 
               "dif10 collection revision 3"
-              umm-coll2-3 :dif10 "application/dif10+xml" "C1200000001-PROV1" 3
+              umm-coll2-3 :dif10 mt/dif10 "C1200000001-PROV1" 3
 
               "iso-smap collection revision 1"
-              umm-coll1-1 :iso-smap "application/iso:smap+xml" "C1200000000-PROV1" 1
+              umm-coll1-1 :iso-smap mt/iso-smap "C1200000000-PROV1" 1
 
               "iso-smap collection revision 2"
-              umm-coll1-2 :iso-smap "application/iso:smap+xml" "C1200000000-PROV1" 2
+              umm-coll1-2 :iso-smap mt/iso-smap "C1200000000-PROV1" 2
 
               "iso19115 collection revision 1"
-              umm-coll2-1 :iso19115 "application/iso19115+xml" "C1200000001-PROV1" 1
+              umm-coll2-1 :iso19115 mt/iso19115 "C1200000001-PROV1" 1
 
               "iso19115 collection revision 3"
-              umm-coll2-3 :iso19115 "application/iso19115+xml" "C1200000001-PROV1" 3
+              umm-coll2-3 :iso19115 mt/iso19115 "C1200000001-PROV1" 3
 
               "native format collection revision 1"
-              umm-coll1-1 :echo10 "application/metadata+xml" "C1200000000-PROV1" 1
+              umm-coll1-1 :echo10 mt/native "C1200000000-PROV1" 1
 
               "native format collection revision 2"
-              umm-coll1-2 :echo10 "application/metadata+xml" "C1200000000-PROV1" 2
+              umm-coll1-2 :echo10 mt/native "C1200000000-PROV1" 2
 
-              " echo10 granule revision 1"
-              umm-gran1-1 :echo10 "application/echo10+xml" "G1200000003-PROV1" 1
+              "echo10 granule revision 1"
+              umm-gran1-1 :echo10 mt/echo10 "G1200000003-PROV1" 1
 
-              " echo10 granule revision 2"
-              umm-gran1-2 :echo10 "application/echo10+xml" "G1200000003-PROV1" 2))
+              "echo10 granule revision 2"
+              umm-gran1-2 :echo10 mt/echo10 "G1200000003-PROV1" 2))
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
@@ -193,6 +194,31 @@
                                                      user1-token}}))]
           (is (= 422 status))
           (is (= #{"Revision id [FOO] must be an integer greater than 0."}
+                 (set errors)))))
+
+      ;; TODO: JSON output is waiting for the UMM JSON Schema implementation.
+      (testing "JSON output not supported (yet)"
+        (let [{:keys [status errors]} (search/get-search-failure-data
+                                        (search/find-concept-metadata-by-id-and-revision
+                                          "C1200000000-PROV1"
+                                          1
+                                          {:headers {transmit-config/token-header
+                                                     user1-token
+                                                     "Accept" "application/json"}}))]
+          (is (= 400 status))
+          (is (= #{"The mime types specified in the accept header [application/json] are not supported."}
+                 (set errors)))))
+
+      (testing "Atom output not supported"
+        (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                        (search/find-concept-metadata-by-id-and-revision
+                                          "C1200000000-PROV1"
+                                          1
+                                          {:headers {transmit-config/token-header
+                                                     user1-token
+                                                     "Accept" "application/atom+xml"}}))]
+          (is (= 400 status))
+          (is (= #{"The mime types specified in the accept header [application/atom+xml] are not supported."}
                  (set errors)))))
 
       (testing "ACLs"
