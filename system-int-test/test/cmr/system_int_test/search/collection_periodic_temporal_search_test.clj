@@ -172,18 +172,27 @@
 
 (deftest search-period-temporal-json-error-scenarios
   (testing "search by invalid temporal day format"
-    (are2 [search error-field]
+    (are2 [search error-field field-type]
           (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
-                expected-error (str (format "/condition/temporal/%s " (name error-field))
-                                    "instance type (string) does not match any allowed primitive "
-                                    "type (allowed: [\"integer\",\"number\"])")]
+                expected-error (str (format "/condition/temporal/%s instance type (%s) "
+                                            (name error-field) field-type)
+                                    "does not match any allowed primitive "
+                                    "type (allowed: [\"integer\"])")]
             (= [400 [expected-error]]
                [status errors]))
 
-          "invalid recurring_start_day"
+          "invalid recurring_start_day, type string"
           {:temporal {:recurring_start_day "40"}}
-          :recurring_start_day
+          :recurring_start_day "string"
 
-          "invalid recurring_end_day"
+          "invalid recurring_start_day, type number"
+          {:temporal {:recurring_start_day 4.0}}
+          :recurring_start_day "number"
+
+          "invalid recurring_end_day, type string"
           {:temporal {:recurring_start_day  5 :recurring_end_day "40"}}
-          :recurring_end_day)))
+          :recurring_end_day "string"
+
+          "invalid recurring_end_day, type number"
+          {:temporal {:recurring_start_day  5 :recurring_end_day 4.0}}
+          :recurring_end_day "number")))
