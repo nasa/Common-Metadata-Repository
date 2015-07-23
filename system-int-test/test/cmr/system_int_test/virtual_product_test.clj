@@ -28,10 +28,12 @@
 
 (defn- ingest-virtual-collections
   "Ingests the virtual collections for the given set of source collections."
-  [source-collections]
+  ([source-collections]
+   (ingest-virtual-collections source-collections {}))
+  ([source-collections options]
   (->> source-collections
        (mapcat vp/virtual-collections)
-       (mapv #(d/ingest (:provider-id %) %))))
+       (mapv #(d/ingest (:provider-id %) % options)))))
 
 (defn- assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
@@ -315,3 +317,24 @@
             errors (:errors (json/parse-string (:body response) true))]
         (and (= 400 (:status response))
              (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))
+
+
+(deftest virtual-product-non-cmr-only-provider-test
+  (let [_ (ingest/update-ingest-provider {:provider-id "LPDAAC_ECS"
+                                          :short-name "LPDAAC_ECS"
+                                          :cmr-only false
+                                          :small false})
+        ast-coll (d/ingest "LPDAAC_ECS"
+                           (dc/collection
+                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"})
+                           {:client-id "ECHO"})
+        vp-colls (ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
+        granule-ur "SC:AST_L1A.003:2006227720"
+        ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur})
+                               {:client-id "ECHO"})
+        expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
+        all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
+    (index/wait-until-indexed)
+    (assert-matching-granule-urs
+      all-expected-granule-urs
+      (search/find-refs :granule {:page-size 50}))))

@@ -33,6 +33,7 @@
   (:import clojure.lang.ExceptionInfo))
 
 (def ECHO_CLIENT_ID "ECHO")
+(def VIRTUAL_PRODUCT_CLIENT_ID "Virtual-Product-Service")
 
 (defn- verify-provider-cmr-only-against-client-id
   "Verifies provider CMR-ONLY flag matches the client-id in the request.
@@ -61,8 +62,15 @@
   [context provider-id]
   (if-let [provider (->> (pc/get-providers-from-cache context)
                          (some #(when (= provider-id (:provider-id %)) %)))]
-    (verify-provider-cmr-only-against-client-id
-      provider-id (:cmr-only provider) (:client-id context))
+    (let [client-id (:client-id context)]
+      ;; We don't check the cmr-only flag if the ingest request is coming from a virtual product
+      ;; service. The occurrence of this ingest event implies that source granule is successfully
+      ;; ingested which in turn implies that the verification succeeded with the provider and
+      ;; the client-id used for ingesting source granule and we don't need to verify again for
+      ;; virtual granule which belongs to the same provider as source granule.
+      (when (not (= VIRTUAL_PRODUCT_CLIENT_ID client-id))
+        (verify-provider-cmr-only-against-client-id
+          provider-id (:cmr-only provider) client-id)))
     (srvc-errors/throw-service-error
       :bad-request (format "Provider with provider-id [%s] does not exist." provider-id))))
 
