@@ -128,7 +128,19 @@
 (defn- path-w-extension->concept-id
   "Parses the path-w-extension to remove the concept id from the beginning"
   [path-w-extension]
-  (second (re-matches #"([^\.]+)(?:\..+)?" path-w-extension)))
+  (second (re-matches #"([^\.]+?)(?:/[0-9]+)?(?:\..+)?" path-w-extension)))
+
+(defn- path-w-extension->revision-id
+  "Parses the path-w-extension to extract the revision id"
+  [path-w-extension]
+  (when-let [revision-id (nth (re-matches #"([^\.]+)/([^\.]+)(?:\..+)?" path-w-extension) 2)]
+    (try
+      (when revision-id
+        (Integer/parseInt revision-id))
+      (catch NumberFormatException e
+        (svc-errors/throw-service-error
+          :invalid-data
+          (format "Revision id [%s] must be an integer greater than 0." revision-id))))))
 
 (defn- get-search-results-format
   "Returns the requested search results format parsed from headers or from the URL extension"
@@ -232,15 +244,30 @@
     (search-response results)))
 
 (defn- find-concept-by-cmr-concept-id
-  "Invokes query service to find concept metadata by cmr concept id and returns the response"
+  "Invokes query service to find concept metadata by cmr concept id (and possibly revision id)
+  and returns the response"
   [context path-w-extension params headers]
-  (let [result-format (get-search-results-format path-w-extension headers
-                                                 supported-concept-id-retrieval-mime-types
-                                                 mt/xml)
-        params (assoc params :result-format result-format)
-        concept-id (path-w-extension->concept-id path-w-extension)
-        _ (info (format "Search for concept with cmr-concept-id [%s]" concept-id))]
-    (search-response (query-svc/find-concept-by-id context result-format concept-id))))
+  (let [concept-id (path-w-extension->concept-id path-w-extension)
+        revision-id (path-w-extension->revision-id path-w-extension)]
+    (if revision-id
+      (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
+            result-format (get-search-results-format path-w-extension headers
+                                                     supported-mime-types
+                                                     mt/xml)
+            params (assoc params :result-format result-format)]
+        (info (format "Search for concept with cmr-concept-id [%s] and revision-id [%s]"
+                      concept-id
+                      revision-id))
+        (search-response (query-svc/find-concept-by-id-and-revision context
+                                                                    result-format
+                                                                    concept-id
+                                                                    revision-id)))
+      (let [result-format (get-search-results-format path-w-extension headers
+                                                     supported-concept-id-retrieval-mime-types
+                                                     mt/xml)
+            params (assoc params :result-format result-format)]
+        (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
+        (search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 
 (defn- find-concept-revisions
   "Calls query service to get concept revisions for the given parameters"
@@ -297,8 +324,8 @@
           (acl/verify-ingest-management-permission request-context :read)
           (find-concept-revisions request-context params headers)))
 
-      ;; Retrieve by cmr concept id -
-      (context ["/concepts/:path-w-extension" :path-w-extension #"(?:[A-Z][0-9]+-[0-9A-Z_]+)(?:\..+)?"] [path-w-extension]
+      ;; Retrieve by cmr concept id or concept id and revision id
+      (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
         ;; In this case, the Echo-Token header is used in the GET request.
         (OPTIONS "/" req options-response)

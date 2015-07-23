@@ -165,5 +165,27 @@
             "concept->value-map time:" t4)
      values)))
 
+(deftracefn get-formatted-concept
+  "Get a specific revision of a concept with the given concept-id in a given format.
+  Applies ACLs to the concept found."
+  [context concept-id revision-id format]
+   (info "Getting revision" revision-id "of concept" concept-id "in" format "format")
+   (let [mdb-context (context->metadata-db-context context)
+         [t1 concept] (u/time-execution
+                         (metadata-db/get-concept mdb-context concept-id revision-id))
+         [t2 concepts] (u/time-execution (doall (acl-service/filter-concepts
+                                                    context
+                                                    [(add-acl-enforcement-fields concept)])))
+         concept (first concepts)
+         ;; Throw a service error for deleted concepts
+         _ (when (:deleted concept)
+             (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata."]))
+         ;; format concept
+         [t4 value] (u/time-execution (when concept (concept->value-map context concept format)))]
+     (debug "get-concept time:" t1
+            "acl-filter-concepts time:" t2
+            "concept->value-map time:" t4)
+     value))
+
 
 
