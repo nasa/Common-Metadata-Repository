@@ -64,3 +64,22 @@
         (assert-ingest-result func concept "bad" 400 cmr-only-false-errors)
         (assert-ingest-result func concept "ECHO" 200 nil)))))
 
+(deftest granule-virtual-product-service-ingest-test
+  (testing "ingest with Virtual-Product-Service as client-id should succeed for cmr-only provider"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          concept (d/item->concept (dg/granule collection))]
+      (ingest/ingest-concept concept)
+      (doseq [func ingest-functions-to-test]
+        (assert-ingest-result func concept "Virtual-Product-Service" 200 nil))))
+  (testing "ingest with Virtual-Product-Service as client-id should succeed for non cmr-only provider"
+    (let [collection (d/ingest "PROV1" (dc/collection {}))
+          concept (d/item->concept (dg/granule collection))]
+      (ingest/ingest-concept concept)
+      (ingest/update-ingest-provider {:provider-id "PROV1"
+                                      :short-name "PROV1"
+                                      :cmr-only false
+                                      :small false})
+      (ingest/clear-caches)
+      (doseq [func ingest-functions-to-test]
+        (assert-ingest-result func concept "Virtual-Product-Service" 200 nil)))))
+
