@@ -33,6 +33,11 @@
     [condition context]
     (update-in condition [:condition] reduce-query-condition context))
 
+  cmr.search.models.query.NegatedCondition
+  (reduce-query-condition
+    [condition context]
+    (update-in condition [:condition] reduce-query-condition context))
+
   ;; catch all
   java.lang.Object
   (reduce-query-condition

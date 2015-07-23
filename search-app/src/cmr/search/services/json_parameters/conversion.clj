@@ -43,6 +43,7 @@
    :two-d-coordinate-system-name :string
    :keyword :keyword
    :bounding-box :bounding-box
+   :temporal :temporal
    :or :or
    :and :and
    :not :not
@@ -114,6 +115,13 @@
                                    (conj psk/science-keyword-fields :any)))
     (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
 
+(defn- validate-temporal
+  "Custom validation to make sure there is at least one temporal condition other than exclude_boundary."
+  [value]
+  (when (empty? (dissoc value :exclude-boundary))
+    (errors/throw-service-error
+      :bad-request "Temporal condition with only exclude_boundary is invalid.")))
+
 (defmethod parse-json-condition :science-keywords
   [condition-name value]
   (validate-science-keywords value)
@@ -129,6 +137,16 @@
                          (mbr/mbr west north east south)))]
     (sv/validate bounding-box)
     (qm/->SpatialCondition bounding-box)))
+
+(defmethod parse-json-condition :temporal
+  [condition-name value]
+  (validate-temporal value)
+  (let [{:keys [start-date end-date recurring-start-day recurring-end-day exclude-boundary]} value]
+    (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
+                                :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))
+                                :start-day recurring-start-day
+                                :end-day recurring-end-day
+                                :exclusive? exclude-boundary})))
 
 (defn- concept-type-validation
   "Validates the provided concept type is valid for JSON query."
