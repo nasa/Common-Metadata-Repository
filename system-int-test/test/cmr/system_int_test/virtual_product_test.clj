@@ -373,5 +373,5 @@
         expected-access-url (str "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3"
                                  "/OMUVBd.003/2013/" ur-suffix
                                  ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")]
-    (is (= granule-ur (first (:values (first (:product-specific-attributes virt-gran-umm))))))
-    (is (= expected-access-url (:url (first (:related-urls virt-gran-umm)))))))
+    (is (= granule-ur (-> virt-gran-umm :product-specific-attributes first :values first)))
+    (is (= expected-access-url (-> virt-gran-umm :related-urls first :url)))))
