@@ -83,7 +83,7 @@
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
 
-    (testing "Find all granules in a virutual collection using source granule-ur as an additional
+    (testing "Find all granules in a virtual collection using source granule-ur as an additional
              attribute"
       (assert-matching-granule-urs
         expected-granule-urs

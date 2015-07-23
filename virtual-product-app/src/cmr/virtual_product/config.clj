@@ -1,4 +1,5 @@
 (ns cmr.virtual-product.config
+  "Namespace to hold configuration rules for creating virtual granules from source granules."
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as mq-conf]
             [cmr.umm.granule :as umm-g]
@@ -124,7 +125,6 @@
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace virtual-granule-ur virtual-short-name source-short-name))
 
-
 (defmethod compute-source-granule-ur ["GSFCS4PA" "OMUVBd"]
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
@@ -151,15 +151,17 @@
         ;; Currently, there is no way to enforce this in the code. Ingest of a virtual collection is
         ;; no way different from ingest of a regular collection. We might want a way for ingest-app
         ;; to distinguish a virtual collection from regular collection to enforce this.
-        (update-in [:product-specific-attributes] conj
+        (update-in [:product-specific-attributes]
+                   conj
                    (umm-g/map->ProductSpecificAttributeRef
                      {:name source-granule-ur-additional-attr-name
                       :values [src-granule-ur]})))))
 
 ;; This is the main dispatching function used for updating virtual granules from the source
 ;; granules based on the source collection on which a virtual granule's collection is based. We
-;; might want to move the functionality encapsulated within each of the dispatch function to its own
-;; file while leaving the default here.
+;; might want to move the functionality encapsulated within each of the dispatch functions to its
+;; own file while leaving the default here. Or use a different way of updating the virtual
+;; granule-umm like using templates.
 (defmulti update-virtual-granule-umm
   "Dispatch function to update virtual granule umm based on source granule umm. All the non-core
   attributes of a virtual granule are inherited from source granule by default. This dispatch
@@ -175,10 +177,10 @@
 (defn- update-online-access-url
   "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url."
   [related-urls src-granule-ur]
-  (let [fname (second (str/split src-granule-ur #":"))]
+  (let [fname (second (str/split src-granule-ur #":"))
+        re (java.util.regex.Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
     (seq (for [related-url related-urls
                :let [url (:url related-url)
-                     re (java.util.regex.Pattern/compile (str "(.*/data/s4pa/.*)(" fname ")$"))
                      matches (re-matches re url)]]
            (if matches
              (assoc related-url :url (str (str/replace (second matches)
