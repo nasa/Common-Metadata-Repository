@@ -29,7 +29,10 @@
                                  :virtual-collections)]
     (assoc (dc/collection (merge (dissoc source-collection
                                          :revision-id :native-id :concept-id :entry-id :product)
-                                 virtual-coll-attribs ))
+                                 virtual-coll-attribs))
+           :product-specific-attributes [{:name vp-config/source-granule-ur-additional-attr-name
+                                          :description "Granule-ur of the source granule"
+                                          :data-type :string}]
            :provider-id (:provider-id source-collection))))
 
 (defn source-granule->virtual-granule-urs

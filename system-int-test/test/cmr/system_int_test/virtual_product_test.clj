@@ -13,6 +13,7 @@
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]
             [cmr.common.util :as util]
+            [cmr.umm.echo10.granule :as g]
             [clj-time.core :as t]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"}
@@ -81,6 +82,16 @@
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
+
+    (testing "Find all granules in a virutual collection using source granule-ur as an additional
+             attribute"
+      (assert-matching-granule-urs
+        expected-granule-urs
+        (search/find-refs :granule {"attribute[]"
+                                    (str "string," vp-config/source-granule-ur-additional-attr-name
+                                         "," granule-ur)
+
+                                    :page-size 50})))
 
     (testing "Find virtual granule by shared fields"
       (assert-matching-granule-urs
@@ -233,10 +244,10 @@
                                 (dg/granule prov-ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
 
         lpdaac-non-ast-coll (d/ingest "LPDAAC_ECS"
-                               (dc/collection
-                                 {:entry-title "non virtual entry title"}))
+                                      (dc/collection
+                                        {:entry-title "non virtual entry title"}))
         lpdaac-non-ast-gran (d/ingest "LPDAAC_ECS"
-                                  (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
+                                      (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
 
         prov-coll (d/ingest "PROV"
                             (dc/collection
@@ -315,3 +326,30 @@
             errors (:errors (json/parse-string (:body response) true))]
         (and (= 400 (:status response))
              (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))
+
+(deftest omi-aura-configuration-test
+  (let [omi-coll (d/ingest "GSFCS4PA"
+                           (dc/collection
+                             {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                                " Dose Daily L3 Global 1.0x1.0 deg Grid V003")}))
+        vp-colls (ingest-virtual-collections [omi-coll])
+        granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
+        [ur-prefix ur-suffix] (str/split granule-ur #":")
+        access-url-path "http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2013/"
+        omi-gran (d/ingest "GSFCS4PA" (dg/granule
+                                        omi-coll {:granule-ur granule-ur
+                                                  :related-urls [{:url (str access-url-path
+                                                                            ur-suffix)
+                                                                  :type "GET DATA"}]}))
+        _ (index/wait-until-indexed)
+        query-param {"attribute[]" (str "string," vp-config/source-granule-ur-additional-attr-name
+                                        "," granule-ur)
+                     :page-size 1}
+        virt-gran-ref (first (:refs (search/find-refs :granule query-param)))
+        virt-gran-umm (g/parse-granule
+                        (:body (search/get-concept-by-concept-id (:id virt-gran-ref))))
+        expected-access-url (str "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3"
+                                 "/OMUVBd.003/2013/" ur-suffix
+                                 ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")]
+    (is (= granule-ur (first (:values (first (:product-specific-attributes virt-gran-umm))))))
+    (is (= expected-access-url (:url (first (:related-urls virt-gran-umm)))))))
