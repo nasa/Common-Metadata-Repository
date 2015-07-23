@@ -191,6 +191,12 @@
           {:temporal {:start_date "2010-13-12T12:00:00" :end_date "2011-13-12T12:00:00"}}
           {"end_date" "2011-13-12T12:00:00" "start_date" "2010-13-12T12:00:00"}))
 
+  (testing "search by empty temporal"
+    (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} {:temporal {}})]
+      (is (= 400 status))
+      (is (= "/condition/temporal object has too few properties (found 0 but schema requires at least 1)"
+             (first errors)))))
+
   (testing "search by invalid exclude_boundary format"
     (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} {:temporal {:exclude_boundary "false"}})]
       (is (= 400 status))
