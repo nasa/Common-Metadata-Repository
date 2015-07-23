@@ -135,9 +135,8 @@
   [concept-id revision-id options]
   (let [base-url (url/concept-revision-metadata-url)
         url (str base-url "/" concept-id (when revision-id (str "/" revision-id)))
-        headers (:headers options)
-        response (client/get url {:headers headers})]
-    response))
+        headers (:headers options)]
+    (client/get url {:headers headers})))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."

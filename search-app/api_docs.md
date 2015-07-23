@@ -1344,7 +1344,7 @@ Example of sorting by start_date in descending order: (Most recent data first)
     curl "%CMR-ENDPOINT%/granules/sort_key\[\]=-start_date
 
 
-### Retrieve concept with a given cmr-concept-id or concept-id & revision-id
+### Retrieve concept with a given concept-id or concept-id & revision-id
 
 This allows retrieving the metadata for a single concept. If no format
 is specified the native format of the metadata will be returned.
