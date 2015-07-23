@@ -130,6 +130,14 @@
          response)
        response))))
 
+(defn find-concept-metadata-by-id-and-revision
+  "Returns the response of finding concept metadata by concept-id/revision-id in search"
+  [concept-id revision-id options]
+  (let [base-url (url/concept-revision-metadata-url)
+        url (str base-url "/" concept-id (when revision-id (str "/" revision-id)))
+        headers (:headers options)]
+    (client/get url {:headers headers})))
+
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
   ([format concept-type params]

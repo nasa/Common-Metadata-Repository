@@ -68,6 +68,8 @@
             [cmr.search.results-handlers.provider-holdings :as ph]
             [cmr.search.services.transformer :as t]
             [cmr.metadata-db.services.search-service :as mdb-search]
+            [cmr.metadata-db.services.concept-service :as concept-service]
+            [cmr.metadata-db.api.route-helpers :as rh]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.concepts :as cc]
             [cmr.common.services.errors :as errors]
@@ -203,6 +205,13 @@
     :not-found
     (format "Concept with concept-id: %s could not be found" concept-id)))
 
+(defn- throw-concept-revision-not-found
+  [concept-id revision-id]
+  (errors/throw-service-error
+    :not-found
+    (format
+      "Concept with concept-id [%s] and revision-id [%s] could not be found." concept-id revision-id)))
+
 (deftracefn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
@@ -222,6 +231,17 @@
       (when-not concept
         (throw-id-not-found concept-id))
       {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))})))
+
+(deftracefn find-concept-by-id-and-revision
+  "Executes a search to metadata-db and returns the concept with the given concept-id and
+  revision-id."
+  [context result-format concept-id revision-id]
+  ;; We don't store revision id in the search index, so we can't use shortcuts for json/atom
+  ;; like we do in find-concept-by-id.
+  (let [concept (t/get-formatted-concept context concept-id revision-id result-format)]
+    (when-not concept
+      (throw-concept-revision-not-found concept-id revision-id))
+    {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))}))
 
 (deftracefn find-concept-revisions
   "Uses the metadata-db to find concept revisions for the given parameters"

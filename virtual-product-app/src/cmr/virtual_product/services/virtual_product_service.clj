@@ -82,11 +82,16 @@
                      "ingesting the virtual granule [%s] : [%s]")
                 status granule-ur (pr-str response))))))
 
+(def virtual-product-client-id
+  "Client Id used by Virtual Product Service"
+  "Virtual-Product-Service")
+
 (defn- build-ingest-headers
   "Create http headers which will be part of ingest requests send to ingest service"
   [revision-id]
   {"cmr-revision-id" revision-id
-   transmit-config/token-header (transmit-config/echo-system-token)})
+   transmit-config/token-header (transmit-config/echo-system-token)
+   "Client-Id" virtual-product-client-id})
 
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
