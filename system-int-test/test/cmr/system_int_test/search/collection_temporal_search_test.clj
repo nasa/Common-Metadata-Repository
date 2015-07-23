@@ -1,6 +1,7 @@
 (ns ^{:doc "Integration test for CMR collection temporal search"}
   cmr.system-int-test.search.collection-temporal-search-test
   (:require [clojure.test :refer :all]
+            [cmr.common.util :refer [are2]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -50,70 +51,112 @@
                                                  :ends-at-present? true}))]
     (index/wait-until-indexed)
 
-      (testing "search by temporal_start."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "2010-12-12T12:00:00Z,"})]
-          (is (d/refs-match? [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] references))))
+    (testing "search by temporal params"
+      (are2 [items search]
+            (d/refs-match? items (search/find-refs :collection search))
 
-      (testing "search by temporal_end."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "/2010-12-12T12:00:00Z"})]
-          (is (d/refs-match? [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11 coll12 coll13] references))))
-      (testing "search by temporal_range."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z"})]
-          (is (d/refs-match? [coll1 coll13] references))))
-      (testing "search by temporal_range.options: :exclude-boundary false"
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
-                                            "options[temporal][exclude_boundary]" "false"})]
-          (is (d/refs-match? [coll1 coll6 coll13] references))))
-      (testing "search by temporal_range.options: :exclude-boundary true"
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
-                                            "options[temporal][exclude_boundary]" "true"})]
-          (is (d/refs-match? [coll13] references))))
-      (testing "search by multiple temporal_range."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/2010-02-22T10:00:00Z"]})]
-          (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
-      (testing "search by multiple temporal_range, options :or."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/P1Y"]
-                                            "options[temporal][or]" ""})]
-          (is (d/refs-match? [coll1 coll2 coll6 coll13] references))))
-      (testing "search by multiple temporal_range, options :and."
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
-                                            "options[temporal][and]" "true"})]
-          (is (d/refs-match? [coll1 coll13] references))))
-      (testing "search by multiple temporal_range, options :or :exclude-boundary"
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" ["2009-02-22T10:00:00Z,2010-01-01T12:00:00Z" "2010-01-11T12:00:00Z, 2010-12-03T12:00:00Z"]
-                                            "options[temporal][or]" "true"
-                                            "options[temporal][exclude_boundary]" "true"})]
-          (is (d/refs-match? [coll2 coll6 coll10 coll13] references))))
+            "search by temporal_start"
+            [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] {"temporal[]" "2010-12-12T12:00:00Z,"}
 
-    (testing "search by temporal_range - iso8601 interval"
-        (let [references (search/find-refs :collection
-                                           {"temporal[]" "2010-01-01T10:00:00Z/P10DT2H"})]
-          (is (d/refs-match? [coll1 coll13] references))))
+            "search by temporal_end"
+            [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11 coll12 coll13] {"temporal[]" "/2010-12-12T12:00:00Z"}
+
+            "search by temporal_range"
+            [coll1 coll13] {"temporal[]" "2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z"}
+
+            "search by temporal_range.options: :exclude-boundary false"
+            [coll1 coll6 coll13] {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
+                                  "options[temporal][exclude_boundary]" "false"}
+
+            "search by temporal_range.options: :exclude-boundary true"
+            [coll13] {"temporal[]" "2010-01-11T12:00:00Z, 2010-01-30T12:00:00Z"
+                      "options[temporal][exclude_boundary]" "true"}
+
+            "search by multiple temporal_range"
+            [coll1 coll2 coll6 coll13] {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/2010-02-22T10:00:00Z"]}
+
+            "search by multiple temporal_range, options :or"
+            [coll1 coll2 coll6 coll13] {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z/P1Y"]
+                                        "options[temporal][or]" ""}
+
+            "search by multiple temporal_range, options :and"
+            [coll1 coll13] {"temporal[]" ["2010-01-01T10:00:00Z, 2010-01-10T12:00:00Z" "2009-02-22T10:00:00Z,2010-02-22T10:00:00Z"]
+                            "options[temporal][and]" "true"}
+
+            "search by multiple temporal_range, options :or :exclude-boundary"
+            [coll2 coll6 coll10 coll13] {"temporal[]" ["2009-02-22T10:00:00Z,2010-01-01T12:00:00Z" "2010-01-11T12:00:00Z, 2010-12-03T12:00:00Z"]
+                                         "options[temporal][or]" "true"
+                                         "options[temporal][exclude_boundary]" "true"}
+
+            "search by temporal_range - iso8601 interval"
+            [coll1 coll13] {"temporal[]" "2010-01-01T10:00:00Z/P10DT2H"}))
 
     (testing "search by temporal date-range with aql"
-      (are [items start-date stop-date]
-           (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
-                                                                                    :stop-date stop-date}}]))
+      (are2 [items start-date stop-date]
+            (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
+                                                                                     :stop-date stop-date}}]))
 
-           ;; search by temporal_start
-           [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] "2010-12-12T12:00:00Z" nil
+            "search by temporal_start"
+            [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13] "2010-12-12T12:00:00Z" nil
 
-           ;; search by temporal_range
-           [coll1 coll13] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
-           [coll2 coll6 coll10 coll13] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))))
+            "search by temporal_range intersect"
+            [coll1 coll13] "2010-01-01T10:00:00Z" "2010-01-10T12:00:00Z"
+
+            "search by temporal_range intersect/contain"
+            [coll2 coll6 coll10 coll13] "2010-04-01T10:00:00Z" "2010-06-10T12:00:00Z"))
+
+    (testing "Search collections by temporal using a JSON Query"
+      (are2 [items search]
+            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+            "search by range"
+            [coll1 coll13] {:temporal {:start_date "2010-01-01T10:00:00Z"
+                                       :end_date "2010-01-10T12:00:00Z"}}
+
+            "search by start date"
+            [coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll13]
+            {:temporal {:start_date "2010-12-12T12:00:00Z"}}
+
+            "search by end date"
+            [coll1 coll2 coll3 coll4 coll6 coll7 coll10 coll11 coll12 coll13]
+            {:temporal {:end_date "2010-12-12T12:00:00Z"}}
+
+            "search by not temporal"
+            [coll5 coll8 coll9] {:not {:temporal {:end_date "2010-12-12T12:00:00Z"}}}
+
+            "search by range :exclude-boundary false"
+            [coll1 coll6 coll13] {:temporal {:start_date "2010-01-01T10:00:00Z"
+                                             :end_date "2010-01-30T12:00:00Z"
+                                             :exclude_boundary false}}
+
+            "search by range :exclude-boundary true"
+            [coll13] {:temporal {:start_date "2010-01-11T12:00:00Z"
+                                 :end_date "2010-01-30T12:00:00Z"
+                                 :exclude_boundary true}}
+
+            "search by multiple temporal_range, options :or"
+            [coll1 coll2 coll6 coll13] {:or [{:temporal {:start_date "2010-01-01T10:00:00Z"
+                                                         :end_date "2010-01-10T12:00:00Z"}}
+                                             {:temporal {:start_date "2009-02-22T10:00:00Z"
+                                                         :end_date "2010-02-22T10:00:00Z"}}]}
+
+            "search by multiple temporal_range, options :and"
+            [coll1 coll13] {:and [{:temporal {:start_date "2010-01-01T10:00:00Z"
+                                              :end_date "2010-01-10T12:00:00Z"}}
+                                  {:temporal {:start_date "2009-02-22T10:00:00Z"
+                                              :end_date "2010-02-22T10:00:00Z"}}]}
+
+            "search by multiple temporal_range, options :or :exclude-boundary"
+            [coll2 coll3 coll6 coll10 coll13] {:or [{:temporal {:start_date "2009-02-22T10:00:00Z"
+                                                                :end_date "2010-01-01T12:00:00Z"
+                                                                :exclude_boundary true}}
+                                                    {:temporal {:start_date "2010-01-12T12:00:00Z"
+                                                                :end_date "2010-12-03T12:00:00Z"
+                                                                :exclude_boundary false}}]}))))
 
 
 ;; Just some symbolic invalid temporal testing, more complete test coverage is in unit tests
-(deftest search-temporal-error-scenarios
+(deftest search-temporal-params-error-scenarios
   (testing "search by invalid temporal format."
     (let [{:keys [status errors]} (search/find-refs :collection {"temporal[]" "2010-13-12T12:00:00,"})]
       (is (= 400 status))
@@ -127,3 +170,29 @@
       (is (= 422 status))
       (is (re-find #"\[2010-01-01T10:00:00Z/P10D2H\] is not a valid date-range : Invalid format: \"P10D2H\" is malformed at \"2H\"" (first errors))))))
 
+(deftest search-temporal-json-error-scenarios
+  (testing "search by invalid temporal date format"
+    (are2 [search invalid-field-dates]
+          (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
+                expected-errors (map #(apply format "/condition/temporal/%s string \"%s\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]" %)
+                                     invalid-field-dates)]
+            (= [400 expected-errors] [status errors]))
+
+          "invalid start_date"
+          {:temporal {:start_date "2010-13-12T12:00:00"}}
+          {"start_date" "2010-13-12T12:00:00"}
+
+          "invalid end_date"
+          {:temporal {:end_date "2011-13-12T12:00:00"}}
+          {"end_date" "2011-13-12T12:00:00"}
+
+
+          "invalid start_date and end_date"
+          {:temporal {:start_date "2010-13-12T12:00:00" :end_date "2011-13-12T12:00:00"}}
+          {"end_date" "2011-13-12T12:00:00" "start_date" "2010-13-12T12:00:00"}))
+
+  (testing "search by invalid exclude_boundary format"
+    (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} {:temporal {:exclude_boundary "false"}})]
+      (is (= 400 status))
+      (is (= "/condition/temporal/exclude_boundary instance type (string) does not match any allowed primitive type (allowed: [\"boolean\"])"
+             (first errors))))))

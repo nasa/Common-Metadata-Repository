@@ -153,6 +153,40 @@
 				"bounding_box": {
 					"description": "Specifies a bounding rectangle search.",
 					"$ref": "#/definitions/BoundingBoxCondition"
+				},
+				"temporal": {
+				  "description": "Specifies a temporal search.",
+				  "type": "object",
+				  "additionalProperties": false,
+				  "minProperties": 1,
+				  "properties": {
+				    "start_date": {
+				      "description": "The temporal coverage start date.",
+				      "format": "date-time",
+				      "type": "string"
+				      },
+				    "end_date": {
+				      "description": "The temporal coverage end date.",
+				      "format": "date-time",
+				      "type": "string"
+				      },
+				    "recurring_start_day": {
+				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period starting on or after the given day.",
+				      "type": "number",
+				      "minimum": 0,
+				      "maximum": 365
+				      },
+				    "recurring_end_day": {
+				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period ending on or before the given day.",
+				      "type": "number",
+				      "minimum": 0,
+				      "maximum": 365
+				      },
+				    "exclude_boundary": {
+				      "description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches.",
+				      "type": "boolean"
+				    }
+				  }
 				}
 			}
 		},
@@ -228,7 +262,7 @@
 			"type": "boolean"
 		},
 		"PatternOption": {
-			"description": "if set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
+			"description": "If set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
 			"type": "boolean"
 		}
 	}
