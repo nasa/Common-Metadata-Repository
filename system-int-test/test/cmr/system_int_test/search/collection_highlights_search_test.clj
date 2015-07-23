@@ -19,12 +19,6 @@
   [n & attribs]
   (d/ingest "PROV1" (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
 
-(comment
-  (def search-options {:keyword "Findme"})
-  (get-search-results-summaries {:keyword "Findme"})
-  (search/find-concepts-json :collection (merge {:include-highlights true} search-options))
-  )
-
 (defn- get-search-results-summaries
   "Returns a list of the highlighted-summary-snippets fields from a list of search results."
   [search-results]
