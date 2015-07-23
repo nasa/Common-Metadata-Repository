@@ -139,7 +139,6 @@
                                          :fields fields
                                          :aggs aggregations
                                          :highlight highlights})]
-    (cmr.common.dev.capture-reveal/capture query-map)
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)

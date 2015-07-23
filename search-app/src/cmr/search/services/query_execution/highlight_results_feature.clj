@@ -13,8 +13,8 @@
         keyword-sub-conditions (for [a-condition (if sub-condition
                                                    (conj sub-conditions sub-condition)
                                                    sub-conditions)
-                                 :let [keyword-condition (get-keyword-conditions a-condition)]
-                                 :when keyword-condition]
+                                     :let [keyword-condition (get-keyword-conditions a-condition)]
+                                     :when keyword-condition]
                                  keyword-condition)
         all-keyword-conditions (if (= :keyword (:field condition))
                                  (conj keyword-sub-conditions condition)
@@ -26,25 +26,23 @@
   [query]
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
     (let [conditions-as-string (str/join " " (map #(:query-str %) keyword-conditions))]
-       {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}})))
+      {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}})))
 
 (defmethod query-execution/pre-process-query-result-feature :highlights
   [_ query _]
   (assoc query :highlights (build-highlight-query query)))
 
 (defn- replace-fields-with-highlighted-fields
-  "Replaces the appropriate fields with the highlighted snippets for each field.
-
-  Note this algorithm requires that both the number of hits and the order of results is identical
-  in the query-results and elastic-results."
+  "Replaces the appropriate fields with the highlighted snippets for each field."
   [query-results elastic-results]
-  (let [all-highlights (map #(get-in % [:highlight :summary])
-                            (get-in elastic-results [:hits :hits]))]
+  (let [all-highlights (into {} (map (fn [hit] (let [id (:_id hit)
+                                                     summary (get-in hit [:highlight :summary])]
+                                                 {id summary}))
+                                     (get-in elastic-results [:hits :hits])))]
     (for [item (:items query-results)
-          :let [highlight (first all-highlights)
-                all-highlights (rest all-highlights)]]
+          :let [highlight (get all-highlights (:id item))]]
       (if (seq highlight)
-        (assoc item :summary (str/join ";" highlight))
+        (assoc item :highlighted-summary-snippets highlight)
         item))))
 
 (defmethod query-execution/post-process-query-result-feature :highlights

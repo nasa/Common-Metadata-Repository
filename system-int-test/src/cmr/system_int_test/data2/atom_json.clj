@@ -98,7 +98,7 @@
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score
                 shapes points boxes polygons lines granule-count has-granules
-                orbit-parameters]} json-entry]
+                orbit-parameters highlighted-summary-snippets]} json-entry]
     (util/remove-nil-keys
       {:id id
        :title title
@@ -123,7 +123,8 @@
        :granule-count granule-count
        :has-granules has-granules
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
-       :orbit-parameters (parse-orbit-parameters orbit-parameters)})))
+       :orbit-parameters (parse-orbit-parameters orbit-parameters)
+       :highlighted-summary-snippets highlighted-summary-snippets})))
 
 (defmethod json-entry->entry :granule
   [concept-type json-entry]
