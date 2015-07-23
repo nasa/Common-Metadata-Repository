@@ -64,7 +64,7 @@
                          (some #(when (= provider-id (:provider-id %)) %)))]
     (let [client-id (:client-id context)]
       ;; We don't check the cmr-only flag if the ingest request is coming from a virtual product
-      ;; service. The occuence of this ingest event implies that source granule is successfully
+      ;; service. The occurrence of this ingest event implies that source granule is successfully
       ;; ingested which in turn implies that the verification succeeded with the provider and
       ;; the client-id used for ingesting source granule and we don't need to verify again for
       ;; virtual granule which belongs to the same provider as source granule.
