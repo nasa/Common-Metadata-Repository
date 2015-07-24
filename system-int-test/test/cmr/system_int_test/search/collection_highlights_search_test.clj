@@ -25,7 +25,7 @@
   (->> search-results
        :results
        :entries
-       (map (partial :highlighted-summary-snippets))))
+       (map :highlighted-summary-snippets)))
 
 (defn- ingest-collections-for-test
   "Ingest all of the collections that will be used for testing"
@@ -38,7 +38,8 @@
                               "snippets have a match, but that seems (Findme) doable.")})
   (make-coll 3 {:summary "Match on 'collection'"})
   (make-coll 4 {:summary "Match on 'ocean'."})
-  (make-coll 5 {:summary "Match on either 'collection' or 'ocean'."})
+  (make-coll 5 {:summary "Match on either 'ocean' or 'collection'."})
+  (make-coll 6 {:summary "Match on 'ocean collection'"})
   (index/wait-until-indexed))
 
 (deftest summary-highlighting-using-parameter-api
@@ -61,8 +62,18 @@
     {:keyword "Findme"}
 
     "Some highlights and some not using a wildcard"
-    [nil nil ["Match on '<em>collection</em>'"] nil ["Match on either '<em>collection</em>' or 'ocean'."]]
-    {:keyword "coll*"}))
+    [nil
+     nil
+     ["Match on '<em>collection</em>'"]
+     nil
+     ["Match on either 'ocean' or '<em>collection</em>'."]
+     ["Match on 'ocean <em>collection</em>'"]]
+    {:keyword "c?ll*"}
+
+    "Search with keyword with spaces treats as two separate keywords AND'ed together"
+    [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
+     ["Match on '<em>ocean</em> <em>collection</em>'"]]
+    {:keyword "ocean collection"}))
 
 (deftest summary-highlighting-using-json-query
   (ingest-collections-for-test)
@@ -73,14 +84,25 @@
                                                         {:include-highlights true}
                                                         json-query-conditions)))
 
+    "JSON Query keyword with spaces treats as two separate keywords AND'ed together"
+    [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
+     ["Match on '<em>ocean</em> <em>collection</em>'"]]
+    {:keyword "ocean collection"}
+
     "JSON Query AND multiple keyword conditions highlights multiple terms"
-    [["Match on either '<em>collection</em>' or '<em>ocean</em>'."]]
+    [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
+     ["Match on '<em>ocean</em> <em>collection</em>'"]]
     {:and [{:keyword "ocean"}
-           {:keyword "collection"}]}
+           {:keyword "collection"}
+           {:not {:keyword "foo"}}]}
 
     "JSON Query OR multiple keyword conditions highlights multiple terms"
-    [["Match on '<em>collection</em>'"]
+    [nil
+     nil
+     ["Match on '<em>collection</em>'"]
      ["Match on '<em>ocean</em>'."]
-     ["Match on either '<em>collection</em>' or '<em>ocean</em>'."]]
+     ["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
+     ["Match on '<em>ocean</em> <em>collection</em>'"]]
     {:or [{:keyword "ocean"}
-          {:keyword "collection"}]}))
+          {:keyword "collection"}
+          {:not {:keyword "foo"}}]}))
