@@ -5,11 +5,7 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
-            [cmr.system-int-test.data2.atom :as da]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.util :as util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -42,8 +38,7 @@
   (make-coll 6 {:summary "Match on 'ocean collection'"})
   (index/wait-until-indexed))
 
-;; CI is failing on these tests, commented out while investigating
-#_(deftest summary-highlighting-using-parameter-api
+(deftest summary-highlighting-using-parameter-api
   (ingest-collections-for-test)
   (util/are2
     [expected-results search-options]
@@ -76,8 +71,7 @@
      ["Match on '<em>ocean</em> <em>collection</em>'"]]
     {:keyword "ocean collection"}))
 
-;; CI is failing on these tests, commented out while investigating
-#_(deftest summary-highlighting-using-json-query
+(deftest summary-highlighting-using-json-query
   (ingest-collections-for-test)
   (util/are2
     [expected-results json-query-conditions]
