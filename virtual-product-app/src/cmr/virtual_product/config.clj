@@ -3,7 +3,8 @@
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as mq-conf]
             [cmr.umm.granule :as umm-g]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import java.util.regex.Pattern))
 
 (defconfig virtual-products-enabled
   "Enables the updates of virtual products. If this is false every ingest event will be ignored
@@ -131,7 +132,7 @@
 
 (def source-granule-ur-additional-attr-name
   "The name of the additional attribute used to store the granule-ur of the source granule"
-  "source granule-ur")
+  "source-granule-ur")
 
 (defn- update-core-fields
   "Update the core set of fields in the source granule umm to create the virtual granule umm. These
@@ -143,14 +144,6 @@
     (-> src-granule-umm
         (assoc :granule-ur virt-granule-ur
                :collection-ref (umm-g/map->CollectionRef (select-keys virtual-coll [:entry-title])))
-        ;; TODO: All virtual granules will have an additional attribute to store the granule-ur of
-        ;; the source granule. Since each additional attribute in a granule must reference an
-        ;; additional attribute with the same name in the corresponding collection, it is assumed
-        ;; that all the virtual collections ingested will have this attribute. The ingest of virtual
-        ;; granules will fail if the collection does not have the attribute.
-        ;; Currently, there is no way to enforce this in the code. Ingest of a virtual collection is
-        ;; no way different from ingest of a regular collection. We might want a way for ingest-app
-        ;; to distinguish a virtual collection from regular collection to enforce this.
         (update-in [:product-specific-attributes]
                    conj
                    (umm-g/map->ProductSpecificAttributeRef
@@ -175,18 +168,23 @@
   virtual-umm)
 
 (defn- update-online-access-url
-  "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url."
+  "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
+  http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5
+  will be translated to
+  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"
   [related-urls src-granule-ur]
   (let [fname (second (str/split src-granule-ur #":"))
-        re (java.util.regex.Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
-    (seq (for [related-url related-urls
-               :let [url (:url related-url)
-                     matches (re-matches re url)]]
-           (if matches
-             (assoc related-url :url (str (str/replace (second matches)
-                                                       "/data/s4pa/" "/opendap/HDF-EOS5")
-                                          (nth matches 2)
-                                          ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"))
+        re (Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
+    (seq (for [related-url related-urls]
+           ;; Online Access URLs have type of "GET DATA"
+           (if (= (:type related-url) "GET DATA")
+             (if-let [matches (re-matches re (:url related-url))]
+               (assoc related-url
+                      :url (str
+                             (str/replace (second matches) "/data/s4pa/" "/opendap/HDF-EOS5")
+                             (nth matches 2)
+                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"))
+               related-url)
              related-url)))))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]

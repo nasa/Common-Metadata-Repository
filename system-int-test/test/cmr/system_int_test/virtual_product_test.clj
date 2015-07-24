@@ -14,6 +14,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.umm.echo10.granule :as g]
+            [cmr.umm.collection :as umm-c]
             [clj-time.core :as t]))
 
 (use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"}
@@ -72,10 +73,22 @@
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
 
-    (testing "Find all granules"
-      (assert-matching-granule-urs
-        all-expected-granule-urs
-        (search/find-refs :granule {:page-size 50})))
+    (util/are2 [expected query-params]
+               (= (set expected)
+                  (set (map :name (:refs (search/find-refs :granule query-params)))))
+
+               "Find all granules"
+               all-expected-granule-urs {:page-size 50}
+
+               "Find all granules in a virtual collection using source granule-ur as an additional
+               attribute"
+               expected-granule-urs
+               {"attribute[]" (format "string,%s,%s" vp-config/source-granule-ur-additional-attr-name
+                                      granule-ur)
+                :page-size 50}
+
+               "Find virtual granule by shared fields"
+               all-expected-granule-urs {:page-size 50 :project "proj1"})
 
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls]
@@ -84,22 +97,6 @@
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
-
-    (testing "Find all granules in a virtual collection using source granule-ur as an additional
-             attribute"
-      (assert-matching-granule-urs
-        expected-granule-urs
-        (search/find-refs :granule {"attribute[]"
-                                    (str "string," vp-config/source-granule-ur-additional-attr-name
-                                         "," granule-ur)
-
-                                    :page-size 50})))
-
-    (testing "Find virtual granule by shared fields"
-      (assert-matching-granule-urs
-        all-expected-granule-urs
-        (search/find-refs :granule {:page-size 50
-                                    :project "proj1"})))
 
     (testing "Update source granule"
       ;; Update the source granule so that the projects referenced are different than original
@@ -349,6 +346,15 @@
       all-expected-granule-urs
       (search/find-refs :granule {:page-size 50}))))
 
+(defn- get-virtual-granule-umm
+  [src-granule-ur]
+  (let [query-param {"attribute[]" (format "string,%s,%s"
+                                           vp-config/source-granule-ur-additional-attr-name
+                                           src-granule-ur)
+                     :page-size 1}
+        virt-gran-ref (first (:refs (search/find-refs :granule query-param)))]
+    (g/parse-granule (:body (search/get-concept-by-concept-id (:id virt-gran-ref))))))
+
 (deftest omi-aura-configuration-test
   (let [omi-coll (d/ingest "GSFCS4PA"
                            (dc/collection
@@ -357,21 +363,40 @@
         vp-colls (ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
-        access-url-path "http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2013/"
-        omi-gran (d/ingest "GSFCS4PA" (dg/granule
-                                        omi-coll {:granule-ur granule-ur
-                                                  :related-urls [{:url (str access-url-path
-                                                                            ur-suffix)
-                                                                  :type "GET DATA"}]}))
-        _ (index/wait-until-indexed)
-        query-param {"attribute[]" (str "string," vp-config/source-granule-ur-additional-attr-name
-                                        "," granule-ur)
-                     :page-size 1}
-        virt-gran-ref (first (:refs (search/find-refs :granule query-param)))
-        virt-gran-umm (g/parse-granule
-                        (:body (search/get-concept-by-concept-id (:id virt-gran-ref))))
-        expected-access-url (str "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3"
-                                 "/OMUVBd.003/2013/" ur-suffix
-                                 ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")]
-    (is (= granule-ur (-> virt-gran-umm :product-specific-attributes first :values first)))
-    (is (= expected-access-url (-> virt-gran-umm :related-urls first :url)))))
+        data-path "http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2013/"
+        opendap-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2013/"]
+
+    (util/are2 [source-related-urls expected-related-url-maps]
+               (let [_ (d/ingest "GSFCS4PA" (dg/granule
+                                                     omi-coll {:granule-ur granule-ur
+                                                               :related-urls source-related-urls}))
+                     _ (index/wait-until-indexed)
+                     virt-gran-umm (get-virtual-granule-umm granule-ur)
+                     expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
+                 (= (set expected-related-urls) (set (:related-urls virt-gran-umm))))
+
+               "Related urls with only one access url which matches the pattern"
+               [{:url (str data-path ur-suffix) :type "GET DATA"}]
+               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
+                 :type "GET DATA"}]
+
+               "Related urls with only one access url which matches the pattern, but is not
+               an online access url"
+               [{:url (str data-path ur-suffix)}]
+               ;; Some additional attributes are added by CMR automatically, but url remains the same
+               [{:url (str data-path ur-suffix)
+                 :type "VIEW RELATED INFORMATION"
+                 :title "(USER SUPPORT)"}]
+
+               "Related urls with only one access url which does not match the pattern"
+               [{:url (str data-path "random.he5") :type "GET DATA"}]
+               [{:url (str data-path "random.he5") :type "GET DATA"}]
+
+               "Multiple related urls"
+               [{:url (str data-path ur-suffix) :type "GET DATA"}
+                {:url "http://www.foo.com"}]
+               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
+                 :type "GET DATA"}
+                {:url "http://www.foo.com"
+                 :type "VIEW RELATED INFORMATION"
+                 :title "(USER SUPPORT)"}])))
