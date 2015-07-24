@@ -105,10 +105,8 @@
                                                        (:source-short-name vp-config)
                                                        (:short-name virtual-coll)
                                                        (:granule-ur orig-umm))
-            new-umm (assoc orig-umm
-                           :granule-ur new-granule-ur
-                           :collection-ref (umm-g/map->CollectionRef
-                                             (select-keys virtual-coll [:entry-title])))
+            new-umm (config/generate-virtual-granule-umm provider-id (:source-short-name vp-config)
+                                                         orig-umm virtual-coll new-granule-ur)
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
             new-concept (-> orig-concept
