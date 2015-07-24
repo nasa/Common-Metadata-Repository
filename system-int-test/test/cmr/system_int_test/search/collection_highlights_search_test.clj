@@ -35,7 +35,7 @@
                               "elasticsearch will break this summary into multiple snippets. I may "
                               "just have to keep typing until that happens. I will have to figure "
                               "out what keyword to search for in order to make two different "
-                              "snippets have a match, but that seems (Findme) doable.")})
+                              "snippets have a match, but that seems (findme) doable.")})
   (make-coll 3 {:summary "Match on 'collection'"})
   (make-coll 4 {:summary "Match on 'ocean'."})
   (make-coll 5 {:summary "Match on either 'ocean' or 'collection'."})
@@ -54,12 +54,12 @@
     [nil]
     {:keyword "coll1"}
 
-    "Long summary with multiple snippets"
+    "Long summary with multiple snippets and case insensitive"
     [[(str "This summary has a lot of characters in it. **<em>Findme</em>** So many that "
            "elasticsearch will break this")
       (str " figure out what keyword to search for in order to make two different snippets have a "
-           "match, but that seems (<em>Findme</em>) doable.")]]
-    {:keyword "Findme"}
+           "match, but that seems (<em>findme</em>) doable.")]]
+    {:keyword "FiNdmE"}
 
     "Some highlights and some not using a wildcard"
     [nil
