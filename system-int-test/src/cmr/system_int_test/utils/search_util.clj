@@ -160,6 +160,19 @@
      (is (= 200 (:status response)))
      response)))
 
+(defn- find-with-json-query
+  "Executes a search using a JSON query request and returns the results."
+  ([concept-type query-params json-as-map]
+   (find-with-json-query concept-type query-params json-as-map mime-types/xml))
+  ([concept-type query-params json-as-map result-format]
+   (client/post (url/search-url concept-type)
+                {:accept result-format
+                 :content-type mime-types/json
+                 :body (json/generate-string {:condition json-as-map})
+                 :query-params query-params
+                 :throw-exceptions true
+                 :connection-manager (s/conn-mgr)})))
+
 (defn- parse-timeline-interval
   "Parses the timeline response interval component into a more readable and comparable format."
   [[start end num-grans]]
@@ -235,6 +248,17 @@
         :results (da/parse-atom-result concept-type body)}
        response))))
 
+(defn find-concepts-in-atom-with-json-query
+  "Returns the response of a search using JSON query in ATOM format"
+  [concept-type query-params json-as-map]
+  (let [response (get-search-failure-data
+                   (find-with-json-query concept-type query-params json-as-map mime-types/atom))
+        {:keys [status body]} response]
+    (if (= status 200)
+      {:status status
+       :results (da/parse-atom-result concept-type body)}
+      response)))
+
 (defn find-concepts-json
   "Returns the response of a search in json format"
   ([concept-type params]
@@ -250,6 +274,20 @@
          {:status status
           :results (dj/parse-json-result concept-type body)}
          response)))))
+
+(defn find-concepts-in-json-with-json-query
+  "Returns the response of a search using JSON query in JSON format"
+  [concept-type query-params json-as-map]
+   (let [response (get-search-failure-data
+                    (find-with-json-query concept-type query-params json-as-map mime-types/json))
+         {:keys [status body]} response
+         {:keys [echo-compatible include-facets]} query-params]
+     (if (and echo-compatible include-facets)
+       (dj/parse-echo-json-result body)
+       (if (= status 200)
+         {:status status
+          :results (dj/parse-json-result concept-type body)}
+         response))))
 
 (defn find-concepts-kml
   "Returns the response of search in KML format"
@@ -399,16 +437,8 @@
   "Returns the references that are found by searching using a JSON request."
   [concept-type query-params json-as-map]
   (get-search-failure-xml-data
-    (let [response (client/post (url/search-url concept-type)
-                                {:accept mime-types/xml
-                                 :content-type mime-types/json
-                                 :body (json/generate-string {:condition json-as-map})
-                                 :query-params query-params
-                                 :throw-exceptions true
-                                 :connection-manager (s/conn-mgr)})]
+    (let [response (find-with-json-query concept-type query-params json-as-map)]
       (parse-reference-response (:echo-compatible query-params) response))))
-
-
 
 (defn find-refs-with-aql-string
   ([aql]

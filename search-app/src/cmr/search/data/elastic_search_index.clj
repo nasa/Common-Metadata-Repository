@@ -6,6 +6,7 @@
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [clojure.string :as s]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.util :as util]
             [cmr.common.lifecycle :as lifecycle]
             [cmr.common.cache :as cache]
             [cmr.elastic-utils.connect :as es]
@@ -124,36 +125,30 @@
 
 (defmethod send-query-to-elastic :default
   [context query]
-  (let [{:keys [page-size page-num concept-type result-format aggregations]} query
+  (let [{:keys [page-size page-num concept-type result-format aggregations highlights]} query
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
         fields (concept-type+result-format->fields concept-type query)
-        from (* (dec page-num) page-size)]
+        from (* (dec page-num) page-size)
+        query-map (util/remove-nil-keys {:query elastic-query
+                                         :version true
+                                         :sort sort-params
+                                         :size page-size
+                                         :from from
+                                         :fields fields
+                                         :aggs aggregations
+                                         :highlight highlights})]
     (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
            (pr-str elastic-query)
            "with sort" (pr-str sort-params)
-           "and aggregations" (pr-str aggregations))
-    (if aggregations
+           "with aggregations" (pr-str aggregations)
+           "and highlights" (pr-str highlights))
+
       (esd/search (context->conn context)
                   (:index-name index-info)
                   [(:type-name index-info)]
-                  :query elastic-query
-                  :version true
-                  :sort sort-params
-                  :size page-size
-                  :from from
-                  :fields fields
-                  :aggs aggregations)
-      (esd/search (context->conn context)
-                  (:index-name index-info)
-                  [(:type-name index-info)]
-                  :query elastic-query
-                  :version true
-                  :sort sort-params
-                  :size page-size
-                  :from from
-                  :fields fields))))
+                  query-map)))
 
 (def unlimited-page-size
   "This is the number of items we will request at a time when the page size is set to unlimited"

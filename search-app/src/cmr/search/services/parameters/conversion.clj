@@ -306,7 +306,9 @@
                                 (when (= (:include-facets params) "true")
                                   (if hierarchical-facets?
                                     [:hierarchical-facets]
-                                    [:facets])))]
+                                    [:facets]))
+                                (when (= (:include-highlights params) "true")
+                                  [:highlights]))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
@@ -325,7 +327,7 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible :hierarchical-facets)]
+                       :echo-compatible :hierarchical-facets :include-highlights)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)
