@@ -366,22 +366,24 @@
         data-path "http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2013/"
         opendap-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2013/"]
 
-    (util/are2 [source-related-urls expected-related-url-maps]
+    (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (d/ingest "GSFCS4PA" (dg/granule
-                                                     omi-coll {:granule-ur granule-ur
+                                                     omi-coll {:granule-ur src-granule-ur
                                                                :related-urls source-related-urls}))
                      _ (index/wait-until-indexed)
-                     virt-gran-umm (get-virtual-granule-umm granule-ur)
+                     virt-gran-umm (get-virtual-granule-umm src-granule-ur)
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
                  (= (set expected-related-urls) (set (:related-urls virt-gran-umm))))
 
                "Related urls with only one access url which matches the pattern"
+               granule-ur
                [{:url (str data-path ur-suffix) :type "GET DATA"}]
                [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
                  :type "GET DATA"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online access url"
+               granule-ur
                [{:url (str data-path ur-suffix)}]
                ;; Some additional attributes are added by CMR automatically, but url remains the same
                [{:url (str data-path ur-suffix)
@@ -389,14 +391,23 @@
                  :title "(USER SUPPORT)"}]
 
                "Related urls with only one access url which does not match the pattern"
+               granule-ur
                [{:url (str data-path "random.he5") :type "GET DATA"}]
                [{:url (str data-path "random.he5") :type "GET DATA"}]
 
                "Multiple related urls"
+               granule-ur
                [{:url (str data-path ur-suffix) :type "GET DATA"}
                 {:url "http://www.foo.com"}]
                [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
                  :type "GET DATA"}
                 {:url "http://www.foo.com"
                  :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}])))
+                 :title "(USER SUPPORT)"}]
+
+               "Unexpected format for the granule UR should not result in translation"
+               "OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5" ;; no ":"
+               [{:url (str data-path ur-suffix) :type "GET DATA"}]
+               [{:url (str data-path ur-suffix) :type "GET DATA"}])))
+
+
