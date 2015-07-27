@@ -7,15 +7,17 @@
             [clojure.string :as str]))
 
 
-(def umm-cmn-schema (io/resource "umm-cmn-json-schema.json"))
+(def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
-(def umm-c-schema (io/resource "umm-c-json-schema.json"))
+(def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
 
+;; TODO move this to the record generators
 (def schema-name->namespace
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
    "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
 
+;; TODO this should go into a util.
 (defn parse-json-with-comments
   "TODO"
   [json-str]

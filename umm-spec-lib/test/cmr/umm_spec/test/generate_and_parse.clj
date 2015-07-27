@@ -64,7 +64,7 @@
 
   )
 
-(deftest roundtrip-gen-parse
+#_(deftest roundtrip-gen-parse
   (let [mappings (xm/load-mappings xm/echo10-mappings)
         xml (xg/generate-xml mappings example-record)
         umm-c-schema (js/load-schema-for-parsing "umm-c-json-schema.json")

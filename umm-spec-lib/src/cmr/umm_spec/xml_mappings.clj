@@ -9,11 +9,13 @@
 
 ;; TODO define json schema for mappings
 
-;; TODO split out mapping into separate namespace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mappings files
 
-(def echo10-mappings (io/resource "echo10-mappings.json"))
+(def echo10-to-xml-file (io/resource "mappings/echo10/echo10-to-xml.json"))
+(def echo10-to-umm-file (io/resource "mappings/echo10/echo10-to-umm.json"))
 
-(defn load-mappings
+(defn load-json-file
   "TODO"
   [mappings-resource]
   (binding [factory/*json-factory* (factory/make-json-factory
@@ -75,14 +77,11 @@
            :parse-type {:type :record
                         :constructor-fn (var-get constructor-fn-var)})))
 
-(defn get-to-umm-mappings
+(defn load-to-umm-mappings
   "Gets the mappings to umm with extra information to aid in parsing"
   [schema mappings]
-  (let [{:keys [to-umm]} mappings
-        root-type-def (get-in schema [:definitions (:root schema)])
-        new-definitions (util/map-values #(add-parse-type schema (:root schema) root-type-def %)
-                                         (:definitions to-umm))]
-    (assoc to-umm :definitions new-definitions)))
+  (let [root-type-def (get-in schema [:definitions (:root schema)])]
+    (add-parse-type schema (:root schema) root-type-def mappings)))
 
 (defn cleanup-schema
   "For debugging purposes. Removes extraneous fields"
@@ -93,3 +92,18 @@
         (dissoc v :description :required :minItems :maxItems :minLength :maxLength :constructor-fn)
         v))
     schema))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Defined mappings
+
+#_(def echo10-to-umm (load-to-umm-mappings (js/load-schema-for-parsing "umm-c-json-schema.json")
+                                         (load-json-file echo10-to-umm-file)))
+
+
+
+
+
+
