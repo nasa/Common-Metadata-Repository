@@ -107,9 +107,10 @@
 
 (defn load-schema-for-parsing
   "TODO this could be used for record generation as well.
-  Rename later"
+  TODO Rename later. Maybe load-schema
+  "
   [schema-name]
-  (let [parsed (parse-json-with-comments (slurp (io/resource schema-name)))
+  (let [parsed (parse-json-with-comments (slurp (io/resource (str "json-schemas/" schema-name))))
         definitions (resolve-ref-deflist schema-name (get parsed :definitions))
         root-def (when (:title parsed)
                    (resolve-ref schema-name (dissoc parsed :definitions :$schema :title)))
@@ -139,9 +140,15 @@
     (or result
         (throw (Exception. (str "Unable to load ref " (pr-str the-ref)))))))
 
+(def umm-c-schema (load-schema-for-parsing "umm-c-json-schema.json"))
 
 
 (comment
+
+  (parse-json-with-comments (slurp (io/resource      "json-schemas/umm-c-json-schema.json")))
+  (load-schema-for-parsing "json-schemas/umm-c-json-schema.json")
+
+
   (load-schema-for-parsing "umm-cmn-json-schema.json")
 
   (def loaded (load-schema-for-parsing "umm-c-json-schema.json"))

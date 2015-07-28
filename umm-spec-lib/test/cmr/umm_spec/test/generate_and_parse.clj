@@ -56,18 +56,14 @@
       (js/load-schema-for-parsing "umm-c-json-schema.json")
       (xm/load-mappings xm/echo10-mappings)))
 
-  (let [mappings (xm/load-mappings xm/echo10-mappings)]
-    (println (xg/generate-xml mappings example-record)))
+  (println (xg/generate-xml xm/echo10-to-xml example-record))
 
   (require '[cmr.umm-spec.simple-xpath :as sx])
 
 
   )
 
-#_(deftest roundtrip-gen-parse
-  (let [mappings (xm/load-mappings xm/echo10-mappings)
-        xml (xg/generate-xml mappings example-record)
-        umm-c-schema (js/load-schema-for-parsing "umm-c-json-schema.json")
-        umm-mappings (xm/get-to-umm-mappings umm-c-schema mappings)
-        parsed (xp/parse-xml umm-mappings xml)]
+(deftest roundtrip-gen-parse
+  (let [xml (xg/generate-xml xm/echo10-to-xml example-record)
+        parsed (xp/parse-xml xm/echo10-to-umm xml)]
     (is (= example-record parsed))))

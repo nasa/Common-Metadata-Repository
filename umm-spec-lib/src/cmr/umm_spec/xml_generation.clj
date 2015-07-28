@@ -37,9 +37,7 @@
 (defn generate-xml
   "TODO"
   [mappings record]
-  (let [root-def-name (get-in mappings [:to-xml :root])
-        definitions (get-in mappings [:to-xml :definitions])
-        root-def (get definitions (keyword root-def-name))]
+  (let [[root-def-name root-def] (first mappings)]
     ;; TODO using indent-str for readability while testing.
     (x/indent-str
       (generate-element (sxp/create-xpath-context-for-data record) root-def-name root-def))))

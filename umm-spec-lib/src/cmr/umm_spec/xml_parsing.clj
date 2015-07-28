@@ -73,8 +73,6 @@
   "TODO"
   [mappings xml-string]
   (let [xpath-context (sxp/create-xpath-context-for-xml xml-string)
-        root-def-name (:root mappings)
-        definitions (:definitions mappings)
-        root-def (get definitions (keyword root-def-name))]
+        [root-def-name root-def] (first mappings)]
     (parse-value xpath-context root-def)))
 

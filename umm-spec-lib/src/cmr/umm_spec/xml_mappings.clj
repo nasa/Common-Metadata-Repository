@@ -80,8 +80,9 @@
 (defn load-to-umm-mappings
   "Gets the mappings to umm with extra information to aid in parsing"
   [schema mappings]
-  (let [root-type-def (get-in schema [:definitions (:root schema)])]
-    (add-parse-type schema (:root schema) root-type-def mappings)))
+  (let [root-type-def (get-in schema [:definitions (:root schema)])
+        [root-def-name root-def] (first mappings)]
+    {root-def-name (add-parse-type schema (:root schema) root-type-def root-def)}))
 
 (defn cleanup-schema
   "For debugging purposes. Removes extraneous fields"
@@ -94,15 +95,12 @@
     schema))
 
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined mappings
 
-#_(def echo10-to-umm (load-to-umm-mappings (js/load-schema-for-parsing "umm-c-json-schema.json")
-                                         (load-json-file echo10-to-umm-file)))
+(def echo10-to-umm (load-to-umm-mappings js/umm-c-schema (load-json-file echo10-to-umm-file)))
 
-
+(def echo10-to-xml (load-json-file echo10-to-xml-file))
 
 
 
