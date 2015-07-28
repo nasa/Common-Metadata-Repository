@@ -80,6 +80,10 @@
             [coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10 coll16 coll17 coll19]
             {"temporal[]" ["2000-04-03T00:00:00Z, 2002-01-02T00:00:00Z, 93, 2"]}
 
+            "search without start-date"
+            [coll1 coll2 coll14 coll16]
+            {"temporal[]" ", 2000-02-15T00:00:00Z, 32, 90"}
+
             "search by multiple temporal"
             [coll2 coll6 coll14 coll16 coll17]
             {"temporal[]"["1998-01-15T00:00:00Z, 1999-03-15T00:00:00Z, 60, 90"
@@ -158,6 +162,12 @@
                         :recurring_start_day 32
                         :recurring_end_day 90
                         :exclude_boundary false}}
+
+            "search without start-date"
+            [coll1 coll2 coll14 coll16]
+            {:temporal {:end_date "2000-02-15T00:00:00Z"
+                        :recurring_start_day 32
+                        :recurring_end_day 90}}
 
             "search by multiple temporal"
             [coll2 coll6 coll14 coll16 coll17]

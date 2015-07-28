@@ -266,7 +266,9 @@
   (condition->elastic
     [{:keys [field start-date end-date exclusive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
-          from-value (if start-date (h/utc-time->elastic-time start-date) h/earliest-echo-start-date)
+          from-value (if start-date
+                       (h/utc-time->elastic-time start-date)
+                       h/earliest-start-date-elastic-time)
           end-value (when end-date (h/utc-time->elastic-time end-date))]
       (range-condition->elastic
         field from-value end-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?)))
