@@ -298,11 +298,13 @@
                  "The order of the output granules should match the corresponding input. Duplicates
                  in the source should be preserved."
                  [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
-                  virtual-granule2 virtual-granule3 non-virtual-granule3 virtual-granule4
-                  source-granule non-virtual-granule1 virtual-granule1]
+                  non-virtual-granule3 non-virtual-granule4 virtual-granule2 virtual-granule3
+                  non-virtual-granule3 non-virtual-granule3 virtual-granule4 source-granule
+                  non-virtual-granule1 virtual-granule1 ]
                  [source-granule non-virtual-granule1 source-granule non-virtual-granule2
-                  source-granule source-granule non-virtual-granule3 source-granule
-                  source-granule non-virtual-granule1 source-granule]))
+                  non-virtual-granule3 non-virtual-granule4 source-granule source-granule
+                  non-virtual-granule3 non-virtual-granule3 source-granule source-granule
+                  non-virtual-granule1 source-granule]))
 
     (testing "Translating a granule which is deleted"
       (util/are2 [deleted-granule request-json expected-response-json]
