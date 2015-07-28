@@ -3,9 +3,10 @@
   (:require [clojure.data.xml :as x]
             [cmr.umm-spec.simple-xpath :as sxp]))
 
-(defmulti generate-element
-  "TODO
-  should return nil if no value"
+(defmulti ^:private generate-element
+  "Generates an XML element of the given name and definition. The XPath context here is expected to
+  be initialized from a source UMM record. nil will be returned if no value can be extracted given the
+  current XML definition."
   (fn [xpath-context element-name xml-def]
     (:type xml-def)))
 
@@ -17,7 +18,7 @@
                             element))]
     (x/element element-name {} content)))
 
-(defmethod generate-element "mpath"
+(defmethod generate-element "xpath"
   [xpath-context element-name {:keys [value]}]
   (when-let [value (->> (sxp/parse-xpath value)
                         (sxp/evaluate xpath-context)
@@ -26,8 +27,8 @@
     (x/element element-name {} (str value))))
 
 (defmethod generate-element "array"
-  [xpath-context element-name {:keys [items-mpath items]}]
-  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-mpath))]
+  [xpath-context element-name {:keys [items-xpath items]}]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-xpath))]
     (for [data (:context new-xpath-context)
           :let [single-item-xpath-context (assoc new-xpath-context :context [data])]]
       (if items
@@ -35,7 +36,7 @@
         (x/element element-name {} (str data))))))
 
 (defn generate-xml
-  "TODO"
+  "Generates XML from a UMM record and the given UMM mappings."
   [mappings record]
   (let [[root-def-name root-def] (first mappings)]
     ;; TODO using indent-str for readability while testing.

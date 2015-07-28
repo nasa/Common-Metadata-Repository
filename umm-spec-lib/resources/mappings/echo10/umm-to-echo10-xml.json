@@ -3,53 +3,53 @@
     "type": "object",
     "properties": [
       ["ShortName", {
-        "type": "mpath",
+        "type": "xpath",
         "value": "/UMM-C/Product/ShortName"
       }],
       ["VersionId", {
-        "type": "mpath",
+        "type": "xpath",
         "value": "/UMM-C/Product/VersionId"
       }],
       ["DataSetId", {
-        "type": "mpath",
+        "type": "xpath",
         "value": "/UMM-C/EntryTitle"
       }],
       ["Description", {
-        "type": "mpath",
+        "type": "xpath",
         "value": "/UMM-C/Abstract"
       }],
       ["Temporal", {
         // TODO I'm not sure if array is appropriate here since there won't be multiple
         "type": "array",
         // ECHO10 only has one Temporal element so we can only select the first one.
-        "items-mpath": "/UMM-C/TemporalExtent[1]",
+        "items-xpath": "/UMM-C/TemporalExtent[1]",
         "items": {
           "type": "object",
           "properties": [
             ["TemporalRangeType", {
-              "type": "mpath",
+              "type": "xpath",
               "value": "TemporalRangeType"
             }],
             ["PrecisionOfSeconds", {
-              "type": "mpath",
+              "type": "xpath",
               "value": "PrecisionOfSeconds"
             }],
             ["EndsAtPresentFlag", {
-              "type": "mpath",
+              "type": "xpath",
               "value": "EndsAtPresentFlag"
             }],
             ["RangeDateTime", {
               "type": "array",
-              "items-mpath": "RangeDateTime",
+              "items-xpath": "RangeDateTime",
               "items": {
                 "type": "object",
                 "properties": [
                   ["BeginningDateTime", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "BeginningDateTime"
                   }],
                   ["EndingDateTime", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "EndingDateTime"
                   }]
                 ]
@@ -57,40 +57,40 @@
             }],
             ["SingleDateTime", {
               "type": "array",
-              "items-mpath": "SingleDateTime"
+              "items-xpath": "SingleDateTime"
             }],
             ["PeriodicDateTime", {
               "type": "array",
-              "items-mpath": "PeriodicDateTime",
+              "items-xpath": "PeriodicDateTime",
               "items": {
                 "type": "object",
                 "properties": [
                   ["Name", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "Name"
                   }],
                   ["StartDate", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "StartDate"
                   }],
                   ["EndDate", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "EndDate"
                   }],
                   ["DurationUnit", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "DurationUnit"
                   }],
                   ["DurationValue", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "DurationValue"
                   }],
                   ["PeriodCycleDurationUnit", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "PeriodCycleDurationUnit"
                   }],
                   ["PeriodCycleDurationValue", {
-                    "type": "mpath",
+                    "type": "xpath",
                     "value": "PeriodCycleDurationValue"
                   }]
                 ]

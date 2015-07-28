@@ -1,26 +1,21 @@
 (ns cmr.umm-spec.xml-mappings
-  "TODO"
+  "Contains functions for loading mappings from UMM to XML and from XML to UMM. Mappings are defined
+  in JSON files. This namespace parses the JSON files and performs additional processing. The
+  loaded mappings are defined in vars in this namespace."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [cheshire.core :as json]
-            [cheshire.factory :as factory]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.common.util :as util]))
+            [cmr.umm-spec.record-generator :as record-gen]
+            [cmr.common.util :as util]
+            [cmr.umm-spec.util :as spec-util]))
 
-;; TODO define json schema for mappings
+;; TODO define json schema for mappings and use to validate them
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mappings files
 
-(def echo10-to-xml-file (io/resource "mappings/echo10/echo10-to-xml.json"))
-(def echo10-to-umm-file (io/resource "mappings/echo10/echo10-to-umm.json"))
-
-(defn load-json-file
-  "TODO"
-  [mappings-resource]
-  (binding [factory/*json-factory* (factory/make-json-factory
-                                     {:allow-comments true})]
-    (json/decode (slurp mappings-resource) true)))
+(def ^:private echo10-to-xml-file (io/resource "mappings/echo10/umm-to-echo10-xml.json"))
+(def ^:private echo10-to-umm-file (io/resource "mappings/echo10/echo10-xml-to-umm.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing prep
@@ -29,8 +24,9 @@
 ;;; things into the appropriate types. We splice together the schema and the mapping information in
 ;;; order to have enough information to parse into appropriate types.
 
-(defmulti add-parse-type
-  "TODO"
+(defmulti ^:private add-parse-type
+  "Adds an additional field to loaded mappings that defines what type to convert the XML value into.
+  Parsed types could be clojure records, strings, numeric types, etc."
   (fn [schema type-name schema-type mapping-type]
     (cond
       (:type schema-type) (:type schema-type)
@@ -62,7 +58,7 @@
 
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
-  (let [record-ns (js/schema-name->namespace (:schema-name schema))
+  (let [record-ns (record-gen/schema-name->namespace (:schema-name schema))
         constructor-fn-var (find-var
                              (symbol (str (name record-ns)
                                           "/map->"
@@ -77,15 +73,15 @@
            :parse-type {:type :record
                         :constructor-fn (var-get constructor-fn-var)})))
 
-(defn load-to-umm-mappings
+(defn- load-to-umm-mappings
   "Gets the mappings to umm with extra information to aid in parsing"
   [schema mappings]
   (let [root-type-def (get-in schema [:definitions (:root schema)])
         [root-def-name root-def] (first mappings)]
     {root-def-name (add-parse-type schema (:root schema) root-type-def root-def)}))
 
-(defn cleanup-schema
-  "For debugging purposes. Removes extraneous fields"
+(defn- cleanup-schema
+  "For debugging purposes. Removes extraneous fields for printing the mappings so it's easier to read."
   [schema]
   (clojure.walk/postwalk
     (fn [v]
@@ -98,9 +94,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined mappings
 
-(def echo10-to-umm (load-to-umm-mappings js/umm-c-schema (load-json-file echo10-to-umm-file)))
+(def echo10-xml-to-umm
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-to-umm-file)))
 
-(def echo10-to-xml (load-json-file echo10-to-xml-file))
+(def umm-to-echo10-xml (spec-util/load-json-resource echo10-to-xml-file))
 
 
 

@@ -52,7 +52,7 @@
   ;; So /  = {:book [a b]}
   ;; So /catalog = {:book [a b]}
   ;; So /catalog/book = [a b]
-  ;; So /catalog/book means ignore the first two. Then look for a key in what's passed in called book
+  ;; So the root tag is ignored when being evaluated against a clojure data structure
 
   (sx/create-xpath-context-for-data
     {:books

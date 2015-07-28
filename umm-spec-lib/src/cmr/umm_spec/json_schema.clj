@@ -1,38 +1,21 @@
 (ns cmr.umm-spec.json-schema
-  "TODO
-  May want to rellocate this "
-  (:require [cheshire.core :as json]
-            [cheshire.factory :as factory]
-            [clojure.java.io :as io]
-            [clojure.string :as str]))
+  "This contains code for loading UMM JSOn schemas."
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [cmr.umm-spec.util :as spec-util]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Defined schema files
 
 (def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
 (def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
 
-;; TODO move this to the record generators
-(def schema-name->namespace
-  "A map of schema names to the namespace they should be placed in"
-  {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
-   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
-
-;; TODO this should go into a util.
-(defn parse-json-with-comments
-  "TODO"
-  [json-str]
-  (binding [factory/*json-factory* (factory/make-json-factory
-                                     {:allow-comments true})]
-    (json/decode json-str true)))
-
-
-(defn load-schema
-  "TODO"
-  [schema-resource]
-  (json/decode (slurp schema-resource) true))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Code for loading schema files.
 
 (defn reference-processor-selector
-  "TODO"
+  "Used to determine how to process a type definition when resolving references."
   [type-def]
   (or (:type type-def)
       (cond
@@ -45,11 +28,16 @@
         :else
         (throw (Exception. (str "Unable to resolve ref on " (pr-str type-def)))))))
 
-(defmulti resolve-ref
+(defmulti ^:private resolve-ref
+  "Recursively resolves references to other types within the JSON schema type definition. When a
+  reference is found it is replaced with a map containing the type name referenced and the name of
+  the other schema that was referenced."
   (fn [schema-name type-def]
     (reference-processor-selector type-def)))
 
-(defn resolve-ref-deflist
+(defn- resolve-ref-deflist
+  "Resolves all the references in the sub type definitions of a map of type names and type
+  definitions."
   [schema-name definition-map]
   (into {} (for [[n type-def] definition-map]
              [n (resolve-ref schema-name type-def)])))
@@ -79,7 +67,7 @@
 (doseq [t ["string" "integer" "number" "boolean" :empty-map]]
   (defmethod resolve-ref t [_ type-def] type-def))
 
-(defmulti referenced-schema-names
+(defmulti ^:private referenced-schema-names
   "Returns a list of the referenced schema names from a loaded schema"
   #'reference-processor-selector)
 
@@ -105,12 +93,16 @@
   (referenced-schema-names (:items type-def)))
 
 
-(defn load-schema-for-parsing
-  "TODO this could be used for record generation as well.
-  TODO Rename later. Maybe load-schema
-  "
+(defn- load-schema
+  "Loads a JSON schema into a Clojure structure. Returns a map with the following keys
+
+  * :definitions - A map of types that were defined in this schema.
+  * :schema-name - the name of the schema that was loaded.
+  * :root - A keyword for the name of root type defined in this schema. This will be a key defined
+  in the definitions map. May be nil if no root type is defined.
+  * :ref-schemas - A map of schema name to schemas that are referenced within this schema."
   [schema-name]
-  (let [parsed (parse-json-with-comments (slurp (io/resource (str "json-schemas/" schema-name))))
+  (let [parsed (spec-util/load-json-resource (io/resource (str "json-schemas/" schema-name)))
         definitions (resolve-ref-deflist schema-name (get parsed :definitions))
         root-def (when (:title parsed)
                    (resolve-ref schema-name (dissoc parsed :definitions :$schema :title)))
@@ -126,10 +118,11 @@
      :schema-name schema-name
      :root (keyword (:title parsed))
      :ref-schemas (into {} (for [ref-schema-name referenced-schemas]
-                             [ref-schema-name (load-schema-for-parsing ref-schema-name)]))}))
+                             [ref-schema-name (load-schema ref-schema-name)]))}))
 
 (defn lookup-ref
-  "Looks up a ref in a loaded schema. Returns the schema containing the referenced type and the ref."
+  "Looks up a ref in a loaded schema. Returns the schema containing the referenced type and the ref.
+  The ref may refer to this schema or an external schema referenced by this schema."
   [schema the-ref]
   (let [{:keys [schema-name type-name]} (:$ref the-ref)
         result (if (= schema-name (:schema-name schema))
@@ -140,19 +133,9 @@
     (or result
         (throw (Exception. (str "Unable to load ref " (pr-str the-ref)))))))
 
-(def umm-c-schema (load-schema-for-parsing "umm-c-json-schema.json"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Loaded schemas
+
+(def umm-c-schema (load-schema "umm-c-json-schema.json"))
 
 
-(comment
-
-  (parse-json-with-comments (slurp (io/resource      "json-schemas/umm-c-json-schema.json")))
-  (load-schema-for-parsing "json-schemas/umm-c-json-schema.json")
-
-
-  (load-schema-for-parsing "umm-cmn-json-schema.json")
-
-  (def loaded (load-schema-for-parsing "umm-c-json-schema.json"))
-
-  (:definitions loaded)
-
-  )

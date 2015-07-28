@@ -15,7 +15,7 @@
     {
      :EntryId (umm-cmn/map->EntryIdType
                 {:Id "short_V1"
-                 ;; TODO instroduce these when testing ISO
+                 ;; introduce these when testing ISO
                  ; :Version
                  ; :Authority
                  })
@@ -64,6 +64,6 @@
   )
 
 (deftest roundtrip-gen-parse
-  (let [xml (xg/generate-xml xm/echo10-to-xml example-record)
-        parsed (xp/parse-xml xm/echo10-to-umm xml)]
+  (let [xml (xg/generate-xml xm/umm-to-echo10-xml example-record)
+        parsed (xp/parse-xml xm/echo10-xml-to-umm xml)]
     (is (= example-record parsed))))
