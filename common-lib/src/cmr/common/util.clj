@@ -126,7 +126,8 @@
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will
-  throw a service error of the type given."
+  throw a service error of the type given.
+  DEPRECATED: we should use the validations namespace"
   [error-type f]
   (fn [& args]
     (when-let [errors (apply f args)]
@@ -134,7 +135,8 @@
         (errors/throw-service-errors error-type errors)))))
 
 (defn apply-validations
-  "Applies the arguments to each validation concatenating all errors and returning them"
+  "Applies the arguments to each validation concatenating all errors and returning them
+  DEPRECATED: we should use the validations namespace"
   [validations & args]
   (reduce (fn [errors validation]
             (if-let [new-errors (apply validation args)]
@@ -145,7 +147,8 @@
 
 (defn compose-validations
   "Creates a function that will compose together a list of validation functions into a
-  single function that will perform all validations together"
+  single function that will perform all validations together
+  DEPRECATED: we should use the validations namespace"
   [validation-fns]
   (partial apply-validations validation-fns))
 
