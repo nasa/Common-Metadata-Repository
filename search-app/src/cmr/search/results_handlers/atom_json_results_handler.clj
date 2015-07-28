@@ -50,7 +50,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters]} reference
+                orbit-parameters highlighted-summary-snippets]} reference
         shape-result (atom-spatial/shapes->json shapes)
         result (merge {:id id
                        :score score
@@ -75,7 +75,8 @@
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters
-                                           (fix-map-for-echo-json orbit-parameters))}
+                                           (fix-map-for-echo-json orbit-parameters))
+                       :highlighted-summary-snippets highlighted-summary-snippets}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))

@@ -5,6 +5,7 @@
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.template :as template]
             [clojure.test :as test])
@@ -125,7 +126,8 @@
 
 (defn build-validator
   "Creates a function that will call f with it's arguments. If f returns any errors then it will
-  throw a service error of the type given."
+  throw a service error of the type given.
+  DEPRECATED: we should use the validations namespace"
   [error-type f]
   (fn [& args]
     (when-let [errors (apply f args)]
@@ -133,7 +135,8 @@
         (errors/throw-service-errors error-type errors)))))
 
 (defn apply-validations
-  "Applies the arguments to each validation concatenating all errors and returning them"
+  "Applies the arguments to each validation concatenating all errors and returning them
+  DEPRECATED: we should use the validations namespace"
   [validations & args]
   (reduce (fn [errors validation]
             (if-let [new-errors (apply validation args)]
@@ -144,7 +147,8 @@
 
 (defn compose-validations
   "Creates a function that will compose together a list of validation functions into a
-  single function that will perform all validations together"
+  single function that will perform all validations together
+  DEPRECATED: we should use the validations namespace"
   [validation-fns]
   (partial apply-validations validation-fns))
 
@@ -319,3 +323,14 @@
 
      (sequential? m)
      (reduce #(into %1 (get-keys-in %2)) key-set m))))
+
+(defn delete-recursively
+  "Recursively delete the directory or file by the given name. Does nothing if the file does not exist."
+  [fname]
+  (when (.exists (io/file fname))
+    (letfn [(delete-recursive
+              [^java.io.File file]
+              (when (.isDirectory file)
+                (dorun (map delete-recursive (.listFiles file))))
+              (io/delete-file file))]
+      (delete-recursive (io/file fname)))))

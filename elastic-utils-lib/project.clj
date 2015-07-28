@@ -3,7 +3,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/elastic-utils-lib"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.elasticsearch/elasticsearch "1.4.5" :exclusions [commons-codec]]
+                 [org.elasticsearch/elasticsearch "1.6.0" :exclusions [commons-codec]]
                  [clojurewerkz/elastisch "2.2.0-beta2" :exclusions [commons-codec]]
 
                  ;; Log4j needed to configure logging in elasticsearch.

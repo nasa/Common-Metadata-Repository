@@ -210,6 +210,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
+(defn concept-revision-metadata-url
+  []
+  (format "http://localhost:%s/concepts" (transmit-config/search-port)))
+
 (defn concept-revisions-url
   [type]
   (format "http://localhost:%s/concept-revisions/%ss" (transmit-config/search-port) (name type)))
@@ -365,4 +369,9 @@
   "URL to check virtual product health."
   []
   (format "http://localhost:%s/health" (transmit-config/virtual-product-port)))
+
+(defn virtual-product-translate-granule-entries-url
+  "URL to translate virtual product entries to the corresponding source entries."
+  []
+  (format "http://localhost:%s/translate-granule-entries" (transmit-config/virtual-product-port)))
 

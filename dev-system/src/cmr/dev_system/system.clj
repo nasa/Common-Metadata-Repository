@@ -53,16 +53,21 @@
 
 (defn external-echo-system-token
   "Returns the ECHO system token based on the value for ECHO_SYSTEM_READ_TOKEN in the ECHO
-  configuration file.  The WORKSPACE_HOME environment variable must be set in order to find the
-  file.  Returns nil if it cannot extract the value."
+  configuration file. The WORKSPACE_HOME environment variable must be set in order to find the
+  file. Returns mock-echo-system-token if it cannot extract the value."
   []
   (try
-    (->> (slurp (str (System/getenv "WORKSPACE_HOME") "/deployment/primary/config.properties"))
-         (re-find #"\n@ECHO_SYSTEM_READ_TOKEN@=(.*)\n")
-         peek)
+    (let [token (->> (str (or (System/getenv "WORKSPACE_HOME")
+                              "../../")
+                          "/deployment/primary/config.properties")
+                     slurp
+                     (re-find #"\n@ECHO_SYSTEM_READ_TOKEN@=(.*)\n")
+                     peek)]
+      (info "Using system token" token)
+      token)
     (catch Exception e
       (warn "Unable to extract the ECHO system read token from configuration.")
-      nil)))
+      "mock-echo-system-token")))
 
 (def app-control-functions
   "A map of application name to the start function"

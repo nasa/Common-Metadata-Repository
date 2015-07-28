@@ -110,7 +110,7 @@
   (let [new-body (f (:body response))]
     (-> response
         (assoc-in [:body] new-body)
-        (assoc-in [:headers "Content-Length"] (str (count new-body))))))
+        (assoc-in [:headers "Content-Length"] (str (count (.getBytes new-body "UTF-8")))))))
 
 
 (defn- pretty-print-body
