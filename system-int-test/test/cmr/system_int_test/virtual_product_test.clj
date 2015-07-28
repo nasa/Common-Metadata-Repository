@@ -272,7 +272,8 @@
         ;; A random non-virtual granule
         non-virtual-granule3 (granule->entry prov-gran1)
 
-        ;; Another random non-virtual granule which belongs to the same collection
+        ;; Another random non-virtual granule which belongs to the same collection as
+        ;; non-virtual-granule3
         non-virtual-granule4 (granule->entry prov-gran2)]
 
     (testing "Valid input to translate-granule-entries end-point"
@@ -285,7 +286,8 @@
                  [non-virtual-granule1 non-virtual-granule2]
                  [non-virtual-granule1 non-virtual-granule2]
 
-                 "Input with two non-virtual granules from the same dataset"
+                 "Input with two non-virtual granules from the same dataset should return the
+                 original response"
                  [non-virtual-granule3 non-virtual-granule4]
                  [non-virtual-granule3 non-virtual-granule4]
 
