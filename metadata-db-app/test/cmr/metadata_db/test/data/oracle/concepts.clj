@@ -10,7 +10,7 @@
             [clj-time.core :as t]
             [cmr.oracle.config :as oracle-config]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.sql-helper :as sh]
+            [cmr.common.util :as util]
             [cmr.metadata-db.config :as mdb-config])
   (:import javax.sql.rowset.serial.SerialBlob
            java.util.zip.GZIPInputStream
@@ -20,7 +20,7 @@
 (defn mock-blob
   "Create a mock blob"
   [value]
-  (SerialBlob. (sh/string->gzip-bytes value)))
+  (SerialBlob. (util/string->gzip-blob value)))
 
 (defn gzip-bytes->string
   "Convert compressed byte array to string"

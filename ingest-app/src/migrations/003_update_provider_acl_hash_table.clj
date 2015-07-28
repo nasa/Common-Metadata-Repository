@@ -13,8 +13,9 @@
   "Migrates the database up to version 3."
   []
   (println "migrations.003-update-provider-acl-hash-table up...")
-  ;; Alter table does not work directly for changing from varchar to CLOB,
+  ;; Alter table does not work directly for changing from varchar to BLOB,
   ;; so we drop the table and recreate it with the new type since we don't need to preserve the data.
+  ;; We're storing the provider acl hash as a compressed value.
   (drop-provider-acl-hash-table)
   (j/db-do-commands (config/db) "CREATE TABLE CMR_INGEST.provider_acl_hash (
                                 acl_hashes BLOB NOT NULL)"))

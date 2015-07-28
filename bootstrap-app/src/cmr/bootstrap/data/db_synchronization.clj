@@ -13,7 +13,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.config :as config :refer [defconfig]]
             [cmr.common.mime-types :as mt]
-            [cmr.common.sql-helper :as sh]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
@@ -180,7 +179,7 @@
         (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
           {:concept-type concept-type
            :format mdb-format
-           :metadata (sh/blob->string compressed_xml)
+           :metadata (util/gzip-blob->string compressed_xml)
            :concept-id concept-id
            :revision-id revision-id
            :revision-date (oracle/oracle-timestamp->str-time conn ingest_updated_at)
@@ -215,7 +214,7 @@
         (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
           {:concept-type concept-type
            :format mdb-format
-           :metadata (sh/blob->string compressed_xml)
+           :metadata (util/gzip-blob->string compressed_xml)
            :concept-id concept-id
            :revision-id revision-id
            :revision-date (oracle/oracle-timestamp->str-time conn ingest_updated_at)

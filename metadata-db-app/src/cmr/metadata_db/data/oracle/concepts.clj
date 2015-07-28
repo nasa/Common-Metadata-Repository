@@ -8,7 +8,6 @@
             [cmr.common.date-time-parser :as p]
             [cmr.common.concepts :as cc]
             [cmr.common.util :as util]
-            [cmr.common.sql-helper :as csh]
             [clojure.java.jdbc :as j]
             [clojure.string :as str]
             [clojure.set :as set]
@@ -118,7 +117,7 @@
                              :native-id native_id
                              :concept-id concept_id
                              :provider-id provider-id
-                             :metadata (when metadata (csh/blob->string metadata))
+                             :metadata (when metadata (util/gzip-blob->string metadata))
                              :format (db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
@@ -139,7 +138,7 @@
         fields ["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
         values [native-id
                 concept-id
-                (csh/string->gzip-bytes metadata)
+                (util/string->gzip-blob metadata)
                 (mime-type->db-format format)
                 revision-id
                 deleted]]

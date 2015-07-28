@@ -9,7 +9,11 @@
             [clojure.walk :as w]
             [clojure.template :as template]
             [clojure.test :as test])
-  (:import java.text.DecimalFormat))
+  (:import java.text.DecimalFormat
+           java.util.zip.GZIPInputStream
+           java.util.zip.GZIPOutputStream
+           java.io.ByteArrayOutputStream
+           java.sql.Blob))
 
 (defmacro are2
   "Based on the are macro from clojure.test. Checks multiple assertions with a template expression.
@@ -331,3 +335,17 @@
                 (dorun (map delete-recursive (.listFiles file))))
               (io/delete-file file))]
       (delete-recursive (io/file fname)))))
+
+(defn gzip-blob->string
+  "Convert a gzipped BLOB to a string"
+  [^Blob blob]
+  (-> blob .getBinaryStream GZIPInputStream. slurp))
+
+(defn string->gzip-blob
+  "Convert a string to an array of compressed bytes"
+  [input]
+  (let [output (ByteArrayOutputStream.)
+        gzip (GZIPOutputStream. output)]
+    (io/copy input gzip)
+    (.finish gzip)
+    (.toByteArray output)))

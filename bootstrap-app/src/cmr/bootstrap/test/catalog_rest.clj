@@ -4,7 +4,7 @@
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
             [cmr.bootstrap.data.migration-utils :as mu]
-            [cmr.common.sql-helper :as sh]
+            [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
             [cmr.common.date-time-parser :as p]
             [cmr.common.mime-types :as mt]
@@ -118,7 +118,7 @@
                      set compressed_xml = ?, ingest_updated_at = ?, xml_mime_type = ?, delete_time = ?
                      where id = ?"
                      table)
-        sql-args [(sh/string->gzip-bytes metadata)
+        sql-args [(util/string->gzip-blob metadata)
                   (cr/to-sql-time (oracle/current-db-time (:db system)))
                   (mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))
@@ -155,7 +155,7 @@
         stmt (format "insert into %s (id, echo_collection_id, dataset_id, compressed_xml, ingest_updated_at,
                      short_name, version_id, xml_mime_type, delete_time) values (?,?,?,?,?,?,?,?,?)"
                      table)
-        sql-args [numeric-id concept-id entry-title (sh/string->gzip-bytes metadata)
+        sql-args [numeric-id concept-id entry-title (util/string->gzip-blob metadata)
                   (cr/to-sql-time (oracle/current-db-time (:db system))) short-name version-id
                   (mime-type->db-format (:format concept))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]
@@ -173,7 +173,7 @@
                      dataset_record_id, xml_mime_type, ingest_updated_at, delete_time)
                      values (?,?,?,?,?,?,?,?)"
                      table)
-        sql-args [numeric-id concept-id native-id (sh/string->gzip-bytes metadata)
+        sql-args [numeric-id concept-id native-id (util/string->gzip-blob metadata)
                   numeric-collection-id (mime-type->db-format (:format concept))
                   (cr/to-sql-time (oracle/current-db-time (:db system)))
                   (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]]

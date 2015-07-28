@@ -7,7 +7,7 @@
             [cheshire.core :as json]
             [camel-snake-kebab.core :as csk]
             [cmr.acl.core :as acl]
-            [cmr.common.sql-helper :as sh]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.rest :as echo-rest]
             [cmr.index-set.services.messages :as m]
@@ -149,7 +149,7 @@
                                              (:concepts (prune-index-set (:index-set index-set))))
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
-                                               sh/string->gzip-bytes
+                                               util/string->gzip-blob
                                                b64/encode
                                                (String. (java.nio.charset.Charset/forName "UTF-8")))
         es-doc {:index-set-id (get-in index-set [:index-set :id])
