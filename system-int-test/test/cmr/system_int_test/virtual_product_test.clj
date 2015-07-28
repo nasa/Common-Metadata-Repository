@@ -235,7 +235,6 @@
         vp-colls (ingest-virtual-collections [ast-coll])
         ast-gran (d/ingest "LPDAAC_ECS"
                            (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
-
         prov-ast-coll (d/ingest "PROV"
                                 (dc/collection
                                   {:entry-title ast-entry-title}))
@@ -247,11 +246,12 @@
                                         {:entry-title "non virtual entry title"}))
         lpdaac-non-ast-gran (d/ingest "LPDAAC_ECS"
                                       (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
-
         prov-coll (d/ingest "PROV"
                             (dc/collection
                               {:entry-title "some other entry title"}))
-        prov-gran (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
+        prov-gran1 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
+
+        prov-gran2 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur4"}))
 
 
         _ (index/wait-until-indexed)
@@ -264,11 +264,16 @@
         ;; Granule with same granule ur and entry title as an AST granule but belonging
         ;; to a different provider than AST collection
         non-virtual-granule1 (granule->entry prov-ast-gran)
+
         ;; Another granule under the same provider as the AST collection but beloning to a
         ;; a different collection
         non-virtual-granule2 (granule->entry lpdaac-non-ast-gran)
+
         ;; A random non-virtual granule
-        non-virtual-granule3 (granule->entry prov-gran)]
+        non-virtual-granule3 (granule->entry prov-gran1)
+
+        ;; Another random non-virtual granule which belongs to the same collection
+        non-virtual-granule4 (granule->entry prov-gran2)]
 
     (testing "Valid input to translate-granule-entries end-point"
       (util/are2 [request-json expected-response-json]
@@ -279,6 +284,10 @@
                  "Input with no virtual granules should return the original response"
                  [non-virtual-granule1 non-virtual-granule2]
                  [non-virtual-granule1 non-virtual-granule2]
+
+                 "Input with two non-virtual granules from the same dataset"
+                 [non-virtual-granule3 non-virtual-granule4]
+                 [non-virtual-granule3 non-virtual-granule4]
 
                  "Virtual granule should be translated to corresponding source granule"
                  [non-virtual-granule1 virtual-granule1]
