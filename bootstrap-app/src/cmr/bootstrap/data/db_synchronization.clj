@@ -13,6 +13,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.config :as config :refer [defconfig]]
             [cmr.common.mime-types :as mt]
+            [cmr.common.sql-helper :as sh]
             [clj-time.coerce :as cr]
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
@@ -179,17 +180,17 @@
         (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
           {:concept-type concept-type
            :format mdb-format
-           :metadata (mdb-concepts/blob->string compressed_xml)
+           :metadata (sh/blob->string compressed_xml)
            :concept-id concept-id
            :revision-id revision-id
-           :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
+           :revision-date (oracle/oracle-timestamp->str-time conn ingest_updated_at)
            :deleted false
            :extra-fields {:short-name short_name
                           :entry-title dataset_id
                           :version-id version_id
                           :entry-id (get-entry-id mdb-format short_name version_id)
                           :delete-time (when delete_time
-                                         (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
+                                         (oracle/oracle-timestamp->str-time conn delete_time))}
            :provider-id provider-id
            :native-id dataset_id}
           (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
@@ -214,10 +215,10 @@
         (if-let [mdb-format (mdb-concepts/db-format->mime-type xml_mime_type)]
           {:concept-type concept-type
            :format mdb-format
-           :metadata (mdb-concepts/blob->string compressed_xml)
+           :metadata (sh/blob->string compressed_xml)
            :concept-id concept-id
            :revision-id revision-id
-           :revision-date (mdb-concepts/oracle-timestamp->str-time conn ingest_updated_at)
+           :revision-date (oracle/oracle-timestamp->str-time conn ingest_updated_at)
            :deleted false
            :extra-fields {:granule-ur granule_ur
                           :parent-collection-id (concepts/build-concept-id
@@ -225,7 +226,7 @@
                                                    :sequence-number (long dataset_record_id)
                                                    :provider-id provider-id})
                           :delete-time (when delete_time
-                                         (mdb-concepts/oracle-timestamp->str-time conn delete_time))}
+                                         (oracle/oracle-timestamp->str-time conn delete_time))}
            :provider-id provider-id
            :native-id granule_ur}
           (warn (format "Skipping Catalog REST Item %s with unsupported xml_mime_type of %s"
