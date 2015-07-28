@@ -70,7 +70,7 @@
   so that it will be easier to convert into elastic json"
   [temporal]
   (let [{:keys [start-day end-day start-date end-date]} temporal
-        start-date (or start-date h/earliest-echo-start-date-joda-time)]
+        start-date (or start-date h/earliest-start-date-joda-time)]
     (if (or start-date end-date)
       (let [end-year (if end-date (t/year end-date) (t/year (tk/now)))
             start-day (if start-day start-day 1)
