@@ -241,7 +241,7 @@
   [context provider-id entry-title granule-urs]
   (let [query-params {"provider-id[]" provider-id
                       "entry_title" entry-title
-                      "granule_ur[]" (str/join "," (set granule-urs))
+                      "granule_ur[]" (vec (set granule-urs))
                       "token" (transmit-config/echo-system-token)}
         gran-refs (search/find-granule-references context query-params)]
     (for [{:keys [concept-id granule-ur]} gran-refs]
