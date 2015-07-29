@@ -149,7 +149,7 @@
                                              (:concepts (prune-index-set (:index-set index-set))))
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
-                                               util/string->gzip-blob
+                                               util/string->gzip-bytes
                                                b64/encode
                                                (String. (java.nio.charset.Charset/forName "UTF-8")))
         es-doc {:index-set-id (get-in index-set [:index-set :id])

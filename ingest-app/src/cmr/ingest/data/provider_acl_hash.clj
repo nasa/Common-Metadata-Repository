@@ -48,7 +48,7 @@
     (j/with-db-transaction
       [conn db]
       (j/execute! conn ["delete from provider_acl_hash"])
-      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [(util/string->gzip-blob acl-hash)])))
+      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [(util/string->gzip-bytes acl-hash)])))
 
   (get-acl-hash
     [db]

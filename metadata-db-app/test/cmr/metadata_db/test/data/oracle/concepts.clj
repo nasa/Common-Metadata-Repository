@@ -20,7 +20,7 @@
 (defn mock-blob
   "Create a mock blob"
   [value]
-  (SerialBlob. (util/string->gzip-blob value)))
+  (SerialBlob. (util/string->gzip-bytes value)))
 
 (defn gzip-bytes->string
   "Convert compressed byte array to string"

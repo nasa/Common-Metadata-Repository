@@ -138,7 +138,7 @@
         fields ["native_id" "concept_id" "metadata" "format" "revision_id" "deleted"]
         values [native-id
                 concept-id
-                (util/string->gzip-blob metadata)
+                (util/string->gzip-bytes metadata)
                 (mime-type->db-format format)
                 revision-id
                 deleted]]
