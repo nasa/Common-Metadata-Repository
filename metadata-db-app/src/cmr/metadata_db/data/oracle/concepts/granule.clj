@@ -4,6 +4,7 @@
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.date-time-parser :as p]
+            [cmr.oracle.connection :as oracle]
             [clj-time.coerce :as cr]))
 
 (defmethod c/db-result->concept-map :granule
@@ -13,7 +14,7 @@
           (assoc-in [:extra-fields :parent-collection-id] (:parent_collection_id result))
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
-                      (c/oracle-timestamp->str-time db (:delete_time result))))
+                      (oracle/oracle-timestamp->str-time db (:delete_time result))))
           ;; The granule_ur column was added after the granule records tables had been populated.
           ;; All ingest going forward will populate the granule_ur, however any existing rows will
           ;; have a null granule_ur. For any granule with a null granule_ur we assume the

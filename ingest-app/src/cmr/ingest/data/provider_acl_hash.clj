@@ -4,7 +4,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [clojure.java.jdbc :as j]
             [clojure.edn :as edn]
-            [cmr.common.util :refer [defn-timed]]))
+            [cmr.common.util :refer [defn-timed] :as util]))
 
 (defprotocol AclHashStore
   "Defines a protocol for storing the acl hashes as a string."
@@ -48,13 +48,14 @@
     (j/with-db-transaction
       [conn db]
       (j/execute! conn ["delete from provider_acl_hash"])
-      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [acl-hash])))
+      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [(util/string->gzip-bytes acl-hash)])))
 
   (get-acl-hash
     [db]
-    (-> (j/query db ["select acl_hashes from provider_acl_hash"])
-        first
-        :acl_hashes)))
+    (some-> (j/query db ["select acl_hashes from provider_acl_hash"])
+            first
+            :acl_hashes
+            util/gzip-blob->string)))
 
 (defn context->db
   [context]

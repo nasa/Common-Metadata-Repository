@@ -7,6 +7,7 @@
             [cheshire.core :as json]
             [camel-snake-kebab.core :as csk]
             [cmr.acl.core :as acl]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.transmit.echo.rest :as echo-rest]
             [cmr.index-set.services.messages :as m]
@@ -14,22 +15,8 @@
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
             [cmr.system-trace.core :refer [deftracefn]]
-            [clojure.java.io :as io]
             [clojure.data.codec.base64 :as b64])
-  (:import clojure.lang.ExceptionInfo
-           java.util.zip.GZIPInputStream
-           java.util.zip.GZIPOutputStream
-           java.io.ByteArrayOutputStream))
-
-;; copied from metadatadb - move to cmr.common - This will be addressed in CMR-1400.
-(defn string->gzip-bytes
-  "Convert a string to an array of compressed bytes"
-  [input]
-  (let [output (ByteArrayOutputStream.)
-        gzip (GZIPOutputStream. output)]
-    (io/copy input gzip)
-    (.finish gzip)
-    (.toByteArray output)))
+  (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
 (def concept-types [:collection :granule])
@@ -162,7 +149,7 @@
                                              (:concepts (prune-index-set (:index-set index-set))))
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
-                                               string->gzip-bytes
+                                               util/string->gzip-bytes
                                                b64/encode
                                                (String. (java.nio.charset.Charset/forName "UTF-8")))
         es-doc {:index-set-id (get-in index-set [:index-set :id])
