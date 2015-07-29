@@ -21,22 +21,6 @@
                                                 (for [p vp/virtual-product-providers]
                                                   [(str p "_guid") p]))))
 
-(defn- ingest-source-collections
-  "Ingests the source collections and returns their UMM records with some extra information."
-  ([]
-   (ingest-source-collections (vp/source-collections)))
-  ([source-collections]
-   (mapv #(d/ingest (:provider-id %) %) source-collections)))
-
-(defn- ingest-virtual-collections
-  "Ingests the virtual collections for the given set of source collections."
-  ([source-collections]
-   (ingest-virtual-collections source-collections {}))
-  ([source-collections options]
-  (->> source-collections
-       (mapcat vp/virtual-collections)
-       (mapv #(d/ingest (:provider-id %) % options)))))
-
 (defn- assert-matching-granule-urs
   "Asserts that the references found from a search match the expected granule URs."
   [expected-granule-urs {:keys [refs]}]
@@ -52,9 +36,9 @@
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
 
 
-  (def isc (ingest-source-collections))
+  (def isc (vp/ingest-source-collections))
 
-  (def vpc (ingest-virtual-collections isc))
+  (def vpc (vp/ingest-virtual-collections isc))
 
   )
 
@@ -65,7 +49,7 @@
                            (dc/collection
                              {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
                               :projects (dc/projects "proj1" "proj2" "proj3")}))
-        vp-colls (ingest-virtual-collections [ast-coll])
+        vp-colls (vp/ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur
                                                                   :project-refs ["proj1"]}))
@@ -130,12 +114,12 @@
             (search/find-refs :granule {:page-size 50})))))))
 
 (deftest all-granules-in-virtual-product-test
-  (let [source-collections (ingest-source-collections)
+  (let [source-collections (vp/ingest-source-collections)
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
                            (into new-colls (map #(assoc % :source-collection source-coll)
-                                                (ingest-virtual-collections [source-coll]))))
+                                                (vp/ingest-virtual-collections [source-coll]))))
                          []
                          source-collections)
         source-granules (doall (for [source-coll source-collections
@@ -184,7 +168,7 @@
   (let [ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
                              {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
-        vp-colls (ingest-virtual-collections [ast-coll])
+        vp-colls (vp/ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
         ingest-result (d/ingest "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
@@ -232,7 +216,7 @@
         ast-coll (d/ingest "LPDAAC_ECS"
                            (dc/collection
                              {:entry-title ast-entry-title}))
-        vp-colls (ingest-virtual-collections [ast-coll])
+        vp-colls (vp/ingest-virtual-collections [ast-coll])
         ast-gran (d/ingest "LPDAAC_ECS"
                            (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
         prov-ast-coll (d/ingest "PROV"
@@ -348,7 +332,7 @@
                            (dc/collection
                              {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"})
                            {:client-id "ECHO"})
-        vp-colls (ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
+        vp-colls (vp/ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll {:granule-ur granule-ur})
                                {:client-id "ECHO"})
@@ -373,7 +357,7 @@
                            (dc/collection
                              {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
                                                 " Dose Daily L3 Global 1.0x1.0 deg Grid V003")}))
-        vp-colls (ingest-virtual-collections [omi-coll])
+        vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
         data-path "http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2013/"

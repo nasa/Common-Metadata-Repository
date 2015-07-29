@@ -24,7 +24,7 @@
   "Ingests the virtual collections for the given set of source collections."
   [source-collections options]
   (->> source-collections
-       (mapcat vp/virtual-collections)
+       (mapcat vp/source-collection->virtual-collections)
        (mapv #(d/ingest (:provider-id %) % options))))
 
 (deftest ingest-with-system-token-test

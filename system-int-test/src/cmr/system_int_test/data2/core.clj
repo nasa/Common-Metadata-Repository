@@ -65,6 +65,7 @@
   * :format - The XML Metadata format to use.
   * :token - The token to use.
   * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
+  * :client-id - The client-id to use
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
   Setting it to true will skip this check. Set it true when testing ingest failure cases."
   ([provider-id item]
