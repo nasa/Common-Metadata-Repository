@@ -32,6 +32,7 @@
 (defmethod elastic-results/elastic-result->query-result-item :xml
   [context query elastic-result]
   (let [name-key (concept-type->name-key (:concept-type query))
+        ;; TODO - update this
         {concept-id :_id
          revision-id :_version
          score :_score

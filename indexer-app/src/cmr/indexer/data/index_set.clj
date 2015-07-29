@@ -155,7 +155,10 @@
   {:collection {:dynamic "strict",
                 :_source {:enabled false},
                 :_all {:enabled false},
-                :_id   {:path "concept-id"},
+                :_id {
+                  :index "not_analyzed"
+                  :store true
+                }
                 :_ttl {:enabled true},
                 :properties (merge {:permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
@@ -197,6 +200,10 @@
                                     :two-d-coord-name.lowercase string-field-mapping
                                     :attributes attributes-field-mapping
                                     :downloadable (stored bool-field-mapping)
+
+                                    ;; Added to support concept revision searches
+                                    :deleted (not-indexed (stored boolean))
+                                    :native-id (stored string-field-mapping)
 
                                     ;; - Science Keywords -
                                     ;; Nested field mapping for searching
@@ -381,6 +388,8 @@
                  :create-reason "indexer app requires this index set"
                  :collection {:indexes
                               [{:name "collections"
+                                :settings collection-setting}
+                               {:name "all-collection-revisions"
                                 :settings collection-setting}]
                               :mapping collection-mapping}
                  :granule {:indexes
