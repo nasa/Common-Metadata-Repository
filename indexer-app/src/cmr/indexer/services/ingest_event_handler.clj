@@ -21,7 +21,7 @@
 
 (defmethod handle-ingest-event :concept-update
   [context {:keys [concept-id revision-id]}]
-  (indexer/index-concept context concept-id revision-id true))
+  (indexer/index-concept context concept-id revision-id {:ignore-confict? true}))
 
 (defmethod handle-ingest-event :concept-delete
   [context {:keys [concept-id revision-id]}]

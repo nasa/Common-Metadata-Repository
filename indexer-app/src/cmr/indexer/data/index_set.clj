@@ -160,7 +160,11 @@
                   :store true
                 }
                 :_ttl {:enabled true},
-                :properties (merge {:permitted-group-ids (stored string-field-mapping)
+                :properties (merge {:deleted (stored bool-field-mapping) ; deleted=true is a tombstone
+                                    :native-id (stored string-field-mapping)
+                                    ;; TODO Figure out where this comes from and comment source
+                                    :revision-date         date-field-mapping
+                                    :permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
                                     ;; This is used explicitly for sorting. The values take up less space in the
                                     ;; fielddata cache.
@@ -175,7 +179,7 @@
                                     :short-name.lowercase  string-field-mapping
                                     :version-id            (stored string-field-mapping)
                                     :version-id.lowercase  string-field-mapping
-                                    :revision-date         date-field-mapping
+
                                     ;; Stored to allow retrieval for implementing granule acls
                                     :access-value          (stored float-field-mapping)
                                     :processing-level-id   (stored string-field-mapping)
@@ -200,10 +204,6 @@
                                     :two-d-coord-name.lowercase string-field-mapping
                                     :attributes attributes-field-mapping
                                     :downloadable (stored bool-field-mapping)
-
-                                    ;; Added to support concept revision searches
-                                    :deleted (not-indexed (stored boolean))
-                                    :native-id (stored string-field-mapping)
 
                                     ;; - Science Keywords -
                                     ;; Nested field mapping for searching
@@ -481,15 +481,15 @@
 
 (defn get-concept-index-name
   "Return the concept index name for the given concept id"
-  ([context concept-id revision-id]
+  ([context concept-id revision-id all-revisions-index?]
    (let [concept-type (cs/concept-id->type concept-id)
          concept (when (= :granule concept-type) (meta-db/get-concept context concept-id revision-id))]
-     (get-concept-index-name context concept-id revision-id concept)))
-  ([context concept-id revision-id concept]
+     (get-concept-index-name context concept-id revision-id all-revisions-index? concept)))
+  ([context concept-id revision-id all-revisions-index? concept]
    (let [concept-type (cs/concept-id->type concept-id)
          indexes (get (get-concept-type-index-names context) concept-type)]
      (if (= :collection concept-type)
-       (get indexes :collections)
+       (get indexes (when all-revisions-index? :all-collection-revisions :collections))
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 

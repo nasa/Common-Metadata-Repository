@@ -123,11 +123,13 @@
   es-doc is the elasticsearch document to be passed on to elasticsearch
   revision-id is the version of the document in elasticsearch
   ttl time-to-live in milliseconds"
-  [f conn es-index es-type es-doc revision-id ttl]
+  [f conn es-index es-type es-doc elastic-id revision-id ttl]
   (let [options {:version revision-id :version_type "external_gte"}
         options (if ttl (merge options {:ttl ttl}) options)]
     (try
-      (f conn es-index es-type (:concept-id es-doc) es-doc options)
+      (f conn es-index es-type elastic-id es-doc options)
+      (catch Throwable e
+        (println e))
       (catch clojure.lang.ExceptionInfo e
         (let [err-msg (get-in (ex-data e) [:object :body])
               msg (str "Call to Elasticsearch caught exception " err-msg)]
@@ -164,7 +166,7 @@
                               type (name (concept->type concept))
                               revision-id (:revision-id concept)
                               index-name (idx-set/get-concept-index-name
-                                           context concept-id revision-id concept)]
+                                           context concept-id revision-id false concept)]
                           (if (:deleted concept)
                             (merge concept {:_id concept-id
                                             :_index index-name
@@ -222,9 +224,9 @@
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  [context es-index es-type es-doc revision-id ttl ignore-conflict]
+  [context es-index es-type es-doc elastic-id revision-id ttl ignore-conflict]
   (let [conn (context->conn context)
-        result (try-elastic-operation doc/put conn es-index es-type es-doc revision-id ttl)]
+        result (try-elastic-operation doc/put conn es-index es-type es-doc elastic-id revision-id ttl)]
     (if (:error result)
       (if (= 409 (:status result))
         (if ignore-conflict

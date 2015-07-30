@@ -47,7 +47,7 @@
 
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
-  (let [{:keys [concept-id provider-id revision-date format]} concept
+  (let [{:keys [concept-id elastic-id provider-id native-id revision-date deleted format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -82,7 +82,9 @@
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
+            :native-id native-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :deleted (if deleted true false)
             :permitted-group-ids permitted-group-ids
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
