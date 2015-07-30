@@ -14,8 +14,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mappings files
 
-(def ^:private echo10-to-xml-file (io/resource "mappings/echo10/umm-to-echo10-xml.json"))
-(def ^:private echo10-to-umm-file (io/resource "mappings/echo10/echo10-xml-to-umm.json"))
+(def ^:private umm-to-echo10-xml-file (io/resource "mappings/echo10/umm-to-echo10-xml.json"))
+(def ^:private echo10-xml-to-umm-file (io/resource "mappings/echo10/echo10-xml-to-umm.json"))
+
+(def ^:private umm-to-mends-xml-file (io/resource "mappings/iso19115-mends/umm-to-mends-xml.json"))
+(def ^:private umm-to-mends-xml2-file (io/resource "mappings/iso19115-mends/umm-to-mends-xml2.json"))
+(def ^:private mends-xml-to-umm-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing prep
@@ -90,14 +94,79 @@
         v))
     schema))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; XML Generation Prep
+
+(defmulti load-mapping
+  (fn [mapping]
+    (cond
+      (:type mapping) (:type mapping)
+      (vector? mapping) :vector
+      ;; Let default fall through to unexpected types and throw an exception
+      :else :default)))
+
+(defmethod load-mapping :default
+  [mapping]
+  (throw (Exception. (str "No implementation for mapping " (pr-str mapping)))))
+
+(defn load-properties
+  [properties]
+  (vec (for [[prop-name mapping] properties]
+         [prop-name (load-mapping mapping)])))
+
+(defmethod load-mapping "object"
+  [mapping]
+  (update-in mapping [:properties] load-properties))
+
+(defmethod load-mapping "xpath"
+  [mapping]
+  mapping)
+
+(defmethod load-mapping "array"
+  [mapping]
+  (if (:items mapping)
+    (update-in mapping [:items] load-mapping)
+    mapping))
+
+;; This is syntactic sugar for specifying an object with properties
+(defmethod load-mapping :vector
+  [properties]
+  {:type "object"
+   :properties (load-properties properties)})
+
+(defn- load-to-xml-mappings
+  "TODO"
+  [mappings]
+  (let [[root-def-name root-def] (first mappings)]
+    {root-def-name (load-mapping root-def)}))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined mappings
 
 (def echo10-xml-to-umm
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-to-umm-file)))
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-xml-to-umm-file)))
 
-(def umm-to-echo10-xml (spec-util/load-json-resource echo10-to-xml-file))
+(def umm-to-echo10-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-to-echo10-xml-file)))
+
+(def mends-xml-to-umm
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource mends-xml-to-umm-file)))
+
+(def umm-to-mends-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-to-mends-xml-file)))
+
+;; Temporary to test smaller representation
+(def umm-to-mends-xml2
+  (load-to-xml-mappings (spec-util/load-json-resource umm-to-mends-xml2-file)))
+
+(comment
+
+  ;; They should be equal
+  (= umm-to-mends-xml2 umm-to-mends-xml)
+
+
+  )
 
 
 

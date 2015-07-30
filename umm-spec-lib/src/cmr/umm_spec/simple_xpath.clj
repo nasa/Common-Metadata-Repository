@@ -183,7 +183,9 @@
 
 (defmethod process-xml-selector :nth-selector
   [elements {:keys [index]}]
-  [(nth elements index)])
+  (if (seq elements)
+    [(nth elements index)]
+    []))
 
 (defn- as-vector
   "Returns data as a vector if it's not one already"
@@ -221,7 +223,9 @@
 
 (defmethod process-data-selector :nth-selector
   [data {:keys [index]}]
-  [(nth (as-vector data) index)])
+  (if (seq data)
+    [(nth (as-vector data) index)]
+    []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -244,13 +248,14 @@
 (defn parse-xpath
   "Parses an XPath into a data structure that allows it to be evaluated."
   [xpath]
-  (if (= xpath "/")
-    ;; A special case
-    (split-xpath->parsed-xpath ["/"])
-    (->> (str/split xpath #"/")
-         (interpose "/")
-         (remove #(= "" %))
-         split-xpath->parsed-xpath)))
+  (let [parsed-xpath (if (= xpath "/")
+                       ;; A special case
+                       (split-xpath->parsed-xpath ["/"])
+                       (->> (str/split xpath #"/")
+                            (interpose "/")
+                            (remove #(= "" %))
+                            split-xpath->parsed-xpath))]
+    (assoc parsed-xpath :original-xpath xpath)))
 
 (defmulti evaluate
   "Evaluates a parsed XPath against the given XPath context."
@@ -258,43 +263,49 @@
     (:type xpath-context)))
 
 (defmethod evaluate :xml
-  [xpath-context {:keys [source selectors]}]
-  (let [source-elements (cond
-                          (= source :from-root) [(:root xpath-context)]
-                          (= source :from-context) (:context xpath-context)
-                          :else (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
-    (assoc xpath-context
-           :context (process-selectors source-elements selectors process-xml-selector))))
+  [xpath-context {:keys [source selectors original-xpath]}]
+  (try
+    (let [source-elements (cond
+                            (= source :from-root) [(:root xpath-context)]
+                            (= source :from-context) (:context xpath-context)
+                            :else (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+      (assoc xpath-context
+             :context (process-selectors source-elements selectors process-xml-selector)))
+    (catch Exception e
+      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
 (defmethod evaluate :data
-  [xpath-context {:keys [source selectors]}]
-  (let [[data selectors] (cond
-                           (= source :from-root)
-                           ;; We drop the first two since it's always child of then the root element
-                           ;; name. In the case of data these two both just refer to the name of the
-                           ;; root element but there's not really a holder for that data.
-                           [(:root xpath-context) (drop 2 selectors)]
+  [xpath-context {:keys [source selectors original-xpath]}]
+  (try
+    (let [[data selectors] (cond
+                             (= source :from-root)
+                             ;; We drop the first two since it's always child of then the root element
+                             ;; name. In the case of data these two both just refer to the name of the
+                             ;; root element but there's not really a holder for that data.
+                             [(:root xpath-context) (drop 2 selectors)]
 
-                           (= source :from-context)
-                           [(:context xpath-context) selectors]
+                             (= source :from-context)
+                             [(:context xpath-context) selectors]
 
-                           :else
-                           (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
-    (assoc xpath-context
-           :context (process-selectors data selectors process-data-selector))))
+                             :else
+                             (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+      (assoc xpath-context
+             :context (process-selectors data selectors process-data-selector)))
+    (catch Exception e
+      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
 
 (comment
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog")))
+                      (parse-xpath "/catalog")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books")))
+                      (parse-xpath "/catalog/books")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books/genre")))
+                      (parse-xpath "/catalog/books/genre")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books[@id='bk101']/genre")))
+                      (parse-xpath "/catalog/books[@id='bk101']/genre")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books[price='5.95']/title")))
+                      (parse-xpath "/catalog/books[price='5.95']/title")))
 
   (defn try-xpaths
     [& xpaths]

@@ -1,0 +1,24 @@
+{
+  "UMM-C": {
+    "type": "object",
+    "properties": {
+      "EntryId": {
+        "type": "object",
+        "properties": {
+          "Id": {
+            "type": "xpath",
+            "value": "/MI_Metadata/identificationInfo/MD_DataIdentification/citation/CI_Citation/identifier/MD_Identifier/code/CharacterString"
+          }
+        }
+      },
+      "EntryTitle": {
+        "type": "xpath",
+        // The Xpath implementation doesn't maintain namespace information so prefixes aren't used.
+        // I think this works for ISO for selecting data but I'm not sure if we should specify it this way
+        "value": "/MI_Metadata/identificationInfo/MD_DataIdentification/citation/CI_Citation/title/CharacterString"
+          // or this way and ignore the prefixes.
+          // /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString
+      }
+    }
+  }
+}

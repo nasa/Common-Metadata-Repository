@@ -13,8 +13,6 @@
    ;; dataset.
    TemporalKeyword
 
-   Product
-
    ;; This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic
    ;; Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code
    ;; List. It is a high-level thematic classification to assist in the grouping and search of
@@ -217,15 +215,6 @@
    EndDate
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
-
-;; Added by Jason since short name and version id are required for ECHO10
-(defrecord ProductType
-  [
-   ShortName
-
-   VersionId
-  ])
-(record-pretty-printer/enable-record-pretty-printing ProductType)
 
 (defrecord LocalCoordinateSystemType
   [
