@@ -1,0 +1,503 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "ProductType":{
+      "type": "object",
+      "description": "Added by Jason since short name and version id are required for ECHO10",
+      "properties": {
+        "ShortName": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/ShortNameType"
+        },
+        "VersionId": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
+        }
+      },
+      "required": ["ShortName","VersionId"]
+    },
+    "DirectoryNameType": {
+      "type": "object",
+      "description": "Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used historically by the GCMD internally to identify association, responsibility and/or ownership of the dataset, service or supplemental information. Note: This field only occurs in the DIF. When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be translated.",
+      "properties": {
+        "ShortName": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/ShortNameType"
+        },
+        "LongName": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/LongNameType"
+        }
+      },
+      "required": ["ShortName"]
+    },
+    "ProcessingLevelType": {
+      "type": "object",
+      "description": "This element contains the level identifier as described here: https://earthdata.nasa.gov/data/standards-and-references/processing-levels",
+      "properties": {
+        "ProcessingLevelDescription": {
+          "description": "Description of Processing Level.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Id": {
+          "description": "The processing level class contains the level identifier and level description of the collection.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "PaleoTemporalCoverageType": {
+      "type": "object",
+      "description": "For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than yyyy-mm-dd = 0001-01-01.",
+      "properties": {
+        "ChronostratigraphicUnit": {
+          "description": "The chronostratigraphic units are selected from a UMM builder. The vocabulary is controlled.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChronostratigraphicUnitType"
+          },
+          "minItems": 0
+        },
+        "StartDate": {
+          "description": "The number of years furthest back in time including units Ga, Ma, ka or ybp.",
+          "type": "string"
+        },
+        "EndDate": {
+          "description": "The number of years closest to the present time including units Ga, Ma, ka or ybp.",
+          "type": "string"
+        }
+      }
+    },
+    "ChronostratigraphicUnitType": {
+      "type": "object",
+      "properties": {
+        "Eon": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Era": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Epoch": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Stage": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Detailed_Classification": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        },
+        "Period": {
+          "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Eon"]
+    },
+    "SpatialInformationType": {
+      "type": "object",
+      "description": "This entity stores the reference frame or system from which altitudes (elevations) are measured. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This table also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the table are geometry reference data etc.",
+      "properties": {
+        "VerticalCoordinateSystem": {
+          "$ref": "#/definitions/VerticalCoordinateSystemType"
+        },
+        "HorizontalCoordinateSystem": {
+          "$ref": "#/definitions/HorizontalCoordinateSystemType"
+        },
+        "SpatialCoverageType": {
+          "description": "This attribute denotes whether the locality/coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["SpatialCoverageType"]
+    },
+    "VerticalCoordinateSystemType": {
+      "type": "object",
+      "properties": {
+        "AltitudeSystemDefinition": {
+          "$ref": "#/definitions/VerticalSystemDefinitionType"
+        },
+        "DepthSystemDefinition": {
+          "$ref": "#/definitions/VerticalSystemDefinitionType"
+        }
+      }
+    },
+    "VerticalSystemDefinitionType": {
+      "type": "object",
+      "description": "The reference frame or system from which altitude or depths are measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
+      "properties": {
+        "DatumName": {
+          "description": "The identification given to the level surface taken as the surface of reference from which measurements are compared.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "DistanceUnits": {
+          "description": "The recorded units",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "EncodingMethod": {
+          "description": "The means used to encode measurements.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Resolution": {
+          "description": "Describes a list of resolutions.",
+          "$ref": "#/definitions/ResolutionsType"
+        }
+      }
+    },
+    "ResolutionsType": {
+      "type": "object",
+      "description": "Describes a list of resolutions.",
+      "properties": {
+        "Resolution": {
+          "description": "This element describes the minimum distance possible between two adjacent values, expressed in distance units of measure for collection.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "HorizontalCoordinateSystemType": {
+      "type": "object",
+      "properties": {
+        "GeodeticModel": {
+          "$ref": "#/definitions/GeodeticModelType"
+        },
+        "TODOMultiChoice": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "GeographicCoordinateSystem": {
+                "$ref": "#/definitions/GeographicCoordinateSystemType"
+              },
+              "LocalCoordinateSystem": {
+                "$ref": "#/definitions/LocalCoordinateSystemType"
+              }
+            }
+          }
+        }
+      }
+    },
+    "GeodeticModelType": {
+      "type": "object",
+      "properties": {
+        "HorizontalDatumName": {
+          "description": "The identification given to the reference system used for defining the coordinates of points.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "EllipsoidName": {
+          "description": "Identification given to established representation of the Earth's shape.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "SemiMajorAxis": {
+          "description": "Radius of the equatorial axis of the ellipsoid.",
+          "type": "number"
+        },
+        "DenominatorOfFlatteningRatio": {
+          "description": "The ratios of the Earth's major axis to the difference between the major and the minor.",
+          "type": "number"
+        }
+      }
+    },
+    "GeographicCoordinateSystemType": {
+      "type": "object",
+      "properties": {
+        "GeographicCoordinateUnits": {
+          "description": "Units of measure used for the geodetic latitude and longitude resolution values. For lat, a 2 digit decimal number from 0-90; for lon, a 3 digit decimal number from 0-180. + or absence of - for values north of equator or values west of prime meridian; - for all others.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "LatitudeResolution": {
+          "description": "The minimum difference between two adjacent latitude values expressed in Geographic Coordinate Units of measure.",
+          "type": "number"
+        },
+        "LongitudeResolution": {
+          "description": "The minimum difference between two adjacent longitude values expressed in Geographic Coordinate Units of measure.",
+          "type": "number"
+        }
+      }
+    },
+    "LocalCoordinateSystemType": {
+      "type": "object",
+      "properties": {
+        "GeoReferenceInformation": {
+          "description": "A description of the information provided to register the local system to the Earth (e.g. control points, satellite ephemeral data, and inertial navigation data).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Description": {
+          "description": "This class contains a description of the coordinate system and geo-reference information.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    },
+    "CollectionDataTypeEnum": {
+      "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
+      "type": "string",
+      "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "OTHER"]
+    },
+    "PlatformType": {
+      "type": "object",
+      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc. This platform includes zero or more instruments",
+      "properties": {}
+    }
+  },
+  "title": "UMM-C",
+  "type": "object",
+  "properties": {
+    "MetadataLanguage": {
+      "description": "The language used in the metadata record.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
+    },
+    "MetadataStandard": {
+      "description": "This element describes the metadata standard name and version as received by the CMR.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/MetadataStandardType"
+    },
+    "MetadataLineage": {
+      "description": "This includes any metadata related dates. All metadata dates will have a Lineage/Scope of ‘metadata’.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+      },
+      "minItems": 0
+    },
+    "DirectoryName": {
+      "description": "Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used historically by the GCMD internally to identify association, responsibility and/or ownership of the dataset, service or supplemental information. Note: This field only occurs in the DIF. When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be translated.\\",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DirectoryNameType"
+      },
+      "minItems": 0
+    },
+    "EntryTitle": {
+      "description": "The title of the service described by the metadata.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
+    },
+    "Abstract": {
+      "description": "Abstract provides a brief description of the data or service the metadata represents.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/AbstractType"
+    },
+    "Product":{
+      "$ref":"#/definitions/ProductType"
+    },
+    "Purpose": {
+      "description": "This element contains suggested usage or purpose for the data or service.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/PurposeType"
+    },
+    "DataLanguage": {
+      "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
+    },
+    "DataLineage": {
+      "description": "This includes any data related dates. All of these dates will have a Lineage/Scope of ‘data’.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+      },
+      "minItems": 1
+    },
+    "ResponsibleOrganization": {
+      "description": "This includes any organizations responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
+      },
+      "minItems": 1
+    },
+    "ResponsiblePersonnel": {
+      "description": "This includes any personnel responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
+      },
+      "minItems": 0
+    },
+    "CollectionDataType": {
+      "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
+      "$ref": "#/definitions/CollectionDataTypeEnum"
+    },
+    "ProcessingLevel": {
+      "description": "This element contains the level identifier as described here: https://earthdata.nasa.gov/data/standards-and-references/processing-levels",
+      "$ref": "#/definitions/ProcessingLevelType"
+    },
+    "CollectionCitation": {
+      "description": "This element permits the user to properly cite the provider and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the service is listed here.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/ResourceCitationType"
+      },
+      "minItems": 0
+    },
+    "CollectionProgress": {
+      "description": "Describes the production status of the data set. There are three choices: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. IN WORK refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "Quality": {
+      "description": "This element permits the author to provide the following information about an item described in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in producing the item. Examples of appropriate element information include: A) succinct description; B) indicators of item quality or quality flags - both validated or invalidated; C) recognized or potential problems with quality; D) established quality control mechanisms; and E) established quantitative quality measurements.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/QualityType"
+    },
+    "UseConstraints": {
+      "description": "The Use Constraints element is designed to protect privacy and/or intellectual property by allowing the author to specify how the item may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness. Note: Use Constraints describe how the item may be used once access has been granted; and is distinct from Access Constraints, which refers to any constraints in accessing the item.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/UseConstraintsType"
+    },
+    "AccessConstraints": {
+      "description": "This element with the description field allows the author to provide information about any constraints for accessing the service. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the service. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/AccessConstraintsType"
+    },
+    "Distribution": {
+      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined).",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/DistributionType"
+      },
+      "minItems": 0
+    },
+    "PublicationReference": {
+      "description": "This element describes key bibliographic citations pertaining to the data.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/PublicationReferenceType"
+      },
+      "minItems": 0
+    },
+    "ISOTopicCategory": {
+      "description": "This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List. It is a high-level thematic classification to assist in the grouping and search of available services.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+      },
+      "minItems": 0
+    },
+    "ScienceKeyword": {
+      "description": "This element enables specification of Earth science keywords.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/ScienceKeywordType"
+      },
+      "minItems": 1
+    },
+    "AncillaryKeyword": {
+      "description": "This element allows authors to provide words or phrases to further describe the data.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+      },
+      "minItems": 0
+    },
+    "AdditionalAttribute": {
+      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined).",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/AdditionalAttributeType"
+      },
+      "minItems": 0
+    },
+    "MetadataAssociation": {
+      "description": "This element is used to identify other services, collections, visualizations, granules, and other metadata types and resources that are associated with or dependent on the data described by the metadata. This element is also used to identify a parent metadata record if it exists. This usage should be reserved for instances where a group of metadata records are subsets that can be better represented by one parent metadata record, which describes the entire set. In some instances, a child may point to more than one parent. The EntryId is the same as the element described elsewhere in this document where it contains and ID, and Version.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/MetadataAssociationType"
+      },
+      "minItems": 0
+    },
+    "TemporalExtent": {
+      "description": "This class contains attributes, which describe the temporal range of a specific collection. This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date Time",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/TemporalExtentType"
+      },
+      "minItems": 1
+    },
+    "PaleoTemporalCoverage": {
+      "description": "For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than yyyy-mm-dd = 0001-01-01.",
+      "$ref": "#/definitions/PaleoTemporalCoverageType"
+    },
+    "TemporalKeyword": {
+      "description": "This attribute specifies a word or phrase that describes the temporal resolution of the dataset.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
+      },
+      "minItems": 0
+    },
+    "SpatialExtent": {
+      "description": "Specifies the geographic and vertical (altitude, depth) coverage of the data.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/SpatialExtentType"
+      },
+      "minItems": 1
+    },
+    "TilingIdentificationSystem": {
+      "description": "Defines a named two-dimensional tiling system for the collection.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/TilingIdentificationSystemType"
+    },
+    "SpatialInformation": {
+      "description": "This class stores the reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
+      "$ref": "#/definitions/SpatialInformationType"
+    },
+    "SpatialKeyword": {
+      "description": "This class specifies the name of a place on Earth, a location within the Earth, a vertical location, or a location outside of Earth.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+    },
+    "Platform": {
+      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "type": "array",
+      "items": {
+        "allOf": [{
+          "$ref": "umm-cmn-json-schema.json#/definitions/PlatformType"
+        }, {
+          "properties": {
+            "Instruments": {
+              "type": "array",
+              "items": {
+                "$ref": "umm-cmn-json-schema.json#/definitions/InstrumentType"
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["Instruments"]
+        }]
+      },
+      "minItems": 1
+    },
+    "Project": {
+      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/ProjectType"
+      },
+      "minItems": 0
+    },
+    "RelatedUrl": {
+      "description": "This element describes any data/service related URLs that include project home pages, services, related data archives/servers, metadata extensions, direct links to online software packages, web mapping services, links to images, or other data.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/RelatedUrlType"
+      },
+      "minItems": 1
+    },
+    "EntryId": {
+      "description": "The entry ID of the service described by the metadata.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/EntryIdType"
+    }
+  },
+  "required": ["MetadataStandard", "EntryId", "EntryTitle", "Abstract", "DataLineage", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]
+}

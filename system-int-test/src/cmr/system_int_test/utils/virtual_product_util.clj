@@ -21,7 +21,7 @@
     (assoc (dc/collection {:entry-title entry-title :short-name short-name})
            :provider-id provider-id)))
 
-(defn virtual-collections
+(defn source-collection->virtual-collections
   "Returns virtual collections from a source collection"
   [source-collection]
   (for [virtual-coll-attribs (-> vp-config/source-to-virtual-product-config
@@ -53,3 +53,23 @@
                 :content-type mt/json
                 :body json-str
                 :connection-manager (s/conn-mgr)}))
+
+(defn ingest-source-collections
+  "Ingests the source collections and returns their UMM records with some extra information."
+  ([]
+   (ingest-source-collections (source-collections)))
+  ([source-collections]
+   (ingest-source-collections source-collections {}))
+  ([source-collections options]
+   (mapv #(d/ingest (:provider-id %) % options) source-collections)))
+
+(defn ingest-virtual-collections
+  "Ingests the virtual collections for the given set of source collections."
+  ([]
+   (ingest-virtual-collections (source-collections) {}))
+  ([source-collections]
+   (ingest-virtual-collections source-collections {}))
+  ([source-collections options]
+  (->> source-collections
+       (mapcat source-collection->virtual-collections)
+       (mapv #(d/ingest (:provider-id %) % options)))))

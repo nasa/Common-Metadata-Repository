@@ -4,8 +4,8 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
+            [clj-time.format :as f]
             [clj-time.coerce :as cr]
-            [clj-time.core :as t]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh])
   (:import oracle.ucp.jdbc.PoolDataSourceFactory
@@ -83,6 +83,13 @@
          first
          :systimestamp
          (oracle-timestamp->clj-time conn))))
+
+(defn oracle-timestamp->str-time
+  "Converts oracle.sql.TIMESTAMP instance into a string representation of the time. Must be called
+  within a with-db-transaction block with the connection"
+  [db ot]
+  (f/unparse (f/formatters :date-time)
+             (oracle-timestamp->clj-time db ot)))
 
 (defn pool
   [spec]
