@@ -1,0 +1,104 @@
+{
+  "Collection": {
+    "type": "object",
+    "properties": [
+      ["ShortName", {
+        "type": "xpath",
+        "value": "/UMM-C/Product/ShortName"
+      }],
+      ["VersionId", {
+        "type": "xpath",
+        "value": "/UMM-C/Product/VersionId"
+      }],
+      ["DataSetId", {
+        "type": "xpath",
+        "value": "/UMM-C/EntryTitle"
+      }],
+      ["Description", {
+        "type": "xpath",
+        "value": "/UMM-C/Abstract"
+      }],
+      ["Temporal", {
+        // TODO I'm not sure if array is appropriate here since there won't be multiple
+        "type": "array",
+        // ECHO10 only has one Temporal element so we can only select the first one.
+        "items-xpath": "/UMM-C/TemporalExtent[1]",
+        "items": {
+          "type": "object",
+          "properties": [
+            ["TemporalRangeType", {
+              "type": "xpath",
+              "value": "TemporalRangeType"
+            }],
+            ["PrecisionOfSeconds", {
+              "type": "xpath",
+              "value": "PrecisionOfSeconds"
+            }],
+            ["EndsAtPresentFlag", {
+              "type": "xpath",
+              "value": "EndsAtPresentFlag"
+            }],
+            ["RangeDateTime", {
+              "type": "array",
+              "items-xpath": "RangeDateTime",
+              "items": {
+                "type": "object",
+                "properties": [
+                  ["BeginningDateTime", {
+                    "type": "xpath",
+                    "value": "BeginningDateTime"
+                  }],
+                  ["EndingDateTime", {
+                    "type": "xpath",
+                    "value": "EndingDateTime"
+                  }]
+                ]
+              }
+            }],
+            ["SingleDateTime", {
+              "type": "array",
+              "items-xpath": "SingleDateTime"
+            }],
+            ["PeriodicDateTime", {
+              "type": "array",
+              "items-xpath": "PeriodicDateTime",
+              "items": {
+                "type": "object",
+                "properties": [
+                  ["Name", {
+                    "type": "xpath",
+                    "value": "Name"
+                  }],
+                  ["StartDate", {
+                    "type": "xpath",
+                    "value": "StartDate"
+                  }],
+                  ["EndDate", {
+                    "type": "xpath",
+                    "value": "EndDate"
+                  }],
+                  ["DurationUnit", {
+                    "type": "xpath",
+                    "value": "DurationUnit"
+                  }],
+                  ["DurationValue", {
+                    "type": "xpath",
+                    "value": "DurationValue"
+                  }],
+                  ["PeriodCycleDurationUnit", {
+                    "type": "xpath",
+                    "value": "PeriodCycleDurationUnit"
+                  }],
+                  ["PeriodCycleDurationValue", {
+                    "type": "xpath",
+                    "value": "PeriodCycleDurationValue"
+                  }]
+                ]
+              }
+            }]
+          ]
+        }
+      }]
+    ]
+  }
+}
