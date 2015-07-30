@@ -83,16 +83,16 @@
   [provider-id]
   (let [virt-collections-by-prov (group-by first (keys vp-config/virtual-product-to-source-config))
         provider-virt-collections (get virt-collections-by-prov provider-id)]
-    (map #(second %) provider-virt-collections)))
+    (map second provider-virt-collections)))
 
 (defn- granule-is-not-virtual-clause
   "Returns a sql clause to filter out virtual granules.
-  cnt is the number of virtual collections for the given provider"
-  [provider-id cnt]
+  n is the number of virtual collections for the given provider"
+  [provider-id n]
   (format "parent_collection_id not in (select distinct concept_id from %s
           where entry_title in (%s))"
           (mu/metadata-db-concept-table provider-id :collection)
-          (str/join "," (repeat cnt "?"))))
+          (str/join "," (repeat n "?"))))
 
 (defmulti add-updates-to-work-table-stmt
   (fn [system provider-id concept-type params]
@@ -452,20 +452,20 @@
   [system provider-id concept-type params]
   (let [virtual-entry-titles (provider-virtual-entry-titles provider-id)
         add-virt-gran-clause?  (and (= :granule concept-type) (seq virtual-entry-titles))
-        add-virt-entry-titles (fn [prepared-stmt]
-                                (if add-virt-gran-clause?
-                                  (vec (concat prepared-stmt virtual-entry-titles))
-                                  prepared-stmt))]
-    (add-virt-entry-titles
-      [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
-               select concept_id, revision_id, deleted from %s
-               where concept_id not in (select %s from %s) and %s"
-               (mu/metadata-db-concept-table provider-id concept-type)
-               (mu/concept-type->catalog-rest-id-field concept-type)
-               (mu/catalog-rest-table system provider-id concept-type)
-               (if add-virt-gran-clause?
-                 (granule-is-not-virtual-clause provider-id (count virtual-entry-titles))
-                 "1=1"))])))
+
+        prepared-stmt
+        [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
+                 select concept_id, revision_id, deleted from %s
+                 where concept_id not in (select %s from %s) and %s"
+                 (mu/metadata-db-concept-table provider-id concept-type)
+                 (mu/concept-type->catalog-rest-id-field concept-type)
+                 (mu/catalog-rest-table system provider-id concept-type)
+                 (if add-virt-gran-clause?
+                   (granule-is-not-virtual-clause provider-id (count virtual-entry-titles))
+                   "1=1"))]]
+    (if add-virt-gran-clause?
+      (into prepared-stmt virtual-entry-titles)
+      prepared-stmt)))
 
 (defmethod add-deleted-items-to-delete-work-table-stmt #{:entry-title}
   [system provider-id concept-type {:keys [entry-title]}]
@@ -473,25 +473,24 @@
         match-entry-title-clause (concept-matches-entry-title-clause system provider-id concept-type)
         virtual-entry-titles (provider-virtual-entry-titles provider-id)
         add-virt-gran-clause?  (and (= :granule concept-type) (seq virtual-entry-titles))
-        ;; Function to concatenate virtual entry titles to the prepared statement.
-        add-virt-entry-titles (fn [prepared-stmt]
-                                (if add-virt-gran-clause?
-                                  (vec (concat prepared-stmt virtual-entry-titles))
-                                  prepared-stmt))]
-    (add-virt-entry-titles
-      [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
-               select concept_id, revision_id, deleted from %s
-               where %s and concept_id not in (select %s from %s where %s) and %s"
-               (mu/metadata-db-concept-table provider-id concept-type)
-               match-entry-title-clause
-               (mu/concept-type->catalog-rest-id-field concept-type)
-               (mu/catalog-rest-table system provider-id concept-type)
-               match-dataset-id-clause
-               (if add-virt-gran-clause?
-                 (granule-is-not-virtual-clause provider-id (count virtual-entry-titles))
-                 "1=1"))
-       entry-title
-       entry-title])))
+
+        prepared-stmt
+        [(format "insert into sync_delete_work (concept_id, revision_id, deleted)
+                 select concept_id, revision_id, deleted from %s
+                 where %s and concept_id not in (select %s from %s where %s) and %s"
+                 (mu/metadata-db-concept-table provider-id concept-type)
+                 match-entry-title-clause
+                 (mu/concept-type->catalog-rest-id-field concept-type)
+                 (mu/catalog-rest-table system provider-id concept-type)
+                 match-dataset-id-clause
+                 (if add-virt-gran-clause?
+                   (granule-is-not-virtual-clause provider-id (count virtual-entry-titles))
+                   "1=1"))
+         entry-title
+         entry-title]]
+    (if add-virt-gran-clause?
+      (into prepared-stmt virtual-entry-titles)
+      prepared-stmt)))
 
 (defn- add-deleted-items-to-delete-work-table
   "Find items that exist in Metadata DB but do not exist in Catalog REST. This includes all
