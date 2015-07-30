@@ -122,7 +122,7 @@
 
 (defmethod create-elastic :in-memory
   [type]
-  (elastic-config/set-elastic-port! 9207)
+  (elastic-config/set-elastic-port! elastic-test-util/IN_MEMORY_ELASTIC_PORT)
   (elastic-server/create-server
     elastic-test-util/IN_MEMORY_ELASTIC_PORT
     (+ elastic-test-util/IN_MEMORY_ELASTIC_PORT 10)
