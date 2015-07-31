@@ -8,6 +8,7 @@
             [clojure.set :as set]
             [cmr.metadata-db.data.oracle.sql-utils :as su :refer [select]]
             [cmr.bootstrap.data.migration-utils :as mu]
+            [cmr.bootstrap.data.util :as data]
             [cmr.common.util :as util]
             [cmr.common.concepts :as concepts]
             [cmr.common.services.errors :as errors]
@@ -17,7 +18,6 @@
             [clj-time.core :as t]
             [cmr.metadata-db.data.oracle.concepts :as mdb-concepts]
             [cmr.oracle.connection :as oracle]
-            [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]
             [cmr.virtual-product.config :as vp-config]
@@ -139,6 +139,8 @@
         stmt [sql start-index (+ start-index n)]]
     (query-for-concept-rev-id-pairs (:db system) stmt)))
 
+
+;; TODO remove this if it is unused?
 (defn- in-clause
   "Generates a sql in clause string. If there are more than the max values to put in the in clause
   it creates multiple an ORs them together."
@@ -294,30 +296,6 @@
           (debug "map-missing-items-to-concepts completed"))))
     concepts-chan))
 
-(defn- save-and-index-concept
-  "Saves the concept to the Metadata DB and indexes it using the indexer"
-  [system concept]
-  ;; This is going to copy the item to metadata db. If it was never added to MDB in the first place
-  ;; and was deleted in Catalog REST in the mean time Ingest would return a 404 from the delete
-  ;; and Catalog REST would ignore it. This would end up saving the item in Metadata DB making them
-  ;; out of sync. The delete processing should happen after this step and put it back in sync.
-  (let [mdb-context {:system (helper/get-metadata-db system)}
-        indexer-context {:system (helper/get-indexer system)}
-        {:keys [concept-id revision-id]} concept]
-    (try
-      (concept-service/save-concept mdb-context concept)
-      (index-service/index-concept indexer-context concept-id revision-id true)
-      (catch clojure.lang.ExceptionInfo e
-        (let [data (ex-data e)]
-          (if (= (:type data) :conflict)
-            (warn (format "Ignoring conflict saving revision for %s %s: %s"
-                          concept-id revision-id (pr-str (:errors data))))
-            (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
-                             concept-id revision-id (.getMessage e))))))
-      (catch Throwable e
-        (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
-                         concept-id revision-id (.getMessage e)))))))
-
 (defn- process-missing-concepts
   "Starts a series of threads that read concepts one at a time off the channel, save, and index them.
   Returns when all concepts have been processed or an error has occured."
@@ -330,7 +308,7 @@
                          (try
                            (util/while-let [concept (<!! concepts-chan)]
                                            (log "Inserting" (:concept-id concept) (:revision-id concept))
-                                           (save-and-index-concept system concept))
+                                           (data/save-and-index-concept system concept))
                            (finally
                              (async/close! concepts-chan)
                              (log "completed")))))]
@@ -563,25 +541,6 @@
           (debug "map-extra-items-batches-to-deletes completed"))))
     tuples-chan))
 
-(defn- create-tombstone-and-unindex-concept
-  "Creates a tombstone with the given concept id and revision id and unindexes the concept."
-  [system concept-id revision-id]
-  (try
-    (let [mdb-context {:system (helper/get-metadata-db system)}
-          indexer-context {:system (helper/get-indexer system)}]
-      (concept-service/delete-concept mdb-context concept-id revision-id nil)
-      (index-service/delete-concept indexer-context concept-id revision-id true))
-    (catch clojure.lang.ExceptionInfo e
-      (let [data (ex-data e)]
-        (if (= (:type data) :conflict)
-          (warn (format "Ignoring conflict creating tombstone for %s %s: %s"
-                        concept-id revision-id (pr-str (:errors data))))
-          (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
-                           concept-id revision-id (.getMessage e))))))
-    (catch Throwable e
-      (error e (format "Error deleting or unindexing concept %s with revision %s. Message: %s"
-                       concept-id revision-id (.getMessage e))))))
-
 (defn- process-deletes
   "Starts a series of threads that read items one at a time off the channel then creates a tombstone
   and unindexes them. Returns when all items have been processed or an error has occured."
@@ -594,7 +553,7 @@
                          (try
                            (util/while-let [[concept-id revision-id] (<!! tuples-chan)]
                                            (log "Deleting" concept-id "-" revision-id)
-                                           (create-tombstone-and-unindex-concept system concept-id revision-id))
+                                           (data/create-tombstone-and-unindex-concept system concept-id revision-id))
                            (finally
                              (async/close! tuples-chan)
                              (log "completed")))))]

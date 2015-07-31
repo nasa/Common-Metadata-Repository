@@ -42,3 +42,11 @@
         (System/exit 1))))
 
   (System/exit 0))
+
+(comment
+  ;; run this code to create the users necessary for Bootstrap
+  ;; integration tests
+  (let [db (oracle-config/sys-dba-db-spec)]
+    (o/create-user db "DEV_52_CATALOG_REST" "DEV_52_CATALOG_REST")
+    (o/grant-select-privileges db "DEV_52_CATALOG_REST" "METADATA_DB"))
+  )

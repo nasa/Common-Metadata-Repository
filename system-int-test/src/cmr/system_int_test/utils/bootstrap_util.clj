@@ -96,6 +96,19 @@
          body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
+(defn bootstrap-virtual-products
+  "Call the bootstrap app to bulk index a collection."
+  []
+  (let [response (client/request
+                   {:method :post
+                    :query-params {:synchronous true}
+                    :url (url/bootstrap-url "virtual_products")
+                    :accept :json
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        body (json/decode (:body response) true)]
+    (assoc body :status (:status response))))
+
 (defn system
   "Returns a system suitable for calling the Catalog REST test code to create providers and add concepts."
   []
@@ -129,8 +142,8 @@
   If we're not connected to a real database then the setup is skipped."
   [provider-id-cmr-only-map]
   (fn [f]
+    (db-fixture-setup provider-id-cmr-only-map)
     (try
-      (db-fixture-setup provider-id-cmr-only-map)
       (f)
       (finally
         (db-fixture-tear-down provider-id-cmr-only-map)))))

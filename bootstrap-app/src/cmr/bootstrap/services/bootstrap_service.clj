@@ -5,7 +5,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.bootstrap.data.bulk-index :as bulk]
             [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.data.db-synchronization :as dbs]))
+            [cmr.bootstrap.data.db-synchronization :as dbs]
+            [cmr.bootstrap.data.virtual-products :as vp]))
 
 (defn migrate-provider
   "Copy all the data for a provider (including collections and graunules) from catalog rest
@@ -74,3 +75,9 @@
     (let [channel (get-in context [:system :db-synchronize-channel])]
       (info "Adding message to the database synchronize channel.")
       (go (>! channel params)))))
+
+(defn bootstrap-virtual-products
+  "Asynchronous. Initializes virtual products."
+  [context params]
+  (info "Adding message to virtual products channel:" params)
+  (go (-> context :system (get vp/channel-name) (>! params))))

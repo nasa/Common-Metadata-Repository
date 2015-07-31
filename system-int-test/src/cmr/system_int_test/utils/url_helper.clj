@@ -4,7 +4,8 @@
             [cmr.common.config :as config]
             [cmr.transmit.config :as transmit-config]
             [cmr.elastic-utils.config :as es-config]
-            [ring.util.codec :as codec]))
+            [ring.util.codec :as codec])
+  (:import java.net.URL))
 
 (def search-public-protocol "http")
 (def search-public-host "localhost")
@@ -279,6 +280,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bootstrap URLs
+
+(def bootstrap-root (URL. "http" "localhost" (transmit-config/bootstrap-port) "/"))
+
+(defn bootstrap-url
+  "Returns a URL for a path in the bootstrap application."
+  [path]
+  (str (URL. bootstrap-root path)))
 
 (defn bulk-index-provider-url
   []
