@@ -128,8 +128,6 @@
         options (if ttl (merge options {:ttl ttl}) options)]
     (try
       (f conn es-index es-type elastic-id es-doc options)
-      (catch Throwable e
-        (println e))
       (catch clojure.lang.ExceptionInfo e
         (let [err-msg (get-in (ex-data e) [:object :body])
               msg (str "Call to Elasticsearch caught exception " err-msg)]

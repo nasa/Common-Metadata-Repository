@@ -489,7 +489,7 @@
    (let [concept-type (cs/concept-id->type concept-id)
          indexes (get (get-concept-type-index-names context) concept-type)]
      (if (= :collection concept-type)
-       (get indexes (when all-revisions-index? :all-collection-revisions :collections))
+       (get indexes (if all-revisions-index? :all-collection-revisions :collections))
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
          (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 
