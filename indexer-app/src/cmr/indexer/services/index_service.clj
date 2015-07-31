@@ -129,7 +129,7 @@
         (es/delete-document
           context
           concept-index
-          (concept-mapping-types concept-type) id revision-id ignore-conflict?)
+          (concept-mapping-types concept-type) id revision-id all-revisions-index? ignore-conflict?)
         (when (and (= :collection concept-type)
                    (not all-revisions-index?))
           (es/delete-by-query

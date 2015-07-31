@@ -12,6 +12,8 @@
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
   (fn [context all-revisions-index? msg]
+    (println "MSG........")
+    (println msg)
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default

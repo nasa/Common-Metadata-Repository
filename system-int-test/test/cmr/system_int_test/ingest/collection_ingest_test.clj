@@ -122,7 +122,7 @@
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (ingest/parse-ingest-body :json response)))))
-  (testing "xml response"
+  #_(testing "xml response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml

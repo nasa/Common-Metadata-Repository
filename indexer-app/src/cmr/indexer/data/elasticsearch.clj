@@ -251,11 +251,13 @@
 
 (deftracefn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
-  [context es-index es-type id revision-id ignore-conflict]
+  [context es-index es-type concept-id revision-id all-revisions-index? ignore-conflict]
   ;; Cannot use elastisch for deletion as we require special headers on delete
   (let [{:keys [admin-token]} (context->es-config context)
         {:keys [uri http-opts]} (context->conn context)
-        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type id revision-id)
+        elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
+                           elastic-id revision-id)
         response (client/delete delete-url
                                 (merge http-opts
                                        {:headers {"Authorization" admin-token
