@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.json-schema
-  "This contains code for loading UMM JSOn schemas."
+  "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [cmr.umm-spec.util :as spec-util]))

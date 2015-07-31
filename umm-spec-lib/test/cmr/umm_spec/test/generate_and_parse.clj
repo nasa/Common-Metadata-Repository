@@ -85,19 +85,19 @@
               expected (expected-manip-fn example-record)]
           (is (= expected parsed)))
         "echo10"
-        xm/umm-to-echo10-xml xm/echo10-xml-to-umm expected-echo10
+        xm/umm-c-to-echo10-xml xm/echo10-xml-to-umm-c expected-echo10
 
         "ISO19115 MENDS"
-        xm/umm-to-mends-xml xm/mends-xml-to-umm identity
+        xm/umm-c-to-mends-xml xm/mends-xml-to-umm-c identity
 
         "ISO19115 MENDS mapping style 2"
-        xm/umm-to-mends-xml2 xm/mends-xml-to-umm identity
+        xm/umm-c-to-mends-xml2 xm/mends-xml-to-umm-c identity
         )
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
-    (let [xml (xg/generate-xml xm/umm-to-echo10-xml example-record-echo10-supported)
-          parsed (xp/parse-xml xm/echo10-xml-to-umm xml)]
+    (let [xml (xg/generate-xml xm/umm-c-to-echo10-xml example-record-echo10-supported)
+          parsed (xp/parse-xml xm/echo10-xml-to-umm-c xml)]
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
 
 

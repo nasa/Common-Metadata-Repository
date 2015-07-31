@@ -1,12 +1,12 @@
 (ns cmr.umm-spec.simple-xpath
   "Simple XPath is an XPath implementation that works against XML parsed with clojure.data.xml
-  and against clojure records.
+  and against Clojure records.
 
   It has a limited support for the XPath specification. These are examples of XPaths that are
   supported. See the tests for a full set of example XPaths.
 
   * From root: /catalog/books/author
-  * Withing current context: author/name
+  * Within current context: author/name
   * Subselect by attribute equality: /catalog/books[@id='bk101']/author
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
@@ -38,7 +38,7 @@
 
   XPath contexts are used as the input to evaluation and also are the output of evaluation. They
   contain three pieces of information: a type (data or xml), the root of the data, and the context.
-  The type indicates whether the xpath context is used for clojure data or parsed XML. The root of
+  The type indicates whether the xpath context is used for Clojure data or parsed XML. The root of
   the data is kept so that XPaths against the root can be evaluated (/catalog/books). The context
   is used so that higher level XPaths may specify a location within the data to evaluate lower level
   XPaths against.
@@ -134,13 +134,12 @@
   [parts]
   (let [[source parts] (if (= "/" (first parts))
                          [:from-root parts]
-                         ;; We add an initial / here so because an xpath like "books" is inherently within the
-                         ;; top element
+                         ;; We add an initial / here because an xpath like "books" is inherently
+                         ;; within the top element.
                          [:from-context (cons "/" parts)])
         selectors (u/mapcatv parse-xpath-element parts)]
     {:source source
      :selectors selectors}))
-
 
 (defmulti process-xml-selector
   "Processes an XPath selector against a set of XML elements"
@@ -249,8 +248,9 @@
   "Parses an XPath into a data structure that allows it to be evaluated."
   [xpath]
   (let [parsed-xpath (if (= xpath "/")
-                       ;; A special case
+                       ;; A special case for returning the root element
                        (split-xpath->parsed-xpath ["/"])
+                       ;; Normal case
                        (->> (str/split xpath #"/")
                             (interpose "/")
                             (remove #(= "" %))

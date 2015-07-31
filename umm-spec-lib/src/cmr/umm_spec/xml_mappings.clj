@@ -14,12 +14,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mappings files
 
-(def ^:private umm-to-echo10-xml-file (io/resource "mappings/echo10/umm-to-echo10-xml.json"))
-(def ^:private echo10-xml-to-umm-file (io/resource "mappings/echo10/echo10-xml-to-umm.json"))
+(def ^:private umm-c-to-echo10-xml-file (io/resource "mappings/echo10/umm-c-to-echo10-xml.json"))
+(def ^:private echo10-xml-to-umm-c-file (io/resource "mappings/echo10/echo10-xml-to-umm-c.json"))
 
-(def ^:private umm-to-mends-xml-file (io/resource "mappings/iso19115-mends/umm-to-mends-xml.json"))
-(def ^:private umm-to-mends-xml2-file (io/resource "mappings/iso19115-mends/umm-to-mends-xml2.json"))
-(def ^:private mends-xml-to-umm-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm.json"))
+(def ^:private umm-c-to-mends-xml-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml.json"))
+(def ^:private umm-c-to-mends-xml2-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml2.json"))
+(def ^:private mends-xml-to-umm-c-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm-c.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing prep
@@ -144,26 +144,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined mappings
 
-(def echo10-xml-to-umm
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-xml-to-umm-file)))
+(def echo10-xml-to-umm-c
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-xml-to-umm-c-file)))
 
-(def umm-to-echo10-xml
-  (load-to-xml-mappings (spec-util/load-json-resource umm-to-echo10-xml-file)))
+(def umm-c-to-echo10-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-echo10-xml-file)))
 
-(def mends-xml-to-umm
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource mends-xml-to-umm-file)))
+(def mends-xml-to-umm-c
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource mends-xml-to-umm-c-file)))
 
-(def umm-to-mends-xml
-  (load-to-xml-mappings (spec-util/load-json-resource umm-to-mends-xml-file)))
+(def umm-c-to-mends-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-mends-xml-file)))
 
 ;; Temporary to test smaller representation
-(def umm-to-mends-xml2
-  (load-to-xml-mappings (spec-util/load-json-resource umm-to-mends-xml2-file)))
+(def umm-c-to-mends-xml2
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-mends-xml2-file)))
 
 (comment
 
   ;; They should be equal
-  (= umm-to-mends-xml2 umm-to-mends-xml)
+  (= umm-c-to-mends-xml2 umm-c-to-mends-xml)
 
 
   )
