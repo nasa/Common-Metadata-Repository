@@ -135,7 +135,7 @@
    :properties (load-properties properties)})
 
 (defn- load-to-xml-mappings
-  "TODO"
+  "Loads the XML Mappings by converting any syntactic sugar into their real representations."
   [mappings]
   (let [[root-def-name root-def] (first mappings)]
     {root-def-name (load-mapping root-def)}))
