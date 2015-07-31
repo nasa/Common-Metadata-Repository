@@ -21,15 +21,18 @@
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/index-concept context concept-id revision-id {:ignore-confict? true
-                                                         :all-revisions-index? all-revisions-index?}))
+  (indexer/index-concept
+    context concept-id revision-id {:ignore-confict? true
+                                    :all-revisions-index? all-revisions-index?}))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/delete-concept context concept-id revision-id true))
+  (indexer/delete-concept
+    context concept-id revision-id {:ignore-confict? true
+                                    :all-revisions-index? all-revisions-index?}))
 
 (defmethod handle-ingest-event :provider-delete
-  [context all-revisions-index? {:keys [provider-id]}]
+  [context _ {:keys [provider-id]}]
   (indexer/delete-provider context provider-id))
 
 (defn subscribe-to-ingest-events

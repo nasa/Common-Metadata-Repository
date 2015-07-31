@@ -36,11 +36,13 @@
       ;; Index a concept
       (POST "/" {body :body context :request-context params :params headers :headers}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-              ignore-conflict (ignore-conflict? params)
-              all-revisions? (= "true" (:all-revisions params))
-              options {:ignore_conflict? ignore-conflict
-                       :all-revisions? all-revisions?}]
-          (r/created (index-svc/index-concept context concept-id revision-id options))))
+              options {:ignore_conflict? (ignore-conflict? params)}]
+          ;; indexing all revisions index, does nothing for concept types that do not support all revisions index
+          (index-svc/index-concept
+            context concept-id revision-id (assoc options :all-revisions-index? true))
+          ;; indexing concept index
+          (r/created (index-svc/index-concept
+                       context concept-id revision-id (assoc options :all-revisions-index? false)))))
 
       ;; reset operation available just for development purposes
       ;; delete configured elastic indexes and create them back
@@ -74,8 +76,11 @@
       ;; Unindex a concept
       (context "/:concept-id/:revision-id" [concept-id revision-id]
         (DELETE "/" {:keys [request-context params headers]}
-          (let [ignore-conflict (ignore-conflict? params)]
-            (index-svc/delete-concept request-context concept-id revision-id ignore-conflict)
+          (let [options {:ignore_conflict? (ignore-conflict? params)}]
+            (index-svc/delete-concept
+              request-context concept-id revision-id (assoc options :all-revisions-index? true))
+            (index-svc/delete-concept
+              request-context concept-id revision-id (assoc options :all-revisions-index? false))
             {:status 204})))
 
       (common-routes/health-api-routes index-svc/health))

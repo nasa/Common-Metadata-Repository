@@ -56,6 +56,16 @@
           0
           concept-batches))
 
+(defn- indexing-applicable?
+  "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
+  Indexing is applicable for all concept types if all-revisions-index? is false and only for
+  collection concept type if all-revisions-index? is true."
+  [concept-type all-revisions-index?]
+  (if (or (not all-revisions-index?)
+          (and all-revisions-index? (= :collection concept-type)))
+    true
+    false))
+
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the providers given."
   [context provider-ids]
@@ -71,52 +81,59 @@
 (deftracefn index-concept
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
-  (info (format "Indexing concept %s, revision-id %s" concept-id revision-id))
   (when-not (and concept-id revision-id)
     (errors/throw-service-error
       :bad-request
       (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+
   (let [{:keys [ignore-conflict? all-revisions-index?]} options
-        concept-type (cs/concept-id->type concept-id)
-        concept-mapping-types (idx-set/get-concept-mapping-types context)
-        concept (meta-db/get-concept context concept-id revision-id)
-        umm-concept (umm/parse-concept concept)
-        delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])]
-    (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
-      (let [ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
-            concept-index (idx-set/get-concept-index-name context concept-id revision-id
-                                                           all-revisions-index? concept)
-            elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-            es-doc (es/concept->elastic-doc context concept umm-concept)]
-        (es/save-document-in-elastic
-          context
-          concept-index
-          (concept-mapping-types concept-type)
-          es-doc
-          elastic-id
-          revision-id
-          ttl
-          ignore-conflict?)))))
+        concept-type (cs/concept-id->type concept-id)]
+    (when (indexing-applicable? concept-type all-revisions-index?)
+      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
+                    concept-id revision-id all-revisions-index?))
+      (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
+            concept (meta-db/get-concept context concept-id revision-id)
+            umm-concept (umm/parse-concept concept)
+            delete-time (get-in umm-concept [:data-provider-timestamps :delete-time])]
+        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+          (let [ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
+                concept-index (idx-set/get-concept-index-name context concept-id revision-id
+                                                              all-revisions-index? concept)
+                elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+                es-doc (es/concept->elastic-doc context concept umm-concept)]
+            (es/save-document-in-elastic
+              context
+              concept-index
+              (concept-mapping-types concept-type)
+              es-doc
+              elastic-id
+              revision-id
+              ttl
+              ignore-conflict?)))))))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
-  [context id revision-id ignore-conflict]
-  (info (format "Deleting concept %s, revision-id %s" id revision-id))
+  [context id revision-id options]
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [concept-type (cs/concept-id->type id)
-        concept-index (idx-set/get-concept-index-name context id revision-id false)
-        concept-mapping-types (idx-set/get-concept-mapping-types context)]
-    (es/delete-document
-      context
-      concept-index
-      (concept-mapping-types concept-type) id revision-id ignore-conflict)
-    (when (= :collection concept-type)
-      (es/delete-by-query
-        context
-        (idx-set/get-granule-index-name-for-collection context id)
-        (concept-mapping-types :granule)
-        {:term {:collection-concept-id id}}))))
+  (let [{:keys [ignore-conflict? all-revisions-index?]} options
+        concept-type (cs/concept-id->type id)]
+    (when (indexing-applicable? concept-type all-revisions-index?)
+      (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
+                    id revision-id all-revisions-index?))
+      (let [concept-index (idx-set/get-concept-index-name context id revision-id all-revisions-index?)
+            concept-mapping-types (idx-set/get-concept-mapping-types context)]
+        (es/delete-document
+          context
+          concept-index
+          (concept-mapping-types concept-type) id revision-id ignore-conflict?)
+        (when (and (= :collection concept-type)
+                   (not all-revisions-index?))
+          (es/delete-by-query
+            context
+            (idx-set/get-granule-index-name-for-collection context id)
+            (concept-mapping-types :granule)
+            {:term {:collection-concept-id id}}))))))
 
 (deftracefn delete-provider
   "Delete all the concepts within the given provider"
