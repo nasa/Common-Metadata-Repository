@@ -13,6 +13,9 @@
 
   Note that there will be undefined behavior if an unsupported XPath is used.
 
+  Note that simple XPath does not support namespaces in XPaths. It ignores any XPath tag name prefixes
+  i.e. /xsl:foo/xsl:bar is equivalent to /foo/bar.
+
   ## Using with XML:
 
   1. Create an XPath context with some XML using `create-xpath-context-for-xml`
@@ -94,8 +97,12 @@
 (defn- create-tag-name-selector
   "Creates a selector that selects elements with a specific tag name."
   [tag-name]
-  {:type :tag-selector
-   :tag-name (keyword tag-name)})
+  ;; This removes namespaces from XPath tag names. Simple XPath does not support them and simply
+  ;; ignores them. This is because it uses clojure.data.xml which does not preserve namespaces
+  ;; after parsing :(
+  (let [tag-name (keyword (last (str/split (str tag-name) #":")))]
+    {:type :tag-selector
+     :tag-name (keyword tag-name)}))
 
 (def child-of-selector
   "A selector that selects the children of a set of elements."

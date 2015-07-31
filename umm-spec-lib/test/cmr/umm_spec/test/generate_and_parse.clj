@@ -11,7 +11,8 @@
             [clj-time.core :as t]
             [cmr.common.util :as u :refer [are2]]
             [cmr.umm-spec.util :as spec-util]
-            [cmr.common.xml.xslt :as xslt]))
+            [cmr.common.xml.xslt :as xslt]
+            [cmr.common.xml :as cx]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -60,8 +61,7 @@
 (comment
 
 
-  (println (spec-util/umm-c-to-xml example-record)
-           )
+  (println (spec-util/umm-c-to-xml example-record))
   (println (spec-util/umm-c-to-xml example-record-echo10-supported))
 
 
@@ -81,7 +81,7 @@
 
   (println (xg/generate-xml xm/umm-to-echo10-xml example-record))
 
-  (println (xg/generate-xml xm/umm-to-mends-xml example-record))
+  (println (cx/pretty-print-xml (xg/generate-xml xm/umm-c-to-mends-xml example-record)))
 
   (require '[cmr.umm-spec.simple-xpath :as sx])
 

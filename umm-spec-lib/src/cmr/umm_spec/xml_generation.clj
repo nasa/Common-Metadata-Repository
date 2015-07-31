@@ -17,9 +17,7 @@
                                 :let [element (generate-element xpath-context sub-def-name sub-def)]
                                 :when element]
                             element))]
-    (let [attributes (if namespaces
-                       (namespace-map->element-attributes namespaces)
-                       {})]
+    (let [attributes (or namespaces {})]
       (x/element element-name attributes content))))
 
 (defmethod generate-element "xpath"

@@ -104,6 +104,14 @@
                           "<author>Corets, Eva</author>"
                           "<author>Corets, Eva</author>"])
 
+       ;; namespaces are ignored
+       "/x:catalog/abc:book/author1:author"
+       (mapv x/parse-str ["<author>Gambardella, Matthew</author>"
+                          "<author>Ralls, Kim</author>"
+                          "<author>Corets, Eva</author>"
+                          "<author>Corets, Eva</author>"
+                          "<author>Corets, Eva</author>"])
+
        "/catalog/book[@id='bk101']/author"
        [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
