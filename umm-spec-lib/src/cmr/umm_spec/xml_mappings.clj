@@ -8,6 +8,9 @@
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.util :as util]
             [cmr.umm-spec.util :as spec-util]
+            [cmr.umm-spec.simple-xpath :as sxp]
+
+            [cmr.common.xml.xslt :as xslt]
 
             ;; Models must be required to be available
             [cmr.umm-spec.models.common]
@@ -25,6 +28,9 @@
 
 (def ^:private umm-c-to-mends-xml-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml.json"))
 (def ^:private umm-c-to-mends-xml2-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml2.json"))
+
+(def umm-c-to-mends-xml-xsl-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml.xsl"))
+
 (def ^:private mends-xml-to-umm-c-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm-c.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,7 +132,7 @@
 
 (defmethod load-mapping "xpath"
   [mapping]
-  mapping)
+  (update-in mapping [:value] sxp/parse-xpath))
 
 (defmethod load-mapping "array"
   [mapping]
@@ -165,6 +171,12 @@
 ;; Temporary to test smaller representation
 (def umm-c-to-mends-xml2
   (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-mends-xml2-file)))
+
+;; Temporary test with XSLT
+
+(def umm-c-to-mends-xml-xsl
+  (xslt/read-template umm-c-to-mends-xml-xsl-file))
+
 
 (comment
 

@@ -9,7 +9,9 @@
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
             [clj-time.core :as t]
-            [cmr.common.util :as u :refer [are2]]))
+            [cmr.common.util :as u :refer [are2]]
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.common.xml.xslt :as xslt]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -52,7 +54,25 @@
     {:EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
      :EntryTitle "The entry title V5"}))
 
+
+
+
 (comment
+
+
+  (println (spec-util/umm-c-to-xml example-record)
+           )
+  (println (spec-util/umm-c-to-xml example-record-echo10-supported))
+
+
+  (println (xslt/transform (spec-util/umm-c-to-xml example-record)
+                           xm/umm-c-to-mends-xml-xsl))
+
+
+  (println (xslt/transform
+             (spec-util/umm-c-to-xml example-record)
+             (xslt/read-template (clojure.java.io/resource "mappings/iso19115-mends/sample.xsl"))))
+
 
   (xm/cleanup-schema
     (xm/get-to-umm-mappings
@@ -65,6 +85,22 @@
 
   (require '[cmr.umm-spec.simple-xpath :as sx])
 
+  (require '[criterium.core :as c])
+
+  ;; 378 microseconds
+  ;; 339 with pre-parsing xpaths
+  ;; 175 without emit-str
+  ;; 162 without namespace translation
+  (c/with-progress-reporting
+    (c/bench
+      (xg/generate-xml xm/umm-c-to-mends-xml example-record)))
+
+  ;; 299 microseconds
+  ;; 172 with emit-str
+  (c/with-progress-reporting
+    (c/bench
+      (let [umm-xml (spec-util/umm-c-to-xml example-record)]
+        (xslt/transform umm-xml xm/umm-c-to-mends-xml-xsl))))
 
   )
 
@@ -75,8 +111,8 @@
   ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
   ;; entry id concatenated with the version id.
   (update-in expected [:EntryId :Id] #(str % "_"
-                                       ;; TODO put version here once it's added to UMM.
-                                       )))
+                                           ;; TODO put version here once it's added to UMM.
+                                           )))
 
 (deftest roundtrip-gen-parse
   (are2 [to-xml to-umm expected-manip-fn]
@@ -93,6 +129,13 @@
         "ISO19115 MENDS mapping style 2"
         xm/umm-c-to-mends-xml2 xm/mends-xml-to-umm-c identity
         )
+
+  (testing "iso mends using XSLT"
+    (let [umm-xml (spec-util/umm-c-to-xml example-record)
+          xml (xslt/transform umm-xml xm/umm-c-to-mends-xml-xsl)
+          parsed (xp/parse-xml xm/mends-xml-to-umm-c xml)]
+      (is (= example-record parsed))))
+
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"

@@ -11,13 +11,6 @@
   (fn [xpath-context element-name xml-def]
     (:type xml-def)))
 
-(defn- namespace-map->element-attributes
-  "Converts a map of namespaces into the attributes to put on an element."
-  [namespaces]
-  (u/map-keys (fn [prefix]
-                (keyword (str "xmlns:" (name prefix))))
-              namespaces))
-
 (defmethod generate-element "object"
   [xpath-context element-name {:keys [properties namespaces]}]
   (when-let [content (seq (for [[sub-def-name sub-def] properties
@@ -31,8 +24,7 @@
 
 (defmethod generate-element "xpath"
   [xpath-context element-name {:keys [value]}]
-  (when-let [value (->> (sxp/parse-xpath value)
-                        (sxp/evaluate xpath-context)
+  (when-let [value (->> (sxp/evaluate xpath-context value)
                         :context
                         first)]
     (x/element element-name {} (str value))))
@@ -51,6 +43,5 @@
   [mappings record]
   (let [[root-def-name root-def] (first mappings)
         element (generate-element (sxp/create-xpath-context-for-data record) root-def-name root-def)]
-    ;; TODO using indent-str for readability while testing.
-    (x/indent-str element)))
+    (x/emit-str element)))
 
