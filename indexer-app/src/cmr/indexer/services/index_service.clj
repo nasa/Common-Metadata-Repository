@@ -48,9 +48,10 @@
   directly to this function - it does not retrieve them from metadata db. The bulk API is
   invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
   of concepts that have been indexed"
-  [context concept-batches]
+  [context concept-batches all-revisions-index?]
   (reduce (fn [num-indexed batch]
-            (let [batch (es/prepare-batch context (filter-expired-concepts batch))]
+            (let [batch (es/prepare-batch context (filter-expired-concepts batch)
+                                          all-revisions-index?)]
               (es/bulk-index context batch)
               (+ num-indexed (count batch))))
           0
@@ -75,8 +76,10 @@
   (acl-fetcher/refresh-acl-cache context)
 
   (doseq [provider-id provider-ids]
-    (let [collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
-      (bulk-index context [collections]))))
+    (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})
+          all-collections (meta-db/find-collections context {:provider-id provider-id :latest false})]
+      (bulk-index context [latest-collections] false)
+      (bulk-index context [all-collections] true))))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
