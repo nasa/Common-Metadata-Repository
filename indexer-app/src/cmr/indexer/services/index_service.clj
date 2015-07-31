@@ -76,7 +76,6 @@
     (errors/throw-service-error
       :bad-request
       (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
-
   (let [{:keys [ignore-conflict? all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
         concept-mapping-types (idx-set/get-concept-mapping-types context)

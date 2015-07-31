@@ -36,8 +36,11 @@
       ;; Index a concept
       (POST "/" {body :body context :request-context params :params headers :headers}
         (let [{:keys [concept-id revision-id]} (walk/keywordize-keys body)
-              ignore-conflict (ignore-conflict? params)]
-          (r/created (index-svc/index-concept context concept-id revision-id ignore-conflict))))
+              ignore-conflict (ignore-conflict? params)
+              all-revisions? (= "true" (:all-revisions params))
+              options {:ignore_conflict? ignore-conflict
+                       :all-revisions? all-revisions?}]
+          (r/created (index-svc/index-concept context concept-id revision-id options))))
 
       ;; reset operation available just for development purposes
       ;; delete configured elastic indexes and create them back

@@ -34,7 +34,6 @@
      :project-sn project-short-names
      :project-sn.lowercase (map s/lower-case project-short-names)}))
 
-
 (def test-config
   "Return the configuration for elasticsearch"
   {:host "localhost"
