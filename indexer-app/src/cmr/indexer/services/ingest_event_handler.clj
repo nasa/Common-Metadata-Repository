@@ -11,31 +11,36 @@
 
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
-  (fn [context msg]
+  (fn [context all-revisions-index? msg]
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default
-  [_ _]
+  [_ _ _]
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
   )
 
 (defmethod handle-ingest-event :concept-update
-  [context {:keys [concept-id revision-id]}]
-  (indexer/index-concept context concept-id revision-id {:ignore-confict? true}))
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  (indexer/index-concept context concept-id revision-id {:ignore-confict? true
+                                                         :all-revisions-index? all-revisions-index?}))
 
 (defmethod handle-ingest-event :concept-delete
-  [context {:keys [concept-id revision-id]}]
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
   (indexer/delete-concept context concept-id revision-id true))
 
 (defmethod handle-ingest-event :provider-delete
-  [context {:keys [provider-id]}]
+  [context all-revisions-index? {:keys [provider-id]}]
   (indexer/delete-provider context provider-id))
 
 (defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."
   [context]
-  (let [queue-broker (get-in context [:system :queue-broker])
-        queue-name (config/index-queue-name)]
+  (let [queue-broker (get-in context [:system :queue-broker])]
     (dotimes [n (config/queue-listener-count)]
-      (queue/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
+      (queue/subscribe queue-broker
+                       (config/index-queue-name)
+                       #(handle-ingest-event context false %))
+      (queue/subscribe queue-broker
+                       (config/all-revisions-index-queue-name)
+                       #(handle-ingest-event context true %)))))
 
