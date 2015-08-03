@@ -126,29 +126,52 @@
                     id revision-id all-revisions-index?))
       (let [concept-index (idx-set/get-concept-index-name context id revision-id all-revisions-index?)
             concept-mapping-types (idx-set/get-concept-mapping-types context)]
-        (es/delete-document
-          context
-          concept-index
-          (concept-mapping-types concept-type) id revision-id all-revisions-index? ignore-conflict?)
-        (when (and (= :collection concept-type)
-                   (not all-revisions-index?))
-          (es/delete-by-query
-            context
-            (idx-set/get-granule-index-name-for-collection context id)
-            (concept-mapping-types :granule)
-            {:term {:collection-concept-id id}}))))))
+        (if all-revisions-index?
+          ;; save tombstone in all revisions collection index
+          (let [concept (meta-db/get-concept context id revision-id)
+                umm-concept (umm/parse-concept concept)
+                revision-id (str (inc (Integer/parseInt revision-id)))
+                elastic-id (get-elastic-id id revision-id all-revisions-index?)
+                es-doc (es/concept->elastic-doc context concept umm-concept)]
+            (es/save-document-in-elastic
+              context
+              concept-index
+              (concept-mapping-types concept-type)
+              es-doc
+              elastic-id
+              revision-id
+              nil
+              ignore-conflict?))
+          ;; delete concept from primary concept index
+          (do
+            (es/delete-document
+              context
+              concept-index
+              (concept-mapping-types concept-type) id revision-id all-revisions-index? ignore-conflict?)
+            ;; propagate collection deletion to granules
+            (when (= :collection concept-type)
+              (es/delete-by-query
+                context
+                (idx-set/get-granule-index-name-for-collection context id)
+                (concept-mapping-types :granule)
+                {:term {:collection-concept-id id}}))))))))
 
 (deftracefn delete-provider
   "Delete all the concepts within the given provider"
   [context provider-id]
   (info (format "Deleting provider-id %s" provider-id))
-  (let [collection-index (get-in (idx-set/get-concept-type-index-names context)
-                                 [:collection :collections])
+  (let [index-names (idx-set/get-concept-type-index-names context)
         concept-mapping-types (idx-set/get-concept-mapping-types context)]
     ;; delete the collections
     (es/delete-by-query
       context
-      collection-index
+      (get-in index-names [:collection :collections])
+      (concept-mapping-types :collection)
+      {:term {:provider-id provider-id}})
+    ;; delete all revisions of collections
+    (es/delete-by-query
+      context
+      (get-in index-names [:collection :all-collection-revisions])
       (concept-mapping-types :collection)
       {:term {:provider-id provider-id}})
     ;; delete the granules

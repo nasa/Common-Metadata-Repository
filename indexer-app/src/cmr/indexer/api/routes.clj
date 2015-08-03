@@ -70,7 +70,6 @@
       (context "/provider/:provider-id" [provider-id]
         (DELETE "/" {:keys [request-context params headers]}
           (acl/verify-ingest-management-permission request-context :update)
-
           (index-svc/delete-provider request-context provider-id)
           {:status 200}))
 
