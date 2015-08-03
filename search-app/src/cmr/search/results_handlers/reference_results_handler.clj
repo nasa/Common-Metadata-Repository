@@ -14,7 +14,8 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
   [concept-type query]
   ["granule-ur"
-   "provider-id"])
+   "provider-id"
+   "concept-id"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :xml]
   [concept-type query]
