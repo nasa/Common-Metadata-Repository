@@ -118,11 +118,12 @@
 (deftest delete-collection-with-accept-header-test
   (testing "json response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
+          _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :json
                                                                            :raw? true})]
       (is (= {:concept-id (:concept-id coll1) :revision-id 2}
              (ingest/parse-ingest-body :json response)))))
-  #_(testing "xml response"
+  (testing "xml response"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           _ (index/wait-until-indexed)
           response (ingest/delete-concept (d/item->concept coll1 :echo10) {:accept-format :xml

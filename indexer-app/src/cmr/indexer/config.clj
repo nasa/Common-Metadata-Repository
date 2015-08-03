@@ -8,7 +8,7 @@
 
 (defconfig all-revisions-index-queue-name
   "The queue containing ingest events for the indexer all revisions index"
-  {:default "cmr_index.all_revisons_queue"})
+  {:default "cmr_index.all_revisions_queue"})
 
 (defconfig ingest-exchange-name
   "The ingest exchange to which messages are published."
