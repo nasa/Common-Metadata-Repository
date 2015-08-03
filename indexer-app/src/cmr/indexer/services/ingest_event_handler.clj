@@ -12,8 +12,6 @@
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
   (fn [context all-revisions-index? msg]
-    (println "MSG........")
-    (println msg)
     (keyword (:action msg))))
 
 (defmethod handle-ingest-event :default
@@ -24,13 +22,13 @@
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (indexer/index-concept
-    context concept-id revision-id {:ignore-confict? true
+    context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 
 (defmethod handle-ingest-event :concept-delete
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (indexer/delete-concept
-    context concept-id revision-id {:ignore-confict? true
+    context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 
 (defmethod handle-ingest-event :provider-delete

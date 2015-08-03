@@ -316,14 +316,6 @@
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
 
-      ;; Retrieve concept maps with basic data in metadata-db (possibly excluding metadata)
-      ;; We are limiting this to admin acccess for now and will add access to users who have
-      ;; been granted read access to the providers' data in CMR-1771.
-      (context "/concept-revisions" []
-        (GET "/:concept-type" {:keys [params headers request-context]}
-          (acl/verify-ingest-management-permission request-context :read)
-          (find-concept-revisions request-context params headers)))
-
       ;; Retrieve by cmr concept id or concept id and revision id
       (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]
         ;; OPTIONS method is needed to support CORS when custom headers are used in requests to the endpoint.
