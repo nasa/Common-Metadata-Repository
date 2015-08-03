@@ -330,7 +330,7 @@
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible :hierarchical-facets :include-highlights
-                       :all-revisions-index?)]
+                       :all-revisions)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

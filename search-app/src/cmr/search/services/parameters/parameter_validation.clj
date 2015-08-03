@@ -27,7 +27,7 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :echo-compatible :include-granule-counts
-    :include-has-granules :include-facets :hierarchical-facets :include-highlights})
+    :include-has-granules :include-facets :hierarchical-facets :include-highlights :all-revisions})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -254,7 +254,7 @@
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :hierarchical-facets :include-highlights)
+                         :hierarchical-facets :include-highlights :all-revisions)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))

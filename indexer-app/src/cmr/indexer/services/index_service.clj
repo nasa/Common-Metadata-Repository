@@ -129,10 +129,8 @@
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
           (let [concept (meta-db/get-concept context id revision-id)
-                umm-concept (umm/parse-concept concept)
-                revision-id (str (inc (Integer/parseInt revision-id)))
                 elastic-id (get-elastic-id id revision-id all-revisions-index?)
-                es-doc (es/concept->elastic-doc context concept umm-concept)]
+                es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
               context
               concept-index

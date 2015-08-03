@@ -269,19 +269,6 @@
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 
-(defn- find-concept-revisions
-  "Calls query service to get concept revisions for the given parameters"
-  [context params headers]
-  (let [params (-> params
-                   (dissoc params :token)
-                   (update-in [:concept-type] (comp keyword inf/singular)))
-        _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
-                        (:client-id context) (pr-str params)))
-        results (query-svc/find-concept-revisions context params)]
-    {:status 200
-     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
-     :body results}))
-
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]

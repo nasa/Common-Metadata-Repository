@@ -22,6 +22,7 @@
    "provider-id"
    "short-name"
    "version-id"
+   "concept-id"
    "_score"])
 
 (def concept-type->name-key
@@ -32,14 +33,12 @@
 (defmethod elastic-results/elastic-result->query-result-item :xml
   [context query elastic-result]
   (let [name-key (concept-type->name-key (:concept-type query))
-        ;; TODO - update this
-        {concept-id :_id
-         revision-id :_version
+        {revision-id :_version
          score :_score
-         {[name-value] name-key} :fields} elastic-result]
+         {[name-value] name-key [concept-id] :concept-id} :fields} elastic-result]
     {:concept-id concept-id
      :revision-id revision-id
-     :location (format "%s%s" (url/reference-root context) concept-id)
+     :location (format "%s%s/%s" (url/reference-root context) concept-id revision-id)
      :name name-value
      :score (r/normalize-score score)}))
 
