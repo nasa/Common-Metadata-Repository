@@ -113,7 +113,7 @@
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
-  (bs/bootstrap-virtual-products context params)
+  (bs/bootstrap-virtual-products context (= "true" (:synchronous params)))
   {:status 202 :body {:message "Bootstrapping virtual products."}})
 
 (defn- build-routes [system]

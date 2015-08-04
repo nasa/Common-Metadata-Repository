@@ -77,9 +77,10 @@
       (go (>! channel params)))))
 
 (defn bootstrap-virtual-products
-  "Asynchronous. Initializes virtual products."
-  [context params]
-  (info "Adding message to virtual products channel:" params)
-  (if (:synchronous params)
-    (vp/bootstrap-virtual-products (:system context) params)
-    (go (-> context :system (get vp/channel-name) (>! params)))))
+  "Initializes virtual products."
+  [context synchronous]
+  (if synchronous
+    (vp/bootstrap-virtual-products (:system context))
+    (go
+      (info "Adding message to virtual products channel.")
+      (-> context :system (get vp/channel-name) (>! params)))))
