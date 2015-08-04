@@ -1,10 +1,6 @@
 (ns cmr.bootstrap.embedded-system-helper
   "Contains general helper functions")
 
-(defn get-embedded
-  [system k]
-  (get-in system [:embedded-systems k]))
-
 (defn get-metadata-db
   "Returns the embedded metadata-db from the given bootstrap system"
   [system]
@@ -22,4 +18,4 @@
 
 (defn get-virtual-products
   [system]
-  (get-embedded system :virtual-products))
+  (get-in system [:embedded-systems :virtual-products]))
