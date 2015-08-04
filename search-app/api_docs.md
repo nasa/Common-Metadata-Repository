@@ -1012,6 +1012,43 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date
 
+
+#### Retrieving All Revisions of a Collection
+
+In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in `all_revisons=true` with the URL parameters. Only the reference format is supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/collections?provider=PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>5</took>
+        <references>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>http://localhost:3003/concepts/C1200000000-PROV1/3</location>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <revision-id>2</revision-id>
+                <deleted>true</deleted>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>http://localhost:3003/concepts/C1200000000-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
+```
+
 ### Granule Search Examples
 
 #### Find all granules
