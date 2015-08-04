@@ -14,6 +14,7 @@
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
                 :entry-id :string
+                :native-id :string
                 :provider :string
                 :attribute :attribute
                 :short-name :string

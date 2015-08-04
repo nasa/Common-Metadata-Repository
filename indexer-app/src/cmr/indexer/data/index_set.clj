@@ -162,6 +162,7 @@
                 :_ttl {:enabled true},
                 :properties (merge {:deleted (stored bool-field-mapping) ; deleted=true is a tombstone
                                     :native-id (stored string-field-mapping)
+                                    :native-id.lowercase string-field-mapping
                                     ;; TODO Figure out where this comes from and comment source
                                     :revision-date         date-field-mapping
                                     :permitted-group-ids (stored string-field-mapping)
