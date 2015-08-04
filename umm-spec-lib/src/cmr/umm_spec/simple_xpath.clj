@@ -1,17 +1,20 @@
 (ns cmr.umm-spec.simple-xpath
   "Simple XPath is an XPath implementation that works against XML parsed with clojure.data.xml
-  and against clojure records.
+  and against Clojure records.
 
   It has a limited support for the XPath specification. These are examples of XPaths that are
   supported. See the tests for a full set of example XPaths.
 
   * From root: /catalog/books/author
-  * Withing current context: author/name
+  * Within current context: author/name
   * Subselect by attribute equality: /catalog/books[@id='bk101']/author
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
 
   Note that there will be undefined behavior if an unsupported XPath is used.
+
+  Note that simple XPath does not support namespaces in XPaths. It ignores any XPath tag name prefixes
+  i.e. /xsl:foo/xsl:bar is equivalent to /foo/bar.
 
   ## Using with XML:
 
@@ -38,7 +41,7 @@
 
   XPath contexts are used as the input to evaluation and also are the output of evaluation. They
   contain three pieces of information: a type (data or xml), the root of the data, and the context.
-  The type indicates whether the xpath context is used for clojure data or parsed XML. The root of
+  The type indicates whether the xpath context is used for Clojure data or parsed XML. The root of
   the data is kept so that XPaths against the root can be evaluated (/catalog/books). The context
   is used so that higher level XPaths may specify a location within the data to evaluate lower level
   XPaths against.
@@ -94,8 +97,12 @@
 (defn- create-tag-name-selector
   "Creates a selector that selects elements with a specific tag name."
   [tag-name]
-  {:type :tag-selector
-   :tag-name (keyword tag-name)})
+  ;; This removes namespaces from XPath tag names. Simple XPath does not support them and simply
+  ;; ignores them. This is because it uses clojure.data.xml which does not preserve namespaces
+  ;; after parsing :(
+  (let [tag-name (keyword (last (str/split (str tag-name) #":")))]
+    {:type :tag-selector
+     :tag-name (keyword tag-name)}))
 
 (def child-of-selector
   "A selector that selects the children of a set of elements."
@@ -134,13 +141,12 @@
   [parts]
   (let [[source parts] (if (= "/" (first parts))
                          [:from-root parts]
-                         ;; We add an initial / here so because an xpath like "books" is inherently within the
-                         ;; top element
+                         ;; We add an initial / here because an xpath like "books" is inherently
+                         ;; within the top element.
                          [:from-context (cons "/" parts)])
         selectors (u/mapcatv parse-xpath-element parts)]
     {:source source
      :selectors selectors}))
-
 
 (defmulti process-xml-selector
   "Processes an XPath selector against a set of XML elements"
@@ -183,7 +189,9 @@
 
 (defmethod process-xml-selector :nth-selector
   [elements {:keys [index]}]
-  [(nth elements index)])
+  (if (seq elements)
+    [(nth elements index)]
+    []))
 
 (defn- as-vector
   "Returns data as a vector if it's not one already"
@@ -221,7 +229,9 @@
 
 (defmethod process-data-selector :nth-selector
   [data {:keys [index]}]
-  [(nth (as-vector data) index)])
+  (if (seq data)
+    [(nth (as-vector data) index)]
+    []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -244,13 +254,15 @@
 (defn parse-xpath
   "Parses an XPath into a data structure that allows it to be evaluated."
   [xpath]
-  (if (= xpath "/")
-    ;; A special case
-    (split-xpath->parsed-xpath ["/"])
-    (->> (str/split xpath #"/")
-         (interpose "/")
-         (remove #(= "" %))
-         split-xpath->parsed-xpath)))
+  (let [parsed-xpath (if (= xpath "/")
+                       ;; A special case for returning the root element
+                       (split-xpath->parsed-xpath ["/"])
+                       ;; Normal case
+                       (->> (str/split xpath #"/")
+                            (interpose "/")
+                            (remove #(= "" %))
+                            split-xpath->parsed-xpath))]
+    (assoc parsed-xpath :original-xpath xpath)))
 
 (defmulti evaluate
   "Evaluates a parsed XPath against the given XPath context."
@@ -258,43 +270,49 @@
     (:type xpath-context)))
 
 (defmethod evaluate :xml
-  [xpath-context {:keys [source selectors]}]
-  (let [source-elements (cond
-                          (= source :from-root) [(:root xpath-context)]
-                          (= source :from-context) (:context xpath-context)
-                          :else (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
-    (assoc xpath-context
-           :context (process-selectors source-elements selectors process-xml-selector))))
+  [xpath-context {:keys [source selectors original-xpath]}]
+  (try
+    (let [source-elements (cond
+                            (= source :from-root) [(:root xpath-context)]
+                            (= source :from-context) (:context xpath-context)
+                            :else (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+      (assoc xpath-context
+             :context (process-selectors source-elements selectors process-xml-selector)))
+    (catch Exception e
+      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
 (defmethod evaluate :data
-  [xpath-context {:keys [source selectors]}]
-  (let [[data selectors] (cond
-                           (= source :from-root)
-                           ;; We drop the first two since it's always child of then the root element
-                           ;; name. In the case of data these two both just refer to the name of the
-                           ;; root element but there's not really a holder for that data.
-                           [(:root xpath-context) (drop 2 selectors)]
+  [xpath-context {:keys [source selectors original-xpath]}]
+  (try
+    (let [[data selectors] (cond
+                             (= source :from-root)
+                             ;; We drop the first two since it's always child of then the root element
+                             ;; name. In the case of data these two both just refer to the name of the
+                             ;; root element but there's not really a holder for that data.
+                             [(:root xpath-context) (drop 2 selectors)]
 
-                           (= source :from-context)
-                           [(:context xpath-context) selectors]
+                             (= source :from-context)
+                             [(:context xpath-context) selectors]
 
-                           :else
-                           (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
-    (assoc xpath-context
-           :context (process-selectors data selectors process-data-selector))))
+                             :else
+                             (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+      (assoc xpath-context
+             :context (process-selectors data selectors process-data-selector)))
+    (catch Exception e
+      (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
 
 (comment
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog")))
+                      (parse-xpath "/catalog")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books")))
+                      (parse-xpath "/catalog/books")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books/genre")))
+                      (parse-xpath "/catalog/books/genre")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books[@id='bk101']/genre")))
+                      (parse-xpath "/catalog/books[@id='bk101']/genre")))
   (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-              (parse-xpath "/catalog/books[price='5.95']/title")))
+                      (parse-xpath "/catalog/books[price='5.95']/title")))
 
   (defn try-xpaths
     [& xpaths]
