@@ -45,17 +45,58 @@
 
 (use-fixtures :each virtual-products-fixture)
 
-(deftest test-virtual-product-bootstrapping
+;; The following function is copied from the other virtual product
+;; test namespace; needs a new home.
+
+(defn- assert-matching-granule-urs
+  "Asserts that the references found from a search match the expected granule URs."
+  [expected-granule-urs {:keys [refs]}]
+  (is (= (set expected-granule-urs)
+         (set (map :name refs)))))
+
+;; The following test is copied from the main virtual product
+;; integration tests, but initiates the virtual product bootstrap
+;; process before checking for virtual products.
+
+(deftest virtual-product-bootstrap
   (let [source-collections (vp/ingest-source-collections)
-        source-granules    (doall
-                            (for [source-coll source-collections
-                                  :let [{:keys [provider-id entry-title]} source-coll]
-                                  granule-ur (vp-config/sample-source-granule-urs
-                                              [provider-id entry-title])]
-                              (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))]
-    (vp/ingest-virtual-collections source-collections)
+        ;; Ingest the virtual collections. For each virtual collection associate it with the source
+        ;; collection to use later.
+        vp-colls (reduce (fn [new-colls source-coll]
+                           (into new-colls (map #(assoc % :source-collection source-coll)
+                                                (vp/ingest-virtual-collections [source-coll]))))
+                         []
+                         source-collections)
+        source-granules (doall (for [source-coll source-collections
+                                     :let [{:keys [provider-id entry-title]} source-coll]
+                                     granule-ur (vp-config/sample-source-granule-urs
+                                                  [provider-id entry-title])]
+                                 (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))
+        all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
+                                         (map :granule-ur source-granules))]
     (index/wait-until-indexed)
+
+    (testing "Only source granules exist (virtual products system is disabled)"
+      (assert-matching-granule-urs
+       (map :granule-ur source-granules)
+       (search/find-refs :granule {:page-size 50})))
+
     (bootstrap/bootstrap-virtual-products)
     (index/wait-until-indexed)
-    ;; TODO: Make sure all the appropriate virtual granules were created.
-    ))
+
+    (testing "Find all granules"
+      (assert-matching-granule-urs
+        all-expected-granule-urs
+        (search/find-refs :granule {:page-size 50})))
+
+    (testing "Find all granules in virtual collections"
+      (doseq [vp-coll vp-colls
+              :let [{:keys [provider-id source-collection]} vp-coll
+                    source-short-name (get-in source-collection [:product :short-name])
+                    vp-short-name (get-in vp-coll [:product :short-name])]]
+        (assert-matching-granule-urs
+          (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
+               (vp-config/sample-source-granule-urs
+                 [provider-id (:entry-title source-collection)]))
+          (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                      :page-size 50}))))))
