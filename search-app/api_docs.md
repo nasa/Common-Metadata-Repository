@@ -1418,31 +1418,6 @@ The following extensions and MIME types are supported by the
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
 
-### Retrieve concept maps with parameters
-
-This allows retrieving of basic concept maps with or without metadata. The only supported result format is JSON.
-
-  curl -i "%CMR-ENDPOINT%/concept-revisions/collections"
-  curl -i "%CMR-ENDPOINT%/concept-revisions/collections?provider_id=PROV1"
-
- The following parameters in any combination are supported for collections:
-
-  * `provider_id`
-  * `entry_title`
-  * `entry_id`
-  * `short_name`
-  * `version_id`
-  * `concept_id`
-
-Granules are _not_ supported.
-
-Note that `provider_id` is required for retrieving granule concept maps.
-
-Additional parameters available to all concept map searches:
-
-  * `latest` - when set to "true" only the latest revision of each concept is returned (defaults to "false")
-  * `exclude_metadata` - when set to "true" the original metadata ingested for each concept (in native format) is excluded from the concept-maps (defaults to "false")
-
 ### Search with POST
 
 Search collections or granules with query parameters encoded form in POST request body.
