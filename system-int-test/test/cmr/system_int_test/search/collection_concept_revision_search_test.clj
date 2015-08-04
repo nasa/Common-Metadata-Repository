@@ -15,11 +15,10 @@
         concept {:provider-id "PROV1"
                  :concept-type :collection
                  :native-id (:entry-title coll1-1)}
-        coll1-2 (merge (ingest/delete-concept concept) concept {:deleted true})
+        coll1-tombstone (merge (ingest/delete-concept concept) concept {:deleted true})
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))]
     (index/wait-until-indexed)
-
-    (testing "find-references-with-all-revisions"
+    (testing "find-references-with-all-revisions-paramete"
       (are2 [collections params]
             (d/refs-match? collections (search/find-refs :collection params))
 
@@ -27,8 +26,12 @@
             [coll1-3]
             {:provider-id "PROV1" :all-revisions false}
 
+            "all-revisions-unspecified"
+            [coll1-3]
+            {:provider-id "PROV1"}
+
             "all-revisions=true"
-            [coll1-1 coll1-2 coll1-3]
+            [coll1-1 coll1-tombstone coll1-3]
             {:provider-id "PROV1" :all-revisions true}))))
 
 (deftest search-granule-all-revisions

@@ -347,6 +347,7 @@
                        :name (cx/string-at-path ref-elem [:name])
                        :revision-id (cx/long-at-path ref-elem [:revision-id])
                        :location (cx/string-at-path ref-elem [:location])
+                       :deleted (cx/bool-at-path ref-elem [:deleted])
                        :granule-count (cx/long-at-path ref-elem [:granule-count])
                        :has-granules (cx/bool-at-path ref-elem [:has-granules])
                        :score (cx/double-at-path ref-elem [:score])}))

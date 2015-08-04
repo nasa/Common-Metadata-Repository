@@ -113,11 +113,16 @@
 (defn item->ref
   "Converts an item into the expected reference"
   [item]
-  (let [{:keys [concept-id revision-id]} item]
-    {:name (or (:native-id item) (item->native-id item))
-     :id concept-id
-     :location (format "%s%s/%s" (url/location-root) (:concept-id item) revision-id)
-     :revision-id revision-id}))
+  (let [{:keys [concept-id revision-id deleted]} item
+        ref {:name (or (:native-id item) (item->native-id item))
+             :id concept-id
+             :location (format "%s%s/%s" (url/location-root) (:concept-id item) revision-id)
+             :revision-id revision-id}]
+    (if deleted
+      (-> ref
+          (assoc :deleted true)
+          (dissoc :location))
+      ref)))
 
 (defmulti item->metadata-result
   "Converts an item into the expected metadata result"

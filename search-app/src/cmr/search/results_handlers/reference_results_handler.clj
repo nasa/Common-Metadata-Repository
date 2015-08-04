@@ -24,6 +24,7 @@
    "short-name"
    "version-id"
    "concept-id"
+   "deleted"
    "_score"])
 
 (def concept-type->name-key
@@ -36,9 +37,10 @@
   (let [name-key (concept-type->name-key (:concept-type query))
         {revision-id :_version
          score :_score
-         {[name-value] name-key [concept-id] :concept-id} :fields} elastic-result]
+         {[name-value] name-key [concept-id] :concept-id [deleted] :deleted} :fields} elastic-result]
     {:concept-id concept-id
      :revision-id revision-id
+     :deleted deleted
      :location (format "%s%s/%s" (url/reference-root context) concept-id revision-id)
      :name name-value
      :score (r/normalize-score score)}))
@@ -64,11 +66,13 @@
 (defmethod reference->xml-element false
   [_ results reference]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [concept-id revision-id location name score]} reference]
+        {:keys [concept-id revision-id location name score deleted]} reference]
     (x/element :reference {}
                (x/element :name {} name)
                (x/element :id {} concept-id)
-               (x/element :location {} location)
+               (if deleted
+                 (x/element :deleted {} "true")
+                 (x/element :location {} location))
                (x/element :revision-id {} (str revision-id))
                (when has-granules-map
                  (x/element :has-granules {} (get has-granules-map concept-id false)))
