@@ -83,4 +83,4 @@
     (vp/bootstrap-virtual-products (:system context))
     (go
       (info "Adding message to virtual products channel.")
-      (-> context :system (get vp/channel-name) (>! params)))))
+      (-> context :system (get vp/channel-name) (>! :bootstrap-virtual-products)))))
