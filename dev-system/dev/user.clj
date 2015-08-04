@@ -78,47 +78,4 @@
   (future
     (tests/run-all-tests {:fail-fast? true :speak? true})))
 
-;;; Use these functions at the REPL for fun and profit. Soon you won't
-;;; want to do anything else.
-
-;; this is a function so that you can load the code while (reset)
-;; is running
-(defn get-db [] (-> system :apps :metadata-db :db))
-
-(defn get-ingest [] (-> system :apps :ingest))
-
-(defn get-providers
-  []
-  (cmr.metadata-db.data.providers/get-providers (get-db)))
-
-(defn get-provider
-  [id]
-  (cmr.metadata-db.data.providers/get-provider (get-db) id))
-
-(defn to-provider
-  [x]
-  (if (string? x)
-    (get-provider x)
-    x))
-
-(defn find-concepts
-  [provider params]
-  (cmr.metadata-db.data.concepts/find-concepts (get-db) [(to-provider provider)] params))
-
-(defn get-concept
-  [concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
-    (last (find-concepts provider-id {:concept-id concept-id
-                                      :concept-type concept-type}))))
-
-(defn save-granule
-  [granule]
-  (cmr.ingest.services.ingest-service/save-granule {:system (get-ingest)} granule))
-
-(defn find-concepts
-  [params]
-  (cmr.metadata-db.services.search-service/find-concepts
-   {:system (-> system :apps :metadata-db)}
-   params))
-
 (info "Custom dev-system user.clj loaded.")
