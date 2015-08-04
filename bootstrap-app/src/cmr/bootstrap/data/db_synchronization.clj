@@ -139,20 +139,6 @@
         stmt [sql start-index (+ start-index n)]]
     (query-for-concept-rev-id-pairs (:db system) stmt)))
 
-
-;; TODO remove this if it is unused?
-(defn- in-clause
-  "Generates a sql in clause string. If there are more than the max values to put in the in clause
-  it creates multiple an ORs them together."
-  [field num-values]
-  (let [num-full (int (/ num-values 1000))
-        num-in-partial (mod num-values 1000)
-        make-in #(str field " in (" (str/join "," (repeat % "?")) ")" )
-        full-in (make-in 1000)
-        full-ins (repeat num-full full-in)
-        partial-ins (when (> num-in-partial 0) [(make-in num-in-partial)])]
-    (str/join " or " (concat full-ins partial-ins))))
-
 (defn- get-latest-concept-id-revision-ids
   "Finds the revision ids for the given concept ids in metadata db. Returns tuples of concept id and
   revision id"
