@@ -56,4 +56,6 @@
     (vp/ingest-virtual-collections source-collections)
     (index/wait-until-indexed)
     (bootstrap/bootstrap-virtual-products)
-    (index/wait-until-indexed)))
+    (index/wait-until-indexed)
+    ;; TODO: Make sure all the appropriate virtual granules were created.
+    ))
