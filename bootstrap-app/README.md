@@ -69,6 +69,14 @@ This should return the granule including the echo-10 xml.
 
   	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
 
+### Initialize Virtual Products
+
+Virtual collections contain granules derived from a source collection.
+To initialize virtual granules from existing source granules, use the
+following command:
+
+    curl -v -XPOST http://localhost:3006/virtual_products/
+
 ### Synchronize Catalog REST and CMR
 
 Due to an issue in Catalog REST the CMR and Catalog REST databases diverged for a period of time because no ingest (new items, updates or deletes) were sent to the CMR. There is a mechanism for synchronizing the CMR with Catalog REST using the following endpoint:
