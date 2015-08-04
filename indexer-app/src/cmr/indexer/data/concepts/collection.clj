@@ -47,7 +47,7 @@
   (first (filter person->email-contact personnel)))
 
 (defn- get-elastic-fields-for-collection
-  "Get fields to be indexed from a collection UMM."
+  "Gets fields to be indexed from a collection umm."
   [context provider-id concept-id umm-c]
   (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
@@ -141,7 +141,8 @@
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
         tombstone-permitted-group-ids (acl/get-coll-permitted-group-ids context
-                                                                        provider-id tombstone-umm)]
+                                                                        provider-id tombstone-umm)
+        {:keys [access-value]} tombstone-umm]
     (merge {:concept-id concept-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
@@ -159,7 +160,8 @@
             :provider-id.lowercase (str/lower-case provider-id)
             :revision-date revision-date
             :metadata-format (name (mt/base-mime-type-to-format format))
-            :permitted-group-ids tombstone-permitted-group-ids}
-           (when deleted
+            :permitted-group-ids tombstone-permitted-group-ids
+            :access-value access-value}
+           (when-not deleted
              (get-elastic-fields-for-collection context provider-id concept-id collection)))))
 
