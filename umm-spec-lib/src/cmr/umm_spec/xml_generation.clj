@@ -4,42 +4,82 @@
             [cmr.umm-spec.simple-xpath :as sxp]
             [cmr.common.util :as u]))
 
-(defmulti ^:private generate-element
-  "Generates an XML element of the given name and definition. The XPath context here is expected to
-  be initialized from a source UMM record. nil will be returned if no value can be extracted given the
-  current XML definition."
-  (fn [xpath-context element-name xml-def]
-    (:type xml-def)))
+;; TODO move to cmr.umm-spec.xml-mappings.xml-generation
 
-(defmethod generate-element "object"
-  [xpath-context element-name {:keys [properties namespaces]}]
-  (when-let [content (seq (for [[sub-def-name sub-def] properties
-                                :let [element (generate-element xpath-context sub-def-name sub-def)]
-                                :when element]
-                            element))]
-    (let [attributes (or namespaces {})]
-      (x/element element-name attributes content))))
+(defmulti generate-content
+  "TODO"
+  (fn [content-generator xpath-context]
+    ;; We will eventually add custom function support through (fn? content-generator) :fn
+    (cond
+      (vector? content-generator) :element
+      (string? content-generator) :constant
 
-(defmethod generate-element "xpath"
-  [xpath-context element-name {:keys [value]}]
-  (when-let [value (->> (sxp/evaluate xpath-context value)
-                        :context
-                        first)]
-    (x/element element-name {} (str value))))
+      ;; We could also interpret seq here in the same way that hiccup does by treating it as a
+      ;; series of content generators. Add this if needed.
 
-(defmethod generate-element "array"
-  [xpath-context element-name {:keys [items-xpath items]}]
-  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath items-xpath))]
+      (and (map? content-generator)
+           (:type content-generator)) (:type content-generator)
+      :else :default)))
+
+(defmethod generate-content :default
+  [content-generator _]
+  (throw (Exception. (str "Unknown content generator type: " (pr-str content-generator)))))
+
+(defmethod generate-content :element
+  [[tag & content-generators] xpath-context]
+
+  ;; TODO add code comments
+
+  (let [{attrib-content-generators true
+         other-content-generators false} (group-by #(= (:type %) :attribs) content-generators)
+        attributes (reduce (fn [attribs attrib-cg]
+                             (into attribs
+                                   (for [[k content-gen] (:value attrib-cg)]
+                                     [k (generate-content content-gen xpath-context)])))
+                           {}
+                           attrib-content-generators)]
+    (x/element
+      tag attributes
+      (map #(generate-content % xpath-context) other-content-generators))))
+
+(defmethod generate-content :xpath
+  [{:keys [value]} xpath-context]
+  (some->> (sxp/evaluate xpath-context (sxp/parse-xpath value))
+           :context
+           first
+           str))
+
+(defmethod generate-content :constant
+  [value _]
+  value)
+
+(defmethod generate-content :for-each
+  [{:keys [xpath template]} xpath-context]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
     (for [data (:context new-xpath-context)
           :let [single-item-xpath-context (assoc new-xpath-context :context [data])]]
-      (if items
-        (generate-element single-item-xpath-context element-name items)
-        (x/element element-name {} (str data))))))
+      (generate-content template single-item-xpath-context))))
 
 (defn generate-xml
-  "Generates XML from a UMM record and the given UMM mappings."
-  [mappings record]
-  (let [[root-def-name root-def] (first mappings)
-        element (generate-element (sxp/create-xpath-context-for-data record) root-def-name root-def)]
-    (x/emit-str element)))
+  "TODO"
+  [content-generator record]
+  (let [xpath-context (sxp/create-xpath-context-for-data record)
+        content (generate-content content-generator xpath-context)]
+    ;; TODO temporary indent str
+    (x/indent-str content)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

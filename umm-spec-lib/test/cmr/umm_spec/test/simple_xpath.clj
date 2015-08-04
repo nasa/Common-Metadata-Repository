@@ -4,6 +4,9 @@
             [clojure.data.xml :as x]
             [cmr.common.util :as u :refer [are2]]))
 
+;; TODO add current context xpath tests
+
+
 ;; From Microsoft sample XML online
 (def sample-xml
   (sx/create-xpath-context-for-xml

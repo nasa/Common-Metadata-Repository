@@ -108,6 +108,10 @@
   "A selector that selects the children of a set of elements."
   {:type :child-of})
 
+(def current-context-selector
+  "A selector that selects the current context."
+  {:type :current-context})
+
 (defn- parse-element-sub-selector
   "Parses an element selector that is within the square brackets of an xpath into a selector."
   [selector-str]
@@ -127,8 +131,14 @@
 (defn- parse-xpath-element
   "Parses an element of an XPath and returns a set of selectors from that element."
   [xpath-elem]
-  (if (= "/" xpath-elem)
+  (cond
+    (= "/" xpath-elem)
     [child-of-selector]
+
+    (= "." xpath-elem)
+    [current-context-selector]
+
+    :else
     (if-let [[_ tag-name element-selector-str] (re-matches #"([^\[]+)(?:\[(.+)\])?" xpath-elem)]
       (let [tag-name-selector (create-tag-name-selector (keyword tag-name))]
         (if element-selector-str
@@ -169,6 +179,10 @@
             (transient [])
             elements)))
 
+(defmethod process-xml-selector :current-context
+  [elements _]
+  elements)
+
 (defmethod process-xml-selector :tag-selector
   [elements {:keys [tag-name]}]
   (filterv #(= tag-name (:tag %)) elements))
@@ -207,6 +221,10 @@
     (:type selector)))
 
 (defmethod process-data-selector :child-of
+  [data _]
+  data)
+
+(defmethod process-data-selector :current-context
   [data _]
   data)
 
