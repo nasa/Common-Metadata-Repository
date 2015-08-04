@@ -7,7 +7,13 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.util :as util]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+
+            ;; Models must be required to be available
+            [cmr.umm-spec.models.common]
+            [cmr.umm-spec.models.collection]
+
+            ))
 
 ;; TODO define json schema for mappings and use to validate them
 
