@@ -22,7 +22,7 @@
   "The maximum number of operations to batch in a single request"
   100)
 
-(defn- get-elastic-id
+(defn get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
   (if (and

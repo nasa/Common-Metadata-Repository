@@ -23,6 +23,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
+            [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.lifecycle :as lifecycle]))
 
 (defn filter-expired-concepts
@@ -35,13 +36,6 @@
               (or (nil? delete-time)
                   (t/after? delete-time (tk/now)))))
           batch))
-
-(defn- get-elastic-id
-  "Create the proper elastic document id for normal indexing or all-revisions indexing"
-  [concept-id revision-id all-revisions-index?]
-  (if all-revisions-index?
-    (str concept-id "," revision-id)
-    concept-id))
 
 (deftracefn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
@@ -102,7 +96,7 @@
           (let [ttl (when delete-time (t/in-millis (t/interval (tk/now) delete-time)))
                 concept-index (idx-set/get-concept-index-name context concept-id revision-id
                                                               all-revisions-index? concept)
-                elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+                elastic-id (es/get-elastic-id concept-id revision-id all-revisions-index?)
                 es-doc (es/concept->elastic-doc context concept umm-concept)]
             (es/save-document-in-elastic
               context
@@ -129,7 +123,7 @@
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
           (let [concept (meta-db/get-concept context id revision-id)
-                elastic-id (get-elastic-id id revision-id all-revisions-index?)
+                elastic-id (es/get-elastic-id id revision-id all-revisions-index?)
                 es-doc (es/concept->elastic-doc context concept (:extra-fields concept))]
             (es/save-document-in-elastic
               context
