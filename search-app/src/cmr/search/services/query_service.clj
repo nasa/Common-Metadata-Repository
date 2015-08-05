@@ -154,8 +154,7 @@
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
-  (let [all-revisions-index? (= "true" (:all-revisions params))
-        [query-creation-time query] (u/time-execution
+  (let [[query-creation-time query] (u/time-execution
                                       (->> params
                                            sanitize-params
                                            ;; handle legacy parameters
@@ -175,8 +174,7 @@
   "Executes a search for concepts using the given JSON. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
-  (let [all-revisions-index? (= "true" (:all-revisions params))
-        [query-creation-time query] (u/time-execution
+  (let [[query-creation-time query] (u/time-execution
                                       (-> (jp/parse-json-query concept-type
                                                                (sanitize-params params)
                                                                json-query)))
