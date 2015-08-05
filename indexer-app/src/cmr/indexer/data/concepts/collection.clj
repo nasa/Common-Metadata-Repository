@@ -155,7 +155,7 @@
             :entry-title.lowercase (str/lower-case entry-title)
             :version-id version-id
             :version-id.lowercase (when version-id (str/lower-case version-id))
-            :deleted (if deleted true false)
+            :deleted (boolean deleted)
             :provider-id provider-id
             :provider-id.lowercase (str/lower-case provider-id)
             :revision-date revision-date

@@ -7,7 +7,11 @@
   {:default "cmr_index.queue"})
 
 (defconfig all-revisions-index-queue-name
-  "The queue containing ingest events for the indexer all revisions index"
+  "The queue containing ingest events for the indexer all revisions index. We use a
+  separate index here because it allows independent retries of indexing failures. If
+  we used a single queue then if either indexing operation (primary or all revisions)
+  failed then we would have to retry both. Also, having separate queues facilitates
+  bootstrapping the all revisions index."
   {:default "cmr_index.all_revisions_queue"})
 
 (defconfig ingest-exchange-name
