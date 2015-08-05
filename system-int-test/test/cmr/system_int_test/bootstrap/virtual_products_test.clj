@@ -27,6 +27,12 @@
 ;; 6. run bootstrap virtual products
 ;; 7. ensure virtual granules DO exist
 
+(defn bootstrap-and-index
+  []
+  (index/wait-until-indexed)
+  (bootstrap/bootstrap-virtual-products)
+  (index/wait-until-indexed))
+
 (defn virtual-products-fixture
   [f]
   (dev-sys-util/reset)
@@ -81,8 +87,7 @@
        (map :granule-ur source-granules)
        (search/find-refs :granule {:page-size 50})))
 
-    (bootstrap/bootstrap-virtual-products)
-    (index/wait-until-indexed)
+    (bootstrap-and-index)
 
     (testing "Find all granules"
       (assert-matching-granule-urs
@@ -100,3 +105,30 @@
                  [provider-id (:entry-title source-collection)]))
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))))
+
+(defn- assert-tombstones
+  "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
+  [concept-ids revision-id]
+  )
+
+;; Verify that latest revision ids of virtual granules and the corresponding source granules
+;; are in sync as various ingest operations are performed on the source granules
+(deftest deleted-virtual-granules
+  (let [ast-coll      (d/ingest "LPDAAC_ECS"
+                                (dc/collection
+                                 {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+        vp-colls      (vp/ingest-virtual-collections [ast-coll])
+        granule       (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720" :revision-id 5})
+        ingest-result (d/ingest "LPDAAC_ECS" granule)]
+    (bootstrap-and-index)
+    (let [v-granules (mapcat #(:refs
+                               (search/find-refs :granule
+                                                 {:entry-title (:entry-title %)
+                                                  :page-size 50}))
+                             vp-colls)]
+      (is (not (empty? v-granules)))
+      (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
+      (bootstrap-and-index)
+      (doseq [gran v-granules]
+        (println "Virtual granule:" (ingest/get-concept (:id gran) 12))
+        (is (:deleted (ingest/get-concept (:id gran) 12)))))))

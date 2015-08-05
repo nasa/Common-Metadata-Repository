@@ -84,7 +84,8 @@
   [context params]
   (validate-find-params params)
   (let [db (db-util/context->db context)
-        latest-only? (= "true" (:latest params))
+        latest-only? (or (true? (:latest params))
+                         (= "true" (:latest params)))
         params (dissoc params :latest)
         providers (find-providers-for-params context params)]
     (when (seq providers)
@@ -94,8 +95,8 @@
           (c/find-concepts db providers params))))))
 
 (defn find-concept
-  "Returns nil or exactly one concept matching the params. Throws
-  exception if more than one concept matches the given params."
+  "Returns nil or exactly one concept matching the params.
+  Throws exception if more than one concept matches the given params."
   [context params]
   (let [concepts (find-concepts context params)]
     (condp = (count concepts)
