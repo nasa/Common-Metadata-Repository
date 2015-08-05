@@ -98,24 +98,27 @@
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
-        vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
+        vp-config (config/source-to-virtual-product-config [provider-id entry-title])
+        source-short-name (:source-short-name vp-config)]
 
-    (doseq [virtual-coll (:virtual-collections vp-config)]
-      (let [new-granule-ur (config/generate-granule-ur provider-id
-                                                       (:source-short-name vp-config)
-                                                       (:short-name virtual-coll)
-                                                       (:granule-ur orig-umm))
-            new-umm (config/generate-virtual-granule-umm provider-id (:source-short-name vp-config)
-                                                         orig-umm virtual-coll new-granule-ur)
-            new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
-                                                 (:format orig-concept)))
-            new-concept (-> orig-concept
-                            (select-keys [:format :provider-id :concept-type])
-                            (assoc :native-id new-granule-ur
-                                   :metadata new-metadata))]
-        (handle-update-response
-          (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
-          new-granule-ur)))))
+    (doseq [virtual-coll (:virtual-collections vp-config)
+            :let [virtual-short-name (:short-name virtual-coll)] ]
+      (when ((config/match-umm provider-id source-short-name virtual-short-name) orig-umm)
+        (let [new-granule-ur (config/generate-granule-ur provider-id
+                                                         source-short-name
+                                                         virtual-short-name
+                                                         (:granule-ur orig-umm))
+              new-umm (config/generate-virtual-granule-umm provider-id source-short-name
+                                                           orig-umm virtual-coll new-granule-ur)
+              new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
+                                                   (:format orig-concept)))
+              new-concept (-> orig-concept
+                              (select-keys [:format :provider-id :concept-type])
+                              (assoc :native-id new-granule-ur
+                                     :metadata new-metadata))]
+          (handle-update-response
+            (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
+            new-granule-ur))))))
 
 (defmethod handle-ingest-event :concept-update
   [context event]

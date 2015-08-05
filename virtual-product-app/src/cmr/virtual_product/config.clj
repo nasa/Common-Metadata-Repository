@@ -198,3 +198,85 @@
     (update-virtual-granule-umm provider-id source-short-name
                                 source-umm virtual-umm)))
 
+(comment
+  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_05")
+          {:product-specific-attributes
+           [{:name "bravo",
+             :values ["cd" "bf"]}
+            {:name "TIR_ObservationMode",
+             :values ["ON" "bc"]}]})
+  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_14DEM")
+          {:product-specific-attributes
+           [{:name "bravo",
+             :values ["cd" "bf"]}
+            {:name "TIR_ObservationMode",
+             :values ["ON" "bc"]}
+            {:name "VNIR1_ObservationMode",
+             :values ["ON" "bc"]}
+            {:name "VNIR2_ObservationMode",
+             :values ["ON" "bc"]}]
+            :data-granule {:day-night "DAY"}})
+
+  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_07")
+          {:product-specific-attributes
+           [{:name "bravo",
+             :values ["cd" "bf"]}
+            {:name "TIR_ObservationMode",
+             :values ["ON" "bc"]}
+            {:name "VNIR1_ObservationMode",
+             :values ["ON" "bc"]}
+            {:name "VNIR2_ObservationMode",
+             :values ["ON" "bc"]}
+            {:name "SWIR_ObservationMode",
+             :values ["ON" "bc"]}]
+            :data-granule {:day-night "DAY"}}))
+
+
+(defmulti match-umm
+  (fn [provider-id source-short-name virtual-short-name]
+    [provider-id source-short-name]))
+
+(defmethod match-umm :default
+  [provider-id source-short-name virtual-short-name]
+  (constantly true))
+
+(defn- match-all
+  [& matchers]
+  (fn [record]
+    (every? true? (map #(% record) matchers))))
+
+(defn- match-nested
+  [ks & matchers]
+  (fn [record]
+    ((apply match-all matchers) (get-in record ks))))
+
+(defn- has-value
+  [ks value]
+  (fn [record]
+    (= value (get-in record ks))))
+
+(defn- has-psa
+  [name value]
+  (fn [psas]
+    (boolean (some #(and (= (:name %) name)
+                         (some #{value} (:values %))) psas))))
+
+(defmethod match-umm ["LPDAAC_ECS" "AST_L1A"]
+  [provider-id source-short-name virtual-short-name]
+  (case virtual-short-name
+    ("AST_05" "AST_08" "AST_09T")
+    (match-nested [:product-specific-attributes] (has-psa "TIR_ObservationMode" "ON"))
+
+    ("AST_07" "AST_07XT" "AST_09" "AST_09XT")
+    (match-all
+      (match-nested [:product-specific-attributes] (has-psa "SWIR_ObservationMode" "ON"))
+      (match-nested [:product-specific-attributes] (has-psa "VNIR1_ObservationMode" "ON"))
+      (match-nested [:product-specific-attributes] (has-psa "VNIR2_ObservationMode" "ON"))
+      (has-value [:data-granule :day-night] "DAY"))
+
+    ("AST_14DEM" "AST_14OTH" "AST_14DMO")
+    (match-all
+      (match-nested [:product-specific-attributes] (has-psa "VNIR1_ObservationMode" "ON"))
+      (match-nested [:product-specific-attributes] (has-psa "VNIR2_ObservationMode" "ON"))
+      (has-value [:data-granule :day-night] "DAY"))))
+
