@@ -40,30 +40,81 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defn- match-all
+  [& matchers]
+  (fn [record]
+    (every? identity (map #(% record) matchers))))
+
+(defn- matches-value
+  [ks value]
+  (fn [record]
+    (= value (get-in record ks))))
+
+(defn- matches-on-psa
+  [psa-name value]
+  (fn [granule]
+    (some #(and (= (:name %) psa-name) (some #{value} (:values %)))
+          (:product-specific-attributes granule))))
+
 (def source-to-virtual-product-config
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:source-short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
-                           :short-name "AST_05"}
+                           :short-name "AST_05"
+                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance"
-                           :short-name "AST_07"}
+                           :short-name "AST_07"
+                           :matcher (match-all
+                                      (matches-on-psa "SWIR_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance VNIR and SWIR Crosstalk-Corrected"
-                           :short-name "AST_07XT"}
+                           :short-name "AST_07XT"
+                           :matcher (match-all
+                                      (matches-on-psa "SWIR_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L2 Surface Kinetic Temperature"
-                           :short-name "AST_08"}
+                           :short-name "AST_08"
+                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance SWIR and VNIR"
-                           :short-name "AST_09"}
+                           :short-name "AST_09"
+                           :matcher (match-all
+                                      (matches-on-psa "SWIR_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance VNIR and SWIR Crosstalk-Corrected"
-                           :short-name "AST_09XT"}
+                           :short-name "AST_09XT"
+                           :matcher (match-all
+                                      (matches-on-psa "SWIR_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance TIR"
-                           :short-name "AST_09T"}
+                           :short-name "AST_09T"
+                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
                           {:entry-title "ASTER On-Demand L3 Digital Elevation Model, GeoTIF Format"
-                           :short-name "AST14DEM"}
+                           :short-name "AST14DEM"
+                           :matcher (match-all
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L3 Orthorectified Images, GeoTIF Format"
-                           :short-name "AST14OTH"}
+                           :short-name "AST14OTH"
+                           :matcher (match-all
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}
                           {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
-                           :short-name "AST14DMO"}]}
+                           :short-name "AST14DMO"
+                           :matcher (match-all
+                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
+                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
+                                      (matches-value [:data-granule :day-night] "DAY"))}]}
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    {:source-short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
@@ -197,86 +248,3 @@
   (let [virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)]
     (update-virtual-granule-umm provider-id source-short-name
                                 source-umm virtual-umm)))
-
-(comment
-  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_05")
-          {:product-specific-attributes
-           [{:name "bravo",
-             :values ["cd" "bf"]}
-            {:name "TIR_ObservationMode",
-             :values ["ON" "bc"]}]})
-  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_14DEM")
-          {:product-specific-attributes
-           [{:name "bravo",
-             :values ["cd" "bf"]}
-            {:name "TIR_ObservationMode",
-             :values ["ON" "bc"]}
-            {:name "VNIR1_ObservationMode",
-             :values ["ON" "bc"]}
-            {:name "VNIR2_ObservationMode",
-             :values ["ON" "bc"]}]
-            :data-granule {:day-night "DAY"}})
-
-  ((match-umm "LPDAAC_ECS" "AST_L1A" "AST_07")
-          {:product-specific-attributes
-           [{:name "bravo",
-             :values ["cd" "bf"]}
-            {:name "TIR_ObservationMode",
-             :values ["ON" "bc"]}
-            {:name "VNIR1_ObservationMode",
-             :values ["ON" "bc"]}
-            {:name "VNIR2_ObservationMode",
-             :values ["ON" "bc"]}
-            {:name "SWIR_ObservationMode",
-             :values ["ON" "bc"]}]
-            :data-granule {:day-night "DAY"}}))
-
-
-(defmulti match-umm
-  (fn [provider-id source-short-name virtual-short-name]
-    [provider-id source-short-name]))
-
-(defmethod match-umm :default
-  [provider-id source-short-name virtual-short-name]
-  (constantly true))
-
-(defn- match-all
-  [& matchers]
-  (fn [record]
-    (every? true? (map #(% record) matchers))))
-
-(defn- match-nested
-  [ks & matchers]
-  (fn [record]
-    ((apply match-all matchers) (get-in record ks))))
-
-(defn- has-value
-  [ks value]
-  (fn [record]
-    (= value (get-in record ks))))
-
-(defn- has-psa
-  [name value]
-  (fn [psas]
-    (boolean (some #(and (= (:name %) name)
-                         (some #{value} (:values %))) psas))))
-
-(defmethod match-umm ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id source-short-name virtual-short-name]
-  (case virtual-short-name
-    ("AST_05" "AST_08" "AST_09T")
-    (match-nested [:product-specific-attributes] (has-psa "TIR_ObservationMode" "ON"))
-
-    ("AST_07" "AST_07XT" "AST_09" "AST_09XT")
-    (match-all
-      (match-nested [:product-specific-attributes] (has-psa "SWIR_ObservationMode" "ON"))
-      (match-nested [:product-specific-attributes] (has-psa "VNIR1_ObservationMode" "ON"))
-      (match-nested [:product-specific-attributes] (has-psa "VNIR2_ObservationMode" "ON"))
-      (has-value [:data-granule :day-night] "DAY"))
-
-    ("AST_14DEM" "AST_14OTH" "AST_14DMO")
-    (match-all
-      (match-nested [:product-specific-attributes] (has-psa "VNIR1_ObservationMode" "ON"))
-      (match-nested [:product-specific-attributes] (has-psa "VNIR2_ObservationMode" "ON"))
-      (has-value [:data-granule :day-night] "DAY"))))
-

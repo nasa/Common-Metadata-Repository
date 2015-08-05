@@ -100,25 +100,24 @@
         orig-umm (umm/parse-concept orig-concept)
         vp-config (config/source-to-virtual-product-config [provider-id entry-title])
         source-short-name (:source-short-name vp-config)]
-
     (doseq [virtual-coll (:virtual-collections vp-config)
-            :let [virtual-short-name (:short-name virtual-coll)] ]
-      (when ((config/match-umm provider-id source-short-name virtual-short-name) orig-umm)
-        (let [new-granule-ur (config/generate-granule-ur provider-id
-                                                         source-short-name
-                                                         virtual-short-name
-                                                         (:granule-ur orig-umm))
-              new-umm (config/generate-virtual-granule-umm provider-id source-short-name
-                                                           orig-umm virtual-coll new-granule-ur)
-              new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
-                                                   (:format orig-concept)))
-              new-concept (-> orig-concept
-                              (select-keys [:format :provider-id :concept-type])
-                              (assoc :native-id new-granule-ur
-                                     :metadata new-metadata))]
-          (handle-update-response
-            (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
-            new-granule-ur))))))
+            :let [matcher (:matcher virtual-coll)]
+            :when (or (nil? matcher) (matcher orig-umm))]
+      (let [new-granule-ur (config/generate-granule-ur provider-id
+                                                       source-short-name
+                                                       (:short-name virtual-coll)
+                                                       (:granule-ur orig-umm))
+            new-umm (config/generate-virtual-granule-umm provider-id source-short-name
+                                                         orig-umm virtual-coll new-granule-ur)
+            new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
+                                                 (:format orig-concept)))
+            new-concept (-> orig-concept
+                            (select-keys [:format :provider-id :concept-type])
+                            (assoc :native-id new-granule-ur
+                                   :metadata new-metadata))]
+        (handle-update-response
+          (ingest/ingest-concept context new-concept (build-ingest-headers revision-id) true)
+          new-granule-ur)))))
 
 (defmethod handle-ingest-event :concept-update
   [context event]
@@ -154,21 +153,23 @@
                     granule-ur (pr-str body)))
 
       ;; Not Found (status code 404)
-      ;; This would occur if delete event is consumed before the concept creation event and
-      ;; metadata-db does not yet have the granule concept. This usually means that an ingest event
-      ;; for the same granule is present in the virtual product queue and is not yet consumed. The
-      ;; exception will cause the event to be put back in the queue. We don't ignore this because
-      ;; the create event would eventually be processed and the virtual granule would exist when it
-      ;; should actually be deleted. We will retry this until the granule is created and the
-      ;; deletion can be processed successfully creating a tombstone with the correct revision id.
-
-      ;; Note that the existence of a delete event for the virtual granule means that the
-      ;; corresponding real granule exists in the database (otherwise corresponding delete request
-      ;; for real granule would fail with 404 and the delete event for the virtual granule would
-      ;; never be put on the virtual product queue to begin with). Which in turn means that ingest
-      ;; event corresponding to the granule has been created in the past (either recent past or
-      ;; distant past) and that event has to to consumed before the delete event can be consumed
-      ;; off the queue.
+      ;; This would occur in two different scenarios:
+      ;; 1) Out of order processing with delete event consumed before ingest event when it should
+      ;;    be other way round. The exception below will cause the event to be put back in the
+      ;;    queue. We don't ignore the error response since otherwise the create event would
+      ;;    eventually be processed and the virtual granule would ultimately be in undeleted state
+      ;;    when it should have been deleted. The delete event will be retried until the
+      ;;    granule is created and the deletion can eventually be processed successfully creating a
+      ;;    tombstone with the correct revision id. The assumption here is that ingest event will
+      ;;    be processed before the maximum number of retries for delete event is reached. If this
+      ;;    does not happen, the granule will end up in inconsistent state.
+      ;; 2) delete event corresponds to delete of a source granule for which a UMM matcher would return
+      ;;    a truth value of false. For such a source granule, the corresponding virtual granule
+      ;;    wouldn't even be created in the first place. Delete handler has no way of checking the
+      ;;    truth value and sends delete request for the virtual granule even if the vitual granule
+      ;;    doesn't really exist. These events will be retried for as many times a the configured
+      ;;    maximum number of retries for an event. After the retries, the delete event will be
+      ;;    considered as a success.
       (= status 404)
       (errors/internal-error!
         (format (str "Received a response with status code [404] and the following response body "
