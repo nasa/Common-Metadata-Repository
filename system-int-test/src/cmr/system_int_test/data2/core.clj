@@ -43,7 +43,7 @@
   :granule)
 
 (defn item->concept
-  "Converts an UMM item to a concept map. Default provider-id to PROV1 if not present."
+  "Converts an UMM item or a tombstone to a concept map. Default provider-id to PROV1 if not present."
   ([item]
    (item->concept item :echo10))
   ([item format-key]
@@ -51,7 +51,7 @@
      (merge {:concept-type (item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (umm/umm->xml item format-key)
+             :metadata (when-not (:deleted item) (umm/umm->xml item format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -113,11 +113,16 @@
 (defn item->ref
   "Converts an item into the expected reference"
   [item]
-  (let [{:keys [concept-id revision-id]} item]
-    {:name (item->native-id item)
-     :id concept-id
-     :location (str (url/location-root) (:concept-id item))
-     :revision-id revision-id}))
+  (let [{:keys [concept-id revision-id deleted]} item
+        ref {:name (or (:native-id item) (item->native-id item))
+             :id concept-id
+             :location (format "%s%s/%s" (url/location-root) (:concept-id item) revision-id)
+             :revision-id revision-id}]
+    (if deleted
+      (-> ref
+          (assoc :deleted true)
+          (dissoc :location))
+      ref)))
 
 (defmulti item->metadata-result
   "Converts an item into the expected metadata result"

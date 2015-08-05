@@ -6,6 +6,14 @@
   "The queue containing ingest events for the indexer"
   {:default "cmr_index.queue"})
 
+(defconfig all-revisions-index-queue-name
+  "The queue containing ingest events for the indexer all revisions index. We use a
+  separate index here because it allows independent retries of indexing failures. If
+  we used a single queue then if either indexing operation (primary or all revisions)
+  failed then we would have to retry both. Also, having separate queues facilitates
+  bootstrapping the all revisions index."
+  {:default "cmr_index.all_revisions_queue"})
+
 (defconfig ingest-exchange-name
   "The ingest exchange to which messages are published."
   {:default "cmr_ingest.exchange"})
@@ -19,9 +27,11 @@
   "Returns the rabbit mq configuration for the indexer application."
   []
   (assoc (rmq-conf/default-config)
-         :queues [(index-queue-name)]
+         :queues [(index-queue-name) (all-revisions-index-queue-name)]
          :exchanges [(ingest-exchange-name)]
          :queues-to-exchanges {(index-queue-name)
+                               (ingest-exchange-name)
+                               (all-revisions-index-queue-name)
                                (ingest-exchange-name)}))
 
 (defconfig indexer-nrepl-port

@@ -17,7 +17,8 @@
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.acl.core :as acl]
-            [cmr.common.concepts :as concepts])
+            [cmr.common.concepts :as concepts]
+            [cmr.umm.collection :as umm-c])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -45,9 +46,10 @@
   [personnel]
   (first (filter person->email-contact personnel)))
 
-(defmethod es/concept->elastic-doc :collection
+(defn- get-elastic-fields-for-full-collection
+  "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id provider-id revision-date format]} concept
+  (let [{:keys [concept-id provider-id native-id revision-date format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -83,6 +85,8 @@
         permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
     (merge {:concept-id concept-id
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :native-id native-id
+            :native-id.lowercase (str/lower-case native-id)
             :permitted-group-ids permitted-group-ids
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
@@ -146,4 +150,41 @@
            (get-in collection [:spatial-coverage :orbit-parameters])
            (spatial->elastic collection)
            (sk/science-keywords->facet-fields collection))))
+
+
+(defn- get-elastic-fields-for-tombstone-collection
+  "Get the subset of elastic field values that apply to a tombstone index operation."
+  [context concept]
+  (let [{{:keys [short-name version-id entry-id entry-title]} :extra-fields
+         :keys [concept-id provider-id native-id revision-date deleted format]} concept
+        ;; only used to get default ACLs for tombstones
+        tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
+        tombstone-permitted-group-ids (acl/get-coll-permitted-group-ids context
+                                                                        provider-id tombstone-umm)
+        {:keys [access-value]} tombstone-umm]
+    {:concept-id concept-id
+     :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+     :native-id native-id
+     :native-id.lowercase (str/lower-case native-id)
+     :short-name short-name
+     :short-name.lowercase (when short-name (str/lower-case short-name))
+     :entry-id entry-id
+     :entry-id.lowercase (str/lower-case entry-id)
+     :entry-title entry-title
+     :entry-title.lowercase (str/lower-case entry-title)
+     :version-id version-id
+     :version-id.lowercase (when version-id (str/lower-case version-id))
+     :deleted (boolean deleted)
+     :provider-id provider-id
+     :provider-id.lowercase (str/lower-case provider-id)
+     :revision-date revision-date
+     :metadata-format (name (mt/base-mime-type-to-format format))
+     :permitted-group-ids tombstone-permitted-group-ids
+     :access-value access-value}))
+
+(defmethod es/concept->elastic-doc :collection
+  [context concept collection]
+  (if (:deleted concept)
+    (get-elastic-fields-for-tombstone-collection context concept)
+    (get-elastic-fields-for-full-collection context concept collection)))
 
