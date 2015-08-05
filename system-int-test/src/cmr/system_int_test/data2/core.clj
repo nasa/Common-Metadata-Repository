@@ -48,7 +48,7 @@
    (item->concept item :echo10))
   ([item format-key]
    (let [format (mime-types/format->mime-type format-key)]
-     (merge {:concept-type (if (:deleted item) :collection (item->concept-type item))
+     (merge {:concept-type (item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
              :metadata (when-not (:deleted item) (umm/umm->xml item format-key))

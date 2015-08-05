@@ -49,6 +49,9 @@
 
    ;; Flag to allow acls to be bypassed. For internal use only
    skip-acls?
+
+   ;; Flag to indicate an all revisions search instead of the default revision search.
+   all-revisions?
    ])
 
 (defrecord ConditionGroup
@@ -348,16 +351,18 @@
              :page-num default-page-num
              :sort-keys (default-sort-keys :granule)
              :result-format :xml
-             :echo-compatible? false}
+             :echo-compatible? false
+             :all-revisions? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
                 :sort-keys (default-sort-keys :collection)
                 :result-format :xml
-                :echo-compatible? false}})
+                :echo-compatible? false
+                :all-revisions? false}})
 
 (defn query
-  "Constructs a query with the given type, page-size, page-num, result-format,
+  "Constructs a query with the given type, page-size, page-num, result-format, all-revisions?
   and root condition. If root condition is not provided it matches everything.
   If page-size, page-num, or result-format are not specified then they are given default values."
   [attribs]

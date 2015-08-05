@@ -84,10 +84,10 @@
   "Returns index info based on input concept type. For granule concept type, it will walks through
   the query and figures out only the relevant granule index names and return those."
   [context concept-type query]
-  (let [{:keys [all-revisions-index?]} query
+  (let [{:keys [all-revisions?]} query
         type-name (name concept-type)
         index-name (if (= :collection concept-type)
-                     (if all-revisions-index?
+                     (if all-revisions?
                        "1_all_collection_revisions"
                        "1_collections")
                      (get-granule-indexes context query))]

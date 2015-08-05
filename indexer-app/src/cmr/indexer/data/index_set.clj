@@ -163,7 +163,9 @@
                 :properties (merge {:deleted (stored bool-field-mapping) ; deleted=true is a tombstone
                                     :native-id (stored string-field-mapping)
                                     :native-id.lowercase string-field-mapping
-                                    ;; TODO Figure out where this comes from and comment source
+                                    ;; This comes from the metadata db column of the same name
+                                    ;; and is by default equal to the Oracle system time at the
+                                    ;; time the revision record is written
                                     :revision-date         date-field-mapping
                                     :permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
@@ -388,8 +390,12 @@
                  :id 1
                  :create-reason "indexer app requires this index set"
                  :collection {:indexes
-                              [{:name "collections"
+                              [;; This index contains the latest revision of each collection and
+                               ;; is used for normal searches.
+                               {:name "collections"
                                 :settings collection-setting}
+                               ;; This index contains all the revisions (including tombstones) and
+                               ;; is used for all-revisions searches.
                                {:name "all-collection-revisions"
                                 :settings collection-setting}]
                               :mapping collection-mapping}
