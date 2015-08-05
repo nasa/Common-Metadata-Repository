@@ -44,10 +44,10 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [result-format result-features all-revisions-index?] :as query}]
+  [{:keys [result-format result-features all-revisions?] :as query}]
   (and (specific-items-query? query)
        (transformer-supported-format? result-format)
-       (not all-revisions-index?)
+       (not all-revisions?)
        ;; Facets requires elastic search
        (not-any? #(= % :facets) result-features)))
 
@@ -55,9 +55,9 @@
   "Returns true if the query is only for specific items that will come directly from elastic search.
   This query type is split out because it is faster to bypass ACLs and apply them afterwards
   than to apply them ahead of time to the query."
-  [{:keys [result-format all-revisions-index?] :as query}]
+  [{:keys [result-format all-revisions?] :as query}]
   (and (specific-items-query? query)
-       (not all-revisions-index?)
+       (not all-revisions?)
        (specific-elastic-items-format? result-format)))
 
 (defn- query->execution-strategy

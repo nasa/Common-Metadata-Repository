@@ -390,8 +390,12 @@
                  :id 1
                  :create-reason "indexer app requires this index set"
                  :collection {:indexes
-                              [{:name "collections"
+                              [;; This index contains the latest revision of each collection and
+                               ;; is used for normal searches.
+                               {:name "collections"
                                 :settings collection-setting}
+                               ;; This index contains all the revisions (including tombstones) and
+                               ;; is used for all-revisions searches.
                                {:name "all-collection-revisions"
                                 :settings collection-setting}]
                               :mapping collection-mapping}
