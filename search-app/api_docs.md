@@ -1012,6 +1012,43 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
     curl "%CMR-ENDPOINT%/collections?sort_key\[\]=-start_date
 
+
+#### Retrieving All Revisions of a Collection
+
+In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in `all_revisons=true` with the URL parameters. Only the reference format is supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+
+    curl "%CMR-ENDPOINT%/collections?provider=PROV1&all_revisions=true&pretty=true"
+
+__Sample response__
+
+```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <results>
+        <hits>3</hits>
+        <took>5</took>
+        <references>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>http://localhost:3003/concepts/C1200000000-PROV1/3</location>
+                <revision-id>3</revision-id>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <revision-id>2</revision-id>
+                <deleted>true</deleted>
+            </reference>
+            <reference>
+                <name>et1</name>
+                <id>C1200000000-PROV1</id>
+                <location>http://localhost:3003/concepts/C1200000000-PROV1/1</location>
+                <revision-id>1</revision-id>
+            </reference>
+        </references>
+    </results>
+```
+
 ### Granule Search Examples
 
 #### Find all granules
@@ -1380,31 +1417,6 @@ The following extensions and MIME types are supported by the
   * `dif`       "application/dif+xml"
   * `dif10`     "application/dif10+xml"
   * `atom`      "application/atom+xml"
-
-### Retrieve concept maps with parameters
-
-This allows retrieving of basic concept maps with or without metadata. The only supported result format is JSON.
-
-  curl -i "%CMR-ENDPOINT%/concept-revisions/collections"
-  curl -i "%CMR-ENDPOINT%/concept-revisions/collections?provider_id=PROV1"
-
- The following parameters in any combination are supported for collections:
-
-  * `provider_id`
-  * `entry_title`
-  * `entry_id`
-  * `short_name`
-  * `version_id`
-  * `concept_id`
-
-Granules are _not_ supported.
-
-Note that `provider_id` is required for retrieving granule concept maps.
-
-Additional parameters available to all concept map searches:
-
-  * `latest` - when set to "true" only the latest revision of each concept is returned (defaults to "false")
-  * `exclude_metadata` - when set to "true" the original metadata ingested for each concept (in native format) is excluded from the concept-maps (defaults to "false")
 
 ### Search with POST
 

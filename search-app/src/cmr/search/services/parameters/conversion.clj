@@ -14,6 +14,7 @@
   "A mapping of param names to query condition types based on concept-type"
   {:collection {:entry-title :string
                 :entry-id :string
+                :native-id :string
                 :provider :string
                 :attribute :attribute
                 :short-name :string
@@ -293,6 +294,7 @@
   [concept-type params]
   (let [page-size (Integer. (get params :page-size qm/default-page-size))
         page-num (Integer. (get params :page-num qm/default-page-num))
+        all-revisions-index? (= "true" (:all-revisions params))
         ;; If there is no sort key specified and keyword parameter exists then we default to
         ;; sorting by document relevance score
         sort-keys (or (parse-sort-key (:sort-key params))
@@ -315,7 +317,8 @@
      :sort-keys sort-keys
      :result-format (:result-format params)
      :result-features (seq result-features)
-     :echo-compatible? echo-compatible?}))
+     :echo-compatible? echo-compatible?
+     :all-revisions-index? all-revisions-index?}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."
@@ -327,7 +330,8 @@
         params (if keywords (assoc params :keyword (str/join " " keywords)) params)
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
-                       :echo-compatible :hierarchical-facets :include-highlights)]
+                       :echo-compatible :hierarchical-facets :include-highlights
+                       :all-revisions)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

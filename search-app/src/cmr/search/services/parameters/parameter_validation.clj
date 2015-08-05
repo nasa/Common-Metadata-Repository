@@ -27,7 +27,7 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :echo-compatible :include-granule-counts
-    :include-has-granules :include-facets :hierarchical-facets :include-highlights})
+    :include-has-granules :include-facets :hierarchical-facets :include-highlights :all-revisions})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -151,6 +151,7 @@
 (def param->valid-options
   "Map of parameters to options that are valid for them."
   {:collection-concept-id pattern-option
+   :native-id pattern-option
    :archive-center string-param-options
    :dataset-id pattern-option
    :entry-title string-plus-and-options
@@ -254,7 +255,7 @@
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :hierarchical-facets :include-highlights)
+                         :hierarchical-facets :include-highlights :all-revisions)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -471,7 +472,8 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :include-facets
-                                         :hierarchical-facets :include-highlights])]
+                                         :hierarchical-facets :include-highlights
+                                         :all-revisions])]
     (mapcat
       (fn [[param value]]
         (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
