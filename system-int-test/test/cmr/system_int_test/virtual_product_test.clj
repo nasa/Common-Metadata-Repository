@@ -44,6 +44,7 @@
   )
 
 (defmulti ingest-source
+  "A method to ingest a source granule and collection concept while adding necessary attributes that allow all related virtual granules to pass through all the associated matchers"
   (fn [provider-id concept & options]
     [provider-id (type concept)]))
 
@@ -412,7 +413,7 @@
                "Related urls with only one access url which matches the pattern"
                granule-ur
                [{:url (str data-path ur-suffix) :type "GET DATA"}]
-               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
+               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "GET DATA"}]
 
                "Related urls with only one access url which matches the pattern, but is not
@@ -433,7 +434,7 @@
                granule-ur
                [{:url (str data-path ur-suffix) :type "GET DATA"}
                 {:url "http://www.foo.com"}]
-               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex")
+               [{:url (str opendap-path ur-suffix ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
                  :type "GET DATA"}
                 {:url "http://www.foo.com"
                  :type "VIEW RELATED INFORMATION"

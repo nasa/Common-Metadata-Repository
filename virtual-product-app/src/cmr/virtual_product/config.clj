@@ -47,13 +47,13 @@
     (every? identity (map #(% granule) matchers))))
 
 (defn- matches-value
-  "Returns a function which checks if the value in the granule umm given by ks matches value"
+  "A matcher which checks if the value in the granule umm given by ks matches value"
   [ks value]
   (fn [granule]
     (= value (get-in granule ks))))
 
 (defn- matches-on-psa
-  "Returns a function which checks the existence of a psa in the granule umm whose name is
+  "A matcher which checks the existence of a psa in the granule umm whose name is
   psa-name and whose values have value as one of the memebers"
   [psa-name value]
   (fn [granule]
@@ -226,7 +226,7 @@
   "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
   http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5
   will be translated to
-  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"
+  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
   [related-urls src-granule-ur]
   (let [fname (second (str/split src-granule-ur #":"))
         re (Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
@@ -238,7 +238,7 @@
                       :url (str
                              (str/replace (second matches) "/data/s4pa/" "/opendap/HDF-EOS5")
                              (nth matches 2)
-                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"))
+                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
                related-url)
              related-url)))))
 
