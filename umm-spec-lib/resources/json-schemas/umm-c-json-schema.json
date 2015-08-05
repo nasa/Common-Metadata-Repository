@@ -1,19 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
-    "ProductType":{
-      "type": "object",
-      "description": "Added by Jason since short name and version id are required for ECHO10",
-      "properties": {
-        "ShortName": {
-          "$ref": "umm-cmn-json-schema.json#/definitions/ShortNameType"
-        },
-        "VersionId": {
-          "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
-        }
-      },
-      "required": ["ShortName","VersionId"]
-    },
     "DirectoryNameType": {
       "type": "object",
       "description": "Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used historically by the GCMD internally to identify association, responsibility and/or ownership of the dataset, service or supplemental information. Note: This field only occurs in the DIF. When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be translated.",
@@ -291,9 +278,6 @@
     "Abstract": {
       "description": "Abstract provides a brief description of the data or service the metadata represents.",
       "$ref": "umm-cmn-json-schema.json#/definitions/AbstractType"
-    },
-    "Product":{
-      "$ref":"#/definitions/ProductType"
     },
     "Purpose": {
       "description": "This element contains suggested usage or purpose for the data or service.",

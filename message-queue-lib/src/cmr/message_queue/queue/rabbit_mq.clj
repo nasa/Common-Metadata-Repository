@@ -56,6 +56,7 @@
     (if (queue/retry-limit-met? msg (count (config/rabbit-mq-ttls)))
       (do
         ;; give up
+        ;; Splunk alert "Indexing from message queue failed and all retries exhausted" dependent on this log message
         (warn "Max retries exceeded for processing message:" (pr-str msg))
         (lb/nack ch delivery-tag false false))
       (let [msg (assoc msg :retry-count (inc retry-count))

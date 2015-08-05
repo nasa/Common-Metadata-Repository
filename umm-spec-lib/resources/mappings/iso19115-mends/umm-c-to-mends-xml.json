@@ -1,0 +1,75 @@
+{
+  "gmi:MI_Metadata": {
+    "type": "object",
+    "namespaces": {
+      "xmlns:gmi": "http://www.isotc211.org/2005/gmi",
+      "xmlns:gco": "http://www.isotc211.org/2005/gco",
+      "xmlns:gmd": "http://www.isotc211.org/2005/gmd",
+      "xmlns:gmx": "http://www.isotc211.org/2005/gmx",
+      "xmlns:gsr": "http://www.isotc211.org/2005/gsr",
+      "xmlns:gss": "http://www.isotc211.org/2005/gss",
+      "xmlns:gts": "http://www.isotc211.org/2005/gts",
+      "xmlns:srv": "http://www.isotc211.org/2005/srv",
+      "xmlns:gml": "http://www.opengis.net/gml/3.2",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+      "xmlns:swe": "http://schemas.opengis.net/sweCommon/2.0/",
+      "xmlns:eos": "http://earthdata.nasa.gov/schema/eos",
+      "xmlns:xs": "http://www.w3.org/2001/XMLSchema"
+    },
+    "properties": [
+      ["gmd:identificationInfo", {
+        "type": "object",
+        "properties": [
+          ["gmd:MD_DataIdentification", {
+            "type": "object",
+            "properties": [
+              ["gmd:citation", {
+                "type": "object",
+                "properties": [
+                  ["gmd:CI_Citation", {
+                    "type": "object",
+                    "properties": [
+
+                      // Entry Title
+                      ["gmd:title", {
+                        "type": "object",
+                        "properties": [
+                          ["gco:CharacterString", {
+                            "type": "xpath",
+                            "value": "/UMM-C/EntryTitle"
+                          }]
+                        ]
+                      }],
+
+                      //Entry Id
+                      ["gmd:identifier", {
+                        "type": "object",
+                        "properties": [
+                          ["gmd:MD_Identifier", {
+                            "type": "object",
+                            "properties": [
+                              ["gmd:code", {
+                                "type": "object",
+                                "properties": [
+                                  ["gco:CharacterString", {
+                                    "type": "xpath",
+                                    "value": "/UMM-C/EntryId/Id"
+                                  }]
+                                ]
+                              }]
+                            ]
+                          }]
+                        ]
+                      }]
+                    ]
+                  }]
+                ]
+              }]
+            ]
+          }]
+        ]
+      }]
+    ]
+  }
+}

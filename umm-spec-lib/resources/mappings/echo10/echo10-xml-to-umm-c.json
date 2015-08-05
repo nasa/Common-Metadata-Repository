@@ -140,19 +140,6 @@
             }]
           }
         }
-      },
-      "Product": {
-        "type": "object",
-        "properties": {
-          "ShortName": {
-            "type": "xpath",
-            "value": "/Collection/ShortName"
-          },
-          "VersionId": {
-            "type": "xpath",
-            "value": "/Collection/VersionId"
-          }
-        }
       }
     }
   }
