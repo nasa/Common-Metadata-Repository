@@ -61,6 +61,8 @@
     true
     false))
 
+(def ALL_REVISION_REINDEX_BATCH_SIZE 2000)
+
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the providers given."
   [context provider-ids]
@@ -71,9 +73,11 @@
 
   (doseq [provider-id provider-ids]
     (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})
-          all-collections (meta-db/find-collections context {:provider-id provider-id :latest false})]
+          all-revisions-batches (meta-db/find-collections-in-batches context
+                                                                     ALL_REVISION_REINDEX_BATCH_SIZE
+                                                                     {:provider-id provider-id})]
       (bulk-index context [latest-collections] false)
-      (bulk-index context [all-collections] true))))
+      (bulk-index context all-revisions-batches true))))
 
 (deftracefn index-concept
   "Index the given concept and revision-id"
