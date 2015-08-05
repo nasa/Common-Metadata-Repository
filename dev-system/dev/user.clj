@@ -19,7 +19,7 @@
         [clojure.repl]
         [alex-and-georges.debug-repl]))
 
-(defonce system nil)
+(def system nil)
 
 (defn start
   "Starts the current development system."
