@@ -2,11 +2,12 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.xml-generation :as xg]
-            [cmr.umm-spec.xml-mappings :as xm]
+            [cmr.umm-spec.xml-mappings.xml-generator :as xg]
             [cmr.umm-spec.xml-mappings.iso19115-2 :as xm-iso2]
             [cmr.umm-spec.xml-mappings.echo10 :as xm-echo10]
-            [cmr.umm-spec.xml-parsing :as xp]
+            [cmr.umm-spec.umm-mappings.iso19115-2 :as um-iso2]
+            [cmr.umm-spec.umm-mappings.echo10 :as um-echo10]
+            [cmr.umm-spec.umm-mappings.parser :as xp]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
@@ -71,16 +72,16 @@
               expected (expected-manip-fn example-record)]
           (is (= expected parsed)))
         "echo10"
-        xm-echo10/umm-c-to-echo10-xml xm/echo10-xml-to-umm-c expected-echo10
+        xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
 
         "ISO19115-2"
-        xm-iso2/umm-c-to-iso19115-2-xml xm/mends-xml-to-umm-c identity
+        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity
         )
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
     (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
-          parsed (xp/parse-xml xm/echo10-xml-to-umm-c xml)]
+          parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)]
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
 
 

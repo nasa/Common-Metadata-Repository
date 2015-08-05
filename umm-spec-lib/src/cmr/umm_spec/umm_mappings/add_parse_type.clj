@@ -1,7 +1,7 @@
-(ns cmr.umm-spec.xml-mappings
-  "Contains functions for loading mappings from UMM to XML and from XML to UMM. Mappings are defined
-  in JSON files. This namespace parses the JSON files and performs additional processing. The
-  loaded mappings are defined in vars in this namespace."
+(ns cmr.umm-spec.umm-mappings.add-parse-type
+  "Code necessary for making mapping easier to parse. When we parse XML into UMM we have to convert
+  things into the appropriate types. We splice together the schema and the mapping information in
+  order to have enough information to parse into appropriate types."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [cmr.umm-spec.json-schema :as js]
@@ -12,24 +12,7 @@
 
             ;; Models must be required to be available
             [cmr.umm-spec.models.common]
-            [cmr.umm-spec.models.collection]
-
-            ))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Mappings files
-
-(def ^:private echo10-xml-to-umm-c-file (io/resource "mappings/echo10/echo10-xml-to-umm-c.json"))
-
-(def ^:private mends-xml-to-umm-c-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm-c.json"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Parsing prep
-
-;;; Code necessary for making mapping easier to parse. When we parse XML into UMM we have to convert
-;;; things into the appropriate types. We splice together the schema and the mapping information in
-;;; order to have enough information to parse into appropriate types.
+            [cmr.umm-spec.models.collection]))
 
 (defmulti ^:private add-parse-type
   "Adds an additional field to loaded mappings that defines what type to convert the XML value into.
@@ -55,7 +38,7 @@
 
 (defmethod add-parse-type "array"
   [schema type-name schema-type mapping-type]
-  (update-in mapping-type [:items] #(add-parse-type schema type-name (:items schema-type) %)))
+  (update-in mapping-type [:template] #(add-parse-type schema type-name (:items schema-type) %)))
 
 ;; Simple types
 (doseq [simple-type ["string" "number" "integer" "boolean"]]
@@ -80,12 +63,11 @@
            :parse-type {:type :record
                         :constructor-fn (var-get constructor-fn-var)})))
 
-(defn- load-to-umm-mappings
+(defn add-parsing-types
   "Gets the mappings to umm with extra information to aid in parsing"
-  [schema mappings]
-  (let [root-type-def (get-in schema [:definitions (:root schema)])
-        [root-def-name root-def] (first mappings)]
-    {root-def-name (add-parse-type schema (:root schema) root-type-def root-def)}))
+  [schema root-def]
+  (let [root-type-def (get-in schema [:definitions (:root schema)])]
+    (add-parse-type schema (:root schema) root-type-def root-def)))
 
 (defn- cleanup-schema
   "For debugging purposes. Removes extraneous fields for printing the mappings so it's easier to read."
@@ -97,15 +79,6 @@
         v))
     schema))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Defined mappings
-
-(def echo10-xml-to-umm-c
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-xml-to-umm-c-file)))
-
-(def mends-xml-to-umm-c
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource mends-xml-to-umm-c-file)))
 
 
 

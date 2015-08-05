@@ -1,13 +1,11 @@
-(ns cmr.umm-spec.xml-generation
+(ns cmr.umm-spec.xml-mappings.xml-generator
   "Contains functions for generating XML using XML Mappings and a source clojure record"
   (:require [clojure.data.xml :as x]
             [cmr.umm-spec.simple-xpath :as sxp]
             [cmr.common.util :as u]))
 
-;; TODO move to cmr.umm-spec.xml-mappings.xml-generation
-
 (defmulti generate-content
-  "TODO"
+  "Generates content using a content generator and values from the XPath context."
   (fn [content-generator xpath-context]
     ;; We will eventually add custom function support through (fn? content-generator) :fn
     (cond
@@ -28,13 +26,14 @@
 (defmethod generate-content :element
   [[tag & content-generators] xpath-context]
 
-  ;; TODO add code comments
-
+  ;; Extract attributes that may be specified within the element.
   (let [{attrib-content-generators true
          other-content-generators false} (group-by #(= (:type %) :attribs) content-generators)
         attributes (reduce (fn [attribs attrib-cg]
+                             ;; Merge together the results any attribute content generators found
                              (into attribs
                                    (for [[k content-gen] (:value attrib-cg)]
+                                     ;; The values in an attribute map are treated as content generators
                                      [k (generate-content content-gen xpath-context)])))
                            {}
                            attrib-content-generators)]
@@ -61,12 +60,11 @@
       (generate-content template single-item-xpath-context))))
 
 (defn generate-xml
-  "TODO"
+  "Generates XML using a root content generator and a source UMM record."
   [content-generator record]
   (let [xpath-context (sxp/create-xpath-context-for-data record)
         content (generate-content content-generator xpath-context)]
-    ;; TODO temporary indent str
-    (x/indent-str content)))
+    (x/emit-str content)))
 
 
 

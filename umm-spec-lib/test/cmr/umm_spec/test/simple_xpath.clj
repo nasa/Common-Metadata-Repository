@@ -4,48 +4,45 @@
             [clojure.data.xml :as x]
             [cmr.common.util :as u :refer [are2]]))
 
-;; TODO add current context xpath tests
-
-
 ;; From Microsoft sample XML online
 (def sample-xml
   (sx/create-xpath-context-for-xml
     "<catalog>
-      <book id=\"bk101\">
-        <author>Gambardella, Matthew</author>
-        <title>XML Developer's Guide</title>
-        <genre>Computer</genre>
-        <price>44.95</price>
-        <publish_date>2000-10-01</publish_date>
-      </book>
-      <book id=\"bk102\">
-        <author>Ralls, Kim</author>
-        <title>Midnight Rain</title>
-        <genre>Fantasy</genre>
-        <price>5.95</price>
-        <publish_date>2000-12-16</publish_date>
-      </book>
-      <book id=\"bk103\">
-        <author>Corets, Eva</author>
-        <title>Maeve Ascendant</title>
-        <genre>Fantasy</genre>
-        <price>5.95</price>
-        <publish_date>2000-11-17</publish_date>
-      </book>
-      <book id=\"bk104\">
-        <author>Corets, Eva</author>
-        <title>Oberon's Legacy</title>
-        <genre>Fantasy</genre>
-        <price>5.95</price>
-        <publish_date>2001-03-10</publish_date>
-      </book>
-      <book id=\"bk105\">
-        <author>Corets, Eva</author>
-        <title>The Sundered Grail</title>
-        <genre>Fantasy</genre>
-        <price>5.95</price>
-        <publish_date>2001-09-10</publish_date>
-      </book>
+    <book id=\"bk101\">
+    <author>Gambardella, Matthew</author>
+    <title>XML Developer's Guide</title>
+    <genre>Computer</genre>
+    <price>44.95</price>
+    <publish_date>2000-10-01</publish_date>
+    </book>
+    <book id=\"bk102\">
+    <author>Ralls, Kim</author>
+    <title>Midnight Rain</title>
+    <genre>Fantasy</genre>
+    <price>5.95</price>
+    <publish_date>2000-12-16</publish_date>
+    </book>
+    <book id=\"bk103\">
+    <author>Corets, Eva</author>
+    <title>Maeve Ascendant</title>
+    <genre>Fantasy</genre>
+    <price>5.95</price>
+    <publish_date>2000-11-17</publish_date>
+    </book>
+    <book id=\"bk104\">
+    <author>Corets, Eva</author>
+    <title>Oberon's Legacy</title>
+    <genre>Fantasy</genre>
+    <price>5.95</price>
+    <publish_date>2001-03-10</publish_date>
+    </book>
+    <book id=\"bk105\">
+    <author>Corets, Eva</author>
+    <title>The Sundered Grail</title>
+    <genre>Fantasy</genre>
+    <price>5.95</price>
+    <publish_date>2001-09-10</publish_date>
+    </book>
     </catalog>"))
 
 (def sample-data-structure
@@ -59,123 +56,161 @@
 
   (sx/create-xpath-context-for-data
     {:books
-      [{:id "bk101"
-        :author "Gambardella, Matthew"
-        :title "XML Developer's Guide"
-        :genre "Computer"
-        :price 44.95
-        :publish_date "2000-10-01"}
-       {:id "bk102"
-        :author "Ralls, Kim"
-        :title "Midnight Rain"
-        :genre "Fantasy"
-        :price 5.95
-        :publish_date "2000-12-16"}
-       {:id "bk103"
-        :author "Corets, Eva"
-        :title "Maeve Ascendant"
-        :genre "Fantasy"
-        :price 5.95
-        :publish_date "2000-11-17"}
-       {:id "bk104"
-        :author "Corets, Eva"
-        :title "Oberon's Legacy"
-        :genre "Fantasy"
-        :price 5.95
-        :publish_date "2001-03-10"}
-       {:id "bk105"
-        :author "Corets, Eva"
-        :title "The Sundered Grail"
-        :genre "Fantasy"
-        :price 5.95
-        :publish_date "2001-09-10"}]}))
+     [{:id "bk101"
+       :author "Gambardella, Matthew"
+       :title "XML Developer's Guide"
+       :genre "Computer"
+       :price 44.95
+       :publish_date "2000-10-01"}
+      {:id "bk102"
+       :author "Ralls, Kim"
+       :title "Midnight Rain"
+       :genre "Fantasy"
+       :price 5.95
+       :publish_date "2000-12-16"}
+      {:id "bk103"
+       :author "Corets, Eva"
+       :title "Maeve Ascendant"
+       :genre "Fantasy"
+       :price 5.95
+       :publish_date "2000-11-17"}
+      {:id "bk104"
+       :author "Corets, Eva"
+       :title "Oberon's Legacy"
+       :genre "Fantasy"
+       :price 5.95
+       :publish_date "2001-03-10"}
+      {:id "bk105"
+       :author "Corets, Eva"
+       :title "The Sundered Grail"
+       :genre "Fantasy"
+       :price 5.95
+       :publish_date "2001-09-10"}]}))
 
 (deftest xpaths-with-xml-test
-  (are [xpath value]
-       (= value (:context (sx/evaluate sample-xml (sx/parse-xpath xpath))))
+  (testing "xpaths from root"
+    (are [xpath value]
+         (= value (:context (sx/evaluate sample-xml (sx/parse-xpath xpath))))
 
-       "/"
-       (get-in sample-xml [:root :content])
+         "/"
+         (get-in sample-xml [:root :content])
 
-       "/catalog"
-       (get-in sample-xml [:root :content])
+         "/catalog"
+         (get-in sample-xml [:root :content])
 
-       "/catalog/book/author"
-       (mapv x/parse-str ["<author>Gambardella, Matthew</author>"
-                          "<author>Ralls, Kim</author>"
-                          "<author>Corets, Eva</author>"
-                          "<author>Corets, Eva</author>"
-                          "<author>Corets, Eva</author>"])
+         "/catalog/book/author"
+         (mapv x/parse-str ["<author>Gambardella, Matthew</author>"
+                            "<author>Ralls, Kim</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Corets, Eva</author>"])
 
-       ;; namespaces are ignored
-       "/x:catalog/abc:book/author1:author"
-       (mapv x/parse-str ["<author>Gambardella, Matthew</author>"
-                          "<author>Ralls, Kim</author>"
-                          "<author>Corets, Eva</author>"
-                          "<author>Corets, Eva</author>"
-                          "<author>Corets, Eva</author>"])
+         ;; namespaces are ignored
+         "/x:catalog/abc:book/author1:author"
+         (mapv x/parse-str ["<author>Gambardella, Matthew</author>"
+                            "<author>Ralls, Kim</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Corets, Eva</author>"
+                            "<author>Corets, Eva</author>"])
 
-       "/catalog/book[@id='bk101']/author"
-       [(x/parse-str "<author>Gambardella, Matthew</author>")]
+         "/catalog/book[@id='bk101']/author"
+         [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
-       "/catalog/book[price='5.95']/title"
-       (mapv x/parse-str ["<title>Midnight Rain</title>"
-                          "<title>Maeve Ascendant</title>"
-                          "<title>Oberon's Legacy</title>"
-                          "<title>The Sundered Grail</title>"])
+         "/catalog/book[price='5.95']/title"
+         (mapv x/parse-str ["<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"
+                            "<title>Oberon's Legacy</title>"
+                            "<title>The Sundered Grail</title>"])
 
-       "/catalog/book[1]/author"
-       [(x/parse-str "<author>Gambardella, Matthew</author>")]
+         "/catalog/book[1]/author"
+         [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
-       "/catalog/book/author[1]"
-       [(x/parse-str "<author>Gambardella, Matthew</author>")]
+         "/catalog/book/author[1]"
+         [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
-       "/catalog/book[2]/author"
-       [(x/parse-str "<author>Ralls, Kim</author>")]
+         "/catalog/book[2]/author"
+         [(x/parse-str "<author>Ralls, Kim</author>")]
 
-       ;; Doesn't reference a real element
-       "/catalog/foo[1]"
-       []))
+         ;; Doesn't reference a real element
+         "/catalog/foo[1]"
+         []))
+
+  (testing "xpaths within context"
+    (let [xpath-context (sx/evaluate sample-xml (sx/parse-xpath "/catalog/book[1]"))]
+
+      (are [xpath value]
+           (= value (:context (sx/evaluate xpath-context (sx/parse-xpath xpath))))
+
+           "/"
+           (get-in sample-xml [:root :content])
+
+           "."
+           (:content (x/parse-str "<book id=\"bk101\">
+                                  <author>Gambardella, Matthew</author>
+                                  <title>XML Developer's Guide</title>
+                                  <genre>Computer</genre>
+                                  <price>44.95</price>
+                                  <publish_date>2000-10-01</publish_date>
+                                  </book>"))
+           "author"
+           [(x/parse-str "<author>Gambardella, Matthew</author>")]))))
 
 (deftest xpaths-with-data-test
-  (are [xpath value]
-       (= value (:context (sx/evaluate sample-data-structure (sx/parse-xpath xpath))))
+  (testing "xpaths from root"
+    (are [xpath value]
+         (= value (:context (sx/evaluate sample-data-structure (sx/parse-xpath xpath))))
 
-       "/"
-       (get-in sample-data-structure [:root])
+         "/"
+         (get-in sample-data-structure [:root])
 
-       "/catalog"
-       (get-in sample-data-structure [:root])
+         "/catalog"
+         (get-in sample-data-structure [:root])
 
-       "/catalog/books/author"
-       ["Gambardella, Matthew"
-        "Ralls, Kim"
-        "Corets, Eva"
-        "Corets, Eva"
-        "Corets, Eva"]
+         "/catalog/books/author"
+         ["Gambardella, Matthew"
+          "Ralls, Kim"
+          "Corets, Eva"
+          "Corets, Eva"
+          "Corets, Eva"]
 
-       "/catalog/books[@id='bk101']/author"
-       ["Gambardella, Matthew"]
+         "/catalog/books[@id='bk101']/author"
+         ["Gambardella, Matthew"]
 
-       "/catalog/books[price='5.95']/title"
-       ["Midnight Rain"
-        "Maeve Ascendant"
-        "Oberon's Legacy"
-        "The Sundered Grail"]
+         "/catalog/books[price='5.95']/title"
+         ["Midnight Rain"
+          "Maeve Ascendant"
+          "Oberon's Legacy"
+          "The Sundered Grail"]
 
-       "/catalog/books[1]/author"
-       ["Gambardella, Matthew"]
+         "/catalog/books[1]/author"
+         ["Gambardella, Matthew"]
 
-       "/catalog/books/author[1]"
-       ["Gambardella, Matthew"]
+         "/catalog/books/author[1]"
+         ["Gambardella, Matthew"]
 
-       "/catalog/books[2]/author"
-       ["Ralls, Kim"]
+         "/catalog/books[2]/author"
+         ["Ralls, Kim"]
 
-       ;; Doesn't reference a real element
-       "/catalog/foo[1]"
-       []))
+         ;; Doesn't reference a real element
+         "/catalog/foo[1]"
+         []))
 
+  (testing "xpaths within context"
+    (let [xpath-context (sx/evaluate sample-data-structure (sx/parse-xpath "/catalog/books[1]"))]
 
+      (are [xpath value]
+           (= value (:context (sx/evaluate xpath-context (sx/parse-xpath xpath))))
 
+           "/"
+           (get-in sample-data-structure [:root])
 
+           "."
+           [{:genre "Computer"
+             :title "XML Developer's Guide"
+             :author "Gambardella, Matthew"
+             :id "bk101"
+             :publish_date "2000-10-01"
+             :price 44.95}]
+
+           "author"
+           ["Gambardella, Matthew"]))))
