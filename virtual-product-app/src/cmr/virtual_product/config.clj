@@ -41,16 +41,20 @@
    :parser cfg/maybe-long})
 
 (defn- match-all
+  "Returns a function which checks if the granule umm matches with each of the matchers given"
   [& matchers]
-  (fn [record]
-    (every? identity (map #(% record) matchers))))
+  (fn [granule]
+    (every? identity (map #(% granule) matchers))))
 
 (defn- matches-value
+  "Returns a function which checks if the value in the granule umm given by ks matches value"
   [ks value]
-  (fn [record]
-    (= value (get-in record ks))))
+  (fn [granule]
+    (= value (get-in granule ks))))
 
 (defn- matches-on-psa
+  "Returns a function which checks the existence of a psa in the granule umm whose name is
+  psa-name and whose values have value as one of the memebers"
   [psa-name value]
   (fn [granule]
     (some #(and (= (:name %) psa-name) (some #{value} (:values %)))
