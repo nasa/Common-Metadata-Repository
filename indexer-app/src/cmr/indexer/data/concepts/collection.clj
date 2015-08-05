@@ -46,18 +46,19 @@
   [personnel]
   (first (filter person->email-contact personnel)))
 
-(defn- get-elastic-fields-for-collection
-  "Gets fields to be indexed from a collection umm."
-  [context provider-id concept-id umm-c]
-  (let [{{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
+(defn- get-elastic-fields-for-full-collection
+  "Get all the fields for a normal collection index operation."
+  [context concept collection]
+  (let [{:keys [concept-id provider-id native-id revision-date format]} concept
+        {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
-                temporal-keywords access-value personnel distribution]} umm-c
+                temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
         personnel (person-with-email personnel)
-        platforms (:platforms umm-c)
+        platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
         instruments (mapcat :instruments platforms)
@@ -66,23 +67,38 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (remove nil? (map :short-name sensors))
         sensor-long-names (remove nil? (map :long-name sensors))
-        project-short-names (map :short-name (:projects umm-c))
-        project-long-names (remove nil? (map :long-name (:projects umm-c)))
-        two-d-coord-names (map :name (:two-d-coordinate-systems umm-c))
-        archive-center-val (org/extract-archive-centers umm-c)
+        project-short-names (map :short-name (:projects collection))
+        project-long-names (remove nil? (map :long-name (:projects collection)))
+        two-d-coord-names (map :name (:two-d-coordinate-systems collection))
+        archive-center-val (org/extract-archive-centers collection)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
         ;; not empty is used below to get a real true/false value
         downloadable (not (empty? (ru/downloadable-urls related-urls)))
         browsable (not (empty? (ru/browse-urls related-urls)))
-        update-time (get-in umm-c [:data-provider-timestamps :update-time])
+        update-time (get-in collection [:data-provider-timestamps :update-time])
         update-time (f/unparse (f/formatters :date-time) update-time)
-        insert-time (get-in umm-c [:data-provider-timestamps :insert-time])
+        insert-time (get-in collection [:data-provider-timestamps :insert-time])
         insert-time (f/unparse (f/formatters :date-time) insert-time)
-        spatial-representation (get-in umm-c [:spatial-coverage :spatial-representation])
-        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id umm-c)]
-    (merge {:permitted-group-ids permitted-group-ids
+        spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
+        permitted-group-ids (acl/get-coll-permitted-group-ids context provider-id collection)]
+    (merge {:concept-id concept-id
+            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+            :native-id native-id
+            :native-id.lowercase (str/lower-case native-id)
+            :permitted-group-ids permitted-group-ids
+            :entry-id entry-id
+            :entry-id.lowercase (str/lower-case entry-id)
+            :entry-title entry-title
+            :entry-title.lowercase (str/lower-case entry-title)
+            :provider-id provider-id
+            :provider-id.lowercase (str/lower-case provider-id)
+            :short-name short-name
+            :short-name.lowercase (when short-name (str/lower-case short-name))
+            :version-id version-id
+            :version-id.lowercase (when version-id (str/lower-case version-id))
+            :revision-date revision-date
             :access-value access-value
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
@@ -103,9 +119,9 @@
             :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
-            :attributes (attrib/psas->elastic-docs umm-c)
-            :science-keywords (sk/science-keywords->elastic-doc umm-c)
-            :science-keywords-flat (sk/flatten-science-keywords umm-c)
+            :attributes (attrib/psas->elastic-docs collection)
+            :science-keywords (sk/science-keywords->elastic-doc collection)
+            :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
@@ -115,6 +131,7 @@
             :browsable browsable
             :atom-links atom-links
             :summary summary
+            :metadata-format (name (mt/base-mime-type-to-format format))
             :related-urls (map json/generate-string related-urls)
             :update-time update-time
             :insert-time insert-time
@@ -123,19 +140,21 @@
             :coordinate-system (when spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id umm-c)
+            :keyword (k/create-keywords-field concept-id collection)
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
             :sensor-ln.lowercase (map str/lower-case sensor-long-names)
             :project-ln.lowercase (map str/lower-case project-long-names)
             :temporal-keyword.lowercase (map str/lower-case temporal-keywords)}
-           (get-in umm-c [:spatial-coverage :orbit-parameters])
-           (spatial->elastic umm-c)
-           (sk/science-keywords->facet-fields umm-c))))
+           (get-in collection [:spatial-coverage :orbit-parameters])
+           (spatial->elastic collection)
+           (sk/science-keywords->facet-fields collection))))
 
-(defmethod es/concept->elastic-doc :collection
-  [context concept collection]
+
+(defn- get-elastic-fields-for-tombstone-collection
+  "Get the subset of elastic field values that apply to a tombstone index operation."
+  [context concept]
   (let [{{:keys [short-name version-id entry-id entry-title]} :extra-fields
          :keys [concept-id provider-id native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
@@ -143,25 +162,29 @@
         tombstone-permitted-group-ids (acl/get-coll-permitted-group-ids context
                                                                         provider-id tombstone-umm)
         {:keys [access-value]} tombstone-umm]
-    (merge {:concept-id concept-id
-            :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-            :native-id native-id
-            :native-id.lowercase (str/lower-case native-id)
-            :short-name short-name
-            :short-name.lowercase (when short-name (str/lower-case short-name))
-            :entry-id entry-id
-            :entry-id.lowercase (str/lower-case entry-id)
-            :entry-title entry-title
-            :entry-title.lowercase (str/lower-case entry-title)
-            :version-id version-id
-            :version-id.lowercase (when version-id (str/lower-case version-id))
-            :deleted (boolean deleted)
-            :provider-id provider-id
-            :provider-id.lowercase (str/lower-case provider-id)
-            :revision-date revision-date
-            :metadata-format (name (mt/base-mime-type-to-format format))
-            :permitted-group-ids tombstone-permitted-group-ids
-            :access-value access-value}
-           (when-not deleted
-             (get-elastic-fields-for-collection context provider-id concept-id collection)))))
+    {:concept-id concept-id
+     :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+     :native-id native-id
+     :native-id.lowercase (str/lower-case native-id)
+     :short-name short-name
+     :short-name.lowercase (when short-name (str/lower-case short-name))
+     :entry-id entry-id
+     :entry-id.lowercase (str/lower-case entry-id)
+     :entry-title entry-title
+     :entry-title.lowercase (str/lower-case entry-title)
+     :version-id version-id
+     :version-id.lowercase (when version-id (str/lower-case version-id))
+     :deleted (boolean deleted)
+     :provider-id provider-id
+     :provider-id.lowercase (str/lower-case provider-id)
+     :revision-date revision-date
+     :metadata-format (name (mt/base-mime-type-to-format format))
+     :permitted-group-ids tombstone-permitted-group-ids
+     :access-value access-value}))
+
+(defmethod es/concept->elastic-doc :collection
+  [context concept collection]
+  (if (:deleted concept)
+    (get-elastic-fields-for-tombstone-collection context concept)
+    (get-elastic-fields-for-full-collection context concept collection)))
 
