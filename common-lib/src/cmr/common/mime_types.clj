@@ -12,6 +12,7 @@
   "Defines a map of mime type format keywords to mime types and other format aliases. Each one of these
    has a var defined for it for easy access."
   {:json {:mime-type "application/json"}
+   :concept-map {:mime-type "application/concept-map+json"}
    :xml {:mime-type "application/xml"}
    :form-url-encoded {:mime-type "application/x-www-form-urlencoded"}
    :echo10 {:mime-type "application/echo10+xml"}

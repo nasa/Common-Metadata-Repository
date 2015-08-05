@@ -116,7 +116,7 @@
             [coll1-1 coll1-tombstone coll1-3]
             {:concept-id "C1200000000-PROV1" :all-revisions true}))))
 
-(deftest search-granule-all-revisions
+#_(deftest search-granule-all-revisions
   (testing "granule search with all_revisions parameter is not supported"
     (let [{:keys [status errors]} (search/get-search-failure-data
                                     (search/find-refs :granule {:provider-id "PROV1"
