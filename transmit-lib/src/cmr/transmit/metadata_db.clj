@@ -173,7 +173,7 @@
   [context batch-size params]
   (->> (find-collections context (assoc params :exclude-metadata true))
        (map #(vector (:concept-id %) (:revision-id %)))
-       (partition batch-size)
+       (partition-all batch-size)
        ;; It's important this step is done lazily.
        (map #(get-concept-revisions context %))))
 
