@@ -96,25 +96,29 @@
        (mapcat source-collection->virtual-collections)
        (mapv #(d/ingest (:provider-id %) % options)))))
 
-(defmulti ingest-source-granule
-  "A method to ingest a source granule while adding necessary attributes that allow all related virtual granules to pass through all the associated matchers"
-  (fn [provider-id concept & options]
-    [provider-id (get-in concept [:collection-ref :short-name])]))
+(defmulti add-granule-attributes
+  "A method to add custom attributes to granule concepts depending on the source granule"
+  (fn [provider-id granule]
+    [provider-id (get-in granule [:collection-ref :short-name])]))
 
-(defmethod ingest-source-granule :default
-  [provider-id concept & options]
-  (d/ingest provider-id concept (apply hash-map options)))
+(defmethod add-granule-attributes :default
+  [provider-id granule]
+  granule)
 
-(defmethod ingest-source-granule ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id concept & options]
+(defmethod add-granule-attributes ["LPDAAC_ECS" "AST_L1A"]
+  [provider-id granule]
   (let [psa1 (dg/psa "TIR_ObservationMode" ["ON"])
         psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
         psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
         psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
-    (d/ingest provider-id (-> concept
-                              (assoc :data-granule
-                                     (umm-g/map->DataGranule
-                                       {:day-night "DAY"
-                                        :production-date-time "2014-09-26T11:11:00Z"}))
-                              (assoc :product-specific-attributes [psa1 psa2 psa3 psa4]))
-              (apply hash-map options))))
+    (-> granule
+        (assoc :data-granule
+               (umm-g/map->DataGranule
+                 {:day-night "DAY"
+                  :production-date-time "2014-09-26T11:11:00Z"}))
+        (assoc :product-specific-attributes [psa1 psa2 psa3 psa4]))))
+
+(defn ingest-source-granule
+  [provider-id concept & options]
+  (d/ingest provider-id (add-granule-attributes provider-id concept) (apply hash-map options)))
+

@@ -1037,24 +1037,28 @@
     (let [concept-counter (atom 1)
           ;; Function to create collection umm using entry title. provider id is added to the
           ;; record created for later use.
-          collection-umm (fn [provider-id entry-title]
-                           (assoc (dc/collection {:entry-title entry-title})
+          collection-umm (fn [provider-id entry-title short-name]
+                           (assoc (dc/collection {:entry-title entry-title
+                                                  :short-name short-name})
                                   :provider-id provider-id))
           ;; Function to create a collection concept which can be ingested directly
           ;; to Catalog Rest.
           coll-concept (fn [coll-umm]
                          (create-collection-concept
                            coll-umm (:provider-id coll-umm) :echo10 concept-counter))
-          non-virt-coll1 (collection-umm "CPROV1" "non virtual collection 1")
+          non-virt-coll1 (collection-umm "CPROV1" "non virtual collection 1" "non-virtual-1")
           non-virt-coll-concept1 (coll-concept non-virt-coll1)
-          non-virt-coll2 (collection-umm "LPDAAC_ECS" "non virtual collection 2")
+          non-virt-coll2 (collection-umm "LPDAAC_ECS" "non virtual collection 2" "non-virtual-2")
           non-virt-coll-concept2 (coll-concept non-virt-coll2)
-          ast-coll (collection-umm "LPDAAC_ECS"
-                                   "ASTER L1A Reconstructed Unprocessed Instrument Data V003")
-          ast-coll-concept (coll-concept ast-coll)
-          omi-coll (collection-umm "GSFCS4PA"
-                                   (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                        " Dose Daily L3 Global 1.0x1.0 deg Grid V003"))
+          ast-coll (vp/add-collection-attributes
+                     (collection-umm "LPDAAC_ECS"
+                                     "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                                     "AST_L1A"))
+          ast-coll-concept (coll-concept  ast-coll)
+          omi-coll (vp/add-collection-attributes
+                     (collection-umm "GSFCS4PA"
+                                     (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                          " Dose Daily L3 Global 1.0x1.0 deg Grid V003") "OMUVBd"))
           omi-coll-concept (coll-concept omi-coll)
           non-virt-collection-concepts [non-virt-coll-concept1 non-virt-coll-concept2]
           src-collection-concepts [ast-coll-concept omi-coll-concept]
@@ -1078,7 +1082,9 @@
         (let [;; Function to create granule umm using granule-ur and collection umm. Collection
               ;; concept id and provider id are added to the record created for later use.
               granule-umm (fn [coll-umm collection-id granule-ur]
-                            (assoc (dg/granule coll-umm {:granule-ur granule-ur})
+                            (assoc (vp/add-granule-attributes
+                                     (:provider-id coll-umm)
+                                     (dg/granule coll-umm {:granule-ur granule-ur}))
                                    :provider-id (:provider-id coll-umm)
                                    :collection-id collection-id))
               ;; Function to create a granule concept which can be ingested directly
