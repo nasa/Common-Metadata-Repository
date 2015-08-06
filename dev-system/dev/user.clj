@@ -6,7 +6,6 @@
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [cmr.dev-system.system :as system]
             [cmr.dev-system.tests :as tests]
-            [cmr.common.concepts :as concepts]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.dev.util :as d]
             [cmr.system-int-test.system :as sit-sys]
