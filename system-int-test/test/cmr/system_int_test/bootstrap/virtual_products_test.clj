@@ -104,9 +104,12 @@
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
 (deftest deleted-virtual-granules
-  (let [ast-coll   (d/ingest "LPDAAC_ECS"
-                             (dc/collection
-                              {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+  (let [[ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")])
         vp-colls   (vp/ingest-virtual-collections [ast-coll])
         s-granules (doall
                     (for [n (range 10)]
@@ -124,6 +127,8 @@
                      (doseq [gran v-granules]
                        (is (:deleted (ingest/get-concept (:id gran) 12)))))]
 
+    (is (not (empty? v-granules)))
+
     (testing "after deleting source granules"
       (doseq [granule s-granules]
         (ingest/delete-concept (d/item->concept granule) {:revision-id 12}))
@@ -133,3 +138,26 @@
     (testing "bootstrapping should be idempotent"
       (bootstrap-and-index)
       (verify))))
+
+(deftest non-matching-source-granules
+  (let [[ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")])
+        ;; Ingest the destination virtual collections (precondition
+        ;; for any virtual granules being created).
+        vp-colls (vp/ingest-virtual-collections [ast-coll])]
+    (is (not (empty? vp-colls)))
+    ;; this source granule won't have PSAs and shouldn't generate any
+    ;; virtual granules
+    (is (= 5 (:revision-id
+              (d/ingest "LPDAAC_ECS"
+                        (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"
+                                              :revision-id 5})))))
+    (bootstrap-and-index)
+    (doseq [virtual-coll vp-colls]
+      (is (empty? (:refs (search/find-refs :granule
+                                           {:entry-title (:entry-title virtual-coll)
+                                            :page-size 50})))))))
