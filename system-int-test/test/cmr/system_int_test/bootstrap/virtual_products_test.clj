@@ -70,8 +70,9 @@
         source-granules (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs
-                                                 [provider-id entry-title])]
-                                 (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))
+                                                  [provider-id entry-title])]
+                                 (vp/ingest-source-granule provider-id
+                                                          (dg/granule source-coll {:granule-ur granule-ur}))))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
     (index/wait-until-indexed)
@@ -109,9 +110,10 @@
         vp-colls   (vp/ingest-virtual-collections [ast-coll])
         s-granules (doall
                     (for [n (range 10)]
-                      (d/ingest "LPDAAC_ECS"
-                                (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
-                                                      :revision-id 5}))))
+                      (vp/ingest-source-granule
+                       "LPDAAC_ECS"
+                       (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
+                                             :revision-id 5}))))
         _          (bootstrap-and-index)
         v-granules (mapcat #(:refs
                              (search/find-refs :granule
