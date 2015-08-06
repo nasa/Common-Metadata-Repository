@@ -1,5 +1,5 @@
-(ns cmr.search.results-handlers.concept-map-handler
-  "Handles the concept map results format and related functions"
+(ns cmr.search.results-handlers.umm-json-results-handler
+  "Handles the umm-json results format and related functions"
   (:require [cmr.search.data.elastic-results-to-query-results :as elastic-results]
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
@@ -8,7 +8,7 @@
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :ummjson]
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :umm-json]
   [concept-type query]
   ["concept-id"
    "native-id"
@@ -21,7 +21,7 @@
    "deleted"
    "metadata-format"])
 
-(defmethod elastic-results/elastic-result->query-result-item :ummjson
+(defmethod elastic-results/elastic-result->query-result-item :umm-json
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
@@ -48,7 +48,7 @@
            :short-name short-name
            :version-id version-id}}))
 
-(defmethod qs/search-results->response :ummjson
+(defmethod qs/search-results->response :umm-json
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
 

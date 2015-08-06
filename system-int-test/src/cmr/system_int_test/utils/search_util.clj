@@ -296,13 +296,13 @@
         :results (od/parse-opendata-result concept-type body)}
        response))))
 
-(defn find-concepts-ummjson
-  "Returns the response of a search in ummjson format"
+(defn find-concepts-umm-json
+  "Returns the response of a search in umm-json format"
   ([concept-type params]
-   (find-concepts-ummjson concept-type params {}))
+   (find-concepts-umm-json concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format mime-types/ummjson concept-type params options))
+                    (find-concepts-in-format mime-types/umm-json concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
