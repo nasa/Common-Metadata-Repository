@@ -21,12 +21,6 @@
     (when-not (get (concept-type->supported-result-formats concept-type) result-format)
       [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))])))
 
-(defn validate-concept-revision-search-concept-type
-  "Validate that the give concept type is supported for concept revision searches"
-  [concept-type]
-  (when-not (contains? #{:collection} concept-type)
-    [(format "Concept revision searches are not supported for %ss." (name concept-type))]))
-
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
   A sequence of errors should be returned if validation fails, otherwise an empty sequence is returned."

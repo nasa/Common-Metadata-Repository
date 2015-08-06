@@ -1,53 +1,82 @@
-(ns cmr.system-int-test.search.collection-concept-revision-search-test
-  "Integration test for collection all revisions search"
+(ns cmr.system-int-test.search.concept-map-search-test
+  "Integration test for concept map format search"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
-            [cmr.umm.core :as umm]
-            [cmr.common.util :refer [are2] :as util]))
+            [cmr.common.util :refer [are2]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(deftest search-collection-all-revisions
+(defn- collection->concept-map
+  "Returns the collection in concept-map format."
+  [collection]
+  (let [{{:keys [short-name version-id]} :product
+         {:keys [delete-time]} :data-provider-timestamps
+         :keys [entry-id entry-title format-key revision-id concept-id provider-id deleted]} collection]
+    {:concept-type "collection"
+     :concept-id concept-id
+     :revision-id revision-id
+     :native-id entry-title
+     :provider-id provider-id
+     :entry-title entry-title
+     :entry-id entry-id
+     :short-name short-name
+     :version-id version-id
+     :deleted (boolean deleted)
+     :format (mt/format->mime-type format-key)}))
+
+
+(defn- collections->concept-maps
+  "Returns the collections in a set of concept-maps."
+  [collections]
+  (set (map collection->concept-map collections)))
+
+(defn- concept-maps-match?
+  "Returns true if the UMM collection concept-maps match the concept-maps returned from the search."
+  [collections search-result]
+  ;; We do not check the revision-date in concept-map as it is not available in UMM record.
+  (is (= (collections->concept-maps collections)
+         (set (map #(dissoc % :revision-date) (:results search-result))))))
+
+(deftest search-collection-concept-map
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
+                                                  :entry-id "s1_v1"
                                                   :version-id "v1"
                                                   :short-name "s1"}))
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
-        coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
+        coll1-2-tombstone (merge coll1-1 {:deleted true} (ingest/delete-concept concept1))
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
+                                                  :entry-id "s1_v2"
                                                   :version-id "v2"
                                                   :short-name "s1"}))
 
         coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
+                                                  :entry-id "s2_v1"
                                                   :version-id "v1"
                                                   :short-name "s2"}))
         coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
+                                                  :entry-id "s2_v2"
                                                   :version-id "v2"
                                                   :short-name "s2"}))
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+        coll2-3-tombstone (merge coll2-2 {:deleted true} (ingest/delete-concept concept2))
 
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
-                                                :entry-id "eid3"
+                                                :entry-id "s1_v4"
                                                 :version-id "v4"
                                                 :short-name "s1"}))]
     (index/wait-until-indexed)
-    (testing "find-references-with-all-revisions parameter"
+    (testing "find collections in concept-map format"
       (are2 [collections params]
-            (d/refs-match? collections (search/find-refs :collection params))
+            (concept-maps-match? collections (search/find-concepts-concept-map :collection params))
 
             ;; Should not get matching tombstone for second collection back
             "provider-id all-revisions=false"
@@ -120,20 +149,9 @@
             [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
             {:all-revisions true}))))
 
-(deftest search-all-revisions-error-cases
-  (testing "collection search with all_revisions bad value"
-    (let [{:keys [status errors]} (search/find-refs :collection {:all-revisions "foo"})]
-      (is (= [400 ["Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]
-             [status errors]))))
-  (testing "granule search with all_revisions parameter is not supported"
-    (let [{:keys [status errors]} (search/find-refs :granule {:provider-id "PROV1"
-                                                              :all-revisions false})]
-      (is (= [400 ["Parameter [all_revisions] was not recognized."]]
-             [status errors]))))
-  (testing "granule search with all_revisions bad value"
-    (let [{:keys [status errors]} (search/find-refs :granule {:provider-id "PROV1"
-                                                              :all-revisions "foo"})]
-      (is (= [400 ["Parameter [all_revisions] was not recognized."
-                   "Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]
+(deftest search-concept-map-error-cases
+  (testing "granule concept-map search is not supported"
+    (let [{:keys [status errors]} (search/find-concepts-concept-map :granule {})]
+      (is (= [400 ["The mime type [application/concept-map+json] is not supported for granules."]]
              [status errors])))))
 

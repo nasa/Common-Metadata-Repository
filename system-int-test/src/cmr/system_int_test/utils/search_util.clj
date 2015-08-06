@@ -257,16 +257,16 @@
 (defn find-concepts-in-json-with-json-query
   "Returns the response of a search using JSON query in JSON format"
   [concept-type query-params json-as-map]
-   (let [response (get-search-failure-data
-                    (find-with-json-query concept-type query-params json-as-map mime-types/json))
-         {:keys [status body]} response
-         {:keys [echo-compatible include-facets]} query-params]
-     (if (and echo-compatible include-facets)
-       (dj/parse-echo-json-result body)
-       (if (= status 200)
-         {:status status
-          :results (dj/parse-json-result concept-type body)}
-         response))))
+  (let [response (get-search-failure-data
+                   (find-with-json-query concept-type query-params json-as-map mime-types/json))
+        {:keys [status body]} response
+        {:keys [echo-compatible include-facets]} query-params]
+    (if (and echo-compatible include-facets)
+      (dj/parse-echo-json-result body)
+      (if (= status 200)
+        {:status status
+         :results (dj/parse-json-result concept-type body)}
+        response))))
 
 (defn find-concepts-kml
   "Returns the response of search in KML format"
@@ -294,6 +294,19 @@
      (if (= status 200)
        {:status status
         :results (od/parse-opendata-result concept-type body)}
+       response))))
+
+(defn find-concepts-concept-map
+  "Returns the response of a search in concept-map format"
+  ([concept-type params]
+   (find-concepts-concept-map concept-type params {}))
+  ([concept-type params options]
+   (let [response (get-search-failure-data
+                    (find-concepts-in-format mime-types/concept-map concept-type params options))
+         {:keys [status body]} response]
+     (if (= status 200)
+       {:status status
+        :results (json/decode body true)}
        response))))
 
 (defn find-metadata
