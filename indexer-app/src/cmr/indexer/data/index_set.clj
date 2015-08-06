@@ -169,6 +169,7 @@
                                     :revision-date         date-field-mapping
                                     :permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
+                                    :revision-id (stored int-field-mapping)
                                     ;; This is used explicitly for sorting. The values take up less space in the
                                     ;; fielddata cache.
                                     :concept-seq-id int-field-mapping
