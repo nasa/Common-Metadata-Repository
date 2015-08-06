@@ -13,6 +13,7 @@
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.bulk-index :as bi]
             [cmr.bootstrap.data.db-synchronization :as dbs]
+            [cmr.bootstrap.data.virtual-products :as vp]
             [cmr.bootstrap.services.jobs :as bootstrap-jobs]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
@@ -73,6 +74,9 @@
              ;; Channel for asynchronously sending database synchronization requests
              :db-synchronize-channel (chan)
 
+             ;; Channel for bootstrapping virtual products
+             vp/channel-name (chan)
+
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
              :jobs-db (oracle/create-db (bootstrap-config/db-spec "db-sync-pool"))
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
@@ -101,6 +105,7 @@
     (bm/handle-copy-requests started-system)
     (bi/handle-bulk-index-requests started-system)
     (dbs/handle-db-synchronization-requests started-system)
+    (vp/handle-virtual-product-requests started-system)
     (info "Bootstrap System started")
     started-system))
 

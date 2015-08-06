@@ -328,6 +328,13 @@
      (sequential? m)
      (reduce #(into %1 (get-keys-in %2)) key-set m))))
 
+(defn unbatch
+  "Returns a lazy seq of individual results from a lazy sequence of
+  sequences. For example: return a lazy sequence of each item in a
+  sequence of batches of items in search results."
+  [coll]
+  (mapcat seq coll))
+
 (defn delete-recursively
   "Recursively delete the directory or file by the given name. Does nothing if the file does not exist."
   [fname]

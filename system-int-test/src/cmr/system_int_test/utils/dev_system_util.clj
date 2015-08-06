@@ -28,7 +28,7 @@
   (let [response (client/post (url/dev-system-eval-url)
                               (assoc (admin-connect-options)
                                      :body (pr-str code)))]
-    (is (= 200 (:status response)) (:body response))
+    (assert (= 200 (:status response)) (:body response))
     (when (= 200 (:status response))
       (read-string (:body response)))))
 

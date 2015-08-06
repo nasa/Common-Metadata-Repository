@@ -15,3 +15,7 @@
   "Returns the embedded indexer from the given bootstrap system"
   [system]
   (get-in system [:embedded-systems :indexer]))
+
+(defn get-virtual-products
+  [system]
+  (get-in system [:embedded-systems :virtual-products]))

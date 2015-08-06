@@ -71,6 +71,12 @@ This should return the granule including the echo-10 xml.
 
 NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
 
+### Initialize Virtual Products
+
+Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
+
+    curl -v -XPOST http://localhost:3006/virtual_products/
+
 ### Synchronize Catalog REST and CMR
 
 Due to an issue in Catalog REST the CMR and Catalog REST databases diverged for a period of time because no ingest (new items, updates or deletes) were sent to the CMR. There is a mechanism for synchronizing the CMR with Catalog REST using the following endpoint:

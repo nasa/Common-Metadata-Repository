@@ -31,7 +31,7 @@
 (comment
   (do
     (dev-sys-util/reset)
-    (doseq [p virtual-product-providers]
+    (doseq [p vp/virtual-product-providers]
       (ingest/create-provider (str p "_guid") p)))
 
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)

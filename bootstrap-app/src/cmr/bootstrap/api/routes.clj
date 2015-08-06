@@ -110,6 +110,12 @@
     {:status 202
      :body {:message msg}}))
 
+(defn- bootstrap-virtual-products
+  "Bootstrap virtual products."
+  [context params]
+  (bs/bootstrap-virtual-products context (= "true" (:synchronous params)))
+  {:status 202 :body {:message "Bootstrapping virtual products."}})
+
 (defn- build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -118,6 +124,7 @@
           (migrate-provider request-context body params))
         (POST "/collections" {:keys [request-context body params]}
           (migrate-collection request-context body params)))
+
       (context "/db_synchronize" []
         (POST "/" {:keys [request-context params]}
           (db-synchronize request-context params)))
@@ -128,6 +135,10 @@
 
         (POST "/collections" {:keys [request-context body params]}
           (bulk-index-collection request-context body params)))
+
+      (context "/virtual_products" []
+        (POST "/" {:keys [request-context params]}
+          (bootstrap-virtual-products request-context params)))
 
       ;; Add routes for managing jobs.
       (common-routes/job-api-routes)
@@ -149,6 +160,3 @@
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
       params/wrap-params))
-
-
-
