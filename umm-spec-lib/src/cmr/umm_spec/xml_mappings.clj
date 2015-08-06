@@ -8,6 +8,9 @@
             [cmr.umm-spec.record-generator :as record-gen]
             [cmr.common.util :as util]
             [cmr.umm-spec.util :as spec-util]
+            [cmr.umm-spec.simple-xpath :as sxp]
+
+            [cmr.common.xml.xslt :as xslt]
 
             ;; Models must be required to be available
             [cmr.umm-spec.models.common]
@@ -20,8 +23,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mappings files
 
-(def ^:private echo10-to-xml-file (io/resource "mappings/echo10/umm-to-echo10-xml.json"))
-(def ^:private echo10-to-umm-file (io/resource "mappings/echo10/echo10-xml-to-umm.json"))
+(def ^:private umm-c-to-echo10-xml-file (io/resource "mappings/echo10/umm-c-to-echo10-xml.json"))
+(def ^:private echo10-xml-to-umm-c-file (io/resource "mappings/echo10/echo10-xml-to-umm-c.json"))
+
+(def ^:private umm-c-to-mends-xml-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml.json"))
+(def ^:private umm-c-to-mends-xml2-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml2.json"))
+
+(def umm-c-to-mends-xml-xsl-file (io/resource "mappings/iso19115-mends/umm-c-to-mends-xml.xsl"))
+
+(def ^:private mends-xml-to-umm-c-file (io/resource "mappings/iso19115-mends/mends-xml-to-umm-c.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing prep
@@ -96,14 +106,85 @@
         v))
     schema))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; XML Generation Prep
+
+(defmulti load-mapping
+  (fn [mapping]
+    (cond
+      (:type mapping) (:type mapping)
+      (vector? mapping) :vector
+      ;; Let default fall through to unexpected types and throw an exception
+      :else :default)))
+
+(defmethod load-mapping :default
+  [mapping]
+  (throw (Exception. (str "No implementation for mapping " (pr-str mapping)))))
+
+(defn load-properties
+  [properties]
+  (vec (for [[prop-name mapping] properties]
+         [prop-name (load-mapping mapping)])))
+
+(defmethod load-mapping "object"
+  [mapping]
+  (update-in mapping [:properties] load-properties))
+
+(defmethod load-mapping "xpath"
+  [mapping]
+  (update-in mapping [:value] sxp/parse-xpath))
+
+(defmethod load-mapping "array"
+  [mapping]
+  (if (:items mapping)
+    (update-in mapping [:items] load-mapping)
+    mapping))
+
+;; This is syntactic sugar for specifying an object with properties
+(defmethod load-mapping :vector
+  [properties]
+  {:type "object"
+   :properties (load-properties properties)})
+
+(defn- load-to-xml-mappings
+  "Loads the XML Mappings by converting any syntactic sugar into their real representations."
+  [mappings]
+  (let [[root-def-name root-def] (first mappings)]
+    {root-def-name (load-mapping root-def)}))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined mappings
 
-(def echo10-xml-to-umm
-  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-to-umm-file)))
+(def echo10-xml-to-umm-c
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource echo10-xml-to-umm-c-file)))
 
-(def umm-to-echo10-xml (spec-util/load-json-resource echo10-to-xml-file))
+(def umm-c-to-echo10-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-echo10-xml-file)))
+
+(def mends-xml-to-umm-c
+  (load-to-umm-mappings js/umm-c-schema (spec-util/load-json-resource mends-xml-to-umm-c-file)))
+
+(def umm-c-to-mends-xml
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-mends-xml-file)))
+
+;; Temporary to test smaller representation
+(def umm-c-to-mends-xml2
+  (load-to-xml-mappings (spec-util/load-json-resource umm-c-to-mends-xml2-file)))
+
+;; Temporary test with XSLT
+
+(def umm-c-to-mends-xml-xsl
+  (xslt/read-template umm-c-to-mends-xml-xsl-file))
+
+
+(comment
+
+  ;; They should be equal
+  (= umm-c-to-mends-xml2 umm-c-to-mends-xml)
+
+
+  )
 
 
 

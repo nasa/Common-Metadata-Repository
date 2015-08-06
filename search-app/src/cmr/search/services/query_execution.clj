@@ -44,9 +44,10 @@
 
 (defn- direct-transformer-query?
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
-  [{:keys [result-format result-features] :as query}]
+  [{:keys [result-format result-features all-revisions?] :as query}]
   (and (specific-items-query? query)
        (transformer-supported-format? result-format)
+       (not all-revisions?)
        ;; Facets requires elastic search
        (not-any? #(= % :facets) result-features)))
 
@@ -54,8 +55,9 @@
   "Returns true if the query is only for specific items that will come directly from elastic search.
   This query type is split out because it is faster to bypass ACLs and apply them afterwards
   than to apply them ahead of time to the query."
-  [{:keys [result-format] :as query}]
+  [{:keys [result-format all-revisions?] :as query}]
   (and (specific-items-query? query)
+       (not all-revisions?)
        (specific-elastic-items-format? result-format)))
 
 (defn- query->execution-strategy
@@ -133,8 +135,8 @@
   [context query]
   (let [processed-query (->> query
                              (pre-process-query-result-features context)
-                             (r/resolve-collection-queries context))
-        processed-query (c2s/reduce-query context processed-query)
+                             (r/resolve-collection-queries context)
+                             (c2s/reduce-query context))
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (:skip-acls? query)

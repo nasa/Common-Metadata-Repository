@@ -175,9 +175,10 @@
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
   (let [[query-creation-time query] (u/time-execution
-                                      (jp/parse-json-query concept-type
-                                                           (sanitize-params params)
-                                                           json-query))
+                                      (-> (jp/parse-json-query concept-type
+                                                               (sanitize-params params)
+                                                               json-query)))
+
         results (find-concepts context concept-type params query-creation-time query)]
     ;; TODO refactor this out into find-concepts or some common function
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
@@ -243,16 +244,6 @@
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
     {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))}))
-
-(deftracefn find-concept-revisions
-  "Uses the metadata-db to find concept revisions for the given parameters"
-  [context params]
-  ;; Prepare params as if they were sent over HTTP to metadata db
-  (let [params (u/map-keys->kebab-case params)
-        errors (v/validate-concept-revision-search-concept-type (:concept-type params))]
-    (if (seq errors)
-      (errors/throw-service-errors :bad-request errors)
-      (mdb-search/find-concepts (t/context->metadata-db-context context) params))))
 
 (deftracefn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."

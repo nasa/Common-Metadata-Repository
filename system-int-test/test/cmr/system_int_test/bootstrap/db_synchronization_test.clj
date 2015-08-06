@@ -237,7 +237,7 @@
   [concepts]
   (index/wait-until-indexed)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
-          concept-set (partition 1000 type-concepts)]
+          concept-set (partition-all 1000 type-concepts)]
     (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) concept-set)
           results (search/find-refs-with-post concept-type {:concept-id (map :concept-id concept-set)
                                                             :page-size 2000})
@@ -249,9 +249,9 @@
   [concepts]
   (index/wait-until-indexed)
   (doseq [[concept-type type-concepts] (group-by :concept-type concepts)
-          concept-set (partition 1000 type-concepts)]
-    (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) type-concepts)
-          results (search/find-refs-with-post concept-type {:concept-id (map :concept-id type-concepts)})]
+          concept-set (partition-all 1000 type-concepts)]
+    (let [expected-tuples (map #(vector (:concept-id %) (:revision-id %)) concept-set)
+          results (search/find-refs-with-post concept-type {:concept-id (map :concept-id concept-set)})]
       (is (= 0 (:hits results)) (str "Expected 0 found " (pr-str results))))))
 
 (deftest db-synchronize-cmr-only-provider
@@ -261,13 +261,13 @@
           system (bootstrap/system)]
 
       (ingest/save-concept coll1-1)
+      (assert-concepts-in-mdb [coll1-1])
 
-      ;; CPROV3 is a CMR Only provider so nothing shoould change when it is synchronized.
+      ;; CPROV3 is a CMR Only provider so nothing should change when it is synchronized.
       (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing] :provider-id "CPROV3"})
 
       ;; Check that they are synchronized now with the latest data.
-      (assert-concepts-in-mdb [coll1-1])
-      (assert-concepts-indexed [coll1-1]))))
+      (assert-concepts-in-mdb [coll1-1]))))
 
 (deftest db-synchronize-collection-updates-test
   (s/only-with-real-database
@@ -391,7 +391,7 @@
           coll5-3 (updated-concept (updated-concept coll5-1))
 
           orig-colls [coll1-1 coll5-1]
-          updated-colls [coll1-1 coll2-1 coll3-1 coll4-1 coll5-3]
+          updated-colls [coll1-2 coll2-1 coll3-1 coll4-1 coll5-3]
           system (bootstrap/system)]
 
       ;; Save the concepts in Catalog REST
@@ -480,7 +480,7 @@
 
       ;; Check that they are synchronized now with the latest data.
       (assert-concepts-in-mdb non-deleted-colls)
-      (assert-concepts-indexed non-deleted-colls)
+      (assert-concepts-indexed (map #(assoc % :revision-id 2) non-deleted-colls))
 
       ;; Make sure the deleted collections are gone
       (assert-tombstones-in-mdb deleted-colls)
@@ -609,7 +609,7 @@
           gran6-1 (gran-concept-with-delete-date-in-the-past concept-counter coll2 "gran6")
 
           orig-grans [gran1-1 gran5-1]
-          updated-grans [gran1-1 gran2-1 gran3-1 gran4-1 gran5-3]
+          updated-grans [gran1-2 gran2-1 gran3-1 gran4-1 gran5-3]
           system (bootstrap/system)]
 
       ;; Save the concepts in Catalog REST
@@ -1152,7 +1152,9 @@
 
         ;; non-virtual-collections and source collections should be present in metadata-db
         (assert-concepts-in-mdb (concat non-virt-collection-concepts src-collection-concepts))
-        (assert-concepts-indexed (concat non-virt-collection-concepts src-collection-concepts))
+        ;; Revision-id of 3 here because synchronization has run 3 times.
+        (assert-concepts-indexed (map #(assoc % :revision-id 3)
+                                      (concat non-virt-collection-concepts src-collection-concepts)))
 
         ;; virtual collections should have tombstones
         (assert-tombstones-in-mdb virt-collection-concepts)
@@ -1160,3 +1162,7 @@
 
         ;; all virtual granules should be deleted as well
         (is (empty? (apply concat (map get-virtual-granule-concepts [ast-gran-ur omi-gran-ur]))))))))
+
+
+
+

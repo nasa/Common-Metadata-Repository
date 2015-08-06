@@ -84,11 +84,15 @@
   "Returns index info based on input concept type. For granule concept type, it will walks through
   the query and figures out only the relevant granule index names and return those."
   [context concept-type query]
-  (if (= :collection concept-type)
-    {:index-name  "1_collections"
-     :type-name "collection"}
-    {:index-name (get-granule-indexes context query)
-     :type-name "granule"}))
+  (let [{:keys [all-revisions?]} query
+        type-name (name concept-type)
+        index-name (if (= :collection concept-type)
+                     (if all-revisions?
+                       "1_all_collection_revisions"
+                       "1_collections")
+                     (get-granule-indexes context query))]
+    {:index-name index-name
+     :type-name type-name}))
 
 (defmulti concept-type+result-format->fields
   "Returns the fields that should be selected out of elastic search given a concept type and result
@@ -145,10 +149,10 @@
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
 
-      (esd/search (context->conn context)
-                  (:index-name index-info)
-                  [(:type-name index-info)]
-                  query-map)))
+    (esd/search (context->conn context)
+                (:index-name index-info)
+                [(:type-name index-info)]
+                query-map)))
 
 (def unlimited-page-size
   "This is the number of items we will request at a time when the page size is set to unlimited"

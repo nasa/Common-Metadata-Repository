@@ -49,6 +49,11 @@
 
    ;; Flag to allow acls to be bypassed. For internal use only
    skip-acls?
+
+   ;; Flag to indicate an all revisions search instead of the default revision search.
+   ;; If this is true all revisions of the concept will be searched. If false, the default,
+   ;; then the latest revisions of the concept type will be searched.
+   all-revisions?
    ])
 
 (defrecord ConditionGroup
@@ -348,18 +353,20 @@
              :page-num default-page-num
              :sort-keys (default-sort-keys :granule)
              :result-format :xml
-             :echo-compatible? false}
+             :echo-compatible? false
+             :all-revisions? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
                 :sort-keys (default-sort-keys :collection)
                 :result-format :xml
-                :echo-compatible? false}})
+                :echo-compatible? false
+                :all-revisions? false}})
 
 (defn query
-  "Constructs a query with the given type, page-size, page-num, result-format,
-  and root condition. If root condition is not provided it matches everything.
-  If page-size, page-num, or result-format are not specified then they are given default values."
+  "Constructs a query with the given attributes and root condition. If root condition is not
+  provided it matches everything. If page-size, page-num, or result-format are not specified
+  then they are given default values."
   [attribs]
   (let [concept-type (:concept-type attribs)]
     (map->Query (merge-with (fn [default-v v]

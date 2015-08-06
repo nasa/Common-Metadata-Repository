@@ -269,19 +269,6 @@
         (info (format "Search for concept with cmr-concept-id [%s]" concept-id))
         (search-response (query-svc/find-concept-by-id context result-format concept-id))))))
 
-(defn- find-concept-revisions
-  "Calls query service to get concept revisions for the given parameters"
-  [context params headers]
-  (let [params (-> params
-                   (dissoc params :token)
-                   (update-in [:concept-type] (comp keyword inf/singular)))
-        _ (info (format "Retrieving concept revisions for client %s using query parameters %s."
-                        (:client-id context) (pr-str params)))
-        results (query-svc/find-concept-revisions context params)]
-    {:status 200
-     :headers {CONTENT_TYPE_HEADER (mt/with-utf-8 mt/json)}
-     :body results}))
-
 (defn- get-provider-holdings
   "Invokes query service to retrieve provider holdings and returns the response"
   [context path-w-extension params headers]
@@ -315,14 +302,6 @@
         (get-in system [:search-public-conf :protocol])
         (get-in system [:search-public-conf :relative-root-url])
         "public/index.html")
-
-      ;; Retrieve concept maps with basic data in metadata-db (possibly excluding metadata)
-      ;; We are limiting this to admin acccess for now and will add access to users who have
-      ;; been granted read access to the providers' data in CMR-1771.
-      (context "/concept-revisions" []
-        (GET "/:concept-type" {:keys [params headers request-context]}
-          (acl/verify-ingest-management-permission request-context :read)
-          (find-concept-revisions request-context params headers)))
 
       ;; Retrieve by cmr concept id or concept id and revision id
       (context ["/concepts/:path-w-extension" :path-w-extension #"[A-Z][0-9]+-[0-9A-Z_]+.*"] [path-w-extension]

@@ -69,6 +69,8 @@ This should return the granule including the echo-10 xml.
 
   	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
 
+NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
+
 ### Initialize Virtual Products
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:

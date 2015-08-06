@@ -36,7 +36,7 @@
 ;; XML Mapping processors
 
 (defmulti ^:private process-xml-mapping
-  "Processes the XML Mapping by using it to extracting values from the XPath Context"
+  "Processes the XML Mapping by using it to extract values from the XPath Context"
   (fn [xpath-context xml-mapping]
     (:type xml-mapping)))
 

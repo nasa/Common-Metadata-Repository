@@ -22,6 +22,15 @@
   "The maximum number of operations to batch in a single request"
   100)
 
+(defn get-elastic-id
+  "Create the proper elastic document id for normal indexing or all-revisions indexing"
+  [concept-id revision-id all-revisions-index?]
+  (if (and
+        (= :collection (cs/concept-id->type concept-id))
+        all-revisions-index?)
+    (str concept-id "," revision-id)
+    concept-id))
+
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
   #{mt/echo10 mt/dif mt/iso-smap mt/iso})
@@ -121,13 +130,14 @@
   es-index is the elasticsearch index name
   es-type is the elasticsearch mapping
   es-doc is the elasticsearch document to be passed on to elasticsearch
+  elastic-id is the _id of the document in the index
   revision-id is the version of the document in elasticsearch
   ttl time-to-live in milliseconds"
-  [f conn es-index es-type es-doc revision-id ttl]
+  [f conn es-index es-type es-doc elastic-id revision-id ttl]
   (let [options {:version revision-id :version_type "external_gte"}
         options (if ttl (merge options {:ttl ttl}) options)]
     (try
-      (f conn es-index es-type (:concept-id es-doc) es-doc options)
+      (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
         (let [err-msg (get-in (ex-data e) [:object :body])
               msg (str "Call to Elasticsearch caught exception " err-msg)]
@@ -150,7 +160,7 @@
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
-  [context concept-batch]
+  [context concept-batch all-revisions-index?]
   (let [parseable-batch (filterv #(supported-formats (:format %)) concept-batch)
         num-skipped (- (count concept-batch) (count parseable-batch))]
     (when (> num-skipped 0)
@@ -160,13 +170,14 @@
       (filter identity
               (pmap (fn [concept]
                       (try
-                        (let [concept-id (:concept-id concept)
+                        (let [{:keys [concept-id revision-id]} concept
                               type (name (concept->type concept))
-                              revision-id (:revision-id concept)
+                              elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
                               index-name (idx-set/get-concept-index-name
-                                           context concept-id revision-id concept)]
+                                           context concept-id revision-id all-revisions-index?
+                                           concept)]
                           (if (:deleted concept)
-                            (merge concept {:_id concept-id
+                            (merge concept {:_id elastic-id
                                             :_index index-name
                                             :_type type
                                             :_version revision-id
@@ -184,11 +195,12 @@
                                                 (assoc elastic-doc :_ttl ttl)
                                                 elastic-doc)]
                               (if (or (nil? ttl)
-                                        (> ttl 0))
-                                (merge elastic-doc {:_index index-name
-                                                   :_type type
-                                                   :_version revision-id
-                                                   :_version_type "external_gte"})
+                                      (> ttl 0))
+                                (merge elastic-doc {:_id elastic-id
+                                                    :_index index-name
+                                                    :_type type
+                                                    :_version revision-id
+                                                    :_version_type "external_gte"})
                                 (info
                                   (str
                                     "Skipping expired concept ["
@@ -222,9 +234,9 @@
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  [context es-index es-type es-doc revision-id ttl ignore-conflict]
+  [context es-index es-type es-doc elastic-id revision-id ttl ignore-conflict]
   (let [conn (context->conn context)
-        result (try-elastic-operation doc/put conn es-index es-type es-doc revision-id ttl)]
+        result (try-elastic-operation doc/put conn es-index es-type es-doc elastic-id revision-id ttl)]
     (if (:error result)
       (if (= 409 (:status result))
         (if ignore-conflict
@@ -239,11 +251,13 @@
 
 (deftracefn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
-  [context es-index es-type id revision-id ignore-conflict]
+  [context es-index es-type concept-id revision-id all-revisions-index? ignore-conflict]
   ;; Cannot use elastisch for deletion as we require special headers on delete
   (let [{:keys [admin-token]} (context->es-config context)
         {:keys [uri http-opts]} (context->conn context)
-        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type id revision-id)
+        elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
+                           elastic-id revision-id)
         response (client/delete delete-url
                                 (merge http-opts
                                        {:headers {"Authorization" admin-token
