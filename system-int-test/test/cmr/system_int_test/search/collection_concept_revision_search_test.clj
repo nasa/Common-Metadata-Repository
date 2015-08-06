@@ -135,5 +135,45 @@
                                                               :all-revisions "foo"})]
       (is (= [400 ["Parameter [all_revisions] was not recognized."
                    "Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]
-             [status errors])))))
+             [status errors]))))
+  (testing "unsupported format for all_revisions search"
+    (testing "formats return common json response"
+      (are [search-format]
+           (let [mime-type (mt/format->mime-type search-format)
+                 {:keys [status errors]} (search/get-search-failure-data
+                                           (search/find-concepts-in-format mime-type :collection {:all-revisions true}))]
+             (= [400 [(format "The mime type [%s] is not supported when all_revisions = true." mime-type)]]
+                [status errors]))
 
+           :json
+           :opendata))
+
+    (testing "formats return common xml response"
+      (are [search-format]
+           (let [mime-type (mt/format->mime-type search-format)
+                 {:keys [status errors]} (search/get-search-failure-xml-data
+                                           (search/find-concepts-in-format mime-type :collection {:all-revisions true}))]
+             (= [400 [(format "The mime type [%s] is not supported when all_revisions = true." mime-type)]]
+                [status errors]))
+
+           :echo10
+           :iso19115
+           :dif
+           :dif10
+           :atom
+           :kml
+           :native))
+
+    ;; iso-smap and csv are in their own tests since they return different error messages
+    ;; because they are not supported for collection searches.
+    (testing "iso-smap"
+      (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                      (search/find-concepts-in-format mt/iso-smap :collection {:all-revisions true}))]
+        (is (= [400 ["The mime types specified in the accept header [application/iso:smap+xml] are not supported."]]
+               [status errors]))))
+    (testing "csv"
+      (let [{:keys [status errors]} (search/get-search-failure-data
+                                      (search/find-concepts-in-format mt/csv :collection {:all-revisions true}))]
+        (is (= [400 ["The mime type [text/csv] is not supported for collections."
+                     "The mime type [text/csv] is not supported when all_revisions = true."]]
+               [status errors]))))))

@@ -14,8 +14,20 @@
                  :opendata, :native}
    :granule #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native}})
 
-(defn validate-result-format
-  "Validate requested search result format."
+(def all-revisions-supported-result-formats
+  "Supported search result format when all-revisions? is true."
+  #{:umm-json :xml})
+
+(defn validate-result-format-for-all-revisions
+  "Validate requested search result format for all-revisions?."
+  [all-revisions? result-format]
+  (when all-revisions?
+    (let [mime-type (mt/format->mime-type result-format)]
+      (when-not (contains? all-revisions-supported-result-formats result-format)
+        [(format "The mime type [%s] is not supported when all_revisions = true." mime-type)]))))
+
+(defn validate-concept-type-result-format
+  "Validate requested search result format for concept type."
   [concept-type result-format]
   (let [mime-type (mt/format->mime-type result-format)]
     (when-not (get (concept-type->supported-result-formats concept-type) result-format)
@@ -31,8 +43,9 @@
 (extend-protocol Validator
   cmr.search.models.query.Query
   (validate
-    [{:keys [concept-type result-format condition]}]
-    (let [errors (validate-result-format concept-type result-format)]
+    [{:keys [concept-type result-format all-revisions? condition]}]
+    (let [errors (concat (validate-concept-type-result-format concept-type result-format)
+                         (validate-result-format-for-all-revisions all-revisions? result-format))]
       (if (seq errors) errors (validate condition))))
 
   cmr.search.models.query.ConditionGroup
