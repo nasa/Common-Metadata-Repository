@@ -63,18 +63,19 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
-  * `json`      "application/json"
-  * `xml`       "application/xml"
-  * `echo10`    "application/echo10+xml"
-  * `iso`       "application/iso19115+xml"
-  * `iso19115`  "application/iso19115+xml"
-  * `dif`       "application/dif+xml"
-  * `dif10`     "application/dif10+xml"
-  * `csv`       "text/csv"
-  * `atom`      "application/atom+xml"
-  * `opendata`  "application/opendata+json" (only supported for collections)
-  * `kml`       "application/vnd.google-earth.kml+xml"
-  * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
+  * `json`          "application/json"
+  * `xml`           "application/xml"
+  * `echo10`        "application/echo10+xml"
+  * `iso`           "application/iso19115+xml"
+  * `iso19115`      "application/iso19115+xml"
+  * `dif`           "application/dif+xml"
+  * `dif10`         "application/dif10+xml"
+  * `csv`           "text/csv"
+  * `atom`          "application/atom+xml"
+  * `opendata`      "application/opendata+json" (only supported for collections)
+  * `kml`           "application/vnd.google-earth.kml+xml"
+  * `native`        "application/metadata+xml" (Returns search results in their individual native formats)
+  * `concept-map`   "application/concept-map+json" (only supported for collections)
 
 ### Supported Result Formats
 

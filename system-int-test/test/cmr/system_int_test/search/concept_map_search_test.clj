@@ -147,7 +147,11 @@
 
             "all-revisions true"
             [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
-            {:all-revisions true}))))
+            {:all-revisions true}))
+
+    (testing "find collections in concept-map extension"
+      (is (= (search/find-concepts-concept-map :collection {})
+             (search/find-concepts-concept-map :collection {} {:url-extension "concept-map"}))))))
 
 (deftest search-concept-map-error-cases
   (testing "granule concept-map search is not supported"
