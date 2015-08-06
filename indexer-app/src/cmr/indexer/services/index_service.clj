@@ -72,11 +72,14 @@
   (acl-fetcher/refresh-acl-cache context)
 
   (doseq [provider-id provider-ids]
-    (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})
-          all-revisions-batches (meta-db/find-collections-in-batches context
+    (info "Reindexing latest collections for provider" provider-id)
+    (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
+      (bulk-index context [latest-collections] false))
+
+    (info "Reindexing all collection revisions for provider" provider-id)
+    (let [all-revisions-batches (meta-db/find-collections-in-batches context
                                                                      ALL_REVISION_REINDEX_BATCH_SIZE
                                                                      {:provider-id provider-id})]
-      (bulk-index context [latest-collections] false)
       (bulk-index context all-revisions-batches true))))
 
 (deftracefn index-concept
