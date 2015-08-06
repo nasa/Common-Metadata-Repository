@@ -19,6 +19,13 @@
             (dc/collection {:entry-title entry-title
                             :beginning-date-time (d/make-datetime begin)
                             :ending-date-time (d/make-datetime end)})))
+(defn delete-coll
+  "Deletes the collection and returns a deleted version of it for sorting comparison."
+  [coll]
+  (let [{:keys [revision-id]} (ingest/delete-concept (d/item->concept coll))]
+    (assoc coll
+           :revision-id revision-id
+           :deleted true)))
 
 (deftest invalid-sort-key-test
   (is (= {:status 400
@@ -30,18 +37,25 @@
                                     {:query-params {:sort-key "foo_bar"}}))))
 
 (defn- sort-order-correct?
-  [items sort-key]
-  (and
-    (d/refs-match-order?
-      items
-      (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
-    (d/refs-match-order?
-      items
-      (search/find-refs-with-aql :collection [] {}
-                                 {:query-params {:page-size 20 :sort-key sort-key}}))))
+  ([items sort-key]
+   (sort-order-correct? items sort-key false))
+  ([items sort-key all-revisions?]
+   (if all-revisions?
+     (d/refs-match-order?
+       items
+       (search/find-refs :collection {:page-size 20 :sort-key sort-key :all-revisions true}))
+     (and
+       (d/refs-match-order?
+         items
+         (search/find-refs :collection {:page-size 20 :sort-key sort-key}))
+       (d/refs-match-order?
+         items
+         (search/find-refs-with-aql :collection [] {}
+                                    {:query-params {:page-size 20 :sort-key sort-key}}))))))
 
 (deftest sorting-test
-  (let [c1 (make-coll "PROV1" "et99" 10 20)
+  (let [c1-1 (make-coll "PROV1" "et99" 10 20)
+        c1-2 (make-coll "PROV1" "et99" 10 20)
         c2 (make-coll "PROV1" "et90" 14 24)
         c3 (make-coll "PROV1" "et80" 19 30)
         c4 (make-coll "PROV1" "et70" 24 35)
@@ -51,46 +65,79 @@
         c7 (make-coll "PROV2" "et79" 20 29)
         c8 (make-coll "PROV2" "ET94" 25 36)
 
-        c9 (make-coll "PROV1" "et95" nil nil)
+        c9-1 (make-coll "PROV1" "et95" nil nil)
+        c9-2 (make-coll "PROV1" "et95" nil nil)
+        c9-3 (make-coll "PROV1" "et95" nil nil)
+
         c10 (make-coll "PROV2" "et85" nil nil)
         c11 (make-coll "PROV1" "et96" 12 nil)
-        all-colls [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11]]
+        c12-1 (make-coll "PROV1" "et97" nil nil)
+        c12-2 (delete-coll c12-1)
+
+        all-colls [c1-2 c2 c3 c4 c5 c6 c7 c8 c9-3 c10 c11]
+        all-revisions [c1-1 c1-2 c2 c3 c4 c5 c6 c7 c8 c9-1 c9-2 c9-3 c10 c11 c12-1 c12-2]]
     (index/wait-until-indexed)
 
+    (testing "all revisions sorting"
+      (testing "Sort by entry title ascending"
+        (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-revisions)]
+          (is (sort-order-correct? sorted-colls "entry_title" true))))
 
-    (testing "Sort by entry title ascending"
-      (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-colls)]
-        (are [sort-key]
-             (sort-order-correct? sorted-colls sort-key)
-             "entry_title"
-             "+entry_title"
-             "dataset_id" ; this is an alias for entry title
-             "+dataset_id")))
+      (testing "Sort by entry title descending"
+        (let [sorted-colls (sort-by identity
+                                    (fn [a b]
+                                      (if (= (:entry-title a) (:entry-title b))
+                                        (if (= (:concept-id a) (:concept-id b))
+                                          (compare (:revision-id a) (:revision-id b))
+                                          (compare (:concept-id a) (:concept-id b)))
+                                        (compare (str/lower-case (:entry-title b))
+                                                 (str/lower-case (:entry-title a)))))
+                                    all-revisions)]
+          (is (sort-order-correct? sorted-colls "-entry_title" true))))
 
-    (testing "Sort by entry title descending"
-      (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
-        (are [sort-key]
-             (sort-order-correct? sorted-colls sort-key)
-             "-entry_title"
-             "-dataset_id")))
 
-    (testing "temporal start date"
-      (are [sort-key items]
-           (sort-order-correct? items sort-key)
-           "start_date" [c5 c1 c11 c2 c6 c3 c7 c4 c8 c9 c10]
-           "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1 c5 c9 c10]))
+      (testing "revision date"
+        (are [sort-key items]
+             (sort-order-correct? items sort-key true)
+             "revision_date" all-revisions
+             "-revision_date" (reverse all-revisions))))
 
-    (testing "temporal end date"
-      (are [sort-key items]
-           (sort-order-correct? items sort-key)
-           "end_date" [c5 c1 c2 c6 c7 c3 c4 c8 c9 c10 c11]
-           "-end_date" [c8 c4 c3 c7 c6 c2 c1 c5 c9 c10 c11]))
+    (testing "latest revisions sorting"
 
-    (testing "revision date"
-      (are [sort-key items]
-           (sort-order-correct? items sort-key)
-           "revision_date" [c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11]
-           "-revision_date" [c11 c10 c9 c8 c7 c6 c5 c4 c3 c2 c1]))))
+      (testing "Sort by entry title ascending"
+        (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-colls)]
+          (are [sort-key]
+               (sort-order-correct? sorted-colls sort-key)
+               "entry_title"
+               "+entry_title"
+               "dataset_id" ; this is an alias for entry title
+               "+dataset_id")))
+
+
+      (testing "Sort by entry title descending"
+        (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
+          (are [sort-key]
+               (sort-order-correct? sorted-colls sort-key)
+               "-entry_title"
+               "-dataset_id")))
+
+      (testing "temporal start date"
+        (are [sort-key items]
+             (sort-order-correct? items sort-key)
+             "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c9-3 c10]
+             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]))
+
+      (testing "temporal end date"
+        (are [sort-key items]
+             (sort-order-correct? items sort-key)
+             "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c9-3 c10 c11]
+             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11]))
+
+      (testing "revision date"
+        (are [sort-key items]
+             (sort-order-correct? items sort-key)
+             "revision_date" [c1-2 c2 c3 c4 c5 c6 c7 c8 c9-3 c10 c11]
+             "-revision_date" [c11 c10 c9-3 c8 c7 c6 c5 c4 c3 c2 c1-2])))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)

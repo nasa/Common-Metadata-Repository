@@ -98,7 +98,9 @@
   "Converts a query into the elastic parameters for sorting results"
   [query]
   (let [{:keys [concept-type sort-keys]} query
-        concept-id-sort {:concept-seq-id {:order "asc"}}
+        default-sorts (if (= concept-type :collection)
+                          [{:concept-seq-id {:order "asc"}} {:revision-id {:order "asc"}}]
+                          [{:concept-seq-id {:order "asc"}}])
         specified-sort (map (fn [{:keys [order field]}]
                               {(get-in sort-key-field->elastic-field [concept-type field] (name field))
                                {:order order}})
@@ -106,7 +108,7 @@
     ;; Sorting within elastic if the sort keys match is essentially random. We add a globally unique
     ;; sort to the end of the specified sort keys so that sorting is always the same. This makes
     ;; paging and query results consistent.
-    (concat specified-sort [concept-id-sort])))
+    (concat specified-sort default-sorts)))
 
 (defn field->lowercase-field
   "Maps a field name to the name of the lowercase field to use within elastic.
