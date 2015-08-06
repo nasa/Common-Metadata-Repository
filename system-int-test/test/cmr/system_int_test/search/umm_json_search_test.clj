@@ -30,7 +30,6 @@
            :short-name short-name
            :version-id version-id}}))
 
-
 (defn- collections->umm-jsons
   "Returns the collections in a set of umm-jsons."
   [collections]
