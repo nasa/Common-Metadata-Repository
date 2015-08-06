@@ -70,7 +70,7 @@
         source-granules (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs
-                                                  [provider-id entry-title])]
+                                                 [provider-id entry-title])]
                                  (d/ingest provider-id (dg/granule source-coll {:granule-ur granule-ur}))))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
@@ -85,8 +85,8 @@
 
     (testing "Find all granules"
       (assert-matching-granule-urs
-        all-expected-granule-urs
-        (search/find-refs :granule {:page-size 50})))
+       all-expected-granule-urs
+       (search/find-refs :granule {:page-size 50})))
 
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls
@@ -94,30 +94,40 @@
                     source-short-name (get-in source-collection [:product :short-name])
                     vp-short-name (get-in vp-coll [:product :short-name])]]
         (assert-matching-granule-urs
-          (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
-               (vp-config/sample-source-granule-urs
-                 [provider-id (:entry-title source-collection)]))
-          (search/find-refs :granule {:entry-title (:entry-title vp-coll)
-                                      :page-size 50}))))))
+         (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
+              (vp-config/sample-source-granule-urs
+               [provider-id (:entry-title source-collection)]))
+         (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                     :page-size 50}))))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
 (deftest deleted-virtual-granules
-  (let [ast-coll      (d/ingest "LPDAAC_ECS"
-                                (dc/collection
-                                 {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
-        vp-colls      (vp/ingest-virtual-collections [ast-coll])
-        granule       (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720" :revision-id 5})
-        ingest-result (d/ingest "LPDAAC_ECS" granule)]
-    (bootstrap-and-index)
-    (let [v-granules (mapcat #(:refs
-                               (search/find-refs :granule
-                                                 {:entry-title (:entry-title %)
-                                                  :page-size 50}))
-                             vp-colls)]
-      (is (not (empty? v-granules)))
-      (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
+  (let [ast-coll   (d/ingest "LPDAAC_ECS"
+                             (dc/collection
+                              {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+        vp-colls   (vp/ingest-virtual-collections [ast-coll])
+        s-granules (doall
+                    (for [n (range 10)]
+                      (d/ingest "LPDAAC_ECS"
+                                (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
+                                                      :revision-id 5}))))
+        _          (bootstrap-and-index)
+        v-granules (mapcat #(:refs
+                             (search/find-refs :granule
+                                               {:entry-title (:entry-title %)
+                                                :page-size 50}))
+                           vp-colls)
+        verify     (fn []
+                     (doseq [gran v-granules]
+                       (is (:deleted (ingest/get-concept (:id gran) 12)))))]
+
+    (testing "after deleting source granules"
+      (doseq [granule s-granules]
+        (ingest/delete-concept (d/item->concept granule) {:revision-id 12}))
       (bootstrap-and-index)
-      (doseq [gran v-granules]
-        (println "Virtual granule:" (ingest/get-concept (:id gran) 12))
-        (is (:deleted (ingest/get-concept (:id gran) 12)))))))
+      (verify))
+
+    (testing "bootstrapping should be idempotent"
+      (bootstrap-and-index)
+      (verify))))
