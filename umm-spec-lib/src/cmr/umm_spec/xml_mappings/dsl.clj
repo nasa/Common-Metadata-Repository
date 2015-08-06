@@ -13,7 +13,8 @@
   name of the element. The rest of the contents of the vector are treated as a list of content
   generators that specify the content of the element.
 
-  Note that a inner map with a :type of :attribs are used to specify the attributes on an element.
+  Note that first inner map without a ::type will be treated as attributes for the element. The
+  attributes map is treated as a map of attribute names to content generators for each attribute.
 
   ## String
 
@@ -23,30 +24,24 @@
 
   ## Map with a :type key
 
-  Maps with a type key are used to specifying various other types of content generators with specific
-  parameters that will be stored in the map as other keys. The maps are usually constructed with
-  functions from this namespace. See individual functions for documentation")
+  Maps with a namespaced type key are used to specifying various other types of content generators
+  with specific parameters that will be stored in the map as other keys. The maps are usually
+  constructed with functions from this namespace. See individual functions for documentation")
 
 (defn xpath
-  "Specifies a content generator that pulls a value from the source XML document at a given XPath."
+  "Specifies a content generator that pulls a value from the source Clojure data at a given XPath."
   [value]
-  {:type :xpath :value value})
+  {::type :xpath :value value})
 
 
 (defn for-each
-  "Specifies a content generator that pulls multiple values from a source XML document at the given
+  "Specifies a content generator that pulls multiple values from the source Clojure data at the given
   XPath. The template should be another content generator that will be used to generate values
   for each of the values found at the xpath."
   [xpath template]
-  {:type :for-each
+  {::type :for-each
    :xpath xpath
    :template template})
 
-(defn attribs
-  "Specifies the attributes of an element. Must be used within an element vector. It can appear
-  anywhere within the element vector. Multiple can be used and their values will be merged. The
-  attributes argument is treated as a map of keywords to content generators for each attribute."
-  [attributes]
-  {:type :attribs
-   :value attributes})
+
 

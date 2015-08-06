@@ -25,14 +25,14 @@
 
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
-   (attribs iso19115-2-xml-namespaces)
+   iso19115-2-xml-namespaces
    [:gmd:identificationInfo
     [:gmd:MD_DataIdentification
      [:gmd:citation
       [:gmd:CI_Citation
-       [:gmd:title (char-string-from "/UMM-C/EntryTitle")]
+       [:gmd:title (char-string-from "/EntryTitle")]
        [:gmd:identifier
         [:gmd:MD_Identifier
-         [:gmd:code (char-string-from "/UMM-C/EntryId/Id")]]]]]]]])
+         [:gmd:code (char-string-from "/EntryId/Id")]]]]]]]])
 
 

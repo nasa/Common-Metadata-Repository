@@ -85,30 +85,3 @@
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
 
 
-
-(comment
-
-  (println
-    (cmr.umm-spec.xml-mappings.iso19115-2/generate-xml
-      cmr.umm-spec.xml-mappings.iso19115-2/umm-c-to-echo10-xml-with-new-dsl
-      example-record-echo10-supported))
-
-    (println
-      (cmr.umm-spec.xml-mappings.iso19115-2/generate-xml
-          cmr.umm-spec.xml-mappings.iso19115-2/umm-c-to-iso19115-2-xml-with-new-dsl
-          example-record-echo10-supported))
-
-  )
-
-
-
-
-
-
-
-
-
-
-
-
-

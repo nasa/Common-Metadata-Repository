@@ -2,7 +2,12 @@
   "Contains functions for generating XML using XML Mappings and a source clojure record"
   (:require [clojure.data.xml :as x]
             [cmr.umm-spec.simple-xpath :as sxp]
+            [cmr.umm-spec.xml-mappings.dsl :as dsl]
             [cmr.common.util :as u]))
+
+(def dsl-type
+  "The namespaced keyword used to identify content generator maps type"
+  :cmr.umm-spec.xml-mappings.dsl/type)
 
 (defmulti generate-content
   "Generates content using a content generator and values from the XPath context."
@@ -16,7 +21,9 @@
       ;; series of content generators. Add this if needed.
 
       (and (map? content-generator)
-           (:type content-generator)) (:type content-generator)
+           (dsl-type content-generator))
+      (dsl-type content-generator)
+
       :else :default)))
 
 (defmethod generate-content :default
@@ -25,21 +32,14 @@
 
 (defmethod generate-content :element
   [[tag & content-generators] xpath-context]
-
-  ;; Extract attributes that may be specified within the element.
-  (let [{attrib-content-generators true
-         other-content-generators false} (group-by #(= (:type %) :attribs) content-generators)
-        attributes (reduce (fn [attribs attrib-cg]
-                             ;; Merge together the results any attribute content generators found
-                             (into attribs
-                                   (for [[k content-gen] (:value attrib-cg)]
-                                     ;; The values in an attribute map are treated as content generators
-                                     [k (generate-content content-gen xpath-context)])))
-                           {}
-                           attrib-content-generators)]
+  (let [maybe-attributes (first content-generators)
+        [attributes content-generators] (if (and (map? maybe-attributes)
+                                                 (not (dsl-type maybe-attributes)))
+                                          [(first content-generators) (rest content-generators)]
+                                          [{} content-generators])]
     (x/element
       tag attributes
-      (map #(generate-content % xpath-context) other-content-generators))))
+      (map #(generate-content % xpath-context) content-generators))))
 
 (defmethod generate-content :xpath
   [{:keys [value]} xpath-context]

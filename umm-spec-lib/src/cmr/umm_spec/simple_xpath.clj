@@ -302,59 +302,17 @@
 (defmethod evaluate :data
   [xpath-context {:keys [source selectors original-xpath]}]
   (try
-    (let [[data selectors] (cond
-                             (= source :from-root)
-                             ;; We drop the first two since it's always child of then the root element
-                             ;; name. In the case of data these two both just refer to the name of the
-                             ;; root element but there's not really a holder for that data.
-                             [(:root xpath-context) (drop 2 selectors)]
+    (let [data (cond
+                 (= source :from-root)
+                 (:root xpath-context)
 
-                             (= source :from-context)
-                             [(:context xpath-context) selectors]
+                 (= source :from-context)
+                 (:context xpath-context)
 
-                             :else
-                             (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+                 :else
+                 (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
       (assoc xpath-context
              :context (process-selectors data selectors process-data-selector)))
     (catch Exception e
       (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
-
-(comment
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books/genre")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books[@id='bk101']/genre")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books[price='5.95']/title")))
-
-  (defn try-xpaths
-    [& xpaths]
-    (->> xpaths
-         (map parse-xpath)
-         (reduce #(evaluate %1 %2) cmr.umm-spec.test.simple-xpath/sample-xml)
-         :context))
-
-  (try-xpaths "/catalog/book[@id='bk101']/author")
-  (try-xpaths "/")
-  (try-xpaths "/catalog" "book" "author")
-  (try-xpaths "/catalog/book[2]/author")
-  (try-xpaths "/catalog/book[2]/price")
-  (try-xpaths "/catalog/book[price='5.95']/title")
-
-
-  (evaluate cmr.umm-spec.test.simple-xpath/sample-xml
-            (parse-xpath "/catalog/book[price='5.95']/@id"))
-
-
-
-  (parse-xpath "/catalog/book[price='5.95']/@id")
-
-
-
-
-  )

@@ -20,13 +20,12 @@
   (fn [schema type-name schema-type mapping-type]
     (cond
       (:type schema-type) (:type schema-type)
-      (:$ref schema-type) :$ref
-      ;; Allow default to fall through and find unaccounted for implementations
-      :else :default)))
+      (:$ref schema-type) :$ref)))
 
 (defmethod add-parse-type :default
   [schema type-name schema-type mapping-type]
-  (throw (Exception. (str "No method for " (pr-str schema-type) " with " (pr-str mapping-type)))))
+  (throw (Exception. (str "No method while trying to add parse type for " (pr-str schema-type)
+                          " with " (pr-str mapping-type)))))
 
 (defmethod add-parse-type :$ref
   [schema type-name schema-type mapping-type]
