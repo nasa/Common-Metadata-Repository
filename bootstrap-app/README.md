@@ -69,6 +69,8 @@ This should return the granule including the echo-10 xml.
 
   	curl -v -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1"}' http://localhost:3006/bulk_index/providers
 
+NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
+
 ### Synchronize Catalog REST and CMR
 
 Due to an issue in Catalog REST the CMR and Catalog REST databases diverged for a period of time because no ingest (new items, updates or deletes) were sent to the CMR. There is a mechanism for synchronizing the CMR with Catalog REST using the following endpoint:

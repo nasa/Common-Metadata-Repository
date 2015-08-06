@@ -165,6 +165,18 @@
         (format "Collection search failed. status: %s body: %s"
                 status body)))))
 
+(defn find-collections-in-batches
+  "Searches metadata db for collection revisions matching the given parameters and pulls them back
+  with metadata in batches in order to save memory. It does this by first doing a search excluding
+  metadata. Then it lazily pulls back batches of those with metadata. This assumes every concept
+  found can fit into memory without the metadata."
+  [context batch-size params]
+  (->> (find-collections context (assoc params :exclude-metadata true))
+       (map #(vector (:concept-id %) (:revision-id %)))
+       (partition-all batch-size)
+       ;; It's important this step is done lazily.
+       (map #(get-concept-revisions context %))))
+
 (defn-timed get-expired-collection-concept-ids
   "Searches metadata db for collections in a provider that have expired and returns their concept ids."
   [context provider-id]

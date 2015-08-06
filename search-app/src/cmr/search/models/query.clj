@@ -51,6 +51,8 @@
    skip-acls?
 
    ;; Flag to indicate an all revisions search instead of the default revision search.
+   ;; If this is true all revisions of the concept will be searched. If false, the default,
+   ;; then the latest revisions of the concept type will be searched.
    all-revisions?
    ])
 
@@ -362,9 +364,9 @@
                 :all-revisions? false}})
 
 (defn query
-  "Constructs a query with the given type, page-size, page-num, result-format, all-revisions?
-  and root condition. If root condition is not provided it matches everything.
-  If page-size, page-num, or result-format are not specified then they are given default values."
+  "Constructs a query with the given attributes and root condition. If root condition is not
+  provided it matches everything. If page-size, page-num, or result-format are not specified
+  then they are given default values."
   [attribs]
   (let [concept-type (:concept-type attribs)]
     (map->Query (merge-with (fn [default-v v]

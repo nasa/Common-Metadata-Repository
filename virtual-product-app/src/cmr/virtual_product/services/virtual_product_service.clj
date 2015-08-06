@@ -14,6 +14,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
             [clojure.string :as str]
+            [cmr.message-queue.config :as queue-config]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -93,19 +94,29 @@
    transmit-config/token-header (transmit-config/echo-system-token)
    "Client-Id" virtual-product-client-id})
 
+(defn source-granule-matches-virtual-product?
+  "Check if the source granule umm matches with the matcher for the virtual collection under
+  the given provider and with the given entry title"
+  [provider-id virt-entry-title src-granule-umm]
+  (let [matcher (:matcher (get config/virtual-product-to-source-config
+                               [provider-id virt-entry-title]))]
+    (or (nil? matcher) (matcher src-granule-umm))))
+
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
-        vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
-
-    (doseq [virtual-coll (:virtual-collections vp-config)]
+        vp-config (config/source-to-virtual-product-config [provider-id entry-title])
+        source-short-name (:source-short-name vp-config)]
+    (doseq [virtual-coll (:virtual-collections vp-config)
+            :when (source-granule-matches-virtual-product?
+                    provider-id (:entry-title virtual-coll) orig-umm)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
-                                                       (:source-short-name vp-config)
+                                                       source-short-name
                                                        (:short-name virtual-coll)
                                                        (:granule-ur orig-umm))
-            new-umm (config/generate-virtual-granule-umm provider-id (:source-short-name vp-config)
+            new-umm (config/generate-virtual-granule-umm provider-id source-short-name
                                                          orig-umm virtual-coll new-granule-ur)
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
@@ -143,35 +154,41 @@
   "Handle response received from ingest service to a delete request. Status codes which do not
   fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
   corresponding queue event to be put back in the queue to be retried."
-  [response granule-ur]
+  [response granule-ur retry-count]
   (let [{:keys [status body]} response]
+    (println "retry-count:" retry-count)
     (cond
       (<= 200 status 299)
       (info (format "Deleted virtual granule [%s] with the following response: [%s]"
                     granule-ur (pr-str body)))
 
       ;; Not Found (status code 404)
-      ;; This would occur if delete event is consumed before the concept creation event and
-      ;; metadata-db does not yet have the granule concept. This usually means that an ingest event
-      ;; for the same granule is present in the virtual product queue and is not yet consumed. The
-      ;; exception will cause the event to be put back in the queue. We don't ignore this because
-      ;; the create event would eventually be processed and the virtual granule would exist when it
-      ;; should actually be deleted. We will retry this until the granule is created and the
-      ;; deletion can be processed successfully creating a tombstone with the correct revision id.
-
-      ;; Note that the existence of a delete event for the virtual granule means that the
-      ;; corresponding real granule exists in the database (otherwise corresponding delete request
-      ;; for real granule would fail with 404 and the delete event for the virtual granule would
-      ;; never be put on the virtual product queue to begin with). Which in turn means that ingest
-      ;; event corresponding to the granule has been created in the past (either recent past or
-      ;; distant past) and that event has to to consumed before the delete event can be consumed
-      ;; off the queue.
+      ;; This would occur in two different scenarios:
+      ;; 1) Out of order processing with delete event consumed before ingest event when it should
+      ;;    be other way round. The exception below will cause the event to be put back in the
+      ;;    queue. We don't ignore the error response since otherwise the create event would
+      ;;    eventually be processed and the virtual granule would ultimately be in undeleted state
+      ;;    when it should have been deleted. The delete event will be retried until the
+      ;;    granule is created and the deletion can eventually be processed successfully creating a
+      ;;    tombstone with the correct revision id. The assumption here is that ingest event will
+      ;;    be processed before the maximum number of retries for delete event is reached. If this
+      ;;    does not happen, the granule will end up in inconsistent state.
+      ;; 2) delete event corresponds to delete of a source granule for which a UMM matcher would return
+      ;;    a truth value of false. For such a source granule, the corresponding virtual granule
+      ;;    wouldn't even be created in the first place. Delete handler has no way of checking the
+      ;;    truth value and sends delete request for the virtual granule even if the vitual granule
+      ;;    doesn't really exist. These events will be retried for as many times a the configured
+      ;;    maximum number of retries for an event. After the retries, the delete event will be
+      ;;    considered as a success.
       (= status 404)
-      (errors/internal-error!
-        (format (str "Received a response with status code [404] and the following response body "
-                     "when deleting the virtual granule [%s] : [%s]. The delete request will be "
-                     "retried.")
-                granule-ur (pr-str body)))
+      (if (>= retry-count (count (queue-config/rabbit-mq-ttls)))
+        (info (format (str "The number of retries has exceeded the maximum retry count."
+                   "The delete event for the virtual granule [%s] will be ignored") granule-ur))
+        (errors/internal-error!
+          (format (str "Received a response with status code [404] and the following response body "
+                       "when deleting the virtual granule [%s] : [%s]. The delete request will be "
+                       "retried.")
+                  granule-ur (pr-str body))))
 
       ;; Conflict (status code 409)
       ;; This would occurs if a delete event with lower revision-id is consumed after an event with
@@ -189,8 +206,9 @@
 
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
-  [context {:keys [provider-id revision-id granule-ur entry-title]}]
+  [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
   (let [vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
+    (println "count= " (count (:virtual-collections vp-config)))
     (doseq [virtual-coll (:virtual-collections vp-config)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
                                                        (:source-short-name vp-config)
@@ -200,7 +218,7 @@
                                                  :concept-type :granule
                                                  :native-id new-granule-ur}
                                         (build-ingest-headers revision-id) true)]
-        (handle-delete-response resp new-granule-ur)))))
+        (handle-delete-response resp new-granule-ur retry-count)))))
 
 (defmethod handle-ingest-event :concept-delete
   [context event]
