@@ -1,53 +1,83 @@
-(ns cmr.system-int-test.search.collection-concept-revision-search-test
-  "Integration test for collection all revisions search"
+(ns cmr.system-int-test.search.umm-json-search-test
+  "Integration test for UMMJSON format search"
   (:require [clojure.test :refer :all]
+            [clojure.core.incubator :as incubator]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
-            [cmr.umm.core :as umm]
-            [cmr.common.util :refer [are2] :as util]))
+            [cmr.common.util :refer [are2]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(deftest search-collection-all-revisions
+(defn- collection->umm-json
+  "Returns the collection in umm-json format."
+  [collection]
+  (let [{{:keys [short-name version-id]} :product
+         {:keys [delete-time]} :data-provider-timestamps
+         :keys [entry-id entry-title format-key revision-id concept-id provider-id deleted]} collection]
+    {:meta {:concept-type "collection"
+            :concept-id concept-id
+            :revision-id revision-id
+            :native-id entry-title
+            :provider-id provider-id
+            :format (mt/format->mime-type format-key)
+            :deleted (boolean deleted)}
+     :umm {:entry-title entry-title
+           :entry-id entry-id
+           :short-name short-name
+           :version-id version-id}}))
+
+(defn- collections->umm-jsons
+  "Returns the collections in a set of umm-jsons."
+  [collections]
+  (set (map collection->umm-json collections)))
+
+(defn- umm-jsons-match?
+  "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
+  [collections search-result]
+  ;; We do not check the revision-date in umm-json as it is not available in UMM record.
+  ;; We also don't check hits and tooks in the UMMJSON.
+  (is (= (collections->umm-jsons collections)
+         (set (map #(incubator/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
+
+(deftest search-collection-umm-json
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
+                                                  :entry-id "s1_v1"
                                                   :version-id "v1"
                                                   :short-name "s1"}))
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
-        coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
+        coll1-2-tombstone (merge coll1-1 {:deleted true} (ingest/delete-concept concept1))
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "eid1"
+                                                  :entry-id "s1_v2"
                                                   :version-id "v2"
                                                   :short-name "s1"}))
 
         coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
+                                                  :entry-id "s2_v1"
                                                   :version-id "v1"
                                                   :short-name "s2"}))
         coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "eid2"
+                                                  :entry-id "s2_v2"
                                                   :version-id "v2"
                                                   :short-name "s2"}))
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+        coll2-3-tombstone (merge coll2-2 {:deleted true} (ingest/delete-concept concept2))
 
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
-                                                :entry-id "eid3"
+                                                :entry-id "s1_v4"
                                                 :version-id "v4"
                                                 :short-name "s1"}))]
     (index/wait-until-indexed)
-    (testing "find-references-with-all-revisions parameter"
+    (testing "find collections in umm-json format"
       (are2 [collections params]
-            (d/refs-match? collections (search/find-refs :collection params))
+            (umm-jsons-match? collections (search/find-concepts-umm-json :collection params))
 
             ;; Should not get matching tombstone for second collection back
             "provider-id all-revisions=false"
@@ -118,22 +148,17 @@
 
             "all-revisions true"
             [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
-            {:all-revisions true}))))
+            {:all-revisions true}))
 
-(deftest search-all-revisions-error-cases
-  (testing "collection search with all_revisions bad value"
-    (let [{:keys [status errors]} (search/find-refs :collection {:all-revisions "foo"})]
-      (is (= [400 ["Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]
-             [status errors]))))
-  (testing "granule search with all_revisions parameter is not supported"
-    (let [{:keys [status errors]} (search/find-refs :granule {:provider-id "PROV1"
-                                                              :all-revisions false})]
-      (is (= [400 ["Parameter [all_revisions] was not recognized."]]
-             [status errors]))))
-  (testing "granule search with all_revisions bad value"
-    (let [{:keys [status errors]} (search/find-refs :granule {:provider-id "PROV1"
-                                                              :all-revisions "foo"})]
-      (is (= [400 ["Parameter [all_revisions] was not recognized."
-                   "Parameter all_revisions must take value of true, false, or unset, but was [foo]"]]
+    (testing "find collections in umm-json extension"
+      (let [results (search/find-concepts-umm-json :collection {})
+            extension-results (search/find-concepts-umm-json :collection {} {:url-extension "umm-json"})]
+        (is (= (incubator/dissoc-in results [:results :took])
+               (incubator/dissoc-in extension-results [:results :took])))))))
+
+(deftest search-umm-json-error-cases
+  (testing "granule umm-json search is not supported"
+    (let [{:keys [status errors]} (search/find-concepts-umm-json :granule {})]
+      (is (= [400 ["The mime type [application/umm+json] is not supported for granules."]]
              [status errors])))))
 

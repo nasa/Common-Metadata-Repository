@@ -40,30 +40,67 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defn- match-all
+  "Returns a function which checks if the granule umm matches with each of the matchers given"
+  [& matchers]
+  (fn [granule]
+    (every? identity (map #(% granule) matchers))))
+
+(defn- matches-value
+  "A matcher which checks if the value in the granule umm given by ks matches value"
+  [ks value]
+  (fn [granule]
+    (= value (get-in granule ks))))
+
+(defn- matches-on-psa
+  "A matcher which checks the existence of a psa in the granule umm whose name is
+  psa-name and whose values have value as one of the memebers"
+  [psa-name value]
+  (fn [granule]
+    (some #(and (= (:name %) psa-name) (some #{value} (:values %)))
+          (:product-specific-attributes granule))))
+
+(def day-granule? (matches-value [:data-granule :day-night] "DAY"))
+(def tir-mode? (matches-on-psa "TIR_ObservationMode" "ON"))
+(def swir-mode? (matches-on-psa "SWIR_ObservationMode" "ON"))
+(def vnir1-mode? (matches-on-psa "VNIR1_ObservationMode" "ON"))
+(def vnir2-mode? (matches-on-psa "VNIR2_ObservationMode" "ON"))
+
+
 (def source-to-virtual-product-config
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:source-short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
-                           :short-name "AST_05"}
+                           :short-name "AST_05"
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance"
-                           :short-name "AST_07"}
+                           :short-name "AST_07"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance VNIR and SWIR Crosstalk-Corrected"
-                           :short-name "AST_07XT"}
+                           :short-name "AST_07XT"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Kinetic Temperature"
-                           :short-name "AST_08"}
+                           :short-name "AST_08"
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance SWIR and VNIR"
-                           :short-name "AST_09"}
+                           :short-name "AST_09"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance VNIR and SWIR Crosstalk-Corrected"
-                           :short-name "AST_09XT"}
+                           :short-name "AST_09XT"
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance TIR"
-                           :short-name "AST_09T"}
+                           :short-name "AST_09T"
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L3 Digital Elevation Model, GeoTIF Format"
-                           :short-name "AST14DEM"}
+                           :short-name "AST14DEM"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L3 Orthorectified Images, GeoTIF Format"
-                           :short-name "AST14OTH"}
+                           :short-name "AST14OTH"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
-                           :short-name "AST14DMO"}]}
+                           :short-name "AST14DMO"
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    {:source-short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
@@ -79,6 +116,7 @@
               virtual-collection virtual-collections]
           [[provider-id (:entry-title virtual-collection)]
            {:short-name (:short-name virtual-collection)
+            :matcher (:matcher virtual-collection)
             :source-entry-title source-entry-title
             :source-short-name source-short-name}])))
 
@@ -171,7 +209,7 @@
   "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
   http://acdisc.gsfc.nasa.gov/data/s4pa///Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5
   will be translated to
-  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"
+  http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
   [related-urls src-granule-ur]
   (let [fname (second (str/split src-granule-ur #":"))
         re (Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
@@ -183,7 +221,7 @@
                       :url (str
                              (str/replace (second matches) "/data/s4pa/" "/opendap/HDF-EOS5")
                              (nth matches 2)
-                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex"))
+                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
                related-url)
              related-url)))))
 
@@ -197,4 +235,3 @@
   (let [virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)]
     (update-virtual-granule-umm provider-id source-short-name
                                 source-umm virtual-umm)))
-

@@ -1,36 +1,42 @@
 (ns cmr.virtual-product.test.services.virtual-product-service
   (:require [clojure.test :refer :all]
+            [cmr.message-queue.config :as queue-config]
             [cmr.virtual-product.services.virtual-product-service :as vps]))
 
 
 (deftest responses-not-causing-error-tests
-  (are [f status]
-       (nil? (f {:status status :body "body"} "granule-ur"))
-       #'vps/handle-update-response 200
-       #'vps/handle-update-response 201
-       #'vps/handle-update-response 409
-       #'vps/handle-delete-response 204
-       #'vps/handle-delete-response 409))
+  (testing "Update responses not causing error"
+    (are [status]
+         (nil? (#'vps/handle-update-response {:status status :body "body"} "granule-ur"))
+         200 201 409 204 409))
+  (testing "Delete responses not causing error"
+    (are [status retry-count]
+         (nil? (#'vps/handle-delete-response {:status status :body "body"} "granule-ur" retry-count))
+         204 1
+         409 1
+         404 (inc (count (queue-config/rabbit-mq-ttls))))))
 
+; status body granule-ur
 (defn- assert-error
-  [f status body granule-ur expected]
-  (try
-    (f {:status status :body body} granule-ur)
+  [f expected-error]
+  (try (f)
     (catch Exception e
-      (is (= expected (.getMessage e))))))
+      (is (= expected-error (.getMessage e))))))
 
 (deftest responses-causing-error-tests
   (testing "Testing unexpected status code in an update response"
-    (assert-error #'vps/handle-update-response 500 "body" "granule-ur"
+    (assert-error (partial #'vps/handle-update-response
+                  {:status 500 :body "body"} "granule-ur")
                   (str "Received unexpected status code [500] and the following response when "
                        "ingesting the virtual granule [granule-ur] : [{:status 500, :body \"body\"}]")))
   (testing "Testing status code 404 in a  delete response"
-    (assert-error #'vps/handle-delete-response 404 "body" "granule-ur"
+    (assert-error (partial #'vps/handle-delete-response {:status 404 :body "body"} "granule-ur"
+                           (dec (count (queue-config/rabbit-mq-ttls))))
                   (str "Received a response with status code [404] and the following response body "
                        "when deleting the virtual granule [granule-ur] : [\"body\"]."
                        " The delete request will be retried.")))
   (testing "Testing unexpected status code in a delete response"
-    (assert-error #'vps/handle-delete-response 500 "body" "granule-ur"
+    (assert-error (partial #'vps/handle-delete-response {:status 500 :body "body"} "granule-ur" 1)
                   (str "Received unexpected status code [500] and the following response when "
                        "deleting the virtual granule [granule-ur] : [{:status 500, :body \"body\"}]"))))
 

@@ -34,15 +34,19 @@
 
   (let [provider-admin-update-token (e/login (s/context) "prov-admin-update"
                                              ["prov-admin-update-group-guid"])
-        token-option {:token provider-admin-update-token}
-        ast-coll (d/ingest "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"})
-                           token-option)
-        vp-colls (ingest-virtual-collections [ast-coll] token-option)
+
+        [ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")]
+                     {:token provider-admin-update-token})
+        vp-colls (ingest-virtual-collections [ast-coll] {:token provider-admin-update-token})
         granule-ur "SC:AST_L1A.003:2006227720"
-        ast-l1a-gran (d/ingest "LPDAAC_ECS" (dg/granule ast-coll
-                                                        {:granule-ur granule-ur}) token-option)
+        ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
+                                    (dg/granule ast-coll {:granule-ur granule-ur})
+                                    :token provider-admin-update-token)
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)

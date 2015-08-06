@@ -108,6 +108,10 @@
   "A selector that selects the children of a set of elements."
   {:type :child-of})
 
+(def current-context-selector
+  "A selector that selects the current context."
+  {:type :current-context})
+
 (defn- parse-element-sub-selector
   "Parses an element selector that is within the square brackets of an xpath into a selector."
   [selector-str]
@@ -127,8 +131,14 @@
 (defn- parse-xpath-element
   "Parses an element of an XPath and returns a set of selectors from that element."
   [xpath-elem]
-  (if (= "/" xpath-elem)
+  (cond
+    (= "/" xpath-elem)
     [child-of-selector]
+
+    (= "." xpath-elem)
+    [current-context-selector]
+
+    :else
     (if-let [[_ tag-name element-selector-str] (re-matches #"([^\[]+)(?:\[(.+)\])?" xpath-elem)]
       (let [tag-name-selector (create-tag-name-selector (keyword tag-name))]
         (if element-selector-str
@@ -169,6 +179,10 @@
             (transient [])
             elements)))
 
+(defmethod process-xml-selector :current-context
+  [elements _]
+  elements)
+
 (defmethod process-xml-selector :tag-selector
   [elements {:keys [tag-name]}]
   (filterv #(= tag-name (:tag %)) elements))
@@ -207,6 +221,10 @@
     (:type selector)))
 
 (defmethod process-data-selector :child-of
+  [data _]
+  data)
+
+(defmethod process-data-selector :current-context
   [data _]
   data)
 
@@ -284,59 +302,17 @@
 (defmethod evaluate :data
   [xpath-context {:keys [source selectors original-xpath]}]
   (try
-    (let [[data selectors] (cond
-                             (= source :from-root)
-                             ;; We drop the first two since it's always child of then the root element
-                             ;; name. In the case of data these two both just refer to the name of the
-                             ;; root element but there's not really a holder for that data.
-                             [(:root xpath-context) (drop 2 selectors)]
+    (let [data (cond
+                 (= source :from-root)
+                 (:root xpath-context)
 
-                             (= source :from-context)
-                             [(:context xpath-context) selectors]
+                 (= source :from-context)
+                 (:context xpath-context)
 
-                             :else
-                             (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
+                 :else
+                 (throw (Exception. (str "Unexpected source:" (pr-str source)))))]
       (assoc xpath-context
              :context (process-selectors data selectors process-data-selector)))
     (catch Exception e
       (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
-
-(comment
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books/genre")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books[@id='bk101']/genre")))
-  (:context (evaluate cmr.umm-spec.test.simple-xpath/sample-data-structure
-                      (parse-xpath "/catalog/books[price='5.95']/title")))
-
-  (defn try-xpaths
-    [& xpaths]
-    (->> xpaths
-         (map parse-xpath)
-         (reduce #(evaluate %1 %2) cmr.umm-spec.test.simple-xpath/sample-xml)
-         :context))
-
-  (try-xpaths "/catalog/book[@id='bk101']/author")
-  (try-xpaths "/")
-  (try-xpaths "/catalog" "book" "author")
-  (try-xpaths "/catalog/book[2]/author")
-  (try-xpaths "/catalog/book[2]/price")
-  (try-xpaths "/catalog/book[price='5.95']/title")
-
-
-  (evaluate cmr.umm-spec.test.simple-xpath/sample-xml
-            (parse-xpath "/catalog/book[price='5.95']/@id"))
-
-
-
-  (parse-xpath "/catalog/book[price='5.95']/@id")
-
-
-
-
-  )
