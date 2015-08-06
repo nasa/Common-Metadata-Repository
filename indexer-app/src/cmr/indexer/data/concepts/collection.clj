@@ -49,7 +49,7 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id revision-id provider-id native-id revision-date format]} concept
+  (let [{:keys [concept-id revision-id provider-id native-id revision-date deleted format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
