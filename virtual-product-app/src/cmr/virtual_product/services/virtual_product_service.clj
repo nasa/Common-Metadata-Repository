@@ -156,7 +156,6 @@
   corresponding queue event to be put back in the queue to be retried."
   [response granule-ur retry-count]
   (let [{:keys [status body]} response]
-    (println "retry-count:" retry-count)
     (cond
       (<= 200 status 299)
       (info (format "Deleted virtual granule [%s] with the following response: [%s]"
@@ -208,7 +207,6 @@
   "Applies a source granule delete event to the virtual granules"
   [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
   (let [vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
-    (println "count= " (count (:virtual-collections vp-config)))
     (doseq [virtual-coll (:virtual-collections vp-config)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
                                                        (:source-short-name vp-config)
