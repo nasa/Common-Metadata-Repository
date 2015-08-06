@@ -106,11 +106,6 @@
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))))
 
-(defn- assert-tombstones
-  "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
-  [concept-ids revision-id]
-  )
-
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
 (deftest deleted-virtual-granules
