@@ -7,10 +7,9 @@
         [alex-and-georges.debug-repl]))
 
 (defn reset []
-  ;; Force the JSON Schemas and XML Mappings to be reloaded since clojure tools namespace can't tell
-  ;; that those files have been modified.
+  ;; Force the JSON Schemas to be reloaded since clojure tools namespace can't tell that those
+  ;; files have been modified.
   (dev-util/touch-file "src/cmr/umm_spec/json_schema.clj")
-  (dev-util/touch-file "src/cmr/umm_spec/xml_mappings.clj")
   (refresh))
 
 (println "umm-spec user.clj loaded.")

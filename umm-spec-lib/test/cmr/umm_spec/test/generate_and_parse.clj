@@ -2,17 +2,17 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.xml-generation :as xg]
-            [cmr.umm-spec.xml-mappings :as xm]
-            [cmr.umm-spec.xml-parsing :as xp]
+            [cmr.umm-spec.xml-mappings.xml-generator :as xg]
+            [cmr.umm-spec.xml-mappings.iso19115-2 :as xm-iso2]
+            [cmr.umm-spec.xml-mappings.echo10 :as xm-echo10]
+            [cmr.umm-spec.umm-mappings.iso19115-2 :as um-iso2]
+            [cmr.umm-spec.umm-mappings.echo10 :as um-echo10]
+            [cmr.umm-spec.umm-mappings.parser :as xp]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
             [clj-time.core :as t]
-            [cmr.common.util :as u :refer [are2]]
-            [cmr.umm-spec.util :as spec-util]
-            [cmr.common.xml.xslt :as xslt]
-            [cmr.common.xml :as cx]))
+            [cmr.common.util :as u :refer [are2]]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -55,55 +55,6 @@
     {:EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
      :EntryTitle "The entry title V5"}))
 
-
-
-
-(comment
-
-
-  (println (spec-util/umm-c-to-xml example-record))
-  (println (spec-util/umm-c-to-xml example-record-echo10-supported))
-
-
-  (println (xslt/transform (spec-util/umm-c-to-xml example-record)
-                           xm/umm-c-to-mends-xml-xsl))
-
-
-  (println (xslt/transform
-             (spec-util/umm-c-to-xml example-record)
-             (xslt/read-template (clojure.java.io/resource "mappings/iso19115-mends/sample.xsl"))))
-
-
-  (xm/cleanup-schema
-    (xm/get-to-umm-mappings
-      (js/load-schema-for-parsing "umm-c-json-schema.json")
-      (xm/load-mappings xm/echo10-mappings)))
-
-  (println (xg/generate-xml xm/umm-to-echo10-xml example-record))
-
-  (println (cx/pretty-print-xml (xg/generate-xml xm/umm-c-to-mends-xml example-record)))
-
-  (require '[cmr.umm-spec.simple-xpath :as sx])
-
-  (require '[criterium.core :as c])
-
-  ;; 378 microseconds
-  ;; 339 with pre-parsing xpaths
-  ;; 175 without emit-str
-  ;; 162 without namespace translation
-  (c/with-progress-reporting
-    (c/bench
-      (xg/generate-xml xm/umm-c-to-mends-xml example-record)))
-
-  ;; 299 microseconds
-  ;; 172 with emit-str
-  (c/with-progress-reporting
-    (c/bench
-      (let [umm-xml (spec-util/umm-c-to-xml example-record)]
-        (xslt/transform umm-xml xm/umm-c-to-mends-xml-xsl))))
-
-  )
-
 (defn expected-echo10
   "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
   [expected]
@@ -121,39 +72,16 @@
               expected (expected-manip-fn example-record)]
           (is (= expected parsed)))
         "echo10"
-        xm/umm-c-to-echo10-xml xm/echo10-xml-to-umm-c expected-echo10
+        xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
 
-        "ISO19115 MENDS"
-        xm/umm-c-to-mends-xml xm/mends-xml-to-umm-c identity
-
-        "ISO19115 MENDS mapping style 2"
-        xm/umm-c-to-mends-xml2 xm/mends-xml-to-umm-c identity
+        "ISO19115-2"
+        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity
         )
-
-  (testing "iso mends using XSLT"
-    (let [umm-xml (spec-util/umm-c-to-xml example-record)
-          xml (xslt/transform umm-xml xm/umm-c-to-mends-xml-xsl)
-          parsed (xp/parse-xml xm/mends-xml-to-umm-c xml)]
-      (is (= example-record parsed))))
-
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
-    (let [xml (xg/generate-xml xm/umm-c-to-echo10-xml example-record-echo10-supported)
-          parsed (xp/parse-xml xm/echo10-xml-to-umm-c xml)]
+    (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
+          parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)]
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
