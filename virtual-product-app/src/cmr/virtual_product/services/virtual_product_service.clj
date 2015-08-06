@@ -94,7 +94,7 @@
    transmit-config/token-header (transmit-config/echo-system-token)
    "Client-Id" virtual-product-client-id})
 
-(defn granule-matches-with?
+(defn source-granule-matches-virtual-product?
   "Check if the source granule umm matches with the matcher for the virtual collection under
   the given provider and with the given entry title"
   [provider-id virt-entry-title src-granule-umm]
@@ -110,7 +110,8 @@
         vp-config (config/source-to-virtual-product-config [provider-id entry-title])
         source-short-name (:source-short-name vp-config)]
     (doseq [virtual-coll (:virtual-collections vp-config)
-            :when (granule-matches-with? provider-id (:entry-title virtual-coll) orig-umm)]
+            :when (source-granule-matches-virtual-product?
+                    provider-id (:entry-title virtual-coll) orig-umm)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
                                                        source-short-name
                                                        (:short-name virtual-coll)

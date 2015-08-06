@@ -9,7 +9,6 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.system :as s]
             [cmr.mock-echo.client.echo-util :as e]
-            [cmr.umm.granule :as umm-g]
             [cmr.common.time-keeper :as tk]
             [clj-time.core :as t]))
 
