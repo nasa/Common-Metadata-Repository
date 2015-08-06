@@ -1,20 +1,14 @@
 (ns cmr.system-int-test.bootstrap.virtual-products-test
   (:require [clojure.test :refer :all]
-            [cmr.bootstrap.test.catalog-rest :as cat-rest]
-            [cmr.common.concepts :as concepts]
-            [cmr.common.mime-types :as mime-types]
-            [cmr.oracle.connection :as oracle]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util :refer [eval-in-dev-sys]]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
-            [cmr.umm.core :as umm]
             [cmr.virtual-product.config :as vp-config]))
 
 ;; test procedure:
