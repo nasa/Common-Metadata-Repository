@@ -37,57 +37,27 @@
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
 
 
-  (def isc (map #(ingest-source (:provider-id %) %) (vp/source-collections)))
+  (def isc (vp/ingest-source-collections))
 
   (def vpc (vp/ingest-virtual-collections isc))
 
   )
 
-(defmulti ingest-source
-  "A method to ingest a source granule and collection concept while adding necessary attributes that allow all related virtual granules to pass through all the associated matchers"
-  (fn [provider-id concept & options]
-    [provider-id (type concept)]))
-
-(defmethod ingest-source :default
-  [provider-id concept & options]
-  (d/ingest provider-id concept (apply hash-map options)))
-
-(defmethod ingest-source ["LPDAAC_ECS" cmr.umm.collection.UmmCollection]
-  [provider-id concept & options]
-  (let [psa1 (dc/psa "TIR_ObservationMode" :string)
-        psa2 (dc/psa "SWIR_ObservationMode" :string)
-        psa3 (dc/psa "VNIR1_ObservationMode" :string)
-        psa4 (dc/psa "VNIR2_ObservationMode" :string)]
-    (d/ingest provider-id
-              (assoc concept :product-specific-attributes [psa1 psa2 psa3 psa4])
-              (apply hash-map options))))
-
-(defmethod ingest-source ["LPDAAC_ECS" cmr.umm.granule.UmmGranule]
-  [provider-id concept & options]
-  (let [psa1 (dg/psa "TIR_ObservationMode" ["ON"])
-        psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
-        psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
-        psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
-    (d/ingest provider-id (-> concept
-                              (assoc :data-granule
-                                     (umm-g/map->DataGranule
-                                       {:day-night "DAY"
-                                        :production-date-time "2014-09-26T11:11:00Z"}))
-                              (assoc :product-specific-attributes [psa1 psa2 psa3 psa4]))
-              (apply hash-map options))))
-
 ;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
 
 (deftest specific-granule-in-virtual-product-test
-  (let [ast-coll (ingest-source "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                              :projects (dc/projects "proj1" "proj2" "proj3")}))
+  (let [[ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"
+                           :projects (dc/projects "proj1" "proj2" "proj3")})
+                        :provider-id "LPDAAC_ECS")])
         vp-colls (vp/ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
-        ast-l1a-gran (ingest-source "LPDAAC_ECS"
-                                              (dg/granule ast-coll {:granule-ur granule-ur
-                                                                  :project-refs ["proj1"]}))
+        ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
+                                    (dg/granule ast-coll {:granule-ur granule-ur
+                                                          :project-refs ["proj1"]}))
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
@@ -119,9 +89,10 @@
 
     (testing "Update source granule"
       ;; Update the source granule so that the projects referenced are different than original
-      (let [ast-l1a-gran-r2 (ingest-source "LPDAAC_ECS" (assoc ast-l1a-gran
-                                                          :project-refs ["proj2" "proj3"]
-                                                          :revision-id nil))]
+      (let [ast-l1a-gran-r2 (vp/ingest-source-granule "LPDAAC_ECS"
+                                           (assoc ast-l1a-gran
+                                                  :project-refs ["proj2" "proj3"]
+                                                  :revision-id nil))]
         (index/wait-until-indexed)
         (testing "find none by original project"
           (is (= 0 (:hits (search/find-refs :granule {:project "proj1"})))))
@@ -141,7 +112,7 @@
         (is (= 0 (:hits (search/find-refs :granule {}))))))
 
     (testing "Recreate source granule"
-      (let [ast-l1a-gran-r4 (ingest-source "LPDAAC_ECS"
+      (let [ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
                                                      (dissoc ast-l1a-gran :revision-id :concept-id))]
         (index/wait-until-indexed)
         (testing "Find all granules"
@@ -150,7 +121,7 @@
             (search/find-refs :granule {:page-size 50})))))))
 
 (deftest all-granules-in-virtual-product-test
-  (let [source-collections (map #(ingest-source (:provider-id %) %) (vp/source-collections))
+  (let [source-collections (vp/ingest-source-collections)
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
         vp-colls (reduce (fn [new-colls source-coll]
@@ -162,7 +133,7 @@
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs
                                                   [provider-id entry-title])]
-                                 (ingest-source provider-id
+                                 (vp/ingest-source-granule provider-id
                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
@@ -202,13 +173,16 @@
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules
 (deftest revision-ids-in-sync-test
-  (let [ast-coll (ingest-source "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"}))
+  (let [[ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")])
         vp-colls (vp/ingest-virtual-collections [ast-coll])
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (dg/granule ast-coll {:granule-ur granule-ur})
-        ingest-result (ingest-source "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
+        ingest-result (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 5))
         _ (index/wait-until-indexed)
         vp-granule-ids (mapcat #(map :id (:refs (search/find-refs
                                                   :granule {:entry-title (:entry-title %)
@@ -216,7 +190,7 @@
 
     ;; check revision ids are in sync after ingest/update operations
     (assert-virtual-gran-revision-id vp-colls 5)
-    (ingest-source "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
+    (vp/ingest-source-granule "LPDAAC_ECS" (assoc ast-l1a-gran :revision-id 10))
     (index/wait-until-indexed)
     (assert-virtual-gran-revision-id vp-colls 10)
 
@@ -250,29 +224,32 @@
 
 (deftest translate-granule-entries-test
   (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-        ast-coll (ingest-source "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title ast-entry-title}))
+        [ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title ast-entry-title
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")])
         vp-colls (vp/ingest-virtual-collections [ast-coll])
-        ast-gran (ingest-source "LPDAAC_ECS"
+        ast-gran (vp/ingest-source-granule "LPDAAC_ECS"
                            (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
-        prov-ast-coll (ingest-source "PROV"
+        prov-ast-coll (d/ingest "PROV"
                                 (dc/collection
                                   {:entry-title ast-entry-title}))
-        prov-ast-gran (ingest-source "PROV"
+        prov-ast-gran (d/ingest "PROV"
                                 (dg/granule prov-ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
 
-        lpdaac-non-ast-coll (ingest-source "LPDAAC_ECS"
+        lpdaac-non-ast-coll (d/ingest "LPDAAC_ECS"
                                       (dc/collection
                                         {:entry-title "non virtual entry title"}))
-        lpdaac-non-ast-gran (ingest-source "LPDAAC_ECS"
+        lpdaac-non-ast-gran (d/ingest "LPDAAC_ECS"
                                       (dg/granule lpdaac-non-ast-coll {:granule-ur "granule-ur2"}))
-        prov-coll (ingest-source "PROV"
+        prov-coll (d/ingest "PROV"
                             (dc/collection
                               {:entry-title "some other entry title"}))
-        prov-gran1 (ingest-source "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
+        prov-gran1 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur3"}))
 
-        prov-gran2 (ingest-source "PROV" (dg/granule prov-coll {:granule-ur "granule-ur4"}))
+        prov-gran2 (d/ingest "PROV" (dg/granule prov-coll {:granule-ur "granule-ur4"}))
 
 
         _ (index/wait-until-indexed)
@@ -366,12 +343,15 @@
                                           :cmr-only false
                                           :small false})
         ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-        ast-coll (ingest-source "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title ast-entry-title}) :client-id "ECHO")
+        [ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title ast-entry-title
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")] {:client-id "ECHO"})
         vp-colls (vp/ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
         granule-ur "SC:AST_L1A.003:2006227720"
-        ast-l1a-gran (ingest-source "LPDAAC_ECS"
+        ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                               (dg/granule ast-coll {:granule-ur granule-ur})
                                               :client-id "ECHO")
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
@@ -391,10 +371,13 @@
     (map #(-> % :id search/get-concept-by-concept-id :body g/parse-granule) virt-gran-refs)))
 
 (deftest omi-aura-configuration-test
-  (let [omi-coll (ingest-source "GSFCS4PA"
-                           (dc/collection
-                             {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                                " Dose Daily L3 Global 1.0x1.0 deg Grid V003")}))
+  (let [[omi-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                             " Dose Daily L3 Global 1.0x1.0 deg Grid V003")
+                           :short-name "OMUVBd"})
+                        :provider-id "GSFCS4PA")])
         vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
         [ur-prefix ur-suffix] (str/split granule-ur #":")
@@ -402,9 +385,10 @@
         opendap-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2013/"]
 
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
-               (let [_ (ingest-source "GSFCS4PA" (dg/granule
-                                                     omi-coll {:granule-ur src-granule-ur
-                                                               :related-urls source-related-urls}))
+               (let [_ (vp/ingest-source-granule "GSFCS4PA"
+                                      (dg/granule
+                                        omi-coll {:granule-ur src-granule-ur
+                                                  :related-urls source-related-urls}))
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
@@ -445,15 +429,13 @@
                [{:url (str data-path ur-suffix) :type "GET DATA"}]
                [{:url (str data-path ur-suffix) :type "GET DATA"}])))
 
-(deftest ast-granule-umm-matchers
-  (let [ast-psas [(dc/psa "TIR_ObservationMode" :string)
-                  (dc/psa "SWIR_ObservationMode" :string)
-                  (dc/psa "VNIR1_ObservationMode" :string)
-                  (dc/psa "VNIR2_ObservationMode" :string)]
-        ast-coll (d/ingest "LPDAAC_ECS"
-                           (dc/collection
-                             {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                              :product-specific-attributes ast-psas}))
+(deftest ast-granule-umm-matchers-test
+  (let [[ast-coll] (vp/ingest-source-collections
+                     [(assoc
+                        (dc/collection
+                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                           :short-name "AST_L1A"})
+                        :provider-id "LPDAAC_ECS")])
         vp-colls (vp/ingest-virtual-collections [ast-coll])
         psa1 (dg/psa "TIR_ObservationMode" ["ON"])
         psa2 (dg/psa "SWIR_ObservationMode" ["ON"])

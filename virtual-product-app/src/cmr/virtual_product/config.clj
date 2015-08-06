@@ -60,65 +60,47 @@
     (some #(and (= (:name %) psa-name) (some #{value} (:values %)))
           (:product-specific-attributes granule))))
 
+(def day-granule? (matches-value [:data-granule :day-night] "DAY"))
+(def tir-mode? (matches-on-psa "TIR_ObservationMode" "ON"))
+(def swir-mode? (matches-on-psa "SWIR_ObservationMode" "ON"))
+(def vnir1-mode? (matches-on-psa "VNIR1_ObservationMode" "ON"))
+(def vnir2-mode? (matches-on-psa "VNIR2_ObservationMode" "ON"))
+
+
 (def source-to-virtual-product-config
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
    {:source-short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
                            :short-name "AST_05"
-                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance"
                            :short-name "AST_07"
-                           :matcher (match-all
-                                      (matches-on-psa "SWIR_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Reflectance VNIR and SWIR Crosstalk-Corrected"
                            :short-name "AST_07XT"
-                           :matcher (match-all
-                                      (matches-on-psa "SWIR_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Kinetic Temperature"
                            :short-name "AST_08"
-                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance SWIR and VNIR"
                            :short-name "AST_09"
-                           :matcher (match-all
-                                      (matches-on-psa "SWIR_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance VNIR and SWIR Crosstalk-Corrected"
                            :short-name "AST_09XT"
-                           :matcher (match-all
-                                      (matches-on-psa "SWIR_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all swir-mode? vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L2 Surface Radiance TIR"
                            :short-name "AST_09T"
-                           :matcher (matches-on-psa "TIR_ObservationMode" "ON")}
+                           :matcher tir-mode?}
                           {:entry-title "ASTER On-Demand L3 Digital Elevation Model, GeoTIF Format"
                            :short-name "AST14DEM"
-                           :matcher (match-all
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L3 Orthorectified Images, GeoTIF Format"
                            :short-name "AST14OTH"
-                           :matcher (match-all
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}
                           {:entry-title "ASTER On-Demand L3 DEM and Orthorectified Images, GeoTIF Format"
                            :short-name "AST14DMO"
-                           :matcher (match-all
-                                      (matches-on-psa "VNIR1_ObservationMode" "ON")
-                                      (matches-on-psa "VNIR2_ObservationMode" "ON")
-                                      (matches-value [:data-granule :day-night] "DAY"))}]}
+                           :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    {:source-short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
@@ -134,6 +116,7 @@
               virtual-collection virtual-collections]
           [[provider-id (:entry-title virtual-collection)]
            {:short-name (:short-name virtual-collection)
+            :matcher (:matcher virtual-collection)
             :source-entry-title source-entry-title
             :source-short-name source-short-name}])))
 

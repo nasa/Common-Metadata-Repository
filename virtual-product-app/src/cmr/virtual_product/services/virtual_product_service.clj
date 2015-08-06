@@ -14,6 +14,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.search :as search]
             [clojure.string :as str]
+            [cmr.message-queue.config :as queue-config]
             [cmr.common.util :as u :refer [defn-timed]]))
 
 (defmulti handle-ingest-event
@@ -93,6 +94,14 @@
    transmit-config/token-header (transmit-config/echo-system-token)
    "Client-Id" virtual-product-client-id})
 
+(defn granule-matches-with?
+  "Check if the source granule umm matches with the matcher for the virtual collection under
+  the given provider and with the given entry title"
+  [provider-id virt-entry-title src-granule-umm]
+  (let [matcher (:matcher (get config/virtual-product-to-source-config
+                               [provider-id virt-entry-title]))]
+    (or (nil? matcher) (matcher src-granule-umm))))
+
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
@@ -101,8 +110,7 @@
         vp-config (config/source-to-virtual-product-config [provider-id entry-title])
         source-short-name (:source-short-name vp-config)]
     (doseq [virtual-coll (:virtual-collections vp-config)
-            :let [matcher (:matcher virtual-coll)]
-            :when (or (nil? matcher) (matcher orig-umm))]
+            :when (granule-matches-with? provider-id (:entry-title virtual-coll) orig-umm)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
                                                        source-short-name
                                                        (:short-name virtual-coll)
@@ -145,8 +153,9 @@
   "Handle response received from ingest service to a delete request. Status codes which do not
   fall between 200 and 299 or not equal to 409 will cause an exception which in turn causes the
   corresponding queue event to be put back in the queue to be retried."
-  [response granule-ur]
+  [response granule-ur retry-count]
   (let [{:keys [status body]} response]
+    (println "retry-count:" retry-count)
     (cond
       (<= 200 status 299)
       (info (format "Deleted virtual granule [%s] with the following response: [%s]"
@@ -171,11 +180,14 @@
       ;;    maximum number of retries for an event. After the retries, the delete event will be
       ;;    considered as a success.
       (= status 404)
-      (errors/internal-error!
-        (format (str "Received a response with status code [404] and the following response body "
-                     "when deleting the virtual granule [%s] : [%s]. The delete request will be "
-                     "retried.")
-                granule-ur (pr-str body)))
+      (if (>= retry-count (count (queue-config/rabbit-mq-ttls)))
+        (info (format (str "The number of retries has exceeded the maximum retry count."
+                   "The delete event for the virtual granule [%s] will be ignored") granule-ur))
+        (errors/internal-error!
+          (format (str "Received a response with status code [404] and the following response body "
+                       "when deleting the virtual granule [%s] : [%s]. The delete request will be "
+                       "retried.")
+                  granule-ur (pr-str body))))
 
       ;; Conflict (status code 409)
       ;; This would occurs if a delete event with lower revision-id is consumed after an event with
@@ -193,8 +205,9 @@
 
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
-  [context {:keys [provider-id revision-id granule-ur entry-title]}]
+  [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
   (let [vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
+    (println "count= " (count (:virtual-collections vp-config)))
     (doseq [virtual-coll (:virtual-collections vp-config)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
                                                        (:source-short-name vp-config)
@@ -204,7 +217,7 @@
                                                  :concept-type :granule
                                                  :native-id new-granule-ur}
                                         (build-ingest-headers revision-id) true)]
-        (handle-delete-response resp new-granule-ur)))))
+        (handle-delete-response resp new-granule-ur retry-count)))))
 
 (defmethod handle-ingest-event :concept-delete
   [context event]
