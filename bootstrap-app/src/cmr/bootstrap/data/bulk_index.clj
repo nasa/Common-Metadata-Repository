@@ -66,7 +66,7 @@
                 :provider-id provider-id
                 :parent-collection-id collection-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id "collection" collection-id)
     num-granules))
 
@@ -79,7 +79,7 @@
         params {:concept-type :granule
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
-        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        num-granules (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
     (info "Indexed" num-granules "granule(s) for provider" provider-id)
     num-granules))
 
@@ -91,7 +91,7 @@
         params {:concept-type :collection
                 :provider-id provider-id}
         concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
-        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches)]
+        num-collections (index/bulk-index {:system (helper/get-indexer system)} concept-batches false)]
     (info "Indexed" num-collections "collection(s) for provider" provider-id)
     num-collections))
 

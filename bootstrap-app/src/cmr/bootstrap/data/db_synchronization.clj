@@ -306,7 +306,10 @@
         {:keys [concept-id revision-id]} concept]
     (try
       (concept-service/save-concept mdb-context concept)
-      (index-service/index-concept indexer-context concept-id revision-id true)
+      (index-service/index-concept indexer-context concept-id revision-id
+                                   {:ignore-conflict? true :all-revisions-index? false})
+      (index-service/index-concept indexer-context concept-id revision-id
+                                   {:ignore-conflict? true :all-revisions-index? true})
       (catch clojure.lang.ExceptionInfo e
         (let [data (ex-data e)]
           (if (= (:type data) :conflict)
