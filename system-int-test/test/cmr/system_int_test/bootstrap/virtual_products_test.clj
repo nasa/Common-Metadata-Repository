@@ -9,6 +9,7 @@
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
+            [cmr.umm.granule :as umm-g]
             [cmr.virtual-product.config :as vp-config]))
 
 ;; test procedure:
@@ -70,9 +71,9 @@
         source-granules (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs
-                                                  [provider-id entry-title])]
+                                                 [provider-id entry-title])]
                                  (vp/ingest-source-granule provider-id
-                                                          (dg/granule source-coll {:granule-ur granule-ur}))))
+                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
         all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs source-granules)
                                          (map :granule-ur source-granules))]
     (index/wait-until-indexed)
@@ -105,11 +106,11 @@
 ;; are in sync as various ingest operations are performed on the source granules
 (deftest deleted-virtual-granules
   (let [[ast-coll] (vp/ingest-source-collections
-                     [(assoc
-                        (dc/collection
-                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                           :short-name "AST_L1A"})
-                        :provider-id "LPDAAC_ECS")])
+                    [(assoc
+                      (dc/collection
+                       {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                        :short-name "AST_L1A"})
+                      :provider-id "LPDAAC_ECS")])
         vp-colls   (vp/ingest-virtual-collections [ast-coll])
         s-granules (doall
                     (for [n (range 10)]
@@ -139,25 +140,70 @@
       (bootstrap-and-index)
       (verify))))
 
-(deftest non-matching-source-granules
+;; The following test is copied directly from the other virtual
+;; product test.
+
+;; TODO: Refactor this somehow.
+
+(deftest ast-granule-umm-matchers-test
   (let [[ast-coll] (vp/ingest-source-collections
-                     [(assoc
-                        (dc/collection
-                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                           :short-name "AST_L1A"})
-                        :provider-id "LPDAAC_ECS")])
-        ;; Ingest the destination virtual collections (precondition
-        ;; for any virtual granules being created).
-        vp-colls (vp/ingest-virtual-collections [ast-coll])]
-    (is (not (empty? vp-colls)))
-    ;; this source granule won't have PSAs and shouldn't generate any
-    ;; virtual granules
-    (is (= 5 (:revision-id
-              (d/ingest "LPDAAC_ECS"
-                        (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"
-                                              :revision-id 5})))))
-    (bootstrap-and-index)
-    (doseq [virtual-coll vp-colls]
-      (is (empty? (:refs (search/find-refs :granule
-                                           {:entry-title (:entry-title virtual-coll)
-                                            :page-size 50})))))))
+                    [(assoc
+                      (dc/collection
+                       {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                        :short-name "AST_L1A"})
+                      :provider-id "LPDAAC_ECS")])
+        vp-colls (vp/ingest-virtual-collections [ast-coll])
+        psa1 (dg/psa "TIR_ObservationMode" ["ON"])
+        psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
+        psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
+        psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
+    (are [granule-attrs expected-granule-urs]
+        (let [_ (d/ingest "LPDAAC_ECS" (dg/granule ast-coll granule-attrs))
+              _ (bootstrap-and-index)
+              src-granule-ur (:granule-ur granule-attrs)
+              query-param {"attribute[]" (format "string,%s,%s"
+                                                 vp-config/source-granule-ur-additional-attr-name
+                                                 src-granule-ur)
+                           :page-size 20}
+              refs (search/find-refs :granule query-param)]
+          (assert-matching-granule-urs expected-granule-urs refs))
+
+      {:granule-ur "SC:AST_L1A.003:2006227720"
+       :product-specific-attributes [psa4]}
+      []
+
+      {:granule-ur "SC:AST_L1A.003:2006227721"
+       :product-specific-attributes [psa1]}
+      ["SC:AST_05.003:2006227721" "SC:AST_08.003:2006227721" "SC:AST_09T.003:2006227721"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227722"
+       :product-specific-attributes [psa1 psa2 psa3 psa4]}
+      ["SC:AST_05.003:2006227722" "SC:AST_08.003:2006227722" "SC:AST_09T.003:2006227722"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227724"
+       :product-specific-attributes [psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST14DEM.003:2006227724" "SC:AST14OTH.003:2006227724" "SC:AST14DMO.003:2006227724"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227725"
+       :product-specific-attributes [psa2 psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST14DMO.003:2006227725" "SC:AST_09.003:2006227725"
+       "SC:AST_09XT.003:2006227725" "SC:AST14DEM.003:2006227725"
+       "SC:AST_07.003:2006227725"   "SC:AST14OTH.003:2006227725"
+       "SC:AST_07XT.003:2006227725"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227726"
+       :product-specific-attributes [psa1 psa2 psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST_09XT.003:2006227726" "SC:AST14DEM.003:2006227726"
+       "SC:AST_08.003:2006227726"   "SC:AST_05.003:2006227726"
+       "SC:AST14OTH.003:2006227726" "SC:AST_07.003:2006227726"
+       "SC:AST_09.003:2006227726"   "SC:AST_09T.003:2006227726"
+       "SC:AST_07XT.003:2006227726" "SC:AST14DMO.003:2006227726"])))
