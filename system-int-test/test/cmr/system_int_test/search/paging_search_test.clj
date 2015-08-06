@@ -127,6 +127,23 @@
                  :else (compare (:revision-id c2) (:revision-id c1)))))
            collections))
 
+(defn sort-collections-latest-revisions
+  "Sorts a list of collections using the same default sort as search for latest revisions."
+  [collections]
+  (sort-by identity
+           (fn [c1 c2]
+             (let [et1 (:entry-title c1)
+                   et2 (:entry-title c2)
+                   p1 (:provider-id c1)
+                   p2 (:provider-id c2)
+                   seq1 (concept-id->sequence-number (:concept-id c1))
+                   seq2 (concept-id->sequence-number (:concept-id c2))]
+               (cond
+                 (not= et1 et2) (compare et1 et2)
+                 (not= p1 p2) (compare p1 p2)
+                 :else (compare seq1 seq2))))
+           collections))
+
 (defn select-page
   "Manually selects a page of collections."
   [collections page-num page-size]
@@ -159,16 +176,18 @@
 
 (deftest search-with-page-num
   (let [provider-id "PROV1"
-        [col1 col2 col3 col4 col5 col6 col7 col8 col9 col10] (for [n (range 10)]
-                                                               (d2c/ingest provider-id
-                                                                           (dc/collection {})))]
+        collections (doall (for [n (range 10)]
+                             (d2c/ingest provider-id
+                                         (dc/collection {}))))]
     (index/wait-until-indexed)
     (testing "Search with page_num."
       (let [{:keys [refs]} (search/find-refs :collection {:provider "PROV1"
                                                           :page_size 5
                                                           :page_num 2})]
-        (is (= (map :short-name [col5 col4 col3 col2 col1])
-               (map :short-name refs)))))
+        (is (= (map get-concept-id-revision-id (select-page (sort-collections-latest-revisions
+                                                              collections)
+                                                            2 5))
+               (map get-concept-id-revision-id refs)))))
     (testing "page_num less than one."
       (let [resp (search/find-refs :collection {:provider "PROV1"
                                                 :page_size 5
