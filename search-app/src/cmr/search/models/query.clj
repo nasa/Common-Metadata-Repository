@@ -25,7 +25,7 @@
    ;; a sequence of maps with :order and :field for sorting
    sort-keys
 
-   ;; desired result format
+   ;; desired result format in keyword
    result-format
 
    ;; A list of features identified by symbols that can be enabled or disabled.

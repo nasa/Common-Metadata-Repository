@@ -15,7 +15,7 @@
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json :xml :atom :atom-links :opendata})
+  #{:csv :json :xml :atom :atom-links :opendata :umm-json})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
@@ -31,7 +31,7 @@
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
-  [{:keys [condition concept-type page-num page-size sort-keys] :as query}]
+  [{:keys [condition concept-type page-num page-size sort-keys result-format all-revisions?] :as query}]
   (and (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)

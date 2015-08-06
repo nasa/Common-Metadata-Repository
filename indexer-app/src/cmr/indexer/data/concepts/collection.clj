@@ -46,10 +46,10 @@
   [personnel]
   (first (filter person->email-contact personnel)))
 
-(defn- get-elastic-fields-for-full-collection
+(defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id revision-id provider-id native-id revision-date format]} concept
+  (let [{:keys [concept-id revision-id provider-id native-id revision-date deleted format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -99,6 +99,7 @@
             :short-name.lowercase (when short-name (str/lower-case short-name))
             :version-id version-id
             :version-id.lowercase (when version-id (str/lower-case version-id))
+            :deleted (boolean deleted)
             :revision-date revision-date
             :access-value access-value
             :processing-level-id processing-level-id
@@ -153,7 +154,7 @@
            (sk/science-keywords->facet-fields collection))))
 
 
-(defn- get-elastic-fields-for-tombstone-collection
+(defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
   [context concept]
   (let [{{:keys [short-name version-id entry-id entry-title]} :extra-fields
@@ -187,6 +188,6 @@
 (defmethod es/concept->elastic-doc :collection
   [context concept collection]
   (if (:deleted concept)
-    (get-elastic-fields-for-tombstone-collection context concept)
-    (get-elastic-fields-for-full-collection context concept collection)))
+    (get-elastic-doc-for-tombstone-collection context concept)
+    (get-elastic-doc-for-full-collection context concept collection)))
 

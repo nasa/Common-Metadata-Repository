@@ -186,6 +186,3 @@
             "acl-filter-concepts time:" t2
             "concept->value-map time:" t4)
      value))
-
-
-

@@ -166,7 +166,7 @@
                                     ;; This comes from the metadata db column of the same name
                                     ;; and is by default equal to the Oracle system time at the
                                     ;; time the revision record is written
-                                    :revision-date         date-field-mapping
+                                    :revision-date (stored date-field-mapping)
                                     :permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
                                     :revision-id (stored int-field-mapping)
