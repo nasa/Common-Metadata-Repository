@@ -8,7 +8,7 @@
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :concept-map]
+(defmethod elastic-search-index/concept-type+result-format->fields [:collection :ummjson]
   [concept-type query]
   ["concept-id"
    "native-id"
@@ -21,7 +21,7 @@
    "deleted"
    "metadata-format"])
 
-(defmethod elastic-results/elastic-result->query-result-item :concept-map
+(defmethod elastic-results/elastic-result->query-result-item :ummjson
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
@@ -35,20 +35,20 @@
          [metadata-format] :metadata-format} (:fields elastic-result)
         revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
         revision-id (:_version elastic-result)]
-    {:concept-type :collection
-     :concept-id concept-id
-     :revision-id revision-id
-     :native-id native-id
-     :provider-id provider-id
-     :entry-title entry-title
-     :entry-id entry-id
-     :short-name short-name
-     :version-id version-id
-     :revision-date revision-date
-     :deleted deleted
-     :format (mt/format->mime-type (keyword metadata-format))}))
+    {:meta {:concept-type :collection
+            :concept-id concept-id
+            :revision-id revision-id
+            :native-id native-id
+            :provider-id provider-id
+            :format (mt/format->mime-type (keyword metadata-format))
+            :revision-date revision-date
+            :deleted deleted}
+     :umm {:entry-title entry-title
+           :entry-id entry-id
+           :short-name short-name
+           :version-id version-id}}))
 
-(defmethod qs/search-results->response :concept-map
+(defmethod qs/search-results->response :ummjson
   [context query results]
-  (json/generate-string (:items results)))
+  (json/generate-string (select-keys results [:hits :took :items])))
 

@@ -71,7 +71,7 @@
   #{mt/any
     mt/xml
     mt/json
-    mt/concept-map
+    mt/ummjson
     mt/echo10
     mt/dif
     mt/dif10

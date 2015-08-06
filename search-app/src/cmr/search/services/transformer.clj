@@ -186,13 +186,3 @@
             "acl-filter-concepts time:" t2
             "concept->value-map time:" t4)
      value))
-
-(deftracefn get-concepts
-  "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
-  [context concept-id-revision-id-tuples]
-   (info "Getting concepts by concept-id & revision-id tuples.")
-   (let [mdb-context (context->metadata-db-context context)
-         [t1 concepts] (u/time-execution
-                         (metadata-db/get-concepts mdb-context concept-id-revision-id-tuples false))]
-     (debug "get-concepts time:" t1)
-     concepts))

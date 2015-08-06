@@ -15,7 +15,7 @@
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json :xml :atom :atom-links :opendata :concept-map})
+  #{:csv :json :xml :atom :atom-links :opendata :ummjson})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
@@ -37,8 +37,6 @@
        (= page-num 1)
        (or (= page-size :unlimited)
            (>= page-size (count (:values condition))))
-       (not all-revisions?)
-       (not (= :concept-map result-format))
        ;; sorting has been left at the default level
        ;; Note that we don't actually sort items by the default sort keys
        ;; See issue CMR-607

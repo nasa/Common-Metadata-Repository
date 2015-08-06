@@ -63,19 +63,19 @@ Besides MimeTypes, client can also use extensions to specify the format for sear
 
 Here is a list of supported extensions and their corresponding MimeTypes:
 
-  * `json`          "application/json"
-  * `xml`           "application/xml"
-  * `echo10`        "application/echo10+xml"
-  * `iso`           "application/iso19115+xml"
-  * `iso19115`      "application/iso19115+xml"
-  * `dif`           "application/dif+xml"
-  * `dif10`         "application/dif10+xml"
-  * `csv`           "text/csv"
-  * `atom`          "application/atom+xml"
-  * `opendata`      "application/opendata+json" (only supported for collections)
-  * `kml`           "application/vnd.google-earth.kml+xml"
-  * `native`        "application/metadata+xml" (Returns search results in their individual native formats)
-  * `concept-map`   "application/concept-map+json" (only supported for collections)
+  * `json`      "application/json"
+  * `xml`       "application/xml"
+  * `echo10`    "application/echo10+xml"
+  * `iso`       "application/iso19115+xml"
+  * `iso19115`  "application/iso19115+xml"
+  * `dif`       "application/dif+xml"
+  * `dif10`     "application/dif10+xml"
+  * `csv`       "text/csv"
+  * `atom`      "application/atom+xml"
+  * `opendata`  "application/opendata+json" (only supported for collections)
+  * `kml`       "application/vnd.google-earth.kml+xml"
+  * `native`    "application/metadata+xml" (Returns search results in their individual native formats)
+  * `ummjson`   "application/umm+json" (only supported for collections)
 
 ### Supported Result Formats
 
@@ -504,6 +504,58 @@ __Example__
     } ]
   }
 }
+```
+
+#### UMMJSON
+
+The JSON response contains meta metadata of the collection and its UMM fields. The UMMJSON format is only applicable to collection searches. It is a beta feature and subject to change in the future.
+
+__Example__
+
+```json
+{
+ "hits": 2,
+ "took": 4,
+ "items": [
+           {
+            "meta": {
+                     "concept-id": "C1200000000-PROV1",
+                     "concept-type": "collection",
+                     "deleted": false,
+                     "format": "application/echo10+xml",
+                     "native-id": "et1",
+                     "provider-id": "PROV1",
+                     "revision-date": "2015-08-06T12:50:49Z",
+                     "revision-id": 3
+                     },
+            "umm": {
+                    "entry-id": "s1_v2",
+                    "entry-title": "et1",
+                    "short-name": "s1",
+                    "version-id": "v2"
+                    }
+            },
+           {
+            "meta": {
+                     "concept-id": "C1200000002-PROV2",
+                     "concept-type": "collection",
+                     "deleted": false,
+                     "format": "application/echo10+xml",
+                     "native-id": "et3",
+                     "provider-id": "PROV2",
+                     "revision-date": "2015-08-06T12:50:49Z",
+                     "revision-id": 1
+                     },
+            "umm": {
+                    "entry-id": "s1_v4",
+                    "entry-title": "et3",
+                    "short-name": "s1",
+                    "version-id": "v4"
+                    }
+            }
+           ]
+ }
+
 ```
 
 #### KML

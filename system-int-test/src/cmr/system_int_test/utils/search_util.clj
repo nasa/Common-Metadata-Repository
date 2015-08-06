@@ -296,13 +296,13 @@
         :results (od/parse-opendata-result concept-type body)}
        response))))
 
-(defn find-concepts-concept-map
-  "Returns the response of a search in concept-map format"
+(defn find-concepts-ummjson
+  "Returns the response of a search in ummjson format"
   ([concept-type params]
-   (find-concepts-concept-map concept-type params {}))
+   (find-concepts-ummjson concept-type params {}))
   ([concept-type params options]
    (let [response (get-search-failure-data
-                    (find-concepts-in-format mime-types/concept-map concept-type params options))
+                    (find-concepts-in-format mime-types/ummjson concept-type params options))
          {:keys [status body]} response]
      (if (= status 200)
        {:status status
@@ -527,5 +527,4 @@
   (client/post (url/search-clear-cache-url)
                {:connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
-
 

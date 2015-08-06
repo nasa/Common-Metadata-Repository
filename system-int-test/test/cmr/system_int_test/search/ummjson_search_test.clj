@@ -1,6 +1,7 @@
-(ns cmr.system-int-test.search.concept-map-search-test
-  "Integration test for concept map format search"
+(ns cmr.system-int-test.search.ummjson-search-test
+  "Integration test for UMMJSON format search"
   (:require [clojure.test :refer :all]
+            [clojure.core.incubator :as incubator]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -11,38 +12,39 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(defn- collection->concept-map
-  "Returns the collection in concept-map format."
+(defn- collection->ummjson
+  "Returns the collection in ummjson format."
   [collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
          :keys [entry-id entry-title format-key revision-id concept-id provider-id deleted]} collection]
-    {:concept-type "collection"
-     :concept-id concept-id
-     :revision-id revision-id
-     :native-id entry-title
-     :provider-id provider-id
-     :entry-title entry-title
-     :entry-id entry-id
-     :short-name short-name
-     :version-id version-id
-     :deleted (boolean deleted)
-     :format (mt/format->mime-type format-key)}))
+    {:meta {:concept-type "collection"
+            :concept-id concept-id
+            :revision-id revision-id
+            :native-id entry-title
+            :provider-id provider-id
+            :format (mt/format->mime-type format-key)
+            :deleted (boolean deleted)}
+     :umm {:entry-title entry-title
+           :entry-id entry-id
+           :short-name short-name
+           :version-id version-id}}))
 
 
-(defn- collections->concept-maps
-  "Returns the collections in a set of concept-maps."
+(defn- collections->ummjsons
+  "Returns the collections in a set of ummjsons."
   [collections]
-  (set (map collection->concept-map collections)))
+  (set (map collection->ummjson collections)))
 
-(defn- concept-maps-match?
-  "Returns true if the UMM collection concept-maps match the concept-maps returned from the search."
+(defn- ummjsons-match?
+  "Returns true if the UMM collection ummjsons match the ummjsons returned from the search."
   [collections search-result]
-  ;; We do not check the revision-date in concept-map as it is not available in UMM record.
-  (is (= (collections->concept-maps collections)
-         (set (map #(dissoc % :revision-date) (:results search-result))))))
+  ;; We do not check the revision-date in ummjson as it is not available in UMM record.
+  ;; We also don't check hits and tooks in the UMMJSON.
+  (is (= (collections->ummjsons collections)
+         (set (map #(incubator/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
 
-(deftest search-collection-concept-map
+(deftest search-collection-ummjson
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
                                                   :entry-id "s1_v1"
                                                   :version-id "v1"
@@ -74,9 +76,9 @@
                                                 :version-id "v4"
                                                 :short-name "s1"}))]
     (index/wait-until-indexed)
-    (testing "find collections in concept-map format"
+    (testing "find collections in ummjson format"
       (are2 [collections params]
-            (concept-maps-match? collections (search/find-concepts-concept-map :collection params))
+            (ummjsons-match? collections (search/find-concepts-ummjson :collection params))
 
             ;; Should not get matching tombstone for second collection back
             "provider-id all-revisions=false"
@@ -149,13 +151,15 @@
             [coll1-1 coll1-2-tombstone coll1-3 coll2-1 coll2-2 coll2-3-tombstone coll3]
             {:all-revisions true}))
 
-    (testing "find collections in concept-map extension"
-      (is (= (search/find-concepts-concept-map :collection {})
-             (search/find-concepts-concept-map :collection {} {:url-extension "concept-map"}))))))
+    (testing "find collections in ummjson extension"
+      (let [results (search/find-concepts-ummjson :collection {})
+            extension-results (search/find-concepts-ummjson :collection {} {:url-extension "ummjson"})]
+        (is (= (incubator/dissoc-in results [:results :took])
+               (incubator/dissoc-in extension-results [:results :took])))))))
 
-(deftest search-concept-map-error-cases
-  (testing "granule concept-map search is not supported"
-    (let [{:keys [status errors]} (search/find-concepts-concept-map :granule {})]
-      (is (= [400 ["The mime type [application/concept-map+json] is not supported for granules."]]
+(deftest search-ummjson-error-cases
+  (testing "granule ummjson search is not supported"
+    (let [{:keys [status errors]} (search/find-concepts-ummjson :granule {})]
+      (is (= [400 ["The mime type [application/umm+json] is not supported for granules."]]
              [status errors])))))
 

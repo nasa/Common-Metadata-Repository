@@ -10,7 +10,7 @@
 
 (def concept-type->supported-result-formats
   "Supported search result formats by concept."
-  {:collection #{:xml, :json, :concept-map, :echo10, :dif, :dif10, :atom, :iso19115, :kml,
+  {:collection #{:xml, :json, :ummjson, :echo10, :dif, :dif10, :atom, :iso19115, :kml,
                  :opendata, :native}
    :granule #{:xml, :json, :echo10, :atom, :iso19115, :csv, :kml, :native}})
 
