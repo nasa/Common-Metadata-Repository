@@ -99,7 +99,7 @@
   [query]
   (let [{:keys [concept-type sort-keys]} query
         default-sorts (if (= concept-type :collection)
-                          [{:concept-seq-id {:order "asc"}} {:revision-id {:order "asc"}}]
+                          [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}]
                           [{:concept-seq-id {:order "asc"}}])
         specified-sort (map (fn [{:keys [order field]}]
                               {(get-in sort-key-field->elastic-field [concept-type field] (name field))

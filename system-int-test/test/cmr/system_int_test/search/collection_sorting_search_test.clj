@@ -53,6 +53,23 @@
          (search/find-refs-with-aql :collection [] {}
                                     {:query-params {:page-size 20 :sort-key sort-key}}))))))
 
+
+(defn all-revision-compare-entry-title
+  "Compares collections by entry title for sorting in all revisions. descending? indicates if the sort
+  is descending by entry_title or ascending. When entry titles are matching the sort order is by
+  concept id ascending and revision id descending."
+  [descending? c1 c2]
+  (if (= (:entry-title c1) (:entry-title c2))
+    (if (= (:concept-id c1) (:concept-id c2))
+      ;; Revision ids are in reverse order by default
+      (compare (:revision-id c2) (:revision-id c1))
+      (compare (:concept-id c1) (:concept-id c2)))
+    (let [et1 (str/lower-case (:entry-title c1))
+          et2 (str/lower-case (:entry-title c2))]
+      (if descending?
+        (compare et2 et1)
+        (compare et1 et2)))))
+
 (deftest sorting-test
   (let [c1-1 (make-coll "PROV1" "et99" 10 20)
         c1-2 (make-coll "PROV1" "et99" 10 20)
@@ -80,18 +97,14 @@
 
     (testing "all revisions sorting"
       (testing "Sort by entry title ascending"
-        (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-revisions)]
+        (let [sorted-colls (sort-by identity
+                                    (partial all-revision-compare-entry-title false)
+                                    all-revisions)]
           (is (sort-order-correct? sorted-colls "entry_title" true))))
 
       (testing "Sort by entry title descending"
         (let [sorted-colls (sort-by identity
-                                    (fn [a b]
-                                      (if (= (:entry-title a) (:entry-title b))
-                                        (if (= (:concept-id a) (:concept-id b))
-                                          (compare (:revision-id a) (:revision-id b))
-                                          (compare (:concept-id a) (:concept-id b)))
-                                        (compare (str/lower-case (:entry-title b))
-                                                 (str/lower-case (:entry-title a)))))
+                                    (partial all-revision-compare-entry-title true)
                                     all-revisions)]
           (is (sort-order-correct? sorted-colls "-entry_title" true))))
 
