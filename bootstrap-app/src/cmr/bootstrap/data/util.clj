@@ -16,23 +16,23 @@
   ;; out of sync. The delete processing should happen after this step and put it back in sync.
   (let [mdb-context {:system (helper/get-metadata-db system)}
         indexer-context {:system (helper/get-indexer system)}
-        {:keys [concept-id revision-id]} concept]
+        concept-str (fn [] (pr-str (dissoc concept :metadata)))]
     (try
-      (concept-service/save-concept mdb-context concept)
-      (index-service/index-concept indexer-context concept-id revision-id
-                                   {:ignore-conflict? true :all-revisions-index? false})
-      (index-service/index-concept indexer-context concept-id revision-id
-                                   {:ignore-conflict? true :all-revisions-index? true})
+      (let [{:keys [concept-id revision-id]} (concept-service/save-concept mdb-context concept)]
+        (index-service/index-concept indexer-context concept-id revision-id
+                                     {:ignore-conflict? true :all-revisions-index? false})
+        (index-service/index-concept indexer-context concept-id revision-id
+                                     {:ignore-conflict? true :all-revisions-index? true}))
       (catch clojure.lang.ExceptionInfo e
         (let [data (ex-data e)]
           (if (= (:type data) :conflict)
-            (warn (format "Ignoring conflict saving revision for %s %s: %s"
-                          concept-id revision-id (pr-str (:errors data))))
-            (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
-                             concept-id revision-id (.getMessage e))))))
+            (warn (format "Ignoring conflict saving revision for %s: %s"
+                          (concept-str) (pr-str (:errors data))))
+            (error e (format "Error saving or indexing concept %s. Message: %s"
+                             (concept-str) (.getMessage e))))))
       (catch Throwable e
-        (error e (format "Error saving or indexing concept %s with revision %s. Message: %s"
-                         concept-id revision-id (.getMessage e)))))))
+        (error e (format "Error saving or indexing concept %s. Message: %s"
+                         (concept-str) (.getMessage e)))))))
 
 (defn create-tombstone-and-unindex-concept
   "Creates a tombstone with the given concept id and revision id and unindexes the concept."
