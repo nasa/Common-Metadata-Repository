@@ -102,7 +102,7 @@
     ;; Log exceptions for server errors
     (if (>= status-code 500)
       (error e)
-      (warn "Failed with status code [" status-code "], response body: " response-body))
+      (info "Failed with status code [" status-code "], response body: " response-body))
     {:status status-code
      :headers {CONTENT_TYPE_HEADER content-type
                CORS_ORIGIN_HEADER "*"}
