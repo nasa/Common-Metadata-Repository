@@ -181,7 +181,8 @@
                        :summary (:long-name product)
                        :product product
                        :data-provider-timestamps data-provider-timestamps}
-         attribs (select-keys attribs (concat (util/record-fields UmmCollection) [:concept-id :revision-id]))
+         attribs (select-keys attribs (concat (util/record-fields UmmCollection)
+                                              [:concept-id :revision-id :native-id]))
          attribs (merge minimal-coll temporal attribs)]
      (c/map->UmmCollection attribs))))
 
