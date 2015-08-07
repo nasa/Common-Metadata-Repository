@@ -3,6 +3,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.common.services.messages :as msg]
+            [cmr.common.util :refer [are2] :as util]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -15,7 +16,8 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
+                                           "provguid3" "PROV3" "provguid4" "PROV4"}
                                           false))
 
 (comment
@@ -50,6 +52,9 @@
   ;; grant specific group permission to coll3, coll6, and coll8
   (e/grant-group (s/context) "group-guid1" (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll3"])))
   (e/grant-group (s/context) "group-guid2" (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll6" "coll8"])))
+  (e/grant-group (s/context) "group-guid3"
+                 (e/coll-catalog-item-id "provguid4"
+                                         (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
 
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
@@ -78,13 +83,36 @@
         coll9 (d/ingest "PROV3" (dc/collection {:entry-title "coll9"}))
         coll10 (d/ingest "PROV3" (dc/collection {:entry-title "coll10"
                                                  :access-value 12}))
+        ;; PROV4
+        ;; group3 has permission to read this collection revision
+        coll11-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll11-entry-title"
+                                                   :native-id "coll11"}))
+        ;; tombstone
+        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1))
+                        :entry-title "coll11-entry-title"
+                        :deleted true
+                        :revision-id 2)
+        ;; no permissions to read this revision since entry-title has changed
+        coll11-3 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
+                                                   :native-id "coll11"}))
+        ;; group 3 has permission to read this collection revision
+        coll12-1 (d/ingest "PROV4" (dc/collection {:entry-title "coll12-entry-title"
+                                                   :native-id "coll12"}))
+        ;; no permissions to read this collection since entry-title has changed
+        coll12-2 (d/ingest "PROV4" (dc/collection {:entry-title "coll12"
+                                                   :native-id "coll12"}))
+        ;; no permision to see this tombstone since it has same entry-title as coll12-2
+        coll12-3 (assoc (ingest/delete-concept (d/item->concept coll12-2))
+                        :deleted true
+                        :revision-id 2)
 
         all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7 coll8 coll9 coll10]
         guest-permitted-collections [coll1 coll4 coll6 coll7 coll8 coll9]
         guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2" ["group-guid1"])
-        user3-token (e/login (s/context) "user3" ["group-guid1" "group-guid2"])]
+        user3-token (e/login (s/context) "user3" ["group-guid1" "group-guid2"])
+        user4-token (e/login (s/context) "user4" ["group-guid3"])]
 
     (index/wait-until-indexed)
 
@@ -175,7 +203,26 @@
               actual-od (search/find-concepts-opendata :collection {:token guest-token
                                                                     :page-size 100
                                                                     :concept-id concept-ids})]
-          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))))
+          (od/assert-collection-opendata-results-match guest-permitted-collections actual-od))))
+
+    (testing "all_revisions"
+      (are2 [collections params]
+            (d/refs-match? collections (search/find-refs :collection params))
+
+            ;; only old revisions satisfy ACL - they should not be returned
+            "provider-id all-revisions=false"
+            []
+            {:provider-id "PROV4" :all-revisions false :token user4-token}
+
+            ;; only permissioned revisions are returned - including tombstones
+            "provider-id all-revisions=true"
+            [coll11-1 coll11-2 coll12-1]
+            {:provider-id "PROV4" :all-revisions true :token user4-token}
+
+            ;; none of the revisions are readable by guest users
+            "provider-id all-revisions=true no token"
+            []
+            {:provider-id "PROV4" :all-revisions true}))))
 
 
 ;; This tests that when acls change after collections have been indexed that collections will be

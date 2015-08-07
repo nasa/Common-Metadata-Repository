@@ -16,18 +16,11 @@
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
-(defmulti item->native-id
+(defn- item->native-id
   "Returns the native id of an item"
-  (fn [item]
-    (type item)))
-
-(defmethod item->native-id UmmCollection
   [item]
-  (:entry-title item))
-
-(defmethod item->native-id UmmGranule
-  [item]
-  (:granule-ur item))
+  (let [{:keys [granule-ur entry-title native-id]} item]
+    (or granule-ur entry-title native-id)))
 
 (defmulti item->concept-type
   "Returns the path to ingest the item"
@@ -114,7 +107,7 @@
   "Converts an item into the expected reference"
   [item]
   (let [{:keys [concept-id revision-id deleted]} item
-        ref {:name (or (:native-id item) (item->native-id item))
+        ref {:name (item->native-id item)
              :id concept-id
              :location (format "%s%s/%s" (url/location-root) (:concept-id item) revision-id)
              :revision-id revision-id}]
@@ -226,10 +219,10 @@
 (defn refs-match?
   "Returns true if the references match the expected items"
   [items search-result]
-  (let [result (= (set (map item->ref items))
+  (let [result (is (= (set (map item->ref items))
                   ;; need to remove score etc. because it won't be available in collections
                   ;; to which we are comparing
-                  (set (map #(dissoc % :score :granule-count) (:refs search-result))))]
+                  (set (map #(dissoc % :score :granule-count) (:refs search-result)))))]
     (when (:status search-result)
       (println (pr-str search-result)))
     result))
