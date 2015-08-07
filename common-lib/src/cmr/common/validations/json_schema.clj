@@ -41,6 +41,8 @@
       (conj (parse-nested-error-report (:reports json-error-report))
             (parse-error-report json-error-report)))))
 
+
+
 (defn- json-string->JsonNode
   "Takes JSON as a string or as EDN and returns a com.fasterxml.jackson.databind.JsonNode. Throws
   an exception if the provided JSON is not valid JSON."
@@ -48,8 +50,9 @@
   (try
     (JsonLoader/fromString json-string)
     (catch JsonParseException e
-      (warn "Invalid JSON when trying to validate" json-string e)
-      (errors/throw-service-error :bad-request (str "Invalid JSON: " (.getMessage e))))))
+      ;; Removes the source from the message which is just going to say StringReader@XXXXX
+      (let [message (str/replace (.getMessage e) #"\[Source[^;]+;" "")]
+        (errors/throw-service-error :bad-request (str "Invalid JSON: " message))))))
 
 (defn parse-json-schema
   "Convert a JSON string into a com.github.fge.jsonschema.main.JsonSchema object."
