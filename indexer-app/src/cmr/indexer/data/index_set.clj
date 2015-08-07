@@ -163,10 +163,18 @@
                 :properties (merge {:deleted (stored bool-field-mapping) ; deleted=true is a tombstone
                                     :native-id (stored string-field-mapping)
                                     :native-id.lowercase string-field-mapping
+
                                     ;; This comes from the metadata db column of the same name
                                     ;; and is by default equal to the Oracle system time at the
                                     ;; time the revision record is written
-                                    :revision-date (stored date-field-mapping)
+
+                                    ;; revision-date needs to be stored but you can't update an
+                                    ;; existing mapping to be stored. We'll switch to revision-date2
+                                    ;; and deprecate and then remove revision-date in sprint 32 or
+                                    ;; later.
+                                    :revision-date date-field-mapping
+                                    :revision-date2 (stored date-field-mapping)
+
                                     :permitted-group-ids (stored string-field-mapping)
                                     :concept-id   (stored string-field-mapping)
                                     :revision-id (stored int-field-mapping)
