@@ -1,5 +1,5 @@
 (ns cmr.common.api.errors
-  (:require [cmr.common.log :refer [error warn]]
+  (:require [cmr.common.log :refer [error warn info debug]]
             [cmr.common.services.errors :as errors]
             [clojure.data.xml :as x]
             [clojure.string :as str]
