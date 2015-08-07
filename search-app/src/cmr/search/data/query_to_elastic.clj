@@ -19,11 +19,12 @@
   {:collection {:provider :provider-id
                 :version :version-id
                 :project :project-sn
-                :updated-since :revision-date
+                :updated-since :revision-date2
                 :two-d-coordinate-system-name :two-d-coord-name
                 :platform :platform-sn
                 :instrument :instrument-sn
-                :sensor :sensor-sn}
+                :sensor :sensor-sn
+                :revision-date :revision-date2}
 
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
@@ -80,7 +81,8 @@
                 :platform :platform-sn.lowercase
                 :instrument :instrument-sn.lowercase
                 :sensor :sensor-sn.lowercase
-                :score :_score}
+                :score :_score
+                :revision-date :revision-date2}
    :granule {:provider :provider-id.lowercase
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase

@@ -100,7 +100,7 @@
             :version-id version-id
             :version-id.lowercase (when version-id (str/lower-case version-id))
             :deleted (boolean deleted)
-            :revision-date revision-date
+            :revision-date2 revision-date
             :access-value access-value
             :processing-level-id processing-level-id
             :processing-level-id.lowercase (when processing-level-id (str/lower-case processing-level-id))
@@ -180,7 +180,7 @@
      :deleted (boolean deleted)
      :provider-id provider-id
      :provider-id.lowercase (str/lower-case provider-id)
-     :revision-date revision-date
+     :revision-date2 revision-date
      :metadata-format (name (mt/base-mime-type-to-format format))
      :permitted-group-ids tombstone-permitted-group-ids
      :access-value access-value}))
