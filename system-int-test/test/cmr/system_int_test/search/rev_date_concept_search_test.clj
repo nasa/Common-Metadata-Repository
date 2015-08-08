@@ -26,8 +26,21 @@
           coll2 (d/ingest "PROV1" (dc/collection {}))
           _ (dev-sys-util/freeze-time! "2000-03-01T10:00:00Z")
           coll3 (d/ingest "PROV1" (dc/collection {}))
+
+          ;; Collection 4 will have updates
           _ (dev-sys-util/freeze-time! "2000-04-01T10:00:00Z")
-          coll4 (d/ingest "PROV1" (dc/collection {}))
+          coll4-1 (d/ingest "PROV1" (dc/collection {}))
+          _ (dev-sys-util/freeze-time! "2000-05-01T10:00:00Z")
+          coll4-2 (d/ingest "PROV1" (dissoc coll4-1 :revision-id))
+
+          ;; Collection D will be deleted
+          _ (dev-sys-util/freeze-time! "2000-06-01T10:00:00Z")
+          coll-d-1 (d/ingest "PROV1" (dc/collection {}))
+
+          _ (dev-sys-util/freeze-time! "2000-07-01T10:00:00Z")
+          _ (ingest/delete-concept (d/item->concept coll-d-1))
+          coll-d-2 (assoc coll-d-1 :deleted true :revision-id 2)
+
           _ (dev-sys-util/freeze-time! "2015-01-01T10:00:00Z")
           coll5 (d/ingest "PROV1" (dc/collection {}))]
       (index/wait-until-indexed)
@@ -39,39 +52,64 @@
                   (d/refs-match? colls references))
 
                 "range without begin - find all"
-                [coll1 coll2 coll3 coll4 coll5] ",2015-01-01T10:00:00Z" {}
+                [coll1 coll2 coll3 coll4-2 coll5] ",2015-01-01T10:00:00Z" {}
+
+                "all-revisions - range without begin - find all"
+                [coll1 coll2 coll3 coll4-1 coll4-2 coll-d-1 coll-d-2 coll5] ",2015-01-01T10:00:00Z" {:all-revisions true}
+
                 "range without begin - find some"
                 [coll1 coll2 coll3] ",2000-03-01T10:00:00Z" {}
+
+                "all-revisions - range without begin - find some"
+                [coll1 coll2 coll3 coll4-1 coll4-2] ",2000-05-01T10:00:00Z" {:all-revisions true}
+
                 "range without begin - find none"
                 [] ",2000-01-01T09:00:00Z" {}
+
                 "range without end - find all"
-                [coll1 coll2 coll3 coll4 coll5] "2000-01-01T10:00:00Z," {}
+                [coll1 coll2 coll3 coll4-2 coll5] "2000-01-01T10:00:00Z," {}
+
                 "range without end - omitting ,"
-                [coll1 coll2 coll3 coll4 coll5] "2000-01-01T10:00:00Z" {}
+                [coll1 coll2 coll3 coll4-2 coll5] "2000-01-01T10:00:00Z" {}
+
                 "range without end - find some"
-                [coll4 coll5] "2000-04-01T10:00:00Z," {}
+                [coll4-2 coll5] "2000-04-01T10:00:00Z," {}
+
+                "all-revisions - range without end - find some"
+                [coll4-1 coll4-2 coll-d-1 coll-d-2 coll5] "2000-04-01T10:00:00Z," {:all-revisions true}
+
                 "range without end - find none"
                 [] "2015-01-01T11:00:00Z," {}
+
                 "range - find all"
-                [coll1 coll2 coll3 coll4 coll5] "2000-01-01T10:00:00Z,2015-01-01T10:00:00Z" {}
+                [coll1 coll2 coll3 coll4-2 coll5] "2000-01-01T10:00:00Z,2015-01-01T10:00:00Z" {}
+
                 "range - find some"
                 [coll1 coll2] "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z" {}
+
                 "range - find none"
                 [] "2000-01-01T11:00:00Z,2000-02-01T09:00:00Z" {}
+
                 "find a single value"
                 [coll1] "2000-01-01T10:00:00Z,2000-01-01T10:00:00Z" {}
+
                 "multiple ranges without options, should default to AND false"
-                [coll3 coll4 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {}
+                [coll3 coll4-2 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {}
+
                 "multiple ranges with option and false"
-                [coll3 coll4 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
+                [coll3 coll4-2 coll5] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "false"}
+
                 "multiple ranges with option and true"
-                [coll4] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "true"}))
+                [coll4-2] ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"] {"options[revision_date][and]" "true"}))
+
+
       (testing "search collections with revision_date is OK"
         (are [colls param value]
              (let [references (search/find-refs :collection {param value})]
                (d/refs-match? colls references))
              [coll1 coll2] "revision_date[]" "2000-01-01T10:00:00Z,2000-02-01T10:00:00Z"
-             [coll3 coll4 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+             [coll3 coll4-2 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
+
       (testing "search collections with invalid revision date"
         (u/are2 [value err-pattern]
                 (let [{:keys [status errors]} (search/find-refs :collection {"revision_date" value})
@@ -92,9 +130,9 @@
         (are [colls param value]
              (let [references (search/find-refs :collection {param value})]
                (d/refs-match? colls references))
-             [coll1 coll2 coll3 coll4 coll5] "updated_since" "2000-01-01T10:00:00Z"
-             [coll1 coll2 coll3 coll4 coll5] "updated_since[]" "2000-01-01T10:00:00Z"
-             [coll2 coll3 coll4 coll5] "updated_since" "2000-02-01T00:00:00Z"
+             [coll1 coll2 coll3 coll4-2 coll5] "updated_since" "2000-01-01T10:00:00Z"
+             [coll1 coll2 coll3 coll4-2 coll5] "updated_since[]" "2000-01-01T10:00:00Z"
+             [coll2 coll3 coll4-2 coll5] "updated_since" "2000-02-01T00:00:00Z"
              [coll5] "updated_since" "2015-01-01T10:00:00Z"
              [] "updated_since" "2015-01-01T10:00:01Z"))
       (testing "search collections with updated_since range is invalid"
@@ -109,8 +147,8 @@
       (testing "search collections with multiple updated_since values is invalid"
         (let [value ["2000-01-01T10:00:00Z" "2009-01-01T10:00:00Z"]
               {:keys [status errors]} (search/find-refs :collection {"updated_since" value})]
-                  (is (= [400 ["Search not allowed with multiple updated_since values"]]
-                        [status errors])))))))
+          (is (= [400 ["Search not allowed with multiple updated_since values"]]
+                 [status errors])))))))
 
 
 (deftest search-granules-by-revision-date
