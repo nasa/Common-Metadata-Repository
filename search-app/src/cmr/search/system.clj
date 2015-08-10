@@ -93,7 +93,7 @@
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
-    (transmit-config/system-with-connections sys [:index-set :echo-rest])))
+    (transmit-config/system-with-connections sys [:index-set :echo-rest :kms])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

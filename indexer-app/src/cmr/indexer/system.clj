@@ -61,7 +61,7 @@
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
