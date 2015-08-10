@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-mappings.add-parse-type
+(ns cmr.umm-spec.xml-to-umm-mappings.add-parse-type
   "Code necessary for making mapping easier to parse. When we parse XML into UMM we have to convert
   things into the appropriate types. We splice together the schema and the mapping information in
   order to have enough information to parse into appropriate types."

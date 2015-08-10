@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-mappings.dsl
+(ns cmr.umm-spec.umm-to-xml-mappings.dsl
   "Defines a DSL for generating XML from a source Clojure record.
 
   The DSL is used to specify content generators. Content generators generate parts of XML which could

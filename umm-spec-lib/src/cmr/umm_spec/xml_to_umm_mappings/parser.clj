@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-mappings.parser
+(ns cmr.umm-spec.xml-to-umm-mappings.parser
   "Implements parsing of XML into UMM records."
   (:require [clojure.string :as str]
             [cmr.common.date-time-parser :as dtp]
