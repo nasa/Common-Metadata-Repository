@@ -2,12 +2,12 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.xml-mappings.xml-generator :as xg]
-            [cmr.umm-spec.xml-mappings.iso19115-2 :as xm-iso2]
-            [cmr.umm-spec.xml-mappings.echo10 :as xm-echo10]
-            [cmr.umm-spec.umm-mappings.iso19115-2 :as um-iso2]
-            [cmr.umm-spec.umm-mappings.echo10 :as um-echo10]
-            [cmr.umm-spec.umm-mappings.parser :as xp]
+            [cmr.umm-spec.umm-to-xml-mappings.xml-generator :as xg]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as xm-iso2]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as xm-echo10]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as um-iso2]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10 :as um-echo10]
+            [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]

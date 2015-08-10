@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.xml-mappings.iso19115-2
+(ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
-  (:require [cmr.umm-spec.xml-mappings.dsl :refer :all]))
+  (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"

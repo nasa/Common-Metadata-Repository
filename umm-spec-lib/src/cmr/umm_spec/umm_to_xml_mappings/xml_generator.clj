@@ -1,13 +1,13 @@
-(ns cmr.umm-spec.xml-mappings.xml-generator
+(ns cmr.umm-spec.umm-to-xml-mappings.xml-generator
   "Contains functions for generating XML using XML Mappings and a source clojure record"
   (:require [clojure.data.xml :as x]
             [cmr.umm-spec.simple-xpath :as sxp]
-            [cmr.umm-spec.xml-mappings.dsl :as dsl]
+            [cmr.umm-spec.umm-to-xml-mappings.dsl :as dsl]
             [cmr.common.util :as u]))
 
 (def dsl-type
   "The namespaced keyword used to identify content generator maps type"
-  :cmr.umm-spec.xml-mappings.dsl/type)
+  :cmr.umm-spec.umm-to-xml-mappings.dsl/type)
 
 (defmulti generate-content
   "Generates content using a content generator and values from the XPath context."
