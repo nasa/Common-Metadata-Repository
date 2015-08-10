@@ -12,7 +12,8 @@
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
             [clj-time.core :as t]
-            [cmr.common.util :as u :refer [are2]]))
+            [cmr.common.util :as u :refer [are2]]
+            [cmr.umm-spec.umm-json :as umm-json]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -49,6 +50,8 @@
                                                    :PeriodCycleDurationValue 3}])
                          })]}))
 
+
+
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
@@ -64,6 +67,21 @@
   (update-in expected [:EntryId :Id] #(str % "_"
                                            ;; TODO put version here once it's added to UMM.
                                            )))
+
+(comment
+
+
+  ;; Take a UMM record, convert to UMM JSON, parse UMM JSON, and then convert to ECHO10 XML
+  (->>  example-record-echo10-supported
+       umm-json/umm->json
+       umm-json/json->umm
+       (xg/generate-xml xm-echo10/umm-c-to-echo10-xml)
+       cmr.common.xml/pretty-print-xml
+       println)
+
+
+  )
+
 
 (deftest roundtrip-gen-parse
   (are2 [to-xml to-umm expected-manip-fn]
