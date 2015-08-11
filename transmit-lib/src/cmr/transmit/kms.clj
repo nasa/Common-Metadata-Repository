@@ -1,8 +1,9 @@
 (ns cmr.transmit.kms
   "This namespace handles retrieval of controlled vocabulary from the GCMD Keyword Management
   System (KMS)."
-  (:require [clj-http.client :as client]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
+            [clj-http.client :as client]
+            [camel-snake-kebab.core :as csk]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]
             [cmr.common.util :as util]
@@ -11,7 +12,7 @@
 (def leaf-node-field-name
   "A map of the concept-scheme to the field name within that concept-scheme that identifies an
   entry as a leaf node."
-  {:providers :Short_Name})
+  {:providers :short-name})
 
 (defn- parse-single-csv-line
   "Parses a single CSV line into an array of values. An example line:
@@ -35,7 +36,7 @@
   [concept-scheme csv-content]
   (let [all-lines (str/split-lines csv-content)
         ;; Line 2 contains the names of the subfield names
-        subfield-names (map keyword (parse-single-csv-line (second all-lines) ","))
+        subfield-names (map csk/->kebab-case-keyword (parse-single-csv-line (second all-lines) ","))
         keyword-values (map util/remove-blank-keys
                             (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
                             ;; Lines 3 to the end are the values
@@ -46,10 +47,10 @@
 
 (comment
   (take 10 (get-provider-hierarchy {:system (cmr.search.system/create-system)}))
-  (count (set (map :Short_Name (get-provider-hierarchy {:system (cmr.search.system/create-system)}))))
-  (count (map :Short_Name (get-provider-hierarchy {:system (cmr.search.system/create-system)})))
+  (count (set (map :short-name (get-provider-hierarchy {:system (cmr.search.system/create-system)}))))
+  (count (map :short-name (get-provider-hierarchy {:system (cmr.search.system/create-system)})))
   ;; Look for any duplicate providers
-  (for [v (vals (group-by keyword (map :Short_Name (get-provider-hierarchy
+  (for [v (vals (group-by keyword (map :short-name (get-provider-hierarchy
                                                      {:system (cmr.search.system/create-system)}))))
         :when (> (count v) 1)]
     v))
