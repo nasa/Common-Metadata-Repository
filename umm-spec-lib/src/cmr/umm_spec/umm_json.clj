@@ -112,3 +112,6 @@
   [schema json-str]
   (let [root-type-def (get-in schema [:definitions (:root schema)])]
     (parse-json schema (:root schema) root-type-def (json/decode json-str true))))
+
+
+
