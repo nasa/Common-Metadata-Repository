@@ -10,7 +10,8 @@
             [cmr.mock-echo.system :as mock-echo])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
-        [alex-and-georges.debug-repl]))
+        [alex-and-georges.debug-repl]
+        [cmr.common.dev.capture-reveal]))
 
 (def system nil)
 (def mock-echo nil)

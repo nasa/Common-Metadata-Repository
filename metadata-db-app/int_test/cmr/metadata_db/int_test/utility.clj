@@ -56,6 +56,7 @@
          collection {:concept-type :collection
                      :native-id (str "native-id " uniq-num)
                      :provider-id provider-id
+                     :user-id (str "user" uniq-num)
                      :metadata (str "xml here " uniq-num)
                      :format "application/echo10+xml"
                      :deleted false
@@ -63,8 +64,7 @@
                                     :version-id version-id
                                     :entry-id (str short-name "_" version-id)
                                     :entry-title (str "dataset" uniq-num)
-                                    :delete-time nil}
-                     :user-id (str "user" uniq-num)}]
+                                    :delete-time nil}}]
      (update-in (merge collection main-attributes) [:extra-fields] merge extra-fields))))
 
 (defn granule-concept

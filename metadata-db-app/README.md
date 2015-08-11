@@ -47,7 +47,7 @@
   		"native-id": "provider collection id"
      	"concept-id": "C1-PROV1"
      	"provider-id": "PROV1"
-      "user-id": "user101"
+      "user-id": "user101" (Only for colletions)
      	"deleted": true
      	"revision-id": 10
       "extra-fields": {

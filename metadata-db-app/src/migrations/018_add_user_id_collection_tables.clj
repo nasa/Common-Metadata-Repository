@@ -17,8 +17,3 @@
   (println "migrations.018-add-user-id-collection-tables down...")
   (doseq [t (h/get-collection-tablenames)]
     (h/sql (format "alter table %s drop column user_id" t))))
-
-
-
-
-
