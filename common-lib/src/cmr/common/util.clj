@@ -169,6 +169,15 @@
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
 
+(defn remove-blank-keys
+  "Removes keys mapping to nil or blank strings in a map."
+  [m]
+  (apply dissoc m (for [[k v] m
+                        :when (or (nil? v)
+                                  (and (string? v)
+                                       (str/blank? v)))]
+                    k)))
+
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.
   This is a recommended function from the Camel Snake Kebab library."
