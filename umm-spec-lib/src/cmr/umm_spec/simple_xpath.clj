@@ -146,10 +146,41 @@
           [tag-name-selector]))
       (throw (Exception. (str "XPath element was not recognized:" xpath-elem))))))
 
+(defn- join-split-selectors
+  "When we split an XPath by / that inadvertently splits subselectors that contain XPaths. This
+  function searches for subselectors that were split by finding non-closed subselectors and
+  joining them back together."
+  [parts]
+  (loop [new-parts []
+         parts parts
+         joining-parts nil]
+    (if-let [^String next-part (first parts)]
+      (cond
+        joining-parts
+        ;; We're joining together parts of an XPath
+        (if (.contains next-part "]")
+          ;; We've reached the end
+          (recur (conj new-parts (str/join (conj joining-parts next-part)))
+                 (rest parts)
+                 nil)
+          ;; We've found another part to join together
+          (recur new-parts (rest parts) (conj joining-parts next-part)))
+
+        ;; Does an XPath contain an open brace but not a closing brace
+        (and (.contains next-part "[")
+             (not (.contains next-part "]")))
+        ;; Look for the closing brace so we can join it back together
+        (recur new-parts (rest parts) [next-part])
+
+        :else
+        (recur (conj new-parts next-part) (rest parts) joining-parts))
+      (concat new-parts joining-parts))))
+
 (defn- split-xpath->parsed-xpath
   "Takes an XPath split on slashes (/) and returns parsed xpath."
   [parts]
-  (let [[source parts] (if (= "/" (first parts))
+  (let [parts (join-split-selectors parts)
+        [source parts] (if (= "/" (first parts))
                          [:from-root parts]
                          ;; We add an initial / here because an xpath like "books" is inherently
                          ;; within the top element.
@@ -157,6 +188,9 @@
         selectors (u/mapcatv parse-xpath-element parts)]
     {:source source
      :selectors selectors}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; XML processors
 
 (defmulti process-xml-selector
   "Processes an XPath selector against a set of XML elements"
@@ -206,6 +240,9 @@
   (if (seq elements)
     [(nth elements index)]
     []))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Data processors
 
 (defn- as-vector
   "Returns data as a vector if it's not one already"
