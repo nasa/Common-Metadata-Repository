@@ -11,9 +11,11 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.mock-echo.client.echo-util :as e]
             [clj-time.core :as t]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
@@ -38,6 +40,21 @@
       (index/wait-until-indexed)
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
+
+;; Verify that user-id is saved from User-Id or token header
+(deftest collection-ingest-user-id
+  (testing "ingest of a new concept with user-id from token"
+    (let [user1-token (e/login (s/context) "user1")
+          concept (dc/collection-concept {})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token user1-token})]
+      (index/wait-until-indexed)
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))))
+
+  (testing "ingest of a new concept with user-id from header"
+    (let [concept (dc/collection-concept {})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user2"})]
+      (index/wait-until-indexed)
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id revision-id)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test

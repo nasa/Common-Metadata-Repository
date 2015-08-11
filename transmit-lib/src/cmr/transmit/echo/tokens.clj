@@ -3,6 +3,7 @@
   (:require [cmr.transmit.echo.rest :as r]
             [cmr.transmit.echo.conversion :as c]
             [cmr.common.services.errors :as errors]
+            [cmr.common.mime-types :as mt]
             [clojure.string :as s]
             [cheshire.core :as json]))
 
@@ -31,6 +32,23 @@
   "Logs in as a guest and returns the token."
   [context]
   (login context "guest" "guest-password"))
+
+(defn get-user-id
+  "Get the user-id from ECHO for the given token"
+  [context token]
+  (when token
+    (let [[status parsed body] (r/rest-get context (format "/tokens/%s/token_info",
+                                                           token, token)
+                                           {:headers {"Accept" mt/json
+                                                      "Echo-Token" token}})]
+      (case status
+        200 (get-in parsed [:token_info :user_name])
+        401 (errors/throw-service-error
+              :unauthorized
+              (format "Token %s does not exist" token))
+        ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
+        400 (errors/throw-service-error :unauthorized (s/join ", " (:errors (json/decode body true))))
+        (r/unexpected-status-error! status body)))))
 
 (defn get-current-sids
   "Gets the 'security identifiers' for the user as string group guids and :registered and :guest"

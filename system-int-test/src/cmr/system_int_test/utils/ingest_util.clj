@@ -3,6 +3,7 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [clojure.data :as d]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.mime-types :as mt]
@@ -192,11 +193,12 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id]} options
+         {:keys [token client-id user-id]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Echo-Token" token
+                                        "User-Id" user-id
                                         "Client-Id" client-id})
          params {:method :put
                  :url (url/ingest-url provider-id concept-type native-id)
@@ -312,6 +314,36 @@
   ([concepts options]
    (doseq [concept concepts]
      (is (#{404 200} (:status (delete-concept concept options)))))))
+
+(defn get-concept
+  ([concept-id]
+   (get-concept concept-id nil))
+  ([concept-id revision-id]
+   (let [response (client/get (url/mdb-concept-url concept-id revision-id)
+                              {:accept :json
+                               :throw-exceptions false
+                               :connection-manager (s/conn-mgr)})]
+     (is (some #{200 404} [(:status response)]))
+     (when (= (:status response) 200)
+       (-> response
+           :body
+           (json/decode true)
+           (update-in [:concept-type] keyword))))))
+
+(defn concept-in-mdb-has-values?
+  "Check to see if the record in mdb has the same values as the given concept map. Only
+  keys in the concept map are checked - extra keys in the mdb record are ignored."
+  ([concept-map concept-id]
+   (concept-in-mdb-has-values? concept-map concept-id nil))
+  ([concept-map concept-id revision-id]
+   (let [mdb-concept (get-concept concept-id revision-id)]
+     (nil? (first (d/diff concept-map mdb-concept))))))
+
+
+(defn concept-exists-in-mdb?
+  "Check concept in mdb with the given concept and revision-id"
+  [concept-id revision-id]
+  (not (nil? (get-concept concept-id revision-id))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
