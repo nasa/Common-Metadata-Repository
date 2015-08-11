@@ -21,7 +21,9 @@
   version_id VARCHAR(80),
   entry_id VARCHAR(255) NOT NULL,
   entry_title VARCHAR(1030) NOT NULL,
-  delete_time TIMESTAMP WITH TIME ZONE")
+  delete_time TIMESTAMP WITH TIME ZONE,
+  user_id VARCHAR(200)
+  ")
 
 (defmethod collection-column-sql true
   [provider]
@@ -98,6 +100,9 @@
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s (entry_title)"
                                table-name
+                               table-name))
+  (j/db-do-commands db (format "CREATE INDEX %s_uid_i ON %s (user_id)"
+                               table-name
                                table-name)))
 
 (defmethod create-collection-indexes true
@@ -112,5 +117,8 @@
                                table-name
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_p_et_i ON %s (provider_id, entry_title)"
+                               table-name
+                               table-name))
+  (j/db-do-commands db (format "CREATE INDEX %s_uid_i ON %s (user_id)"
                                table-name
                                table-name)))

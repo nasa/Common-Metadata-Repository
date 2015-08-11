@@ -63,7 +63,8 @@
                                     :version-id version-id
                                     :entry-id (str short-name "_" version-id)
                                     :entry-title (str "dataset" uniq-num)
-                                    :delete-time nil}}]
+                                    :delete-time nil}
+                     :user-id (str "user" uniq-num)}]
      (update-in (merge collection main-attributes) [:extra-fields] merge extra-fields))))
 
 (defn granule-concept
