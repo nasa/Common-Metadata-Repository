@@ -99,9 +99,6 @@
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s (entry_title)"
                                table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_uid_i ON %s (user_id)"
-                               table-name
                                table-name)))
 
 (defmethod create-collection-indexes true
@@ -116,8 +113,5 @@
                                table-name
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_p_et_i ON %s (provider_id, entry_title)"
-                               table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_uid_i ON %s (user_id)"
                                table-name
                                table-name)))
