@@ -8,7 +8,7 @@
   "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata")
 
 (def entry-id-xpath
-  "For now, we set the entry-id to short-name"
+  ;; For now, we set the entry-id to short-name
   (xpath (str metadata-base-xpath
               "/gmd:identificationInfo/gmd:MD_DataIdentification"
               "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"

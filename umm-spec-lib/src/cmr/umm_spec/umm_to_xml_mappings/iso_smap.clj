@@ -15,11 +15,6 @@
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
 
-(defn char-string-from
-  "Defines a mapping for a ISO CharacterString element with a value from the given XPath."
-  [xpath-str]
-  [:gco:CharacterString (xpath xpath-str)])
-
 (def umm-c-to-iso-smap-xml
   [:gmd:DS_Series
    iso-smap-xml-namespaces
