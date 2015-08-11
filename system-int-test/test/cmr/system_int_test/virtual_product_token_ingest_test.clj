@@ -14,19 +14,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} true false))
 
-(defn- assert-matching-granule-urs
-  "Asserts that the references found from a search match the expected granule URs."
-  [expected-granule-urs {:keys [refs]}]
-  (is (= (set expected-granule-urs)
-         (set (map :name refs)))))
-
-(defn- ingest-virtual-collections
-  "Ingests the virtual collections for the given set of source collections."
-  [source-collections options]
-  (->> source-collections
-       (mapcat vp/source-collection->virtual-collections)
-       (mapv #(d/ingest (:provider-id %) % options))))
-
 (deftest ingest-with-system-token-test
   (e/grant-group-provider-admin (s/context) "prov-admin-update-group-guid" "LPDAAC_ECS_guid" :update)
   ;; Grant ingest permission on LPDAAC_ECS to the group to which mock echo system token belongs
@@ -42,7 +29,7 @@
                            :short-name "AST_L1A"})
                         :provider-id "LPDAAC_ECS")]
                      {:token provider-admin-update-token})
-        vp-colls (ingest-virtual-collections [ast-coll] {:token provider-admin-update-token})
+        vp-colls (vp/ingest-virtual-collections [ast-coll] {:token provider-admin-update-token})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                     (dg/granule ast-coll {:granule-ur granule-ur})
@@ -50,7 +37,7 @@
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
-    (assert-matching-granule-urs
+    (vp/assert-matching-granule-urs
       all-expected-granule-urs
       (search/find-refs :granule {:page-size 50}))))
 

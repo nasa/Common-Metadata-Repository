@@ -2,7 +2,9 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.url-helper :as url]
+            [cmr.system-int-test.utils.search-util :as search]
             [cmr.virtual-product.config :as vp-config]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
@@ -122,3 +124,83 @@
   [provider-id concept & options]
   (d/ingest provider-id (add-granule-attributes provider-id concept) (apply hash-map options)))
 
+
+(defn ingest-ast-coll
+  "Ingests the AST_L1A collection commonly used in virtual product tests."
+  []
+  (first
+   (ingest-source-collections
+    [(assoc
+      (dc/collection
+       {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+        :short-name "AST_L1A"})
+      :provider-id "LPDAAC_ECS")])))
+
+;;; Functions for use in assertions
+
+(defn assert-matching-granule-urs
+  "Asserts that the references found from a search match the expected granule URs."
+  [expected-granule-urs search-results]
+  (is (= (set expected-granule-urs)
+         (set (map :name (:refs search-results))))))
+
+(defn assert-psa-granules-match
+  "A large assertion used to test the behavior of both the virtual
+  product service and virtual product bootstrapping logic. f is a
+  function that will be called after indexing each source granule."
+  [f]
+  (let [ast-coll (ingest-ast-coll)
+        psa1 (dg/psa "TIR_ObservationMode" ["ON"])
+        psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
+        psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
+        psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
+    (ingest-virtual-collections [ast-coll])
+    (are [granule-attrs expected-granule-urs]
+        (let [params {"attribute[]" (format "string,%s,%s"
+                                            vp-config/source-granule-ur-additional-attr-name
+                                            (:granule-ur granule-attrs))
+                      :page-size 20}]
+          (d/ingest "LPDAAC_ECS" (dg/granule ast-coll granule-attrs))
+          (f)
+          (assert-matching-granule-urs expected-granule-urs
+                                       (search/find-refs :granule params)))
+
+      {:granule-ur "SC:AST_L1A.003:2006227720"
+       :product-specific-attributes [psa4]}
+      []
+
+      {:granule-ur "SC:AST_L1A.003:2006227721"
+       :product-specific-attributes [psa1]}
+      ["SC:AST_05.003:2006227721" "SC:AST_08.003:2006227721" "SC:AST_09T.003:2006227721"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227722"
+       :product-specific-attributes [psa1 psa2 psa3 psa4]}
+      ["SC:AST_05.003:2006227722" "SC:AST_08.003:2006227722" "SC:AST_09T.003:2006227722"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227724"
+       :product-specific-attributes [psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST14DEM.003:2006227724" "SC:AST14OTH.003:2006227724" "SC:AST14DMO.003:2006227724"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227725"
+       :product-specific-attributes [psa2 psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST14DMO.003:2006227725" "SC:AST_09.003:2006227725"
+       "SC:AST_09XT.003:2006227725" "SC:AST14DEM.003:2006227725"
+       "SC:AST_07.003:2006227725"   "SC:AST14OTH.003:2006227725"
+       "SC:AST_07XT.003:2006227725"]
+
+      {:granule-ur "SC:AST_L1A.003:2006227726"
+       :product-specific-attributes [psa1 psa2 psa3 psa4]
+       :data-granule (umm-g/map->DataGranule
+                      {:day-night "DAY"
+                       :production-date-time "2014-09-26T11:11:00Z"})}
+      ["SC:AST_09XT.003:2006227726" "SC:AST14DEM.003:2006227726"
+       "SC:AST_08.003:2006227726"   "SC:AST_05.003:2006227726"
+       "SC:AST14OTH.003:2006227726" "SC:AST_07.003:2006227726"
+       "SC:AST_09.003:2006227726"   "SC:AST_09T.003:2006227726"
+       "SC:AST_07XT.003:2006227726" "SC:AST14DMO.003:2006227726"])))
