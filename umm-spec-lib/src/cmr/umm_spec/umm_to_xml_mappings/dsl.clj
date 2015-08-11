@@ -43,5 +43,9 @@
    :xpath xpath
    :template template})
 
+(defn char-string-from
+  "Defines a mapping for a ISO CharacterString element with a value from the given XPath."
+  [xpath-str]
+  [:gco:CharacterString (xpath xpath-str)])
 
 

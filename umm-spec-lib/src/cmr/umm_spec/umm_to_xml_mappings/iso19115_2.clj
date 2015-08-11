@@ -18,11 +18,6 @@
    :xmlns:swe "http://schemas.opengis.net/sweCommon/2.0/"
    :xmlns:gsr "http://www.isotc211.org/2005/gsr"})
 
-(defn char-string-from
-  "Defines a mapping for a ISO CharacterString element with a value from the given XPath."
-  [xpath-str]
-  [:gco:CharacterString (xpath xpath-str)])
-
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
    iso19115-2-xml-namespaces
