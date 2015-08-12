@@ -8,13 +8,11 @@
             [cmr.common.mime-types :as mt]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
-
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
     {:EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
      :EntryTitle "The entry title V5"}))
-
 
 (def valid-formats
   [:umm-json
@@ -23,6 +21,12 @@
    :dif
    :dif10
    :echo10])
+
+(defn assert-translate-failure
+  [error-regex & args]
+  (let [{:keys [status body]} (apply ingest/translate-metadata args)]
+    (is (= 400 status))
+    (is (re-find error-regex body))))
 
 (deftest translate-metadata
   (doseq [input-format valid-formats
@@ -36,4 +40,25 @@
             content-type (:content-type headers)]
             (is (= 200 status))
             (is (= (mt/format->mime-type output-format) content-type))
-            (is (= expected (umm-spec/parse-metadata :collection output-format body)))))))
+            (is (= expected (umm-spec/parse-metadata :collection output-format body))))))
+
+  (testing "Failure cases"
+    (testing "unsupported input format"
+      (assert-translate-failure
+        #"The mime types specified in the content-type header \[application/xml\] are not supported"
+        :collection :xml "notread" :umm-json))
+
+    (testing "not specified input format"
+      (assert-translate-failure
+       #"The mime types specified in the content-type header \[\] are not supported"
+        :collection nil "notread" :umm-json))
+
+    (testing "unsupported output format"
+      (assert-translate-failure
+        #"The mime types specified in the accept header \[application/xml\] are not supported"
+        :collection :echo10 "notread" :xml))
+
+    (testing "not specified output format"
+      (assert-translate-failure
+       #"The mime types specified in the accept header \[\] are not supported"
+        :collection :echo10 "notread" nil))))
