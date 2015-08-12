@@ -67,7 +67,7 @@
      :body (json/generate-string concepts)
      :headers rh/json-header}))
 
-(defn- save-concept
+(defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
   (let [concept (-> concept
@@ -83,7 +83,7 @@
   [context params concept-id revision-id]
   (let [{:keys [revision-id]} (concept-service/delete-concept
                                 context concept-id (as-int revision-id) (:revision-date params))]
-    {:status 200
+    {:status 201
      :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))
 
@@ -128,7 +128,7 @@
 
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
-        (save-concept request-context params body))
+        (save-concept-revision request-context params body))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                            request-context :request-context}
