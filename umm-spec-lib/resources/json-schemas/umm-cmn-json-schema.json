@@ -65,7 +65,7 @@
       },
       "required": ["Date", "Type", "Responsibility"]
     },
-    "DatesType": {
+    "DateType": {
       "type": "object",
       "description": "Specifies the date and its type.",
       "properties": {
@@ -82,21 +82,10 @@
       "required": ["Date", "Type"]
     },
     "EntryIdType": {
-      "type": "object",
-      "properties": {
-        "Version": {
-          "description": "The version of the unique identifier.",
-          "$ref": "#/definitions/VersionType"
-        },
-        "Id": {
-          "$ref": "#/definitions/IdType"
-        },
-        "Authority": {
-          "description": "The Authority (who created it or owns it) of the unique identifier.",
-          "$ref": "#/definitions/AuthorityType"
-        }
-      },
-      "required": ["Id"]
+      "description":"This is the ID of the metadata record.  It is only unique when combined with the version.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
     },
     "ResponsibilityType": {
       "type": "object",
@@ -463,7 +452,7 @@
           "$ref": "#/definitions/MetadataAssociateTypeEnum"
         },
         "Description": {
-          "description": "The ProviderName of the metadata record that is associated with this record.",
+          "description": "The description of the association.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
@@ -472,9 +461,15 @@
           "description": "ID of the metadata record that is associated with this record.",
           "$ref": "#/definitions/EntryIdType"
         },
+        "Version": {
+          "description": "The version of the metadata record that is associated with this record.",
+          "$ref": "#/definitions/Version"
+        },
         "ProviderId": {
           "description": "The ProviderName of the metadata record that is associated with this record.",
-          "$ref": "#/definitions/ProviderIdEnum"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
         }
       },
       "required": ["EntryId", "ProviderId"]
@@ -1243,7 +1238,7 @@
       "minLength": 1
     },
     "VersionType": {
-      "description": "The version of the unique identifier.",
+      "description": "The version of the metadata record.",
       "type": "string",
       "minLength": 1,
       "maxLength": 80
@@ -1303,11 +1298,6 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 12000
-    },
-    "ProviderIdEnum": {
-      "description": "The name of supported lineage date types",
-      "type": "string",
-      "enum": ["ASF", "CDDIS", "ORNL_DAAC", "GHRC", "GSFCS4PA", "LAADS", "LANCEAMSR2", "LANCEMODIS", "LARC", "LARC_ASDC", "LPDAAC_ECS", "NSIDC_ECS", "NSIDCV0", "OBPG", "OMINRT", "PODAAC", "SEDAC", "USGS_EROS"]
     },
     "MetadataAssociateTypeEnum": {
       "description": "The name of supported lineage date types",

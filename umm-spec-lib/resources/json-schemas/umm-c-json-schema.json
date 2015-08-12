@@ -251,15 +251,19 @@
       "description": "The language used in the metadata record.",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
-    "MetadataStandard": {
-      "description": "This element describes the metadata standard name and version as received by the CMR.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/MetadataStandardType"
-    },
     "MetadataLineage": {
-      "description": "This includes any metadata related dates. All metadata dates will have a Lineage/Scope of ‘metadata’.",
+      "description": "Lineage is historical data and includes how data was processed.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+      },
+      "minItems": 0
+    },
+    "MetadataDate": {
+      "description": "This includes any metadata related dates.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/DataDateType"
       },
       "minItems": 0
     },
@@ -287,11 +291,11 @@
       "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
-    "DataLineage": {
-      "description": "This includes any data related dates. All of these dates will have a Lineage/Scope of ‘data’.",
+    "DataDate": {
+      "description": "This includes any data related dates. create,delete, and update.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/DataDateType"
       },
       "minItems": 1
     },
@@ -483,5 +487,5 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryIdType"
     }
   },
-  "required": ["MetadataStandard", "EntryId", "EntryTitle", "Abstract", "DataLineage", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]
+  "required": ["EntryId", "EntryTitle", "Abstract", "DataDate", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]
 }
