@@ -9,11 +9,6 @@
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
-(def leaf-node-field-name
-  "A map of the concept-scheme to the field name within that concept-scheme that identifies an
-  entry as a leaf node."
-  {:providers :short-name})
-
 (defn- parse-single-csv-line
   "Parses a single CSV line into an array of values. An example line:
 
@@ -26,34 +21,45 @@
       (str/replace (re-pattern "\"$") "")
       (str/split (re-pattern field-separator))))
 
+(defn- log-warning-for-invalid-entries
+  "Checks the entries for any duplicate short names. Short names should be unique otherwise we
+  do not know how to correctly map from short name to the full hierarchy. We log a warning, and
+  choose one of the hierarchies at random."
+  [keyword-entries]
+  (let [duplicates (for [v (vals (group-by keyword (map :short-name keyword-entries)))
+                         :when (> (count v) 1)]
+                     (first v))]
+    (doseq [short-name duplicates :when short-name]
+      (doseq [entry keyword-entries :when (= short-name (:short-name entry))]
+        (warn (format "Found duplicate controlled vocabulary for short-name [%s]: %s"
+                      short-name
+                      entry))))))
+
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
   specific format with the first line providing metadata information, the second line providing
   a breakdown of the subfields within the hierarchy, and from the third line on are the actual
   values.
 
-  Returns an array of maps containing the subfield names as keys for each of the values."
+  Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
+  value. andmaps containing the subfield names as keys for each of the values."
   [concept-scheme csv-content]
   (let [all-lines (str/split-lines csv-content)
         ;; Line 2 contains the names of the subfield names
         subfield-names (map csk/->kebab-case-keyword (parse-single-csv-line (second all-lines) ","))
-        keyword-values (map util/remove-blank-keys
-                            (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
-                            ;; Lines 3 to the end are the values
-                            (rest (rest all-lines))))]
+        keyword-entries (map util/remove-blank-keys
+                             (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
+                                  ;; Lines 3 to the end are the values
+                                  (rest (rest all-lines))))]
 
-    ;; Filter out any values that are not leaf nodes
-    (filter (leaf-node-field-name concept-scheme) keyword-values)))
+    (log-warning-for-invalid-entries keyword-entries)
 
-(comment
-  (take 10 (get-provider-hierarchy {:system (cmr.search.system/create-system)}))
-  (count (set (map :short-name (get-provider-hierarchy {:system (cmr.search.system/create-system)}))))
-  (count (map :short-name (get-provider-hierarchy {:system (cmr.search.system/create-system)})))
-  ;; Look for any duplicate providers
-  (for [v (vals (group-by keyword (map :short-name (get-provider-hierarchy
-                                                     {:system (cmr.search.system/create-system)}))))
-        :when (> (count v) 1)]
-    v))
+    ;; Create a map with the short-names as keys to the full hierarchy for that short-name
+    (into {}
+          (for [entry keyword-entries
+                :let [{:keys [short-name]} entry]
+                :when short-name]
+            [short-name entry]))))
 
 (defn- get-by-concept-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
@@ -78,9 +84,16 @@
 
 ;; Public API
 
-(defn get-provider-hierarchy
-  "Returns the provider hierarchy"
-  [context]
-  ; (parse-entries-from-csv :providers (:body (get-by-concept-scheme context :providers))))
-  (parse-entries-from-csv :providers (slurp (clojure.java.io/resource "provider_kms.csv"))))
+(defn get-keywords-for-concept-scheme
+  "Returns the full list of keywords from the GCMD Keyword Management System (KMS) for the given
+  concept scheme. Supported concept schemes include providers, platforms, and instruments."
+  [context concept-scheme]
+  (let [keywords (parse-entries-from-csv concept-scheme
+                                         (:body (get-by-concept-scheme context concept-scheme)))]
+    (debug (format "Found %s keywords for %s" (count (keys keywords)) (name concept-scheme)))
+    keywords))
+  ; (parse-entries-from-csv :providers (slurp (clojure.java.io/resource "provider_kms.csv"))))
 
+(comment
+  (take 3 (get-keywords-for-concept-scheme {:system (cmr.search.system/create-system)} :providers))
+  )
