@@ -2,15 +2,22 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
-            [cmr.umm-spec.xml-mappings.xml-generator :as xg]
-            [cmr.umm-spec.xml-mappings.iso19115-2 :as xm-iso2]
-            [cmr.umm-spec.xml-mappings.echo10 :as xm-echo10]
-            [cmr.umm-spec.umm-mappings.iso19115-2 :as um-iso2]
-            [cmr.umm-spec.umm-mappings.echo10 :as um-echo10]
-            [cmr.umm-spec.umm-mappings.parser :as xp]
+            [cmr.umm-spec.umm-to-xml-mappings.xml-generator :as xg]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as xm-echo10]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10 :as um-echo10]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as xm-iso2]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as um-iso2]
+            [cmr.umm-spec.umm-to-xml-mappings.dif9 :as xm-dif9]
+            [cmr.umm-spec.xml-to-umm-mappings.dif9 :as um-dif9]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as xm-dif10]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10 :as um-dif10]
+            [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as xm-smap]
+            [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as um-smap]
+            [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
+            [clojure.java.io :as io]
             [clj-time.core :as t]
             [cmr.common.util :as u :refer [are2]]))
 
@@ -51,8 +58,9 @@
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
-    {:EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     :EntryTitle "The entry title V5"}))
+    {:EntryTitle "The entry title V5"
+     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
+     }))
 
 (defn expected-echo10
   "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
@@ -73,6 +81,15 @@
         "echo10"
         xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
 
+        "dif9"
+        xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c identity
+
+        "dif10"
+        xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c identity
+
+        "iso-smap"
+        xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c identity
+
         "ISO19115-2"
         xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity)
 
@@ -81,5 +98,4 @@
     (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
           parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)]
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
-
 

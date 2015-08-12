@@ -126,7 +126,7 @@
     (create-elem-val-equality-selector selector-str)
 
     :else
-    (throw (Exception. (str "Unrecognized selector string form in xpath:" selector-str)))))
+    (throw (Exception. (str "Unrecognized selector string form in xpath: " selector-str)))))
 
 (defn- parse-xpath-element
   "Parses an element of an XPath and returns a set of selectors from that element."
@@ -144,7 +144,7 @@
         (if element-selector-str
           [tag-name-selector (parse-element-sub-selector element-selector-str)]
           [tag-name-selector]))
-      (throw (Exception. (str "XPath element was not recognized:" xpath-elem))))))
+      (throw (Exception. (str "XPath element was not recognized: " xpath-elem))))))
 
 (defn- join-split-selectors
   "When we split an XPath by / that inadvertently splits subselectors that contain XPaths. This

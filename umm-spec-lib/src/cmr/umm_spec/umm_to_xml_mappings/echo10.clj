@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.xml-mappings.echo10
+(ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.umm-spec.xml-mappings.dsl :refer :all]))
+  (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
 (def umm-c-to-echo10-xml
   [:Collection
