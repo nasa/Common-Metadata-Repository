@@ -61,6 +61,16 @@
     (testing "not specified output format"
       (assert-translate-failure
        #"The mime types specified in the accept header \[\] are not supported"
-        :collection :echo10 "notread" nil))))
+        :collection :echo10 "notread" nil))
+
+    (testing "invalid metadata"
+      (assert-translate-failure
+        #"something"
+        :collection :echo10 "this is not good XML" :umm-json)
+
+      )
+
+
+    ))
 
 

@@ -24,14 +24,19 @@
         output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)
         output-format (mt/mime-type->format output-mime-type)
         input-mime-type (mt/extract-header-mime-type supported-formats headers "content-type" true)
-        input-format (mt/mime-type->format input-mime-type)
-        umm (umm-spec/parse-metadata concept-type input-format body)
-        output-str (umm-spec/generate-metadata concept-type output-format umm)]
-    ;; TODO validate input data against XML schema or JSON schema
-    ;; I'll do this as another pull request
-    {:status 200
-     :body output-str
-     :headers {"Content-Type" output-mime-type}}))
+        input-format (mt/mime-type->format input-mime-type)]
+
+    ;; Validate the input data
+    (if-let [errors (seq (umm-spec/validate-metadata concept-type input-format body))]
+      (errors/throw-service-errors :bad-request errors)
+
+      (let [umm (umm-spec/parse-metadata concept-type input-format body)
+            output-str (umm-spec/generate-metadata concept-type output-format umm)]
+        ;; TODO validate input data against XML schema or JSON schema
+        ;; I'll do this as another pull request
+        {:status 200
+         :body output-str
+         :headers {"Content-Type" output-mime-type}}))))
 
 (def translation-routes
   (context "/translate" []

@@ -1,5 +1,7 @@
 (ns cmr.umm-spec.core
   (:require [cmr.umm-spec.json-schema :as js]
+            [clojure.java.io :as io]
+            [cmr.common.xml :as cx]
 
             ;; XML -> UMM
             [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
@@ -21,6 +23,30 @@
             [cmr.umm-spec.umm-json :as umm-json]
 
             ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validate Metadata
+
+;;TODO copied from Leo's pull request. Needs to be merged.
+
+(def concept-type+metadata-format->schema
+  {[:collection :echo10] (io/resource "xml-schemas/echo10/Collection.xsd")
+   [:collection :dif9] (io/resource "xml-schemas/dif9/dif_v9.9.3.xsd")
+   [:collection :dif10] (io/resource "xml-schemas/dif10/dif_v10.1.xsd")
+   [:collection :iso19115] (io/resource "xml-schemas/iso19115_2/schema/1.0/ISO19115-2_EOS.xsd")
+   [:collection :iso-smap] (io/resource "xml-schemas/iso_smap/schema.xsd")})
+
+(defn validate-xml
+  "Validates the XML against the schema for the given format."
+  [concept-type metadata-format xml]
+  (cx/validate-xml (concept-type+metadata-format->schema [concept-type metadata-format]) xml))
+
+(defn validate-metadata
+  "TODO"
+  [concept-type metadata-standard metadata]
+  (if (= metadata-standard :umm-json)
+    (js/validate-umm-json metadata)
+    (validate-xml concept-type metadata-standard metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parse Metadata
