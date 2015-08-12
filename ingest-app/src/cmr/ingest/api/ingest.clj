@@ -257,12 +257,11 @@
                                    :native-id native-id
                                    :concept-type :collection}
                                   headers)]
-            (println "concept-attribs:" (pr-str concept-attribs))
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting collection %s from client %s"
                           (pr-str concept-attribs) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-collection request-context concept-attribs)))))
+            (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
 
       (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
         (POST "/" {:keys [params headers request-context] :as request}
@@ -279,10 +278,11 @@
                           (concept->loggable-string concept) (:client-id request-context)))
             (generate-ingest-response headers (ingest/save-granule request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :granule
-                                 :revision-id (get headers "cmr-revision-id")}]
+          (let [concept-attribs (set-revision-id
+                                  {:provider-id provider-id
+                                   :native-id native-id
+                                   :concept-type :granule}
+                                  headers)]
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting granule %s from client %s"
