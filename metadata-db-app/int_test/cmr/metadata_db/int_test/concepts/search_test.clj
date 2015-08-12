@@ -170,7 +170,7 @@
             "small provider - short-name, version-id"
             [coll4-3] {:short-name "s4" :version-id "v5" :latest true}
 
-            ;; TODO - this should change when the "find latest" logic is updated in CMR-1416.
+            ;; TODO - this should change when the "find latest" logic is updated in CMR-1831
             "small provider - match multiple - version-id"
             [coll3 coll4-1] {:version-id "v3" :latest true}
 
