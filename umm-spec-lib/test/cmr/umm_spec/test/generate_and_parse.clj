@@ -46,8 +46,7 @@
                                                    :DurationUnit "YEAR"
                                                    :DurationValue 4
                                                    :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}])
-                         })]}))
+                                                   :PeriodCycleDurationValue 3}])})]}))
 
 (def example-record
   "This contains an example record with fields supported by all formats"
@@ -75,8 +74,7 @@
         xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
 
         "ISO19115-2"
-        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity
-        )
+        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity)
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"

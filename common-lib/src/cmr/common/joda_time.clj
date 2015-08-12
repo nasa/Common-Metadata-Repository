@@ -1,7 +1,19 @@
 (ns cmr.common.joda-time
-  "Implements the clojure multimethod print-dup for Joda Time. This allows instances of the Joda
+  "Adds some features for Joda Times to make them easier to work with.
+  - Adds ability to convert Joda Times to JSON.
+
+  - Implements the clojure multimethod print-dup for Joda Time. This allows instances of the Joda
   time classes to be written and parsed from strings. This feature can be made available simply by
-  requiring this namespace.")
+  requiring this namespace."
+  (:require [cheshire.generate :as json-gen]))
+
+
+;; Adds the ability for Joda DateTimes to be converted to JSON.
+(json-gen/add-encoder
+  org.joda.time.DateTime
+  (fn [c jsonGenerator]
+    (.writeString jsonGenerator (str c))))
+
 
 ;; Based on code from
 ;; https://github.com/michaelklishin/monger/blob/master/src/clojure/monger/joda_time.clj
