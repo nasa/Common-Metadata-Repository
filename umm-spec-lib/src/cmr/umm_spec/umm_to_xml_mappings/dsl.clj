@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-mappings.dsl
+(ns cmr.umm-spec.umm-to-xml-mappings.dsl
   "Defines a DSL for generating XML from a source Clojure record.
 
   The DSL is used to specify content generators. Content generators generate parts of XML which could
@@ -43,5 +43,9 @@
    :xpath xpath
    :template template})
 
+(defn char-string-from
+  "Defines a mapping for a ISO CharacterString element with a value from the given XPath."
+  [xpath-str]
+  [:gco:CharacterString (xpath xpath-str)])
 
 

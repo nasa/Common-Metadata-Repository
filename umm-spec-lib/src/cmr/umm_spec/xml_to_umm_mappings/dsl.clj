@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.umm-mappings.dsl
+(ns cmr.umm-spec.xml-to-umm-mappings.dsl
   "Describes a DSL for specifying mappings from an XML format into UMM records.
 
   The UMM record structure is described by the JSON schema. The DSL is responsible for specifying

@@ -1,7 +1,7 @@
-(ns cmr.umm-spec.umm-mappings.echo10
+(ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.umm-spec.umm-mappings.dsl :refer :all]
-            [cmr.umm-spec.umm-mappings.add-parse-type :as apt]
+  (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
             [cmr.umm-spec.json-schema :as js]))
 
 
