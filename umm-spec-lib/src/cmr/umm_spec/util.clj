@@ -15,7 +15,7 @@
 
 (def metadata-format->schema
   {:echo10 "xml-schemas/echo10/Collection.xsd"
-   :dif9 "xml-schemas/dif9/dif_v9.9.3.xsd"
+   :dif "xml-schemas/dif9/dif_v9.9.3.xsd"
    :dif10 "xml-schemas/dif10/dif_v10.1.xsd"
    :iso19115 "xml-schemas/iso19115_2/schema/1.0/ISO19115-2_EOS.xsd"
    :iso-smap "xml-schemas/iso_smap/schema.xsd"})
