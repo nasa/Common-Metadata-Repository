@@ -42,19 +42,41 @@
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
 ;; Verify that user-id is saved from User-Id or token header
-(deftest collection-ingest-user-id
+(deftest collection-ingest-user-id-test
   (testing "ingest of a new concept with user-id from token"
     (let [user1-token (e/login (s/context) "user1")
           concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token user1-token})]
       (index/wait-until-indexed)
       (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))))
-
   (testing "ingest of a new concept with user-id from header"
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user2"})]
       (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id revision-id)))))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id revision-id))))
+  (testing "ingest of a new concept with no user-id or token in the header"
+    (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dc/collection-concept {}))]
+      (index/wait-until-indexed)
+      (is (ingest/concept-in-mdb-has-values? {:user-id nil} concept-id revision-id))))
+  (testing "update of a concept with a new user-id from token"
+    (let [user1-token (e/login (s/context) "user1")
+          user2-token (e/login (s/context) "user2")
+          user3-token (e/login (s/context) "user3")
+          concept (dc/collection-concept {})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token user1-token})
+          _ (ingest/ingest-concept concept {:token user2-token})
+          _ (ingest/delete-concept concept {:token user3-token})]
+      (index/wait-until-indexed)
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id)))
+      #_(is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id))))))
+  (testing "update of a concept with a new user-id from header"
+    (let [concept (dc/collection-concept {})
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user1"})
+          _ (ingest/ingest-concept concept {:user-id "user2"})]
+      (index/wait-until-indexed)
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id))))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
