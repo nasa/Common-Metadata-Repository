@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.bootstrap.virtual-product-bootstrap-test
+(ns cmr.system-int-test.bootstrap.virtual-products-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
