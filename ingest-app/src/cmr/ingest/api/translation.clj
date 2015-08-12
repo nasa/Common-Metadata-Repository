@@ -5,20 +5,22 @@
             [cmr.umm-spec.core :as umm-spec]
             [cmr.common.services.errors :as errors]))
 
-(def supported-formats
-  "The list of formats that are supported both for input and output of translation."
-  #{mt/echo10
-    mt/umm-json
-    mt/iso19115
-    mt/dif
-    mt/dif10
-    mt/iso-smap})
+(def concept-type->supported-formats
+  "A map of concept type to the list of formats that are supported both for input and output of
+  translation."
+  {:collection #{mt/echo10
+                 mt/umm-json
+                 mt/iso19115
+                 mt/dif
+                 mt/dif10
+                 mt/iso-smap}})
 
 (defn translate
   "Fulfills the translate request using the body, content type header, and accept header. Returns
   a ring response with translated metadata."
   [context concept-type headers body-input]
   (let [body (slurp body-input)
+        supported-formats (concept-type->supported-formats concept-type)
         output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)
         output-format (mt/mime-type->format output-mime-type)
         input-mime-type (mt/extract-header-mime-type supported-formats headers "content-type" true)

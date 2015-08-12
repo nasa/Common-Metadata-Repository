@@ -23,7 +23,7 @@
             ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Parsee Metadata
+;; Parse Metadata
 
 (defmulti parse-metadata
   "Parses metadata of the specific concept type and format into UMM records"
