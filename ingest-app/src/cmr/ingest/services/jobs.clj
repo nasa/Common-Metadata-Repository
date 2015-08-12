@@ -80,7 +80,8 @@
     (when-let [concept-ids (mdb/get-expired-collection-concept-ids context provider-id)]
       (info "Removing expired collections:" (pr-str concept-ids))
       (doseq [concept-id concept-ids]
-        (let [revision-id (mdb/delete-concept context concept-id)]
+        (let [concept {:concept-id concept-id :deleted true}
+              {:keys [revision-id]} (mdb/save-concept context concept)]
           (ingest-events/publish-event
             context (ingest-events/concept-delete-event concept-id revision-id)))))))
 

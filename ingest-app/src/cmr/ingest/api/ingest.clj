@@ -252,10 +252,11 @@
                           (concept->loggable-string concept) (:client-id request-context)))
             (generate-ingest-response headers (ingest/save-collection request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :collection
-                                 :revision-id (get headers "cmr-revision-id")}]
+          (let [concept-attribs (set-revision-id
+                                  {:provider-id provider-id
+                                   :native-id native-id
+                                   :concept-type :collection}
+                                  headers)]
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting collection %s from client %s"

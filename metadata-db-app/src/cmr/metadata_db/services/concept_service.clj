@@ -308,19 +308,6 @@
         provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
-(deftracefn save-concept
-  "Store a concept record and return the revision."
-  [context concept]
-  (cv/validate-concept concept)
-  (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
-        concept (set-or-generate-concept-id db provider concept)]
-    (validate-concept-revision-id db provider concept)
-    (let [concept (->> concept
-                       (set-or-generate-revision-id db provider)
-                       (set-deleted-flag false))]
-      (try-to-save db provider concept))))
-
 (deftracefn delete-concept
   "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
   [context concept-id revision-id revision-date]
@@ -351,6 +338,23 @@
         ((cmsg/data-error :not-found
                           msg/concept-does-not-exist
                           concept-id))))))
+
+(deftracefn save-concept
+  "Store a concept record and return the revision."
+  [context concept]
+  (if (:deleted concept)
+    (let [{:keys [concept-id revision-id revision-date]} concept]
+      (delete-concept context concept-id revision-id revision-date))
+    (do
+      (cv/validate-concept concept)
+      (let [db (util/context->db context)
+            provider (provider-service/get-provider-by-id context (:provider-id concept) true)
+            concept (set-or-generate-concept-id db provider concept)]
+        (validate-concept-revision-id db provider concept)
+        (let [concept (->> concept
+                           (set-or-generate-revision-id db provider)
+                           (set-deleted-flag false))]
+          (try-to-save db provider concept))))))
 
 (deftracefn force-delete
   "Remove a revision of a concept from the database completely."
