@@ -4,7 +4,9 @@
             [compojure.core :refer :all]
             [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
-            [cmr.ingest.services.provider-service :as ps]))
+            [cheshire.core :as json]
+            [cmr.ingest.services.provider-service :as ps]
+            [cmr.common.services.errors :as errors]))
 
 (defn- result->response-map
   "Returns the response map of the given result"
@@ -14,25 +16,30 @@
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body body}))
 
+(defn read-body
+  [headers body-input]
+  (if (= mt/json (mt/content-type-mime-type headers))
+    (json/decode (slurp body-input) true)
+    (errors/throw-service-error
+      :bad-request "Creating or updating a provider requires a JSON content type.")))
+
 (def provider-api-routes
   (context "/providers" []
+
     ;; create a new provider
     (POST "/" {:keys [request-context body params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (result->response-map
-        (ps/create-provider request-context {:provider-id (get body "provider-id")
-                                             :short-name (get body "short-name")
-                                             :cmr-only (get body "cmr-only")
-                                             :small (get body "small")})))
+        (ps/create-provider request-context (read-body headers body))))
 
     ;; update an existing provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
                           request-context :request-context
-                          provider :body
+                          body :body
                           headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
       (result->response-map
-        (ps/update-provider request-context (walk/keywordize-keys provider))))
+        (ps/update-provider request-context (read-body headers body))))
 
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params

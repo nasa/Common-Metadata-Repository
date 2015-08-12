@@ -14,6 +14,7 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as xm-smap]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as um-smap]
             [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
@@ -62,40 +63,33 @@
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
      }))
 
-(defn expected-echo10
-  "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
-  [expected]
-  ;; ECHO10 returns entry id as a combination of short name and version. It generates short name
-  ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
-  ;; entry id concatenated with the version id.
-  (update-in expected [:EntryId :Id] #(str % "_"
-                                           ;; TODO put version here once it's added to UMM.
-                                           )))
 
 (deftest roundtrip-gen-parse
-  (are2 [to-xml to-umm expected-manip-fn]
+  (are2 [metadata-format to-xml to-umm]
         (let [xml (xg/generate-xml to-xml example-record)
               parsed (xp/parse-xml to-umm xml)
+              expected-manip-fn (expected-conversion/metadata-format->expected-conversion metadata-format)
               expected (expected-manip-fn example-record)]
           (is (= expected parsed)))
         "echo10"
-        xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
+        :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c
 
         "dif9"
-        xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c identity
+        :dif xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c
 
         "dif10"
-        xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c identity
+        :dif10 xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c
 
         "iso-smap"
-        xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c identity
+        :iso-smap xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c
 
         "ISO19115-2"
-        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity)
+        :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c)
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
     (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
-          parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)]
-      (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
+          parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)
+          expected-manip-fn (expected-conversion/metadata-format->expected-conversion :echo10)]
+      (is (= (expected-manip-fn example-record-echo10-supported) parsed)))))
 
