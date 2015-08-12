@@ -104,10 +104,8 @@
 ;; This is the reason why the above validate-xml function is refactored as it is.
 ;; Remove these comments and uncomment out the function when validate-umm-json function is implemented.
 #_(defn validate-metadata
-  "Validate the given metadata for the given concept type and metadata format."
-  [concept-type metadata-standard metadata]
-  (if (= metadata-standard :umm-json)
-    (js/validate-umm-json metadata)
-    (validate-xml concept-type metadata-standard metadata)))
-
-
+    "Validate the given metadata for the given concept type and metadata format."
+    [concept-type metadata-standard metadata]
+    (if (= metadata-standard :umm-json)
+      (js/validate-umm-json metadata)
+      (validate-xml concept-type metadata-standard metadata)))
