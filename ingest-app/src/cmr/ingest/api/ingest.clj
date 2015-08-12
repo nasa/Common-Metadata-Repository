@@ -1,5 +1,5 @@
 (ns cmr.ingest.api.ingest
-  "Defines the HTTP URL routes for the validating and ingesting concepts."
+  "Defines the HTTP URL routes for validating and ingesting concepts."
   (:require [compojure.core :refer :all]
             [clojure.string :as str]
             [clojure.data.xml :as x]
