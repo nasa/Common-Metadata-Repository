@@ -18,8 +18,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as u]
-            [clojure.java.io :as io]
+            [cmr.umm-spec.core :as c]
             [clj-time.core :as t]
             [cmr.common.util :refer [are2]]))
 
@@ -62,14 +61,13 @@
   (umm-c/map->UMM-C
     {:EntryTitle "The entry title V5"
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     :Abstract "Abstract description"
-     }))
+     :Abstract "Abstract description"}))
 
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format to-xml to-umm]
         (let [xml (xg/generate-xml to-xml example-record)
-              validation-errors (u/validate-xml metadata-format xml)
+              validation-errors (c/validate-xml :collection metadata-format xml)
               parsed (xp/parse-xml to-umm xml)
               expected-manip-fn (expected-conversion/metadata-format->expected-conversion metadata-format)
               expected (expected-manip-fn example-record)]
@@ -96,32 +94,3 @@
           parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)
           expected-manip-fn (expected-conversion/metadata-format->expected-conversion :echo10)]
       (is (= (expected-manip-fn example-record-echo10-supported) parsed)))))
-
-
-(comment
-
-  (let [xml (xg/generate-xml xm-dif9/umm-c-to-dif9-xml example-record)]
-    (u/validate-xml :dif9 xml))
-
-   (let [xml (xg/generate-xml xm-dif10/umm-c-to-dif10-xml example-record)]
-    (u/validate-xml :dif10 xml))
-
-   (let [xml (xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record)]
-    (u/validate-xml :iso-smap xml))
-
-   (let [xml (xg/generate-xml xm-iso2/umm-c-to-iso19115-2-xml example-record)]
-    (u/validate-xml :iso19115 xml))
-
-(let [xml (slurp (io/resource "data/dif.xml"))]
-  (xp/parse-xml um-dif9/dif9-xml-to-umm-c xml))
-(xg/generate-xml xm-dif9/umm-c-to-dif9-xml example-record)
-
-(let [xml (slurp (io/resource "data/iso19115.xml"))]
-  (xp/parse-xml um-iso2/iso19115-2-xml-to-umm-c xml))
-(xg/generate-xml xm-iso2/umm-c-to-iso19115-2-xml example-record)
-
-(let [xml (slurp (io/resource "data/iso_smap.xml"))]
-  (u/validate-xml :iso-smap xml))
-(xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record)
-
-  )
