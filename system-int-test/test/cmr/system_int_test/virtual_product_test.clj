@@ -37,8 +37,6 @@
 
   )
 
-;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
-
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
                      [(assoc

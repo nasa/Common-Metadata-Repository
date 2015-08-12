@@ -180,7 +180,6 @@
                                                                json-query)))
 
         results (find-concepts context concept-type params query-creation-time query)]
-    ;; TODO refactor this out into find-concepts or some common function
     (info (format "Found %d %ss in %d ms in format %s with JSON Query %s and query params %s."
                   (:hits results) (name concept-type) (:total-took results) (:result-format query)
                   json-query (pr-str params)))

@@ -10,7 +10,7 @@
   ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
   ;; entry id concatenated with the version id.
   (update-in expected [:EntryId :Id] #(str % "_"
-                                           ;; TODO put version here once it's added to UMM.
+                                           ;; put version here once it's added to UMM.
                                            )))
 
 (def ^:private formats->expected-conversion-fns
