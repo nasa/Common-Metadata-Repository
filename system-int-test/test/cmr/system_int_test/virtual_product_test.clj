@@ -105,7 +105,7 @@
       (testing "Find no granules"
         (is (= 0 (:hits (search/find-refs :granule {}))))))
 
-    (testing "Recreate source granule"
+    #_(testing "Recreate source granule"
       (let [ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
                                                      (dissoc ast-l1a-gran :revision-id :concept-id))]
         (index/wait-until-indexed)
