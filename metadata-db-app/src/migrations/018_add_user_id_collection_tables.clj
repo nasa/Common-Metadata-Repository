@@ -9,7 +9,7 @@
   (println "migrations.018-add-user-id-collection-tables up...")
   (h/sql "alter table small_prov_collections add user_id VARCHAR(50)")
   (doseq [t (h/get-collection-tablenames)]
-    (h/sql (format "alter table %s add user_id VARCHAR(50)" t))))
+    (h/sql (format "alter table %s add user_id VARCHAR(30)" t))))
 
 (defn down
   "Migrates the database down from version 18."
