@@ -75,11 +75,17 @@ The UMM to XML mappings are in files named `src/cmr/umm_spec/xml_mappings/<forma
 
 See the DSL documentation and existing formats for examples.
 
+If the conversion from UMM to XML is lossy then update cmr.umm-spec.test.expected-conversion
+
 ### 4. Implement the XML to UMM mappings for each format.
 
 The XML to UMM mappings are in files named `src/cmr/umm_spec/umm_mappings/<format>.clj`
 
 See the DSL documentation and existing formats for examples.
+
+### 5. Update other tests that use UMM Spec
+
+* Update the example record in cmr.system-int-test.ingest.translation-test.
 
 ## License
 

@@ -97,16 +97,26 @@
     (for [{:keys [sub-type type]} (fr/parse-accept-header* mime-type-str)]
       (str type "/" sub-type))))
 
-(defn mime-type-from-headers
-  "Returns first acceptable preferred mime-type based on the 'accept' or 'content-type' headers or the
-  first preferred mime type if none of them were acceptable"
+(defn mime-type-from-header
+  "Returns first acceptable preferred mime-type from the given header."
+  [header-value potential-mime-types]
+  (some (set potential-mime-types) (extract-mime-types header-value)))
+
+(defn accept-mime-type
+  "Returns the first accepted mime type passed in the Accept header"
   ([headers]
-   (mime-type-from-headers headers all-supported-mime-types))
+   (accept-mime-type headers all-supported-mime-types))
   ([headers potential-mime-types]
-   (let [headers (util/map-keys str/lower-case headers)]
-     (some (set potential-mime-types)
-           (concat (extract-mime-types (get headers "accept"))
-                   (extract-mime-types (get headers "content-type")))))))
+   (mime-type-from-header (get (util/map-keys str/lower-case headers) "accept")
+                          potential-mime-types)))
+
+(defn content-type-mime-type
+  "Returns the mime type passed in the Content-Type header"
+  ([headers]
+   (content-type-mime-type headers all-supported-mime-types))
+  ([headers potential-mime-types]
+   (mime-type-from-header (get (util/map-keys str/lower-case headers) "content-type")
+                          potential-mime-types)))
 
 (defn path-w-extension->mime-type
   "Parses the search path with extension and returns the requested mime-type or nil if no extension
@@ -136,5 +146,6 @@
      path-w-extension headers all-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (or (path-w-extension->mime-type path-w-extension)
-       (mime-type-from-headers headers valid-mime-types)
+       (accept-mime-type headers valid-mime-types)
+       (content-type-mime-type headers valid-mime-types)
        default-mime-type)))

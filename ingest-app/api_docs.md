@@ -14,6 +14,8 @@
   * /providers/\<provider-id>/granules/\<native-id>
     * [PUT - Create or update a granule.](#create-update-granule)
     * [DELETE - Delete a granule.](#delete-granule)
+  * /translate/collection
+    * [POST - Translate collection metadata.](#translate-collection)
 
 ***
 
@@ -342,4 +344,95 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 ```
 {"concept-id":"G1200000001-PROV1","revision-id":2}
+```
+
+
+## <a name="translate-collection"></a> Translate Collection Metadata
+
+Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
+
+Example: Translate ECHO10 metadata to UMM JSON
+
+```
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/umm+json" %CMR-ENDPOINT%/translate/collection -d \
+"<Collection>
+  <ShortName>ShortName_Larc</ShortName>
+  <VersionId>Version01</VersionId>
+  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+  <LongName>LarcLongName</LongName>
+  <DataSetId>LarcDatasetId</DataSetId>
+  <Description>A minimal valid collection</Description>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Collection>"
+```
+
+Example output:
+
+```
+{
+  "Abstract" : "A minimal valid collection",
+  "EntryId" : {
+    "Id" : "ShortName_Larc_Version01"
+  },
+  "EntryTitle" : "LarcDatasetId"
+}
+```
+
+Example: Translate ECHO10 metadata to ISO19115-2
+
+```
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/iso19115+xml" %CMR-ENDPOINT%/translate/collection -d \
+"<Collection>
+  <ShortName>ShortName_Larc</ShortName>
+  <VersionId>Version01</VersionId>
+  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+  <LongName>LarcLongName</LongName>
+  <DataSetId>LarcDatasetId</DataSetId>
+  <Description>A minimal valid collection</Description>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Collection>"
+```
+
+Example output:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<gmi:MI_Metadata xmlns:eos="http://earthdata.nasa.gov/schema/eos"
+    xmlns:gco="http://www.isotc211.org/2005/gco"
+    xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:gmi="http://www.isotc211.org/2005/gmi"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:gmx="http://www.isotc211.org/2005/gmx"
+    xmlns:gsr="http://www.isotc211.org/2005/gsr"
+    xmlns:gss="http://www.isotc211.org/2005/gss"
+    xmlns:gts="http://www.isotc211.org/2005/gts"
+    xmlns:srv="http://www.isotc211.org/2005/srv"
+    xmlns:swe="http://schemas.opengis.net/sweCommon/2.0/"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <gmd:identificationInfo>
+        <gmd:MD_DataIdentification>
+            <gmd:citation>
+                <gmd:CI_Citation>
+                    <gmd:title>
+                        <gco:CharacterString>LarcDatasetId</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>ShortName_Larc_Version01</gco:CharacterString>
+                            </gmd:code>
+                        </gmd:MD_Identifier>
+                    </gmd:identifier>
+                </gmd:CI_Citation>
+            </gmd:citation>
+        </gmd:MD_DataIdentification>
+    </gmd:identificationInfo>
+</gmi:MI_Metadata>
 ```

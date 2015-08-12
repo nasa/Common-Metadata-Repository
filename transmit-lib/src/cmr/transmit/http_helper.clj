@@ -22,7 +22,7 @@
   useful in cases where the exact status code is required such as in testing."
   [{:keys [status body headers]}]
   (let [content-type (mt/mime-type->format
-                       (mt/mime-type-from-headers headers)
+                       (mt/content-type-mime-type headers)
                        ;; don't return a default
                        nil)]
     {:status status

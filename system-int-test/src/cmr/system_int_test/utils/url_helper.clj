@@ -164,6 +164,12 @@
   (format "http://localhost:%s/jobs/cleanup-expired-collections"
           (transmit-config/ingest-port)))
 
+(defn translate-metadata-url
+  [concept-type]
+  (format "http://localhost:%s/translate/%s"
+          (transmit-config/ingest-port)
+          (name concept-type)))
+
 (defn ingest-url
   [provider-id type native-id]
   (format "http://localhost:%s/providers/%s/%ss/%s"

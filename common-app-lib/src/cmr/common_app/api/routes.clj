@@ -116,7 +116,7 @@
 (defn- pretty-print-body
   "Update the body of the response to a pretty printed string based on the content type"
   [response]
-  (let [mime-type (mt/mime-type-from-headers (:headers response))
+  (let [mime-type (mt/content-type-mime-type (:headers response))
         find-re (fn [re] (and mime-type (re-find re mime-type)))]
     (if (string? (:body response))
       (cond
