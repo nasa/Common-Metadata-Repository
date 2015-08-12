@@ -17,9 +17,10 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.util :as u]
             [clojure.java.io :as io]
             [clj-time.core :as t]
-            [cmr.common.util :as u :refer [are2]]))
+            [cmr.common.util :refer [are2]]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -60,6 +61,7 @@
   (umm-c/map->UMM-C
     {:EntryTitle "The entry title V5"
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
+     :Abstract "Abstract description"
      }))
 
 (defn expected-echo10
@@ -70,28 +72,32 @@
   ;; entry id concatenated with the version id.
   (update-in expected [:EntryId :Id] #(str % "_"
                                            ;; TODO put version here once it's added to UMM.
+                                           "V1"
                                            )))
 
 (deftest roundtrip-gen-parse
-  (are2 [to-xml to-umm expected-manip-fn]
+  (are2 [format-key to-xml to-umm expected-manip-fn]
         (let [xml (xg/generate-xml to-xml example-record)
+              validation-errors (u/validate-xml format-key xml)
               parsed (xp/parse-xml to-umm xml)
               expected (expected-manip-fn example-record)]
-          (is (= expected parsed)))
+          (and (empty? validation-errors)
+               (= expected parsed)))
         "echo10"
-        xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
+        :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c expected-echo10
 
         "dif9"
-        xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c identity
+        :dif9 xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c identity
 
         "dif10"
-        xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c identity
+        :dif10 xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c identity
 
         "iso-smap"
-        xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c identity
+        :iso-smap xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c identity
 
         "ISO19115-2"
-        xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity)
+        :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c identity
+        )
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
@@ -99,3 +105,31 @@
           parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)]
       (is (= (expected-echo10 example-record-echo10-supported) parsed)))))
 
+
+(comment
+
+  (let [xml (xg/generate-xml xm-dif9/umm-c-to-dif9-xml example-record)]
+    (u/validate-xml :dif9 xml))
+
+   (let [xml (xg/generate-xml xm-dif10/umm-c-to-dif10-xml example-record)]
+    (u/validate-xml :dif10 xml))
+
+   (let [xml (xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record)]
+    (u/validate-xml :iso-smap xml))
+
+   (let [xml (xg/generate-xml xm-iso2/umm-c-to-iso19115-2-xml example-record)]
+    (u/validate-xml :iso19115 xml))
+
+(let [xml (slurp (io/resource "data/dif.xml"))]
+  (xp/parse-xml um-dif9/dif9-xml-to-umm-c xml))
+(xg/generate-xml xm-dif9/umm-c-to-dif9-xml example-record)
+
+(let [xml (slurp (io/resource "data/iso19115.xml"))]
+  (xp/parse-xml um-iso2/iso19115-2-xml-to-umm-c xml))
+(xg/generate-xml xm-iso2/umm-c-to-iso19115-2-xml example-record)
+
+(let [xml (slurp (io/resource "data/iso_smap.xml"))]
+  (u/validate-xml :iso-smap xml))
+(xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record)
+
+  )

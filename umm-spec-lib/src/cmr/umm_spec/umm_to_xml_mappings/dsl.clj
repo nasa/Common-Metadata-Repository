@@ -48,4 +48,8 @@
   [xpath-str]
   [:gco:CharacterString (xpath xpath-str)])
 
+(defn char-string
+  "Defines a mapping for a ISO CharacterString element with the given value."
+  [value]
+  [:gco:CharacterString value])
 

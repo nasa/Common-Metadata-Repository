@@ -5,6 +5,10 @@
 (def umm-c-to-echo10-xml
   [:Collection
    [:ShortName (xpath "/EntryId/Id")]
+   [:VersionId "V1"]
+   [:InsertTime "1999-12-31T19:00:00-05:00"]
+   [:LastUpdate "1999-12-31T19:00:00-05:00"]
+   [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
 
@@ -28,5 +32,7 @@
          [:DurationUnit (xpath "DurationUnit")]
          [:DurationValue (xpath "DurationValue")]
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])])
+         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
+   [:Orderable "true"]
+   [:Visible "true"]])
 
