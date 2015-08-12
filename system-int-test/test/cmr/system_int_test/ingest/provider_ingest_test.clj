@@ -11,7 +11,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.system :as s]))
+            [cmr.system-int-test.system :as s]
+            [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -43,7 +44,18 @@
 
       "small invalid value"
       {:provider-id "PROV9" :short-name "S8" :cmr-only false :small ""}
-      "Small must be either true or false but was [\"\"]")))
+      "Small must be either true or false but was [\"\"]")
+
+    (testing "not json"
+      (let [response (client/post (url/ingest-create-provider-url)
+                                  {:body "<somexml/>"
+                                   :content-type :xml
+                                   :throw-exceptions false
+                                   :connection-manager (s/conn-mgr)
+                                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
+            {:keys [status body]} response]
+        (is (= 400 status))
+        (is (re-find #"Creating or updating a provider requires a JSON content type" body))))))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
@@ -80,14 +92,14 @@
                                                    :small false})
           {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
       (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
-             [status errors])))))
+             [status errors]))))
+  (testing "update provider without permission"
+    (let [response (client/put (url/ingest-provider-url "PROV1")
+                               {:throw-exceptions false
+                                :connection-manager (s/conn-mgr)
+                                :query-params {:token "dummy-token"}})]
+      (is (= 401 (:status response))))))
 
-(deftest update-provider-without-permission-test
-  (let [response (client/put (url/ingest-provider-url "PROV1")
-                             {:throw-exceptions false
-                              :connection-manager (s/conn-mgr)
-                              :query-params {:token "dummy-token"}})]
-    (is (= 401 (:status response)))))
 
 (deftest delete-provider-test
   (testing "delete provider"

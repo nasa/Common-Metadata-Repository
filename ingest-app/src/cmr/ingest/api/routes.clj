@@ -16,28 +16,22 @@
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.api.provider :as provider-api]
-            [cmr.common-app.api.routes :as common-routes]
             [cmr.ingest.api.ingest :as ingest-api]
+            [cmr.ingest.api.translation :as translation-api]
+            [cmr.common-app.api.routes :as common-routes]
+
             [cmr.common-app.api-docs :as api-docs]))
-
-#_(def translation-routes
-    (set-default-error-format
-      :xml
-      (context "/translate-metadata" []
-        (POST "/" {:keys [body content-type headers request-context params]}
-          ))))
-
 
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
       provider-api/provider-api-routes
 
+      ;; Add routes for translating metadata formats
+      translation-api/translation-routes
+
       ;; Add routes to create, update, delete, validate concepts
       ingest-api/ingest-routes
-
-      ;; Add routes for translating metadata formats
-      ; translation-routes
 
       ;; Add routes for API documentation
       (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
@@ -83,7 +77,6 @@
       nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
-      ring-json/wrap-json-body
       (api-errors/exception-handler default-error-format-fn)
       common-routes/pretty-print-response-handler
       params/wrap-params))
