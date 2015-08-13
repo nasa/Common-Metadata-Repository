@@ -33,14 +33,13 @@
     (is (nil? (seq (#'cmr.transmit.kms/validate-entries sample-kms-entries)))))
 
   (testing "With duplicates"
-    (let [expected {"First Entry"
-                     [{:short-name "First Entry",
-                      :field-1 "field1 value, (with commas),",
-                      :field-2 "field2",
-                      :uuid "abc-123"}
+    (let [expected [{:short-name "First Entry",
+                     :field-1 "field1 value, (with commas),",
+                     :field-2 "field2",
+                     :uuid "abc-123"}
                     {:short-name "First Entry",
                      :field-1 "dupe-field-1",
-                     :uuid "123-abd"}]}
+                     :uuid "123-abd"}]
           actual (#'cmr.transmit.kms/validate-entries sample-kms-entries-with-duplicates)]
       (is (= expected actual)))))
 

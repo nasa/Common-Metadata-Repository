@@ -24,19 +24,17 @@
 
 (defn- validate-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
-  do not know how to correctly map from short name to the full hierarchy. Returns a sequence of
-  short name, entry tuples.
+  do not know how to correctly map from short name to the full hierarchy.
 
-  Takes a list of the keywords represented as a map with each subfield name being a key."
+  Takes a list of the keywords represented as a map with each subfield name being a key.
+  Returns a sequence of invalid entries."
   [keyword-entries]
   (let [duplicates (for [v (vals (group-by keyword (map :short-name keyword-entries)))
                          :when (> (count v) 1)]
                      (first v))]
-    (into {}
-          (for [short-name duplicates :when short-name]
-            (group-by :short-name
-                      (for [entry keyword-entries :when (= short-name (:short-name entry))]
-                        entry))))))
+    (flatten (for [short-name duplicates :when short-name]
+               (for [entry keyword-entries :when (= short-name (:short-name entry))]
+                 entry)))))
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
@@ -59,12 +57,9 @@
         invalid-entries (validate-entries keyword-entries)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
-    (doseq [[short-name entries] invalid-entries
-            entry entries]
-      (warn (format "Found duplicate keywords for %s short-name [%s]: %s"
-                    (name keyword-scheme)
-                    short-name
-                    entry)))
+    (doseq [entry invalid-entries]
+      (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
+                    (:short-name entry) entry)))
 
     ;; Create a map with the short-names as keys to the full hierarchy for that short-name
     (into {}
