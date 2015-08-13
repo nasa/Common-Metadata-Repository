@@ -261,8 +261,8 @@
   (let [ru1 (dc/related-url {:type "GET DATA" :url "http://example.com"})
         ru2 (dc/related-url {:type "GET DATA" :url "http://example2.com"})
         ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
-        coll1 (d/ingest "PROV1" (dc/collection {}))
-        coll2 (d/ingest "PROV1" (dc/collection {}))
+        coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00Z"
                                                    :ending-date-time "2010-01-11T12:00:00Z"
@@ -322,10 +322,13 @@
         ru4 (dc/related-url {:type "ALGORITHM INFO" :url "http://inherited.com"})
         ru5 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://inherited.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
                                                 :spatial-coverage (dc/spatial {:gsr :geodetic})}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
                                                 :related-urls [ru4 ru5]}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "OrbitDataset"
+                                                :beginning-date-time "1970-01-01T12:00:00Z"
                                                 :spatial-coverage (dc/spatial {:gsr :orbit
                                                                                :orbit {:inclination-angle 98.0
                                                                                        :period 97.87
