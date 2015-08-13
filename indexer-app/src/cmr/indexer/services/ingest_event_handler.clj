@@ -36,13 +36,14 @@
   (indexer/delete-provider context provider-id))
 
 (defn subscribe-to-ingest-events
-  "Subscribe to messages on the indexing queue."
+  "Subscribe to messages related to ingest"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/queue-listener-count)]
+    (dotimes [n (config/index-queue-listener-count)]
       (queue/subscribe queue-broker
                        (config/index-queue-name)
-                       #(handle-ingest-event context false %))
+                       #(handle-ingest-event context false %)))
+    (dotimes [n (config/all-revisions-index-queue-listener-count)]
       (queue/subscribe queue-broker
                        (config/all-revisions-index-queue-name)
                        #(handle-ingest-event context true %)))))

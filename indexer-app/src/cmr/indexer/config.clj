@@ -6,6 +6,11 @@
   "The queue containing ingest events for the indexer"
   {:default "cmr_index.queue"})
 
+(defconfig index-queue-listener-count
+  "Number of worker threads to use for the queue listener"
+  {:default 5
+   :type Long})
+
 (defconfig all-revisions-index-queue-name
   "The queue containing ingest events for the indexer all revisions index. We use a
   separate index here because it allows independent retries of indexing failures. If
@@ -14,25 +19,41 @@
   bootstrapping the all revisions index."
   {:default "cmr_index.all_revisions_queue"})
 
+(defconfig all-revisions-index-queue-listener-count
+  "Number of worker threads to use for the queue listener for the all revisions queue"
+  {:default 2
+   :type Long})
+
 (defconfig ingest-exchange-name
   "The ingest exchange to which messages are published."
   {:default "cmr_ingest.exchange"})
 
-(defconfig queue-listener-count
-  "Number of worker threads to use for the queue listener"
-  {:default 5
+(defconfig deleted-collection-revision-queue-listener-count
+  "Number of worker threads to use for the queue listener for the deleted collection revision queue"
+  {:default 1
    :type Long})
+
+(defconfig deleted-collection-revision-queue-name
+  "The name of the indexer's queue for processing deleted collection revisions"
+  {:default "cmr_indexer_deleted_collection_revision.queue"})
+
+(defconfig deleted-collection-revision-exchange-name
+  "An exchange that will have messages passed to it whenever a collection revision is removed
+  from metadata db."
+  {:default "cmr_deleted_collection_revision.exchange"})
 
 (defn rabbit-mq-config
   "Returns the rabbit mq configuration for the indexer application."
   []
   (assoc (rmq-conf/default-config)
-         :queues [(index-queue-name) (all-revisions-index-queue-name)]
-         :exchanges [(ingest-exchange-name)]
-         :queues-to-exchanges {(index-queue-name)
-                               (ingest-exchange-name)
-                               (all-revisions-index-queue-name)
-                               (ingest-exchange-name)}))
+         :queues [(index-queue-name)
+                  (all-revisions-index-queue-name)
+                  (deleted-collection-revision-queue-name)]
+         :exchanges [(ingest-exchange-name) (deleted-collection-revision-exchange-name)]
+         :queues-to-exchanges
+         {(index-queue-name) (ingest-exchange-name)
+          (all-revisions-index-queue-name) (ingest-exchange-name)
+          (deleted-collection-revision-queue-name) (deleted-collection-revision-exchange-name)}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"

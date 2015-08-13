@@ -22,7 +22,9 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]))
+            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]
+            [cmr.indexer.services.metadata-db-event-handler :as metadata-db-event-handler]
+            ))
 
 (defconfig colls-with-separate-indexes
   "Configuration value that contains a list of collections with separate indexes for their
@@ -76,7 +78,8 @@
 
     ;; When the indexer is used as an embedded system it won't be allowed to subscribe to events
     (when (:queue-broker started-system)
-      (ingest-event-handler/subscribe-to-ingest-events {:system started-system}))
+      (ingest-event-handler/subscribe-to-ingest-events {:system started-system})
+      (metadata-db-event-handler/subscribe-to-metadata-db-events {:system started-system}))
 
     (info "System started")
     started-system))

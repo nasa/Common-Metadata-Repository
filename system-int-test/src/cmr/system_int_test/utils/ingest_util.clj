@@ -407,21 +407,25 @@
      (when grant-all-ingest?
        (echo-util/grant-all-ingest (s/context) provider-guid)))))
 
+(def reset-fixture-default-options
+  {:grant-all-search? true
+   :grant-all-ingest? true})
+
 (defn reset-fixture
   "Creates the given providers in ECHO and the CMR then clears out all data at the end."
   ([]
    (reset-fixture {}))
   ([provider-guid-id-map]
-   (reset-fixture provider-guid-id-map true))
-  ([provider-guid-id-map grant-all-search?]
-   (reset-fixture provider-guid-id-map grant-all-search? true))
-  ([provider-guid-id-map grant-all-search? grant-all-ingest?]
+   (reset-fixture provider-guid-id-map nil))
+  ([provider-guid-id-map options]
    (fn [f]
-     (dev-sys-util/reset)
-     (doseq [[provider-guid provider-id] provider-guid-id-map]
-       (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
-                                                   :grant-all-ingest? grant-all-ingest?}))
-     (f))))
+     (let [{:keys [grant-all-search? grant-all-ingest?]}
+           (merge reset-fixture-default-options options)]
+       (dev-sys-util/reset)
+       (doseq [[provider-guid provider-id] provider-guid-id-map]
+         (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
+                                                     :grant-all-ingest? grant-all-ingest?}))
+       (f)))))
 
 (defn clear-caches
   "Clears caches in the ingest application"

@@ -15,7 +15,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"
                                            "provguid3" "PROV3"}
-                                          false))
+                                          {:grant-all-search? false}))
 
 ;; total number of collections in PROV1
 (def prov1-collection-count 5)

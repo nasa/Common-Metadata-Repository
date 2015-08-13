@@ -189,12 +189,13 @@
 
 (defn create-metadata-db-app
   "Create an instance of the metadata-db application."
-  [db-component]
-  (if db-component
-    (-> (mdb-system/create-system)
-        (assoc :db db-component
-               :scheduler (jobs/create-non-running-scheduler)))
-    (mdb-system/create-system)))
+  [db-component queue-broker]
+  (let [sys-with-db (if db-component
+                      (-> (mdb-system/create-system)
+                          (assoc :db db-component
+                                 :scheduler (jobs/create-non-running-scheduler)))
+                      (mdb-system/create-system))]
+    (assoc sys-with-db :queue-broker queue-broker)))
 
 (defn create-indexer-app
   "Create an instance of the indexer application."
@@ -278,7 +279,7 @@
     {:apps (u/remove-nil-keys
              {:mock-echo echo-component
               :cubby (cubby-system/create-system)
-              :metadata-db (create-metadata-db-app db-component)
+              :metadata-db (create-metadata-db-app db-component queue-broker)
               :bootstrap (when-not db-component (bootstrap-system/create-system))
               :indexer (create-indexer-app queue-broker)
               :index-set (index-set-system/create-system)

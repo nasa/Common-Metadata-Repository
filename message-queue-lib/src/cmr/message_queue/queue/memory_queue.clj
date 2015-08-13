@@ -98,7 +98,9 @@
   (publish-to-queue
     [this queue-name msg]
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
-    (a/>!! (queues-to-channels queue-name) (json/generate-string msg)))
+    (if-let [chan (queues-to-channels queue-name)]
+      (a/>!! chan (json/generate-string msg))
+      (throw (IllegalArgumentException. (str "Could not find channel bound to queue " queue-name)))))
 
   (get-queues-bound-to-exchange
     [this exchange-name]
