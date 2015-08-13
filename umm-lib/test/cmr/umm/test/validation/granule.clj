@@ -167,7 +167,8 @@
         assert-invalid #(assert-invalid-gran %1 %2 [:temporal] [%3])
         coll (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" nil)
         coll-ends-at-present (make-coll "2015-01-01T00:00:00Z" "2015-01-02T00:00:00Z" true)
-        coll-no-end-date (make-coll "2015-01-01T00:00:00Z" nil false)]
+        coll-no-end-date (make-coll "2015-01-01T00:00:00Z" nil false)
+        coll-no-temporal (make-collection {})]
 
     (testing "Granule with no temporal coverage values is valid"
       (assert-valid coll (make-granule {})))
@@ -204,7 +205,9 @@
                     "Granule start date [2015-01-03T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
 
     (assert-invalid coll (granule-with-temporal "2016-01-01T00:00:00Z" nil)
-                    "Granule start date [2016-01-01T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")))
+                    "Granule start date [2016-01-01T00:00:00.000Z] is later than collection end date [2015-01-02T00:00:00.000Z].")
+    (assert-invalid coll-no-temporal (granule-with-temporal "2016-01-01T00:00:00Z" nil)
+                    "Granule whose parent collection does not have temporal information cannot have temporal.")))
 
 (deftest granule-project-refs
   (let [c1 (c/map->Project {:short-name "C1"})

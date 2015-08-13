@@ -238,7 +238,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id summary entry-title format-key entry-id
-                related-urls beginning-date-time ending-date-time associated-difs organizations]} collection
+                related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         coordinate-system (when spatial-representation
@@ -247,11 +247,12 @@
         archive-org (first (filter #(= :archive-center (:type %)) organizations))
         archive-center (when archive-org (:org-name archive-org))
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
-        range-date-time (first (get-in collection [:temporal :range-date-times]))
-        start (when range-date-time
-                (f/unparse (f/formatters :date-time-no-ms) (:beginning-date-time range-date-time)))
-        end (when range-date-time
-              (f/unparse (f/formatters :date-time-no-ms) (:ending-date-time range-date-time)))
+        {:keys [beginning-date-time ending-date-time]} (first (get-in collection
+                                                                      [:temporal :range-date-times]))
+        start (when beginning-date-time
+                (f/unparse (f/formatters :date-time-no-ms) beginning-date-time))
+        end (when ending-date-time
+              (f/unparse (f/formatters :date-time-no-ms) ending-date-time))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         ;; DIF collections have special cases on short-name and associated-difs

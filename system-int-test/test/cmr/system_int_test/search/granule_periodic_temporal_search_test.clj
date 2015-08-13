@@ -11,61 +11,61 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-periodic-temporal
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T00:00:00Z"}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
-                                                       :beginning-date-time "2000-01-01T12:00:00Z"
-                                                       :ending-date-time "2000-02-14T12:00:00Z"}))
+                                                   :beginning-date-time "2000-01-01T12:00:00Z"
+                                                   :ending-date-time "2000-02-14T12:00:00Z"}))
         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"
-                                                       :beginning-date-time "2000-02-14T12:00:00Z"
-                                                       :ending-date-time "2000-02-15T12:00:00Z"}))
+                                                   :beginning-date-time "2000-02-14T12:00:00Z"
+                                                   :ending-date-time "2000-02-15T12:00:00Z"}))
         gran3 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule3"
-                                                       :beginning-date-time "2000-03-15T12:00:00Z"
-                                                       :ending-date-time "2000-04-15T12:00:00Z"}))
+                                                   :beginning-date-time "2000-03-15T12:00:00Z"
+                                                   :ending-date-time "2000-04-15T12:00:00Z"}))
         gran4 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule4"
-                                                       :beginning-date-time "2000-04-01T12:00:00Z"
-                                                       :ending-date-time "2000-04-15T12:00:00Z"}))
+                                                   :beginning-date-time "2000-04-01T12:00:00Z"
+                                                   :ending-date-time "2000-04-15T12:00:00Z"}))
         gran5 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule5"
-                                                       :beginning-date-time "2001-01-01T12:00:00Z"
-                                                       :ending-date-time "2001-01-31T12:00:00Z"}))
+                                                   :beginning-date-time "2001-01-01T12:00:00Z"
+                                                   :ending-date-time "2001-01-31T12:00:00Z"}))
         gran6 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule6"
-                                                       :beginning-date-time "2001-01-01T12:00:00Z"
-                                                       :ending-date-time "2001-02-14T12:00:00Z"}))
+                                                   :beginning-date-time "2001-01-01T12:00:00Z"
+                                                   :ending-date-time "2001-02-14T12:00:00Z"}))
         gran7 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule7"
-                                                       :beginning-date-time "2001-03-15T12:00:00Z"
-                                                       :ending-date-time "2001-04-15T12:00:00Z"}))
+                                                   :beginning-date-time "2001-03-15T12:00:00Z"
+                                                   :ending-date-time "2001-04-15T12:00:00Z"}))
         gran8 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule8"
-                                                       :beginning-date-time "2001-04-01T12:00:00Z"
-                                                       :ending-date-time "2001-04-15T12:00:00Z"}))
+                                                   :beginning-date-time "2001-04-01T12:00:00Z"
+                                                   :ending-date-time "2001-04-15T12:00:00Z"}))
         gran9 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule9"
-                                                       :beginning-date-time "2002-01-01T12:00:00Z"
-                                                       :ending-date-time "2002-01-31T12:00:00Z"}))
+                                                   :beginning-date-time "2002-01-01T12:00:00Z"
+                                                   :ending-date-time "2002-01-31T12:00:00Z"}))
         gran10 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule10"
-                                                        :beginning-date-time "2002-01-01T12:00:00Z"
-                                                        :ending-date-time "2002-02-14T12:00:00Z"}))
+                                                    :beginning-date-time "2002-01-01T12:00:00Z"
+                                                    :ending-date-time "2002-02-14T12:00:00Z"}))
         gran11 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule11"
-                                                        :beginning-date-time "2002-03-14T12:00:00Z"
-                                                        :ending-date-time "2002-04-15T12:00:00Z"}))
+                                                    :beginning-date-time "2002-03-14T12:00:00Z"
+                                                    :ending-date-time "2002-04-15T12:00:00Z"}))
         gran12 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule12"
-                                                        :beginning-date-time "2002-03-15T12:00:00Z"
-                                                        :ending-date-time "2002-04-15T12:00:00Z"}))
+                                                    :beginning-date-time "2002-03-15T12:00:00Z"
+                                                    :ending-date-time "2002-04-15T12:00:00Z"}))
         gran13 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule13"
-                                                        :beginning-date-time "2002-04-01T12:00:00Z"
-                                                        :ending-date-time "2002-04-15T12:00:00Z"}))
+                                                    :beginning-date-time "2002-04-01T12:00:00Z"
+                                                    :ending-date-time "2002-04-15T12:00:00Z"}))
         gran14 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule14"
-                                                        :beginning-date-time "1999-02-15T12:00:00Z"
-                                                        :ending-date-time "1999-03-15T12:00:00Z"}))
+                                                    :beginning-date-time "1999-02-15T12:00:00Z"
+                                                    :ending-date-time "1999-03-15T12:00:00Z"}))
         gran15 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule15"
-                                                        :beginning-date-time "2003-02-15T12:00:00Z"
-                                                        :ending-date-time "2003-03-15T12:00:00Z"}))
+                                                    :beginning-date-time "2003-02-15T12:00:00Z"
+                                                    :ending-date-time "2003-03-15T12:00:00Z"}))
         gran16 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule16"
-                                                        :beginning-date-time "1999-02-15T12:00:00Z"}))
+                                                    :beginning-date-time "1999-02-15T12:00:00Z"}))
         gran17 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule17"
-                                                        :beginning-date-time "2001-02-15T12:00:00Z"}))
+                                                    :beginning-date-time "2001-02-15T12:00:00Z"}))
         gran18 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule18"
-                                                        :beginning-date-time "2002-03-15T12:00:00Z"}))
+                                                    :beginning-date-time "2002-03-15T12:00:00Z"}))
         gran19 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule19"
-                                                        :beginning-date-time "2001-11-15T12:00:00Z"
-                                                        :ending-date-time "2001-12-15T12:00:00Z"}))
+                                                    :beginning-date-time "2001-11-15T12:00:00Z"
+                                                    :ending-date-time "2001-12-15T12:00:00Z"}))
         gran20 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule20"}))]
     (index/wait-until-indexed)
 

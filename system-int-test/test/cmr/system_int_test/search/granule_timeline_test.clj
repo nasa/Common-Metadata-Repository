@@ -35,8 +35,10 @@
   )
 
 (deftest timeline-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :beginning-date-time "1970-01-01T00:00:00Z"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"
+                                                :beginning-date-time "1970-01-01T00:00:00Z"}))
 
         ;; Coll1 granules
         ;; Date range granules
