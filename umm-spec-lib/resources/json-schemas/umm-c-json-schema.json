@@ -263,7 +263,7 @@
       "description": "This includes any metadata related dates.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/DataDateType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
       },
       "minItems": 0
     },
@@ -295,7 +295,7 @@
       "description": "This includes any data related dates. create,delete, and update.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/DataDateType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
       },
       "minItems": 1
     },
@@ -485,6 +485,10 @@
     "EntryId": {
       "description": "The entry ID of the service described by the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryIdType"
+    },
+    "Version": {
+      "description": "The Version of the metadata record.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
   "required": ["EntryId", "EntryTitle", "Abstract", "DataDate", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]

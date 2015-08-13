@@ -463,7 +463,7 @@
         },
         "Version": {
           "description": "The version of the metadata record that is associated with this record.",
-          "$ref": "#/definitions/Version"
+          "$ref": "#/definitions/VersionType"
         },
         "ProviderId": {
           "description": "The ProviderName of the metadata record that is associated with this record.",
