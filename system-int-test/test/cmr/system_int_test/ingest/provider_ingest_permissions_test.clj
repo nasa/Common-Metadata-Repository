@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.provider-ingest-permissions-test
   "Verifies the correct provider ingest permissions are enforced"
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
@@ -48,7 +49,7 @@
         super-admin-token (e/login (s/context) "super-admin" ["ingest-super-admin-group-guid"])
         non-existant-token "not-exist"
         collection (d/ingest "PROV1" (dc/collection {})  {:token provider-admin-update-token})
-        ingested-concept (ingest/get-concept (:concept-id collection))
+        ingested-concept (mdb/get-concept (:concept-id collection))
 
         granule (d/item->concept (dg/granule collection))]
 

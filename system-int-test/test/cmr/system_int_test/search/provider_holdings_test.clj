@@ -2,6 +2,7 @@
   "Integration tests for provider holdings"
   (:require [clojure.test :refer :all]
             [cmr.search.api.routes :as sr]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -107,7 +108,7 @@
     (def user-token (e/login (s/context) "user1")))
 
 
-  (ingest/provider-holdings)
+  (mdb/provider-holdings)
 
   )
 
@@ -128,7 +129,7 @@
         user-token (e/login (s/context) "user1")]
 
     (testing "Retrieving provider holdings from Metadata DB"
-      (let [response (ingest/provider-holdings)]
+      (let [response (mdb/provider-holdings)]
         (is (= 200 (:status response)))
         (is (= expected-all-holdings
                (set (:results response))))))

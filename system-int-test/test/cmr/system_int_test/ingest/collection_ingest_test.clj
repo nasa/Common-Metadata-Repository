@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
   "CMR collection ingest integration tests"
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
@@ -29,14 +30,14 @@
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a concept with a revision id"
     (let [concept (dc/collection-concept {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (= 5 revision-id))
-      (is (ingest/concept-exists-in-mdb? concept-id 5)))))
+      (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
@@ -55,7 +56,7 @@
     (testing "ingest of a new concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (index/wait-until-indexed)
-        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
     (testing "Update the concept with the concept-id"
@@ -268,7 +269,7 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 5 delete-revision-id))
-      (is (ingest/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
+      (is (mdb/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
 
 
 (comment
@@ -292,10 +293,10 @@
     (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
     (index/wait-until-indexed)
 
-    (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
-    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
+    (is (:deleted (mdb/get-concept (:concept-id coll1))) "The collection should be deleted")
+    (is (not (mdb/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
         "Granules in the collection should be deleted")
-    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
+    (is (not (mdb/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
         "Granules in the collection should be deleted")
 
     (is (empty? (:refs (search/find-refs :collection {"concept-id" (:concept-id coll1)}))))
@@ -303,8 +304,8 @@
     (is (empty? (:refs (search/find-refs :granule {"concept-id" (:concept-id gran2)}))))
 
 
-    (is (ingest/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
-    (is (ingest/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
+    (is (mdb/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
+    (is (mdb/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
 
     (is (d/refs-match?
           [coll2]
@@ -323,8 +324,8 @@
     (is (= 7 (:revision-id coll-del2)))
     (index/wait-until-indexed)
     (is (empty? (:refs (search/find-refs :collection {"concept-id" concept-id}))))
-    (is (ingest/concept-exists-in-mdb? concept-id 5))
-    (is (ingest/concept-exists-in-mdb? concept-id 7))))
+    (is (mdb/concept-exists-in-mdb? concept-id 5))
+    (is (mdb/concept-exists-in-mdb? concept-id 7))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
@@ -370,10 +371,10 @@
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
         collection (dc/collection-concept {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
-        ingested-concept (ingest/get-concept concept-id)]
+        ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
     (is (= 200 (:status response)))
-    (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+    (is (mdb/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
     (is (= crazy-id (:native-id ingested-concept)))
 

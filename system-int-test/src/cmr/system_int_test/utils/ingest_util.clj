@@ -294,48 +294,6 @@
          :content (:metadata collection-concept)
          :content-type (:format collection-concept)}]))))
 
-(defn save-concept
-  "Save a concept to the metadata db and return a map with status, concept-id, and revision-id"
-  [concept]
-  (let [response (client/request
-                   {:method :post
-                    :url (url/mdb-concepts-url)
-                    :body  (json/generate-string concept)
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
-
-(defn provider-holdings
-  "Returns the provider holdings from metadata db."
-  []
-  (let [url (url/mdb-provider-holdings-url)
-        response (client/get url {:accept :json
-                                  :connection-manager (s/conn-mgr)})
-        {:keys [status body headers]} response]
-    (if (= status 200)
-      {:status status
-       :headers headers
-       :results (ph/parse-provider-holdings :json false body)}
-      response)))
-
-(defn tombstone-concept
-  "Create a tombstone in mdb for the concept, but don't delete it from elastic."
-  [concept]
-  (let [{:keys [concept-id revision-id]} concept
-        response (client/request
-                   {:method :delete
-                    :url (str (url/mdb-concepts-url) "/" concept-id "/" revision-id)
-                    :body  (json/generate-string concept)
-                    :content-type :json
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (s/conn-mgr)})
-        body (json/decode (:body response) true)]
-    (assoc body :status (:status response))))
-
 (defn ingest-concepts
   "Ingests all the given concepts assuming that they should all be successful."
   ([concepts]
@@ -354,26 +312,6 @@
   ([concepts options]
    (doseq [concept concepts]
      (is (#{404 200} (:status (delete-concept concept options)))))))
-
-(defn get-concept
-  ([concept-id]
-   (get-concept concept-id nil))
-  ([concept-id revision-id]
-   (let [response (client/get (url/mdb-concept-url concept-id revision-id)
-                              {:accept :json
-                               :throw-exceptions false
-                               :connection-manager (s/conn-mgr)})]
-     (is (some #{200 404} [(:status response)]))
-     (when (= (:status response) 200)
-       (-> response
-           :body
-           (json/decode true)
-           (update-in [:concept-type] keyword))))))
-
-(defn concept-exists-in-mdb?
-  "Check concept in mdb with the given concept and revision-id"
-  [concept-id revision-id]
-  (not (nil? (get-concept concept-id revision-id))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

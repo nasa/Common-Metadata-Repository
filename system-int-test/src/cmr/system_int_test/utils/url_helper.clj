@@ -146,6 +146,11 @@
   []
   (format "http://localhost:%s/jobs/" (transmit-config/metadata-db-port)))
 
+(defn mdb-old-revision-cleanup-job-url
+  "URL to metadata db jobs api"
+  []
+  (format "http://localhost:%s/jobs/old-revision-concept-cleanup" (transmit-config/metadata-db-port)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs
 

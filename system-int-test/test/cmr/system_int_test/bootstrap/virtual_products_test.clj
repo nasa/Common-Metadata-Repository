@@ -6,6 +6,7 @@
             [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util :refer [eval-in-dev-sys]]
             [cmr.system-int-test.utils.index-util :as index]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
@@ -114,7 +115,7 @@
                              vp-colls)
           verify     (fn []
                        (doseq [gran v-granules]
-                         (is (:deleted (ingest/get-concept (:id gran) 12)))))]
+                         (is (:deleted (mdb/get-concept (:id gran) 12)))))]
 
       (is (not (empty? v-granules)))
 

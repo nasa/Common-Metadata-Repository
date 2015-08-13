@@ -4,6 +4,7 @@
             [clj-http.client :as client]
             [cmr.common.util :as u]
             [cmr.common.mime-types :as mt]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
@@ -123,7 +124,7 @@
 
       ;; PROV1 concepts are not in metadata-db
       (are [concept]
-           (not (ingest/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
+           (not (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))
            coll1
            coll2
            gran1
@@ -132,7 +133,7 @@
 
       ;; PROV2 concepts are in metadata-db
       (are [concept]
-           (ingest/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
+           (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept))
            coll3
            gran4)
 
