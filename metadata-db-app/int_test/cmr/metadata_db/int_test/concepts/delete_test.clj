@@ -60,6 +60,7 @@
       (is (= 201 status))
       (is (= 4 revision-id))
 
+      ;; Make sure that the saved tombstone is what it is expected to be
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
