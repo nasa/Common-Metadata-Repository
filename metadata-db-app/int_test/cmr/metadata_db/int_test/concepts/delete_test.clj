@@ -52,10 +52,9 @@
           gran1 (util/create-and-save-granule provider-id (:concept-id coll1) 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id (:concept-id coll2) 1)
-          coll1-tombstone (-> coll1
-                              (dissoc :revision-id)
-                              (assoc :deleted true))
-          {:keys [status revision-id]} (util/save-concept coll1-tombstone)
+          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
+                                                           :deleted true
+                                                           :user-id "user101"})
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
       (is (= 201 status))
@@ -64,7 +63,8 @@
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
-                            :revision-id revision-id)
+                            :revision-id revision-id
+                            :user-id "user101")
                      :revision-date)
              (dissoc deleted-coll1 :revision-date)))
 

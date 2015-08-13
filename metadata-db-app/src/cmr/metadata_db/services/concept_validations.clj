@@ -92,3 +92,20 @@
 (def validate-concept
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data concept-validation))
+
+(def valid-tombstone-keys
+  #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id})
+
+(defn validate-tombstone-keys
+  "Validates that there are no extraneous keys"
+  [tombstone]
+  (map msg/invalid-tombstone-field
+       (set/difference (set (keys tombstone))
+                       valid-tombstone-keys)))
+
+(def tombstone-request-validation
+  (util/compose-validations [concept-id-missing-validation
+                             validate-tombstone-keys]))
+
+(def validate-tombstone-request
+  (util/build-validator :invalid-data tombstone-request-validation))
