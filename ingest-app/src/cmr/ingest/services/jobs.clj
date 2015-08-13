@@ -34,7 +34,9 @@
     (info "Reindexing collections in all providers:" (pr-str providers))
     (indexer/reindex-provider-collections context providers)
 
-    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
+    (debug "Reindexing all collections complete. Saving provider acl hashes")
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)
+    (debug "Saving provider acl hashes complete")))
 
 (defn reindex-collection-permitted-groups
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
