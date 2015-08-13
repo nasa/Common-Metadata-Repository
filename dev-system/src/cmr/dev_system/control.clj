@@ -84,7 +84,7 @@
   (routes
     ;; Retrieve KMS resources
     (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
-      (let [resource (io/resource (str keyword-scheme "/" filename))]
+      (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]
         (if resource
           {:status 200
            :body (slurp resource)

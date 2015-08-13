@@ -1,0 +1,3 @@
+This directory contains sample files with controlled vocabulary definitions as provided by the
+GCMD Keyword Management System (KMS). The files are used in integration tests in order to avoid
+an external dependency on the GCMD system in local testing as well as the CI environment.
