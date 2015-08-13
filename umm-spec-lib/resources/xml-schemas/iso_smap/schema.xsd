@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.isotc211.org/2005/gmi" 
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xmlns:gmi="http://www.isotc211.org/2005/gmi" 
+  xmlns:srv="http://www.isotc211.org/2005/srv"
+  xmlns:eos="http://earthdata.nasa.gov/schema/eos">
+	<xs:include schemaLocation="gmi/gmi.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="gmd/gmd.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/srv" schemaLocation="srv/srv.xsd"/>    
+  <xs:import namespace="http://earthdata.nasa.gov/schema/eos" schemaLocation="eos/eos.xsd"/>  
+</xs:schema>
+ 

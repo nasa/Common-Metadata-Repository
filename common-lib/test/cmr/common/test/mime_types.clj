@@ -2,47 +2,44 @@
   "Tests for mime-type functions."
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
+            [cmr.common.util :refer [are2]]
             [cmr.common.mime-types :as mt]))
 
 ;; Tests various times when the content type should be used when extracting mime types from headers
 (deftest mime-type-from-headers-test
-  (testing "extract first preferred valid mime type"
-    (is (= mt/json
-           (mt/mime-type-from-headers
-             {"accept" "text/html, application/json;q=9"}))))
+  (testing "accept header"
+    (are2
+      [headers mime-type]
+      (= mime-type (mt/accept-mime-type headers))
 
-  (testing "accept header used if available"
-    (is (= mt/iso-smap
-           (mt/mime-type-from-headers
-             {"accept" "application/iso:smap+xml"
-              "content-type" "application/xml"})))
+          "extract first preferred valid mime type"
+          {"accept" "text/html, application/json"} mt/json
 
-    (testing "accept parameters are ignored"
-      (is (= mt/xml
-             (mt/mime-type-from-headers
-               {"accept" "application/xml; q=1"})))))
+          "accept parameters are ignored"
+          {"accept" "application/xml; q=1"} mt/xml
 
-  (testing "content type used if accept not set"
-    (is (= mt/xml
-           (mt/mime-type-from-headers
-             {"content-type" "application/xml"})))
+          "nil if no accept header"
+          {"content-type" "application/xml; q=1"} nil
 
-    (testing "accept parameters are ignored"
-      (is (= mt/xml
-             (mt/mime-type-from-headers
-               {"content-type" "application/xml; q=1"})))))
+          "nil if no acceptable type"
+          {"accept" "text/html, application/foo"} nil
 
-  (testing "*/* in accept header is ignored"
-    (testing "use content type if not provided"
-      (is (= mt/xml
-             (mt/mime-type-from-headers
-               {"accept" "*/*"
-                "content-type" "application/xml"}))))
-    (testing "nil returned otherwise"
-      (is (nil? (mt/mime-type-from-headers {"accept" "*/*"}))))
+          "*/* header is ignored"
+          {"accept" "*/*"} nil))
 
-    (testing "accept parameters are ignored"
-      (is (nil? (mt/mime-type-from-headers {"accept" "*/*; q=1"}))))))
+  (testing "content type header"
+    (are2
+      [headers mime-type]
+      (= mime-type (mt/content-type-mime-type headers))
+          "parameters are ignored"
+          {"content-type" "application/xml; q=1"} mt/xml
+
+          "nil if no content-type header"
+          {"accept" "application/xml; q=1"} nil
+
+          "nil if no acceptable type"
+          {"content-type" "text/html, application/foo"} nil)))
+
 
 
 (deftest convert-format-extension-to-mime-type

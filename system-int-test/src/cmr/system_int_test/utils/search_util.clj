@@ -484,7 +484,7 @@
 (defn mime-type-matches-response?
   "Checks that the response's content type mime type is the given mime type."
   [response mime-type]
-  (= mime-type (mime-types/mime-type-from-headers (:headers response))))
+  (= mime-type (mime-types/content-type-mime-type (:headers response))))
 
 (defn provider-holdings-in-format
   "Returns the provider holdings."

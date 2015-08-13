@@ -22,12 +22,6 @@
                                                 (for [p vp/virtual-product-providers]
                                                   [(str p "_guid") p]))))
 
-(defn- assert-matching-granule-urs
-  "Asserts that the references found from a search match the expected granule URs."
-  [expected-granule-urs {:keys [refs]}]
-  (is (= (set expected-granule-urs)
-         (set (map :name refs)))))
-
 (comment
   (do
     (dev-sys-util/reset)
@@ -42,8 +36,6 @@
   (def vpc (vp/ingest-virtual-collections isc))
 
   )
-
-;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
 
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
@@ -81,7 +73,7 @@
 
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls]
-        (assert-matching-granule-urs
+        (vp/assert-matching-granule-urs
           [(vp-config/generate-granule-ur
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
@@ -98,7 +90,7 @@
           (is (= 0 (:hits (search/find-refs :granule {:project "proj1"})))))
 
         (testing "Find virtual granule by shared fields"
-          (assert-matching-granule-urs
+          (vp/assert-matching-granule-urs
             all-expected-granule-urs
             (search/find-refs :granule {:page-size 50
                                         :project "proj2"})))))
@@ -116,7 +108,7 @@
                                                      (dissoc ast-l1a-gran :revision-id :concept-id))]
         (index/wait-until-indexed)
         (testing "Find all granules"
-          (assert-matching-granule-urs
+          (vp/assert-matching-granule-urs
             all-expected-granule-urs
             (search/find-refs :granule {:page-size 50})))))))
 
@@ -140,7 +132,7 @@
     (index/wait-until-indexed)
 
     (testing "Find all granules"
-      (assert-matching-granule-urs
+      (vp/assert-matching-granule-urs
         all-expected-granule-urs
         (search/find-refs :granule {:page-size 50})))
 
@@ -149,7 +141,7 @@
               :let [{:keys [provider-id source-collection]} vp-coll
                     source-short-name (get-in source-collection [:product :short-name])
                     vp-short-name (get-in vp-coll [:product :short-name])]]
-        (assert-matching-granule-urs
+        (vp/assert-matching-granule-urs
           (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
                (vp-config/sample-source-granule-urs
                  [provider-id (:entry-title source-collection)]))
@@ -357,7 +349,7 @@
         expected-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
-    (assert-matching-granule-urs
+    (vp/assert-matching-granule-urs
       all-expected-granule-urs
       (search/find-refs :granule {:page-size 50}))))
 
@@ -430,64 +422,4 @@
                [{:url (str data-path ur-suffix) :type "GET DATA"}])))
 
 (deftest ast-granule-umm-matchers-test
-  (let [[ast-coll] (vp/ingest-source-collections
-                     [(assoc
-                        (dc/collection
-                          {:entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                           :short-name "AST_L1A"})
-                        :provider-id "LPDAAC_ECS")])
-        vp-colls (vp/ingest-virtual-collections [ast-coll])
-        psa1 (dg/psa "TIR_ObservationMode" ["ON"])
-        psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
-        psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
-        psa4 (dg/psa "VNIR2_ObservationMode" ["ON"])]
-    (are [granule-attrs expected-granule-urs]
-         (let [_ (d/ingest "LPDAAC_ECS" (dg/granule ast-coll granule-attrs))
-               _ (index/wait-until-indexed)
-               src-granule-ur (:granule-ur granule-attrs)
-               query-param {"attribute[]" (format "string,%s,%s"
-                                                  vp-config/source-granule-ur-additional-attr-name
-                                                  src-granule-ur)
-                            :page-size 20}
-               refs (search/find-refs :granule query-param)]
-           (assert-matching-granule-urs expected-granule-urs refs))
-
-         {:granule-ur "SC:AST_L1A.003:2006227720"
-          :product-specific-attributes [psa4]}
-         []
-
-         {:granule-ur "SC:AST_L1A.003:2006227721"
-          :product-specific-attributes [psa1]}
-         ["SC:AST_05.003:2006227721" "SC:AST_08.003:2006227721" "SC:AST_09T.003:2006227721"]
-
-         {:granule-ur "SC:AST_L1A.003:2006227722"
-          :product-specific-attributes [psa1 psa2 psa3 psa4]}
-         ["SC:AST_05.003:2006227722" "SC:AST_08.003:2006227722" "SC:AST_09T.003:2006227722"]
-
-         {:granule-ur "SC:AST_L1A.003:2006227724"
-          :product-specific-attributes [psa3 psa4]
-          :data-granule (umm-g/map->DataGranule
-                          {:day-night "DAY"
-                           :production-date-time "2014-09-26T11:11:00Z"})}
-         ["SC:AST14DEM.003:2006227724" "SC:AST14OTH.003:2006227724" "SC:AST14DMO.003:2006227724"]
-
-         {:granule-ur "SC:AST_L1A.003:2006227725"
-          :product-specific-attributes [psa2 psa3 psa4]
-          :data-granule (umm-g/map->DataGranule
-                          {:day-night "DAY"
-                           :production-date-time "2014-09-26T11:11:00Z"})}
-         ["SC:AST14DMO.003:2006227725" "SC:AST_09.003:2006227725"
-          "SC:AST_09XT.003:2006227725" "SC:AST14DEM.003:2006227725"
-          "SC:AST_07.003:2006227725"   "SC:AST14OTH.003:2006227725"
-          "SC:AST_07XT.003:2006227725"]
-
-         {:granule-ur "SC:AST_L1A.003:2006227726"
-          :product-specific-attributes [psa1 psa2 psa3 psa4]
-          :data-granule (umm-g/map->DataGranule
-                          {:day-night "DAY"
-                           :production-date-time "2014-09-26T11:11:00Z"})}
-         ["SC:AST_09XT.003:2006227726" "SC:AST14DEM.003:2006227726"
-          "SC:AST_08.003:2006227726"   "SC:AST_05.003:2006227726"
-          "SC:AST14OTH.003:2006227726" "SC:AST_07.003:2006227726"
-          "SC:AST_09.003:2006227726"   "SC:AST_09T.003:2006227726"
-          "SC:AST_07XT.003:2006227726" "SC:AST14DMO.003:2006227726"])))
+  (vp/assert-psa-granules-match index/wait-until-indexed))
