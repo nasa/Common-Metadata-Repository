@@ -41,7 +41,7 @@
   (try
     (let [mdb-context {:system (helper/get-metadata-db system)}
           indexer-context {:system (helper/get-indexer system)}]
-      (concept-service/save-concept-revision mdb-context  {:concept concept-id
+      (concept-service/save-concept-revision mdb-context  {:concept-id concept-id
                                                            :revision-id revision-id
                                                            :deleted true})
       (index-service/delete-concept indexer-context concept-id revision-id true))

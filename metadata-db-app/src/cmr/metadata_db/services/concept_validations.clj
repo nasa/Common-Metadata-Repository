@@ -104,7 +104,7 @@
 (defn validate-tombstone-keys
   "Validates that there are no extraneous keys"
   [tombstone]
-  (map #(msg/invalid-tombstone-field %)
+  (map msg/invalid-tombstone-field
        (set/difference (set (keys tombstone))
                        valid-tombstone-keys)))
 

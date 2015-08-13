@@ -60,7 +60,8 @@
       (is (= 201 status))
       (is (= 4 revision-id))
 
-      ;; Make sure that the saved tombstone is what it is expected to be
+      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
+      ;; and deleted = true.
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
@@ -174,7 +175,7 @@
       (u/are2 [concept expected-status error-messages]
               (let [{:keys [status errors]} (util/save-concept concept)]
                 (and (= expected-status status)
-                     (= (set error-messages) (set errors))))
+                     (= error-messages errors)))
 
               "Invalid revision-id: Regular provider"
               {:concept-id (:concept-id coll-reg-prov) :revision-id 1 :deleted true} 409
@@ -194,19 +195,7 @@
 
               "Missing concept for missing provider"
               {:concept-id "C100-NONEXIST" :deleted true} 404
-              ["Provider with provider-id [NONEXIST] does not exist."]
-
-              "No concept id given"
-              {:deleted true} 422
-              ["Concept must include concept-id."]
-
-              "Invalid keys in the concept"
-              {:concept-id (:concept-id coll-reg-prov) :provider-id "PROV"
-               :deleted true :native-id "coll" :format "echo10" :metadata "xml"} 422
-              ["Tombstone concept cannot include [provider-id]"
-               "Tombstone concept cannot include [native-id]"
-               "Tombstone concept cannot include [format]"
-               "Tombstone concept cannot include [metadata]"]))))
+              ["Provider with provider-id [NONEXIST] does not exist."]))))
 
 (deftest repeated-calls-to-delete-get-same-revision
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
