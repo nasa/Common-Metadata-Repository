@@ -4,8 +4,6 @@
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as p]
-            [cmr.common.validations.json-schema :as js]
-            [cheshire.core :as json]
             [cmr.common.util :as util]))
 
 (defn concept-type-missing-validation
@@ -22,6 +20,11 @@
   [concept]
   (when-not (:native-id concept)
     [(msg/missing-native-id)]))
+
+(defn concept-id-missing-validation
+  [concept]
+  (when-not (:concept-id concept)
+    [(msg/missing-concept-id)]))
 
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
@@ -95,22 +98,19 @@
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data concept-validation))
 
-(def tombstone-concept-schema
-  "Schema for validating the JSON request containing tombstone concept sent to the save concept end-point"
-  (js/parse-json-schema
-    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
-                           "title" "Tombstone concept passed into the the save concept end-point"
-                           "description" (str "Schema for validating the JSON request containing "
-                                              "tombstone concept sent to the save concept end-point")
-                           "type" "object"
-                           "additionalProperties" false
-                           "properties" {"concept-id" {"type" "string"}
-                                         "revision-id" {"type" "integer"}
-                                         "user-id" {"type" "string"}
-                                         "revision-date" {"type" "string"}
-                                         "deleted" {"type" "boolean"}}
-                           "required" ["concept-id" "deleted"]})))
+(def valid-tombstone-keys
+  #{:concept-id :revision-id :revision-date :concept-type :deleted})
 
-(defn validate-tombstone-concept
+(defn validate-tombstone-keys
+  "Validates that there are no extraneous keys"
   [tombstone]
-  (js/validate-json tombstone-concept-schema (json/generate-string tombstone)))
+  (map #(msg/invalid-tombstone-field %)
+       (set/difference (set (keys tombstone))
+                       valid-tombstone-keys)))
+
+(def tombstone-request-validation
+  (util/compose-validations [concept-id-missing-validation
+                             validate-tombstone-keys]))
+
+(def validate-tombstone-request
+  (util/build-validator :invalid-data tombstone-request-validation))

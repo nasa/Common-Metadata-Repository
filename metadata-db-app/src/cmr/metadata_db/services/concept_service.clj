@@ -311,13 +311,13 @@
 (defmulti save-concept-revision
   "Store a concept record, which could be a tombstone, and return the revision."
   (fn [context concept]
-    (:deleted concept)))
+    (boolean (:deleted concept))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
-  (cv/validate-tombstone-concept concept)
-  (let [{:keys [concept-id revision-id]} (:concept-id concept)
+  (cv/validate-tombstone-request concept)
+  (let [{:keys [concept-id revision-id revision-date]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
@@ -331,7 +331,11 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [tombstone (merge previous-revision concept)]
+        (let [tombstone (merge previous-revision {:concept-id concept-id
+                                                  :revision-id revision-id
+                                                  :revision-date revision-date
+                                                  :metadata ""
+                                                  :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db provider tombstone previous-revision)]

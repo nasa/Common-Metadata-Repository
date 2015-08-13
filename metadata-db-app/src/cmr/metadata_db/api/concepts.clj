@@ -7,6 +7,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.search-service :as search-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -82,7 +83,7 @@
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
   (let [{:keys [revision-id]} (concept-service/save-concept-revision
-                                context {:concept concept-id
+                                context {:concept-id concept-id
                                          :revision-id (as-int revision-id)
                                          :revision-date (:revision-date params)
                                          :deleted true})]
