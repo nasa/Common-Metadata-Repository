@@ -17,23 +17,26 @@
   \"d51f97c7-387a-4794-b445-bb1daa486cde\""
   [csv-line field-separator]
   (-> csv-line
+      str/trim
       (str/replace (re-pattern "^\"") "")
       (str/replace (re-pattern "\"$") "")
       (str/split (re-pattern field-separator))))
 
-(defn- log-warning-for-invalid-entries
+(defn- validate-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
-  do not know how to correctly map from short name to the full hierarchy. We log a warning, and
-  choose one of the hierarchies at random."
+  do not know how to correctly map from short name to the full hierarchy. Returns a sequence of
+  short name, entry tuples.
+
+  Takes a list of the keywords represented as a map with each subfield name being a key."
   [keyword-entries]
   (let [duplicates (for [v (vals (group-by keyword (map :short-name keyword-entries)))
                          :when (> (count v) 1)]
                      (first v))]
-    (doseq [short-name duplicates :when short-name]
-      (doseq [entry keyword-entries :when (= short-name (:short-name entry))]
-        (warn (format "Found duplicate controlled vocabulary for short-name [%s]: %s"
-                      short-name
-                      entry))))))
+    (into {}
+          (for [short-name duplicates :when short-name]
+            (group-by :short-name
+                      (for [entry keyword-entries :when (= short-name (:short-name entry))]
+                        entry))))))
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
@@ -42,7 +45,7 @@
   values.
 
   Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
-  value. andmaps containing the subfield names as keys for each of the values."
+  value."
   [keyword-scheme csv-content]
   (let [all-lines (str/split-lines csv-content)
         ;; Line 2 contains the names of the subfield names
@@ -50,9 +53,16 @@
         keyword-entries (map util/remove-blank-keys
                              (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
                                   ;; Lines 3 to the end are the values
-                                  (rest (rest all-lines))))]
+                                  (rest (rest all-lines))))
+        invalid-entries (validate-entries keyword-entries)]
 
-    (log-warning-for-invalid-entries keyword-entries)
+    ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
+    (doseq [[short-name entries] invalid-entries
+            entry entries]
+      (warn (format "Found duplicate keywords for %s short-name [%s]: %s"
+                    (name keyword-scheme)
+                    short-name
+                    entry)))
 
     ;; Create a map with the short-names as keys to the full hierarchy for that short-name
     (into {}
@@ -91,7 +101,7 @@
     keywords))
 
 (comment
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :providers))
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :instruments))
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :platforms))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :providers))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :instruments))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :platforms))
   )

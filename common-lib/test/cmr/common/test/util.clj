@@ -106,10 +106,14 @@
                (ex-data e)))))))
 
 (deftest remove-nil-keys-test
-  (is (= {:a true :c "value" :d false}
+  (is (= {:a true :c "value" :d false :e "" :f " "}
          (util/remove-nil-keys
-           {:a true :b nil :c "value" :d false}))))
+           {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
+(deftest remove-blank-keys-test
+  (is (= {:a true :c "value" :d false}
+         (util/remove-blank-keys
+           {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
 (deftest rename-keys-with-test
   (testing "basic rename key tests"
