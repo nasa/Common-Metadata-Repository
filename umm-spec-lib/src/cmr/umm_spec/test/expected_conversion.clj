@@ -24,3 +24,8 @@
   [metadata-format]
   ;; identity is used if no conversion is needed.
   (get formats->expected-conversion-fns metadata-format identity))
+
+(defn convert
+  [input-record metadata-format]
+  (let [f (metadata-format->expected-conversion metadata-format)]
+    (f input-record)))

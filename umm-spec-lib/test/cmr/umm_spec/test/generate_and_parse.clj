@@ -66,31 +66,37 @@
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format to-xml to-umm]
-        (let [xml (xg/generate-xml to-xml example-record)
-              validation-errors (c/validate-xml :collection metadata-format xml)
-              parsed (xp/parse-xml to-umm xml)
-              expected-manip-fn (expected-conversion/metadata-format->expected-conversion metadata-format)
-              expected (expected-manip-fn example-record)]
-          (and (empty? validation-errors)
-               (= expected parsed)))
-        "echo10"
-        :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c
+    (= (expected-conversion/convert example-record metadata-format)
+       (xp/parse-xml to-umm (xg/generate-xml to-xml example-record)))
+    
+    "echo10"
+    :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c
 
-        "dif9"
-        :dif xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c
+    "dif9"
+    :dif xm-dif9/umm-c-to-dif9-xml um-dif9/dif9-xml-to-umm-c
 
-        "dif10"
-        :dif10 xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c
+    "dif10"
+    :dif10 xm-dif10/umm-c-to-dif10-xml um-dif10/dif10-xml-to-umm-c
 
-        "iso-smap"
-        :iso-smap xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c
+    "iso-smap"
+    :iso-smap xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c
 
-        "ISO19115-2"
-        :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c)
+    "ISO19115-2"
+    :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c)
 
   ;; This is here because echo10 supported additional fields
   (testing "echo10 supported fields"
     (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
           parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)
-          expected-manip-fn (expected-conversion/metadata-format->expected-conversion :echo10)]
-      (is (= (expected-manip-fn example-record-echo10-supported) parsed)))))
+          expected (expected-conversion/convert example-record-echo10-supported :echo10)]
+      (is (= expected parsed)))))
+
+(deftest generate-valid-xml
+  (testing "valid XML is generated for each format"
+    (are [fmt generator]
+        (empty? (c/validate-xml :collection fmt (xg/generate-xml generator example-record)))
+      :echo10   xm-echo10/umm-c-to-echo10-xml
+      :dif      xm-dif9/umm-c-to-dif9-xml
+      :dif10    xm-dif10/umm-c-to-dif10-xml
+      :iso-smap xm-smap/umm-c-to-iso-smap-xml
+      :iso19115 xm-iso2/umm-c-to-iso19115-2-xml)))
