@@ -18,7 +18,8 @@
         indexer-context {:system (helper/get-indexer system)}
         concept-str (fn [] (pr-str (dissoc concept :metadata)))]
     (try
-      (let [{:keys [concept-id revision-id]} (concept-service/save-concept mdb-context concept)]
+      (let [{:keys [concept-id revision-id]} (concept-service/save-concept-revision
+                                               mdb-context concept)]
         (index-service/index-concept indexer-context concept-id revision-id
                                      {:ignore-conflict? true :all-revisions-index? false})
         (index-service/index-concept indexer-context concept-id revision-id
@@ -40,7 +41,9 @@
   (try
     (let [mdb-context {:system (helper/get-metadata-db system)}
           indexer-context {:system (helper/get-indexer system)}]
-      (concept-service/delete-concept mdb-context concept-id revision-id nil)
+      (concept-service/save-concept-revision mdb-context  {:concept concept-id
+                                                           :revision-id revision-id
+                                                           :deleted true})
       (index-service/delete-concept indexer-context concept-id revision-id true))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]

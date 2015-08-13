@@ -4,6 +4,8 @@
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as p]
+            [cmr.common.validations.json-schema :as js]
+            [cheshire.core :as json]
             [cmr.common.util :as util]))
 
 (defn concept-type-missing-validation
@@ -92,3 +94,23 @@
 (def validate-concept
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data concept-validation))
+
+(def tombstone-concept-schema
+  "Schema for validating the JSON request containing tombstone concept sent to the save concept end-point"
+  (js/parse-json-schema
+    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
+                           "title" "Tombstone concept passed into the the save concept end-point"
+                           "description" (str "Schema for validating the JSON request containing "
+                                              "tombstone concept sent to the save concept end-point")
+                           "type" "object"
+                           "additionalProperties" false
+                           "properties" {"concept-id" {"type" "string"}
+                                         "revision-id" {"type" "integer"}
+                                         "user-id" {"type" "string"}
+                                         "revision-date" {"type" "string"}
+                                         "deleted" {"type" "boolean"}}
+                           "required" ["concept-id" "deleted"]})))
+
+(defn validate-tombstone-concept
+  [tombstone]
+  (js/validate-json tombstone-concept-schema (json/generate-string tombstone)))

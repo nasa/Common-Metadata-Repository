@@ -308,11 +308,18 @@
         provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
-(deftracefn delete-concept
-  "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
-  [context concept-id revision-id revision-date]
-  (let [db (util/context->db context)
+(defmulti save-concept-revision
+  "Store a concept record, which could be a tombstone, and return the revision."
+  (fn [context concept]
+    (:deleted concept)))
+
+;; true implies creation of tombstone for the revision
+(defmethod save-concept-revision true
+  [context concept]
+  (cv/validate-tombstone-concept concept)
+  (let [{:keys [concept-id revision-id]} (:concept-id concept)
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
@@ -324,8 +331,7 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""
-                                                  :revision-date revision-date})]
+        (let [tombstone (merge previous-revision concept)]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db provider tombstone previous-revision)]
@@ -339,22 +345,17 @@
                           msg/concept-does-not-exist
                           concept-id))))))
 
-(deftracefn save-concept
-  "Store a concept record and return the revision."
+(defmethod save-concept-revision false
   [context concept]
-  (if (:deleted concept)
-    (let [{:keys [concept-id revision-id revision-date]} concept]
-      (delete-concept context concept-id revision-id revision-date))
-    (do
-      (cv/validate-concept concept)
-      (let [db (util/context->db context)
-            provider (provider-service/get-provider-by-id context (:provider-id concept) true)
-            concept (set-or-generate-concept-id db provider concept)]
-        (validate-concept-revision-id db provider concept)
-        (let [concept (->> concept
-                           (set-or-generate-revision-id db provider)
-                           (set-deleted-flag false))]
-          (try-to-save db provider concept))))))
+  (cv/validate-concept concept)
+  (let [db (util/context->db context)
+        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
+        concept (set-or-generate-concept-id db provider concept)]
+    (validate-concept-revision-id db provider concept)
+    (let [concept (->> concept
+                       (set-or-generate-revision-id db provider)
+                       (set-deleted-flag false))]
+      (try-to-save db provider concept))))
 
 (deftracefn force-delete
   "Remove a revision of a concept from the database completely."
