@@ -71,24 +71,13 @@
   ;; We want the latest permitted groups to be indexed with the collections
   (acl-fetcher/refresh-acl-cache context)
 
-
-
   (doseq [provider-id provider-ids]
     (info "Reindexing latest collections for provider" provider-id)
     (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
       (bulk-index context [latest-collections] false))
 
-    ;; TODO add comment that this won't cleanup old revisions that were removed
-    ;; Add comment on issue that we'll handle it during index management epic
-
-    ;; TODO when deploying this we need to manually delete everything from the index
-    ;; then reindex things.
-    ;; Make a note of that in the issue.
-    ;; Create the sprint release page and add that note as well along with the elastic request to send.
-
-
-    ;; TODO  when processing the message in the indexer make the _version correct (revision id + 1)
-
+    ;; Note that this will not unindex revisions that were removed directly from the database.
+    ;; We will handle that with the index management epic.
     (info "Reindexing all collection revisions for provider" provider-id)
     (let [all-revisions-batches (meta-db/find-collections-in-batches
                                   context
