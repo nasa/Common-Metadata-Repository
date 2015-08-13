@@ -4,7 +4,6 @@
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
-            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.template :as template]
@@ -169,13 +168,11 @@
   [m]
   (apply dissoc m (for [[k v] m :when (nil? v)] k)))
 
-(defn remove-blank-keys
-  "Removes keys mapping to nil or blank strings in a map."
-  [m]
+(defn remove-map-keys
+  "Removes all keys from a map where the provided function returns true."
+  [f m]
   (apply dissoc m (for [[k v] m
-                        :when (or (nil? v)
-                                  (and (string? v)
-                                       (str/blank? v)))]
+                        :when (f v)]
                     k)))
 
 (defn map-keys [f m]

@@ -50,7 +50,9 @@
   (let [all-lines (str/split-lines csv-content)
         ;; Line 2 contains the names of the subfield names
         subfield-names (map csk/->kebab-case-keyword (parse-single-csv-line (second all-lines) ","))
-        keyword-entries (map util/remove-blank-keys
+        keyword-entries (map (fn [entry] (util/remove-map-keys
+                                           (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
+                                           entry))
                              (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
                                   ;; Lines 3 to the end are the values
                                   (rest (rest all-lines))))

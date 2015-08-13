@@ -7,6 +7,7 @@
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clj-time.core :as t]
+            [clojure.string :as str]
             [cmr.common.util :as util :refer [defn-timed]]))
 
 (deftest test-sequence->fn
@@ -110,9 +111,10 @@
          (util/remove-nil-keys
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
-(deftest remove-blank-keys-test
+(deftest remove-map-keys-test
   (is (= {:a true :c "value" :d false}
-         (util/remove-blank-keys
+         (util/remove-map-keys
+           (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
 (deftest rename-keys-with-test
