@@ -40,7 +40,8 @@
      [:Contact_Person
       [:Last_Name "Not provided"]]]]
    [:Summary
-    [:Abstract (xpath "/Abstract")]]
+    [:Abstract (xpath "/Abstract")]
+    [:Purpose (xpath "/Purpose")]]
    [:Related_URL
     [:URL "http://www.foo.com"]]
    [:Metadata_Name "CEOS IDN DIF"]

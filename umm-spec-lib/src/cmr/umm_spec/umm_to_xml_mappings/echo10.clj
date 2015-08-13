@@ -34,5 +34,6 @@
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
          [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
    [:Orderable "true"]
-   [:Visible "true"]])
+   [:Visible "true"]
+   [:SuggestedUsage (xpath "/Purpose")]])
 
