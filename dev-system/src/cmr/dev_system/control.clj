@@ -1,7 +1,8 @@
 (ns cmr.dev-system.control
   "A namespace that creates a web server for control of the dev system. It allows the system to be
   stopped for easy testing in CI."
-  (:require [compojure.handler :as handler]
+  (:require [clojure.java.io :as io]
+            [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
             [cheshire.core :as json]
@@ -81,6 +82,15 @@
 
 (defn- build-routes [system]
   (routes
+    ;; Retrieve KMS resources
+    (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
+      (let [resource (io/resource (str keyword-scheme "/" filename))]
+        (if resource
+          {:status 200
+           :body (slurp resource)
+           :headers {"Content-Type" "application/csv"}}
+          (route/not-found "KMS resource not found\n"))))
+
     ;; For debugging. Gets the state of the world in relations to ACLs and what's indexed
     (GET "/acl-state" []
       {:status 200

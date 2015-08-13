@@ -43,7 +43,7 @@
 
   Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
   value. andmaps containing the subfield names as keys for each of the values."
-  [concept-scheme csv-content]
+  [keyword-scheme csv-content]
   (let [all-lines (str/split-lines csv-content)
         ;; Line 2 contains the names of the subfield names
         subfield-names (map csk/->kebab-case-keyword (parse-single-csv-line (second all-lines) ","))
@@ -61,39 +61,37 @@
                 :when short-name]
             [short-name entry]))))
 
-(defn- get-by-concept-scheme
+(defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
-  concept-scheme"
-  ([context concept-scheme]
-   (get-by-concept-scheme context concept-scheme {}))
-  ([context concept-scheme options]
-   (let [conn (config/context->app-connection context :kms)
-         url (format "%s/%s/%s.csv"
-                     (conn/root-url conn)
-                     (name concept-scheme)
-                     (name concept-scheme))
-         params (merge {:throw-exceptions false
-                        :connection-manager (conn/conn-mgr conn)}
-                       options)
-         start (System/currentTimeMillis)
-         response (client/get url params)]
-     (debug
-       (format
-         "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
-     response)))
+  keyword scheme"
+  [context keyword-scheme]
+  (let [conn (config/context->app-connection context :kms)
+        url (format "%s/%s/%s.csv"
+                    (conn/root-url conn)
+                    (name keyword-scheme)
+                    (name keyword-scheme))
+        params {:connection-manager (conn/conn-mgr conn)
+                :throw-exceptions true}
+        start (System/currentTimeMillis)
+        response (client/get url params)]
+    (debug
+      (format
+        "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
+    (:body response)))
 
 ;; Public API
 
-(defn get-keywords-for-concept-scheme
+(defn get-keywords-for-keyword-scheme
   "Returns the full list of keywords from the GCMD Keyword Management System (KMS) for the given
-  concept scheme. Supported concept schemes include providers, platforms, and instruments."
-  [context concept-scheme]
-  (let [keywords (parse-entries-from-csv concept-scheme
-                                         (:body (get-by-concept-scheme context concept-scheme)))]
-    (debug (format "Found %s keywords for %s" (count (keys keywords)) (name concept-scheme)))
+  keyword scheme. Supported concept schemes include providers, platforms, and instruments."
+  [context keyword-scheme]
+  (let [keywords
+        (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
+    (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
     keywords))
-  ; (parse-entries-from-csv :providers (slurp (clojure.java.io/resource "provider_kms.csv"))))
 
 (comment
-  (take 3 (get-keywords-for-concept-scheme {:system (cmr.search.system/create-system)} :providers))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :providers))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :instruments))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.search.system/create-system)} :platforms))
   )

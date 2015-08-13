@@ -60,15 +60,15 @@
 
 (defconfig kms-host
   "The host name to use for connections to GCMD KMS."
-  {:default "gcmdservices.gsfc.nasa.gov"})
+  {:default "localhost"})
 
 (defconfig kms-port
   "The port to use for connections to GCMD KMS."
-  {:default 80 :type Long})
+  {:default 2999 :type Long})
 
 (defconfig kms-relative-root-url
   "The root URL for accessing GCMD KMS resources."
-  {:default "/static/kms"})
+  {:default "/kms"})
 
 (def default-conn-info
   "The default values for connections."
