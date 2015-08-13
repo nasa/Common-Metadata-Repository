@@ -15,6 +15,13 @@
               "[gmd:description/gco:CharacterString='The ECS Short Name']"
               "/gmd:code/gco:CharacterString")))
 
+(def abstract-xpath
+  (xpath (str metadata-base-xpath
+              "/gmd:identificationInfo/gmd:MD_DataIdentification"
+              "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+              "/gmd:description/gco:CharacterString='The ECS Short Name']"
+              "/gmd:abstract/gco:CharacterString")))
+
 (def entry-title-xpath
   (xpath (str metadata-base-xpath
               "/gmd:identificationInfo/gmd:MD_DataIdentification"
@@ -26,4 +33,5 @@
   (apt/add-parsing-types
     js/umm-c-schema
     (object {:EntryId (object {:Id entry-id-xpath})
-             :EntryTitle entry-title-xpath})))
+             :EntryTitle entry-title-xpath
+             :Abstract abstract-xpath})))

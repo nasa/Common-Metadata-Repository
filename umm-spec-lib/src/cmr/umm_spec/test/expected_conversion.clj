@@ -11,6 +11,7 @@
   ;; entry id concatenated with the version id.
   (update-in expected [:EntryId :Id] #(str % "_"
                                            ;; put version here once it's added to UMM.
+                                           "V1"
                                            )))
 
 (def ^:private formats->expected-conversion-fns

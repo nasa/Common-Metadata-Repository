@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gmx:CT_CodelistCatalogue xmlns:gmx="http://www.isotc211.org/2005/gmx"
+   xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gml="http://www.opengis.net/gml/3.2"
+   xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.isotc211.org/2005/gmx ../../gmx/gmx.xsd http://www.isotc211.org/2005/gco ../../gco/gco.xsd http://www.opengis.net/gml ../../gml/gml.xsd http://www.w3.org/1999/xlink ../../xlink/xlinks.xsd">
+   <gmx:name>
+      <gco:CharacterString>eosCodelists</gco:CharacterString>
+   </gmx:name>
+   <gmx:scope>
+      <gco:CharacterString>Codelists for description of NASA Additional
+         Attributes</gco:CharacterString>
+   </gmx:scope>
+   <gmx:fieldOfApplication>
+      <gco:CharacterString>EOS Namespace</gco:CharacterString>
+   </gmx:fieldOfApplication>
+   <gmx:versionNumber>
+      <gco:CharacterString>0.0</gco:CharacterString>
+   </gmx:versionNumber>
+   <gmx:versionDate>
+      <gco:Date>2013-04-21</gco:Date>
+   </gmx:versionDate>
+   <gmx:codelistItem>
+      <gmx:CodeListDictionary gml:id="EOS_AdditionalAttributeTypeCode">
+         <gml:description>Codes that describe types used to classify NASA/ESDIS additional attributes.</gml:description>
+         <gml:identifier codeSpace="gov.nasa.esdis">EOS_AdditionalAttributeTypeCode</gml:identifier>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_geographicIdentifier">
+               <gml:description>The Additional Attribute provides an identifier for a geographic
+                  feature.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">geographicIdentifier</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_qualityInformation">
+               <gml:description>The Additional Attribute provides information about quality of the
+                  resource.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">qualityInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_instrumentInformation">
+               <gml:description>The Additional Attribute provides information about
+                  instrument(s).</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">instrumentInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_sensorInformation">
+               <gml:description>The Additional Attribute provides information about
+                  sensor(s).</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">sensorInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_contentInformation">
+               <gml:description>The Additional Attribute provides information about the content of
+                  the resource.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">contentInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_platformInformation">
+               <gml:description>The Additional Attribute provides information about
+                  platform(s).</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">platformInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_citation.identifier">
+               <gml:description>The Additional Attribute provides an identifier for the
+                  resource.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">citation.identifier</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_descriptiveKeyword">
+               <gml:description>The Additional Attribute provides a keyword value.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">descriptiveKeyword</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_processingInformation">
+               <gml:description>The Additional Attribute provides information about processing of
+                  the resource(s).</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">processingInformation</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+        <gmx:codeEntry>
+          <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_processingParameter">
+            <gml:description>The Additional Attribute provides information about a parameter used in processing of
+              the resource(s).</gml:description>
+            <gml:identifier codeSpace="gov.nasa.esdis">processingParameter</gml:identifier>
+          </gmx:CodeDefinition>
+        </gmx:codeEntry>
+        <gmx:codeEntry>
+          <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeTypeCode_commandLineArgument">
+            <gml:description>The Additional Attribute provides information about a commandLineArgument used in processing of
+              the resource(s).</gml:description>
+            <gml:identifier codeSpace="gov.nasa.esdis">commandLineArgument</gml:identifier>
+          </gmx:CodeDefinition>
+        </gmx:codeEntry>
+      </gmx:CodeListDictionary>
+   </gmx:codelistItem>
+   <gmx:codelistItem>
+      <gmx:CodeListDictionary gml:id="EOS_AdditionalAttributeDataTypeCode">
+        <gml:description>Codes that describe basic computer science types for NASA/ESDIS additional attribute values.</gml:description>
+         <gml:identifier codeSpace="gov.nasa.esdis">EOS_AdditionalAttributeDataTypeCode</gml:identifier>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_string">
+               <gml:description>The parameter value type is XML primitive string type. See the XML
+                  Schema specification (http://www.w3.org/TR/xmlschema-2/#string) for more
+                  information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">string</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_float">
+               <gml:description>The parameter value type is XML primitive float type, without
+                  support for positive or negative infinity, or not-a-number. See the XML Schema
+                  specification (http://www.w3.org/TR/xmlschema-2/#string) for more
+                  information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">float</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_int">
+               <gml:description>The parameter value type is XML derived int type. See the XML Schema
+                  specification (http://www.w3.org/TR/xmlschema-2/#string) for more
+                  information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">int</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_boolean">
+               <gml:description>The parameter value type is XML primitive boolean type. See the XML
+                  Schema specification (http://www.w3.org/TR/xmlschema-2/#string) for more
+                  information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">boolean</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_date">
+               <gml:description>The parameter value type is XML primitive date type but with GMT
+                  timezone, meaning any timezoned or non-timezoned value will be treated as having
+                  GMT timezone. See the XML Schema specification
+                  (http://www.w3.org/TR/xmlschema-2/#string) for more information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">date</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_time">
+               <gml:description>The parameter value type is XML primitive time type but with GMT
+                  timezone, meaning any timezoned or non-timezoned value will be treated as having
+                  GMT timezone. See the XML Schema specification
+                  (http://www.w3.org/TR/xmlschema-2/#string) for more information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">time</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_dateTime">
+               <gml:description>The parameter value type is XML primitive dateTime type. See the XML
+                  Schema specification (http://www.w3.org/TR/xmlschema-2/#string) for more
+                  information.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">dateTime</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_dateString">
+               <gml:description>The parameter value type is a string that follows a provider-defined
+                  date format.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">dateString</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_timeString">
+               <gml:description>The parameter value type is a string that follows a provider-defined
+                  time format.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">timeString</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AdditionalAttributeDataTypeCode_dateTimeString">
+               <gml:description>The parameter value type is a string that follows a provider-defined
+                  dateTime format.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis">dateTimeString</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+      </gmx:CodeListDictionary>
+   </gmx:codelistItem>
+</gmx:CT_CodelistCatalogue>
