@@ -150,6 +150,12 @@ throws error if revision-id is less than or equal to the current highest saved r
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
 
+Tombstones can be created using the same end-point used for saving concepts by specifying "deleted" as true in the body of the POST:
+
+    curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-id": "C1200000000-REG_PROV", "revision-id": 4, "deleted": true}' http://localhost:3001/concepts/
+
+concept-id is a required field. revision-id and revision date are optional. No other fields are allowed.
+
 ### GET /concepts/#concept-id
 
 params: none
