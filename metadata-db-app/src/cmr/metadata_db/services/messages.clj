@@ -36,7 +36,7 @@
 (defn missing-native-id []
   "Concept must include native-id.")
 
-(defn missing-concept-id []
+(defn missing-concept-id-field []
   "Concept must include concept-id.")
 
 (defn missing-extra-fields []

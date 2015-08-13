@@ -24,7 +24,7 @@
 (defn concept-id-missing-validation
   [concept]
   (when-not (:concept-id concept)
-    [(msg/missing-concept-id)]))
+    [(msg/missing-concept-id-field)]))
 
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
