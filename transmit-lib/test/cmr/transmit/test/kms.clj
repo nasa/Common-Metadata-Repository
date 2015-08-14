@@ -5,18 +5,22 @@
 
 (def sample-csv
   "Sample KMS csv file"
-  "This is a sample for testing.
-  field1,FIELD2,field3,Short_Name,UUID
-  \"field1 value, (with commas),\",\"field2\",\"\",\"First Entry\",\"abc-123\"
-  \"line with no short-name\",\"\",\"\",\"\",\"def-456\"
-  \"field1 value 2\",\"field2 v2\",\"field3 value\",\"Last Entry\",\"xyz-789\"")
+  (str
+    "\"This is a sample for testing.\"\n"
+    "field1,FIELD2,field3,Short_Name,UUID\n"
+    "\"field1 value, (with commas)\",\"field2\",\"\",\"First Entry\",\"abc-123\"\n"
+    "\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
+    "\"field1 value 2\",\"field2 v2\",\"field3 value\",\"Last Entry\",\"xyz-789\"\n"))
+
+(comment
+  (clojure.data.csv/read-csv sample-csv))
 
 (def sample-kms-entries
   "Sample KMS entries map"
   [{:uuid "abc-123",
     :short-name "First Entry",
     :field-2 "field2",
-    :field-1 "field1 value, (with commas),"}
+    :field-1 "field1 value, (with commas)"}
    {:uuid "def-456", :field-1 "line with no short-name"}
    {:uuid "xyz-789",
     :short-name "Last Entry",
@@ -34,7 +38,7 @@
 
   (testing "With duplicates"
     (let [expected [{:short-name "First Entry",
-                     :field-1 "field1 value, (with commas),",
+                     :field-1 "field1 value, (with commas)",
                      :field-2 "field2",
                      :uuid "abc-123"}
                     {:short-name "First Entry",
@@ -47,7 +51,7 @@
   (let [expected {"First Entry" {:uuid "abc-123"
                                  :short-name "First Entry"
                                  :field-2 "field2"
-                                 :field-1 "field1 value, (with commas),"}
+                                 :field-1 "field1 value, (with commas)"}
                   "Last Entry" {:uuid "xyz-789"
                                 :short-name "Last Entry"
                                 :field-3 "field3 value"

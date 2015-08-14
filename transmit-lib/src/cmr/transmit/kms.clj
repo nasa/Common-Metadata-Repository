@@ -1,26 +1,24 @@
 (ns cmr.transmit.kms
-  "This namespace handles retrieval of controlled vocabulary from the GCMD Keyword Management
-  System (KMS)."
+  "This namespace handles retrieval of controlled keywords from the GCMD Keyword Management
+  System (KMS). There are several different keyword schemes within KMS. They include providers,
+  platforms, instruments, science keywords, and locations. This namespace currently supports
+  providers, platforms, and instruments.
+
+  For each of the supported keyword schemes we expect the short name to uniquely identify a row
+  in the KMS. However we have found that the actual KMS does contain duplicates. Until the GCMD
+  enforces uniqueness we will track any duplicate short names so that we can make GCMD aware and
+  they fix the entries.
+
+  We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
+  can be found in dev-system/resources/kms_examples."
   (:require [clojure.string :as str]
+            [clojure.data.csv :as csv]
             [clj-http.client :as client]
             [camel-snake-kebab.core :as csk]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
-
-(defn- parse-single-csv-line
-  "Parses a single CSV line into an array of values. An example line:
-
-  \"U.S. STATE/REGIONAL/LOCAL AGENCIES\",\"WYOMING\",\"\",\"\",\"WY/TC/DEM\",\"Department of
-  Emergency Management,Teton County, Wyoming\",\"http://www.tetonwyo.org/em/\",
-  \"d51f97c7-387a-4794-b445-bb1daa486cde\""
-  [csv-line field-separator]
-  (-> csv-line
-      str/trim
-      (str/replace (re-pattern "^\"") "")
-      (str/replace (re-pattern "\"$") "")
-      (str/split (re-pattern field-separator))))
 
 (defn- validate-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
@@ -39,19 +37,19 @@
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
   specific format with the first line providing metadata information, the second line providing
-  a breakdown of the subfields within the hierarchy, and from the third line on are the actual
+  a breakdown of the subfields for the keyword scheme, and from the third line on are the actual
   values.
 
   Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
   value."
   [keyword-scheme csv-content]
-  (let [all-lines (str/split-lines csv-content)
+  (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the names of the subfield names
-        subfield-names (map csk/->kebab-case-keyword (parse-single-csv-line (second all-lines) ","))
+        subfield-names (map csk/->kebab-case-keyword (second all-lines))
         keyword-entries (map (fn [entry] (util/remove-map-keys
                                            (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
                                            entry))
-                             (map #(zipmap subfield-names (parse-single-csv-line % "\",\""))
+                             (map #(zipmap subfield-names %)
                                   ;; Lines 3 to the end are the values
                                   (rest (rest all-lines))))
         invalid-entries (validate-entries keyword-entries)]
@@ -70,7 +68,7 @@
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
-  keyword scheme"
+  keyword scheme."
   [context keyword-scheme]
   (let [conn (config/context->app-connection context :kms)
         url (format "%s/%s/%s.csv"
@@ -90,7 +88,15 @@
 
 (defn get-keywords-for-keyword-scheme
   "Returns the full list of keywords from the GCMD Keyword Management System (KMS) for the given
-  keyword scheme. Supported concept schemes include providers, platforms, and instruments."
+  keyword scheme. Supported keyword schemes include providers, platforms, and instruments.
+
+  Returns a map with each short-name as a key and the full hierarchy map for each keyword as the
+  value.
+
+  Example response:
+  {\"ETALON-2\"
+  {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :short-name \"ETALON-2\",
+  :series-entity \"ETALON\", :category \"Earth Observation Satellites\"} ..."
   [context keyword-scheme]
   (let [keywords
         (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
