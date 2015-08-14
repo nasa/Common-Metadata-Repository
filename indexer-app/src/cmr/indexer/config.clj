@@ -28,15 +28,6 @@
   "The ingest exchange to which messages are published."
   {:default "cmr_ingest.exchange"})
 
-(defconfig deleted-collection-revision-queue-listener-count
-  "Number of worker threads to use for the queue listener for the deleted collection revision queue"
-  {:default 1
-   :type Long})
-
-(defconfig deleted-collection-revision-queue-name
-  "The name of the indexer's queue for processing deleted collection revisions"
-  {:default "cmr_indexer_deleted_collection_revision.queue"})
-
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed
   from metadata db."
@@ -47,13 +38,14 @@
   []
   (assoc (rmq-conf/default-config)
          :queues [(index-queue-name)
-                  (all-revisions-index-queue-name)
-                  (deleted-collection-revision-queue-name)]
+                  (all-revisions-index-queue-name)]
          :exchanges [(ingest-exchange-name) (deleted-collection-revision-exchange-name)]
          :queues-to-exchanges
-         {(index-queue-name) (ingest-exchange-name)
-          (all-revisions-index-queue-name) (ingest-exchange-name)
-          (deleted-collection-revision-queue-name) (deleted-collection-revision-exchange-name)}))
+         {(index-queue-name) [(ingest-exchange-name)]
+          ;; The all revisions index  queue will be bound to both the ingest exchange and the
+          ;; deleted collection revision exchange
+          (all-revisions-index-queue-name) [(ingest-exchange-name)
+                                            (deleted-collection-revision-exchange-name)]}))
 
 (defconfig indexer-nrepl-port
   "Port to listen for nREPL connections"

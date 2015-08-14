@@ -360,7 +360,9 @@
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])
           exchange-name (config/deleted-collection-revision-exchange-name)
-          msg {:concept-id concept-id
+          ;; Note it's important that the format of this message match the ingest event format.
+          msg {:action :concept-revision-delete
+               :concept-id concept-id
                :revision-id revision-id}]
       (queue/publish-message queue-broker exchange-name msg timeout-ms))))
 

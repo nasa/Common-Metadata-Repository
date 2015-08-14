@@ -18,7 +18,6 @@
 
             [cmr.indexer.system :as indexer-system]
             [cmr.indexer.config :as indexer-config]
-            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]
 
             [cmr.ingest.system :as ingest-system]
             [cmr.ingest.data.provider-acl-hash :as ingest-data]

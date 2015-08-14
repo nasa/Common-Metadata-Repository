@@ -64,6 +64,17 @@
            (json/decode true)
            (update-in [:concept-type] keyword))))))
 
+(defn force-delete-concept
+  "Force deletes a concept revision from Metadata db"
+  [concept-id revision-id]
+  (client/request
+    {:method :delete
+     :url (url/mdb-force-delete-concept-url concept-id revision-id)
+     :accept :json
+     :throw-exceptions false
+     :connection-manager (s/conn-mgr)}))
+
+
 (defn concept-exists-in-mdb?
   "Check concept in mdb with the given concept and revision-id"
   [concept-id revision-id]
