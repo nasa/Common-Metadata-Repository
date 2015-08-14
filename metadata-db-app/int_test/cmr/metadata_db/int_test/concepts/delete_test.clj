@@ -31,7 +31,8 @@
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
-                            :revision-id revision-id)
+                            :revision-id revision-id
+                            :user-id nil)
                      :revision-date)
              (dissoc deleted-coll1 :revision-date)))
 
