@@ -20,6 +20,15 @@
     [:Topic "dummy topic"]
     [:Term "dummy term"]]
    [:ISO_Topic_Category "dummy iso topic category"]
+   (for-each "/TemporalExtent/RangeDateTime"
+             [:Temporal_Coverage
+              [:Start_Date (xpath "BeginningDateTime")]
+              [:Stop_Date (xpath "EndingDateTime")]])
+   (for-each "/TemporalExtent/SingleDateTime"
+             [:Temporal_Coverage
+              [:Start_Date (xpath ".")]
+              [:Stop_Date (xpath ".")]])
+   ;; TODO determine if PeriodicDateTime needs to be supported
    [:Data_Center
     [:Data_Center_Name
      [:Short_Name "datacenter_short_name"]
