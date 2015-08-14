@@ -6,6 +6,7 @@
             [cheshire.core :as cheshire]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
+            [cmr.common.util :as u]
             [clj-time.core :as t]))
 
 ;;; fixtures
@@ -60,6 +61,8 @@
       (is (= 201 status))
       (is (= 4 revision-id))
 
+      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
+      ;; and deleted = true.
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
@@ -107,8 +110,8 @@
     (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
           gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
           gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
-          gran1-tombstone (-> gran1
-                              (dissoc :revision-id)
+          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id gran1)
+                                                           :deleted true})
                               (assoc :deleted true))
           {:keys [status revision-id]} (util/save-concept gran1-tombstone)
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
@@ -135,12 +138,6 @@
       (is (= status 201))
       (is (= revision-id 100)))))
 
-(deftest delete-concept-with-invalid-revision
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1)
-          {:keys [status]} (util/delete-concept (:concept-id coll1) 0)]
-      (is (= status 409)))))
-
 (deftest delete-deleted-concept-with-new-revision-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
@@ -150,15 +147,59 @@
       (is (= 5 revision-id1))
       (is (= 7 revision-id2)))))
 
-(deftest fail-to-delete-missing-concept
-  (let [{:keys [status revision-id errors]} (util/delete-concept "C100-REG_PROV")]
-    (is (= status 404))
-    (is (= errors [(messages/concept-does-not-exist "C100-REG_PROV")]))))
+(deftest delete-concept-failure-cases
+  (let [coll-reg-prov (util/create-and-save-collection "REG_PROV" 1)
+        coll-small-prov (util/create-and-save-collection "SMAL_PROV" 1)]
+    (testing "Using delete concept end-point"
+      (u/are2 [concept-id revision-id expected-status error-messages]
+              (let [{:keys [status errors]} (util/delete-concept concept-id revision-id)]
+                (and (= expected-status status)
+                     (= error-messages errors)))
 
-(deftest fail-to-delete-missing-concept-for-missing-provider
-  (let [{:keys [status revision-id errors]} (util/delete-concept "C100-NONEXIST")]
-    (is (= status 404))
-    (is (= errors [(messages/provider-does-not-exist "NONEXIST")]))))
+              "Invalid revision-id: Regular provider"
+              (:concept-id coll-reg-prov) 1 409
+              ["Expected revision-id of [2] got [1] for [C1200000000-REG_PROV]"]
+
+              "Invalid revision-id: Small provider"
+              (:concept-id coll-small-prov) 0 409
+              ["Expected revision-id of [2] got [0] for [C1200000001-SMAL_PROV]"]
+
+              "Missing concept: Regular provider"
+              "C100-REG_PROV" nil 404
+              ["Concept with concept-id [C100-REG_PROV] does not exist."]
+
+              "Missing concept: Small provider"
+              "C100-SMAL_PROV" nil 404
+              ["Concept with concept-id [C100-SMAL_PROV] does not exist."]
+
+              "Missing concept for missing provider"
+              "C100-NONEXIST" nil 404
+              ["Provider with provider-id [NONEXIST] does not exist."]))
+    (testing "Using save concept end-point"
+      (u/are2 [concept expected-status error-messages]
+              (let [{:keys [status errors]} (util/save-concept concept)]
+                (and (= expected-status status)
+                     (= error-messages errors)))
+
+              "Invalid revision-id: Regular provider"
+              {:concept-id (:concept-id coll-reg-prov) :revision-id 1 :deleted true} 409
+              ["Expected revision-id of [2] got [1] for [C1200000000-REG_PROV]"]
+
+              "Invalid revision-id: Small provider"
+              {:concept-id (:concept-id coll-small-prov) :revision-id 0 :deleted true} 409
+              ["Expected revision-id of [2] got [0] for [C1200000001-SMAL_PROV]"]
+
+              "Missing concept: Regular provider"
+              {:concept-id "C100-REG_PROV" :deleted true} 404
+              ["Concept with concept-id [C100-REG_PROV] does not exist."]
+
+              "Missing concept: Small provider"
+              {:concept-id "C100-SMAL_PROV" :deleted true} 404
+              ["Concept with concept-id [C100-SMAL_PROV] does not exist."]
+
+              "Missing concept for missing provider"
+              {:concept-id "C100-NONEXIST" :deleted true} 404
+              ["Provider with provider-id [NONEXIST] does not exist."]))))
 
 (deftest repeated-calls-to-delete-get-same-revision
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -166,4 +207,5 @@
       (is (= (util/delete-concept (:concept-id coll1))
              (util/delete-concept (:concept-id coll1))
              (util/delete-concept (:concept-id coll1)))))))
+
 

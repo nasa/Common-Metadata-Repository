@@ -12,4 +12,22 @@
   [:DIF
    dif9-xml-namespaces
    [:Entry_ID (xpath "/EntryId/Id")]
-   [:Entry_Title (xpath "/EntryTitle")]])
+   [:Entry_Title (xpath "/EntryTitle")]
+   [:Data_Set_Citation
+    [:Dataset_Title "dummy dataset title"]]
+   [:Parameters
+    [:Category "dummy category"]
+    [:Topic "dummy topic"]
+    [:Term "dummy term"]]
+   [:ISO_Topic_Category "dummy iso topic category"]
+   [:Data_Center
+    [:Data_Center_Name
+     [:Short_Name "datacenter_short_name"]
+     [:Long_Name "data center long name"]]
+    [:Personnel
+     [:Role "DummyRole"]
+     [:Last_Name "dummy last name"]]]
+   [:Summary
+    [:Abstract (xpath "/Abstract")]]
+   [:Metadata_Name "CEOS IDN DIF"]
+   [:Metadata_Version "VERSION 9.9.3"]])

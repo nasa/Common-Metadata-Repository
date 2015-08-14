@@ -7,6 +7,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.search-service :as search-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -73,7 +74,7 @@
   (let [concept (-> concept
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))
-        {:keys [concept-id revision-id]} (concept-service/save-concept context concept)]
+        {:keys [concept-id revision-id]} (concept-service/save-concept-revision context concept)]
     {:status 201
      :body (json/generate-string {:revision-id revision-id :concept-id concept-id})
      :headers rh/json-header}))
@@ -81,8 +82,11 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
-  (let [{:keys [revision-id]} (concept-service/delete-concept
-                                context concept-id (as-int revision-id) (:revision-date params))]
+  (let [{:keys [revision-id]} (concept-service/save-concept-revision
+                                context {:concept-id concept-id
+                                         :revision-id (as-int revision-id)
+                                         :revision-date (:revision-date params)
+                                         :deleted true})]
     {:status 201
      :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))

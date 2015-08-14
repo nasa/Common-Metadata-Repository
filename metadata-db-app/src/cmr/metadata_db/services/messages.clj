@@ -36,6 +36,9 @@
 (defn missing-native-id []
   "Concept must include native-id.")
 
+(defn missing-concept-id-field []
+  "Concept must include concept-id.")
+
 (defn missing-extra-fields []
   "Concept must include extra-fields")
 
@@ -47,6 +50,9 @@
 
 (defn missing-extra-field [field]
   (format "Concept must include extra-field value for field [%s]" (name field)))
+
+(defn invalid-tombstone-field [field]
+  (format "Tombstone concept cannot include [%s]" (name field)))
 
 (defn nil-field [field]
   (format "Concept field [%s] cannot be nil." (name field)))

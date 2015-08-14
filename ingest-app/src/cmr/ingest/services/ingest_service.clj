@@ -161,7 +161,9 @@
   [context concept-attribs]
   (let [{:keys [concept-type provider-id native-id]} concept-attribs
         concept-id (mdb/get-concept-id context concept-type provider-id native-id)
-        concept (assoc concept-attribs :concept-id concept-id :deleted true)
+        concept (-> concept-attribs
+                    (dissoc :provider-id :native-id)
+                    (assoc :concept-id concept-id :deleted true))
         {:keys [revision-id]} (mdb/save-concept context concept)]
     (ingest-events/publish-event context (ingest-events/concept-delete-event concept-id revision-id))
     {:concept-id concept-id, :revision-id revision-id}))

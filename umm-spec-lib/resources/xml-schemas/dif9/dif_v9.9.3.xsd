@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+            xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/">
+
+<xs:element name="DIF">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Entry_ID" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Entry_Title" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Data_Set_Citation" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Personnel" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Discipline" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Parameters" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element ref="ISO_Topic_Category" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Keyword" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Sensor_Name" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Source_Name" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Temporal_Coverage" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Paleo_Temporal_Coverage" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Data_Set_Progress" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Spatial_Coverage" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Location" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Data_Resolution" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Project" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Quality" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Access_Constraints" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Use_Constraints" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Data_Set_Language" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Originating_Center" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Data_Center" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element ref="Distribution" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Multimedia_Sample" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Reference" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Summary" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Related_URL" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Parent_DIF" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="IDN_Node" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Originating_Metadata_Node" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Metadata_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Metadata_Version" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="DIF_Creation_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Last_DIF_Revision_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="DIF_Revision_History" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Future_DIF_Review_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Private" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Extended_Metadata" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Entry_ID" type="xs:string"/>
+<xs:element name="Entry_Title" type="xs:string"/>
+<xs:element name="Data_Set_Citation">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Dataset_Creator" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Editor" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Title" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Series_Name" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Release_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Release_Place" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_Publisher" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Version" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Issue_Identification" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Data_Presentation_Form" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Other_Citation_Details" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Dataset_DOI" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Online_Resource" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Dataset_Creator" type="xs:string"/>
+<xs:element name="Dataset_Title" type="xs:string"/>
+<xs:element name="Dataset_Series_Name" type="xs:string"/>
+<xs:element name="Dataset_Release_Date" type="xs:string"/>
+<xs:element name="Dataset_Release_Place" type="xs:string"/>
+<xs:element name="Dataset_Publisher" type="xs:string"/>
+<xs:element name="Version" type="xs:string"/>
+<xs:element name="Issue_Identification" type="xs:string"/>
+<xs:element name="Data_Presentation_Form" type="xs:string"/>
+<xs:element name="Other_Citation_Details" type="xs:string"/>
+<xs:element name="Online_Resource" type="xs:string"/>
+<xs:element name="Dataset_Editor" type="xs:string"/>
+<xs:element name="Dataset_DOI" type="xs:string"/>
+<xs:element name="Personnel">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Role" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element ref="First_Name" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Middle_Name" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Last_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Email" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Phone" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Fax" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Contact_Address" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Role" type="xs:string"/>
+<xs:element name="First_Name" type="xs:string"/>
+<xs:element name="Middle_Name" type="xs:string"/>
+<xs:element name="Last_Name" type="xs:string"/>
+<xs:element name="Email" type="xs:string"/>
+<xs:element name="Phone" type="xs:string"/>
+<xs:element name="Fax" type="xs:string"/>
+<xs:element name="FAX" type="xs:string"/>
+<xs:element name="Contact_Address">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Address" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="City" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Province_or_State" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Postal_Code" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Country" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Address" type="xs:string"/>
+<xs:element name="City" type="xs:string"/>
+<xs:element name="Province_or_State" type="xs:string"/>
+<xs:element name="Postal_Code" type="xs:string"/>
+<xs:element name="Country" type="xs:string"/>
+<xs:element name="Discipline">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Discipline_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Subdiscipline" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Detailed_Subdiscipline" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="uuid" type="xs:string"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Discipline_Name" type="xs:string"/>
+<xs:element name="Subdiscipline" type="xs:string"/>
+<xs:element name="Detailed_Subdiscipline" type="xs:string"/>
+<xs:element name="Parameters">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Category" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Topic" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Term" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Variable_Level_1" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Variable_Level_2" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Variable_Level_3" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Detailed_Variable" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="uuid" type="xs:string"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Category" type="xs:string"/>
+<xs:element name="Topic" type="xs:string"/>
+<xs:element name="Term" type="xs:string"/>
+<xs:element name="Variable_Level_1" type="xs:string"/>
+<xs:element name="Variable_Level_2" type="xs:string"/>
+<xs:element name="Variable_Level_3" type="xs:string"/>
+<xs:element name="Detailed_Variable" type="xs:string"/>
+<xs:element name="ISO_Topic_Category">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+<xs:element name="Keyword" type="xs:string"/>
+<xs:element name="Sensor_Name">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Short_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Long_Name" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="uuid" type="xs:string"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Short_Name" type="xs:string"/>
+<xs:element name="Long_Name" type="xs:string"/>
+<xs:element name="Source_Name">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Short_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Long_Name" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="uuid" type="xs:string"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Temporal_Coverage">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Start_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Stop_Date" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Start_Date" type="xs:string"/>
+<xs:element name="Stop_Date" type="xs:string"/>
+<xs:element name="Paleo_Temporal_Coverage">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Paleo_Start_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Paleo_Stop_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Chronostratigraphic_Unit" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Paleo_Start_Date" type="xs:string"/>
+<xs:element name="Paleo_Stop_Date" type="xs:string"/>
+
+<xs:element name="Chronostratigraphic_Unit">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Eon" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Era" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Period" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Epoch" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Stage" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Detailed_Classification" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="uuid"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Eon" type="xs:string"/>
+<xs:element name="Era" type="xs:string"/>
+<xs:element name="Period" type="xs:string"/>
+<xs:element name="Epoch" type="xs:string"/>
+<xs:element name="Stage" type="xs:string"/>
+<xs:element name="Detailed_Classification" type="xs:string"/>
+
+<xs:element name="Data_Set_Progress" type="xs:string"/>
+<xs:element name="Spatial_Coverage">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Southernmost_Latitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Northernmost_Latitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Westernmost_Longitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Easternmost_Longitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Minimum_Altitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Maximum_Altitude" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Minimum_Depth" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Maximum_Depth" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Southernmost_Latitude" type="xs:string"/>
+<xs:element name="Northernmost_Latitude" type="xs:string"/>
+<xs:element name="Westernmost_Longitude" type="xs:string"/>
+<xs:element name="Easternmost_Longitude" type="xs:string"/>
+<xs:element name="Minimum_Altitude" type="xs:string"/>
+<xs:element name="Maximum_Altitude" type="xs:string"/>
+<xs:element name="Minimum_Depth" type="xs:string"/>
+<xs:element name="Maximum_Depth" type="xs:string"/>
+<xs:element name="Location">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Location_Category" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Location_Type" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Location_Subregion1" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Location_Subregion2" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Location_Subregion3" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Detailed_Location" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="uuid" type="xs:string"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Location_Category" type="xs:string"/>
+<xs:element name="Location_Type" type="xs:string"/>
+<xs:element name="Location_Subregion1" type="xs:string"/>
+<xs:element name="Location_Subregion2" type="xs:string"/>
+<xs:element name="Location_Subregion3" type="xs:string"/>
+<xs:element name="Detailed_Location" type="xs:string"/>
+<xs:element name="Data_Resolution">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Latitude_Resolution" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Longitude_Resolution" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Horizontal_Resolution_Range" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Vertical_Resolution" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Vertical_Resolution_Range" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Temporal_Resolution" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Temporal_Resolution_Range" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Latitude_Resolution" type="xs:string"/>
+<xs:element name="Longitude_Resolution" type="xs:string"/>
+<xs:element name="Horizontal_Resolution_Range">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+<xs:element name="Vertical_Resolution" type="xs:string"/>
+<xs:element name="Vertical_Resolution_Range">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+<xs:element name="Temporal_Resolution" type="xs:string"/>
+<xs:element name="Temporal_Resolution_Range">
+  <xs:complexType>
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="uuid" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:element>
+<xs:element name="Project">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Short_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Long_Name" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="uuid"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Quality" type="xs:string"/>
+<xs:element name="Access_Constraints" type="xs:string"/>
+<xs:element name="Use_Constraints" type="xs:string"/>
+<xs:element name="Data_Set_Language" type="xs:string"/>
+<xs:element name="Originating_Center" type="xs:string"/>
+<xs:element name="Data_Center">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Data_Center_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Data_Center_URL" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Data_Set_ID" minOccurs="0" maxOccurs="unbounded"/>
+         <xs:element ref="Personnel" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Data_Center_Name">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Short_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Long_Name" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="uuid"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Data_Center_URL" type="xs:string"/>
+<xs:element name="Data_Set_ID" type="xs:string"/>
+<xs:element name="Distribution">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Distribution_Media" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Distribution_Size" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Distribution_Format" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Fees" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Distribution_Media" type="xs:string"/>
+<xs:element name="Distribution_Size" type="xs:string"/>
+<xs:element name="Distribution_Format" type="xs:string"/>
+<xs:element name="Fees" type="xs:string"/>
+<xs:element name="Multimedia_Sample">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="File" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="URL" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Format" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Caption" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Description" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="File" type="xs:string"/>
+<xs:element name="Format" type="xs:string"/>
+<xs:element name="Caption" type="xs:string"/>
+<xs:element name="Description" type="xs:string"/>
+
+<xs:element name="Reference">
+   <xs:complexType mixed="true">
+      <xs:sequence>
+         <xs:element ref="Author" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Publication_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Title" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Series" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Edition" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Volume" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Issue" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Report_Number" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Publication_Place" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Publisher" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Pages" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="ISBN" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="DOI" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Online_Resource" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Other_Reference_Details" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Author" type="xs:string"/>
+<xs:element name="Publication_Date" type="xs:string"/>
+<xs:element name="Title" type="xs:string"/>
+<xs:element name="Series" type="xs:string"/>
+<xs:element name="Edition" type="xs:string"/>
+<xs:element name="Volume" type="xs:string"/>
+<xs:element name="Issue" type="xs:string"/>
+<xs:element name="Report_Number" type="xs:string"/>
+<xs:element name="Publication_Place" type="xs:string"/>
+<xs:element name="Publisher" type="xs:string"/>
+<xs:element name="Pages" type="xs:string"/>
+<xs:element name="ISBN" type="xs:string"/>
+<xs:element name="DOI" type="xs:string"/>
+<xs:element name="Other_Reference_Details" type="xs:string"/>
+
+<xs:element name="Summary">
+   <xs:complexType mixed="true">
+      <xs:sequence>
+         <xs:element ref="Abstract" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Purpose" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Abstract" type="xs:string"/>
+<xs:element name="Purpose" type="xs:string"/>
+
+<xs:element name="Related_URL">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="URL_Content_Type" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="URL" minOccurs="1" maxOccurs="unbounded"/>
+         <xs:element ref="Description" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+
+<xs:element name="URL_Content_Type">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Type" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Subtype" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="uuid"/>
+   </xs:complexType>
+</xs:element>
+<xs:element name="Type" type="xs:string"/>
+<xs:element name="Subtype" type="xs:string"/>
+
+<xs:element name="URL" type="xs:string"/>
+<xs:element name="Parent_DIF" type="xs:string"/>
+<xs:element name="IDN_Node">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Short_Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Long_Name" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="uuid"/>
+   </xs:complexType>
+</xs:element>
+
+<xs:element name="Extended_Metadata">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Metadata" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+
+<xs:element name="Metadata">
+   <xs:complexType>
+      <xs:sequence>
+         <xs:element ref="Group" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Name" minOccurs="1" maxOccurs="1"/>
+         <xs:element ref="Description" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Type" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Update_Date" minOccurs="0" maxOccurs="1"/>
+         <xs:element ref="Value" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+   </xs:complexType>
+</xs:element>
+
+<xs:element name="Group" type="xs:string"/>
+<xs:element name="Name" type="xs:string"/>
+<xs:element name="Update_Date" type="xs:string"/>
+
+<xs:element name="Value">
+    <xs:complexType>
+       <xs:simpleContent>
+           <xs:extension base="xs:string">
+               <xs:attribute type="xs:string" name="type"/>
+           </xs:extension>
+       </xs:simpleContent>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="Originating_Metadata_Node" type="xs:string"/>
+<xs:element name="Metadata_Name" type="xs:string"/>
+<xs:element name="Metadata_Version" type="xs:string"/>
+<xs:element name="DIF_Creation_Date" type="xs:string"/>
+<xs:element name="Last_DIF_Revision_Date" type="xs:string"/>
+<xs:element name="DIF_Revision_History" type="xs:string"/>
+<xs:element name="Future_DIF_Review_Date" type="xs:string"/>
+<xs:element name="Private" type="xs:string"/>
+</xs:schema>

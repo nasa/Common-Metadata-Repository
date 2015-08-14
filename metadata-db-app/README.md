@@ -156,6 +156,8 @@ Tombstones can be created using the same end-point used for saving concepts by s
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-id": "C1200000000-REG_PROV", "revision-id": 4, "deleted": true}' http://localhost:3001/concepts/
 
+concept-id is a required field. revision-id and revision date are optional. No other fields are allowed.
+
 ### GET /concepts/#concept-id
 
 params: none

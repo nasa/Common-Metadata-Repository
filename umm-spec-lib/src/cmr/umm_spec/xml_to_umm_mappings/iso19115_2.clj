@@ -17,4 +17,6 @@
   (apt/add-parsing-types
     js/umm-c-schema
     (object {:EntryId (object {:Id entry-id-xpath})
-             :EntryTitle entry-title-xpath})))
+             :EntryTitle entry-title-xpath
+             :Abstract (xpath "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/gco:CharacterString")
+             })))

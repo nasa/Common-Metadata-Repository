@@ -4,6 +4,7 @@
             [cmr.common.lifecycle :as lifecycle]
             [clojure.java.jdbc :as j]
             [clojure.edn :as edn]
+            [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :refer [defn-timed] :as util]))
 
 (defprotocol AclHashStore
@@ -47,8 +48,11 @@
     [db acl-hash]
     (j/with-db-transaction
       [conn db]
+      (debug "Deleting existing records from provider acl hash")
       (j/execute! conn ["delete from provider_acl_hash"])
-      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [(util/string->gzip-bytes acl-hash)])))
+      (debug "Inserting acl hash")
+      (j/insert! conn "provider_acl_hash" ["acl_hashes"] [(util/string->gzip-bytes acl-hash)])
+      (debug "Acl hash inserted. Completing transaction")))
 
   (get-acl-hash
     [db]

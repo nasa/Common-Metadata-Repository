@@ -21,6 +21,11 @@
   (when-not (:native-id concept)
     [(msg/missing-native-id)]))
 
+(defn concept-id-missing-validation
+  [concept]
+  (when-not (:concept-id concept)
+    [(msg/missing-concept-id-field)]))
+
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
   {:collection #{:short-name :version-id :entry-id :entry-title}
