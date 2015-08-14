@@ -48,7 +48,7 @@
            [:gmd:code (char-string-from "/EntryId/Id")]
            [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
-       [:gmd:purpose {:gco:nilReason "missing"}]
+       [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
        [:gmd:language (char-string "eng")]]]
 
      [:gmd:identificationInfo
