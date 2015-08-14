@@ -12,9 +12,6 @@
     "\"line with no short-name\",\"\",\"\",\"\",\"def-456\"\n"
     "\"field1 value 2\",\"field2 v2\",\"field3 value\",\"Last Entry\",\"xyz-789\"\n"))
 
-(comment
-  (clojure.data.csv/read-csv sample-csv))
-
 (def sample-kms-entries
   "Sample KMS entries map"
   [{:uuid "abc-123",
@@ -34,7 +31,7 @@
 
 (deftest validate-entries-test
   (testing "No duplicates"
-    (is (nil? (seq (#'cmr.transmit.kms/validate-entries sample-kms-entries)))))
+    (is (nil? (seq (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries)))))
 
   (testing "With duplicates"
     (let [expected [{:short-name "First Entry",
@@ -44,7 +41,7 @@
                     {:short-name "First Entry",
                      :field-1 "dupe-field-1",
                      :uuid "123-abd"}]
-          actual (#'cmr.transmit.kms/validate-entries sample-kms-entries-with-duplicates)]
+          actual (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries-with-duplicates)]
       (is (= expected actual)))))
 
 (deftest parse-entries-from-csv-test

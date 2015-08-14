@@ -20,19 +20,31 @@
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
-(defn- validate-entries
+(defn- find-invalid-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
   do not know how to correctly map from short name to the full hierarchy.
 
   Takes a list of the keywords represented as a map with each subfield name being a key.
   Returns a sequence of invalid entries."
   [keyword-entries]
-  (let [duplicates (for [v (vals (group-by keyword (map :short-name keyword-entries)))
-                         :when (> (count v) 1)]
-                     (first v))]
-    (flatten (for [short-name duplicates :when short-name]
-               (for [entry keyword-entries :when (= short-name (:short-name entry))]
-                 entry)))))
+  (->> keyword-entries
+       (group-by :short-name)
+       ;; Keep all the ones that have duplicate short names
+       (util/remove-map-keys #(= (count %) 1))
+       ;; Get all the entries with duplicates as a single sequence
+       vals
+       flatten))
+
+(defn- remove-blank-keys
+  "Remove any keys from a map which have nil or empty string values."
+  [m]
+  (util/remove-map-keys
+    (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
+    m))
+
+(def NUM_HEADER_LINES
+  "Number of lines which contain header information (not the actual keyword values)."
+  2)
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
@@ -46,13 +58,14 @@
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the names of the subfield names
         subfield-names (map csk/->kebab-case-keyword (second all-lines))
-        keyword-entries (map (fn [entry] (util/remove-map-keys
-                                           (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
-                                           entry))
-                             (map #(zipmap subfield-names %)
-                                  ;; Lines 3 to the end are the values
-                                  (rest (rest all-lines))))
-        invalid-entries (validate-entries keyword-entries)]
+        keyword-entries (->> all-lines
+                             (drop NUM_HEADER_LINES)
+                             ;; Create a map for each row using the subfield-names as keys
+                             (map #(zipmap subfield-names %))
+                             (map remove-blank-keys)
+                             ;; We only want keyword entries with a short-name (leaf entries)
+                             (filter :short-name))
+        invalid-entries (find-invalid-entries keyword-entries)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
     (doseq [entry invalid-entries]
@@ -62,8 +75,7 @@
     ;; Create a map with the short-names as keys to the full hierarchy for that short-name
     (into {}
           (for [entry keyword-entries
-                :let [{:keys [short-name]} entry]
-                :when short-name]
+                :let [{:keys [short-name]} entry]]
             [short-name entry]))))
 
 (defn- get-by-keyword-scheme
