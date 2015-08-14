@@ -55,10 +55,6 @@
   [record format]
   (core/parse-metadata :collection format (core/generate-metadata :collection format record)))
 
-(deftest dif9-round-trip
-  (is (= (expected-conversion/convert example-record :dif)
-         (xml-round-trip example-record :dif))))
-
 (deftest roundtrip-gen-parse
   (are2 [metadata-format]
     (= (expected-conversion/convert example-record metadata-format)
