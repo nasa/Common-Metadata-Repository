@@ -219,7 +219,7 @@
   (doseq [concept concepts]
     (is (= concept
            (-> (mdb/get-concept (:concept-id concept) (:revision-id concept))
-               (dissoc :revision-date))))))
+               (dissoc :revision-date :user-id))))))
 
 (defn assert-concepts-not-in-mdb
   "Checks that all of the concepts with the indicated revisions are not in metadata db."

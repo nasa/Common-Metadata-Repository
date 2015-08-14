@@ -48,7 +48,7 @@
                  (conj acc (msg/nil-field field))
                  acc))
              []
-             (dissoc concept :revision-date :revision-id)))
+             (dissoc concept :revision-date :revision-id :user-id)))
 
 (defn datetime-validator
   [field-path]
@@ -99,7 +99,7 @@
   (util/build-validator :invalid-data concept-validation))
 
 (def valid-tombstone-keys
-  #{:concept-id :revision-id :revision-date :concept-type :deleted})
+  #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id})
 
 (defn validate-tombstone-keys
   "Validates that there are no extraneous keys"

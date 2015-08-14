@@ -9,6 +9,7 @@
    :native-id "foo"
    :provider-id "PROV1"
    :concept-type :collection
+   :user-id "user1"
    :extra-fields {:short-name "short"
                   :version-id "v1"
                   :entry-id "short_v1"

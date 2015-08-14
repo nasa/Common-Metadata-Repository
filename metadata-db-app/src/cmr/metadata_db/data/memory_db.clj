@@ -212,7 +212,10 @@
       ;; Concept id native id pair was valid
       (let [{:keys [concept-type provider-id concept-id revision-id]} concept
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
-                                                                          (tk/now))))]
+                                                                          (tk/now))))
+            concept (if (= concept-type :granule)
+                      (dissoc concept :user-id)
+                      concept)]
         (if (or (nil? revision-id)
                 (concepts/get-concept this concept-type provider concept-id revision-id))
           {:error :revision-id-conflict}

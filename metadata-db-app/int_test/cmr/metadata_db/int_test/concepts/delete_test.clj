@@ -31,7 +31,8 @@
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
-                            :revision-id revision-id)
+                            :revision-id revision-id
+                            :user-id nil)
                      :revision-date)
              (dissoc deleted-coll1 :revision-date)))
 
@@ -54,7 +55,8 @@
           coll2 (util/create-and-save-collection provider-id 2)
           gran3 (util/create-and-save-granule provider-id (:concept-id coll2) 1)
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
-                                                           :deleted true})
+                                                           :deleted true
+                                                           :user-id "user101"})
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
       (is (= 201 status))
@@ -65,7 +67,8 @@
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
                             :metadata ""
-                            :revision-id revision-id)
+                            :revision-id revision-id
+                            :user-id "user101")
                      :revision-date)
              (dissoc deleted-coll1 :revision-date)))
 

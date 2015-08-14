@@ -318,7 +318,7 @@
 (defmethod save-concept-revision true
   [context concept]
   (cv/validate-tombstone-request concept)
-  (let [{:keys [concept-id revision-id revision-date]} concept
+  (let [{:keys [concept-id revision-id revision-date user-id]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
@@ -335,6 +335,7 @@
         (let [tombstone (merge previous-revision {:concept-id concept-id
                                                   :revision-id revision-id
                                                   :revision-date revision-date
+                                                  :user-id user-id
                                                   :metadata ""
                                                   :deleted true})]
           (cv/validate-concept tombstone)
@@ -422,7 +423,7 @@
     (into {} (pmap (fn [{:keys [provider-id] :as provider}]
                      [provider-id
                       (->> (c/find-latest-concepts db [provider] {:provider-id provider-id
-                                                                :concept-type :collection})
+                                                                  :concept-type :collection})
                            (remove :deleted))])
                    (provider-db/get-providers db)))))
 

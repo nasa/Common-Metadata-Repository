@@ -57,6 +57,7 @@
          collection {:concept-type :collection
                      :native-id (str "native-id " uniq-num)
                      :provider-id provider-id
+                     :user-id (str "user" uniq-num)
                      :metadata (str "xml here " uniq-num)
                      :format "application/echo10+xml"
                      :deleted false
