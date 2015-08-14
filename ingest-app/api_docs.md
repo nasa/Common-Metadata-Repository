@@ -56,6 +56,10 @@ The revision id header allows specifying the [revision id](#revision-id) to use 
 
 The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id. The header Concept-Id is an alias for Cmr-Concept-Id.
 
+#### <a name="user-id"></a> User-Id Header
+
+The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts.
+
 ***
 
 ### <a name="responses"></a> Responses

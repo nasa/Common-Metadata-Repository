@@ -238,14 +238,6 @@
                            :errors errors
                            :default-format default-response-format})))))))
 
-; (defn save-collection
-;   "Extract user-id from the header/token and call ingest services to save the collection"
-;   [context headers concept]
-;   (let [user-id (or (get headers "user-id")
-;                     (tokens/get-user-id context (get headers tcfg/token-header)))
-;         concept (assoc concept :user-id user-id)]
-;     (ingest/save-collection context concept)))
-
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
   (set-default-error-format
