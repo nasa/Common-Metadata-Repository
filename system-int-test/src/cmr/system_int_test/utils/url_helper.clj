@@ -121,6 +121,12 @@
   []
   (format "http://localhost:%s/concepts" (transmit-config/metadata-db-port)))
 
+(defn mdb-force-delete-concept-url
+  [concept-id revision-id]
+  (format "http://localhost:%s/concepts/force-delete/%s/%s"
+          (transmit-config/metadata-db-port)
+          concept-id revision-id))
+
 (defn mdb-provider-holdings-url
   "URL to retrieve provider holdings in mdb."
   []
@@ -145,6 +151,11 @@
   "URL to metadata db jobs api"
   []
   (format "http://localhost:%s/jobs/" (transmit-config/metadata-db-port)))
+
+(defn mdb-old-revision-cleanup-job-url
+  "URL to metadata db old revision cleanup job"
+  []
+  (format "http://localhost:%s/jobs/old-revision-concept-cleanup" (transmit-config/metadata-db-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ingest URLs

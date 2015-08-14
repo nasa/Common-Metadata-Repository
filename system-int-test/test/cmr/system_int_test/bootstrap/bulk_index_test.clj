@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.bootstrap.bulk-index-test
   "Integration test for CMR bulk indexing."
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.umm.echo10.core :as echo10]
             [cmr.system-int-test.utils.search-util :as search]
@@ -21,7 +22,7 @@
     (let [;; saved but not indexed
           umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
-          coll1 (ingest/save-concept {:concept-type :collection
+          coll1 (mdb/save-concept {:concept-type :collection
                                       :format "application/echo10+xml"
                                       :metadata xml1
                                       :extra-fields {:short-name "coll1"
@@ -39,7 +40,7 @@
           ;; saved (with old delete-time), but not indexed
           umm3 (dc/collection {:short-name "coll3" :entry-title "coll3" :delete-time "2000-01-01T12:00:00Z"})
           xml3 (echo10/umm->echo10-xml umm3)
-          coll3 (ingest/save-concept {:concept-type :collection
+          coll3 (mdb/save-concept {:concept-type :collection
                                       :format "application/echo10+xml"
                                       :metadata xml3
                                       :extra-fields {:short-name "coll3"
@@ -53,14 +54,14 @@
           ;; a granule saved with a nil delete time but an expired delete time in the xml
           ummg1 (dg/granule coll1 {:granule-ur "gran1" :delete-time "2000-01-01T12:00:00Z"})
           xmlg1 (echo10/umm->echo10-xml ummg1)
-          gran1 (ingest/save-concept {:concept-type :granule
+          gran1 (mdb/save-concept {:concept-type :granule
                                       :provider-id "PROV1"
                                       :native-id "gran1"
                                       :format "application/echo10+xml"
                                       :metadata xmlg1
                                       :extra-fields {:parent-collection-id (:concept-id umm1)
                                                      :granule-ur "ur1"}})]
-      (ingest/tombstone-concept coll2-tombstone)
+      (mdb/tombstone-concept coll2-tombstone)
 
       ;; Verify that all of the ingest requests completed successfully
       (doseq [concept [coll1 coll3 gran1]] (is (= 201 (:status concept))))
@@ -105,7 +106,7 @@
                                            :provider-id "PROV1"
                                            :native-id (str "coll" x)
                                            :short-name (str "short-name" x)}
-                              {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
+                              {:keys [concept-id revision-id]} (mdb/save-concept concept-map)]
                           (assoc umm :concept-id concept-id :revision-id revision-id)))
           granules1 (mapcat (fn [collection]
                                      (doall
@@ -120,7 +121,7 @@
                                                                            :granule-ur (str "gran-" pid "-" x)}
                                                             :format "application/echo10+xml"
                                                             :metadata xml}
-                                               {:keys [concept-id revision-id]} (ingest/save-concept concept-map)]
+                                               {:keys [concept-id revision-id]} (mdb/save-concept concept-map)]
                                            (assoc umm :concept-id concept-id :revision-id revision-id)))))
                                    collections)
           ;; granules2 and f (the future) are used to ingest ten granules five times each in
@@ -170,7 +171,7 @@
   (s/only-with-real-database
     (let [umm1 (dc/collection {:short-name "coll1" :entry-title "coll1"})
           xml1 (echo10/umm->echo10-xml umm1)
-          coll1 (ingest/save-concept {:concept-type :collection
+          coll1 (mdb/save-concept {:concept-type :collection
                                       :format "application/echo10+xml"
                                       :metadata xml1
                                       :extra-fields {:short-name "coll1"
@@ -183,7 +184,7 @@
           umm1 (merge umm1 (select-keys coll1 [:concept-id :revision-id]))
           ummg1 (dg/granule coll1 {:granule-ur "gran1"})
           xmlg1 (echo10/umm->echo10-xml ummg1)
-          gran1 (ingest/save-concept {:concept-type :granule
+          gran1 (mdb/save-concept {:concept-type :granule
                                       :provider-id "PROV1"
                                       :native-id "gran1"
                                       :format "application/echo10+xml"

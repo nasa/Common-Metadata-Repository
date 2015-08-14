@@ -11,4 +11,5 @@
       {:EntryTitle (xpath "/DIF/Entry_Title")
        :EntryId (object
                   {:Id (xpath "/DIF/Entry_ID")})
-       :Abstract (xpath "/DIF/Summary/Abstract")})))
+       :Abstract (xpath "/DIF/Summary/Abstract")
+       :Purpose (xpath "/DIF/Summary/Purpose")})))

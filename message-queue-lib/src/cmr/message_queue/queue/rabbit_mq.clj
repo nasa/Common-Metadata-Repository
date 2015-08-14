@@ -232,7 +232,7 @@
    ;; Exchanges that should be created on startup
    persistent-exchanges
 
-   ;; A map of queue name to exchange name bindings to create
+   ;; A map of queue name to a sequence of exchange names that the queue should be bound to.
    bindings
    ]
 
@@ -251,7 +251,8 @@
       (doseq [exchange-name persistent-exchanges]
         (create-exchange this exchange-name))
 
-      (doseq [[queue-name exchange-name] bindings]
+      (doseq [[queue-name exchange-names] bindings
+              exchange-name exchange-names]
         (bind-queue-to-exchange this queue-name exchange-name))
       this))
 
@@ -270,7 +271,8 @@
 
   (get-queues-bound-to-exchange
     [this exchange-name]
-    (for [[q e] bindings
+    (for [[q es] bindings
+          e es
           :when (= e exchange-name)]
       q))
 

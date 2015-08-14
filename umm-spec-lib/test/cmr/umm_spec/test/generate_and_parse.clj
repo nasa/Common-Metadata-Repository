@@ -61,8 +61,8 @@
   (umm-c/map->UMM-C
     {:EntryTitle "The entry title V5"
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     :Abstract "Abstract description"}))
-
+     :Abstract "Abstract description"
+     :Purpose "help testing"}))
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format to-xml to-umm]
@@ -94,3 +94,4 @@
           parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)
           expected-manip-fn (expected-conversion/metadata-format->expected-conversion :echo10)]
       (is (= (expected-manip-fn example-record-echo10-supported) parsed)))))
+

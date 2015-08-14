@@ -28,6 +28,7 @@
      [:Role "DummyRole"]
      [:Last_Name "dummy last name"]]]
    [:Summary
-    [:Abstract (xpath "/Abstract")]]
+    [:Abstract (xpath "/Abstract")]
+    [:Purpose (xpath "/Purpose")]]
    [:Metadata_Name "CEOS IDN DIF"]
    [:Metadata_Version "VERSION 9.9.3"]])

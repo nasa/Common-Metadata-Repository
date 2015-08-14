@@ -33,7 +33,7 @@
          :queues [(virtual-product-queue-name)]
          :exchanges [(ingest-exchange-name)]
          :queues-to-exchanges {(virtual-product-queue-name)
-                               (ingest-exchange-name)}))
+                               [(ingest-exchange-name)]}))
 
 (defconfig virtual-product-nrepl-port
   "Port to listen for nREPL connections"

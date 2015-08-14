@@ -90,60 +90,63 @@
 
 (deftest save-with-increment-versions-test
   (testing "Save with increment versions"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
     (assert-version "C1234-PROV1" 1)
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2)
     (assert-version "C1234-PROV1" 2)
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 10 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 10)
     (assert-version "C1234-PROV1" 10)))
 
 (deftest save-with-equal-versions-test
   (testing "Save with equal versions"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
     (assert-version "C1234-PROV1" 1)
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
     (assert-version "C1234-PROV1" 1)))
 
 (deftest save-with-earlier-versions-test
   (testing "Save with earlier versions with ignore-conflict false"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 3 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 3)
     (assert-version "C1234-PROV1" 3)
     (try
-      (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2 nil false)
+      (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2)
       (catch clojure.lang.ExceptionInfo e
         (let [type (:type (ex-data e))
               err-msg (first (:errors (ex-data e)))]
           (is (= :conflict type))
           (is (re-find #"version conflict, current \[3\], provided \[2\]" err-msg))))))
   (testing "Save with earlier versions with ignore-conflict true"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 3 nil true)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 3
+                                 {:ignore-conflict? true})
     (assert-version "C1234-PROV1" 3)
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2 nil true)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2
+                                 {:ignore-conflict? true})
     (assert-version "C1234-PROV1" 3)))
 
 (deftest delete-with-increment-versions-test
   (testing "Delete with increment versions"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1 nil false)
-    (es/delete-document @context "tests" "collection" "C1234-PROV1" "2" false false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "2")
     (assert-delete "C1234-PROV1")
-    (es/delete-document @context "tests" "collection" "C1234-PROV1" "8" false false)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "8")
     (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-equal-versions-test
-    (testing "Delete with equal versions"
-      (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1 nil false)
-      (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" false false)
-      (assert-delete "C1234-PROV1")))
+  (testing "Delete with equal versions"
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 1)
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "1")
+    (assert-delete "C1234-PROV1")))
 
 (deftest delete-with-earlier-versions-test
   (testing "Delete with earlier versions ignore-conflict false"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2 nil false)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2)
     (try
-      (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" false false)
+      (es/delete-document @context "tests" "collection" "C1234-PROV1" "1")
       (catch java.lang.Exception e
         (is (re-find #"version conflict, current \[2\], provided \[1\]" (.getMessage e))))))
   (testing "Delete with earlier versions ignore-conflict true"
-    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2 nil true)
-    (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" false true)
+    (es/save-document-in-elastic @context "tests" "collection" (es-doc) "C1234-PROV1" 2
+                                 {:ignore-conflict? true})
+    (es/delete-document @context "tests" "collection" "C1234-PROV1" "1" {:ignore-conflict? true})
     (assert-version "C1234-PROV1" 2)))
 
