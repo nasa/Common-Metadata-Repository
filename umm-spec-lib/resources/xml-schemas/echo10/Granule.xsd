@@ -1,0 +1,1878 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
+elementFormDefault="qualified"
+xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="MetadataCommon.xsd" />
+  <xs:element name="GranuleMetaDataFile"
+  type="GranuleMetaDataFile">
+    <xs:annotation>
+      <xs:documentation>The main element that holds all granules
+      being ingested.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:element name="Granule" type="Granule"></xs:element>
+  <xs:element name="GranuleDelete" type="GranuleDelete">
+  </xs:element>
+  <xs:element name="GranuleUR" type="GranuleUR"></xs:element>
+  <xs:complexType name="GranuleMetaDataFile">
+    <xs:annotation>
+      <xs:documentation />
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="DataCenter" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Name of data center where this metadata
+          file was originated.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="Granules"
+      type="ListOfGranules">
+        <xs:annotation>
+          <xs:documentation>The granules to insert or replace. A
+          replace will be performed automatically if a granule
+          already exists.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="GranulePartialAdds"
+      type="ListOfGranulePartialAdds" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Partial metadata adds to be applied to
+          granules. The metadata will be updated if the referenced
+          field already exists.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="GranulePartialDeletes"
+      type="ListOfGranulePartialDeletes" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Partial metadata deletes to be applied
+          to granules</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="GranuleDeletes"
+      type="ListOfGranuleDeletes">
+        <xs:annotation>
+          <xs:documentation>Granules that should be immediately
+          deleted. To set a future delete time, use a partial
+          metadata update.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="GranuleVerifications"
+      type="ListOfGranules">
+        <xs:annotation>
+          <xs:documentation>Granules to be verified. Each granule
+          supplied will be matched with the current instance in
+          ECHO in order to find any metadata mismatches. The
+          supplied granules will then be inserted or
+          replaced.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="GranuleInventories"
+      type="ListOfGranuleInventories">
+        <xs:annotation>
+          <xs:documentation>Inventories of granules to be checked
+          for existence in ECHO. Supplying zero inventories
+          indicates that existence checking should be
+          skipped.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranules">
+    <xs:annotation>
+      <xs:documentation>List of granules</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="Granule"
+      type="Granule" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Granule">
+    <xs:annotation>
+      <xs:documentation>
+        <html:p>Stores the basic descriptive characteristics
+        associated with a granule.</html:p>
+        <html:p>Adopted from Release B Science Data Processing
+        Segment (SDPS) for the ECS Project. Refer to 311-CD-008-001
+        May 15, 1996. Additional attributes been added for book
+        keeping information.</html:p>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="GranuleUR" type="GranuleUR"></xs:element>
+      <xs:element name="InsertTime" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>The date/time this granule was entered
+          data provider's database.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="LastUpdate" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>The date/time that data provider last
+          updated the granule info on data provider's
+          database.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="DeleteTime"
+      type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>The date/time that data provider
+          deleted the granule from data provider's
+          database.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Collection" type="CollectionRef">
+        <xs:annotation>
+          <xs:documentation>This entity holds the reference
+          information from a granule to a collection. Granule
+          referencing the collection either by collection short
+          name and collection version or by collection dataset
+          ID.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="RestrictionFlag"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>The numerical value indicates the type
+          of the restriction that applies on the granule for data
+          access.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="RestrictionComment">
+        <xs:annotation>
+          <xs:documentation>The restriction comment applied on the
+          granule for data access. This data could be defined for
+          each granule. If there is no restriction comment given
+          for the granule, the restriction comment of its primary
+          collection will be used if applicable.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="1024"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="DataGranule"
+      type="DataGranule">
+        <xs:annotation>
+          <xs:documentation>This entity stores basic descriptive
+          characteristics associated with a
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="PGEVersionClass"
+      type="PGEVersionClass">
+        <xs:annotation>
+          <xs:documentation>This entity stores basic descriptive
+          characteristics related to the Program Generation
+          Executable associated with a granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Temporal" type="Temporal">
+        <xs:annotation>
+          <xs:documentation>This entity contains records, which
+          describe the basis of the time system used for a specific
+          collection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Spatial" type="Spatial">
+        <xs:annotation>
+          <xs:documentation>Holds granule spatial domain
+          information.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0"
+      name="OrbitCalculatedSpatialDomains"
+      type="ListOfOrbitCalculatedSpatialDomains">
+        <xs:annotation>
+          <xs:documentation>This entity is used to store the
+          characteristics of the orbit calculated spatial domain to
+          include the model name, orbit number, start and stop
+          orbit number, equator crossing date and time, and equator
+          crossing longitude.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="MeasuredParameters"
+      type="ListOfMeasuredParameters">
+        <xs:annotation>
+          <xs:documentation>Names of the geophysical parameter
+          expressed in the data as well as associated quality flags
+          and quality status.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Platforms"
+      type="ListOfPlatformRefs">
+        <xs:annotation>
+          <xs:documentation>References to the relevant platforms
+          associated with the acquisition of the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Campaigns"
+      type="ListOfCampaignRefs">
+        <xs:annotation>
+          <xs:documentation>References to attributes describing the
+          scientific endeavor(s) to which the collection is
+          associated. Scientific endeavors include campaigns,
+          projects, interdisciplinary science investigations,
+          missions, field experiments, etc.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AdditionalAttributes"
+      type="ListOfAdditionalAttributeRefs" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>An additional attribute for the
+          granule. The attribute name and type must exist in the
+          parent collection for this granule. Additional attributes
+          are the same as PSAs.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="InputGranules"
+      type="ListOfInputGranules">
+        <xs:annotation>
+          <xs:documentation>This entity contains the identification
+          of the input granules for a specific
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="TwoDCoordinateSystem"
+      type="TwoDCoordinateSystem">
+        <xs:annotation>
+          <xs:documentation>This entity stores the two dimensional
+          coordinate system information for the granule. The two
+          dimensional coordinate system information is an
+          alternative way to express granule's spatial coverage
+          based on a certain two dimensional coordinate system
+          defined by the providers.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Price" type="DollarAmount">
+        <xs:annotation>
+          <xs:documentation>The price of the granule data when
+          order.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="OnlineAccessURLs"
+      type="ListOfOnlineAccessURLs">
+        <xs:annotation>
+          <xs:documentation>This entity stores the online URL(s)
+          for the collections if there is any. Those URLs either
+          provide the site where the user can obtain collection
+          data or give the further instruction of obtaining the
+          collection data.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="OnlineResources"
+      type="ListOfOnlineResources">
+        <xs:annotation>
+          <xs:documentation>This entity holds all types of online
+          URL associated with the granule such as guide document or
+          ordering site etc.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Orderable" type="xs:boolean">
+        <xs:annotation>
+          <xs:documentation>Indication of whether the granule is
+          orderable.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="DataFormat">
+        <xs:annotation>
+          <xs:documentation>The file format of the raw data (such
+          as HDF) for this granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Visible" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <p>Indication of whether the granule is visible or not.
+            Visibility is a basic access control mechanism that
+            bypasses all ACL rules. If a granule is not visible,
+            only users with the owning provider role will be able
+            to see the item. All other users will not see the item
+            no matter what ACL permissions are in place.</p>
+            <p>If group based permissions are needed, use the
+            restriction flag field instead of visibility. Normally
+            visibility is used when an item is first ingested.
+            Making the item not visible allows the provider time to
+            install any ACL rules or order options required before
+            users will see the item. Visibility is more commonly
+            set at the collection level than the granule level. If
+            a collection is not visible, none of the granules in
+            the collection will be visible.</p>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CloudCover" type="xs:decimal"
+      minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>A percentage value indicating how much
+          of the area of a granule (the ECS data unit) has been
+          obscured by clouds. It is worth noting that there are
+          many different measures of cloud cover within the ECS
+          data holdings and that the cloud cover parameter that is
+          represented in the DataPool is specific to Data
+          Set.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="MetadataStandardName" type="MetadataStandardName" />
+      <xs:element minOccurs="0" name="MetadataStandardVersion" type="MetadataStandardVersion" />
+      <xs:choice>
+        <xs:element name="AssociatedBrowseImages"
+        type="ListOfProviderBrowseIds" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>The list of browse images associated
+            with this granule.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="AssociatedBrowseImageUrls"
+        type="ListOfProviderBrowseUrls" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>The list of browse image urls
+            associated with this granule.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DataGranule">
+    <xs:annotation>
+      <xs:documentation>This entity stores the basic descriptive
+      characteristics associated with a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="SizeMBDataGranule"
+      type="xs:double">
+        <xs:annotation>
+          <xs:documentation>The size attribute will indicate the
+          volume of data contained in the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="ReprocessingPlanned">
+        <xs:annotation>
+          <xs:documentation>Granule level, stating what
+          reprocessing may be performed on this
+          granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="ReprocessingActual">
+        <xs:annotation>
+          <xs:documentation>Granule level, stating what
+          reprocessing has been performed on this
+          granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="ProducerGranuleId">
+        <xs:annotation>
+          <xs:documentation>Unique identifier for locally produced
+          granule that ECS ingests and is required to
+          capture.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="128"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="DayNightFlag" type="DayNightFlag">
+        <xs:annotation>
+          <xs:documentation>This attribute is used to identify if a
+          granule was collected during the day, night (between
+          sunset and sunrise) or both.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ProductionDateTime" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>The date and time a specific granule
+          was produced by a PGE.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="LocalVersionId">
+        <xs:annotation>
+          <xs:documentation>Granule version identifier for PGE
+          defined granule defined by the
+          producer.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PGEVersionClass">
+    <xs:annotation>
+      <xs:documentation>This entity stores the basic descriptive
+      characteristics associated with a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="PGEName">
+        <xs:annotation>
+          <xs:documentation>Name of product generation
+          executive.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="1024"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="PGEVersion">
+        <xs:annotation>
+          <xs:documentation>Version of the Delivered Algorithm
+          Package that applied when produce the
+          granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="10"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Spatial">
+    <xs:annotation>
+      <xs:documentation>This is a pseudo entity to hold granule
+      spatial domain information.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="GranuleLocality"
+      type="ListOfLocalityValues">
+        <xs:annotation>
+          <xs:documentation>This entity stores information used at
+          the granule level to describe the labeling of granules
+          with compounded time/space text values and which are
+          subsequently used to define more phenomenological-based
+          granules, thus the locality type and description are
+          contained.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="VerticalSpatialDomains"
+      type="ListOfVerticalSpatialDomains">
+        <xs:annotation>
+          <xs:documentation>This entity contains the domain value
+          and type for the granule's vertical spatial
+          domain.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="HorizontalSpatialDomain"
+      type="HorizontalSpatialDomain">
+        <xs:annotation>
+          <xs:documentation>This is a pseudo entity to hold granule
+          horizontal spatial domain information.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfLocalityValues">
+    <xs:annotation>
+      <xs:documentation>This entity stores information used at the
+      granule level to describe the labeling of granules with
+      compounded time/space text values and which are subsequently
+      used to define more phenomenological-based granules, thus the
+      locality type and description are
+      contained.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="LocalityValue">
+        <xs:annotation>
+          <xs:documentation>Provides name which spatial/temporal
+          entity is known. This could change on a granule by
+          granule basis. This attribute is paralleled by the
+          AggregationType which applies at the collection level
+          although locality has a more restricted usage. Several
+          locality measures could be included in each
+          granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="1024"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="HorizontalSpatialDomain">
+    <xs:annotation>
+      <xs:documentation>This is a pseudo entity to hold granule
+      horizontal spatial domain information.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ZoneIdentifier">
+        <xs:annotation>
+          <xs:documentation>The appropriate numeric or alpha code
+          used to identify the various zones in this grid
+          coordinate system.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:choice>
+        <xs:element name="Geometry" type="Geometry" />
+        <xs:element name="Orbit" type="Orbit">
+          <xs:annotation>
+            <xs:documentation>This entity stores orbital coverage
+            information of the granule. This coverage is an
+            alternative way of express granule spatial coverage.
+            This information supports orbital backtrack search
+            apply on granule.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Geometry">
+    <xs:annotation>
+      <xs:documentation>This entity holds the geometry representing
+      the spatial coverage information of a
+      granule.</xs:documentation>
+    </xs:annotation>
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="Point" type="Point">
+        <xs:annotation>
+          <xs:documentation>The horizontal spatial coverage of a
+          point.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="BoundingRectangle"
+      type="BoundingRectangle">
+        <xs:annotation>
+          <xs:documentation>This entity holds the horizontal
+          spatial coverage of a line. ECHO stores horizontal
+          spatial coverage bounding rectangle type information
+          using oracle spatial type expression as a four points
+          polygon.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="GPolygon" type="GPolygon">
+        <xs:annotation>
+          <xs:documentation>A GPolygon represents an area on the
+          earth represented by a main boundary with optional
+          boundaries excluded regions from the main
+          boundary.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Line" type="Line">
+        <xs:annotation>
+          <xs:documentation>This entity holds the horizontal
+          spatial coverage of a line. A line area contains at least
+          two points expressed with (PointLongitude,
+          PointLatitude). A Line entity forms with at least two
+          Point entity. ECHO stores horizontal spatial coverage
+          Line type information using oracle spatial type
+          expression.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="Orbit">
+    <xs:annotation>
+      <xs:documentation>This entity stores orbital coverage
+      information of the granule. This coverage is an alternative
+      way of express granule spatial coverage. This information
+      supports orbital backtrack search apply on
+      granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="AscendingCrossing" type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Equatorial crossing on the ascending
+          pass in decimal degrees longitude. The convention we've
+          been using is it's the first included ascending crossing
+          if one is included, and the prior ascending crossing if
+          none is included (e.g. descending half
+          orbits).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StartLat" type="Latitude">
+        <xs:annotation>
+          <xs:documentation>Granule's starting
+          latitude.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StartDirection" type="OrbitDirection">
+        <xs:annotation>
+          <xs:documentation>Ascending or descending. Valid input:
+          "A" or "D".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="EndLat" type="Latitude">
+        <xs:annotation>
+          <xs:documentation>Granule's ending
+          latitude.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="EndDirection" type="OrbitDirection">
+        <xs:annotation>
+          <xs:documentation>Ascending or descending. Valid input:
+          "A" or "D".</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="CenterPoint" type="Point">
+        <xs:annotation>
+          <xs:documentation>Granule's horizontal spatial coverage
+          of a point.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfOrbitCalculatedSpatialDomains">
+    <xs:annotation>
+      <xs:documentation>This entity is used to store the
+      characteristics of the orbit calculated spatial domain to
+      include the model name, orbit number, start and stop orbit
+      number, equator crossing date and time, and equator crossing
+      longitude.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded"
+      name="OrbitCalculatedSpatialDomain"
+      type="OrbitCalculatedSpatialDomain" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="OrbitCalculatedSpatialDomain">
+    <xs:annotation>
+      <xs:documentation>This entity is used to store the
+      characteristics of the orbit calculated spatial domain to
+      include the model name, orbit number, start and stop orbit
+      number, equator crossing date and time, and equator crossing
+      longitude.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="OrbitalModelName">
+        <xs:annotation>
+          <xs:documentation>The reference to the orbital model to
+          be used to calculate the geo-location of this data in
+          order to determine global spatial
+          extent.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="OrbitNumber"
+      type="xs:integer">
+        <xs:annotation>
+          <xs:documentation>The orbit number to be used in
+          calculating the spatial extent of this
+          data.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="StartOrbitNumber"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Orbit number at start of data
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="StopOrbitNumber"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Orbit number at end of data
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="EquatorCrossingLongitude"
+      type="Longitude">
+        <xs:annotation>
+          <xs:documentation>This attribute represents the
+          terrestrial longitude of the descending equator
+          crossing.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="EquatorCrossingDateTime"
+      type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>This attribute represents the date and
+          time of the descending equator
+          crossing.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfMeasuredParameters">
+    <xs:annotation>
+      <xs:documentation>This entity contains the name of the
+      geophysical parameter expressed in the data as well as
+      associated quality flags and quality status. The quality
+      status contains measures of quality for the granule. The
+      parameters used to set these measures are not preset and will
+      be determined by the data producer. Each set of measures can
+      occur many times either for the granule as a whole or for
+      individual parameters. The quality flags contain the science,
+      operational and automatic quality flags which indicate the
+      overall quality assurance levels of specific parameter values
+      within a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="MeasuredParameter"
+      type="MeasuredParameter" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MeasuredParameter">
+    <xs:annotation>
+      <xs:documentation>This entity contains the name of the
+      geophysical parameter expressed in the data as well as
+      associated quality flags and quality status. The quality
+      status contains measures of quality for the granule. The
+      parameters used to set these measures are not preset and will
+      be determined by the data producer. Each set of measures can
+      occur many times either for the granule as a whole or for
+      individual parameters. The quality flags contain the science,
+      operational and automatic quality flags which indicate the
+      overall quality assurance levels of specific parameter values
+      within a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ParameterName">
+        <xs:annotation>
+          <xs:documentation>The measured science parameter
+          expressed in the data granule.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="250"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="QAStats" type="QAStats">
+        <xs:annotation>
+          <xs:documentation>The name of the geophysical parameter
+          expressed in the data as well as associated quality flags
+          and quality status.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="QAFlags" type="QAFlags">
+        <xs:annotation>
+          <xs:documentation>The name of the geophysical parameter
+          expressed in the data as well as associated quality flags
+          and quality status.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="QAStats">
+    <xs:annotation>
+      <xs:documentation>This entity contains the name of the
+      geophysical parameter expressed in the data as well as
+      associated quality flags and quality status. The quality
+      status contains measures of quality for the granule. The
+      parameters used to set these measures are not preset and will
+      be determined by the data producer. Each set of measures can
+      occur many times either for the granule as a whole or for
+      individual parameters. The quality flags contain the science,
+      operational and automatic quality flags which indicate the
+      overall quality assurance levels of specific parameter values
+      within a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="QAPercentMissingData"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Granule level % missing data. This
+          attribute can be repeated for individual parameters
+          within a granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="QAPercentOutOfBoundsData"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Granule level % out of bounds data.
+          This attribute can be repeated for individual parameters
+          within a granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="QAPercentInterpolatedData"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>Granule level % interpolated data. This
+          attribute can be repeated for individual parameters
+          within a granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="QAPercentCloudCover"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>This attribute is used to characterize
+          the cloud cover amount of a granule. This attribute may
+          be repeated for individual parameters within a granule.
+          (Note - there may be more than one way to define a cloud
+          or it's effects within a product containing several
+          parameters; i.e. this attribute may be parameter
+          specific)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="QAFlags">
+    <xs:annotation>
+      <xs:documentation>This entity contains the name of the
+      geophysical parameter expressed in the data as well as
+      associated quality flags and quality status. The quality
+      status contains measures of quality for the granule. The
+      parameters used to set these measures are not preset and will
+      be determined by the data producer. Each set of measures can
+      occur many times either for the granule as a whole or for
+      individual parameters. The quality flags contain the science,
+      operational and automatic quality flags which indicate the
+      overall quality assurance levels of specific parameter values
+      within a granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AutomaticQualityFlag">
+        <xs:annotation>
+          <xs:documentation>The granule level flag applying
+          generally to the granule and specifically to parameters
+          the granule level. When applied to parameter, the flag
+          refers to the quality of that parameter for the granule
+          (as applicable). The parameters determining whether the
+          flag is set are defined by the developer and documented
+          in the Quality Flag Explanation.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0"
+      name="AutomaticQualityFlagExplanation">
+        <xs:annotation>
+          <xs:documentation>A text explanation of the criteria used
+          to set automatic quality flag; including thresholds or
+          other criteria.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="2048"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="OperationalQualityFlag">
+        <xs:annotation>
+          <xs:documentation>The granule level flag applying both
+          generally to a granule and specifically to parameters at
+          the granule level. When applied to parameter, the flag
+          refers to the quality of that parameter for the granule
+          (as applicable). The parameters determining whether the
+          flag is set are defined by the developers and documented
+          in the QualityFlagExplanation.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0"
+      name="OperationalQualityFlagExplanation">
+        <xs:annotation>
+          <xs:documentation>A text explanation of the criteria used
+          to set operational quality flag; including thresholds or
+          other criteria.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="2048"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="ScienceQualityFlag">
+        <xs:annotation>
+          <xs:documentation>Granule level flag applying to a
+          granule, and specifically to parameters. When applied to
+          parameter, the flag refers to the quality of that
+          parameter for the granule (as applicable). The parameters
+          determining whether the flag is set are defined by the
+          developers and documented in the Quality Flag
+          Explanation.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0"
+      name="ScienceQualityFlagExplanation">
+        <xs:annotation>
+          <xs:documentation>A text explanation of the criteria used
+          to set science quality flag; including thresholds or
+          other criteria.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="2048"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PlatformRef">
+    <xs:annotation>
+      <xs:documentation>A reference to a platform in the parent
+      collection that is associated with the acquisition of the
+      granule. The platform must exist in the parent collection.
+      For example, Platform types may include (but are not limited
+      to): ADEOS-II, AEM-2, AM-1, Aqua, Aura, BALLOONS, BUOYS,
+      C-130, DEM, DMSP-F1, ERS-1, GOES-10, LANDSAT-1, METEOSAT-2,
+      NIMBUS-2, NOAA-6, TERRA, TRMM, etc.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ShortName">
+        <xs:annotation>
+          <xs:documentation>The unique platform name. (e.g.
+          GOES-8).</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="Instruments"
+      type="ListOfInstrumentRefs">
+        <xs:annotation>
+          <xs:documentation>References to the devices in the parent
+          collection that were used to measure or record data,
+          including direct human observation.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfCharacteristicRefs">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded"
+      name="Characteristic" type="CharacteristicRef" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CharacteristicRef">
+    <xs:annotation>
+      <xs:documentation>This entity is used to reference
+      characteristics defined in the parent
+      collection.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Name">
+        <xs:annotation>
+          <xs:documentation>The name of the characteristic
+          attribute.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80" />
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Value">
+        <xs:annotation>
+          <xs:documentation>The value of the Characteristic
+          attribute.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="InstrumentRef">
+    <xs:annotation>
+      <xs:documentation>A reference to the device in the parent
+      collection that was used to measure or record data, including
+      direct human observation. In cases where instruments have a
+      single sensor or the instrument and sensor are used
+      synonymously (e.g. AVHRR) the both Instrument and Sensor
+      should be recorded. The Sensor information is represented by
+      child entities. The instrument reference may contain granule
+      specific characteristics and operation modes. These
+      characteristics and modes are not checked against the
+      referenced instrument.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ShortName">
+        <xs:annotation>
+          <xs:documentation>The unique identifier of an
+          instrument.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="Characteristics"
+      type="ListOfCharacteristicRefs">
+        <xs:annotation>
+          <xs:documentation>This entity is used to define item
+          additional attributes (unprocessed, custom
+          data).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="Sensors"
+      type="ListOfSensorRefs">
+        <xs:annotation>
+          <xs:documentation>References to sensory subcomponents in
+          the parent collection's instrument used by various
+          sources in the granule. A sensor reference may contain
+          characteristics specific to the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="OperationModes"
+      type="ListOfOperationModes">
+        <xs:annotation>
+          <xs:documentation>This entity identifies the instrument's
+          operational modes for a specific collection associated
+          with the channel, wavelength, and FOV (e.g., launch,
+          survival, initialization, safe, diagnostic, standby,
+          crosstrack, biaxial, solar
+          calibration).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SensorRef">
+    <xs:annotation>
+      <xs:documentation>A reference to a sensory subcomponent in
+      the parent collection's instrument used by various sources in
+      this granule. A sensor reference may contain characteristics
+      specific to the granule. These characteristics are not
+      checked against the referenced sensor.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ShortName">
+        <xs:annotation>
+          <xs:documentation>A sensor is a defined sensory
+          sub-component of an instrument. (e.g.
+          InstrumentShortName=ASTER, NumberofSensors= 3,
+          SensorShortName= SWIR, SensorShortName= TIR,
+          SensorShortName= VNIR) In cases where the Instrument has
+          a single Sensor or the Instrument and Sensor are
+          synonymous then both attributes should be populated.
+          (e.g. AVHRR). Sensors cannot exist without
+          Instruments.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="0" name="Characteristics"
+      type="ListOfCharacteristicRefs" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CampaignRef">
+    <xs:annotation>
+      <xs:documentation>This entity contains attributes describing
+      the scientific endeavor(s) to which the collection is
+      associated. Scientific endeavors include campaigns, projects,
+      interdisciplinary science investigations, missions, field
+      experiments, etc. Seems to be a reference to one that exists
+      at collection level.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="ShortName">
+        <xs:annotation>
+          <xs:documentation>The unique identifier by which a
+          campaign/project/experiment is known. The campain/project
+          is the scientific endeavor associated with the
+          acquisition of the collection. Collections may be
+          associated with multiple campaigns.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfAdditionalAttributeRefs">
+    <xs:annotation>
+      <xs:documentation>This entity stores the Product Specific
+      Attributes with value a granule
+      associates.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="AdditionalAttribute"
+      type="AdditionalAttributeRef" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AdditionalAttributeRef">
+    <xs:annotation>
+      <xs:documentation>A reference to an additional attribute in
+      the parent collection. The attribute reference may contain a
+      granule specific value that will override the value in the
+      parent collection for this granule. An attribute with the
+      same name must exist in the parent
+      collection.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Name">
+        <xs:annotation>
+          <xs:documentation>Additional attribute
+          name.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="80"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element minOccurs="1" maxOccurs="1" name="Values"
+      type="ListOfAdditionalAttributeValues">
+        <xs:annotation>
+          <xs:documentation>The ordered list of values of the
+          additioanl attribute for this granule. The values will be
+          kept in the order which they appear.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfInputGranules">
+    <xs:annotation>
+      <xs:documentation>This entity contains the identification of
+      the input granule(s) for a specific
+      granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="InputGranule"
+      minOccurs="0">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="255"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="TwoDCoordinateSystem">
+    <xs:annotation>
+      <xs:documentation>
+        <html:p>This entity stores the two dimensional coordinate
+        system information for the granule. The two dimensional
+        coordinate system information is an alternative way to
+        express granule's spatial coverage based on a certain two
+        dimensional coordinate system defined by the
+        providers.</html:p>
+        <html:p>The following discussion on Landsat's PATH/ROW is
+        an example of grid information. The Path is the
+        longitudinal center line of a Landsat scene corresponding
+        to the center of an orbital track that represented by grid
+        Y lines.</html:p>
+        <html:p>The Row is the Latitudinal center line of a Landsat
+        scene that corresponding to grid X lines. The indication of
+        the two dimensional coordinate system type is "WRS-2". The
+        two dimensional coordinate system information can be used
+        to designate a geographic search for a nominal scene
+        center.</html:p>
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="StartCoordinate1" type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>The horizontal starting line of the
+          nominal scene center based on the coordinate system. This
+          value could be either entered directly as part of
+          metadata or extracted from PSA value based on a
+          pre-defined PSA name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="EndCoordinate1"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>The horizontal ending line of the
+          nominal scene center based on the coordinate system. This
+          value could be either entered directly as part of
+          metadata or extracted from PSA value based on a
+          pre-defined PSA name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="StartCoordinate2" type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>The vertical starting line of the
+          nominal scene center based on the coordinate system. This
+          value could be either entered directly as part of
+          metadata or extracted from PSA value based on a
+          pre-defined PSA name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element minOccurs="0" name="EndCoordinate2"
+      type="xs:decimal">
+        <xs:annotation>
+          <xs:documentation>The vertical ending line of the nominal
+          scene center based on the coordinate system. This value
+          could be either entered directly as part of metadata or
+          extracted from PSA value based on a pre-defined PSA
+          name.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="TwoDCoordinateSystemName">
+        <xs:annotation>
+          <xs:documentation>The type of the two dimensional
+          coordinate system defined by the providers such as
+          "WRS-2" for Landsat scene.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranuleDeletes">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="GranuleDelete"
+      type="GranuleDelete" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranuleDelete">
+    <xs:annotation>
+      <xs:documentation>Granule that should be immediately
+      deleted.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="GranuleUR" type="GranuleUR" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfInstrumentRefs">
+    <xs:sequence>
+      <xs:element name="Instrument" type="InstrumentRef"
+      minOccurs="0" maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfSensorRefs">
+    <xs:sequence>
+      <xs:element name="Sensor" type="SensorRef" minOccurs="0"
+      maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfCampaignRefs">
+    <xs:sequence>
+      <xs:element name="Campaign" type="CampaignRef" minOccurs="0"
+      maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfPlatformRefs">
+    <xs:sequence>
+      <xs:element name="Platform" type="PlatformRef" minOccurs="0"
+      maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="OrbitDirection">
+    <xs:annotation>
+      <xs:documentation>Orbit start and end direction. A for
+      ascending orbit and D for descending.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="A"></xs:enumeration>
+      <xs:enumeration value="D"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ListOfGranuleAddFields">
+    <xs:annotation>
+      <xs:documentation>A list of fields that can be updated on a
+      granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Field" type="GranuleAddField" minOccurs="0"
+      maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single field to be
+          updated.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranuleAddField">
+    <xs:annotation>
+      <xs:documentation>A field to be added to a granule. Not all
+      fields of a granule support partial updates. If an update is
+      required for a non-supported field, perform a complete
+      granule replacement rather than a partial metadata
+      update.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:choice>
+        <xs:choice>
+          <xs:element name="BrowseImage" type="ProviderBrowseId">
+            <xs:annotation>
+              <xs:documentation>Updates a link to a browse image.
+              The browse image's ProviderBrowseId must be provided
+              to identify it.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="BrowseImageUrl"
+          type="ProviderBrowseUrl">
+            <xs:annotation>
+              <xs:documentation>Updates a link to a browse image.
+              The browse image's ProviderBrowseUrl must be provided
+              to identify it.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:choice>
+        <xs:element name="OnlineAccessURL" type="OnlineAccessURL">
+          <xs:annotation>
+            <xs:documentation>Updates an online access URL. The URL
+            will be used as the key to identify the online access
+            URL to be added or replaced.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="OnlineResource" type="OnlineResource">
+          <xs:annotation>
+            <xs:documentation>Updates an online access URL. The URL
+            will be used as the key to identify the online resource
+            to be added or replaced.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="MeasuredParameter"
+        type="MeasuredParameter">
+          <xs:annotation>
+            <xs:documentation>Updates a measured parameter. The
+            parameter name will be used as the key to identify the
+            measured parameter to be added or replaced.The entire
+            measured parameter will be added or
+            replaced.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="AdditionalAttribute"
+        type="AdditionalAttributeRef">
+          <xs:annotation>
+            <xs:documentation>Updates an additional attribute
+            reference. The attribute name will be used as the key
+            to identify the additional attribute reference to be
+            added or replaced.The entire additional attribute
+            reference will be added or replaced.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Temporal" type="Temporal">
+          <xs:annotation>
+            <xs:documentation>Updates the temporal information for
+            the granule. The entire temporal information will be
+            replaced during an add. Refer to the Granule
+            documentation for more information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="DayNightFlag" type="DayNightFlag">
+          <xs:annotation>
+            <xs:documentation>The day/night flag to update. Refer
+            to the Granule documentation for more
+            information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="DeleteTime" type="xs:dateTime">
+          <xs:annotation>
+            <xs:documentation>Updates the delete time of the
+            granule. Refer to the Granule documentation for more
+            information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="CloudCover" type="xs:decimal">
+          <xs:annotation>
+            <xs:documentation>Updates the cloud cover of the
+            granule. Refer to the Granule documentation for more
+            information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="RestrictionFlag" type="xs:decimal">
+          <xs:annotation>
+            <xs:documentation>Updates the restriction flag of the
+            granule. Refer to the Granule documentation for more
+            information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Visible" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>Updates the visible flag of the
+            granule. Refer to the granule documentation for more
+            information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="Spatial" type="Spatial">
+          <xs:annotation>
+            <xs:documentation>Updates the spatial coverage for the
+            granule. The entire spatial coverage will be replaced
+            during an add. Refer to the Granule documentation for
+            more information.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+      <xs:element name="UpdateTargetFields"
+      type="ListOfGranuleUpdateTargetFields" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>The fields that should be targeted by
+          this update. Only the fields in this list will be updated
+          and the other fields in the added element will be
+          ignored. This element is only for backward compatibility
+          and should not be used for new development. This field
+          will be removed in the future.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OldValue" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>Indicates the previous value held by an
+          updated field. This will only be set when updating
+          primary key values explicitly using the
+          UpdateTargetFields. This element is only for backward
+          compatibility and should not be used for new development.
+          This field will be removed in the
+          future.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Temporal">
+    <xs:annotation>
+      <xs:documentation>This entity contains records, which
+      describe the basis of the time system used for a specific
+      collection.</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="RangeDateTime" type="RangeDateTime">
+        <xs:annotation>
+          <xs:documentation>This entity stores the start and end
+          date/time of a collection.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="SingleDateTime" type="xs:dateTime">
+        <xs:annotation>
+          <xs:documentation>This entity stores the time of day and
+          calendar date for an ECS collection. This information
+          provides a means of encoding a single date and time for a
+          granule occurring at that time or during the period
+          covered by the time (e.g. one-day for a single date
+          excluding the time within the day).</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranuleDeleteFields">
+    <xs:annotation>
+      <xs:documentation>A list of fields to be deleted from a
+      granule.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Field" type="GranuleDeleteField"
+      minOccurs="0" maxOccurs="unbounded"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranuleDeleteField">
+    <xs:annotation>
+      <xs:documentation>The field that should be deleted. Some
+      fields require a value to indicate the key of the field to
+      the correct instance can be identified.</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="BrowseImage" type="ProviderBrowseId">
+        <xs:annotation>
+          <xs:documentation>Deletes a link to the browse image with
+          the specified ProviderBrowseId.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OnlineAccessURL">
+        <xs:annotation>
+          <xs:documentation>Deletes an online access URL with the
+          given value. The entire URL element will be deleted. The
+          value of this element should be the
+          URL.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="1024"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="OnlineResource">
+        <xs:annotation>
+          <xs:documentation>Deletes an online resource URL with the
+          given value. The entire URL element will be deleted. The
+          value of this element should be the
+          URL.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="1024"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="MeasuredParameter">
+        <xs:annotation>
+          <xs:documentation>Deletes the measured parameter. The
+          value of this element should be the measured parameter
+          name. The entire measured parameter will be
+          deleted.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="250"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="AdditionalAttribute">
+        <xs:annotation>
+          <xs:documentation>Deletes an additional attribute
+          reference from the granule. The value of this element
+          should be the additional attribute
+          name.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"></xs:minLength>
+            <xs:maxLength value="80"></xs:maxLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="Temporal" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the temporal information from
+          the granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="DayNightFlag" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the day/night flag from the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="DeleteTime" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the remove time from the
+          granule. The granule will no longer be automatically
+          removed.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CloudCover" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the cloud cover information
+          from the granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="RestrictionFlag" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the restriction flag from the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AllOnlineAccessURLs" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Indicates that all online access URLs
+          should be deleted from the granules.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AllOnlineResources" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Indicates that all online resources
+          should be deleted from the granules.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AllAdditionalAttributes" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Indicates that all additional
+          attributes should be deleted from the
+          granules.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AllBrowseImages" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Indicates that all links to browse
+          images should be deleted from the
+          granules.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Spatial" type="EmptyType">
+        <xs:annotation>
+          <xs:documentation>Deletes the spatial coverage from the
+          granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+  <xs:simpleType name="GranuleUpdateTargetField">
+    <xs:annotation>
+      <xs:documentation>A target field for an update that should
+      only affect a single field of the metadata. This type is only
+      for backward compatibility and should not be used for new
+      development.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="URL"></xs:enumeration>
+      <xs:enumeration value="VALUE"></xs:enumeration>
+      <xs:enumeration value="NAME"></xs:enumeration>
+      <xs:enumeration value="MIME_TYPE"></xs:enumeration>
+      <xs:enumeration value="DESCRIPTION"></xs:enumeration>
+      <xs:enumeration value="TYPE"></xs:enumeration>
+      <xs:enumeration value="AUTO_QUALITY_FLAG"></xs:enumeration>
+      <xs:enumeration value="AUTO_QUALITY_FLAG_EX">
+      </xs:enumeration>
+      <xs:enumeration value="OP_QUALITY_FLAG"></xs:enumeration>
+      <xs:enumeration value="OP_QUALITY_FLAG_EX"></xs:enumeration>
+      <xs:enumeration value="SCIENCE_QUALITY_FLAG">
+      </xs:enumeration>
+      <xs:enumeration value="SCIENCE_QUALITY_FLAG_EX">
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ListOfGranuleUpdateTargetFields">
+    <xs:annotation>
+      <xs:documentation>A list of single fields that are the target
+      of the update.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="UpdateTargetField"
+      type="GranuleUpdateTargetField" minOccurs="0"
+      maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single field that is the target of
+          the update.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranulePartialAdd">
+    <xs:annotation>
+      <xs:documentation>A partial add to be applied to a granule.
+      The partial add may contain one or more fields. If the field
+      being updated contains a unique key and the field already
+      exists, it will be updated or replaced, otherwise it will be
+      added. Refer to the individual field documentation for
+      details.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Targets" type="ListOfGranuleUpdateTargets">
+        <xs:annotation>
+          <xs:documentation>The list of granules to
+          update.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Fields" type="ListOfGranuleAddFields">
+        <xs:annotation>
+          <xs:documentation>The fields that should be added to the
+          referenced granule. If the field already exists in the
+          collection, it will be updated or
+          replaced.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranulePartialDelete">
+    <xs:annotation>
+      <xs:documentation>A partial delete to be applied to a
+      granule. The partial delete may contain one or more fields.
+      If a delete is attempted the field will be set to a default
+      value. Refer to the individual field documentation for
+      details.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Targets" type="ListOfGranuleUpdateTargets">
+        <xs:annotation>
+          <xs:documentation>The list of granules to
+          update.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Fields" type="ListOfGranuleDeleteFields">
+        <xs:annotation>
+          <xs:documentation>The fields that should be deleted from
+          the granule.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranulePartialAdds">
+    <xs:annotation>
+      <xs:documentation>A list of granule partial metadata
+      adds.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="GranulePartialAdd" type="GranulePartialAdd"
+      minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single granule partial metadata
+          add.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranulePartialDeletes">
+    <xs:annotation>
+      <xs:documentation>A list of granule partial metadata
+      deletes.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="GranulePartialDelete"
+      type="GranulePartialDelete" minOccurs="0"
+      maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single granule partial metadata
+          delete.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="GranulePartialAdd" type="GranulePartialAdd">
+  </xs:element>
+  <xs:element name="GranulePartialDelete"
+  type="GranulePartialDelete"></xs:element>
+  <xs:complexType name="GranuleUpdateTarget">
+    <xs:annotation>
+      <xs:documentation>A reference to a granule to be
+      updated</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="LastUpdate" type="xs:dateTime"
+      minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>The date this change occured in the
+          provider's database. If this is provided we will validate
+          that this date is greater than or equal to the date in
+          the granule. The granule's last update data will be
+          updated with this value.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="GranuleUR" type="GranuleUR">
+        <xs:annotation>
+          <xs:documentation>The granule UR of the granule to which
+          the update will be applied.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranuleUpdateTargets">
+    <xs:annotation>
+      <xs:documentation>A list of granule update
+      targets.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Target" type="GranuleUpdateTarget"
+      maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>A single granule update
+          target</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="DayNightFlag">
+    <xs:annotation>
+      <xs:documentation>Possible values for the day night flag. If
+      no day night flag information is available, the unspecified
+      value should be used.</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DAY"></xs:enumeration>
+      <xs:enumeration value="NIGHT"></xs:enumeration>
+      <xs:enumeration value="BOTH"></xs:enumeration>
+      <xs:enumeration value="UNSPECIFIED"></xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="ListOfAdditionalAttributeValues">
+    <xs:sequence>
+      <xs:element name="Value" minOccurs="1" maxOccurs="unbounded">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:maxLength value="500"></xs:maxLength>
+            <xs:minLength value="1"></xs:minLength>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ListOfGranuleInventories">
+    <xs:annotation>
+      <xs:documentation>List of granule
+      inventories.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="GranuleInventory"
+      type="GranuleInventory" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="GranuleInventory">
+    <xs:annotation>
+      <xs:documentation>An inventory of granules for a given
+      collection. An empty GranuleURs element represents an
+      inventory with no granules.</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="CollectionRef" type="CollectionRef">
+        <xs:annotation>
+          <xs:documentation>The parent collection for this granule
+          inventory.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="GranuleURs" type="ListOfGranuleURs">
+        <xs:annotation>
+          <xs:documentation>The references to granules that are
+          expected to exist for the given parent collection in
+          ECHO.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

@@ -37,15 +37,36 @@
   (testing "invalid param"
     (is (= [(msg/find-not-supported-combination :collection [:foo])]
            (search/find-params-validation {:concept-type "collection"
-                                      :foo "f"})))
+                                           :foo "f"})))
     (is (= [(msg/find-not-supported-combination :granule [:foo])]
            (search/find-params-validation {:concept-type "granule"
-                                      :foo "f"}))))
+                                           :foo "f"}))))
   (testing "invalid concept-type"
     (is (= [(msg/find-not-supported-combination :foo [:provider-id :entry-title])]
            (search/find-params-validation {:concept-type "foo"
-                                      :entry-title "e"
-                                      :provider-id "p"})))))
+                                           :entry-title "e"
+                                           :provider-id "p"})))))
+
+(deftest tombstone-request-validations-test
+  (testing "valid tombstone request"
+    (is (= [] (v/tombstone-request-validation {:concept-id "C1-PROV1"
+                                               :revision-id 1
+                                               :revision-date "2015-02-13T17:00:35Z"
+                                               :deleted true}))))
+  (testing "missing concept-id"
+    (is (= ["Concept must include concept-id."] (v/tombstone-request-validation
+                                                  {:revision-id 1
+                                                   :revision-date "2015-02-13T17:00:35Z"
+                                                   :deleted true}))))
+
+  (testing "extra fields"
+    (is (= (set ["Tombstone concept cannot include [provider-id]"
+                 "Tombstone concept cannot include [native-id]"
+                 "Tombstone concept cannot include [format]"
+                 "Tombstone concept cannot include [metadata]"])
+           (set (v/tombstone-request-validation
+                  {:concept-id "C120000000-PROV" :provider-id "PROV"
+                   :deleted true :native-id "coll" :format "echo10" :metadata "xml"}))))))
 
 (deftest collection-validation-test
   (testing "valid-concept"

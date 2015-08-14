@@ -11,7 +11,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (deftest search-by-temporal
-  (let [coll1 (d/ingest "PROV1" (dc/collection {}))
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T00:00:00Z"}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00Z"
                                                    :ending-date-time "2010-01-11T12:00:00Z"}))

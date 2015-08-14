@@ -126,7 +126,7 @@
     (create-elem-val-equality-selector selector-str)
 
     :else
-    (throw (Exception. (str "Unrecognized selector string form in xpath: " selector-str)))))
+    (throw (IllegalArgumentException. (str "Unrecognized selector string form in xpath: " selector-str)))))
 
 (defn- parse-xpath-element
   "Parses an element of an XPath and returns a set of selectors from that element."

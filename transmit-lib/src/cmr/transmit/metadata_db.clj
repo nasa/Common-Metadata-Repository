@@ -264,7 +264,7 @@
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
 (defn-timed save-concept
-  "Saves a concept in metadata db and index."
+  "Saves a concept in metadata db"
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)
         concept-json-str (json/generate-string concept)
@@ -295,37 +295,6 @@
       (errors/internal-error!
         (format "Save concept failed. MetadataDb app response status code: %s response: %s"
                 status response)))))
-
-(defn-timed delete-concept
-  "Delete a concept from metatdata db."
-  ([context concept-id]
-   (delete-concept context concept-id nil))
-  ([context concept-id revision-id]
-   (let [conn (config/context->app-connection context :metadata-db)
-         response (client/delete (str (conn/root-url conn) "/concepts/" concept-id
-                                      (when revision-id (str "/" revision-id)))
-                                 {:accept :json
-                                  :throw-exceptions false
-                                  :headers (ch/context->http-headers context)
-                                  :connection-manager (conn/conn-mgr conn)})
-         status (:status response)
-         body (json/decode (:body response))]
-     (case status
-       404
-       (let [errors-str (json/generate-string (flatten (get body "errors")))]
-         (errors/throw-service-error :not-found errors-str))
-
-       200
-       (get body "revision-id")
-
-       409
-      ;; Post commit constraint violation occurred
-      (errors/throw-service-errors :conflict (get body "errors"))
-
-       ;; default
-       (errors/internal-error!
-         (format "Delete concept operation failed. MetadataDb app response status code: %s response: %s "
-                                    status response))))))
 
 (defn get-metadata-db-health-fn
   "Returns the health status of the metadata db"

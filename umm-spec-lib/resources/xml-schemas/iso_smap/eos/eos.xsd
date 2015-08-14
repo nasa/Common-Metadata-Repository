@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" targetNamespace="http://earthdata.nasa.gov/schema/eos" 
+  xmlns:eos="http://earthdata.nasa.gov/schema/eos" xmlns:gmi="http://www.isotc211.org/2005/gmi" 
+  xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gco="http://www.isotc211.org/2005/gco" 
+  version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <!-- ================================= Annotation ================================ -->
+  <xs:annotation>
+    <xs:documentation>eos.xsd Version 1.0 ted.habermann@noaa.gov </xs:documentation>
+    <xs:documentation>Created 2012-08-25 </xs:documentation>
+  </xs:annotation>
+  <!-- ================================== Imports ================================== -->
+  <xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="../gmd/gmd.xsd"/>
+  <xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../gco/gco.xsd"/>
+  <xs:import namespace="http://www.isotc211.org/2005/gmx" schemaLocation="../gmx/gmx.xsd"/>
+  <xs:import namespace="http://www.isotc211.org/2005/gmi" schemaLocation="../gmi/gmi.xsd"/>
+  <!-- ########################################################################### -->
+  <!-- ########################################################################### -->
+  <!-- ================================== Classes ================================= -->
+  <!-- =========================================================================== -->
+  <xs:simpleType name="EOS_DataType">
+    <xs:annotation>
+      <xs:documentation> This entity contains the additional attribute data types. </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STRING">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive string type. See <a href="http://www.w3.org/TR/xmlschema-2/#string">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="FLOAT">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive float type, without support for positive or negative infinity, or not-a-number. See <a href="http://www.w3.org/TR/xmlschema-2/#float">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="INT">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML derived int type. See <a href="http://www.w3.org/TR/xmlschema-2/#int">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BOOLEAN">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive boolean type. See <a href="http://www.w3.org/TR/xmlschema-2/#boolean">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATE">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive date type but with GMT timezone, meaning any timezoned or non-timezoned value will be treated as having GMT timezone. See <a href="http://www.w3.org/TR/xmlschema-2/#date">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIME">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive time type but with GMT timezone, meaning any timezoned or non-timezoned value will be treated as having GMT timezone. See <a href="http://www.w3.org/TR/xmlschema-2/#time">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATETIME">
+        <xs:annotation>
+          <xs:documentation> The parameter value type is XML primitive dateTime type. See <a href="http://www.w3.org/TR/xmlschema-2/#dateTime">the XML Schema specification</a> for more information. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATE_STRING">
+        <xs:annotation>
+          <xs:documentation>The parameter value type is a string that follows a provider-defined date format. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TIME_STRING">
+        <xs:annotation>
+          <xs:documentation>The parameter value type is a string that follows a provider-defined time format. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="DATETIME_STRING">
+        <xs:annotation>
+          <xs:documentation>The parameter value type is a string that follows a provider-defined dateTime format. </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_AdditionalAttributes_Type">
+    <xs:annotation>
+      <xs:documentation>This entity stores the product specific attributes (i.e. attributes used to describe the unique characteristics of the collection which extend beyond those defined in the ECHO metadata model).</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="additionalAttribute" type="eos:EOS_AdditionalAttribute_PropertyType"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ................................................................................. -->
+  <xs:element name="EOS_AdditionalAttributes" type="eos:EOS_AdditionalAttributes_Type"/>
+  <!-- ................................................................................. -->
+  <xs:complexType name="EOS_AdditionalAttributes_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_AdditionalAttributes" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_AdditionalAttribute_Type">
+    <xs:annotation>
+      <xs:documentation>This entity stores the product specific attributes (i.e. attributes used to describe the unique characteristics of the collection which extend beyond those defined in the ECHO metadata model).</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="reference" minOccurs="1" type="eos:EOS_AdditionalAttributeDescription_PropertyType"/>
+          <xs:element minOccurs="0" name="value" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> This attribute contains the value of the product specific attribute (additional attribute) for all granules across a given collection </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ................................................................................. -->
+  <xs:element name="EOS_AdditionalAttribute" type="eos:EOS_AdditionalAttribute_Type"/>
+  <!-- ................................................................................. -->
+  <xs:complexType name="EOS_AdditionalAttribute_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_AdditionalAttribute" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_AdditionalAttributeDescription_Type">
+    <xs:annotation>
+      <xs:documentation>This entity stores the product specific attributes (i.e. attributes used to describe the unique characteristics of the collection which extend beyond those defined in the ECHO metadata model).</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="type" type="eos:EOS_AdditionalAttributeTypeCode_PropertyType" maxOccurs="1">
+            <xs:annotation>
+              <xs:documentation>This element is added in order to provide a type for the additional attribute that can be used to classify the attribute and determine where it belongs in the ISO Model</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+          <xs:element name="name" type="gco:CharacterString_PropertyType" maxOccurs="1">
+            <xs:annotation>
+              <xs:documentation>Name of the additional attribute</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" maxOccurs="1" name="description" type="gco:CharacterString_PropertyType" >
+            <xs:annotation>
+              <xs:documentation> This attribute provides a description for the additionalAttribute. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <!--<xs:element minOccurs="0" name="dataType" type="eos:EOS_DataType" maxOccurs="1">-->
+          <xs:element minOccurs="0" name="dataType" type="eos:EOS_AdditionalAttributeDataTypeCode_PropertyType" maxOccurs="1">            
+            <xs:annotation>
+              <xs:documentation>Data type of the additional attribute from the EOS_DataTypes</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="measurementResolution" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> This attribute will be used to identify the smallest unit increment to which the additionalAttribute value is measured. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="parameterRangeBegin" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> This attribute provides the minimum value of the additionalAttribute over whole collection. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="parameterRangeEnd" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> This attribute provides the maximum value of the additionalAttribute over whole collection. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="parameterUnitsOfMeasure" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> The standard unit of measurement for an additionalAttribute. AVHRR: unit of geophysical parameter-units of geophysical parameter. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="parameterValueAccuracy" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> An estimate of the accuracy of the assignment of the additionalAttribute value. AVHRR: Measurement error or precision-measurement error or precision of a data product parameter. This can be specified in percent or the unit with which the parameter is measured. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element minOccurs="0" name="valueAccuracyExplanation" type="gco:CharacterString_PropertyType">
+            <xs:annotation>
+              <xs:documentation> This defines the method used for determining the additionalAttribute value accuracy that is given for this non core attribute. </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ................................................................................. -->
+  <xs:element name="EOS_AdditionalAttributeDescription" type="eos:EOS_AdditionalAttributeDescription_Type"/>
+  <!-- ................................................................................. -->
+  <xs:complexType name="EOS_AdditionalAttributeDescription_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_AdditionalAttributeDescription" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_AdditionalAttributeTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_AdditionalAttributeTypeCode_PropertyType">
+    <xs:sequence minOccurs="0">
+      <xs:element ref="eos:EOS_AdditionalAttributeTypeCode"/>
+    </xs:sequence>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_AdditionalAttributeDataTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_AdditionalAttributeDataTypeCode_PropertyType">
+    <xs:sequence minOccurs="0">
+      <xs:element ref="eos:EOS_AdditionalAttributeDataTypeCode"/>
+    </xs:sequence>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <!--<xs:complexType name="EOS_Georectified_Type">
+    <xs:annotation>
+      <xs:documentation>Description: extends MI_Georectified by adding citation</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gmd:MD_Georectified_Type">
+        <xs:sequence>
+          <xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-\- ......................................................................................... -\->
+  <xs:element name="EOS_Georectified" type="eos:EOS_Georectified_Type" substitutionGroup="gmd:MD_Georectified"/>
+  <!-\- ......................................................................................... -\->
+  <xs:complexType name="EOS_Georectified_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Georectified" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>-->
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Platform_Type">
+    <xs:annotation>
+      <xs:documentation>Description: extends MI_Platform by adding additionalAttributes</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gmi:MI_Platform_Type">
+        <xs:sequence>
+          <xs:element name="otherPropertyType" type="gco:RecordType_PropertyType" minOccurs="0"/>
+          <xs:element name="otherProperty" type="gco:Record_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ......................................................................................... -->
+  <xs:element name="EOS_Platform" type="eos:EOS_Platform_Type" substitutionGroup="gmi:MI_Platform"/>
+  <!-- ......................................................................................... -->
+  <xs:complexType name="EOS_Platform_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Platform" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Instrument_Type">
+    <xs:annotation>
+      <xs:documentation>Description: extends MI_Instrument by adding sensor and additionalAttributes</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gmi:MI_Instrument_Type">
+        <xs:sequence>
+          <xs:element name="otherPropertyType" type="gco:RecordType_PropertyType" minOccurs="0"/>
+          <xs:element name="otherProperty" type="gco:Record_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="sensor" type="eos:EOS_Sensor_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ......................................................................................... -->
+  <xs:element name="EOS_Instrument" type="eos:EOS_Instrument_Type" substitutionGroup="gmi:MI_Instrument"/>
+  <!-- ......................................................................................... -->
+  <xs:complexType name="EOS_Instrument_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Instrument" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Sensor_Type">
+    <xs:annotation>
+      <xs:documentation>Description: NASA Sensor Description</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+          <xs:element name="type" type="gco:CharacterString_PropertyType"/>
+          <xs:element name="description" type="gco:CharacterString_PropertyType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="mountedOn" type="eos:EOS_Platform_PropertyType" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="otherPropertyType" type="gco:RecordType_PropertyType" minOccurs="0"/>
+          <xs:element name="otherProperty" type="gco:Record_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="history" type="eos:EOS_EventList_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_Sensor" type="eos:EOS_Sensor_Type"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_Sensor_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Sensor" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_AcquisitionInformation_Type">
+    <xs:annotation>
+      <xs:documentation>Description: extends MI_AcquisitionInformation by adding sensor</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gmi:MI_AcquisitionInformation_Type">
+        <xs:sequence>
+          <xs:element name="instrument" type="eos:EOS_Instrument_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="sensor" type="eos:EOS_Sensor_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ......................................................................................... -->
+  <xs:element name="EOS_AcquisitionInformation" type="eos:EOS_AcquisitionInformation_Type" substitutionGroup="gmi:MI_AcquisitionInformation"/>
+  <!-- ......................................................................................... -->
+  <xs:complexType name="EOS_AcquisitionInformation_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_AcquisitionInformation" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Processing_Type">
+    <xs:annotation>
+      <xs:documentation>Description: extends LE_Processing by adding additionalAttributeType and additionalAttributeValue</xs:documentation>
+    </xs:annotation>
+    <!--    <xs:complexContent>
+      <xs:extension base="gmi:LE_Processing_Type">
+        <xs:sequence>
+          <xs:element name="otherPropertyType" type="gco:RecordType_PropertyType" minOccurs="0"/>
+          <xs:element name="otherProperty" type="gco:Record_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>-->
+    <!-- This type substitutes an EOS_Algorithm for LE_Algorithm -->
+    <xs:complexContent>
+      <xs:extension base="gmi:LE_Processing_Type">
+        <!--<xs:extension base="gco:AbstractObject_Type">-->
+          <xs:sequence>
+          <xs:element name="algorithm" type="eos:EOS_Algorithm_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="otherPropertyType" type="gco:RecordType_PropertyType" minOccurs="0"/>
+          <xs:element name="otherProperty" type="gco:Record_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ......................................................................................... -->
+  <xs:element name="EOS_Processing" type="eos:EOS_Processing_Type" substitutionGroup="gmi:LE_Processing"/>
+  <!-- ......................................................................................... -->
+  <xs:complexType name="EOS_Processing_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Processing" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <!-- This type was added in order to increase the cardinality of citation and add version -->
+  <xs:complexType name="EOS_Algorithm_Type">
+    <xs:annotation>
+      <xs:documentation>Description: Details of the methodology by which geographic information was derived from the instrument readings - FGDC: Algorithm_Information - shortName: Algorithm</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gmi:LE_Algorithm_Type">
+        <xs:sequence>
+          <xs:element name="additionalCitation" minOccurs="0" maxOccurs="unbounded" type="gmd:CI_Citation_PropertyType"/>
+          <xs:element name="version" minOccurs="0" type="gco:CharacterString_PropertyType"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_Algorithm" type="eos:EOS_Algorithm_Type" substitutionGroup="gmi:LE_Algorithm"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_Algorithm_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Algorithm" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_EventList_Type">
+    <xs:annotation>
+      <xs:documentation>Description: NASA EventList Description</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="title" type="gco:CharacterString_PropertyType"/>
+          <xs:element name="description" type="gco:CharacterString_PropertyType"/>
+          <xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+          <xs:element name="responsibleParty" type="gmd:CI_ResponsibleParty_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="dateInfo" type="gmd:CI_Date_PropertyType" minOccurs="1" maxOccurs="unbounded"/>
+          <xs:element name="language" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+          <xs:element name="characterSet" type="gmd:MD_CharacterSetCode_PropertyType" minOccurs="0"/>
+          <xs:element name="constraints" type="gmd:MD_Constraints_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="onlineResource" type="gmd:CI_OnlineResource_PropertyType" minOccurs="0"/>
+          <xs:element name="event" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_EventList" type="eos:EOS_EventList_Type"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_EventList_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_EventList" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Event_Type">
+    <xs:annotation>
+      <xs:documentation>Description: NASA Event Description</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="title" type="gco:CharacterString_PropertyType"/>
+          <xs:element name="description" type="gco:CharacterString_PropertyType"/>
+          <xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+          <xs:element name="extent" type="gmd:EX_Extent_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="type" type="eos:EOS_EventTypeCode_PropertyType" minOccurs="1" maxOccurs="unbounded"/>
+          <xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="revisionHistory" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_Event" type="eos:EOS_Event_Type"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_Event_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Event" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <xs:complexType name="EOS_Revision_Type">
+    <xs:annotation>
+      <xs:documentation>Description: NASA Revision Description</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="gco:AbstractObject_Type">
+        <xs:sequence>
+          <xs:element name="dateInfo" type="gmd:CI_Date_PropertyType"/>
+          <xs:element name="author" type="gmd:CI_ResponsibleParty_PropertyType"/>
+          <xs:element name="description" type="gco:CharacterString_PropertyType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_Revision" type="eos:EOS_Revision_Type"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_Revision_PropertyType">
+    <xs:sequence>
+      <xs:element ref="eos:EOS_Revision" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="gco:ObjectReference"/>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+  <!-- ........................................................................ -->
+  <xs:element name="EOS_EventTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+  <!-- ........................................................................ -->
+  <xs:complexType name="EOS_EventTypeCode_PropertyType">
+    <xs:sequence minOccurs="0">
+      <xs:element ref="eos:EOS_EventTypeCode"/>
+    </xs:sequence>
+    <xs:attribute ref="gco:nilReason"/>
+  </xs:complexType>
+  <!-- =========================================================================== -->
+</xs:schema>

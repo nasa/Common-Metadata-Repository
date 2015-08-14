@@ -37,4 +37,5 @@
                          (constant  "_")
                          (xpath "/Collection/VersionId"))})
        :Abstract (xpath "/Collection/Description")
+       :Purpose (xpath "/Collection/SuggestedUsage")
        :TemporalExtent temporal-mappings})))

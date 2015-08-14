@@ -19,7 +19,6 @@
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.ingest.api.translation :as translation-api]
             [cmr.common-app.api.routes :as common-routes]
-
             [cmr.common-app.api-docs :as api-docs]))
 
 (defn- build-routes [system]

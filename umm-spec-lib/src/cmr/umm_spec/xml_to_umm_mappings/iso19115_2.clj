@@ -4,8 +4,11 @@
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
             [cmr.umm-spec.json-schema :as js]))
 
+(def data-identification-base-xpath
+  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
+
 (def citation-base-xpath
-  "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation")
+  (str data-identification-base-xpath "/gmd:citation/gmd:CI_Citation"))
 
 (def entry-id-xpath
   (xpath (str citation-base-xpath "/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")))
@@ -17,4 +20,7 @@
   (apt/add-parsing-types
     js/umm-c-schema
     (object {:EntryId (object {:Id entry-id-xpath})
-             :EntryTitle entry-title-xpath})))
+             :EntryTitle entry-title-xpath
+             :Abstract (xpath (str data-identification-base-xpath "/gmd:abstract/gco:CharacterString"))
+             :Purpose (xpath (str data-identification-base-xpath "/gmd:purpose/gco:CharacterString"))
+             })))

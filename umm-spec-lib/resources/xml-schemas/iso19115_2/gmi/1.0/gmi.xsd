@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- edited with XMLSpy v2005 rel. 3 U (http://www.altova.com) by STEPHANE BIDAULT (I.G.N/SAF/RECEPTIONS) -->
+<xs:schema elementFormDefault="qualified" targetNamespace="http://www.isotc211.org/2005/gmi" 
+  xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd" 
+  xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gss="http://www.isotc211.org/2005/gss" 
+  version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<!-- ================================= Annotation ================================ -->
+	<xs:annotation>
+		<xs:documentation>This file was generated from ISO TC/211 UML class diagrams == 04-04-2008 17:12:49 ====== </xs:documentation>
+	</xs:annotation>
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../../gco/1.0/gco.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="../../gmd/1.0/gmd.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmx" schemaLocation="../../gmx/1.0/gmx.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gss" schemaLocation="../../gss/1.0/gss.xsd"/>
+	<xs:include schemaLocation="../../gmi/1.0/metadataEntitySet.xsd"/>
+	<xs:include schemaLocation="../../gmi/1.0/contentInformation.xsd"/>
+  <xs:include schemaLocation="../../gmi/1.0/acquisitionInformation.xsd"/>
+	<xs:include schemaLocation="../../gmi/1.0/dataQualityInformation.xsd"/>
+	<xs:include schemaLocation="../../gmi/1.0/spatialRepresentationInformation.xsd"/>
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!-- ================================== Classes ================================= -->
+</xs:schema>
