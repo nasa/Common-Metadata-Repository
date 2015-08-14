@@ -29,7 +29,7 @@
   (map :provider_id (j/query (config/db) "select provider_id from metadata_db.providers")))
 
 (defn get-regular-providers
-  "Gets a list of the regular (not small) providers in the datbase. Primarily for enabling
+  "Gets a list of the regular (not small) providers in the database. Primarily for enabling
   migrations of existing provider tables."
   []
   (remove :small (p/get-providers (config/db))))
