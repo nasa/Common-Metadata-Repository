@@ -331,19 +331,13 @@
            (update-in [:concept-type] keyword))))))
 
 (defn concept-in-mdb-has-values?
-  "Check to see if the record in mdb has the same values as the given concept map. Only
-  keys in the concept map are checked - extra keys in the mdb record are ignored."
+  "Check to see if the record in mdb with the given concept-id has the same values as the given
+  concept map. Only keys in the concept map are checked - extra keys in the mdb record are ignored."
   ([concept-map concept-id]
    (concept-in-mdb-has-values? concept-map concept-id nil))
   ([concept-map concept-id revision-id]
    (let [mdb-concept (get-concept concept-id revision-id)]
      (nil? (first (d/diff concept-map mdb-concept))))))
-
-
-(defn concept-exists-in-mdb?
-  "Check concept in mdb with the given concept and revision-id"
-  [concept-id revision-id]
-  (not (nil? (get-concept concept-id revision-id))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -7,6 +7,8 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.transmit.echo.tokens :as tokens]
+            [cmr.transmit.config :as tcfg]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.ingest.services.messages :as msg]
@@ -142,6 +144,13 @@
       (invalid-revision-id-error revision-id))
     concept))
 
+(defn- set-user-id
+  "Associate user id to concept."
+  [concept context headers]
+  (let [user-id (or (get headers "user-id")
+                    (tokens/get-user-id context (get headers tcfg/token-header)))]
+    (assoc concept :user-id user-id)))
+
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
@@ -228,6 +237,15 @@
                           {:type type
                            :errors errors
                            :default-format default-response-format})))))))
+
+; (defn save-collection
+;   "Extract user-id from the header/token and call ingest services to save the collection"
+;   [context headers concept]
+;   (let [user-id (or (get headers "user-id")
+;                     (tokens/get-user-id context (get headers tcfg/token-header)))
+;         concept (assoc concept :user-id user-id)]
+;     (ingest/save-collection context concept)))
+
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
   (set-default-error-format
@@ -250,13 +268,15 @@
           (let [concept (body->concept :collection provider-id native-id body content-type headers)]
             (info (format "Ingesting collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-collection request-context concept))))
+            (generate-ingest-response headers (ingest/save-collection
+                                                request-context
+                                                (set-user-id concept request-context headers)))))
         (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs (set-revision-id
-                                  {:provider-id provider-id
-                                   :native-id native-id
-                                   :concept-type :collection}
-                                  headers)]
+          (let [concept-attribs (-> {:provider-id provider-id
+                                     :native-id native-id
+                                     :concept-type :collection}
+                                    (set-revision-id headers)
+                                    (set-user-id request-context headers))]
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting collection %s from client %s"

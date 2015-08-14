@@ -69,14 +69,16 @@
       (index/wait-until-indexed)
       (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
       (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id)))
-      #_(is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id))))))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id))))))
   (testing "update of a concept with a new user-id from header"
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user1"})
-          _ (ingest/ingest-concept concept {:user-id "user2"})]
+          _ (ingest/ingest-concept concept {:user-id "user2"})
+          _ (ingest/ingest-concept concept {:user-id "user3"})]
       (index/wait-until-indexed)
       (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id))))))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id)))
+      (is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id)))))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
