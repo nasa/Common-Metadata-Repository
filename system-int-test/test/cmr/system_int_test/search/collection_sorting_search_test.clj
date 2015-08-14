@@ -54,21 +54,29 @@
                                     {:query-params {:page-size 20 :sort-key sort-key}}))))))
 
 
-(defn all-revision-compare-entry-title
-  "Compares collections by entry title for sorting in all revisions. descending? indicates if the sort
-  is descending by entry_title or ascending. When entry titles are matching the sort order is by
-  concept id ascending and revision id descending."
-  [descending? c1 c2]
-  (if (= (:entry-title c1) (:entry-title c2))
+(defn- all-revision-compare-field
+  "Compares collections by the given field for sorting in all revisions. descending? indicates if
+  the sort is descending by the field or ascending. When the given field matches for two
+  revisions the sort order is by concept id ascending and revision id descending. Only string
+  fields are supported. The field values must implement Comparable. Strings are converted to
+  lower case."
+  [field descending? c1 c2]
+  (if (= (field c1) (field c2))
     (if (= (:concept-id c1) (:concept-id c2))
       ;; Revision ids are in reverse order by default
       (compare (:revision-id c2) (:revision-id c1))
       (compare (:concept-id c1) (:concept-id c2)))
-    (let [et1 (str/lower-case (:entry-title c1))
-          et2 (str/lower-case (:entry-title c2))]
+    (let [et1 (if (string? (field c1)) (str/lower-case (field c1)) (field c1))
+          et2 (if (string? (field c2)) (str/lower-case (field c2)) (field c2))]
       (if descending?
         (compare et2 et1)
         (compare et1 et2)))))
+
+(defn- sort-revisions-by-field
+  "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
+  descending. The field values must implement Comparable and strings are converted to lower case."
+  [field descending? colls]
+  (sort-by identity (partial all-revision-compare-field field descending?) colls))
 
 (deftest sorting-test
   (let [c1-1 (make-coll "PROV1" "et99" 10 20)
@@ -96,24 +104,18 @@
     (index/wait-until-indexed)
 
     (testing "all revisions sorting"
-      (testing "Sort by entry title ascending"
-        (let [sorted-colls (sort-by identity
-                                    (partial all-revision-compare-entry-title false)
-                                    all-revisions)]
-          (is (sort-order-correct? sorted-colls "entry_title" true))))
-
-      (testing "Sort by entry title descending"
-        (let [sorted-colls (sort-by identity
-                                    (partial all-revision-compare-entry-title true)
-                                    all-revisions)]
-          (is (sort-order-correct? sorted-colls "-entry_title" true))))
-
-
-      (testing "revision date"
+      (testing "various sort keys"
         (are [sort-key items]
              (sort-order-correct? items sort-key true)
+             "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
+             "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
+             ;; Revision date is not returned (and therefore not available for sort-revisions-by-field,
+             ;; so we rely on the fact that revision date defaults to the current time,
+             ;; so ordering by revision date it the same as ordering by insertion order.
              "revision_date" all-revisions
-             "-revision_date" (reverse all-revisions))))
+             "-revision_date" (reverse all-revisions)
+             "entry_id" (sort-revisions-by-field :entry-id false all-revisions)
+             "-entry_id" (sort-revisions-by-field :entry-id true all-revisions))))
 
     (testing "latest revisions sorting"
 
@@ -125,7 +127,6 @@
                "+entry_title"
                "dataset_id" ; this is an alias for entry title
                "+dataset_id")))
-
 
       (testing "Sort by entry title descending"
         (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
