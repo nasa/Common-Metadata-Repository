@@ -44,7 +44,8 @@
       (concept-service/save-concept-revision mdb-context  {:concept-id concept-id
                                                            :revision-id revision-id
                                                            :deleted true})
-      (index-service/delete-concept indexer-context concept-id revision-id true))
+      (index-service/delete-concept indexer-context concept-id revision-id
+                                    {:ignore-conflict? true}))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
         (if (= (:type data) :conflict)
