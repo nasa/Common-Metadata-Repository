@@ -32,7 +32,7 @@
   "Gets a list of the regular (not small) providers in the datbase. Primarily for enabling
   migrations of existing provider tables."
   []
-  (filter #(not (:small %)) (p/get-providers (config/db))))
+  (remove :small (p/get-providers (config/db))))
 
 (defn get-regular-provider-collection-tablenames
   "Gets a list of all the collection tablenames for regular providers. Primarily for enabling
