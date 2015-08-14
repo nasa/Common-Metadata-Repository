@@ -106,7 +106,7 @@
   (let [qb (l/start (mq/create-memory-queue-broker
                       {:queues ["a" "b"]
                        :exchanges ["e"]
-                       :queues-to-exchanges {"a" "e" "b" "e"}}) nil)]
+                       :queues-to-exchanges {"a" ["e"] "b" ["e"]}}) nil)]
     (try
       (let [a-msgs-received (add-message-capturing-handler qb "a")
             b-msgs-received (add-message-capturing-handler qb "b")

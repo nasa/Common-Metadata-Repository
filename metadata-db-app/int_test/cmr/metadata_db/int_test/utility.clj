@@ -12,7 +12,8 @@
             [cmr.common.util :as util]
             [cmr.metadata-db.config :as config]
             [clj-http.conn-mgr :as conn-mgr]
-            [cmr.transmit.config :as transmit-config]))
+            [cmr.transmit.config :as transmit-config]
+            [cmr.metadata-db.config :as mdb-config]))
 
 (def conn-mgr-atom (atom nil))
 
@@ -417,13 +418,19 @@
   Optionally accepts a list of provider-ids to create before the test"
   [& providers]
   (fn [f]
-    (reset-database)
-    (doseq [provider providers]
-      (let [{:keys [provider-id short-name cmr-only small]} provider
-            short-name (if short-name short-name provider-id)]
-        (save-provider {:provider-id provider-id
-                        :short-name short-name
-                        :cmr-only (if cmr-only true false)
-                        :small (if small true false)})))
-    (f)))
+    (try
+      ;; We set this to false during a test so that messages won't be published when this is run
+      ;; in dev system and cause exceptions in the indexer.
+      (mdb-config/set-publish-collection-revision-deletes! false)
+      (reset-database)
+      (doseq [provider providers]
+        (let [{:keys [provider-id short-name cmr-only small]} provider
+              short-name (if short-name short-name provider-id)]
+          (save-provider {:provider-id provider-id
+                          :short-name short-name
+                          :cmr-only (if cmr-only true false)
+                          :small (if small true false)})))
+      (f)
+      (finally
+        (mdb-config/set-publish-collection-revision-deletes! true)))))
 

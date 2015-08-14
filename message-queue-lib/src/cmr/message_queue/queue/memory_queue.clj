@@ -98,7 +98,9 @@
   (publish-to-queue
     [this queue-name msg]
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
-    (a/>!! (queues-to-channels queue-name) (json/generate-string msg)))
+    (if-let [chan (queues-to-channels queue-name)]
+      (a/>!! chan (json/generate-string msg))
+      (throw (IllegalArgumentException. (str "Could not find channel bound to queue " queue-name)))))
 
   (get-queues-bound-to-exchange
     [this exchange-name]
@@ -129,10 +131,17 @@
   RabbitMQBroker"
   [{:keys [queues exchanges queues-to-exchanges]}]
   (let [exchanges-to-empty-sets (into {} (for [e exchanges] [e #{}]))
-        exchanges-to-queue-sets (reduce (fn [e-to-q [queue exchange]]
+
+        ;; Create a sequence of all the exchange queue combinations
+        exchange-queue-tuples (for [[queue exchanges] queues-to-exchanges
+                                    exchange exchanges]
+                                [exchange queue])
+
+        ;; Create a map of exchange names to sets of queues
+        exchanges-to-queue-sets (reduce (fn [e-to-q [exchange queue]]
                                           (update-in e-to-q [exchange] conj queue))
                                         exchanges-to-empty-sets
-                                        queues-to-exchanges)
+                                        exchange-queue-tuples)
         q-to-chans (into {} (for [q queues] [q (a/chan CHANNEL_BUFFER_SIZE)]))]
     (->MemoryQueueBroker queues exchanges-to-queue-sets
                          q-to-chans
@@ -143,7 +152,7 @@
 
   (def qb (create-memory-queue-broker {:queues ["a" "b" "c"]
                                        :exchanges ["e1" "e2"]
-                                       :queues-to-exchanges {"a" "e1", "b" "e1", "c" "e2"}}))
+                                       :queues-to-exchanges {"a" ["e1"], "b" ["e1"], "c" ["e2"]}}))
 
   (def running-qb (lifecycle/start qb nil))
 

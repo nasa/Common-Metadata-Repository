@@ -9,7 +9,8 @@
             [cmr.system-int-test.system :as s]
             [clj-http.client :as client]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"} {:grant-all-search? false
+                                                                 :grant-all-ingest? false}))
 
 (defn has-action-permission?
   "Attempts to perform the given action using the url and method with the token. Returns true

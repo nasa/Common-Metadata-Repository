@@ -3,7 +3,9 @@
   a queue listener"
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.common.util :as util :refer [defn-timed]]
+            [clojail.core :as timeout]))
 
 (defn retry-limit-met?
   "Determine whether or not the given message has met (or exceeded)
@@ -48,4 +50,40 @@
     :problem (only present when :ok? is false) - a string indicating the problem.
 
     This function handles exceptions and timeouts internally."))
+
+(defn- try-to-publish
+  "Attempts to publish messages to the given exchange.
+
+  When the RabbitMQ server is down or unreachable, calls to publish will throw an exception. Rather
+  than raise an error to the caller immediately, the publication will be retried indefinitely.
+  By retrying, routine maintenance such as restarting the RabbitMQ server will not result in any
+  ingest errors returned to the provider.
+
+  Returns true if the message was successfully enqueued and false otherwise."
+  [queue-broker exchange-name msg]
+  (when-not (try
+              (publish-to-exchange queue-broker exchange-name msg)
+              (catch Exception e
+                (error e)
+                false))
+    (warn "Attempt to queue messaged failed. Retrying: " msg)
+    (Thread/sleep 2000)
+    (recur queue-broker exchange-name msg)))
+
+(defn-timed publish-message
+  "Publishes a message to an exchange Throws a service unavailable error if the message
+  fails to be put on the queue.
+
+  Requests to publish a message are wrapped in a timeout to handle error cases with the Rabbit MQ
+  server. Otherwise failures to publish will be retried indefinitely."
+  [queue-broker exchange-name msg timeout-ms]
+  (let [start-time (System/currentTimeMillis)]
+    (try
+      (timeout/thunk-timeout #(try-to-publish queue-broker exchange-name msg) timeout-ms)
+      (catch java.util.concurrent.TimeoutException e
+        (errors/throw-service-error
+          :service-unavailable
+          (str "Request timed out when attempting to publish message: " msg)
+          e)))))
+
 

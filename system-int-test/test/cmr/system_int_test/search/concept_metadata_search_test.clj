@@ -21,7 +21,8 @@
 
 (use-fixtures
   :each
-  (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+  (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+                        {:grant-all-search? false}))
 
 (defmulti result-matches?
   "Compare UMM record to the response from search."

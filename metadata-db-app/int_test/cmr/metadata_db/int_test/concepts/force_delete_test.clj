@@ -61,4 +61,3 @@
   (testing "provider not exist"
     (is (= 404 (:status (util/force-delete-concept "C22-PROV3" 0))))
     (is (= 404 (:status (util/force-delete-concept "G22-PROV3" 0))))))
-
