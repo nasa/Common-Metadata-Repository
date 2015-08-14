@@ -12,6 +12,7 @@
   [concept-type db provider-id result]
   (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :collection)
+          (assoc :user-id (:user_id result))
           (assoc-in [:extra-fields :short-name] (:short_name result))
           (assoc-in [:extra-fields :version-id] (:version_id result))
           (assoc-in [:extra-fields :entry-id] (:entry_id result))
@@ -22,11 +23,12 @@
 
 (defmethod c/concept->insert-args [:collection false]
   [concept _]
-  (let [{{:keys [short-name version-id entry-id entry-title delete-time]} :extra-fields} concept
+  (let [{{:keys [short-name version-id entry-id entry-title delete-time]} :extra-fields
+         user-id :user-id} concept
         [cols values] (c/concept->common-insert-args concept)
         delete-time (when delete-time (cr/to-sql-time (p/parse-datetime delete-time)))]
-    [(concat cols ["short_name" "version_id" "entry_id" "entry_title" "delete_time"])
-     (concat values [short-name version-id entry-id entry-title delete-time])]))
+    [(concat cols ["short_name" "version_id" "entry_id" "entry_title" "delete_time" "user_id"])
+     (concat values [short-name version-id entry-id entry-title delete-time user-id])]))
 
 (defmethod c/concept->insert-args [:collection true]
   [concept _]

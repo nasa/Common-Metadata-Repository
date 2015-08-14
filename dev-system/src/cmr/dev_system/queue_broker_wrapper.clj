@@ -127,23 +127,10 @@
   "Publishes a message to the exchange and captures the actions with the queue history of the
   exchanges associated queues."
   [broker exchange-name msg]
-  ;; record the message
-  (let [{:keys [id-sequence-atom timeout?-atom queue-broker]} broker
-        msg-id (swap! id-sequence-atom inc)
-        tagged-msg (assoc msg :id msg-id)
-        queues (queue/get-queues-bound-to-exchange (:queue-broker broker) exchange-name)]
-
-    ;; Set the initial state of the message to :initial
-    (doseq [queue-name queues]
-      (update-message-queue-history broker queue-name :enqueue tagged-msg :initial))
-
-    ;; Mark the enqueue as failed if we are timing things out or it fails
-    (if (or @timeout?-atom (not (queue/publish-to-exchange queue-broker exchange-name tagged-msg)))
-      (do
-        (doseq [queue-name queues]
-          (update-message-queue-history broker queue-name :enqueue tagged-msg :failure))
-        false)
-      true)))
+  (let [queues (queue/get-queues-bound-to-exchange (:queue-broker broker) exchange-name)
+        results (for [queue-name queues]
+                  (publish-to-queue broker queue-name msg))]
+    (every? identity results)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handler wrapper functions

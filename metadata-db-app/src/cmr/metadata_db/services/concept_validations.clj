@@ -21,6 +21,11 @@
   (when-not (:native-id concept)
     [(msg/missing-native-id)]))
 
+(defn concept-id-missing-validation
+  [concept]
+  (when-not (:concept-id concept)
+    [(msg/missing-concept-id-field)]))
+
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
   {:collection #{:short-name :version-id :entry-id :entry-title}
@@ -43,7 +48,7 @@
                  (conj acc (msg/nil-field field))
                  acc))
              []
-             (dissoc concept :revision-date :revision-id)))
+             (dissoc concept :revision-date :revision-id :user-id)))
 
 (defn datetime-validator
   [field-path]
@@ -92,3 +97,20 @@
 (def validate-concept
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data concept-validation))
+
+(def valid-tombstone-keys
+  #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id})
+
+(defn validate-tombstone-keys
+  "Validates that there are no extraneous keys"
+  [tombstone]
+  (map msg/invalid-tombstone-field
+       (set/difference (set (keys tombstone))
+                       valid-tombstone-keys)))
+
+(def tombstone-request-validation
+  (util/compose-validations [concept-id-missing-validation
+                             validate-tombstone-keys]))
+
+(def validate-tombstone-request
+  (util/build-validator :invalid-data tombstone-request-validation))

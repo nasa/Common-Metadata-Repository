@@ -6,9 +6,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.transmit.config :as transmit-config]
             [cmr.common.mime-types :as mt]
-            [cmr.umm.core :as umm]
             [cmr.common.util :refer [are2] :as util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))

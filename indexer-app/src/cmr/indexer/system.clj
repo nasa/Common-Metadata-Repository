@@ -22,7 +22,7 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.indexer.services.ingest-event-handler :as ingest-event-handler]))
+            [cmr.indexer.services.event-handler :as event-handler]))
 
 (defconfig colls-with-separate-indexes
   "Configuration value that contains a list of collections with separate indexes for their
@@ -61,7 +61,7 @@
                           [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
-    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby])))
+    (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
@@ -74,9 +74,8 @@
                                system
                                component-order)]
 
-    ;; When the indexer is used as an embedded system it won't be allowed to subscribe to events
-    (when (:queue-broker started-system)
-      (ingest-event-handler/subscribe-to-ingest-events {:system started-system}))
+    (when (:queue-broker system)
+      (event-handler/subscribe-to-events {:system started-system}))
 
     (info "System started")
     started-system))

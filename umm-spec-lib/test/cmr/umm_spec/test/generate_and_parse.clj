@@ -18,9 +18,9 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [cmr.umm-spec.json-schema :as js]
-            [clojure.java.io :as io]
+            [cmr.umm-spec.core :as c]
             [clj-time.core :as t]
-            [cmr.common.util :as u :refer [are2]]))
+            [cmr.common.util :refer [are2]]))
 
 (def example-record-echo10-supported
   "This contains an example record will all the fields supported by ECHO10. It supported
@@ -61,16 +61,18 @@
   (umm-c/map->UMM-C
     {:EntryTitle "The entry title V5"
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     }))
-
+     :Abstract "Abstract description"
+     :Purpose "help testing"}))
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format to-xml to-umm]
         (let [xml (xg/generate-xml to-xml example-record)
+              validation-errors (c/validate-xml :collection metadata-format xml)
               parsed (xp/parse-xml to-umm xml)
               expected-manip-fn (expected-conversion/metadata-format->expected-conversion metadata-format)
               expected (expected-manip-fn example-record)]
-          (is (= expected parsed)))
+          (and (empty? validation-errors)
+               (= expected parsed)))
         "echo10"
         :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c
 

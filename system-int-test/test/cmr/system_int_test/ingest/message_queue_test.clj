@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.message-queue-test
   "Tests behavior of ingest and indexer under different message queue failure scenarios."
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index-util]
             [cmr.system-int-test.data2.collection :as dc]
@@ -69,7 +70,7 @@
   "Verifies that all of the provided concepts are stored in metadata-db"
   [& concepts]
   (doseq [concept concepts]
-    (is (ingest/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))))
+    (is (mdb/concept-exists-in-mdb? (:concept-id concept) (:revision-id concept)))))
 
 (deftest message-queue-concept-history-test
   (s/only-with-real-message-queue

@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
@@ -36,8 +37,6 @@
   (def vpc (vp/ingest-virtual-collections isc))
 
   )
-
-;; TODO when testing a failure case we can delete the virtual collection. This would make the granule fail ingest.
 
 (deftest specific-granule-in-virtual-product-test
   (let [[ast-coll] (vp/ingest-source-collections
@@ -162,7 +161,7 @@
   "Assert that the concepts with the given concept-ids and revision-id exist in mdb and are tombstones"
   [concept-ids revision-id]
   (doseq [concept-id concept-ids]
-    (is (:deleted (ingest/get-concept concept-id revision-id)))))
+    (is (:deleted (mdb/get-concept concept-id revision-id)))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules

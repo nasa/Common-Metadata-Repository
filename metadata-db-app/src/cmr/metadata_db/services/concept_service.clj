@@ -26,7 +26,8 @@
             [clojure.string]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as time-keeper]
-            [cmr.metadata-db.services.concept-constraints :as cc]))
+            [cmr.metadata-db.services.concept-constraints :as cc]
+            [cmr.message-queue.services.queue :as queue]))
 
 
 (def num-revisions-to-keep-per-concept-type
@@ -308,24 +309,18 @@
         provider (provider-service/get-provider-by-id context provider-id true)]
     (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
-(deftracefn save-concept
-  "Store a concept record and return the revision."
-  [context concept]
-  (cv/validate-concept concept)
-  (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
-        concept (set-or-generate-concept-id db provider concept)]
-    (validate-concept-revision-id db provider concept)
-    (let [concept (->> concept
-                       (set-or-generate-revision-id db provider)
-                       (set-deleted-flag false))]
-      (try-to-save db provider concept))))
+(defmulti save-concept-revision
+  "Store a concept record, which could be a tombstone, and return the revision."
+  (fn [context concept]
+    (boolean (:deleted concept))))
 
-(deftracefn delete-concept
-  "Add a tombstone record to mark a concept as deleted and return the revision-id of the tombstone."
-  [context concept-id revision-id revision-date]
-  (let [db (util/context->db context)
+;; true implies creation of tombstone for the revision
+(defmethod save-concept-revision true
+  [context concept]
+  (cv/validate-tombstone-request concept)
+  (let [{:keys [concept-id revision-id revision-date user-id]} concept
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
@@ -337,8 +332,12 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [tombstone (merge previous-revision {:revision-id revision-id :deleted true :metadata ""
-                                                  :revision-date revision-date})]
+        (let [tombstone (merge previous-revision {:concept-id concept-id
+                                                  :revision-id revision-id
+                                                  :revision-date revision-date
+                                                  :user-id user-id
+                                                  :metadata ""
+                                                  :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
           (let [revisioned-tombstone (set-or-generate-revision-id db provider tombstone previous-revision)]
@@ -352,6 +351,31 @@
                           msg/concept-does-not-exist
                           concept-id))))))
 
+(defmethod save-concept-revision false
+  [context concept]
+  (cv/validate-concept concept)
+  (let [db (util/context->db context)
+        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
+        concept (set-or-generate-concept-id db provider concept)]
+    (validate-concept-revision-id db provider concept)
+    (let [concept (->> concept
+                       (set-or-generate-revision-id db provider)
+                       (set-deleted-flag false))]
+      (try-to-save db provider concept))))
+
+(defn- publish-collection-revision-delete-msg
+  "Publishes a message indicating a collection revision was removed."
+  [context concept-id revision-id]
+  (when (config/publish-collection-revision-deletes)
+    (let [timeout-ms (config/publish-timeout-ms)
+          queue-broker (get-in context [:system :queue-broker])
+          exchange-name (config/deleted-collection-revision-exchange-name)
+          ;; Note it's important that the format of this message match the ingest event format.
+          msg {:action :concept-revision-delete
+               :concept-id concept-id
+               :revision-id revision-id}]
+      (queue/publish-message queue-broker exchange-name msg timeout-ms))))
+
 (deftracefn force-delete
   "Remove a revision of a concept from the database completely."
   [context concept-id revision-id]
@@ -360,7 +384,10 @@
         provider (provider-service/get-provider-by-id context provider-id true)
         concept (c/get-concept db concept-type provider concept-id revision-id)]
     (if concept
-      (c/force-delete db concept-type provider concept-id revision-id)
+      (do
+        (when (= :collection concept-type)
+          (publish-collection-revision-delete-msg context concept-id revision-id))
+        (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
                        msg/concept-with-concept-id-and-rev-id-does-not-exist
                        concept-id
@@ -396,7 +423,7 @@
     (into {} (pmap (fn [{:keys [provider-id] :as provider}]
                      [provider-id
                       (->> (c/find-latest-concepts db [provider] {:provider-id provider-id
-                                                                :concept-type :collection})
+                                                                  :concept-type :collection})
                            (remove :deleted))])
                    (provider-db/get-providers db)))))
 
@@ -459,12 +486,16 @@
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
   to find concept id revision id tuples to delete. Stops once the function returns an empty set."
-  [db provider concept-type concept-id-revision-id-tuple-finder]
-  (cutil/while-let
-    [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-    (info "Deleting" (count concept-id-revision-id-tuples)
-          "old concept revisions for provider" (:provider-id provider))
-    (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples)))
+  [context provider concept-type concept-id-revision-id-tuple-finder]
+  (let [db (util/context->db context)]
+    (cutil/while-let
+      [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+      (info "Deleting" (count concept-id-revision-id-tuples)
+            "old concept revisions for provider" (:provider-id provider))
+      (when (= :collection concept-type)
+        (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
+          (publish-collection-revision-delete-msg context concept-id revision-id)))
+      (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
@@ -476,7 +507,7 @@
 
     (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      db provider concept-type
+      context provider concept-type
       #(c/get-old-concept-revisions
          db
          provider
@@ -487,7 +518,7 @@
 
     (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
     (force-delete-with
-      db provider concept-type
+      context provider concept-type
       #(c/get-tombstoned-concept-revisions
          db
          provider

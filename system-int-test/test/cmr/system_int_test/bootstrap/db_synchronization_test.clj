@@ -2,6 +2,7 @@
   "This tests putting the Catalog REST and Metadata DB in an inconsistent state and then using
   the bootstrap application to make them consistent again."
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
             [cmr.system-int-test.utils.search-util :as search]
@@ -217,20 +218,20 @@
   [concepts]
   (doseq [concept concepts]
     (is (= concept
-           (-> (ingest/get-concept (:concept-id concept) (:revision-id concept))
-               (dissoc :revision-date))))))
+           (-> (mdb/get-concept (:concept-id concept) (:revision-id concept))
+               (dissoc :revision-date :user-id))))))
 
 (defn assert-concepts-not-in-mdb
   "Checks that all of the concepts with the indicated revisions are not in metadata db."
   [concepts]
   (doseq [concept concepts]
-    (is (nil? (ingest/get-concept (:concept-id concept) (:revision-id concept))))))
+    (is (nil? (mdb/get-concept (:concept-id concept) (:revision-id concept))))))
 
 (defn assert-tombstones-in-mdb
   "Checks that tombstones for each of the concepts are the latest revisions in the metadata db"
   [concepts]
   (doseq [concept concepts]
-    (is (:deleted (ingest/get-concept (:concept-id concept))))))
+    (is (:deleted (mdb/get-concept (:concept-id concept))))))
 
 (defn assert-concepts-indexed
   "Check that all of the concepts are indexed for searching with the indicated revisions."
@@ -260,7 +261,7 @@
           coll1-1 (coll-concept concept-counter "CPROV3" "coll1")
           system (bootstrap/system)]
 
-      (ingest/save-concept coll1-1)
+      (mdb/save-concept coll1-1)
       (assert-concepts-in-mdb [coll1-1])
 
       ;; CPROV3 is a CMR Only provider so nothing should change when it is synchronized.
@@ -565,8 +566,8 @@
       ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
       (cat-rest/insert-concept system coll5-1)
       ;; Add a few more revisions for coll3
-      (ingest/save-concept coll3-2)
-      (ingest/save-concept coll3-3)
+      (mdb/save-concept coll3-2)
+      (mdb/save-concept coll3-3)
       (cat-rest/delete-concepts system deleted-colls)
 
       ;; Collection 7 was also deleted from metadata db
@@ -734,8 +735,8 @@
       ;; granule 5 is inserted for the first time so it's not yet in Metadata DB
       (cat-rest/insert-concept system gran5-1)
       ;; Add a few more revisions for gran3
-      (ingest/save-concept gran3-2)
-      (ingest/save-concept gran3-3)
+      (mdb/save-concept gran3-2)
+      (mdb/save-concept gran3-3)
       (cat-rest/delete-concepts system deleted-grans)
 
       ;; granule 7 was also deleted from metadata db
@@ -1020,7 +1021,7 @@
                 "attribute[][value]" src-granule-ur
                 :page-size 50}
         refs (search/find-refs :granule params)]
-    (map #(dissoc (ingest/get-concept (:id %)) :revision-date) (:refs refs))))
+    (map #(dissoc (mdb/get-concept (:id %)) :revision-date) (:refs refs))))
 
 (defn- assert-virtual-granules
   "Assert that the input granule-concepts are virtual granules by checking their granule-ur"

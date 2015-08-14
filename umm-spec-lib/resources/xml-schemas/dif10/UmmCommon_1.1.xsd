@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema elementFormDefault="qualified" 
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+        targetNamespace="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
+    >
+
+    <!-- *********************************************************** -->
+    <!-- #mark Displayable Text Enum -->
+    
+    <xs:simpleType name="GranuleSpatialRepresentationEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example usage:
+                * /DIF/Spatial_Coverage/Granule_Spatial_Representation
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CARTESIAN"/>
+            <xs:enumeration value="GEODETIC"/>
+            <xs:enumeration value="ORBIT"/>
+            <xs:enumeration value="NO_SPATIAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Coordinate System Enum -->
+
+    <xs:simpleType name="CoordinateSystemEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Spatial_Coverage/Geometry/Coordinate_System
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CARTESIAN"/>
+            <xs:enumeration value="GEODETIC"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Organization Personnel Role Enum -->
+
+    <xs:simpleType name="OrganizationPersonnelRoleEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Personnel/Contact_Person/Role
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DATA CENTER CONTACT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Organization Type Enum -->
+
+    <xs:simpleType name="OrganizationTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Organization/Organization_Type
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DISTRIBUTOR"/>
+            <xs:enumeration value="ARCHIVER"/>
+            <xs:enumeration value="ORIGINATOR"/>
+            <xs:enumeration value="PROCESSOR"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+<!--
+Roles found in 3916 echo records:
+
+Archive
+Archiver
+DATA CENTER CONTACT
+DIF AUTHOR
+DIF AUTHOR, TECHNICAL CONTACT
+Data Manager
+Data Originator
+Distributor
+GHRC USER SERVICES
+INVESTIGATOR
+INVESTIGATOR, TECHNICAL CONTACT
+Investigator
+Producer
+TECHNICAL CONTACT
+TECHNICAL CONTACT, DIF AUTHOR
+Technical Contact
+User Services
+archiving data center
+author
+compiler
+internal data center
+investigator
+metadata author
+technical contact
+-->
+
+    <!-- *********************************************************** -->
+    <!-- #mark Personnel Rule Enum -->
+    
+    <xs:simpleType name="PersonnelRoleEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Personnel/Role
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="INVESTIGATOR"/>
+            <xs:enumeration value="INVESTIGATOR, TECHNICAL CONTACT"/>
+            <xs:enumeration value="METADATA AUTHOR"/>
+            <xs:enumeration value="METADATA AUTHOR, TECHNICAL CONTACT"/>
+            <xs:enumeration value="TECHNICAL CONTACT"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Platform Type Enum Enum -->
+    
+    <!-- todo: review along side of ISO 639 -->
+    <xs:simpleType name="PlatformTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                
+                Example Usage:
+                * /DIF/Dataset_Language
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Not provided"/>  <!-- not provided, may be known -->
+            <xs:enumeration value="Aircraft"/>
+            <xs:enumeration value="Balloons/Rockets"/>
+            <xs:enumeration value="Earth Observation Satellites"/>
+            <xs:enumeration value="In Situ Land-based Platforms"/>
+            <xs:enumeration value="In Situ Ocean-based Platforms"/>
+            <xs:enumeration value="Interplanetary Spacecraft"/>
+            <xs:enumeration value="Maps/Charts/Photographs"/>
+            <xs:enumeration value="Models/Analyses"/>
+            <xs:enumeration value="Navigation Platforms"/>
+            <xs:enumeration value="Solar/Space Observation Satellites"/>
+            <xs:enumeration value="Space Stations/Manned Spacecraft"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Dataset Language Enum -->
+    
+    <xs:simpleType name="DatasetLanguageEnum">
+        <xs:annotation>
+            <xs:documentation>
+                DatasetLanguageType enumerations are a sub-set of ISO 639
+                
+                Example Usage:
+                * /DIF/Dataset_Language
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="English"/>
+            <xs:enumeration value="Afrikaans"/>
+            <xs:enumeration value="Arabic"/>
+            <xs:enumeration value="Bosnian"/>
+            <xs:enumeration value="Bulgarian"/>
+            <xs:enumeration value="Chinese"/>
+            <xs:enumeration value="Croatian"/>
+            <xs:enumeration value="Czech"/>
+            <xs:enumeration value="Danish"/>
+            <xs:enumeration value="Dutch"/>
+            <xs:enumeration value="Estonian"/>
+            <xs:enumeration value="Finnish"/>
+            <xs:enumeration value="French"/>
+            <xs:enumeration value="German"/>
+            <xs:enumeration value="Hebrew"/>
+            <xs:enumeration value="Hungarian"/>
+            <xs:enumeration value="Indonesian"/>
+            <xs:enumeration value="Italian"/>
+            <xs:enumeration value="Japanese"/>
+            <xs:enumeration value="Korean"/>
+            <xs:enumeration value="Latvian"/>
+            <xs:enumeration value="Lithuanian"/>
+            <xs:enumeration value="Norwegian"/>
+            <xs:enumeration value="Polish"/>
+            <xs:enumeration value="Portuguese"/>
+            <xs:enumeration value="Romanian"/>
+            <xs:enumeration value="Russian"/>
+            <xs:enumeration value="Slovak"/>
+            <xs:enumeration value="Spanish"/>
+            <xs:enumeration value="Ukrainian"/>
+            <xs:enumeration value="Vietnamese"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Collection Data Type Enum -->
+    
+    <xs:simpleType name="CollectionDataTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                * /DIF/Collection_DataType
+            </xs:documentation>
+        </xs:annotation>
+
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SCIENCE_QUALITY"/>
+            <xs:enumeration value="NEAR_REAL_TIME"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Product Flag Enum -->
+        
+    <xs:simpleType name="ProductFlagEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example usage:
+                * /DIF/Product_Flag
+            </xs:documentation>
+        </xs:annotation>
+        
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Not provided"/>  <!-- not provided, may be known -->
+            <xs:enumeration value="DATA_PRODUCT_FILE"/>
+            <xs:enumeration value="INSTRUMENT_ANCILLARY_FILE"/>
+            <xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
+            <xs:enumeration value="EXTERNAL_DATA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Duration Unit Enum -->
+        
+    <xs:simpleType name="DurationUnitEnum">
+        <xs:annotation>
+            <xs:documentation>
+                This entity indicates the periodic duration units.
+                
+                Example usage:
+                * /DIF/Temporal_Coverage/Periodic_DateTime/Duration_Unit
+                * /DIF/Temporal_Coverage/Periodic_DateTime/Period_Cycle_Duration_Unit
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DAY"/>
+            <xs:enumeration value="MONTH"/>
+            <xs:enumeration value="YEAR"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Spatial Coverage Type Enum -->
+        
+    <xs:simpleType name="SpatialCoverageTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                metadata may be in upper case for horizontals and camel case for the others, use an adapter to normalize these.
+                
+                Example usage:
+                * /DIF/Spatial_Coverage/Spatial_Coverage_Type
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Horizontal"/>
+            <xs:enumeration value="HorizontalVertical"/>
+            <xs:enumeration value="Orbit"/>
+            <xs:enumeration value="Vertical"/>
+            <xs:enumeration value="Horizon&amp;Vert"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Phone Type Enum -->
+        
+    <xs:simpleType name="PhoneTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Phone types for people
+                Example Usage:
+                * /DIF/Personnel/Contact_Person/Phone/Type
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Direct Line"/>
+            <xs:enumeration value="Primary"/>
+            <xs:enumeration value="Telephone"/>
+            <xs:enumeration value="Fax"/>
+            <xs:enumeration value="Mobile"/>
+            <xs:enumeration value="Modem"/>
+            <xs:enumeration value="TDD/TTY Phone"/>
+            <xs:enumeration value="U.S. toll free"/>
+            <xs:enumeration value="Other"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+        <!-- *********************************************************** -->
+    <!-- #mark Phone Type Enum -->
+        
+    <xs:simpleType name="MetadataAssociationTypeEnum">
+        <xs:annotation>
+            <xs:documentation>
+                relating metadata records
+                * /DIF/Metadata_Association/
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <!--xs:enumeration value="Parent"/--><!-- todo: proposed - defered` -->
+            <xs:enumeration value="Dependent"/>
+            <xs:enumeration value="Input"/>
+            <xs:enumeration value="Science Associated"/>
+            <!--xs:enumeration value="Other"/--><!-- todo: needs justification -->
+        </xs:restriction>
+    </xs:simpleType>
+    
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Private Enum -->
+        
+    <xs:simpleType name="PrivateEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Values:
+                * True:=Private
+                * False:=Public
+                
+                Example Usage
+                * /DIF/Private
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="True"/>
+            <xs:enumeration value="False"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark Metadata Version Enum -->
+        
+    <xs:simpleType name="MetadataVersionEnum">
+        <xs:annotation>
+            <xs:documentation>
+                The version of the DIF metadata format currently support by software
+                
+                Example Usage:
+                * /DIF/Metaadata_Version
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="VERSION 9.8.1"/>
+            <xs:enumeration value="VERSION 9.8.2"/>
+            <xs:enumeration value="VERSION 9.8.2.2"/>
+            <xs:enumeration value="VERSION 9.8.3"/>
+            <xs:enumeration value="VERSION 9.8.4"/>
+            <xs:enumeration value="VERSION 9.9.3"/>
+            <!--xs:enumeration value="VERSION 10.0"/-->
+            <xs:enumeration value="VERSION 10.1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <!-- *********************************************************** -->
+    <!-- #mark Product Level ID Enum -->
+    
+    <xs:simpleType name="ProductLevelIdEnum">
+        <xs:annotation>
+            <xs:documentation>
+                defined in Collection.ProcessingLevelId_mappingMPM.xlsx
+                
+                values to be mapped as such:
+                
+                | Legacy  | New      |
+                | ------- | -------- |
+                | 0       | Level 0  |
+                | 1       | Level 1  |
+                | 1A      | Level 1A |
+                | 2       | Level 2  |
+                | 1B, L1B | Level 1B |
+                | 1T, L1T | Level 1T |
+                | 2       | Level 2  |
+                | 2G      | Level 2G |
+                | 2P      | Level 2P |
+                | 3       | Level 3  |
+                | 4       | Level 4  |
+                | NA      | Level NA |
+                
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Not provided"/>
+            <xs:enumeration value="Level 0"/>
+            <xs:enumeration value="Level 1"/>
+            <xs:enumeration value="Level 1A"/>
+            <xs:enumeration value="Level 1B"/>
+            <xs:enumeration value="Level 1T"/>
+            <xs:enumeration value="Level 2"/>
+            <xs:enumeration value="Level 2G"/>
+            <xs:enumeration value="Level 2P"/>
+            <xs:enumeration value="Level 3"/>
+            <xs:enumeration value="Level 4"/>
+            <xs:enumeration value="Level NA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <!-- *********************************************************** -->
+    <!-- #mark Dataset Progress Enum -->
+
+    <xs:simpleType name="DatasetProgressEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Dataset_Progress
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="PLANNED"/>
+            <xs:enumeration value="IN WORK"/>
+            <xs:enumeration value="COMPLETE"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Displayable Text Enum -->
+
+    <xs:simpleType name="DisplayableTextEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Some fields support formated text, the mime types supported by
+                the UMM are listed by this enumeration. All fields using this
+                type can have new line text
+                
+                Example of fields that use this enumeration
+                * DIF/Summary/Abstract
+                * DIF/Summary/Purpose
+                * DIF/Related_URL/URL/Description
+                * DIF/Quality
+                * DIF/Use_Constraints
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="text/plain"/>
+            <!-- not approved at this time -->
+            <!--xs:enumeration value="text/html"/-->
+            <xs:enumeration value="text/markdown"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DisplayableTextTypeBaseType">
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+    
+    <!--xs:complexType name="DisplayableTextType">
+        <xs:simpleContent>
+            <xs:extension base="DisplayableTextTypeBaseType">
+                <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/plain"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType-->
+
+    <!-- *********************************************************** -->
+    <!-- #mark Persistent Identifier Type and Enum -->
+
+    <xs:complexType name="PersistentIdentifierType">
+        <xs:annotation>
+            <xs:appinfo><details></details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>GCMD (DIF)</src><since>b</since></xs:appinfo>
+            
+            <xs:documentation>
+                In the past, fields such as Dataset_DOI encoded DOI and ARK values as "doi:10.1000/182" or "ark:/NAAN/Name[Qualifier]".
+                Much feedback was given on the wisdom of this syntax, based on that feedback the DOI fields in DIF have been changed to
+                support a type allowing for any value.
+            </xs:documentation>
+        </xs:annotation>
+        
+        <xs:sequence>
+            <xs:element name="Type" type="PersistentIdentifierEnum"/>
+            <xs:element name="Identifier" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:simpleType name="PersistentIdentifierEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Used to store either a DOI or an ARK identifier.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DOI"/>
+            <xs:enumeration value="ARK"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Date, Time, or Enum -->
+
+    <xs:simpleType name="DateOrEnumType">
+        <xs:annotation>
+            <xs:documentation>
+                One of two types ment to allow for flexability in defining dates
+                while still enforcing date and date time rules.
+                
+                * This rule enforces an ISO date or use of an enum.
+                * See DateOrTimeType for enforcing ISO date-time and an enum list.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:union memberTypes="xs:date DateEnum"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="TimeOrEnumType">
+        <xs:annotation>
+            <xs:documentation>
+                One of two types ment to allow for flexability in defining times
+                while still enforcing date time rules.
+                
+                * This rule enforces an ISO date-time or use of an enum.
+                * See DateOrEnumType for enforcing ISO dates and an enum list.
+                * See DateOrTimeOrEnumType for enforcing ISO date-times and an enum list.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:union memberTypes="xs:dateTime DateEnum"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="DateOrTimeOrEnumType">
+        <xs:annotation>
+            <xs:documentation>
+                One of two types ment to allow for flexability in defining dates
+                while still enforcing date and date time rules.
+                
+                * This rule enforces an ISO date-time or use of an enum.
+                * See DateType for enforcing ISO dates and an enum list.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:union memberTypes="xs:date xs:dateTime DateEnum"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="DateEnum">
+        <xs:annotation>
+            <xs:documentation>
+                Enum list for both DateType and DateOrTimeType allowing for cases
+                where a fixed date is not descriptive enough. In most cases
+                these values can be treated as if the date was not provided.
+                Search software can filter out or ignore these records as required
+                or use a place-holder value (NRT records may be populated internally
+                at a fixed date in the future, or with the current date as required
+                by internal software or specificly searched for by value). Quality
+                and control software however will need these values for determining
+                where there are shortages and needed improvments. The primary goal
+                for providing an enum list for dates is distinguish between cases
+                where:
+                
+                * the metadata author knows the date and provides it (known)
+                * the date is known to not exist
+                * the date is known to not be known (unknown)
+                * translation deficiencies (not known)
+                * to be specified at a future time (will be known)
+                * fixed dates have less meaning in the context of the metadata
+                
+                | Value        | Justification                                                   | Example                | Status   |
+                | ------------ | --------------------------------------------------------------- | ---------------------- | -------- |
+                | Not provided | Used by translation software (to DIF 10 ) for required fields   | Metadata_Future_Review | In use   |
+                | unknown      | Value not known by metadata author, needs value                 | Data_Future_Review     | proposed |
+                | present      | A rolling date meant to mean "now"                              | NRT                    | proposed |
+                | unbounded    | Open ended; On going, may be fixed latter. "now" when searching | Project/End_Date       | proposed |
+                | tbd*         | Fixed dates that have not been determined yet                   | A platform launch date | proposed |
+                
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Not provided"/>  <!-- not provided, may be known -->
+            <xs:enumeration value="unknown"/>       <!-- not known by author -->
+            <xs:enumeration value="present"/>       <!-- always now, can't find definition, not sure how usfull this is, NRT -->
+            <xs:enumeration value="unbounded"/>     <!-- no specified begining or end, projects with no defined end date -->
+            <xs:enumeration value="future"/>        <!-- Lanunch dates that have not been defined -->
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <!-- *********************************************************** -->
+    <!-- #mark UUID type -->
+
+    <xs:simpleType name="UuidType">
+        <xs:annotation>
+            <xs:documentation>
+                A Level 3 UUID, see wiki link
+                http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29
+            </xs:documentation>
+        </xs:annotation>
+            
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89abAB][0-9a-f]{3}-[0-9a-f]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+</xs:schema>

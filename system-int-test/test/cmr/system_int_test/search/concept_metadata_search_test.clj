@@ -21,7 +21,8 @@
 
 (use-fixtures
   :each
-  (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+  (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+                        {:grant-all-search? false}))
 
 (defmulti result-matches?
   "Compare UMM record to the response from search."
@@ -196,7 +197,7 @@
           (is (= #{"Revision id [FOO] must be an integer greater than 0."}
                  (set errors)))))
 
-      ;; TODO: JSON output is waiting for the UMM JSON Schema implementation.
+      ;; JSON output is waiting for the UMM JSON Schema implementation.
       (testing "JSON output not supported (yet)"
         (let [{:keys [status errors]} (search/get-search-failure-data
                                         (search/find-concept-metadata-by-id-and-revision

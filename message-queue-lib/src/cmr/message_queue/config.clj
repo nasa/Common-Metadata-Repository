@@ -59,7 +59,7 @@
                          (if (= v1 v2)
                            v1
                            (errors/internal-error!
-                             (format "Queue was mapped to two different exchanges: %s %s"
-                                     v1 v2))))
+                             (format "Queue was mapped to two different exchange sets: %s %s"
+                                     (pr-str v1) (pr-str v2)))))
                        q-to-e
                        (:queues-to-exchanges config2)))))))

@@ -16,14 +16,15 @@
             [cmr.metadata-db.config :as config]
             [cmr.transmit.config :as transmit-config]
             [cmr.acl.core :as acl]
-            [cmr.common.config :as cfg]))
+            [cmr.common.config :as cfg]
+            [cmr.message-queue.queue.rabbit-mq :as rmq]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
 (def
   ^{:doc "Defines the order to start the components."
     :private true}
-  component-order [:db :log :scheduler :web :nrepl])
+  component-order [:db :log :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -44,6 +45,7 @@
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)
+              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))
               :relative-root-url (transmit-config/metadata-db-relative-root-url)}]
      (transmit-config/system-with-connections sys [:echo-rest]))))
 

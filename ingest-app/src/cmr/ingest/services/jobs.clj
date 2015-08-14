@@ -34,7 +34,9 @@
     (info "Reindexing collections in all providers:" (pr-str providers))
     (indexer/reindex-provider-collections context providers)
 
-    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
+    (debug "Reindexing all collections complete. Saving provider acl hashes")
+    (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)
+    (debug "Saving provider acl hashes complete")))
 
 (defn reindex-collection-permitted-groups
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
@@ -80,7 +82,8 @@
     (when-let [concept-ids (mdb/get-expired-collection-concept-ids context provider-id)]
       (info "Removing expired collections:" (pr-str concept-ids))
       (doseq [concept-id concept-ids]
-        (let [revision-id (mdb/delete-concept context concept-id)]
+        (let [concept {:concept-id concept-id :deleted true}
+              {:keys [revision-id]} (mdb/save-concept context concept)]
           (ingest-events/publish-event
             context (ingest-events/concept-delete-event concept-id revision-id)))))))
 

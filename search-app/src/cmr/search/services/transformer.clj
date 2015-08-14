@@ -111,7 +111,7 @@
 
 (defmethod extract-access-value mt/dif10
   [concept]
-  ;; TODO: Add support for Access Constraints, CMR-1574
+  ;; Add support for Access Constraints, See CMR-1574
   nil)
 
 (defmethod extract-access-value mt/iso

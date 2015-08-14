@@ -12,7 +12,8 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+                                          {:grant-all-search? false}))
 
 (defn make-coll
   "Helper for creating and ingesting a collection"

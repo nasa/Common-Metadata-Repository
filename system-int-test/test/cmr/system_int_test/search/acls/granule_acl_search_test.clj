@@ -19,7 +19,8 @@
                                            "provguid2" "PROV2"
                                            "provguid3" "PROV3"
                                            "provguid4" "PROV4"
-                                           "provguid5" "PROV5"} false))
+                                           "provguid5" "PROV5"}
+                                          {:grant-all-search? false}))
 
 (defn make-coll
   ([n prov]

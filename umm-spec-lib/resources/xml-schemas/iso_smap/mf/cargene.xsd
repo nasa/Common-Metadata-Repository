@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Le 23/03/2006:  Pour eleiminer une erreur levee par xerces c, la declaration de mfType a ete deplacee de metafor.xsd vers cargene.xsd-->
+<xs:schema targetNamespace="http://eden.ign.fr/xsd/metafor/20050620/mf" elementFormDefault="qualified" version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:mf="http://eden.ign.fr/xsd/metafor/20050620/mf">
+	<!-- ================================= Annotation ================================ -->
+	<xs:annotation>
+		<xs:documentation>This file was generated from ISO TC/211 UML class diagrams == 06-18-2005 15:21:55 ====== </xs:documentation>
+	</xs:annotation>
+	<!-- ================================== Imports ================================== -->
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../gco/gco.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gmx" schemaLocation="../gmx/gmx.xsd"/>
+	<!--<xs:include schemaLocation="../mf/metafor.xsd"/>-->
+	<!-- ########################################################################### -->
+	<!-- ########################################################################### -->
+	<!-- ================================== Classes ================================= -->
+	<xs:complexType name="DG_ProductSet_Type">
+		<xs:complexContent>
+			<xs:extension base="gmx:MX_Aggregate_Type">
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_ProductSet" type="mf:DG_ProductSet_Type" substitutionGroup="gmx:MX_Aggregate"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_ProductSet_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_ProductSet" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="DG_Product_Type">
+		<xs:complexContent>
+			<xs:extension base="gmx:MX_DataSet_Type">
+				<xs:attribute ref="gco:isoType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="DG_Product" type="mf:DG_Product_Type" substitutionGroup="gmx:MX_DataSet"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="DG_Product_PropertyType">
+		<xs:sequence>
+			<xs:element ref="mf:DG_Product" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:attribute name="mfType" type="xs:string"/>
+</xs:schema>
