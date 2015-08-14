@@ -149,55 +149,66 @@
              (ingest/parse-ingest-body :xml response)))))
   (testing "dif"
     (let [concept (d/item->concept (assoc (dc/collection-dif {:concept-id "C2-PROV1"})
-                         :provider-id "PROV1") :dif)
+                                          :provider-id "PROV1") :dif)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
-            (ingest/parse-ingest-body :xml response)))))
+             (ingest/parse-ingest-body :xml response)))))
   (testing "iso"
     (let [concept (dc/collection-concept {:concept-id "C3-PROV1"} :iso-smap)
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C3-PROV1" :revision-id 1}
-            (ingest/parse-ingest-body :xml response))))))
+             (ingest/parse-ingest-body :xml response))))))
 
 ;; Note entry-id only exists in the DIF format.  For other formats we set the entry ID to be a
 ;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
-  (let [collection (dc/collection-dif {:concept-id "C1-PROV1"
-                                       :entry-id "EID-1"
-                                       :entry-title "ET-1"
-                                       :native-id "NID-1"})]
+  (let [coll1-1 (dc/collection-dif {:concept-id "C1-PROV1"
+                                    :entry-id "EID-1"
+                                    :entry-title "ET-1"
+                                    :native-id "NID-1"})
+        coll1-2 (assoc coll1-1 :entry-id "EID-2")]
 
-    (d/ingest "PROV1" collection {:format :dif})
+    (d/ingest "PROV1" coll1-1 {:format :dif})
 
     (testing "update the collection with a different entry-id is OK"
       (let [{:keys [status concept-id revision-id errors]}
-            (d/ingest "PROV1" (assoc collection :entry-id "EID-2") {:format :dif})]
+            (d/ingest "PROV1" coll1-2 {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
 
-    (testing "ingest collection with entry-id used by a different collection within the same provider is invalid"
+    (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"
       (let [{:keys [status errors]} (d/ingest "PROV1"
-                                              (assoc collection
-                                                             :concept-id "C2-PROV1"
-                                                             :native-id "NID-2"
-                                                             :entry-title "EID-2")
+                                              (assoc coll1-2
+                                                     :concept-id "C2-PROV1"
+                                                     :native-id "NID-2"
+                                                     :entry-title "EID-2")
                                               {:format :dif :allow-failure? true})]
-        (is (= [409 ["The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+        (is (= [409 ["The Entry Id [EID-2] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
+
+    (testing "ingest collection with entry-id used by a different collection, but not the latest revision within the same provider is OK"
+      (let [{:keys [status concept-id revision-id errors]}
+            (d/ingest "PROV1"
+                      (assoc coll1-1
+                             :concept-id "C2-PROV1"
+                             :native-id "NID-2"
+                             :entry-title "EID-2")
+                      {:format :dif :allow-failure? true})]
+        (is (= ["C2-PROV1" 1 200 nil] [concept-id revision-id status errors]))))
 
     (testing "entry-id and entry-title constraint violations return multiple errors"
       (let [{:keys [status errors]} (d/ingest "PROV1"
-                                              (assoc collection
-                                                             :concept-id "C2-PROV1"
-                                                             :native-id "NID-2")
+                                              (assoc coll1-2
+                                                     :concept-id "C3-PROV1"
+                                                     :native-id "NID-3")
                                               {:format :dif :allow-failure? true})]
 
         (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
-                     "The Entry Id [EID-1] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
+                     "The Entry Id [EID-2] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a collection in a different provider is OK"
       (let [{:keys [status]} (d/ingest "PROV2"
-                                       (assoc collection :concept-id "C1-PROV2")
+                                       (assoc coll1-2 :concept-id "C1-PROV2")
                                        {:format :dif})]
         (is (= 200 status))))))
 
@@ -255,13 +266,13 @@
 (deftest delete-collection-test-old
   (testing "It should be possible to delete existing concept and the operation without revision id should
            result in revision id 1 greater than max revision id of the concept prior to the delete"
-    (let [concept (dc/collection-concept {})
-          ingest-result (ingest/ingest-concept concept)
-          delete-result (ingest/delete-concept concept)
-          ingest-revision-id (:revision-id ingest-result)
-          delete-revision-id (:revision-id delete-result)]
-      (index/wait-until-indexed)
-      (is (= 1 (- delete-revision-id ingest-revision-id)))))
+           (let [concept (dc/collection-concept {})
+                 ingest-result (ingest/ingest-concept concept)
+                 delete-result (ingest/delete-concept concept)
+                 ingest-revision-id (:revision-id ingest-result)
+                 delete-revision-id (:revision-id delete-result)]
+             (index/wait-until-indexed)
+             (is (= 1 (- delete-revision-id ingest-revision-id)))))
   (testing "Deleting existing concept with a revision-id should respect the revision id"
     (let [concept (dc/collection-concept {})
           ingest-result (ingest/ingest-concept concept)

@@ -12,7 +12,7 @@
     [db provider params batch-size]
     [db provider params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
-)
+  )
 
 (defprotocol ConceptsStore
   "Functions for saving and retrieving concepts"
@@ -85,17 +85,25 @@
     old) revisions of concepts, up to 'limit' concepts."))
 
 (defn find-latest-concepts
-  "Finds the latest revision of concepts by the given parameters"
-  [db providers params]
-  (let [revision-concepts (find-concepts db providers params)]
-    (->> revision-concepts
-         (group-by :concept-id)
-         (map (fn [[concept-id concepts]]
-                (->> concepts (sort-by :revision-id) reverse first))))))
-
-
-
-
-
-
+  "Finds the latest revision of concepts by the given parameters,
+  :concept-type must present in the parameters."
+  [db provider params]
+  {:pre [(:concept-type params)]}
+  ;; First we find the concepts that are of the highest revision of those revisions that match the
+  ;; search parameters, but they are not necessarily the latest revision of the concepts.
+  ;; So we find the latest revision of those concepts by searching with the concept ids,
+  ;; then the intersection between the found-concepts and the latest concepts are the ones we want.
+  (let [revision-concepts (find-concepts db [provider] params)
+        matched-concepts (->> revision-concepts
+                              (group-by :concept-id)
+                              (map (fn [[concept-id concepts]]
+                                     (->> concepts (sort-by :revision-id) reverse first))))
+        latest-concepts (when (seq matched-concepts)
+                          (get-latest-concepts db (:concept-type params) provider
+                                               (map :concept-id matched-concepts)))
+        concept-id-to-latest-revision (into {} (for [concept latest-concepts]
+                                                 [(:concept-id concept) (:revision-id concept)]))]
+    (filter #(= (:revision-id %)
+                (concept-id-to-latest-revision (:concept-id %)))
+            matched-concepts)))
 

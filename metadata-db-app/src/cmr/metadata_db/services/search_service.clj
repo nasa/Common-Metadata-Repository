@@ -91,7 +91,7 @@
     (when (seq providers)
       (do
         (if latest-only?
-          (c/find-latest-concepts db providers params)
+          (mapcat #(c/find-latest-concepts db % params) providers)
           (c/find-concepts db providers params))))))
 
 (defn find-concept
