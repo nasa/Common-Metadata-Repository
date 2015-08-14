@@ -351,12 +351,7 @@
                           concept-id))))))
 
 (defmethod save-concept-revision false
-  "Store a concept record and return the revision."
   [context concept]
-  (if (:deleted concept)
-    (let [{:keys [concept-id revision-id revision-date]} concept]
-      (delete-concept context concept-id revision-id revision-date))
-    (do
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider (provider-service/get-provider-by-id context (:provider-id concept) true)
@@ -411,7 +406,7 @@
     (into {} (pmap (fn [{:keys [provider-id] :as provider}]
                      [provider-id
                       (->> (c/find-latest-concepts db [provider] {:provider-id provider-id
-                                                                :concept-type :collection})
+                                                                  :concept-type :collection})
                            (remove :deleted))])
                    (provider-db/get-providers db)))))
 

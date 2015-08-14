@@ -112,8 +112,6 @@
           gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id gran1)
                                                            :deleted true})
-                              (assoc :deleted true))
-          {:keys [status revision-id]} (util/save-concept gran1-tombstone)
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
       (is (= status 201))
       (is (= revision-id 4))
