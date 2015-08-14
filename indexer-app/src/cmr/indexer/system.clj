@@ -74,7 +74,8 @@
                                system
                                component-order)]
 
-    (event-handler/subscribe-to-events {:system started-system})
+    (when (:queue-broker system)
+      (event-handler/subscribe-to-events {:system started-system}))
 
     (info "System started")
     started-system))
