@@ -6,7 +6,8 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [clj-http "1.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]]
+                 [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
+                 [org.clojure/data.csv "0.1.2"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 
