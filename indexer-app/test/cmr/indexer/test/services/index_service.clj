@@ -9,7 +9,7 @@
          (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"Concept-id .* and revision-id .* cannot be null"
-           (index-svc/index-concept {} concept-id revision-id true))
+           (index-svc/index-concept-by-concept-id-revision-id {} concept-id revision-id true))
 
          "C123-PROV1" nil
          nil 1
