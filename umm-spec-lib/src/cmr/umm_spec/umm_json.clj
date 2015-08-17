@@ -69,7 +69,7 @@
 
 (defmethod parse-json :default
   [_ _ schema-type _]
-  (throw (Exception. (str "Unable to determing parse json for " (pr-str schema-type)))))
+  (throw (Exception. (str "Unable to parse json for " (pr-str schema-type)))))
 
 ;; An object is parsed by finding the equivalent clojure record and it's map->record-name constructor
 ;; function.
