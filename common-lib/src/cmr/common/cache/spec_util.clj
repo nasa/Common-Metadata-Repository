@@ -21,3 +21,4 @@
   "Asserts that the expected keys are in the cache."
   [expected-keys cache]
   (is (= (sort expected-keys) (sort (c/get-keys cache)))))
+
