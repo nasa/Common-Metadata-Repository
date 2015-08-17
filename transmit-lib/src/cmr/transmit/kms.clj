@@ -96,6 +96,7 @@
         "Completed KMS Request to %s in [%d] ms" url (- (System/currentTimeMillis) start)))
     (:body response)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
 
 (defn get-keywords-for-keyword-scheme

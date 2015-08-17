@@ -1,38 +1,20 @@
 (ns cmr.common-app.cache.consistent-cache-spec
   "Defines a common set of tests for a consistent cache."
   (:require [clojure.test :refer :all]
-            [cmr.common.cache :as c]))
-
-(defn put-values-in-caches
-  "Puts the key value pairs in the val map into the caches"
-  [caches val-map]
-  (doseq [cache caches
-          [k v] val-map]
-    (c/set-value cache k v)))
-
-(defn assert-values-in-caches
-  "Asserts that all of the values in the value map are in the caches."
-  [caches val-map]
-  (doseq [cache caches
-          [k v] val-map]
-    (is (= v (c/get-value cache k)))))
-
-(defn assert-cache-keys
-  "Asserts that the expected keys are in the cache."
-  [expected-keys cache]
-  (is (= (sort expected-keys) (sort (c/get-keys cache)))))
+            [cmr.common.cache :as c]
+            [cmr.common.cache.spec-util :as su]))
 
 (defn basic-consistency-test
   [cache-a cache-b]
   (let [caches [cache-a cache-b]
         initial-values {:foo "foo value" :bar "bar value"}]
     ;; Put the same items in both caches
-    (put-values-in-caches caches initial-values)
+    (su/put-values-in-caches caches initial-values)
 
     (testing "Initial state with items in both caches"
-      (assert-values-in-caches caches initial-values)
-      (assert-cache-keys [:foo :bar] cache-a)
-      (assert-cache-keys [:foo :bar] cache-b))
+      (su/assert-values-in-caches caches initial-values)
+      (su/assert-cache-keys [:foo :bar] cache-a)
+      (su/assert-cache-keys [:foo :bar] cache-b))
 
     (testing "Change a value in one cache"
       (c/set-value cache-a :foo "new foo value")
@@ -44,11 +26,11 @@
         (is (nil? (c/get-value cache-b :foo))))
 
       (testing "The other cache keys should not be effected"
-        (assert-values-in-caches caches {:bar "bar value"}))
+        (su/assert-values-in-caches caches {:bar "bar value"}))
 
       (testing "Keys after change should be correct"
-        (assert-cache-keys [:foo :bar] cache-a)
-        (assert-cache-keys [:bar] cache-b)))
+        (su/assert-cache-keys [:foo :bar] cache-a)
+        (su/assert-cache-keys [:bar] cache-b)))
 
     (testing "Change a value in the other cache"
       (c/set-value cache-b :foo "another foo value")
@@ -60,22 +42,22 @@
         (is (nil? (c/get-value cache-a :foo))))
 
       (testing "The other cache keys should not be effected"
-        (assert-values-in-caches caches {:bar "bar value"}))
+        (su/assert-values-in-caches caches {:bar "bar value"}))
 
       (testing "Keys after change should be correct"
-        (assert-cache-keys [:bar] cache-a)
-        (assert-cache-keys [:foo :bar] cache-b)))))
+        (su/assert-cache-keys [:bar] cache-a)
+        (su/assert-cache-keys [:foo :bar] cache-b)))))
 
 (defn clear-cache-test
   [cache-a cache-b]
   (let [caches [cache-a cache-b]
         initial-values {:foo "foo value" :bar "bar value"}]
-    (put-values-in-caches caches initial-values)
+    (su/put-values-in-caches caches initial-values)
 
     (c/reset cache-a)
     (is (empty? (c/get-keys cache-a)))
     (is (empty? (c/get-keys cache-b)))
-    (assert-values-in-caches caches {:foo nil :bar nil})))
+    (su/assert-values-in-caches caches {:foo nil :bar nil})))
 
 (defn get-value-with-lookup-test
   "This tests that get value with a lookup function will perform correctly. The names of objects in
@@ -111,7 +93,12 @@
       (testing "Manually updated one cache"
         (swap! echo-acls-atom conj :acl4)
         (c/set-value indexer2-cache :acls (lookup-fn))
-        (assert-acls-from-cache [:acl1 :acl2 :acl3 :acl4])))))
+        (assert-acls-from-cache [:acl1 :acl2 :acl3 :acl4])))
+
+    ;; FIXME - This test is blocked by CMR-1931. The REPL hangs right now with the error.
+    #_(testing "Do not store a key with a nil value when lookup function does not find the value"
+      (is (nil? (c/get-value indexer1-cache :unknown-key (constantly nil))))
+      (su/assert-cache-keys [:acls] indexer1-cache))))
 
 (def ^:private cache-test-fns
   "Defines the set of test functions that check a cache implementation"

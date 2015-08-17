@@ -77,7 +77,7 @@
   (get-value
     [this key lookup-fn]
     (or (c/get-value this key)
-        (let [value (lookup-fn)]
+        (when-let [value (lookup-fn)]
           (c/set-value this key value)
           value)))
 

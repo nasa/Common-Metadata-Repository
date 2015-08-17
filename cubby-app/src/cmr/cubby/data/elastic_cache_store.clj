@@ -18,7 +18,7 @@
   {:type "string"
    ;; Stored so we can retrieve the value
    :store "yes"
-   :index "not_analyzed"})
+   :index "no"})
 
 (def type-name
   "The name of the mapping type within the cubby elasticsearch index."
