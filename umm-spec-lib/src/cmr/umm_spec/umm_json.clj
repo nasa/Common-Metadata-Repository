@@ -29,6 +29,10 @@
                 :when (some? v)]
             [(to-jsonable k) (to-jsonable v)])))
 
+  clojure.lang.Sequential
+  (to-jsonable
+    [values]
+    (mapv to-jsonable values))
 
   ;; Default implementations
   Object
@@ -63,6 +67,10 @@
       (:type schema-type) (:type schema-type)
       (:$ref schema-type) :$ref)))
 
+(defmethod parse-json :default
+  [_ _ schema-type _]
+  (throw (Exception. (str "Unable to determing parse json for " (pr-str schema-type)))))
+
 ;; An object is parsed by finding the equivalent clojure record and it's map->record-name constructor
 ;; function.
 (defmethod parse-json "object"
@@ -74,7 +82,7 @@
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get-in schema-type [:properties k])]]
-                           [k (parse-json schema nil sub-type-def v)]))]
+                           [k (parse-json schema k sub-type-def v)]))]
     (constructor-fn properties)))
 
 ;; A ref refers to another type. We lookup that type and then parse the JSON data using that type.
@@ -82,7 +90,7 @@
   [schema type-name schema-type js-data]
   (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)]
     (parse-json ref-schema
-                (or type-name (get-in schema-type [:$ref :type-name]))
+                (get-in schema-type [:$ref :type-name])
                 ref-schema-type
                 js-data)))
 

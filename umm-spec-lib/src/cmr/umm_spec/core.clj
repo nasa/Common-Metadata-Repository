@@ -41,7 +41,7 @@
   (cx/validate-xml (concept-type+metadata-format->schema [concept-type metadata-format]) xml))
 
 (defn validate-metadata
-  "TODO"
+  "Validates the given metadata and returns a list of errors found."
   [concept-type metadata-standard metadata]
   (if (= metadata-standard :umm-json)
     (js/validate-umm-json metadata)

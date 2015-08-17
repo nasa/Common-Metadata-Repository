@@ -22,47 +22,33 @@
             [clj-time.core :as t]
             [cmr.common.util :refer [are2]]))
 
-(def example-record-echo10-supported
-  "This contains an example record will all the fields supported by ECHO10. It supported
-  more initially for demonstration purposes."
-  (umm-c/map->UMM-C
-    {
-     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     :EntryTitle "The entry title V5"
-     :Abstract "A very abstract collection"
-     :TemporalExtent [(umm-cmn/map->TemporalExtentType
-                        {:TemporalRangeType "temp range"
-                         :PrecisionOfSeconds 3
-                         :EndsAtPresentFlag false
-                         :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                                              [{:BeginningDateTime (t/date-time 2000)
-                                                :EndingDateTime (t/date-time 2001)}
-                                               {:BeginningDateTime (t/date-time 2002)
-                                                :EndingDateTime (t/date-time 2003)}])
-                         :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]
-                         :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                                                 [{:Name "period1"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}
-                                                  {:Name "period2"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}])})]}))
-
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
-    {:EntryTitle "The entry title V5"
+    {:DataLineage [(umm-cmn/map->LineageType
+                     {:Scope "METADATA"})]
+     :MetadataStandard (umm-cmn/map->MetadataStandardType
+                         {:Name "UMM"
+                          :Version "1.0"})
+     :Platform [(umm-cmn/map->PlatformType
+                  {:ShortName "Platform"
+                   :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :RelatedUrl [(umm-cmn/map->RelatedUrlType {:URL ["http://google.com"]})]
+     :ResponsibleOrganization [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                 :Party (umm-cmn/map->PartyType {})})]
+     :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
+
      :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-     :Abstract "Abstract description"
-     :Purpose "help testing"}))
+     :EntryTitle "The entry title V5"
+     :Abstract "A very abstract collection"
+     :TemporalExtent [(umm-cmn/map->TemporalExtentType {})]}))
+
+(comment
+
+  (println (xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record))
+  )
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format to-xml to-umm]
@@ -71,8 +57,8 @@
               parsed (xp/parse-xml to-umm xml)
               expected-manip-fn (expected-conversion/metadata-format->expected-conversion metadata-format)
               expected (expected-manip-fn example-record)]
-          (and (empty? validation-errors)
-               (= expected parsed)))
+          (and (is (empty? validation-errors))
+               (is (= expected parsed))))
         "echo10"
         :echo10 xm-echo10/umm-c-to-echo10-xml um-echo10/echo10-xml-to-umm-c
 
@@ -86,12 +72,5 @@
         :iso-smap xm-smap/umm-c-to-iso-smap-xml um-smap/iso-smap-xml-to-umm-c
 
         "ISO19115-2"
-        :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c)
-
-  ;; This is here because echo10 supported additional fields
-  (testing "echo10 supported fields"
-    (let [xml (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record-echo10-supported)
-          parsed (xp/parse-xml um-echo10/echo10-xml-to-umm-c xml)
-          expected-manip-fn (expected-conversion/metadata-format->expected-conversion :echo10)]
-      (is (= (expected-manip-fn example-record-echo10-supported) parsed)))))
+        :iso19115 xm-iso2/umm-c-to-iso19115-2-xml um-iso2/iso19115-2-xml-to-umm-c))
 

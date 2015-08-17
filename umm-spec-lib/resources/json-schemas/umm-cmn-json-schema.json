@@ -725,6 +725,13 @@
             "$ref": "#/definitions/CharacteristicType"
           },
           "minItems": 0
+        },
+        "Instruments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstrumentType"
+          },
+          "minItems": 1
         }
       },
       "required": ["ShortName"]

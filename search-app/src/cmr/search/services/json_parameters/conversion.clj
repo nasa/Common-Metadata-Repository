@@ -22,8 +22,8 @@
 (def json-query-schema
   "JSON Schema for querying for collections."
   (-> (io/resource "schema/JSONQueryLanguage.json")
-      slurp
-      js/parse-json-schema))
+      str
+      js/parse-json-schema-from-uri))
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."
@@ -158,7 +158,8 @@
   "Perform all validations against the provided JSON query."
   [concept-type json-query]
   (concept-type-validation concept-type)
-  (js/validate-json json-query-schema json-query))
+  (when-let [errors (seq (js/validate-json json-query-schema json-query))]
+    (errors/throw-service-errors :bad-request errors)))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

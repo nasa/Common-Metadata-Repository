@@ -18,7 +18,7 @@
 ;; Validation
 
 (def ^:private json-schema-for-validation
-  (js-validations/parse-json-schema (slurp umm-c-schema-file)))
+  (js-validations/parse-json-schema-from-uri (str umm-c-schema-file)))
 
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."

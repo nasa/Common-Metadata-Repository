@@ -32,8 +32,6 @@
 
       (let [umm (umm-spec/parse-metadata concept-type input-format body)
             output-str (umm-spec/generate-metadata concept-type output-format umm)]
-        ;; TODO validate input data against XML schema or JSON schema
-        ;; I'll do this as another pull request
         {:status 200
          :body output-str
          :headers {"Content-Type" output-mime-type}}))))
