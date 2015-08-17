@@ -53,13 +53,11 @@
          (search/find-refs-with-aql :collection [] {}
                                     {:query-params {:page-size 20 :sort-key sort-key}}))))))
 
-
-(defn- all-revision-compare-field
-  "Compares collections by the given field for sorting in all revisions. descending? indicates if
-  the sort is descending by the field or ascending. When the given field matches for two
-  revisions the sort order is by concept id ascending and revision id descending. Only string
-  fields are supported. The field values must implement Comparable. Strings are converted to
-  lower case."
+(defn- compare-field
+  "Compares collections by the given field for sorting. descending? indicates if
+  the sort is descending or ascending. When the given field matches for two
+  revisions the sort order is by concept-id ascending and revision-id descending. Field values
+  must implement Comparable. Strings are converted to lower case for the comparison."
   [field descending? c1 c2]
   (if (= (field c1) (field c2))
     (if (= (:concept-id c1) (:concept-id c2))
@@ -76,7 +74,7 @@
   "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
   descending. The field values must implement Comparable and strings are converted to lower case."
   [field descending? colls]
-  (sort-by identity (partial all-revision-compare-field field descending?) colls))
+  (sort-by identity (partial compare-field field descending?) colls))
 
 (deftest sorting-test
   (let [c1-1 (make-coll "PROV1" "et99" 10 20)
@@ -108,50 +106,46 @@
         (are [sort-key items]
              (sort-order-correct? items sort-key true)
              "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
+             "+entry-title" (sort-revisions-by-field :entry-title false all-revisions)
              "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
-             ;; Revision date is not returned (and therefore not available for sort-revisions-by-field,
-             ;; so we rely on the fact that revision date defaults to the current time,
-             ;; so ordering by revision date it the same as ordering by insertion order.
+             ;; alias for entry_titile
+             "dataset_id" (sort-revisions-by-field :entry-title false all-revisions)
+             "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions)
+             ;; Revision date is not returned (and therefore not available for
+             ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
+             ;; the current time, so ordering by revision date it the same as ordering by
+             ;; insertion order.
              "revision_date" all-revisions
              "-revision_date" (reverse all-revisions)
              "entry_id" (sort-revisions-by-field :entry-id false all-revisions)
-             "-entry_id" (sort-revisions-by-field :entry-id true all-revisions))))
+             "-entry_id" (sort-revisions-by-field :entry-id true all-revisions)
+             "start_date" [c5 c1-2 c1-1 c11 c2 c6 c3 c7 c4 c8 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
+             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c12-2 c12-1]
+             "end_date" [c5 c1-2 c1-1 c2 c6 c7 c3 c4 c8 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1]
+             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c1-1 c5 c9-3 c9-2 c9-1 c10 c11 c12-2 c12-1])))
 
     (testing "latest revisions sorting"
-
-      (testing "Sort by entry title ascending"
-        (let [sorted-colls (sort-by (comp str/lower-case :entry-title) all-colls)]
-          (are [sort-key]
-               (sort-order-correct? sorted-colls sort-key)
-               "entry_title"
-               "+entry_title"
-               "dataset_id" ; this is an alias for entry title
-               "+dataset_id")))
-
-      (testing "Sort by entry title descending"
-        (let [sorted-colls (reverse (sort-by (comp str/lower-case :entry-title) all-colls))]
-          (are [sort-key]
-               (sort-order-correct? sorted-colls sort-key)
-               "-entry_title"
-               "-dataset_id")))
-
-      (testing "temporal start date"
+      (testing "various sort keys"
         (are [sort-key items]
-             (sort-order-correct? items sort-key)
+             (sort-order-correct? items sort-key false)
+             "entry-title" (sort-revisions-by-field :entry-title false all-colls)
+             "+entry-title" (sort-revisions-by-field :entry-title false all-colls)
+             "-entry-title" (sort-revisions-by-field :entry-title true all-colls)
+             ;; alias for entry_title
+             "dataset_id" (sort-revisions-by-field :entry-title false all-colls)
+             "-dataset_id" (sort-revisions-by-field :entry-title true all-colls)
+             ;; Revision date is not returned (and therefore not available for
+             ;; sort-revisions-by-field, so we rely on the fact that revision date defaults to
+             ;; the current time, so ordering by revision date it the same as ordering by
+             ;; insertion order.
+             "revision_date" all-colls
+             "-revision_date" (reverse all-colls)
+             "entry_id" (sort-revisions-by-field :entry-id false all-colls)
+             "-entry_id" (sort-revisions-by-field :entry-id true all-colls)
              "start_date" [c5 c1-2 c11 c2 c6 c3 c7 c4 c8 c9-3 c10]
-             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]))
-
-      (testing "temporal end date"
-        (are [sort-key items]
-             (sort-order-correct? items sort-key)
+             "-start_date" [c8 c4 c7 c3 c6 c2 c11 c1-2 c5 c9-3 c10]
              "end_date" [c5 c1-2 c2 c6 c7 c3 c4 c8 c9-3 c10 c11]
-             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11]))
-
-      (testing "revision date"
-        (are [sort-key items]
-             (sort-order-correct? items sort-key)
-             "revision_date" [c1-2 c2 c3 c4 c5 c6 c7 c8 c9-3 c10 c11]
-             "-revision_date" [c11 c10 c9-3 c8 c7 c6 c5 c4 c3 c2 c1-2])))))
+             "-end_date" [c8 c4 c3 c7 c6 c2 c1-2 c5 c9-3 c10 c11])))))
 
 (deftest default-sorting-test
   (let [c1 (make-coll "PROV1" "et99" 10 20)
