@@ -59,16 +59,18 @@
   revisions the sort order is by concept-id ascending and revision-id descending. Field values
   must implement Comparable. Strings are converted to lower case for the comparison."
   [field descending? c1 c2]
-  (if (= (field c1) (field c2))
-    (if (= (:concept-id c1) (:concept-id c2))
-      ;; Revision ids are in reverse order by default
-      (compare (:revision-id c2) (:revision-id c1))
-      (compare (:concept-id c1) (:concept-id c2)))
-    (let [et1 (if (string? (field c1)) (str/lower-case (field c1)) (field c1))
-          et2 (if (string? (field c2)) (str/lower-case (field c2)) (field c2))]
-      (if descending?
-        (compare et2 et1)
-        (compare et1 et2)))))
+  (let [value1 (field c1)
+        value2 (field c2)]
+    (if (= value1 value2)
+      (if (= (:concept-id c1) (:concept-id c2))
+        ;; Revision ids are in reverse order by default
+        (compare (:revision-id c2) (:revision-id c1))
+        (compare (:concept-id c1) (:concept-id c2)))
+      (let [processed-value1 (if (string? value1) (str/lower-case value1) value1)
+            processed-value2 (if (string? value2) (str/lower-case value2) value2)]
+        (if descending?
+          (compare processed-value2 processed-value1)
+          (compare processed-value1 processed-value2))))))
 
 (defn- sort-revisions-by-field
   "Sort revisions using the given field with sub-sorting by concept-id ascending, revision-id
