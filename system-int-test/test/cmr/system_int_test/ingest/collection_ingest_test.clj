@@ -272,7 +272,7 @@
                  ingest-revision-id (:revision-id ingest-result)
                  delete-revision-id (:revision-id delete-result)]
              (index/wait-until-indexed)
-             (is (= 1 (- delete-revision-id ingest-revision-id)))))
+             (is (= (inc ingest-revision-id) delete-revision-id))))
   (testing "Deleting existing concept with a revision-id should respect the revision id"
     (let [concept (dc/collection-concept {})
           ingest-result (ingest/ingest-concept concept)

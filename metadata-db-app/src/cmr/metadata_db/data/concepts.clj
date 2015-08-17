@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.data.concepts
-  "Defines a protocol for CRUD operations on concepts.")
+  "Defines a protocol for CRUD operations on concepts."
+  (:require [cmr.common.util :as util]))
 
 (defprotocol ConceptSearch
   "Functions for retrieving concepts by parameters"
@@ -12,6 +13,11 @@
     [db provider params batch-size]
     [db provider params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
+
+  (find-latest-concepts
+    [db provider params]
+    "Finds the latest concepts by the given provider and parameters.
+    :concept-type must present in the parameters.")
   )
 
 (defprotocol ConceptsStore
@@ -84,26 +90,35 @@
     "Returns concept-id and revision-id tuples for old (more than 'max-revisions'
     old) revisions of concepts, up to 'limit' concepts."))
 
-(defn find-latest-concepts
-  "Finds the latest revision of concepts by the given parameters,
-  :concept-type must present in the parameters."
-  [db provider params]
-  {:pre [(:concept-type params)]}
-  ;; First we find the concepts that are of the highest revision of those revisions that match the
-  ;; search parameters, but they are not necessarily the latest revision of the concepts.
-  ;; So we find the latest revision of those concepts by searching with the concept ids,
-  ;; then the intersection between the found-concepts and the latest concepts are the ones we want.
-  (let [revision-concepts (find-concepts db [provider] params)
-        matched-concepts (->> revision-concepts
-                              (group-by :concept-id)
-                              (map (fn [[concept-id concepts]]
-                                     (->> concepts (sort-by :revision-id) reverse first))))
-        latest-concepts (when (seq matched-concepts)
-                          (get-latest-concepts db (:concept-type params) provider
-                                               (map :concept-id matched-concepts)))
-        concept-id-to-latest-revision (into {} (for [concept latest-concepts]
-                                                 [(:concept-id concept) (:revision-id concept)]))]
-    (filter #(= (:revision-id %)
-                (concept-id-to-latest-revision (:concept-id %)))
-            matched-concepts)))
-
+(defn search-with-params
+  "Returns the concepts within the given concepts that matches the search params."
+  [concepts params]
+  (let [{:keys [provider-id concept-type concept-id native-id]} params
+        exclude-metadata? (= "true" (:exclude-metadata params))
+        extra-field-params (dissoc params :concept-type :provider-id :native-id
+                                   :concept-id :exclude-metadata)]
+    (keep (fn [{extra-fields :extra-fields
+                ct :concept-type
+                pid :provider-id
+                cid :concept-id
+                nid :native-id :as concept}]
+            (let [query-map (util/remove-nil-keys {:concept-id concept-id
+                                                   :concept-type concept-type
+                                                   :provider-id provider-id
+                                                   :native-id native-id
+                                                   :extra-fields extra-field-params})
+                  full-concept-map {:concept-type ct
+                                    :concept-id cid
+                                    :provider-id pid
+                                    :native-id nid
+                                    :extra-fields (select-keys extra-fields
+                                                               (keys extra-field-params))}
+                  concept-map (select-keys full-concept-map (keys query-map))]
+              (when (= query-map concept-map)
+                (dissoc (if (and (= :granule concept-type)
+                                 (nil? (get-in concept [:extra-fields :granule-ur])))
+                          (assoc-in concept [:extra-fields :granule-ur]
+                                    (:native-id concept))
+                          concept)
+                        (when exclude-metadata? :metadata)))))
+          concepts)))
