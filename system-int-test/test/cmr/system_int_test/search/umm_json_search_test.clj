@@ -17,11 +17,13 @@
   [collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         :keys [entry-id entry-title format-key revision-id concept-id provider-id deleted]} collection]
+         :keys [entry-id entry-title user-id format-key
+                revision-id concept-id provider-id deleted]} collection]
     {:meta {:concept-type "collection"
             :concept-id concept-id
             :revision-id revision-id
             :native-id entry-title
+            :user-id user-id
             :provider-id provider-id
             :format (mt/format->mime-type format-key)
             :deleted (boolean deleted)}
@@ -47,11 +49,14 @@
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
                                                   :entry-id "s1_v1"
                                                   :version-id "v1"
-                                                  :short-name "s1"}))
+                                                  :short-name "s1"})
+                          {:user-id "user1"})
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
-        coll1-2-tombstone (merge coll1-1 {:deleted true} (ingest/delete-concept concept1))
+        coll1-2-tombstone (merge coll1-1
+                                 {:deleted true :user-id "user2"}
+                                 (ingest/delete-concept concept1 {:user-id "user2"}))
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
                                                   :entry-id "s1_v2"
                                                   :version-id "v2"
@@ -73,7 +78,7 @@
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
                                                 :entry-id "s1_v4"
                                                 :version-id "v4"
-                                                :short-name "s1"}))]
+                                                :short-name "s1"}) {:user-id "user3"})]
     (index/wait-until-indexed)
     (testing "find collections in umm-json format"
       (are2 [collections params]

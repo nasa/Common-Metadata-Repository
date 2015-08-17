@@ -12,6 +12,7 @@
   [concept-type query]
   ["concept-id"
    "native-id"
+   "user-id"
    "provider-id"
    "entry-title"
    "entry-id"
@@ -25,6 +26,7 @@
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
+         [user-id] :user-id
          [provider-id] :provider-id
          [entry-title] :entry-title
          [entry-id] :entry-id
@@ -40,6 +42,7 @@
             :revision-id revision-id
             :native-id native-id
             :provider-id provider-id
+            :user-id user-id
             :format (mt/format->mime-type (keyword metadata-format))
             :revision-date revision-date
             :deleted deleted}

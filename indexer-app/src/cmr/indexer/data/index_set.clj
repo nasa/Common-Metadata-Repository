@@ -163,6 +163,7 @@
                 :properties (merge {:deleted (stored bool-field-mapping) ; deleted=true is a tombstone
                                     :native-id (stored string-field-mapping)
                                     :native-id.lowercase string-field-mapping
+                                    :user-id (stored string-field-mapping)
 
                                     ;; This comes from the metadata db column of the same name
                                     ;; and is by default equal to the Oracle system time at the

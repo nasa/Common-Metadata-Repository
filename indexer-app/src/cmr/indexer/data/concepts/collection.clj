@@ -49,7 +49,8 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id revision-id provider-id native-id revision-date deleted format]} concept
+  (let [{:keys [concept-id revision-id provider-id user-id
+                native-id revision-date deleted format]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
@@ -88,6 +89,7 @@
             :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
             :native-id native-id
             :native-id.lowercase (str/lower-case native-id)
+            :user-id user-id
             :permitted-group-ids permitted-group-ids
             :entry-id entry-id
             :entry-id.lowercase (str/lower-case entry-id)
@@ -158,7 +160,8 @@
   "Get the subset of elastic field values that apply to a tombstone index operation."
   [context concept]
   (let [{{:keys [short-name version-id entry-id entry-title]} :extra-fields
-         :keys [concept-id revision-id provider-id native-id revision-date deleted format]} concept
+         :keys [concept-id revision-id provider-id user-id
+                native-id revision-date deleted format]} concept
         ;; only used to get default ACLs for tombstones
         tombstone-umm (umm-c/map->UmmCollection {:entry-title entry-title})
         tombstone-permitted-group-ids (acl/get-coll-permitted-group-ids context
@@ -169,6 +172,7 @@
      :concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
      :native-id native-id
      :native-id.lowercase (str/lower-case native-id)
+     :user-id user-id
      :short-name short-name
      :short-name.lowercase (when short-name (str/lower-case short-name))
      :entry-id entry-id
