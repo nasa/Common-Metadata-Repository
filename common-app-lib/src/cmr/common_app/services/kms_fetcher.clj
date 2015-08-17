@@ -1,15 +1,20 @@
 (ns cmr.common-app.services.kms-fetcher
   "Provides functions to easily fetch keywords from the GCMD Keyword Management Service (KMS). It
   will use a cache in order to minimize calls to the GCMD KMS and improve performance. The job
-  defined in this namespace should be used to keep the KMS keywords fresh. The cache will be
-  persisted such that if the "
+  defined in this namespace should be used to keep the KMS keywords fresh. KMS keywords will be
+  cached using a fallback cache with Cubby as the backup store. See the documentation for
+  cmr.common.cache.fallback-cache for more details. As a result of persisting the keywords in Cubby,
+  the CMR will still be able to lookup KMS keywords even when the GCMD KMS is unavailable. CMR will
+  use the last keyword values which were retrieved from the GCMD KMS before it became unavailable."
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [def-stateful-job]]
             [cmr.transmit.kms :as kms]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
-            [cmr.transmit.cubby :as cubby]
+            [cmr.common.cache.fallback-cache :as fallback-cache]
+            [cmr.common-app.cache.cubby-cache :as cubby-cache]
+            [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [clojure.set :as set]
             [cheshire.core :as json]))
 
@@ -20,6 +25,15 @@
 (def kms-cache-key
   "The key used to store the KMS cache in the system cache map."
   :kms)
+
+(defn create-kms-cache
+  "Used to create the cache that will be used for caching KMS keywords. All applications caching
+  KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
+  unavailable."
+  []
+  (fallback-cache/create-fallback-cache
+    (consistent-cache/create-consistent-cache)
+    (cubby-cache/create-cubby-cache)))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a

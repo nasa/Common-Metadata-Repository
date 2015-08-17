@@ -58,9 +58,7 @@
                                          [:catalog-item :system-object :provider-object])
                       cache/general-cache-key (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
-                      kf/kms-cache-key (fallback-cache/create-fallback-cache
-                                         (consistent-cache/create-consistent-cache)
-                                         (cubby-cache/create-cubby-cache))}
+                      kf/kms-cache-key (kf/create-kms-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           :db
