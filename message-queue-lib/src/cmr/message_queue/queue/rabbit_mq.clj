@@ -57,7 +57,7 @@
       (do
         ;; give up
         ;; Splunk alert "Indexing from message queue failed and all retries exhausted" dependent on this log message
-        (warn "Max retries exceeded for processing message:" (pr-str msg))
+        (warn "Max retries exceeded for processing message:" (pr-str msg) "on queue:" queue-name)
         (lb/nack ch delivery-tag false false))
       (let [msg (assoc msg :retry-count (inc retry-count))
             wait-q (wait-queue-name queue-name (inc retry-count))
