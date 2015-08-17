@@ -202,6 +202,7 @@
 (def concept-type->valid-sort-keys
   "A map of concept type to sets of valid sort keys"
   {:collection #{:entry-title
+                 :entry-id
                  :dataset-id
                  :start-date
                  :end-date
