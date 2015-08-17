@@ -2,6 +2,10 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
+(defn- gen-id
+  []
+  (str "d" (java.util.UUID/randomUUID)))
+
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
    :xmlns:gmx "http://www.isotc211.org/2005/gmx"
@@ -59,6 +63,19 @@
          [:gmd:code (char-string-from "/EntryId/Id")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"}]
-     [:gmd:language (char-string "eng")]]]])
-
-
+     [:gmd:language (char-string "eng")]
+     [:gmd:extent
+      [:gmd:EX_Extent
+       (for-each "/TemporalExtent/RangeDateTime"
+         [:gmd:temporalElement
+          [:gmd:EX_TemporalExtent
+           [:gmd:extent
+            [:gml:TimePeriod {:gml:id gen-id}
+             [:gml:beginPosition (xpath "BeginningDateTime")]
+             [:gml:endPosition (xpath "EndingDateTime")]]]]])
+       (for-each "/TemporalExtent/SingleDateTime"
+         [:gmd:temporalElement
+          [:gmd:EX_TemporalExtent
+           [:gmd:extent
+            [:gml:TimeInstant {:gml:id gen-id}
+             [:gml:timePosition (xpath ".")]]]]])]]]]])

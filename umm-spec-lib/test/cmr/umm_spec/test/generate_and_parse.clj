@@ -68,6 +68,7 @@
     "dif10"
     :dif10
 
+    ;; TODO
     "iso-smap"
     :iso-smap
 
@@ -78,6 +79,7 @@
   (testing "valid XML is generated for each format"
     (are [fmt]
         (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
+      ;; TODO fix the invalid ECHO10 XML
       :echo10
       :dif
       :dif10

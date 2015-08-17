@@ -36,6 +36,16 @@
   [t1 t2]
   (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2)))
 
+(defn split-temporals
+  [k temporal-extents]
+  (reduce (fn [result extent]
+            (if-let [values (get extent k)]
+              (concat result (map #(cmn/map->TemporalExtentType {k [%]})
+                                  values))
+              (concat result [extent])))
+          []
+          temporal-extents))
+
 ;;; Format-Specific Translation Functions
 
 ;; ECHO 10
@@ -74,12 +84,28 @@
   [umm-coll]
   (update-in umm-coll [:TemporalExtent] dif-temporal))
 
+;; ISO 19115-2
+
+(defn expected-iso-19115-2-temporal
+  [temporal-extents]
+  (->> temporal-extents
+       (map #(dissoc % :TemporalRangeType :PrecisionOfSeconds :EndsAtPresentFlag))
+       (remove :PeriodicDateTime)
+       (split-temporals :RangeDateTime)
+       (split-temporals :SingleDateTime)
+       (map cmn/map->TemporalExtentType)))
+
+(defn expected-iso-19115-2
+  [iso-coll]
+  (update-in iso-coll [:TemporalExtent] expected-iso-19115-2-temporal))
+
 ;;; Conversion Lookup By Format
 
 (def ^:private formats->expected-conversion-fns
   "A map of metadata formats to expected conversion functions"
-  {:echo10 expected-echo10
-   :dif    expected-dif})
+  {:echo10   expected-echo10
+   :dif      expected-dif
+   :iso19115 expected-iso-19115-2})
 
 (defn- metadata-format->expected-conversion
   "Takes a metadata format and returns the function that can convert the UMM record used as input
