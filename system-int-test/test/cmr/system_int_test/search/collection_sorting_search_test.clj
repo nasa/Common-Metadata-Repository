@@ -110,7 +110,7 @@
              "entry-title" (sort-revisions-by-field :entry-title false all-revisions)
              "+entry-title" (sort-revisions-by-field :entry-title false all-revisions)
              "-entry-title" (sort-revisions-by-field :entry-title true all-revisions)
-             ;; alias for entry_titile
+             ;; alias for entry_title
              "dataset_id" (sort-revisions-by-field :entry-title false all-revisions)
              "-dataset_id" (sort-revisions-by-field :entry-title true all-revisions)
              ;; Revision date is not returned (and therefore not available for
