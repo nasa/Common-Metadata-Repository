@@ -6,40 +6,35 @@
             [clj-time.core :as t]
             [cmr.umm-spec.json-schema :as js]))
 
-(def example-record
+(def minimal-example-record
+  "This is the minimum valid UMM."
   (umm-c/map->UMM-C
-    {:EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
+    {:DataLineage [(umm-cmn/map->LineageType
+                     {:Scope "METADATA"})]
+     :MetadataStandard (umm-cmn/map->MetadataStandardType
+                         {:Name "UMM"
+                          :Version "1.0"})
+     :Platform [(umm-cmn/map->PlatformType
+                  {:ShortName "Platform"
+                   :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :RelatedUrl [(umm-cmn/map->RelatedUrlType {:URL ["http://google.com"]})]
+     :ResponsibleOrganization [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                 :Party (umm-cmn/map->PartyType {})})]
+     :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
+
+     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
      :EntryTitle "The entry title V5"
      :Abstract "A very abstract collection"
-     :TemporalExtent [(umm-cmn/map->TemporalExtentType
-                        {:TemporalRangeType "temp range"
-                         :PrecisionOfSeconds 3
-                         :EndsAtPresentFlag false
-                         :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                                              [{:BeginningDateTime (t/date-time 2000)
-                                                :EndingDateTime (t/date-time 2001)}
-                                               {:BeginningDateTime (t/date-time 2002)
-                                                :EndingDateTime (t/date-time 2003)}])
-                         :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]
-                         :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                                                 [{:Name "period1"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}
-                                                  {:Name "period2"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}])})]}))
+     :TemporalExtent [(umm-cmn/map->TemporalExtentType {})]}))
 
+;; This only tests a minimum example record for now. We need to test with larger more complicated
+;; records. We will do this as part of CMR-1929
 
 (deftest generate-and-parse-umm-json
-  (let [json (uj/umm->json example-record)
+  (let [json (uj/umm->json minimal-example-record)
         parsed (uj/json->umm js/umm-c-schema json)]
-    (is (= example-record parsed))))
+    (is (empty? (js/validate-umm-json json)))
+    (is (= minimal-example-record parsed))))
 

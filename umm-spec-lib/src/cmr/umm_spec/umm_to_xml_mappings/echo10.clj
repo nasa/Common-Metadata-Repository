@@ -11,28 +11,6 @@
    [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
-
-   (for-each "/TemporalExtent[1]"
-     [:Temporal
-      [:TemporalRangeType (xpath "TemporalRangeType")]
-      [:PrecisionOfSeconds (xpath "PrecisionOfSeconds")]
-      [:EndsAtPresentFlag (xpath "EndsAtPresentFlag")]
-      (for-each "RangeDateTime"
-        [:RangeDateTime
-         [:BeginningDateTime (xpath "BeginningDateTime")]
-         [:EndingDateTime (xpath "EndingDateTime")]])
-
-      (for-each "SingleDateTime" [:SingleDateTime (xpath ".")])
-
-      (for-each "PeriodicDateTime"
-        [:PeriodicDateTime
-         [:Name (xpath "Name")]
-         [:StartDate (xpath "StartDate")]
-         [:EndDate (xpath "EndDate")]
-         [:DurationUnit (xpath "DurationUnit")]
-         [:DurationValue (xpath "DurationValue")]
-         [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]])

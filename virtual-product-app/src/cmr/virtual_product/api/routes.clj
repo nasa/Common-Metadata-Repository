@@ -7,6 +7,7 @@
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
+            [cmr.common.services.errors :as serv-errors]
             [cmr.system-trace.http :as http-trace]
             [cmr.common.mime-types :as mt]
             [cmr.virtual-product.services.virtual-product-service :as vps]
@@ -16,7 +17,7 @@
 
 (def granule-entries-schema
   "Schema for the JSON request to the translate-granule-entries end-point"
-  (js/parse-json-schema
+  (js/parse-json-schema-from-string
     (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                            "title" "Granule Entries"
                            "description" (str "Input request from ECHO ordering service for "
@@ -33,7 +34,8 @@
 (defn- translate
   [context json-str]
   ;; Checks the json-str for validity as well as well-formedness
-  (js/validate-json granule-entries-schema json-str)
+  (when-let [errors (seq (js/validate-json granule-entries-schema json-str))]
+    (serv-errors/throw-service-errors :bad-request errors))
   (vps/translate-granule-entries context (json/parse-string json-str true)))
 
 (defn- build-routes [system]
