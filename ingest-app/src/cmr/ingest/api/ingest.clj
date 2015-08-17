@@ -8,10 +8,12 @@
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.mime-types :as mt]
             [cmr.transmit.echo.tokens :as tokens]
-            [cmr.transmit.config :as tcfg]
+            [cmr.transmit.config :as transmit-config]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.ingest.services.messages :as msg]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.cache :as cache]
             [cmr.ingest.services.providers-cache :as pc])
   (:import clojure.lang.ExceptionInfo))
 
@@ -144,12 +146,28 @@
       (invalid-revision-id-error revision-id))
     concept))
 
+(def user-id-cache-key
+  "The cache key for the token user id cache"
+  :token-user-ids)
+
+(defn create-user-id-cache
+  "Creates cache for token user ids"
+  []
+  (mem-cache/create-in-memory-cache
+    :lru
+    {}
+    {:threshold 1000}))
+
 (defn- set-user-id
   "Associate user id to concept."
   [concept context headers]
-  (let [user-id (or (get headers "user-id")
-                    (tokens/get-user-id context (get headers tcfg/token-header)))]
-    (assoc concept :user-id user-id)))
+  (assoc concept :user-id
+         (if-let [user-id (get headers "user-id")]
+           user-id
+           (when-let [token (get headers transmit-config/token-header)]
+             (cache/get-value (cache/context->cache context user-id-cache-key)
+                              token
+                              (partial tokens/get-user-id context token))))))
 
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the

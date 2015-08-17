@@ -13,6 +13,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.mock-echo.client.echo-util :as e]
             [clj-time.core :as t]
+            [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-int-test.system :as s]
@@ -41,44 +42,59 @@
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
+(defn- assert-user-id
+  "Assert concept with the given concep-id and revision-id in metadata db has user id equal to expected-user-id"
+  [concept-id revision-id expected-user-id]
+  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
+
 ;; Verify that user-id is saved from User-Id or token header
 (deftest collection-ingest-user-id-test
-  (testing "ingest of a new concept with user-id from token"
-    (let [user1-token (e/login (s/context) "user1")
-          concept (dc/collection-concept {})
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token user1-token})]
-      (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))))
-  (testing "ingest of a new concept with user-id from header"
-    (let [concept (dc/collection-concept {})
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user2"})]
-      (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id revision-id))))
-  (testing "ingest of a new concept with no user-id or token in the header"
-    (let [{:keys [concept-id revision-id]} (ingest/ingest-concept (dc/collection-concept {}))]
-      (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id nil} concept-id revision-id))))
-  (testing "update of a concept with a new user-id from token"
-    (let [user1-token (e/login (s/context) "user1")
-          user2-token (e/login (s/context) "user2")
-          user3-token (e/login (s/context) "user3")
-          concept (dc/collection-concept {})
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token user1-token})
-          _ (ingest/ingest-concept concept {:token user2-token})
-          _ (ingest/delete-concept concept {:token user3-token})]
-      (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id)))
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id))))))
-  (testing "update of a concept with a new user-id from header"
-    (let [concept (dc/collection-concept {})
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:user-id "user1"})
-          _ (ingest/ingest-concept concept {:user-id "user2"})
-          _ (ingest/ingest-concept concept {:user-id "user3"})]
-      (index/wait-until-indexed)
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user1"} concept-id revision-id))
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user2"} concept-id (inc revision-id)))
-      (is (ingest/concept-in-mdb-has-values? {:user-id "user3"} concept-id (inc (inc revision-id)))))))
+  (testing "ingest of new concept"
+    (util/are2 [ingest-headers expected-user-id]
+               (let [concept (dc/collection-concept {})
+                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
+                 (index/wait-until-indexed)
+                 (assert-user-id concept-id revision-id expected-user-id))
+
+               "user id from token"
+               {:token (e/login (s/context) "user1")} "user1"
+
+               "user id from user-id header"
+               {:user-id "user2"} "user2"
+
+               "both user-id and token in the header results in the revision getting user id from user-id header"
+               {:token (e/login (s/context) "user3")
+                :user-id "user4"} "user4"
+
+               "neither user-id nor token in the header"
+               {} nil))
+  (testing "update of existing concept with new user-id"
+    (util/are2 [ingest-header1 expected-user-id1
+                ingest-header2 expected-user-id2
+                ingest-header3 expected-user-id3
+                ingest-header4 expected-user-id4]
+               (let [concept (dc/collection-concept {})
+                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
+                 (ingest/ingest-concept concept ingest-header2)
+                 (ingest/delete-concept concept ingest-header3)
+                 (ingest/ingest-concept concept ingest-header4)
+                 (index/wait-until-indexed)
+                 (assert-user-id concept-id revision-id expected-user-id1)
+                 (assert-user-id concept-id (inc revision-id) expected-user-id2)
+                 (assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
+                 (assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
+
+               "user id from token"
+               {:token (e/login (s/context) "user1")} "user1"
+               {:token (e/login (s/context) "user2")} "user2"
+               {:token (e/login (s/context) "user3")} "user3"
+               {:token nil} nil
+
+               "user id from user-id header"
+               {:user-id "user1"} "user1"
+               {:user-id "user2"} "user2"
+               {:user-id "user3"} "user3"
+               {:user-id nil} nil)))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test

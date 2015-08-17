@@ -58,7 +58,7 @@ The concept id header allows specifying the [concept id](#concept-id) to use whe
 
 #### <a name="user-id"></a> User-Id Header
 
-The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts.
+The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
 
 ***
 

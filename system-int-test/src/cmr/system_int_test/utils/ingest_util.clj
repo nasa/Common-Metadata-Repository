@@ -216,9 +216,10 @@
    (delete-concept concept {}))
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token client-id accept-format revision-id]} options
+         {:keys [token client-id accept-format revision-id user-id]} options
          headers (util/remove-nil-keys {"Echo-Token" token
                                         "Client-Id" client-id
+                                        "User-Id" user-id
                                         "Cmr-Revision-id" revision-id})
          params {:method :delete
                  :url (url/ingest-url provider-id concept-type native-id)
@@ -314,30 +315,6 @@
   ([concepts options]
    (doseq [concept concepts]
      (is (#{404 200} (:status (delete-concept concept options)))))))
-
-(defn get-concept
-  ([concept-id]
-   (get-concept concept-id nil))
-  ([concept-id revision-id]
-   (let [response (client/get (url/mdb-concept-url concept-id revision-id)
-                              {:accept :json
-                               :throw-exceptions false
-                               :connection-manager (s/conn-mgr)})]
-     (is (some #{200 404} [(:status response)]))
-     (when (= (:status response) 200)
-       (-> response
-           :body
-           (json/decode true)
-           (update-in [:concept-type] keyword))))))
-
-(defn concept-in-mdb-has-values?
-  "Check to see if the record in mdb with the given concept-id has the same values as the given
-  concept map. Only keys in the concept map are checked - extra keys in the mdb record are ignored."
-  ([concept-map concept-id]
-   (concept-in-mdb-has-values? concept-map concept-id nil))
-  ([concept-map concept-id revision-id]
-   (let [mdb-concept (get-concept concept-id revision-id)]
-     (nil? (first (d/diff concept-map mdb-concept))))))
 
 ;;; fixture - each test to call this fixture
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
