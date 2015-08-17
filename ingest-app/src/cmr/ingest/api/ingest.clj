@@ -151,7 +151,7 @@
   :token-user-ids)
 
 (defn create-user-id-cache
-  "Creates cache for token user ids"
+  "Creates cache for user ids associated with tokens"
   []
   (mem-cache/create-in-memory-cache
     :lru

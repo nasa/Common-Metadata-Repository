@@ -43,7 +43,7 @@
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
 (defn- assert-user-id
-  "Assert concept with the given concep-id and revision-id in metadata db has user id equal to expected-user-id"
+  "Assert concept with the given concept-id and revision-id in metadata db has user id equal to expected-user-id"
   [concept-id revision-id expected-user-id]
   (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
 
