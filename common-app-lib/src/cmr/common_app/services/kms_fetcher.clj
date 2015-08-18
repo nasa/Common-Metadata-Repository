@@ -5,7 +5,14 @@
   cached using a fallback cache with Cubby as the backup store. See the documentation for
   cmr.common.cache.fallback-cache for more details. As a result of persisting the keywords in Cubby,
   the CMR will still be able to lookup KMS keywords even when the GCMD KMS is unavailable. CMR will
-  use the last keyword values which were retrieved from the GCMD KMS before it became unavailable."
+  use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
+
+  The KMS keywords are all cached under a single :kms key. The structure looks like the following:
+  {:kms {:platforms [\"SN-1\" {:category \"C\" :series-entity \"S\"
+                               :short-name \"SN-1\" :long-name \"LN\"}
+                     \"SN-2\" {...}
+                    ]}
+         :providers [...]}"
   (:require [cmr.common.services.errors :as errors]
             [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [def-stateful-job]]
@@ -15,6 +22,7 @@
             [cmr.common.cache.fallback-cache :as fallback-cache]
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
+            [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [clojure.set :as set]
             [cheshire.core :as json]))
 
@@ -31,28 +39,35 @@
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (fallback-cache/create-fallback-cache
-    (consistent-cache/create-consistent-cache)
-    (cubby-cache/create-cubby-cache)))
+  (stl-cache/create-single-thread-lookup-cache
+    (fallback-cache/create-fallback-cache
+      (consistent-cache/create-consistent-cache)
+      (cubby-cache/create-cubby-cache))))
+
+(defn- get-all-gcmd-keywords-as-map
+  "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
+  as used in the KMS cache."
+  [context]
+  (into {}
+        (for [keyword-scheme keyword-schemes]
+          [keyword-scheme (kms/get-keywords-for-keyword-scheme
+                            context keyword-scheme)])))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
   timer to keep the cache fresh. This will throw an exception if there is a problem fetching the
   keywords from KMS. The caller is responsible for catching and logging the exception."
   [context]
-  (let [cache (cache/context->cache context kms-cache-key)
-        updated-keywords (into {}
-                               (for [keyword-scheme keyword-schemes]
-                                 [keyword-scheme (kms/get-keywords-for-keyword-scheme
-                                                   context keyword-scheme)]))]
-    (cache/set-value cache kms-cache-key updated-keywords)))
+  (let [cache (cache/context->cache context kms-cache-key)]
+    (cache/set-value cache kms-cache-key (get-all-gcmd-keywords-as-map context))))
 
 (defn get-full-hierarchy-for-short-name
   "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
   nil will be returned."
   [context keyword-scheme short-name]
   (let [cache (cache/context->cache context kms-cache-key)]
-    (get-in (cache/get-value cache kms-cache-key) [keyword-scheme short-name])))
+    (get-in (cache/get-value cache kms-cache-key (partial get-all-gcmd-keywords-as-map context))
+            [keyword-scheme short-name])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
