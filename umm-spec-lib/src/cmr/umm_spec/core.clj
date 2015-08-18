@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.core
   "Contains functions for parsing, generating and validating metadata of various metadata formats."
   (:require [cmr.umm-spec.json-schema :as js]
-            [cmr.common.xml :as cx]
             [clojure.java.io :as io]
+            [cmr.common.xml :as cx]
 
             ;; XML -> UMM
             [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
@@ -24,6 +24,28 @@
             [cmr.umm-spec.umm-json :as umm-json]
 
             ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validate Metadata
+
+(def concept-type+metadata-format->schema
+  {[:collection :echo10] (io/resource "xml-schemas/echo10/Collection.xsd")
+   [:collection :dif] (io/resource "xml-schemas/dif9/dif_v9.9.3.xsd")
+   [:collection :dif10] (io/resource "xml-schemas/dif10/dif_v10.1.xsd")
+   [:collection :iso19115] (io/resource "xml-schemas/iso19115_2/schema/1.0/ISO19115-2_EOS.xsd")
+   [:collection :iso-smap] (io/resource "xml-schemas/iso_smap/schema.xsd")})
+
+(defn validate-xml
+  "Validates the XML against the xml schema for the given concept type and format."
+  [concept-type metadata-format xml]
+  (cx/validate-xml (concept-type+metadata-format->schema [concept-type metadata-format]) xml))
+
+(defn validate-metadata
+  "Validates the given metadata and returns a list of errors found."
+  [concept-type metadata-standard metadata]
+  (if (= metadata-standard :umm-json)
+    (js/validate-umm-json metadata)
+    (validate-xml concept-type metadata-standard metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parse Metadata
@@ -88,24 +110,3 @@
   [_ _ umm]
   (xg/generate-xml umm-to-iso-smap/umm-c-to-iso-smap-xml umm))
 
-(def concept-type+metadata-format->schema
-  {[:collection :echo10] (io/resource "xml-schemas/echo10/Collection.xsd")
-   [:collection :dif] (io/resource "xml-schemas/dif9/dif_v9.9.3.xsd")
-   [:collection :dif10] (io/resource "xml-schemas/dif10/dif_v10.1.xsd")
-   [:collection :iso19115] (io/resource "xml-schemas/iso19115_2/schema/1.0/ISO19115-2_EOS.xsd")
-   [:collection :iso-smap] (io/resource "xml-schemas/iso_smap/schema.xsd")})
-
-(defn validate-xml
-  "Validates the XML against the xml schema for the given concept type and format."
-  [concept-type metadata-format xml]
-  (cx/validate-xml (concept-type+metadata-format->schema [concept-type metadata-format]) xml))
-
-;; TODO: This is the function for validate metadata formats including umm-json.
-;; This is the reason why the above validate-xml function is refactored as it is.
-;; Remove these comments and uncomment out the function when validate-umm-json function is implemented.
-#_(defn validate-metadata
-    "Validate the given metadata for the given concept type and metadata format."
-    [concept-type metadata-standard metadata]
-    (if (= metadata-standard :umm-json)
-      (js/validate-umm-json metadata)
-      (validate-xml concept-type metadata-standard metadata)))

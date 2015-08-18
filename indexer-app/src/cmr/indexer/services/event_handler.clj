@@ -19,7 +19,7 @@
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/index-concept
+  (indexer/index-concept-by-concept-id-revision-id
     context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 

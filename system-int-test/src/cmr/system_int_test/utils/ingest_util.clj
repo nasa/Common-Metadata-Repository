@@ -3,6 +3,7 @@
             [clj-http.client :as client]
             [clojure.string :as str]
             [cheshire.core :as json]
+            [clojure.data :as d]
             [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.common.mime-types :as mt]
@@ -192,11 +193,12 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id]} options
+         {:keys [token client-id user-id]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
                                         "Echo-Token" token
+                                        "User-Id" user-id
                                         "Client-Id" client-id})
          params {:method :put
                  :url (url/ingest-url provider-id concept-type native-id)
@@ -214,9 +216,10 @@
    (delete-concept concept {}))
   ([concept options]
    (let [{:keys [provider-id concept-type native-id]} concept
-         {:keys [token client-id accept-format revision-id]} options
+         {:keys [token client-id accept-format revision-id user-id]} options
          headers (util/remove-nil-keys {"Echo-Token" token
                                         "Client-Id" client-id
+                                        "User-Id" user-id
                                         "Cmr-Revision-id" revision-id})
          params {:method :delete
                  :url (url/ingest-url provider-id concept-type native-id)

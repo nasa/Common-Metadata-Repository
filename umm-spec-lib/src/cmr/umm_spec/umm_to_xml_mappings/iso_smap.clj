@@ -63,7 +63,10 @@
          [:gmd:aggregateDataSetIdentifier
           [:gmd:MD_Identifier
            [:gmd:code (char-string-from "/EntryTitle")]]]
-         [:gmd:associationType]]]
+         [:gmd:associationType
+          [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                        :codeListValue "largerWorkCitation"}
+           "largerWorkCitation"]]]]
        [:gmd:language (char-string "eng")]]]]]])
 
 
