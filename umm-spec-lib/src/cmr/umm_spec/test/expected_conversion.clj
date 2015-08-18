@@ -37,7 +37,7 @@
   (let [singles (:SingleDateTime temporal)]
     (if (not (empty? singles))
       (-> temporal
-          (dissoc :SingleDateTime)
+          (assoc :SingleDateTime nil)
           (assoc :RangeDateTime (map single-date->range singles)))
       temporal)))
 
@@ -64,11 +64,7 @@
 
 (defmethod convert-internal :echo10
   [umm-coll _]
-  ;; ECHO10 returns entry id as a combination of short name and version. It generates short name
-  ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
-  ;; entry id concatenated with the version id.
   (-> umm-coll
-      (update-in [:EntryId :Id] str "_V1")
       (update-in [:TemporalExtent] (partial take 1))))
 
 ;; DIF 9
@@ -83,7 +79,10 @@
        ;; Only ranges are supported by DIF 9, so we need to convert
        ;; single dates to range types.
        (map single-dates->ranges)
-       (map #(dissoc % :TemporalRangeType :PrecisionOfSeconds :EndsAtPresentFlag))
+       (map #(assoc %
+                    :TemporalRangeType nil
+                    :PrecisionOfSeconds nil
+                    :EndsAtPresentFlag nil))
        ;; Now we need to concatenate all of the range extents into a
        ;; single TemporalExtent.
        (reduce merge-ranges)
@@ -101,7 +100,10 @@
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
-       (map #(dissoc % :TemporalRangeType :PrecisionOfSeconds :EndsAtPresentFlag))
+       (map #(assoc %
+                    :TemporalRangeType nil
+                    :PrecisionOfSeconds nil
+                    :EndsAtPresentFlag nil))
        (remove :PeriodicDateTime)
        (split-temporals :RangeDateTime)
        (split-temporals :SingleDateTime)
@@ -130,24 +132,13 @@
           record
           not-implemented-fields))
 
-(def ^:private formats->expected-conversion-fns
-  "A map of metadata formats to expected conversion functions"
-  {:echo10 dissoc-not-implemented-fields
-   :iso19115 dissoc-not-implemented-fields
-   :iso-smap dissoc-not-implemented-fields
-   :dif dissoc-not-implemented-fields
-   :dif10 dissoc-not-implemented-fields})
-
-(defn metadata-format->expected-conversion
-  "Takes a metadata format and returns the function that can convert the UMM record used as input
-  into the expected parsed UMM."
-  [metadata-format]
-  ;; identity is used if no conversion is needed.
-  (get formats->expected-conversion-fns metadata-format identity))
 ;;; Public API
 
 (defn convert
   "Returns input UMM-C record transformed according to the specified transformation for
   metadata-format."
   [umm-coll metadata-format]
-  (dissoc-not-implemented-fields (convert-internal umm-coll metadata-format)))
+  (if (= metadata-format :umm-json)
+    umm-coll
+    (dissoc-not-implemented-fields
+      (convert-internal umm-coll metadata-format))))
