@@ -30,6 +30,13 @@
   [content-generator _]
   (throw (Exception. (str "Unknown content generator type: " (pr-str content-generator)))))
 
+(defn- realize-attributes
+  "Returns map with function values replaced by the result of calling them."
+  [m]
+  (zipmap (keys m)
+          (map #(if (fn? %) (%) %)
+               (vals m))))
+
 (defmethod generate-content :element
   [[tag & content-generators] xpath-context]
   (let [maybe-attributes (first content-generators)
@@ -37,6 +44,7 @@
                                                  (not (dsl-type maybe-attributes)))
                                           [(first content-generators) (rest content-generators)]
                                           [{} content-generators])
+        attributes (realize-attributes attributes)
         content (mapcat #(generate-content % xpath-context) content-generators)]
     (when (or (seq attributes) (seq content))
       [(x/element tag attributes content)])))
@@ -66,20 +74,4 @@
   [content-generator record]
   (let [xpath-context (sxp/create-xpath-context-for-data record)
         content (generate-content content-generator xpath-context)]
-    (x/emit-str content)))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    (x/indent-str content)))

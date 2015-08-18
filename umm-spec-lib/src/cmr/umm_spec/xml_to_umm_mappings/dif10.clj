@@ -12,4 +12,23 @@
        :EntryId (object
                   {:Id (xpath "/DIF/Entry_ID")})
        :Abstract (xpath "/DIF/Summary/Abstract")
-       :Purpose (xpath "/DIF/Summary/Purpose")})))
+       :Purpose (xpath "/DIF/Summary/Purpose")
+       :TemporalExtent (for-each "/DIF/Temporal_Coverage"
+                         (object
+                          {:TemporalRangeType (xpath "Temporal_Range_Type")
+                           :PrecisionOfSeconds (xpath "Precision_Of_Seconds")
+                           :EndsAtPresentFlag (xpath "Ends_At_Present_Flag")
+                           :RangeDateTime (for-each "Range_DateTime"
+                                            (object
+                                             {:BeginningDateTime (xpath "Beginning_Date_Time")
+                                              :EndingDateTime (xpath "Ending_Date_Time")}))
+                           :SingleDateTime (select "Single_DateTime")
+                           :PeriodicDateTime (for-each "Periodic_DateTime"
+                                               (object
+                                                {:Name (xpath "Name")
+                                                 :StartDate (xpath "Start_Date")
+                                                 :EndDate (xpath "End_Date")
+                                                 :DurationUnit (xpath "Duration_Unit")
+                                                 :DurationValue (xpath "Duration_Value")
+                                                 :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
+                                                 :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))})))

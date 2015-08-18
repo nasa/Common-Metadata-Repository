@@ -23,10 +23,31 @@
     [:Short_Name "dummy platform short name"]
     [:Instrument
      [:Short_Name "dummy instrument short name"]]]
-   [:Temporal_Coverage
-    [:Range_DateTime
-     [:Beginning_Date_Time "1998-02-24T22:20:41"]
-     [:Ending_Date_Time "1999-03-24T22:20:41"]]]
+
+   (for-each "/TemporalExtent"
+     [:Temporal_Coverage
+      [:Temporal_Range_Type (xpath "TemporalRangeType")]
+      [:Precision_Of_Seconds (xpath "PrecisionOfSeconds")]
+      [:Ends_At_Present_Flag (xpath "EndsAtPresentFlag")]
+
+      (for-each "RangeDateTime"
+        [:Range_DateTime
+         [:Beginning_Date_Time (xpath "BeginningDateTime")]
+         [:Ending_Date_Time (xpath "EndingDateTime")]])
+
+      (for-each "SingleDateTime"
+        [:Single_DateTime (xpath ".")])
+
+      (for-each "PeriodicDateTime"
+        [:Periodic_DateTime
+         [:Name (xpath "Name")]
+         [:Start_Date (xpath "StartDate")]
+         [:End_Date (xpath "EndDate")]
+         [:Duration_Unit (xpath "DurationUnit")]
+         [:Duration_Value (xpath "DurationValue")]
+         [:Period_Cycle_Duration_Unit (xpath "PeriodCycleDurationUnit")]
+         [:Period_Cycle_Duration_Value (xpath "PeriodCycleDurationValue")]])])
+
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]
    [:Project
