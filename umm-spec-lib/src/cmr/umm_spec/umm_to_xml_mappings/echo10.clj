@@ -11,7 +11,8 @@
    [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
-
+   [:Orderable "true"]
+   [:Visible "true"]
    (for-each "/TemporalExtent[1]"
      [:Temporal
       [:TemporalRangeType (xpath "TemporalRangeType")]
@@ -32,7 +33,5 @@
          [:DurationUnit (xpath "DurationUnit")]
          [:DurationValue (xpath "DurationValue")]
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
-   [:Orderable "true"]
-   [:Visible "true"]])
+         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])])
 

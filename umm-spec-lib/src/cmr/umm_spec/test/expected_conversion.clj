@@ -56,7 +56,9 @@
   ;; ECHO10 returns entry id as a combination of short name and version. It generates short name
   ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
   ;; entry id concatenated with the version id.
-  (update-in umm-coll [:EntryId :Id] str "_V1"))
+  (-> umm-coll
+      (update-in [:EntryId :Id] str "_V1")
+      (update-in [:TemporalExtent] (partial take 1))))
 
 ;; DIF 9
 
