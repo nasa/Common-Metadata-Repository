@@ -19,14 +19,14 @@
          {:keys [delete-time]} :data-provider-timestamps
          :keys [entry-id entry-title user-id format-key
                 revision-id concept-id provider-id deleted]} collection]
-    {:meta {:concept-type "collection"
-            :concept-id concept-id
-            :revision-id revision-id
-            :native-id entry-title
-            :user-id user-id
-            :provider-id provider-id
-            :format (mt/format->mime-type format-key)
-            :deleted (boolean deleted)}
+    {:meta (merge {:concept-type "collection"
+                   :concept-id concept-id
+                   :revision-id revision-id
+                   :native-id entry-title
+                   :provider-id provider-id
+                   :format (mt/format->mime-type format-key)
+                   :deleted (boolean deleted)}
+                  (when user-id {:user-id user-id}))
      :umm {:entry-title entry-title
            :entry-id entry-id
            :short-name short-name
