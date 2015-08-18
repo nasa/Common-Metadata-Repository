@@ -81,9 +81,9 @@
           counter-fn #(swap! counter inc)]
       (is (= 3 (test-timed-single-arity counter-fn))))
     (testing "multi arity"
-    (let [counter (atom 0)
-          counter-fn #(swap! counter inc)]
-      (is (= 3 (test-timed-multi-arity counter-fn)))))))
+      (let [counter (atom 0)
+            counter-fn #(swap! counter inc)]
+        (is (= 3 (test-timed-multi-arity counter-fn)))))))
 
 (deftest build-validator-test
   (let [error-type :not-found
@@ -285,3 +285,133 @@
     "Empty collection"
     []
     #{}))
+
+(deftest map->path-values-test
+  (util/are2
+    [test-map expected]
+    (= expected (util/map->path-values test-map))
+
+    "Simple map"
+    {:a 1 :b 2}
+    {[:a] 1 [:b] 2}
+
+    "Nested map, paths into vectors aren't currently supported."
+    {:a {:b "B"
+         :c "C"}
+     :b {:d "D"}
+     :c [{:e "E":f "F"} [{:g "G":h "H"}]]}
+    {[:a :b] "B"
+     [:a :c] "C"
+     [:b :d] "D"
+     [:c] [{:e "E", :f "F"} [{:g "G", :h "H"}]]}
+
+    "Complex keys in map"
+    {{:a "a"} "map"
+     (symbol "a+-*&%$#!") "symbol"
+     1 2
+     "str" [{1 2
+             3 4}]
+     #{5 6 7} "set"
+     [8 9] "vec"}
+    {[{:a "a"}] "map"
+     [(symbol "a+-*&%$#!")] "symbol"
+     [1] 2
+     ["str"] [{1 2, 3 4}]
+     [#{7 6 5}] "set"
+     [[8 9]] "vec"}
+
+    "Empty map"
+    {}
+    {}))
+
+(deftest map-matches-path-values-test
+  (util/are2
+    [path-values test-map]
+    (util/map-matches-path-values? path-values test-map)
+
+    "Simple map"
+    {[:a] 1 [:b] 2}
+    {:a 1 :b 2}
+
+    "partial path-values map"
+    {[:b] 2}
+    {:a 1 :b 2}
+
+    "Nested map"
+    {[:a :b] "B"
+     [:a :c] "C"
+     [:b :d] "D"
+     [:c] [{:e "E", :f "F"} [{:g "G", :h "H"}]]}
+    {:a {:b "B"
+         :c "C"}
+     :b {:d "D"}
+     :c [{:e "E":f "F"} [{:g "G":h "H"}]]}
+
+    "Complex keys in map"
+    {[{:a "a"}] "map"
+     [(symbol "a+-*&%$#!")] "symbol"
+     [1] 2
+     ["str"] [{1 2, 3 4}]
+     [#{7 6 5}] "set"
+     [[8 9]] "vec"}
+    {{:a "a"} "map"
+     (symbol "a+-*&%$#!") "symbol"
+     1 2
+     "str" [{1 2
+             3 4}]
+     #{5 6 7} "set"
+     [8 9] "vec"}
+
+    "Empty map"
+    {}
+    {})
+  (testing "not match"
+    (is (not (util/map-matches-path-values? {[:a] 2} {:a 1 :b 2})))))
+
+(deftest filter-matching-maps-test
+  (let [nested-map {:a {:b "B"
+                        :c "C"}
+                    :b {"d" "D"}
+                    :c [{:e "E":f "F"} [{:g "G":h "H"}]]}
+        type-map {[{:a "a"}] "map"
+                  [(symbol "a+-*&%$#!")] "symbol"
+                  [1] 2
+                  ["str"] [{1 2, 3 4}]
+                  [#{7 6 5}] "set"
+                  [[8 9]] "vec"}
+        maps [nested-map
+              type-map
+              {:c [{:e "E"}]}
+              {:a {:b "B"}}
+              {:x 1}]]
+    (util/are2
+      [matching-map matched]
+      (= matched (util/filter-matching-maps matching-map maps))
+
+      "simple match"
+      {:x 1}
+      [{:x 1}]
+
+      "nested all match"
+      nested-map
+      [nested-map]
+
+      "nested partial match"
+      {:a {:c "C"}}
+      [nested-map]
+
+      "multiple matches"
+      {:a {:b "B"}}
+      [nested-map {:a {:b "B"}}]
+
+      "value is matched exactly"
+      {:c [{:e "E"}]}
+      [{:c [{:e "E"}]}]
+
+      "type match"
+      type-map
+      [type-map]
+
+      "Empty matching map finds everything"
+      {}
+      maps)))

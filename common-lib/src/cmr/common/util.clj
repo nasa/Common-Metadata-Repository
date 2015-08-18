@@ -366,3 +366,43 @@
     (io/copy input gzip)
     (.finish gzip)
     (.toByteArray output)))
+
+(defn map->path-values
+  "Takes a map and returns a map of a sequence of paths through the map to values contained in that
+  map. A path is a sequence of keys to a value in the map like that taken by the get-in function.
+
+  Example:
+
+  (map->path-values {:a 1
+  :b {:c 2}})
+  =>
+  {
+    [:a] 1
+    [:b] 2
+  }"
+  [matching-map]
+  (into {}
+        (mapcatv
+          (fn [[k v]]
+            (if (map? v)
+              (mapv (fn [[path value]]
+                      [(vec (cons k path)) value])
+                    (map->path-values v))
+              [[[k] v]]))
+          matching-map)))
+
+(defn map-matches-path-values?
+  "Returns true if the map matches the given path values. Path values are described in the
+  map->path-values function documentation."
+  [path-values m]
+  (every? (fn [[path value]]
+            (= (get-in m path) value))
+          path-values))
+
+(defn filter-matching-maps
+  "Keeps all the maps which match the given matching map. The matching map is a set of nested maps
+  with keys and values. A map matches it if the matching map is a subset of the map."
+  [matching-map maps]
+  (let [path-values (map->path-values matching-map)]
+    (filter #(map-matches-path-values? path-values %) maps)))
+

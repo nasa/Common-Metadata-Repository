@@ -1,5 +1,6 @@
 (ns cmr.metadata-db.data.concepts
-  "Defines a protocol for CRUD operations on concepts.")
+  "Defines a protocol for CRUD operations on concepts."
+  (:require [cmr.common.util :as util]))
 
 (defprotocol ConceptSearch
   "Functions for retrieving concepts by parameters"
@@ -12,7 +13,12 @@
     [db provider params batch-size]
     [db provider params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
-)
+
+  (find-latest-concepts
+    [db provider params]
+    "Finds the latest concepts by the given provider and parameters.
+    :concept-type must present in the parameters.")
+  )
 
 (defprotocol ConceptsStore
   "Functions for saving and retrieving concepts"
@@ -84,18 +90,16 @@
     "Returns concept-id and revision-id tuples for old (more than 'max-revisions'
     old) revisions of concepts, up to 'limit' concepts."))
 
-(defn find-latest-concepts
-  "Finds the latest revision of concepts by the given parameters"
-  [db providers params]
-  (let [revision-concepts (find-concepts db providers params)]
-    (->> revision-concepts
-         (group-by :concept-id)
-         (map (fn [[concept-id concepts]]
-                (->> concepts (sort-by :revision-id) reverse first))))))
-
-
-
-
-
-
+(defn search-with-params
+  "Returns the concepts within the given concepts that matches the search params."
+  [concepts params]
+  (let [{:keys [provider-id concept-type concept-id native-id]} params
+        extra-field-params (dissoc params :concept-type :provider-id :native-id
+                                   :concept-id :exclude-metadata)
+        query-map (util/remove-nil-keys {:concept-id concept-id
+                                         :concept-type concept-type
+                                         :provider-id provider-id
+                                         :native-id native-id
+                                         :extra-fields extra-field-params})]
+    (util/filter-matching-maps query-map concepts)))
 

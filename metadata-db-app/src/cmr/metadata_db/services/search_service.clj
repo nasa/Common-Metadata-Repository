@@ -89,10 +89,9 @@
         params (dissoc params :latest)
         providers (find-providers-for-params context params)]
     (when (seq providers)
-      (do
-        (if latest-only?
-          (c/find-latest-concepts db providers params)
-          (c/find-concepts db providers params))))))
+      (if latest-only?
+        (mapcat #(c/find-latest-concepts db % params) providers)
+        (c/find-concepts db providers params)))))
 
 (defn find-concept
   "Returns nil or exactly one concept matching the params.

@@ -422,8 +422,8 @@
   (let [db (util/context->db context)]
     (into {} (pmap (fn [{:keys [provider-id] :as provider}]
                      [provider-id
-                      (->> (c/find-latest-concepts db [provider] {:provider-id provider-id
-                                                                  :concept-type :collection})
+                      (->> (c/find-latest-concepts db provider {:provider-id provider-id
+                                                                :concept-type :collection})
                            (remove :deleted))])
                    (provider-db/get-providers db)))))
 

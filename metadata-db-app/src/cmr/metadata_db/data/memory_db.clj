@@ -4,7 +4,6 @@
             [cmr.metadata-db.data.providers :as providers]
             [cmr.common.concepts :as cc]
             [cmr.common.lifecycle :as lifecycle]
-            [cmr.common.util :as util]
             [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [clj-time.format :as f]
@@ -70,6 +69,21 @@
        (map (partial sort-by :revision-id)
             (vals (group-by :concept-id concepts)))))
 
+(defn- concepts->find-result
+  "Returns the given concepts in the proper find result format based on the find params."
+  [concepts params]
+  (let [exclude-metadata? (= "true" (:exclude-metadata params))
+        map-fn (fn [concept]
+                 (let [concept (if (and (= :granule (:concept-type concept))
+                                        (nil? (get-in concept [:extra-fields :granule-ur])))
+                                 (assoc-in concept [:extra-fields :granule-ur]
+                                           (:native-id concept))
+                                 concept)]
+                   (if exclude-metadata?
+                     (dissoc concept :metadata)
+                     concept)))]
+    (map map-fn concepts)))
+
 (defrecord MemoryDB
   [
    ;; A sequence of concepts stored in metadata db
@@ -96,38 +110,17 @@
 
   (find-concepts
     [db providers params]
-    (mapcat (fn [provider]
-              (let [provider-id (:provider-id provider)
-                    {:keys [concept-type concept-id native-id]} params
-                    exclude-metadata? (= "true" (:exclude-metadata params))
-                    extra-field-params (dissoc params :concept-type :provider-id :native-id
-                                               :concept-id :exclude-metadata)]
-                (keep (fn [{extra-fields :extra-fields
-                            ct :concept-type
-                            pid :provider-id
-                            cid :concept-id
-                            nid :native-id :as concept}]
-                        (let [query-map (util/remove-nil-keys {:concept-id concept-id
-                                                               :concept-type concept-type
-                                                               :provider-id provider-id
-                                                               :native-id native-id
-                                                               :extra-fields extra-field-params})
-                              full-concept-map {:concept-type ct
-                                                :concept-id cid
-                                                :provider-id pid
-                                                :native-id nid
-                                                :extra-fields (select-keys extra-fields
-                                                                           (keys extra-field-params))}
-                              concept-map (select-keys full-concept-map (keys query-map))]
-                          (when (= query-map concept-map)
-                            (dissoc (if (and (= :granule concept-type)
-                                             (nil? (get-in concept [:extra-fields :granule-ur])))
-                                      (assoc-in concept [:extra-fields :granule-ur]
-                                                (:native-id concept))
-                                      concept)
-                                    (when exclude-metadata? :metadata)))))
-                      @concepts-atom)))
-            providers))
+    (let [found-concepts (mapcat #(concepts/search-with-params @concepts-atom
+                                                               (assoc params :provider-id (:provider-id %)))
+                                 providers)]
+      (concepts->find-result found-concepts params)))
+
+  (find-latest-concepts
+    [db provider params]
+    (let [latest-concepts (latest-revisions @concepts-atom)
+          found-concepts (concepts/search-with-params latest-concepts
+                                                      (assoc params :provider-id (:provider-id provider)))]
+      (concepts->find-result found-concepts params)))
 
   concepts/ConceptsStore
 

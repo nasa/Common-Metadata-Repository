@@ -23,8 +23,8 @@
                                ~existing-params)
                          `(>= :id ~min-id))
          stmt (select ['(min :id)]
-                (from table)
-                (where params-clause))]
+                      (from table)
+                      (where params-clause))]
      (-> (su/find-one conn stmt)
          vals
          first))))
@@ -57,16 +57,27 @@
     (dissoc params :concept-type :exclude-metadata :provider-id)))
 
 (defn- gen-find-concepts-in-table-sql
-  "Create the SQL for the given params and table"
+  "Create the SQL for the given params and table.
+  If :include-all is true, all revisions of the concepts will be returned. This is needed for the
+  find-latest-concepts function to later filter out the latest concepts that satisfy the search in memory."
   [concept-type table fields params]
-  (su/build (select (vec fields)
-              (from table)
-              (when-not (empty? params)
-                (where (sh/find-params->sql-clause params))))))
+  (if (:include-all params)
+    (let [params (dissoc params :include-all)]
+      (su/build (select (vec fields)
+                        (from table)
+                        (where `(in :concept_id
+                                    ~(select [:concept_id]
+                                             (from table)
+                                             (when-not (empty? params)
+                                               (where (sh/find-params->sql-clause params)))))))))
+    (su/build (select (vec fields)
+                      (from table)
+                      (when-not (empty? params)
+                        (where (sh/find-params->sql-clause params)))))))
 
 (defmulti find-concepts-in-table
   "Retrieve concept maps from the given table, handling small providers separately from
-  normal providers"
+  normal providers."
   (fn [db table concept-type providers params]
     (:small (first providers))))
 
@@ -129,8 +140,8 @@
                                       conditions
                                       (cons (sh/find-params->sql-clause params) conditions))
                          stmt (su/build (select [:*]
-                                          (from table)
-                                          (where (cons `and conditions))))
+                                                (from table)
+                                                (where (cons `and conditions))))
                          batch-result (su/query db stmt)]
                      (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                            batch-result))))
@@ -149,4 +160,21 @@
                      (cons batch (lazy-seq (lazy-find (+ start-index batch-size)))))))]
          ;; If there's no minimum found so there are no concepts that match
          (when-let [start-index (find-batch-starting-id db table params)]
-           (lazy-find (max requested-start-index start-index))))))))
+           (lazy-find (max requested-start-index start-index)))))))
+
+  (find-latest-concepts
+    [db provider params]
+    {:pre [(:concept-type params)]}
+    ;; First we find all revisions of the concepts that have at least one revision that matches the
+    ;; search parameters. Then we find the latest revisions of those concepts and match with the
+    ;; search parameters again in memory to find what we are looking for.
+    (let [concept-type (:concept-type params)
+          table (tables/get-table-name provider concept-type)
+          revision-concepts (find-concepts-in-table db table concept-type [provider]
+                                                    (assoc params :include-all true))
+          latest-concepts (->> revision-concepts
+                               (group-by :concept-id)
+                               (map (fn [[concept-id concepts]]
+                                      (->> concepts (sort-by :revision-id) reverse first))))]
+      (c/search-with-params latest-concepts params))))
+
