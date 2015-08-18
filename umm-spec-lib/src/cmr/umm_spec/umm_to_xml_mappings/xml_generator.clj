@@ -30,7 +30,7 @@
   [content-generator _]
   (throw (Exception. (str "Unknown content generator type: " (pr-str content-generator)))))
 
-(defn realize-attributes
+(defn- realize-attributes
   "Returns map with function values replaced by the result of calling them."
   [m]
   (zipmap (keys m)
