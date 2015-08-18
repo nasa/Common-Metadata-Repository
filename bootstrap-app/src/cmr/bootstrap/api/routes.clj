@@ -17,7 +17,8 @@
             [cmr.bootstrap.services.bootstrap-service :as bs]
             [cmr.bootstrap.services.health-service :as hs]
             [cmr.common.date-time-parser :as date-time-parser]
-            [cmr.common-app.api.routes :as common-routes]))
+            [cmr.common-app.api.routes :as common-routes]
+            [cmr.virtual-product.config :as vp-config]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
@@ -113,8 +114,21 @@
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
-  (bs/bootstrap-virtual-products context (= "true" (:synchronous params)))
-  {:status 202 :body {:message "Bootstrapping virtual products."}})
+  (let [{:keys [provider-id entry-title]} params]
+    (when-not (and provider-id entry-title)
+      (srv-errors/throw-service-error
+        :bad-request
+        "Provider_id and entry_title are required parameters."))
+    (when-not (vp-config/source-to-virtual-product-config [provider-id entry-title])
+      (srv-errors/throw-service-error
+        :bad-request
+        (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
+                provider-id
+                entry-title)))
+    (info "Bootstrapping virtual products for provider [" provider-id
+          "] entry-title [" entry-title)
+    (bs/bootstrap-virtual-products context (= "true" (:synchronous params)) provider-id entry-title)
+    {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
 (defn- build-routes [system]
   (routes
@@ -139,6 +153,7 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (bootstrap-virtual-products request-context params)))
+
 
       ;; Add routes for managing jobs.
       (common-routes/job-api-routes)

@@ -78,9 +78,10 @@
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
-  [context synchronous]
+  [context synchronous provider-id entry-title]
   (if synchronous
-    (vp/bootstrap-virtual-products (:system context))
+    (vp/bootstrap-virtual-products (:system context) provider-id entry-title)
     (go
       (info "Adding message to virtual products channel.")
-      (-> context :system (get vp/channel-name) (>! :bootstrap-virtual-products)))))
+      (-> context :system (get vp/channel-name) (>! {:provider-id provider-id
+                                                     :entry-title entry-title})))))
