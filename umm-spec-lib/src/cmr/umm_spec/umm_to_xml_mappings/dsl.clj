@@ -14,7 +14,9 @@
   generators that specify the content of the element.
 
   Note that first inner map without a ::type will be treated as attributes for the element. The
-  attributes map is treated as a map of attribute names to content generators for each attribute.
+  attributes map is treated as a map of attribute names to content generators for each attribute. A
+  zero-argument function may be supplied for an attribute value which will be called to generate the
+  actual output value.
 
   ## String
 
