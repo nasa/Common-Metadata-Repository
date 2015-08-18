@@ -49,7 +49,7 @@
     [this key]
     (or (c/get-value primary-cache key)
         (when-let [value (c/get-value backup-cache key)]
-          (c/set-value this key value)
+          (c/set-value primary-cache key value)
           value)))
 
   (get-value
