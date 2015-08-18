@@ -8,6 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]
             [cmr.common.util :refer [are2]]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -19,14 +20,15 @@
          {:keys [delete-time]} :data-provider-timestamps
          :keys [entry-id entry-title user-id format-key
                 revision-id concept-id provider-id deleted]} collection]
-    {:meta (merge {:concept-type "collection"
-                   :concept-id concept-id
-                   :revision-id revision-id
-                   :native-id entry-title
-                   :provider-id provider-id
-                   :format (mt/format->mime-type format-key)
-                   :deleted (boolean deleted)}
-                  (when user-id {:user-id user-id}))
+    {:meta (util/remove-nil-keys
+             {:concept-type "collection"
+              :concept-id concept-id
+              :revision-id revision-id
+              :native-id entry-title
+              :user-id user-id
+              :provider-id provider-id
+              :format (mt/format->mime-type format-key)
+              :deleted (boolean deleted)})
      :umm {:entry-title entry-title
            :entry-id entry-id
            :short-name short-name
@@ -78,7 +80,8 @@
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
                                                 :entry-id "s1_v4"
                                                 :version-id "v4"
-                                                :short-name "s1"}) {:user-id "user3"})]
+                                                :short-name "s1"})
+                        {:user-id "user3"})]
     (index/wait-until-indexed)
     (testing "find collections in umm-json format"
       (are2 [collections params]

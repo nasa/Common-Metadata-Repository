@@ -37,15 +37,16 @@
          [metadata-format] :metadata-format} (:fields elastic-result)
         revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
         revision-id (:_version elastic-result)]
-    {:meta (merge {:concept-type :collection
-                   :concept-id concept-id
-                   :revision-id revision-id
-                   :native-id native-id
-                   :provider-id provider-id
-                   :format (mt/format->mime-type (keyword metadata-format))
-                   :revision-date revision-date
-                   :deleted deleted}
-                  (when user-id {:user-id user-id}))
+    {:meta (util/remove-nil-keys
+             {:concept-type :collection
+              :concept-id concept-id
+              :revision-id revision-id
+              :native-id native-id
+              :user-id user-id
+              :provider-id provider-id
+              :format (mt/format->mime-type (keyword metadata-format))
+              :revision-date revision-date
+              :deleted deleted})
      :umm {:entry-title entry-title
            :entry-id entry-id
            :short-name short-name
