@@ -19,8 +19,7 @@
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
-    (object {:EntryId (object {:Id entry-id-xpath})
+    (object {:EntryId entry-id-xpath
              :EntryTitle entry-title-xpath
              :Abstract (xpath (str data-identification-base-xpath "/gmd:abstract/gco:CharacterString"))
-             :Purpose (xpath (str data-identification-base-xpath "/gmd:purpose/gco:CharacterString"))
-             })))
+             :Purpose (xpath (str data-identification-base-xpath "/gmd:purpose/gco:CharacterString"))})))

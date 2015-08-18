@@ -5,8 +5,8 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:DataLineage :MetadataStandard :Platform :ProcessingLevel :RelatedUrl
-    :ResponsibleOrganization :ScienceKeyword :SpatialExtent :TemporalExtent})
+  #{:Platform :ProcessingLevel :RelatedUrl :DataDate :ResponsibleOrganization :ScienceKeyword
+    :SpatialExtent :TemporalExtent})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
@@ -16,23 +16,9 @@
           record
           not-implemented-fields))
 
-
-(defn- expected-echo10
-  "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
-  [expected]
-  ;; ECHO10 returns entry id as a combination of short name and version. It generates short name
-  ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
-  ;; entry id concatenated with the version id.
-  (update-in expected [:EntryId :Id] #(str % "_"
-                                           ;; put version here once it's added to UMM.
-                                           "V1"
-                                           )))
-
-
-
 (def ^:private formats->expected-conversion-fns
   "A map of metadata formats to expected conversion functions"
-  {:echo10 (comp expected-echo10 dissoc-not-implemented-fields)
+  {:echo10 dissoc-not-implemented-fields
    :iso19115 dissoc-not-implemented-fields
    :iso-smap dissoc-not-implemented-fields
    :dif dissoc-not-implemented-fields

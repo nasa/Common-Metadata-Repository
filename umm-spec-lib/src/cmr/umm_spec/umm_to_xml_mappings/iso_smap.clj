@@ -45,7 +45,7 @@
 
          [:gmd:identifier
           [:gmd:MD_Identifier
-           [:gmd:code (char-string-from "/EntryId/Id")]
+           [:gmd:code (char-string-from "/EntryId")]
            [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]

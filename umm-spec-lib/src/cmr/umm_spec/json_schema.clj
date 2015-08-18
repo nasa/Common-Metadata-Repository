@@ -12,8 +12,6 @@
 
 (def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
 
-(slurp umm-c-schema-file)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 

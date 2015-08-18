@@ -25,12 +25,7 @@
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
-    {:DataLineage [(umm-cmn/map->LineageType
-                     {:Scope "METADATA"})]
-     :MetadataStandard (umm-cmn/map->MetadataStandardType
-                         {:Name "UMM"
-                          :Version "1.0"})
-     :Platform [(umm-cmn/map->PlatformType
+    {:Platform [(umm-cmn/map->PlatformType
                   {:ShortName "Platform"
                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
@@ -40,14 +35,16 @@
      :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
 
-     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
+     :EntryId "short"
      :EntryTitle "The entry title V5"
      :Abstract "A very abstract collection"
      :TemporalExtent [(umm-cmn/map->TemporalExtentType {})]}))
 
 (comment
 
-  (println (xg/generate-xml xm-smap/umm-c-to-iso-smap-xml example-record))
+  (println (xg/generate-xml xm-echo10/umm-c-to-echo10-xml example-record))
+
+  (xp/parse-xml )
   )
 
 (deftest roundtrip-gen-parse

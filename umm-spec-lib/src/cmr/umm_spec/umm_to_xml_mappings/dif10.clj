@@ -11,7 +11,7 @@
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
-   [:Entry_ID (xpath "/EntryId/Id")]
+   [:Entry_ID (xpath "/EntryId")]
    [:Version "001"]
    [:Entry_Title (xpath "/EntryTitle")]
    [:Science_Keywords

@@ -123,18 +123,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
 
-(defrecord EntryIdType
-  [
-   ;; The version of the unique identifier.
-   Version
-
-   Id
-
-   ;; The Authority (who created it or owns it) of the unique identifier.
-   Authority
-  ])
-(record-pretty-printer/enable-record-pretty-printing EntryIdType)
-
 ;; Describes the Records the data and the changes that happened on that date for the metadata or
 ;; data (the metadata or data is described by the scope element.)
 (defrecord LineageType
@@ -164,17 +152,6 @@
    Fees
   ])
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
-
-;; Specifies the date and its type.
-(defrecord DatesType
-  [
-   ;; This is the date a creation, update, or deletion occurred.
-   Date
-
-   ;; This is the type of date: create, update, review, delete.
-   Type
-  ])
-(record-pretty-printer/enable-record-pretty-printing DatesType)
 
 (defrecord PartyType
   [
@@ -499,11 +476,14 @@
    ;; Type is used to indicate the basis (justification) for relating one resource to another
    Type
 
-   ;; The ProviderName of the metadata record that is associated with this record.
+   ;; The description of the association.
    Description
 
    ;; ID of the metadata record that is associated with this record.
    EntryId
+
+   ;; The version of the metadata record that is associated with this record.
+   Version
 
    ;; The ProviderName of the metadata record that is associated with this record.
    ProviderId
@@ -546,6 +526,17 @@
    Point
   ])
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
+
+;; Specifies the date and its type.
+(defrecord DateType
+  [
+   ;; This is the date a creation, update, or deletion occurred.
+   Date
+
+   ;; This is the type of date: create, update, review, delete.
+   Type
+  ])
+(record-pretty-printer/enable-record-pretty-printing DateType)
 
 ;; This entity is used to define characteristics.
 (defrecord CharacteristicType

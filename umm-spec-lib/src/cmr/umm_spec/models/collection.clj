@@ -5,8 +5,7 @@
 
 (defrecord UMM-C
   [
-   ;; This includes any metadata related dates. All metadata dates will have a Lineage/Scope of
-   ;; ‘metadata’.
+   ;; Lineage is historical data and includes how data was processed.
    MetadataLineage
 
    ;; This attribute specifies a word or phrase that describes the temporal resolution of the
@@ -45,9 +44,6 @@
    ;; should be in the Publication Reference element. A DOI that specifically identifies the service
    ;; is listed here.
    CollectionCitation
-
-   ;; This includes any data related dates. All of these dates will have a Lineage/Scope of ‘data’.
-   DataLineage
 
    ;; This includes any personnel responsible for this data and metadata through the party element.
    ;; The role (distributing, archiving, providing, and/or maintaining the data) is placed in the
@@ -89,6 +85,9 @@
    ;; The entry ID of the service described by the metadata.
    EntryId
 
+   ;; This includes any metadata related dates.
+   MetadataDate
+
    ;; This element permits the author to provide the following information about an item described
    ;; in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in
    ;; producing the item. Examples of appropriate element information include: A) succinct
@@ -122,13 +121,13 @@
    ;; with different roles throughout the metadata.
    ResponsibleOrganization
 
-   ;; This element describes the metadata standard name and version as received by the CMR.
-   MetadataStandard
-
    ;; This element describes the relevant platforms used to acquire the data related to the service.
    ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
    ;; Station, Network, Human, etc.
    Platform
+
+   ;; This includes any data related dates. create,delete, and update.
+   DataDate
 
    ;; This element describes any data/service related URLs that include project home pages,
    ;; services, related data archives/servers, metadata extensions, direct links to online software
@@ -173,6 +172,9 @@
    ;; This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic
    ;; Date Time
    TemporalExtent
+
+   ;; The Version of the metadata record.
+   Version
 
    ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
    ;; the data collected. PaleoTemporalCoverage should be used when the data spans time frames

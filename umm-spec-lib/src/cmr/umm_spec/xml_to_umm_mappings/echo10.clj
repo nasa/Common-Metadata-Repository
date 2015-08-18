@@ -9,10 +9,6 @@
     js/umm-c-schema
     (object
       {:EntryTitle (xpath "/Collection/DataSetId")
-       :EntryId (object
-                  {:Id (concat-parts
-                         (xpath "/Collection/ShortName")
-                         (constant  "_")
-                         (xpath "/Collection/VersionId"))})
+       :EntryId (xpath "/Collection/ShortName")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")})))

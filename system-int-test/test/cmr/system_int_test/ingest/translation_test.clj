@@ -11,12 +11,7 @@
 (def example-record
   "This is the minimum valid UMM."
   (umm-c/map->UMM-C
-    {:DataLineage [(umm-cmn/map->LineageType
-                     {:Scope "METADATA"})]
-     :MetadataStandard (umm-cmn/map->MetadataStandardType
-                         {:Name "UMM"
-                          :Version "1.0"})
-     :Platform [(umm-cmn/map->PlatformType
+    {:Platform [(umm-cmn/map->PlatformType
                   {:ShortName "Platform"
                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
@@ -26,8 +21,10 @@
      :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
 
-     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
+     :EntryId "short"
      :EntryTitle "The entry title V5"
+     :DataDate [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                        :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :TemporalExtent [(umm-cmn/map->TemporalExtentType {})]}))
 
