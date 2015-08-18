@@ -22,6 +22,9 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
+            [cmr.common-app.cache.cubby-cache :as cubby-cache]
+            [cmr.common.cache.fallback-cache :as fallback-cache]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]))
 
 (defconfig colls-with-separate-indexes
@@ -54,11 +57,13 @@
                                            (consistent-cache/create-consistent-cache))
                                          [:catalog-item :system-object :provider-object])
                       cache/general-cache-key (mem-cache/create-in-memory-cache)
-                      acl/token-imp-cache-key (acl/create-token-imp-cache)}
+                      acl/token-imp-cache-key (acl/create-token-imp-cache)
+                      kf/kms-cache-key (kf/create-kms-cache)}
              :scheduler (jobs/create-scheduler
                           `system-holder
                           :db
-                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")])
+                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
+                           (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")])
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :index-set :echo-rest :cubby :kms])))

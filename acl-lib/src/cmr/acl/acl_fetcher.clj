@@ -9,7 +9,6 @@
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
-            [clojurewerkz.quartzite.conversion :as qc]
             [clojure.set :as set]))
 
 (def acl-cache-key

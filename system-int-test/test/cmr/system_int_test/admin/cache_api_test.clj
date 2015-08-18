@@ -71,7 +71,7 @@
            (let [response (list-caches-for-app url admin-read-token)]
              (is (= (set caches) (set response))))
 
-           (url/indexer-read-caches-url) ["acls" "general" "token-imp"]
+           (url/indexer-read-caches-url) ["acls" "general" "token-imp" "kms"]
            (url/index-set-read-caches-url) ["token-imp"]
            (url/mdb-read-caches-url) ["token-imp"]
            (url/ingest-read-caches-url) ["token-imp" "providers" "acls" "token-user-ids"]
