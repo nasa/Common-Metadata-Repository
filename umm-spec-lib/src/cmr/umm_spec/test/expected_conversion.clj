@@ -43,8 +43,10 @@
 
 (defn merge-ranges
   "Returns t1 with :RangeDateTime concatenated together with t2's."
-  [t1 t2]
-  (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2)))
+  ([])
+  ([t1] t1)
+  ([t1 t2]
+   (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2))))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
@@ -88,6 +90,7 @@
        (reduce merge-ranges)
        ;; Turn that single one into a collection again.
        vector
+       (remove nil?)
        ;; Then make sure we get the right record type out.
        (map cmn/map->TemporalExtentType)))
 
@@ -107,7 +110,9 @@
        (remove :PeriodicDateTime)
        (split-temporals :RangeDateTime)
        (split-temporals :SingleDateTime)
-       (map cmn/map->TemporalExtentType)))
+       (map cmn/map->TemporalExtentType)
+       ;; return nil if empty
+       seq))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]

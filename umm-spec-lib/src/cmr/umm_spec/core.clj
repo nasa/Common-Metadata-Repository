@@ -65,7 +65,11 @@
 
 (defmethod parse-metadata [:collection :dif]
   [_ _ metadata]
-  (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata))
+  (->
+   (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata)
+   ;; Because of the weirdness with parsign DIF and the cardinality of TemporalExtent, we need to
+   ;; munge this to remove any empty TemporalExtents.
+   (update-in [:TemporalExtent] #(filter :RangeDateTime %))))
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]

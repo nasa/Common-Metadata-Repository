@@ -58,6 +58,12 @@
                                                  :DurationValue 4
                                                  :PeriodCycleDurationUnit "DAY"
                                                  :PeriodCycleDurationValue 3}])})]}))
+
+(def temporal-variations
+  "A seq of example records for each of the values in the TemporalExtent in the base example-record
+  above."
+  (for [temporal (:TemporalExtent example-record)]
+    (assoc example-record :TemporalExtent [temporal])))
  
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -66,31 +72,33 @@
   (core/parse-metadata :collection format (core/generate-metadata :collection format record)))
 
 (deftest roundtrip-gen-parse
-  (are2 [metadata-format]
-    (= (expected-conversion/convert example-record metadata-format)
-       (xml-round-trip example-record metadata-format))
-    
-    "echo10"
-    :echo10
+  (doseq [record temporal-variations]
+    (are2 [metadata-format]
+      (= (expected-conversion/convert record metadata-format)
+         (xml-round-trip record metadata-format))
+      
+      "echo10"
+      :echo10
 
-    "dif9"
-    :dif
+      "dif9"
+      :dif
 
-    "dif10"
-    :dif10
+      "dif10"
+      :dif10
 
-    "iso-smap"
-    :iso-smap
+      "iso-smap"
+      :iso-smap
 
-    "ISO19115-2"
-    :iso19115))
+      "ISO19115-2"
+      :iso19115)))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
-    (are [fmt]
-        (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
-      :echo10
-      :dif
-      :dif10
-      :iso-smap
-      :iso19115)))
+    (doseq [record temporal-variations]
+      (are [fmt]
+          (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt record)))
+        :echo10
+        :dif
+        :dif10
+        :iso-smap
+        :iso19115))))
