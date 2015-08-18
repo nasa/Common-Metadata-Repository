@@ -13,19 +13,19 @@
     (su/put-values-in-caches caches initial-values)
 
     (testing "Initial state with items in both caches"
-      (su/assert-values-in-caches caches initial-values)
+      (su/assert-values-in-caches (conj caches fallback-cache) initial-values)
       (su/assert-cache-keys [:foo :bar] primary-cache)
       (su/assert-cache-keys [:foo :bar] backup-cache)
       (su/assert-cache-keys [:foo :bar] fallback-cache))
 
-    (testing "Change a value in the primary cache"
-      (c/set-value primary-cache :foo "new foo value")
+    (testing "Change a value in the backup cache"
+      (c/set-value backup-cache :foo "new foo value")
 
-      (testing "The value is unchanged in the backup cache"
-        (is (= "foo value" (c/get-value backup-cache :foo))))
+      (testing "The value is unchanged in the primary cache"
+        (is (= "foo value" (c/get-value primary-cache :foo))))
 
       (testing "Value is retrieved from the primary cache when present in both"
-        (is (= "new foo value" (c/get-value fallback-cache :foo)))))
+        (is (= "foo value" (c/get-value fallback-cache :foo)))))
 
     (testing "Add a value to the backup cache"
       (c/set-value backup-cache :alpha "alpha value")
@@ -47,7 +47,16 @@
       (is (nil? (c/get-value fallback-cache :beta)))
 
       (testing "Key with nil value is not added to the cache"
-        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache)))))
+        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache)))
+
+    (testing "Add a value to the fallback cache"
+      (c/set-value fallback-cache :omega "The last test")
+
+      (testing "The value is added to the primary cache"
+        (is (= "The last test" (c/get-value primary-cache :omega))))
+
+      (testing "The value is added to the backup cache"
+        (is (= "The last test" (c/get-value backup-cache :omega)))))))
 
 (defn- clear-cache-test
   "Tests that clear cache on the fallback cache clears both primary and backup stores."

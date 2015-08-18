@@ -18,6 +18,8 @@
   {:type "string"
    ;; Stored so we can retrieve the value
    :store "yes"
+   ;; Do not index the field, otherwise strings are limited to 32KB. The theoretical max size for
+   ;; a field that is not indexed is 2GB.
    :index "no"})
 
 (def type-name
