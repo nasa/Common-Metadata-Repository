@@ -22,8 +22,9 @@
 
   ## Downsides and Caveats:
 
-  For most use cases only a single store is required with the fallback being to use a provided
-  lookup function to obtain the value. This cache should only be used when a secondary store is
+
+  For most use cases only a single store is required with the fallback being a lookup function
+  provided to obtain the value. This cache should only be used when a secondary store is
   needed rather than just a lookup function."
   (:require [cmr.common.cache :as c]
             [clojure.set :as set]))
