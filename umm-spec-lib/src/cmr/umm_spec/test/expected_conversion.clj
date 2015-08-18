@@ -4,6 +4,14 @@
   can be lossy if some fields are not supported by that format"
   (:require [cmr.umm-spec.models.common :as cmn]))
 
+(defmulti convert-internal
+  (fn [umm-coll metadata-format]
+    metadata-format))
+
+(defmethod convert-internal :default
+  [umm-coll _]
+  umm-coll)
+
 ;;; Utililty Functions
 
 (defn update-in-each
@@ -37,6 +45,8 @@
   (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2)))
 
 (defn split-temporals
+  "Returns a seq of temporal extents with a new extent for each value under key
+  k (e.g. :RangeDateTime) in each source temporal extent."
   [k temporal-extents]
   (reduce (fn [result extent]
             (if-let [values (get extent k)]
@@ -50,23 +60,8 @@
 
 ;; ECHO 10
 
-(def not-implemented-fields
-  "This is a list of required but not implemented fields."
-  #{:DataLineage :MetadataStandard :Platform :ProcessingLevel :RelatedUrl
-    :ResponsibleOrganization :ScienceKeyword :SpatialExtent})
-
-(defn- dissoc-not-implemented-fields
-  "Removes not implemented fields since they can't be used for comparison"
-  [record]
-  (reduce (fn [r field]
-            (assoc r field nil))
-          record
-          not-implemented-fields))
-
-
-(defn- expected-echo10
-  "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
-  [umm-coll]
+(defmethod convert-internal :echo10
+  [umm-coll _]
   ;; ECHO10 returns entry id as a combination of short name and version. It generates short name
   ;; from entry id. So the expected entry id when going from umm->echo10->umm is the original
   ;; entry id concatenated with the version id.
@@ -95,9 +90,8 @@
        ;; Then make sure we get the right record type out.
        (map cmn/map->TemporalExtentType)))
 
-(defn expected-dif
-  "Returns a UMM record with only features supported by DIF 9."
-  [umm-coll]
+(defmethod convert-internal :dif
+  [umm-coll _]
   (update-in umm-coll [:TemporalExtent] dif-temporal))
 
 ;; ISO 19115-2
@@ -111,26 +105,33 @@
        (split-temporals :SingleDateTime)
        (map cmn/map->TemporalExtentType)))
 
-(defn expected-iso-19115-2
-  [iso-coll]
-  (update-in iso-coll [:TemporalExtent] expected-iso-19115-2-temporal))
+(defmethod convert-internal :iso19115
+  [umm-coll _]
+  (update-in umm-coll [:TemporalExtent] expected-iso-19115-2-temporal))
 
-;;; Conversion Lookup By Format
+(defmethod convert-internal :iso-smap
+  [umm-coll _]
+  (convert-internal umm-coll :iso19115))
 
-(def ^:private formats->expected-conversion-fns
-  "A map of metadata formats to expected conversion functions"
-  {:echo10   expected-echo10
-   :iso19115 expected-iso-19115-2
-   :iso-smap expected-iso-19115-2
-   :dif      expected-dif})
+;;; Unimplemented Fields
+
+(def not-implemented-fields
+  "This is a list of required but not implemented fields."
+  #{:DataLineage :MetadataStandard :Platform :ProcessingLevel :RelatedUrl
+    :ResponsibleOrganization :ScienceKeyword :SpatialExtent})
+
+(defn- dissoc-not-implemented-fields
+  "Removes not implemented fields since they can't be used for comparison"
+  [record]
+  (reduce (fn [r field]
+            (assoc r field nil))
+          record
+          not-implemented-fields))
 
 ;;; Public API
 
 (defn convert
-  "Returns input-record transformed according to the specified
-  transformation for metadata-format."
-  [input-record metadata-format]
-  (let [f (get formats->expected-conversion-fns
-               metadata-format
-               identity)]
-    (dissoc-not-implemented-fields (f input-record))))
+  "Returns input UMM-C record transformed according to the specified transformation for
+  metadata-format."
+  [umm-coll metadata-format]
+  (dissoc-not-implemented-fields (convert-internal umm-coll metadata-format)))
