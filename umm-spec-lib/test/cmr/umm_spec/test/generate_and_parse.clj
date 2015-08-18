@@ -59,6 +59,7 @@
   (are2 [metadata-format]
     (= (expected-conversion/convert example-record metadata-format)
        (xml-round-trip example-record metadata-format))
+    
     "echo10"
     :echo10
 
@@ -68,7 +69,6 @@
     "dif10"
     :dif10
 
-    ;; TODO
     "iso-smap"
     :iso-smap
 

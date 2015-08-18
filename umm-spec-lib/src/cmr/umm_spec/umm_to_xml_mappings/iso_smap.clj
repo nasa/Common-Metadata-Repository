@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
-  (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
+  (:require [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+            [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"
@@ -49,8 +50,22 @@
            [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"}]
-       [:gmd:language (char-string "eng")]]]
-
+       [:gmd:language (char-string "eng")]
+       [:gmd:extent
+        [:gmd:EX_Extent
+         (for-each "/TemporalExtent/RangeDateTime"
+           [:gmd:temporalElement
+            [:gmd:EX_TemporalExtent
+             [:gmd:extent
+              [:gml:TimePeriod {:gml:id gen-id}
+               [:gml:beginPosition (xpath "BeginningDateTime")]
+               [:gml:endPosition (xpath "EndingDateTime")]]]]])
+         (for-each "/TemporalExtent/SingleDateTime"
+           [:gmd:temporalElement
+            [:gmd:EX_TemporalExtent
+             [:gmd:extent
+              [:gml:TimeInstant {:gml:id gen-id}
+               [:gml:timePosition (xpath ".")]]]]])]]]]
      [:gmd:identificationInfo
       [:gmd:MD_DataIdentification
        [:gmd:citation

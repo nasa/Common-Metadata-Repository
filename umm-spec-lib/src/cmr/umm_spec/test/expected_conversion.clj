@@ -105,7 +105,9 @@
   "A map of metadata formats to expected conversion functions"
   {:echo10   expected-echo10
    :dif      expected-dif
-   :iso19115 expected-iso-19115-2})
+   :iso19115 expected-iso-19115-2
+   ;; We will just borrow 19115-2 for now.
+   :iso-smap expected-iso-19115-2})
 
 (defn- metadata-format->expected-conversion
   "Takes a metadata format and returns the function that can convert the UMM record used as input

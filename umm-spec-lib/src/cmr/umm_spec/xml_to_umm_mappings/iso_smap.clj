@@ -29,9 +29,20 @@
               "/gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetIdentifier"
               "/gmd:MD_Identifier/gmd:code/gco:CharacterString")))
 
+(def temporal-extent-xpath-str
+  (str metadata-base-xpath
+       "/gmd:identificationInfo/gmd:MD_DataIdentification"
+       "/gmd:extent/gmd:EX_Extent"
+       "/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+
 (def iso-smap-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
     (object {:EntryId (object {:Id entry-id-xpath})
              :EntryTitle entry-title-xpath
-             :Abstract abstract-xpath})))
+             :Abstract abstract-xpath
+             :TemporalExtent (for-each temporal-extent-xpath-str
+                               (object {:RangeDateTime (for-each "gml:TimePeriod"
+                                                         (object {:BeginningDateTime (xpath "gml:beginPosition")
+                                                                  :EndingDateTime    (xpath "gml:endPosition")}))
+                                        :SingleDateTime (select "gml:TimeInstant/gml:timePosition")}))})))
