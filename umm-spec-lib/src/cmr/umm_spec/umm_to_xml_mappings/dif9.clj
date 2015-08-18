@@ -28,7 +28,7 @@
              [:Temporal_Coverage
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
-   ;; TODO determine if PeriodicDateTime needs to be supported
+   ;; TODO (CMR-1933) determine if PeriodicDateTime is supported for DIF
    [:Data_Center
     [:Data_Center_Name
      [:Short_Name "datacenter_short_name"]

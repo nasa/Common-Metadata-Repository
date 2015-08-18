@@ -14,6 +14,9 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+
+   ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
+   ;; address questions about temporal mappings.
    (for-each "/TemporalExtent[1]"
      [:Temporal
       [:TemporalRangeType (xpath "TemporalRangeType")]
