@@ -34,4 +34,6 @@
          [:DurationUnit (xpath "DurationUnit")]
          [:DurationValue (xpath "DurationValue")]
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])])
+         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
+   ])
+
