@@ -60,7 +60,7 @@
              (is (= exp-status status))
              (is (= (set exp-errors) (set errors))))
 
-      "missing prodver-id"
+      "missing provider-id"
       400
       ["Provider_id and entry_title are required parameters."]
       nil
@@ -78,7 +78,7 @@
       nil
       nil
 
-      "bad provider id"
+      "bad provider-id"
       400
       ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
       "FOO"
