@@ -78,7 +78,7 @@
       nil
       nil
 
-      "bad provider-id"
+      "invalid provider-id"
       400
       ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
       "FOO"
