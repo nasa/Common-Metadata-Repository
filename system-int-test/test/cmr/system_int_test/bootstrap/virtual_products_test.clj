@@ -29,8 +29,8 @@
   []
   (index/wait-until-indexed)
   (doseq [[provider-id entry-title] (keys vp-config/source-to-virtual-product-config)]
-    (bootstrap/bootstrap-virtual-products provider-id entry-title)
-    (index/wait-until-indexed)))
+    (bootstrap/bootstrap-virtual-products provider-id entry-title))
+  (index/wait-until-indexed))
 
 (defn fixture
   [f]
@@ -62,19 +62,19 @@
 
       "missing provider-id"
       400
-      ["Provider_id and entry_title are required parameters."]
+      ["provider-id and entry-title are required parameters."]
       nil
       "et1"
 
       "missing entry-id"
       400
-      ["Provider_id and entry_title are required parameters."]
+      ["provider-id and entry-title are required parameters."]
       "PROV1"
       nil
 
       "missing both"
       400
-      ["Provider_id and entry_title are required parameters."]
+      ["provider-id and entry-title are required parameters."]
       nil
       nil
 

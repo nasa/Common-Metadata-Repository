@@ -118,15 +118,16 @@
     (when-not (and provider-id entry-title)
       (srv-errors/throw-service-error
         :bad-request
-        "Provider_id and entry_title are required parameters."))
+        "provider-id and entry-title are required parameters."))
     (when-not (vp-config/source-to-virtual-product-config [provider-id entry-title])
       (srv-errors/throw-service-error
         :not-found
         (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
                 provider-id
                 entry-title)))
-    (info "Bootstrapping virtual products for provider [" provider-id
-          "] entry-title [" entry-title)
+    (info (format "Bootstrapping virtual products for provider [%s] entry-title [%s]"
+                  provider-id
+                  entry-title))
     (bs/bootstrap-virtual-products context (= "true" (:synchronous params)) provider-id entry-title)
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
