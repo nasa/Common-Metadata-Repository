@@ -64,15 +64,16 @@
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
-   (let [{:keys [token client-id]
+   (let [{:keys [token client-id user-id]
           format-key :format} (merge {:format :echo10
                                       :token nil
                                       :allow-failure? false
-                                      :client-id nil}
+                                      :client-id nil
+                                      :user-id nil}
                                      options)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token :client-id client-id})
+                    {:token token :client-id client-id :user-id user-id})
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -85,6 +86,7 @@
        (assoc item
               :status status
               :provider-id provider-id
+              :user-id user-id
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
               :format-key format-key)

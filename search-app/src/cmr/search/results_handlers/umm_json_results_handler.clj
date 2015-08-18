@@ -12,6 +12,7 @@
   [concept-type query]
   ["concept-id"
    "native-id"
+   "user-id"
    "provider-id"
    "entry-title"
    "entry-id"
@@ -25,6 +26,7 @@
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
+         [user-id] :user-id
          [provider-id] :provider-id
          [entry-title] :entry-title
          [entry-id] :entry-id
@@ -35,14 +37,16 @@
          [metadata-format] :metadata-format} (:fields elastic-result)
         revision-date (when revision-date (str/replace (str revision-date) #"\+0000" "Z"))
         revision-id (:_version elastic-result)]
-    {:meta {:concept-type :collection
-            :concept-id concept-id
-            :revision-id revision-id
-            :native-id native-id
-            :provider-id provider-id
-            :format (mt/format->mime-type (keyword metadata-format))
-            :revision-date revision-date
-            :deleted deleted}
+    {:meta (util/remove-nil-keys
+             {:concept-type :collection
+              :concept-id concept-id
+              :revision-id revision-id
+              :native-id native-id
+              :user-id user-id
+              :provider-id provider-id
+              :format (mt/format->mime-type (keyword metadata-format))
+              :revision-date revision-date
+              :deleted deleted})
      :umm {:entry-title entry-title
            :entry-id entry-id
            :short-name short-name
