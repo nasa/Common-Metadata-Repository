@@ -121,7 +121,7 @@
         "Provider_id and entry_title are required parameters."))
     (when-not (vp-config/source-to-virtual-product-config [provider-id entry-title])
       (srv-errors/throw-service-error
-        :bad-request
+        :not-found
         (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
                 provider-id
                 entry-title)))

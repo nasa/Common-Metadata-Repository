@@ -79,13 +79,13 @@
       nil
 
       "invalid provider-id"
-      400
+      404
       ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
       "FOO"
       "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
 
       "invalid entry-id"
-      400
+      404
       ["No virtual product configuration found for provider [LPDAAC_ECS] and entry-title [BAR]"]
       "LPDAAC_ECS"
       "BAR")))
