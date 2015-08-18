@@ -74,12 +74,14 @@
   [concepts params]
   (let [exclude-metadata? (= "true" (:exclude-metadata params))
         map-fn (fn [concept]
-                 (dissoc (if (and (= :granule (:concept-type concept))
-                                  (nil? (get-in concept [:extra-fields :granule-ur])))
-                           (assoc-in concept [:extra-fields :granule-ur]
-                                     (:native-id concept))
-                           concept)
-                         (when exclude-metadata? :metadata)))]
+                 (let [concept (if (and (= :granule (:concept-type concept))
+                                        (nil? (get-in concept [:extra-fields :granule-ur])))
+                                 (assoc-in concept [:extra-fields :granule-ur]
+                                           (:native-id concept))
+                                 concept)]
+                   (if exclude-metadata?
+                     (dissoc concept :metadata)
+                     concept)))]
     (map map-fn concepts)))
 
 (defrecord MemoryDB

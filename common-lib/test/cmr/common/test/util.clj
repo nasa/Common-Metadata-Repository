@@ -295,7 +295,7 @@
     {:a 1 :b 2}
     {[:a] 1 [:b] 2}
 
-    "Nested map"
+    "Nested map, paths into vectors aren't currently supported."
     {:a {:b "B"
          :c "C"}
      :b {:d "D"}
