@@ -4,7 +4,9 @@
   can be lossy if some fields are not supported by that format"
   (:require [cmr.umm-spec.models.common :as cmn]))
 
-(defmulti convert-internal
+(defmulti ^:private convert-internal
+  "Returns UMM collection that would be expected when converting the source UMM-C record into the
+  destination XML format and parsing it back to a UMM-C record."
   (fn [umm-coll metadata-format]
     metadata-format))
 
