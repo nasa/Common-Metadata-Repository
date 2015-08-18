@@ -12,6 +12,7 @@
             [cmr.common.util :refer [are2]]))
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
+                                                 {:provider-id "REG_PROV1" :small false}
                                                  {:provider-id "SMAL_PROV1" :small true}
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
@@ -124,6 +125,12 @@
                                                               :entry-title "et2"
                                                               :version-id "v2"
                                                               :short-name "s2"}})
+        coll5-1 (save-collection "REG_PROV" 5 {:extra-fields {:entry-id "entry-5"
+                                                              :entry-title "et5"
+                                                              :version-id "v55"
+                                                              :short-name "s5"}})
+        _ (util/delete-concept (:concept-id coll5-1))
+        coll5-2 (assoc coll5-1 :deleted true :revision-id 2 :metadata "" :user-id nil)
         coll3 (save-collection "SMAL_PROV1" 3 {:extra-fields {:entry-id "entry-3"
                                                               :entry-title "et3"
                                                               :version-id "v3"
@@ -139,7 +146,17 @@
         coll4-3 (save-collection "SMAL_PROV2" 4 {:extra-fields {:entry-id "entry-1"
                                                                 :entry-title "et1"
                                                                 :version-id "v5"
-                                                                :short-name "s4"}})]
+                                                                :short-name "s4"}})
+        coll6-1 (save-collection "SMAL_PROV1" 6 {:extra-fields {:entry-id "entry-6"
+                                                                :entry-title "et6"
+                                                                :version-id "v6"
+                                                                :short-name "s6"}})
+        _ (util/delete-concept (:concept-id coll6-1))
+        coll6-2 (assoc coll6-1 :deleted true :revision-id 2 :metadata "" :user-id nil)
+        coll7 (save-collection "REG_PROV1" 1 {:extra-fields {:entry-id "entry-7"
+                                                             :entry-title "et7"
+                                                             :version-id "v7"
+                                                             :short-name "s7"}})]
     (testing "find-with-parameters"
       (are2 [collections params]
             (= (set collections)
@@ -147,10 +164,13 @@
                         :concepts
                         concepts-for-comparison)))
             "regular provider - provider-id"
-            [coll1 coll2-2] {:provider-id "REG_PROV" :latest true}
+            [coll1 coll2-2 coll5-2] {:provider-id "REG_PROV" :latest true}
+
+            "small provider with tombstones - provider-id"
+            [coll3 coll6-2] {:provider-id "SMAL_PROV1"  :latest true}
 
             "small provider - provider-id"
-            [coll3] {:provider-id "SMAL_PROV1"  :latest true}
+            [coll4-3] {:provider-id "SMAL_PROV2"  :latest true}
 
             "regular provider - provider-id, entry-title"
             [coll1] {:provider-id "REG_PROV" :entry-title "et1"  :latest true}
@@ -182,10 +202,12 @@
             [coll1 coll4-3] {:entry-title "et1" :latest true}
 
             "exclude-metadata=true"
-            [(dissoc coll3 :metadata)] {:provider-id "SMAL_PROV1" :exclude-metadata "true" :latest true}
+            [(dissoc coll3 :metadata)]
+            {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "true" :latest true}
 
             "exclude-metadata=false"
-            [coll3] {:provider-id "SMAL_PROV1" :exclude-metadata "false" :latest true}
+            [coll3]
+            {:provider-id "SMAL_PROV1" :entry-id "entry-3" :exclude-metadata "false" :latest true}
 
             "regular provider - concept-id"
             [coll1] {:concept-id (:concept-id coll1) :latest true}

@@ -165,7 +165,7 @@
   (find-latest-concepts
     [db provider params]
     {:pre [(:concept-type params)]}
-    ;; First we find all revisions of the conceps that have at least one revision that matches the
+    ;; First we find all revisions of the concepts that have at least one revision that matches the
     ;; search parameters. Then we find the latest revisions of those concepts and match with the
     ;; search parameters again in memory to find what we are looking for.
     (let [concept-type (:concept-type params)

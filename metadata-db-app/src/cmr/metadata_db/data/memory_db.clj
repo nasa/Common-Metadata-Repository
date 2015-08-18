@@ -69,6 +69,19 @@
        (map (partial sort-by :revision-id)
             (vals (group-by :concept-id concepts)))))
 
+(defn- concepts->find-result
+  "Returns the given concepts in the proper find result format based on the find params."
+  [concepts params]
+  (let [exclude-metadata? (= "true" (:exclude-metadata params))
+        map-fn (fn [concept]
+                 (dissoc (if (and (= :granule (:concept-type concept))
+                                  (nil? (get-in concept [:extra-fields :granule-ur])))
+                           (assoc-in concept [:extra-fields :granule-ur]
+                                     (:native-id concept))
+                           concept)
+                         (when exclude-metadata? :metadata)))]
+    (map map-fn concepts)))
+
 (defrecord MemoryDB
   [
    ;; A sequence of concepts stored in metadata db
@@ -95,15 +108,17 @@
 
   (find-concepts
     [db providers params]
-    (mapcat #(concepts/search-with-params @concepts-atom
-                                          (assoc params :provider-id (:provider-id %)))
-            providers))
+    (let [found-concepts (mapcat #(concepts/search-with-params @concepts-atom
+                                                               (assoc params :provider-id (:provider-id %)))
+                                 providers)]
+      (concepts->find-result found-concepts params)))
 
   (find-latest-concepts
     [db provider params]
-    (let [latest-concepts (latest-revisions @concepts-atom)]
-      (concepts/search-with-params latest-concepts
-                                   (assoc params :provider-id (:provider-id provider)))))
+    (let [latest-concepts (latest-revisions @concepts-atom)
+          found-concepts (concepts/search-with-params latest-concepts
+                                                      (assoc params :provider-id (:provider-id provider)))]
+      (concepts->find-result found-concepts params)))
 
   concepts/ConceptsStore
 

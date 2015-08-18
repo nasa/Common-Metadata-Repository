@@ -94,31 +94,12 @@
   "Returns the concepts within the given concepts that matches the search params."
   [concepts params]
   (let [{:keys [provider-id concept-type concept-id native-id]} params
-        exclude-metadata? (= "true" (:exclude-metadata params))
         extra-field-params (dissoc params :concept-type :provider-id :native-id
-                                   :concept-id :exclude-metadata)]
-    (keep (fn [{extra-fields :extra-fields
-                ct :concept-type
-                pid :provider-id
-                cid :concept-id
-                nid :native-id :as concept}]
-            (let [query-map (util/remove-nil-keys {:concept-id concept-id
-                                                   :concept-type concept-type
-                                                   :provider-id provider-id
-                                                   :native-id native-id
-                                                   :extra-fields extra-field-params})
-                  full-concept-map {:concept-type ct
-                                    :concept-id cid
-                                    :provider-id pid
-                                    :native-id nid
-                                    :extra-fields (select-keys extra-fields
-                                                               (keys extra-field-params))}
-                  concept-map (select-keys full-concept-map (keys query-map))]
-              (when (= query-map concept-map)
-                (dissoc (if (and (= :granule concept-type)
-                                 (nil? (get-in concept [:extra-fields :granule-ur])))
-                          (assoc-in concept [:extra-fields :granule-ur]
-                                    (:native-id concept))
-                          concept)
-                        (when exclude-metadata? :metadata)))))
-          concepts)))
+                                   :concept-id :exclude-metadata)
+        query-map (util/remove-nil-keys {:concept-id concept-id
+                                         :concept-type concept-type
+                                         :provider-id provider-id
+                                         :native-id native-id
+                                         :extra-fields extra-field-params})]
+    (util/filter-matching-maps query-map concepts)))
+
