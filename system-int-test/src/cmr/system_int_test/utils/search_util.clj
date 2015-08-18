@@ -464,6 +464,16 @@
   [concept-type conditions]
   (find-refs-with-aql-string (aql/generate-aql concept-type {} conditions) {} ""))
 
+(defn find-concepts-with-param-string
+  "Returns the concepts by searching with the given parameters string. This is used to execute
+  complicated parameter searches where using param map is confusing and less straightforward
+  (e.g. for invalid parameter validation)."
+  [concept-type param-str]
+  (let [url (str (url/search-url concept-type) "?" param-str)]
+    (get-search-failure-xml-data
+      (parse-reference-response false
+                                (client/get url {:connection-manager (s/conn-mgr)})))))
+
 (defn get-concept-by-concept-id
   "Returns the concept metadata by searching metadata-db using the given cmr concept id"
   ([concept-id]

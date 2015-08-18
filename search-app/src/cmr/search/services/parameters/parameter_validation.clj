@@ -462,9 +462,11 @@
     (let [invalid-exclude-params (set/difference (set (keys exclude-kv)) exclude-params)]
       (if (empty? invalid-exclude-params)
         (let [exclude-values (flatten (vals exclude-kv))]
-          (if (some #(.startsWith % "C") exclude-values)
-            [(str "Exclude collection is not supported, " exclude-kv)]
-            []))
+          (if (every? #(= java.lang.String (type %)) exclude-values)
+            (if (some #(.startsWith % "C") exclude-values)
+              [(str "Exclude collection is not supported, " exclude-kv)]
+              [])
+            ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"]))
         [(msg/invalid-exclude-param-msg invalid-exclude-params)]))
     []))
 
