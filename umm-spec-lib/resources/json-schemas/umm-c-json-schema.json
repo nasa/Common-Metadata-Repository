@@ -237,11 +237,6 @@
       "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
       "type": "string",
       "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "OTHER"]
-    },
-    "PlatformType": {
-      "type": "object",
-      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc. This platform includes zero or more instruments",
-      "properties": {}
     }
   },
   "title": "UMM-C",
@@ -445,20 +440,7 @@
       "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
       "type": "array",
       "items": {
-        "allOf": [{
-          "$ref": "umm-cmn-json-schema.json#/definitions/PlatformType"
-        }, {
-          "properties": {
-            "Instruments": {
-              "type": "array",
-              "items": {
-                "$ref": "umm-cmn-json-schema.json#/definitions/InstrumentType"
-              },
-              "minItems": 1
-            }
-          },
-          "required": ["Instruments"]
-        }]
+        "$ref": "umm-cmn-json-schema.json#/definitions/PlatformType"
       },
       "minItems": 1
     },

@@ -18,7 +18,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"
                                            "provguid3" "PROV3" "provguid4" "PROV4"}
-                                          false))
+                                          {:grant-all-search? false}))
 
 (comment
   (dev-sys-util/reset)

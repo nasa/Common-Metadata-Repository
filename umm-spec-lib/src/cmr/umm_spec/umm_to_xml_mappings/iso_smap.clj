@@ -49,7 +49,7 @@
            [:gmd:code (char-string-from "/EntryId/Id")]
            [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
-       [:gmd:purpose {:gco:nilReason "missing"}]
+       [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
        [:gmd:language (char-string "eng")]
        [:gmd:extent
         [:gmd:EX_Extent
@@ -78,7 +78,9 @@
          [:gmd:aggregateDataSetIdentifier
           [:gmd:MD_Identifier
            [:gmd:code (char-string-from "/EntryTitle")]]]
-         [:gmd:associationType]]]
+         [:gmd:associationType
+          [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                        :codeListValue "largerWorkCitation"}
+           "largerWorkCitation"]]]]
        [:gmd:language (char-string "eng")]]]]]])
-
 

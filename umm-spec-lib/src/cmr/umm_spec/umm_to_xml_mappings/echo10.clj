@@ -13,6 +13,7 @@
    [:Description (xpath "/Abstract")]
    [:Orderable "true"]
    [:Visible "true"]
+   [:SuggestedUsage (xpath "/Purpose")]
    (for-each "/TemporalExtent[1]"
      [:Temporal
       [:TemporalRangeType (xpath "TemporalRangeType")]
@@ -34,4 +35,3 @@
          [:DurationValue (xpath "DurationValue")]
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
          [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])])
-

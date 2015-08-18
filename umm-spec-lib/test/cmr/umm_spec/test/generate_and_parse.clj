@@ -12,9 +12,24 @@
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
-   {:EntryTitle "The entry title V5"
+   {:DataLineage [(umm-cmn/map->LineageType
+                   {:Scope "METADATA"})]
+    :MetadataStandard (umm-cmn/map->MetadataStandardType
+                       {:Name "UMM"
+                        :Version "1.0"})
+    :Platform [(umm-cmn/map->PlatformType
+                {:ShortName "Platform"
+                 :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+    :RelatedUrl [(umm-cmn/map->RelatedUrlType {:URL ["http://google.com"]})]
+    :ResponsibleOrganization [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                :Party (umm-cmn/map->PartyType {})})]
+    :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+    :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
+    
     :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-    :Abstract "Abstract description"
+    :EntryTitle "The entry title V5"
+    :Abstract "A very abstract collection"
     :TemporalExtent [(umm-cmn/map->TemporalExtentType
                       {:TemporalRangeType "temp range"
                        :PrecisionOfSeconds 3
@@ -79,15 +94,8 @@
   (testing "valid XML is generated for each format"
     (are [fmt]
         (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
-      ;; TODO fix the invalid ECHO10 XML
       :echo10
       :dif
       :dif10
       :iso-smap
       :iso19115)))
-
-(comment
-  (->> example-record
-       (core/generate-metadata :collection :dif)
-       (core/parse-metadata :collection :dif))
-  )

@@ -77,6 +77,7 @@
   "Submaps by concept type of the sort key fields given by the user to the exact elastic sort field to use.
   If a sort key is not in this map it means that it can be used directly with elastic."
   {:collection {:entry-title :entry-title.lowercase
+                :entry-id :entry-id.lowercase
                 :provider :provider-id.lowercase
                 :platform :platform-sn.lowercase
                 :instrument :instrument-sn.lowercase

@@ -4,7 +4,6 @@
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
-            [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.template :as template]
@@ -163,11 +162,19 @@
   [record-type]
   `(map keyword  ( ~(symbol (str record-type "/getBasis")))))
 
+(defn remove-map-keys
+  "Removes all keys from a map where the provided function returns true for the value of that key.
+  The supplied function must take a single value as an argument."
+  [f m]
+  (apply dissoc m (for [[k v] m
+                        :when (f v)]
+                    k)))
+
 (defn remove-nil-keys
-  "Removes keys mapping to nil values in a map.
-  From http://stackoverflow.com/questions/3937661/remove-nil-values-from-a-map"
+  "Removes keys mapping to nil values in a map."
   [m]
-  (apply dissoc m (for [[k v] m :when (nil? v)] k)))
+  (remove-map-keys (partial nil?) m))
+
 
 (defn map-keys [f m]
   "Maps f over the keys in map m and updates all keys with the result of f.

@@ -2,7 +2,8 @@
   "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.common.validations.json-schema :as js-validations]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
@@ -10,6 +11,19 @@
 (def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
 (def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
+
+(slurp umm-c-schema-file)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validation
+
+(def ^:private json-schema-for-validation
+  (js-validations/parse-json-schema-from-uri (str umm-c-schema-file)))
+
+(defn validate-umm-json
+  "Validates the UMM JSON and returns a list of errors if invalid."
+  [json-str]
+  (js-validations/validate-json json-schema-for-validation json-str))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.

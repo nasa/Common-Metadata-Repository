@@ -50,6 +50,20 @@
 
 ;; ECHO 10
 
+(def not-implemented-fields
+  "This is a list of required but not implemented fields."
+  #{:DataLineage :MetadataStandard :Platform :ProcessingLevel :RelatedUrl
+    :ResponsibleOrganization :ScienceKeyword :SpatialExtent})
+
+(defn- dissoc-not-implemented-fields
+  "Removes not implemented fields since they can't be used for comparison"
+  [record]
+  (reduce (fn [r field]
+            (assoc r field nil))
+          record
+          not-implemented-fields))
+
+
 (defn- expected-echo10
   "This manipulates the expected parsed UMM record based on lossy conversion in ECHO10."
   [umm-coll]
@@ -106,17 +120,9 @@
 (def ^:private formats->expected-conversion-fns
   "A map of metadata formats to expected conversion functions"
   {:echo10   expected-echo10
-   :dif      expected-dif
    :iso19115 expected-iso-19115-2
-   ;; We will just borrow 19115-2 for now.
-   :iso-smap expected-iso-19115-2})
-
-(defn- metadata-format->expected-conversion
-  "Takes a metadata format and returns the function that can convert the UMM record used as input
-  into the expected parsed UMM."
-  [metadata-format]
-  ;; identity is used if no conversion is needed.
-  (get formats->expected-conversion-fns metadata-format identity))
+   :iso-smap expected-iso-19115-2
+   :dif      expected-dif})
 
 ;;; Public API
 
@@ -124,5 +130,7 @@
   "Returns input-record transformed according to the specified
   transformation for metadata-format."
   [input-record metadata-format]
-  (let [f (metadata-format->expected-conversion metadata-format)]
-    (f input-record)))
+  (let [f (get formats->expected-conversion-fns
+               metadata-format
+               identity)]
+    (dissoc-not-implemented-fields (f input-record))))

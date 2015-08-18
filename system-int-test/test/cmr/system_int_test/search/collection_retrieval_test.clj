@@ -12,7 +12,8 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.mime-types :as mt]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"} false))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
+                                          {:grant-all-search? false}))
 
 (comment
   (dev-sys-util/reset)

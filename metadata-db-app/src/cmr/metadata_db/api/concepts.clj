@@ -7,6 +7,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [inflections.core :as inf]
             [cheshire.core :as json]
+            [cmr.common.util :as util]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.search-service :as search-service]
             [cmr.common.log :refer (debug info warn error)]))
@@ -67,13 +68,13 @@
      :body (json/generate-string concepts)
      :headers rh/json-header}))
 
-(defn- save-concept
+(defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
   (let [concept (-> concept
                     clojure.walk/keywordize-keys
                     (update-in [:concept-type] keyword))
-        {:keys [concept-id revision-id]} (concept-service/save-concept context concept)]
+        {:keys [concept-id revision-id]} (concept-service/save-concept-revision context concept)]
     {:status 201
      :body (json/generate-string {:revision-id revision-id :concept-id concept-id})
      :headers rh/json-header}))
@@ -81,9 +82,12 @@
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
   [context params concept-id revision-id]
-  (let [{:keys [revision-id]} (concept-service/delete-concept
-                                context concept-id (as-int revision-id) (:revision-date params))]
-    {:status 200
+  (let [{:keys [revision-id]} (concept-service/save-concept-revision
+                                context {:concept-id concept-id
+                                         :revision-id (as-int revision-id)
+                                         :revision-date (:revision-date params)
+                                         :deleted true})]
+    {:status 201
      :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))
 
@@ -128,7 +132,7 @@
 
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
-        (save-concept request-context params body))
+        (save-concept-revision request-context params body))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                            request-context :request-context}

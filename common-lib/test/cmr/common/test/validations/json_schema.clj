@@ -10,7 +10,7 @@
 
 (def sample-json-schema
   "Schema to test validation against"
-  (js/parse-json-schema
+  (js/parse-json-schema-from-string
     (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                            "title" "The title"
                            "description" "A description"
@@ -36,10 +36,8 @@
 
   (testing "Validation failures"
     (u/are2 [invalid-json errors]
-            (tu/assert-exception-thrown-with-errors
-              :bad-request
-              errors
-              (js/validate-json sample-json-schema (json/generate-string invalid-json)))
+            (= errors
+               (js/validate-json sample-json-schema (json/generate-string invalid-json)))
 
             "Missing required property"
             {"alpha" "omega"}
@@ -74,7 +72,7 @@
           InvalidSchemaException
           #"value has incorrect type \(found array, expected one of \[string\]\)"
           (js/validate-json
-            (js/parse-json-schema
+            (js/parse-json-schema-from-string
               (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
                                      "title" "The title"
                                      "description" ["A description" "B description"]}))

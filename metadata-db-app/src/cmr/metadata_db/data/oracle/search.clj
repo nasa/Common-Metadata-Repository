@@ -45,7 +45,8 @@
   [concpet-type params]
   (let [exclude-metadata? (= "true" (:exclude-metadata params))
         all-fields #{:native_id :provider_id :concept_id :revision_date :revision_id :metadata
-                     :deleted :format :entry_title :entry_id :short_name :version_id :delete_time}]
+                     :deleted :format :entry_title :entry_id :short_name :version_id :delete_time
+                     :user-id}]
     (disj all-fields (when exclude-metadata? :metadata))))
 
 (defn- params->sql-params

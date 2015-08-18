@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-ingest-test
   "CMR collection ingest integration tests"
   (:require [clojure.test :refer :all]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.index-util :as index]
             [ring.util.io :as io]
@@ -10,9 +11,12 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.mock-echo.client.echo-util :as e]
             [clj-time.core :as t]
+            [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (debug info warn error)]
+            [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
@@ -29,14 +33,68 @@
     (let [concept (dc/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a concept with a revision id"
     (let [concept (dc/collection-concept {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (= 5 revision-id))
-      (is (ingest/concept-exists-in-mdb? concept-id 5)))))
+      (is (mdb/concept-exists-in-mdb? concept-id 5)))))
+
+(defn- assert-user-id
+  "Assert concept with the given concept-id and revision-id in metadata db has user id equal to expected-user-id"
+  [concept-id revision-id expected-user-id]
+  (is (= expected-user-id (:user-id (mdb/get-concept concept-id revision-id)))))
+
+;; Verify that user-id is saved from User-Id or token header
+(deftest collection-ingest-user-id-test
+  (testing "ingest of new concept"
+    (util/are2 [ingest-headers expected-user-id]
+               (let [concept (dc/collection-concept {})
+                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-headers)]
+                 (index/wait-until-indexed)
+                 (assert-user-id concept-id revision-id expected-user-id))
+
+               "user id from token"
+               {:token (e/login (s/context) "user1")} "user1"
+
+               "user id from user-id header"
+               {:user-id "user2"} "user2"
+
+               "both user-id and token in the header results in the revision getting user id from user-id header"
+               {:token (e/login (s/context) "user3")
+                :user-id "user4"} "user4"
+
+               "neither user-id nor token in the header"
+               {} nil))
+  (testing "update of existing concept with new user-id"
+    (util/are2 [ingest-header1 expected-user-id1
+                ingest-header2 expected-user-id2
+                ingest-header3 expected-user-id3
+                ingest-header4 expected-user-id4]
+               (let [concept (dc/collection-concept {})
+                     {:keys [concept-id revision-id]} (ingest/ingest-concept concept ingest-header1)]
+                 (ingest/ingest-concept concept ingest-header2)
+                 (ingest/delete-concept concept ingest-header3)
+                 (ingest/ingest-concept concept ingest-header4)
+                 (index/wait-until-indexed)
+                 (assert-user-id concept-id revision-id expected-user-id1)
+                 (assert-user-id concept-id (inc revision-id) expected-user-id2)
+                 (assert-user-id concept-id (inc (inc revision-id)) expected-user-id3)
+                 (assert-user-id concept-id (inc (inc (inc revision-id))) expected-user-id4))
+
+               "user id from token"
+               {:token (e/login (s/context) "user1")} "user1"
+               {:token (e/login (s/context) "user2")} "user2"
+               {:token (e/login (s/context) "user3")} "user3"
+               {:token nil} nil
+
+               "user id from user-id header"
+               {:user-id "user1"} "user1"
+               {:user-id "user2"} "user2"
+               {:user-id "user3"} "user3"
+               {:user-id nil} nil)))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest deletion-of-non-existent-concept-error-message-test
@@ -55,7 +113,7 @@
     (testing "ingest of a new concept with concept-id present"
       (let [{:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (index/wait-until-indexed)
-        (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= [supplied-concept-id 1] [concept-id revision-id]))))
 
     (testing "Update the concept with the concept-id"
@@ -268,7 +326,7 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 5 delete-revision-id))
-      (is (ingest/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
+      (is (mdb/concept-exists-in-mdb? (:concept-id ingest-result) 5)))))
 
 
 (comment
@@ -292,10 +350,10 @@
     (is (= 200 (:status (ingest/delete-concept (d/item->concept coll1 :echo10)))))
     (index/wait-until-indexed)
 
-    (is (:deleted (ingest/get-concept (:concept-id coll1))) "The collection should be deleted")
-    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
+    (is (:deleted (mdb/get-concept (:concept-id coll1))) "The collection should be deleted")
+    (is (not (mdb/concept-exists-in-mdb? (:concept-id gran1) (:revision-id gran1)))
         "Granules in the collection should be deleted")
-    (is (not (ingest/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
+    (is (not (mdb/concept-exists-in-mdb? (:concept-id gran2) (:revision-id gran2)))
         "Granules in the collection should be deleted")
 
     (is (empty? (:refs (search/find-refs :collection {"concept-id" (:concept-id coll1)}))))
@@ -303,8 +361,8 @@
     (is (empty? (:refs (search/find-refs :granule {"concept-id" (:concept-id gran2)}))))
 
 
-    (is (ingest/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
-    (is (ingest/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
+    (is (mdb/concept-exists-in-mdb? (:concept-id coll2) (:revision-id coll2)))
+    (is (mdb/concept-exists-in-mdb? (:concept-id gran3) (:revision-id gran3)))
 
     (is (d/refs-match?
           [coll2]
@@ -323,8 +381,8 @@
     (is (= 7 (:revision-id coll-del2)))
     (index/wait-until-indexed)
     (is (empty? (:refs (search/find-refs :collection {"concept-id" concept-id}))))
-    (is (ingest/concept-exists-in-mdb? concept-id 5))
-    (is (ingest/concept-exists-in-mdb? concept-id 7))))
+    (is (mdb/concept-exists-in-mdb? concept-id 5))
+    (is (mdb/concept-exists-in-mdb? concept-id 7))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
@@ -370,10 +428,10 @@
   (let [crazy-id "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./ ~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?"
         collection (dc/collection-concept {:entry-title crazy-id})
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept collection)
-        ingested-concept (ingest/get-concept concept-id)]
+        ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
     (is (= 200 (:status response)))
-    (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+    (is (mdb/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
     (is (= crazy-id (:native-id ingested-concept)))
 

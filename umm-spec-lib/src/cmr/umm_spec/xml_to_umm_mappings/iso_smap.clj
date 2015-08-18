@@ -15,12 +15,19 @@
               "[gmd:description/gco:CharacterString='The ECS Short Name']"
               "/gmd:code/gco:CharacterString")))
 
+(def short-name-identification-xpath
+  (str metadata-base-xpath
+       "/gmd:identificationInfo/gmd:MD_DataIdentification"
+       "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+       "/gmd:description/gco:CharacterString='The ECS Short Name']"))
+
 (def abstract-xpath
-  (xpath (str metadata-base-xpath
-              "/gmd:identificationInfo/gmd:MD_DataIdentification"
-              "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
-              "/gmd:description/gco:CharacterString='The ECS Short Name']"
+  (xpath (str short-name-identification-xpath
               "/gmd:abstract/gco:CharacterString")))
+
+(def purpose-xpath
+  (xpath (str short-name-identification-xpath
+              "/gmd:purpose/gco:CharacterString")))
 
 (def entry-title-xpath
   (xpath (str metadata-base-xpath
@@ -41,6 +48,7 @@
     (object {:EntryId (object {:Id entry-id-xpath})
              :EntryTitle entry-title-xpath
              :Abstract abstract-xpath
+             :Purpose purpose-xpath
              :TemporalExtent (for-each temporal-extent-xpath-str
                                (object {:RangeDateTime (for-each "gml:TimePeriod"
                                                          (object {:BeginningDateTime (xpath "gml:beginPosition")

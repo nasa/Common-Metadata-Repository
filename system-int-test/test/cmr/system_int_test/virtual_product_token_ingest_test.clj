@@ -12,7 +12,7 @@
             [cmr.common.time-keeper :as tk]
             [clj-time.core :as t]))
 
-(use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} true false))
+(use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} {:grant-all-ingest? false}))
 
 (deftest ingest-with-system-token-test
   (e/grant-group-provider-admin (s/context) "prov-admin-update-group-guid" "LPDAAC_ECS_guid" :update)

@@ -2,6 +2,7 @@
   "CMR granule ingest integration tests"
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
+            [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.search-util :as search]
             [clojure.string :as str]
@@ -41,14 +42,14 @@
     (index/wait-until-indexed)
     ;; Make sure the granules reference the correct collection
     (is (= (:concept-id new-coll)
-           (get-in (ingest/get-concept (:concept-id gran1) (:revision-id gran1))
+           (get-in (mdb/get-concept (:concept-id gran1) (:revision-id gran1))
                    [:extra-fields :parent-collection-id])))
 
     (is (= (:concept-id new-coll)
-           (get-in (ingest/get-concept (:concept-id gran2) (:revision-id gran2))
+           (get-in (mdb/get-concept (:concept-id gran2) (:revision-id gran2))
                    [:extra-fields :parent-collection-id])))
     (is (= (:concept-id new-coll)
-           (get-in (ingest/get-concept (:concept-id gran3) (:revision-id gran3))
+           (get-in (mdb/get-concept (:concept-id gran3) (:revision-id gran3))
                    [:extra-fields :parent-collection-id])))))
 
 ;; Verify a new granule is ingested successfully.
@@ -58,14 +59,14 @@
           granule (d/item->concept (dg/granule collection))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= 1 revision-id))))
   (testing "ingest of a new granule with a revision id"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
           granule (assoc (d/item->concept (dg/granule collection)) :revision-id 5)
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id 5))
+      (is (mdb/concept-exists-in-mdb? concept-id 5))
       (is (= 5 revision-id)))))
 
 ;; Verify a new granule with concept-id is ingested successfully.
@@ -77,7 +78,7 @@
                     (dg/granule collection {:concept-id supplied-concept-id}))
           {:keys [concept-id revision-id]} (ingest/ingest-concept granule)]
       (index/wait-until-indexed)
-      (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
       (is (= supplied-concept-id concept-id))
       (is (= 1 revision-id)))))
 
@@ -178,7 +179,7 @@
           delete-revision-id (:revision-id delete-result)]
       (index/wait-until-indexed)
       (is (= 5 delete-revision-id))
-      (is (ingest/concept-exists-in-mdb? (:concept-id delete-result) 5)))))
+      (is (mdb/concept-exists-in-mdb? (:concept-id delete-result) 5)))))
 
 ;; Verify deleting non-existent concepts returns good error messages
 (deftest delete-non-existing-concept-gives-good-error-message-test
@@ -246,7 +247,7 @@
     (index/wait-until-indexed)
     (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
            [status errors]))
-    (is (not (ingest/concept-exists-in-mdb? "G1-PROV1" 0)))))
+    (is (not (mdb/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
 ;; Verify that granules with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-granule-with-slash-in-native-id-test
@@ -254,10 +255,10 @@
         umm-granule (dg/granule collection {:native-id "Name/With/Slashes"})
         granule (d/item->concept umm-granule)
         {:keys [concept-id revision-id] :as response} (ingest/ingest-concept granule)
-        ingested-concept (ingest/get-concept concept-id)]
+        ingested-concept (mdb/get-concept concept-id)]
     (index/wait-until-indexed)
     (is (= 200 (:status response)))
-    (is (ingest/concept-exists-in-mdb? concept-id revision-id))
+    (is (mdb/concept-exists-in-mdb? concept-id revision-id))
     (is (= 1 revision-id))
     (is (= "Name/With/Slashes" (:native-id ingested-concept)))))
 

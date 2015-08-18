@@ -1,13 +1,11 @@
-(ns cmr.indexer.services.ingest-event-handler
-  "Provides functions related to subscribing to the indexing queue. Creates
-  separate subscriber threads to listen on the indexing queue for index requests
-  with start-queue-message-handler and provides a multi-method, handle-ingest-event,
-  to actually process the messages."
+(ns cmr.indexer.services.event-handler
+  "Provides functions for subscribing to and handling events."
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.indexer.config :as config]
             [cmr.indexer.services.index-service :as indexer]
             [cmr.message-queue.services.queue :as queue]
-            [cmr.common.log :refer (debug info warn error)]))
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.services.errors :as errors]))
 
 (defmulti handle-ingest-event
   "Handle the various actions that can be requested via the indexing queue"
@@ -21,7 +19,7 @@
 
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
-  (indexer/index-concept
+  (indexer/index-concept-by-concept-id-revision-id
     context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 
@@ -31,18 +29,34 @@
     context concept-id revision-id {:ignore-conflict? true
                                     :all-revisions-index? all-revisions-index?}))
 
+(defn handle-deleted-collection-revision-event
+  "Handle the various actions that can be requested via the indexing queue"
+  [context {:keys [concept-id revision-id]}]
+  (indexer/force-delete-collection-revision context concept-id revision-id))
+
+(defmethod handle-ingest-event :concept-revision-delete
+  [context all-revisions-index? {:keys [concept-id revision-id]}]
+  ;; We should never receive a message that's not for the all revisions index
+  (when-not all-revisions-index?
+    (errors/internal-error!
+      (format (str "Received :concept-revision-delete event that wasn't for the all revisions "
+                   "index.  concept-id: %s revision-id: %s")
+              concept-id revision-id)))
+  (indexer/force-delete-collection-revision context concept-id revision-id))
+
 (defmethod handle-ingest-event :provider-delete
   [context _ {:keys [provider-id]}]
   (indexer/delete-provider context provider-id))
 
-(defn subscribe-to-ingest-events
-  "Subscribe to messages on the indexing queue."
+(defn subscribe-to-events
+  "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/queue-listener-count)]
+    (dotimes [n (config/index-queue-listener-count)]
       (queue/subscribe queue-broker
                        (config/index-queue-name)
-                       #(handle-ingest-event context false %))
+                       #(handle-ingest-event context false %)))
+    (dotimes [n (config/all-revisions-index-queue-listener-count)]
       (queue/subscribe queue-broker
                        (config/all-revisions-index-queue-name)
                        #(handle-ingest-event context true %)))))

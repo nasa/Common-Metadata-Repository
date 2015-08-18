@@ -42,8 +42,10 @@
     (object {:EntryId (object {:Id entry-id-xpath})
              :EntryTitle entry-title-xpath
              :Abstract (xpath (make-data-id-xpath "gmd:abstract/gco:CharacterString"))
+             :Purpose (xpath (make-data-id-xpath "/gmd:purpose/gco:CharacterString"))
              :TemporalExtent (for-each (make-temporal-xpath)
                                (object {:RangeDateTime (for-each "gml:TimePeriod"
                                                          (object {:BeginningDateTime (xpath "gml:beginPosition")
                                                                   :EndingDateTime    (xpath "gml:endPosition")}))
-                                        :SingleDateTime (select "gml:TimeInstant/gml:timePosition")}))})))
+                                        :SingleDateTime (select "gml:TimeInstant/gml:timePosition")}))
+             })))

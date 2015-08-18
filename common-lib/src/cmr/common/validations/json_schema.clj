@@ -41,8 +41,6 @@
       (conj (parse-nested-error-report (:reports json-error-report))
             (parse-error-report json-error-report)))))
 
-
-
 (defn- json-string->JsonNode
   "Takes JSON as a string or as EDN and returns a com.fasterxml.jackson.databind.JsonNode. Throws
   an exception if the provided JSON is not valid JSON."
@@ -54,19 +52,27 @@
       (let [message (str/replace (.getMessage e) #"\[Source[^;]+;" "")]
         (errors/throw-service-error :bad-request (str "Invalid JSON: " message))))))
 
-(defn parse-json-schema
+(defn parse-json-schema-from-string
   "Convert a JSON string into a com.github.fge.jsonschema.main.JsonSchema object."
   [json-string]
   (->> json-string
        JsonLoader/fromString
        (.getJsonSchema (JsonSchemaFactory/byDefault))))
 
+(defn parse-json-schema-from-uri
+  "Loads a JSON schema from a URI into a com.github.fge.jsonschema.main.JsonSchema object. It's
+  necessary to use this one if loading a JSON schema from the classpath that references other
+  JSON schemas on the classpath."
+  [uri]
+  (let [factory (JsonSchemaFactory/byDefault)]
+    (.getJsonSchema factory uri)))
+
 (defn validate-json
   "Performs schema validation using the provided JSON schema and the given json string to validate.
   Uses com.github.fge.jsonschema to perform the validation. The JSON schema must be provided as
-  a com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must be a string."
+  a com.github.fge.jsonschema.main.JsonSchema object and the json-to-validate must be a string.
+  Returns a list of the errors found."
   [json-schema json-to-validate]
-  (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))
-        errors (parse-validation-report validation-report)]
-    (when (seq errors)
-      (errors/throw-service-errors :bad-request errors))))
+  (let [validation-report (.validate json-schema (json-string->JsonNode json-to-validate))]
+    (parse-validation-report validation-report)))
+

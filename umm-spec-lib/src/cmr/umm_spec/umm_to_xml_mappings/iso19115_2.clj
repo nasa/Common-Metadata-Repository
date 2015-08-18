@@ -59,7 +59,7 @@
         [:gmd:MD_Identifier
          [:gmd:code (char-string-from "/EntryId/Id")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
-     [:gmd:purpose {:gco:nilReason "missing"}]
+     [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
      [:gmd:language (char-string "eng")]
      [:gmd:extent
       [:gmd:EX_Extent

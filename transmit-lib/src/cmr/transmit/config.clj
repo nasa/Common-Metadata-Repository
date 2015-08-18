@@ -58,6 +58,18 @@
   "The ECHO system token to use for request to ECHO."
   {:default "mock-echo-system-token"})
 
+(defconfig kms-host
+  "The host name to use for connections to GCMD KMS."
+  {:default "localhost"})
+
+(defconfig kms-port
+  "The port to use for connections to GCMD KMS."
+  {:default 2999 :type Long})
+
+(defconfig kms-relative-root-url
+  "The root URL for accessing GCMD KMS resources."
+  {:default "/kms"})
+
 (def default-conn-info
   "The default values for connections."
   {:protocol "http"
@@ -93,7 +105,10 @@
    :echo-rest {:protocol (echo-rest-protocol)
                :host (echo-rest-host)
                :port (echo-rest-port)
-               :context (echo-rest-context)}})
+               :context (echo-rest-context)}
+   :kms {:host (kms-host)
+         :port (kms-port)
+         :context (kms-relative-root-url)}})
 
 (defn app-connection-system-key-name
   "The name of the app connection in the system"

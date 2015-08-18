@@ -22,7 +22,7 @@
   "The maximum number of operations to batch in a single request"
   100)
 
-(defn get-elastic-id
+(defn- get-elastic-id
   "Create the proper elastic document id for normal indexing or all-revisions indexing"
   [concept-id revision-id all-revisions-index?]
   (if (and
@@ -234,42 +234,49 @@
 
 (deftracefn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
-  [context es-index es-type es-doc elastic-id revision-id ttl ignore-conflict]
-  (let [conn (context->conn context)
-        result (try-elastic-operation doc/put conn es-index es-type es-doc elastic-id revision-id ttl)]
-    (if (:error result)
-      (if (= 409 (:status result))
-        (if ignore-conflict
-          (info (str "Ignore conflict: " (str result)))
-          (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
-        (errors/internal-error! (str "Save to Elasticsearch failed " (str result)))))))
+  ([context es-index es-type es-doc concept-id revision-id]
+   (save-document-in-elastic context es-index es-type es-doc concept-id revision-id nil))
+  ([context es-index es-type es-doc concept-id revision-id options]
+   (let [conn (context->conn context)
+         {:keys [ttl ignore-conflict? all-revisions-index?]} options
+         elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+         result (try-elastic-operation doc/put conn es-index es-type es-doc elastic-id revision-id ttl)]
+     (if (:error result)
+       (if (= 409 (:status result))
+         (if ignore-conflict?
+           (info (str "Ignore conflict: " (str result)))
+           (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
+         (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
 (deftracefn get-document
   "Get the document from Elasticsearch, raise error if failed."
-  [context es-index es-type id]
-  (doc/get (context->conn context) es-index es-type id))
+  [context es-index es-type elastic-id]
+  (doc/get (context->conn context) es-index es-type elastic-id))
 
 (deftracefn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
-  [context es-index es-type concept-id revision-id all-revisions-index? ignore-conflict]
-  ;; Cannot use elastisch for deletion as we require special headers on delete
-  (let [{:keys [admin-token]} (context->es-config context)
-        {:keys [uri http-opts]} (context->conn context)
-        elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
-        delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
-                           elastic-id revision-id)
-        response (client/delete delete-url
-                                (merge http-opts
-                                       {:headers {"Authorization" admin-token
-                                                  "Confirm-delete-action" "true"}
-                                        :throw-exceptions false}))
-        status (:status response)]
-    (if-not (some #{200 404} [status])
-      (if (= 409 status)
-        (if ignore-conflict
-          (info (str "Ignore conflict: " (str response)))
-          (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
-        (errors/internal-error! (str "Delete from Elasticsearch failed " (str response)))))))
+  ([context es-index es-type concept-id revision-id]
+   (delete-document context es-index es-type concept-id revision-id nil))
+  ([context es-index es-type concept-id revision-id options]
+   ;; Cannot use elastisch for deletion as we require special headers on delete
+   (let [{:keys [admin-token]} (context->es-config context)
+         {:keys [uri http-opts]} (context->conn context)
+         {:keys [ignore-conflict? all-revisions-index?]} options
+         elastic-id (get-elastic-id concept-id revision-id all-revisions-index?)
+         delete-url (format "%s/%s/%s/%s?version=%s&version_type=external_gte" uri es-index es-type
+                            elastic-id revision-id)
+         response (client/delete delete-url
+                                 (merge http-opts
+                                        {:headers {"Authorization" admin-token
+                                                   "Confirm-delete-action" "true"}
+                                         :throw-exceptions false}))
+         status (:status response)]
+     (if-not (some #{200 404} [status])
+       (if (= 409 status)
+         (if ignore-conflict?
+           (info (str "Ignore conflict: " (str response)))
+           (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
+         (errors/internal-error! (str "Delete from Elasticsearch failed " (str response))))))))
 
 (deftracefn delete-by-query
   "Delete document that match the given query"

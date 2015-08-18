@@ -44,28 +44,30 @@
                                                  (not (dsl-type maybe-attributes)))
                                           [(first content-generators) (rest content-generators)]
                                           [{} content-generators])
-        attributes (realize-attributes attributes)]
-    (x/element
-      tag attributes
-      (map #(generate-content % xpath-context) content-generators))))
+        attributes (realize-attributes attributes)
+        content (mapcat #(generate-content % xpath-context) content-generators)]
+    (when (or (seq attributes) (seq content))
+      [(x/element tag attributes content)])))
 
 (defmethod generate-content :xpath
   [{:keys [value]} xpath-context]
   (some->> (sxp/evaluate xpath-context (sxp/parse-xpath value))
-           :context
-           first
-           str))
+             :context
+             first
+             str
+             vector))
 
 (defmethod generate-content :constant
   [value _]
-  value)
+  [value])
 
 (defmethod generate-content :for-each
   [{:keys [xpath template]} xpath-context]
   (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
     (for [data (:context new-xpath-context)
-          :let [single-item-xpath-context (assoc new-xpath-context :context [data])]]
-      (generate-content template single-item-xpath-context))))
+          :let [single-item-xpath-context (assoc new-xpath-context :context [data])]
+          item (generate-content template single-item-xpath-context)]
+      item)))
 
 (defn generate-xml
   "Generates XML using a root content generator and a source UMM record."

@@ -7,9 +7,13 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as srvc-errors]
             [cmr.common.mime-types :as mt]
+            [cmr.transmit.echo.tokens :as tokens]
+            [cmr.transmit.config :as transmit-config]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.ingest.services.messages :as msg]
+            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.cache :as cache]
             [cmr.ingest.services.providers-cache :as pc])
   (:import clojure.lang.ExceptionInfo))
 
@@ -142,6 +146,29 @@
       (invalid-revision-id-error revision-id))
     concept))
 
+(def user-id-cache-key
+  "The cache key for the token user id cache"
+  :token-user-ids)
+
+(defn create-user-id-cache
+  "Creates cache for user ids associated with tokens"
+  []
+  (mem-cache/create-in-memory-cache
+    :lru
+    {}
+    {:threshold 1000}))
+
+(defn- set-user-id
+  "Associate user id to concept."
+  [concept context headers]
+  (assoc concept :user-id
+         (if-let [user-id (get headers "user-id")]
+           user-id
+           (when-let [token (get headers transmit-config/token-header)]
+             (cache/get-value (cache/context->cache context user-id-cache-key)
+                              token
+                              (partial tokens/get-user-id context token))))))
+
 (defn- set-concept-id
   "Set concept-id and revision-id for the given concept based on the headers. Ignore the
   revision-id if no concept-id header is passed in."
@@ -228,6 +255,7 @@
                           {:type type
                            :errors errors
                            :default-format default-response-format})))))))
+
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
   (set-default-error-format
@@ -250,12 +278,15 @@
           (let [concept (body->concept :collection provider-id native-id body content-type headers)]
             (info (format "Ingesting collection %s from client %s"
                           (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-collection request-context concept))))
+            (generate-ingest-response headers (ingest/save-collection
+                                                request-context
+                                                (set-user-id concept request-context headers)))))
         (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :collection
-                                 :revision-id (get headers "cmr-revision-id")}]
+          (let [concept-attribs (-> {:provider-id provider-id
+                                     :native-id native-id
+                                     :concept-type :collection}
+                                    (set-revision-id headers)
+                                    (set-user-id request-context headers))]
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting collection %s from client %s"
@@ -277,10 +308,11 @@
                           (concept->loggable-string concept) (:client-id request-context)))
             (generate-ingest-response headers (ingest/save-granule request-context concept))))
         (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs {:provider-id provider-id
-                                 :native-id native-id
-                                 :concept-type :granule
-                                 :revision-id (get headers "cmr-revision-id")}]
+          (let [concept-attribs (set-revision-id
+                                  {:provider-id provider-id
+                                   :native-id native-id
+                                   :concept-type :granule}
+                                  headers)]
             (verify-provider-against-client-id request-context provider-id)
             (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
             (info (format "Deleting granule %s from client %s"

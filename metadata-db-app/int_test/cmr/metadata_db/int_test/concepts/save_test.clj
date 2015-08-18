@@ -153,7 +153,7 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
-      (is (= 200 (:status (util/delete-concept concept-id))))
+      (is (= 201 (:status (util/delete-concept concept-id))))
       (let [{:keys [status revision-id]} (util/save-concept concept)]
         (is (= 201 status))
         (is (= revision-id 3))))))
@@ -162,7 +162,7 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
-      (is (= 200 (:status (util/delete-concept concept-id))))
+      (is (= 201 (:status (util/delete-concept concept-id))))
       (let [{:keys [status revision-id]} (util/save-concept (assoc concept :revision-id 0))]
         (is (= 409 status))))))
 
