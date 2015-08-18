@@ -154,7 +154,6 @@
         (POST "/" {:keys [request-context params]}
           (bootstrap-virtual-products request-context params)))
 
-
       ;; Add routes for managing jobs.
       (common-routes/job-api-routes)
 
