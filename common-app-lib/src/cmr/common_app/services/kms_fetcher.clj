@@ -78,6 +78,9 @@
   (refresh-kms-cache {:system system}))
 
 (defn refresh-kms-cache-job
+  "The singleton job that refreshes the KMS cache. The keywords are infrequently updated by the
+  GCMD team. They update the CSV file which we read from every 6 hours. I arbitrarily chose 2 hours
+  so that we are never more than 8 hours from the time a keyword is updated."
   [job-key]
   {:job-type RefreshKmsCacheJob
    :job-key job-key
