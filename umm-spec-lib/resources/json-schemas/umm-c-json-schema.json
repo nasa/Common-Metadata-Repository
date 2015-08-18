@@ -3,6 +3,7 @@
   "definitions": {
     "DirectoryNameType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used historically by the GCMD internally to identify association, responsibility and/or ownership of the dataset, service or supplemental information. Note: This field only occurs in the DIF. When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be translated.",
       "properties": {
         "ShortName": {
@@ -16,6 +17,7 @@
     },
     "ProcessingLevelType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "This element contains the level identifier as described here: https://earthdata.nasa.gov/data/standards-and-references/processing-levels",
       "properties": {
         "ProcessingLevelDescription": {
@@ -34,6 +36,7 @@
     },
     "PaleoTemporalCoverageType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than yyyy-mm-dd = 0001-01-01.",
       "properties": {
         "ChronostratigraphicUnit": {
@@ -56,6 +59,7 @@
     },
     "ChronostratigraphicUnitType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "Eon": {
           "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
@@ -80,6 +84,7 @@
     },
     "SpatialInformationType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "This entity stores the reference frame or system from which altitudes (elevations) are measured. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This table also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the table are geometry reference data etc.",
       "properties": {
         "VerticalCoordinateSystem": {
@@ -99,6 +104,7 @@
     },
     "VerticalCoordinateSystemType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "AltitudeSystemDefinition": {
           "$ref": "#/definitions/VerticalSystemDefinitionType"
@@ -110,6 +116,7 @@
     },
     "VerticalSystemDefinitionType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "The reference frame or system from which altitude or depths are measured. The term 'altitude' is used instead of the common term 'elevation' to conform to the terminology in Federal Information Processing Standards 70-1 and 173. The information contains the datum name, distance units and encoding method, which provide the definition for the system.",
       "properties": {
         "DatumName": {
@@ -138,6 +145,7 @@
     },
     "ResolutionsType": {
       "type": "object",
+      "additionalProperties": false,
       "description": "Describes a list of resolutions.",
       "properties": {
         "Resolution": {
@@ -152,6 +160,7 @@
     },
     "HorizontalCoordinateSystemType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "GeodeticModel": {
           "$ref": "#/definitions/GeodeticModelType"
@@ -160,6 +169,7 @@
           "type": "array",
           "items": {
             "type": "object",
+            "additionalProperties": false,
             "properties": {
               "GeographicCoordinateSystem": {
                 "$ref": "#/definitions/GeographicCoordinateSystemType"
@@ -174,6 +184,7 @@
     },
     "GeodeticModelType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "HorizontalDatumName": {
           "description": "The identification given to the reference system used for defining the coordinates of points.",
@@ -199,6 +210,7 @@
     },
     "GeographicCoordinateSystemType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "GeographicCoordinateUnits": {
           "description": "Units of measure used for the geodetic latitude and longitude resolution values. For lat, a 2 digit decimal number from 0-90; for lon, a 3 digit decimal number from 0-180. + or absence of - for values north of equator or values west of prime meridian; - for all others.",
@@ -218,6 +230,7 @@
     },
     "LocalCoordinateSystemType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "GeoReferenceInformation": {
           "description": "A description of the information provided to register the local system to the Earth (e.g. control points, satellite ephemeral data, and inertial navigation data).",
@@ -241,20 +254,25 @@
   },
   "title": "UMM-C",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "MetadataLanguage": {
       "description": "The language used in the metadata record.",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
-    "MetadataStandard": {
-      "description": "This element describes the metadata standard name and version as received by the CMR.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/MetadataStandardType"
-    },
     "MetadataLineage": {
-      "description": "This includes any metadata related dates. All metadata dates will have a Lineage/Scope of ‘metadata’.",
+      "description": "Lineage is historical data and includes how data was processed.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+      },
+      "minItems": 0
+    },
+    "MetadataDate": {
+      "description": "This includes any metadata related dates.",
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
       },
       "minItems": 0
     },
@@ -282,11 +300,11 @@
       "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
-    "DataLineage": {
-      "description": "This includes any data related dates. All of these dates will have a Lineage/Scope of ‘data’.",
+    "DataDate": {
+      "description": "This includes any data related dates. create,delete, and update.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
       },
       "minItems": 1
     },
@@ -463,7 +481,11 @@
     "EntryId": {
       "description": "The entry ID of the service described by the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryIdType"
+    },
+    "Version": {
+      "description": "The Version of the metadata record.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
-  "required": ["MetadataStandard", "EntryId", "EntryTitle", "Abstract", "DataLineage", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]
+  "required": ["EntryId", "EntryTitle", "Abstract", "DataDate", "ResponsibleOrganization", "RelatedUrl", "ProcessingLevel", "ScienceKeyword", "TemporalExtent", "SpatialExtent", "Platform"]
 }

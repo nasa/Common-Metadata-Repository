@@ -45,7 +45,7 @@
 (def iso-smap-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
-    (object {:EntryId (object {:Id entry-id-xpath})
+    (object {:EntryId entry-id-xpath
              :EntryTitle entry-title-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath

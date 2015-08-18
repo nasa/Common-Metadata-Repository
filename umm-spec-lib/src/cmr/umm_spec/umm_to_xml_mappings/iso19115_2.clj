@@ -57,7 +57,7 @@
        (date-mapping "creation" "2000-12-31T19:00:00-05:00")
        [:gmd:identifier
         [:gmd:MD_Identifier
-         [:gmd:code (char-string-from "/EntryId/Id")]]]]]
+         [:gmd:code (char-string-from "/EntryId")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
      [:gmd:language (char-string "eng")]

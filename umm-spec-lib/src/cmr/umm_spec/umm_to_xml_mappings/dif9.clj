@@ -11,7 +11,7 @@
 (def umm-c-to-dif9-xml
   [:DIF
    dif9-xml-namespaces
-   [:Entry_ID (xpath "/EntryId/Id")]
+   [:Entry_ID (xpath "/EntryId")]
    [:Entry_Title (xpath "/EntryTitle")]
    [:Data_Set_Citation
     [:Dataset_Title "dummy dataset title"]]

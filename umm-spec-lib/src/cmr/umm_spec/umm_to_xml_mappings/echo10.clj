@@ -4,7 +4,7 @@
 
 (def umm-c-to-echo10-xml
   [:Collection
-   [:ShortName (xpath "/EntryId/Id")]
+   [:ShortName (xpath "/EntryId")]
    [:VersionId "V1"]
    [:InsertTime "1999-12-31T19:00:00-05:00"]
    [:LastUpdate "1999-12-31T19:00:00-05:00"]
