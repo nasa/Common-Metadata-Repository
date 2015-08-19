@@ -10,6 +10,7 @@
     (object
       {:EntryTitle (xpath "/DIF/Entry_Title")
        :EntryId (xpath "/DIF/Entry_ID")
+       :Version (xpath "/DIF/Data_Set_Citation/Version")
        :Abstract (xpath "/DIF/Summary/Abstract")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :TemporalExtents (for-each "."

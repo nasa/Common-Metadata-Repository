@@ -126,7 +126,8 @@
     ([db provider params batch-size]
      (c/find-concepts-in-batches db provider params batch-size 0))
     ([db provider params batch-size requested-start-index]
-     (let [{:keys [concept-type provider-id]} params
+     (let [{:keys [concept-type]} params
+           provider-id (:provider-id provider)
            params (params->sql-params provider params)
            table (tables/get-table-name provider concept-type)]
        (letfn [(find-batch
