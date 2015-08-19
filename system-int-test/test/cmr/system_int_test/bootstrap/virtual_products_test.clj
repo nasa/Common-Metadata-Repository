@@ -12,7 +12,8 @@
             [cmr.system-int-test.utils.virtual-product-util :as vp]
             [cmr.system-int-test.system :as s]
             [cmr.umm.granule :as umm-g]
-            [cmr.virtual-product.config :as vp-config]))
+            [cmr.virtual-product.config :as vp-config]
+            [cmr.common.util :refer [are2]]))
 
 ;; test procedure:
 ;;
@@ -27,7 +28,8 @@
 (defn bootstrap-and-index
   []
   (index/wait-until-indexed)
-  (bootstrap/bootstrap-virtual-products)
+  (doseq [[provider-id entry-title] (keys vp-config/source-to-virtual-product-config)]
+    (bootstrap/bootstrap-virtual-products provider-id entry-title))
   (index/wait-until-indexed))
 
 (defn fixture
@@ -50,6 +52,43 @@
 ;; The following test is copied from the main virtual product
 ;; integration tests, but initiates the virtual product bootstrap
 ;; process before checking for virtual products.
+
+(deftest virtual-product-bootstrap-params
+  (testing "invalid params"
+    (are2 [exp-status exp-errors provider-id entry-title]
+      (let [{:keys [status errors]}(bootstrap/bootstrap-virtual-products provider-id entry-title)]
+             (is (= exp-status status))
+             (is (= (set exp-errors) (set errors))))
+
+      "missing provider-id"
+      400
+      ["provider-id and entry-title are required parameters."]
+      nil
+      "et1"
+
+      "missing entry-id"
+      400
+      ["provider-id and entry-title are required parameters."]
+      "PROV1"
+      nil
+
+      "missing both"
+      400
+      ["provider-id and entry-title are required parameters."]
+      nil
+      nil
+
+      "invalid provider-id"
+      404
+      ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
+      "FOO"
+      "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+
+      "invalid entry-id"
+      404
+      ["No virtual product configuration found for provider [LPDAAC_ECS] and entry-title [BAR]"]
+      "LPDAAC_ECS"
+      "BAR")))
 
 (deftest virtual-product-bootstrap
   (s/only-with-real-database
@@ -102,16 +141,16 @@
     (let [ast-coll (vp/ingest-ast-coll)
           vp-colls   (vp/ingest-virtual-collections [ast-coll])
           s-granules (doall
-                      (for [n (range 10)]
-                        (vp/ingest-source-granule
-                         "LPDAAC_ECS"
-                         (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
-                                               :revision-id 5}))))
+                       (for [n (range 10)]
+                         (vp/ingest-source-granule
+                           "LPDAAC_ECS"
+                           (dg/granule ast-coll {:granule-ur (format "SC:AST_L1A.003:%d" n)
+                                                 :revision-id 5}))))
           _          (bootstrap-and-index)
           v-granules (mapcat #(:refs
-                               (search/find-refs :granule
-                                                 {:entry-title (:entry-title %)
-                                                  :page-size 50}))
+                                (search/find-refs :granule
+                                                  {:entry-title (:entry-title %)
+                                                   :page-size 50}))
                              vp-colls)
           verify     (fn []
                        (doseq [gran v-granules]
@@ -135,4 +174,4 @@
 
 (deftest ast-granule-umm-matchers-test
   (s/only-with-real-database
-   (vp/assert-psa-granules-match bootstrap-and-index)))
+    (vp/assert-psa-granules-match bootstrap-and-index)))
