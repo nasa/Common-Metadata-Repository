@@ -20,6 +20,12 @@
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
+(def keyword-scheme->field-names
+  "Maps each keyword scheme to its hierarchical field names."
+  {:providers [:level0 :level1 :level2 :level3 :short-name :long-name]
+   :platforms [:category :series-entity :short-name :long-name]
+   :instruments [:category :class :type :subtype :short-name :long-name]})
+
 (defn- find-invalid-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
   do not know how to correctly map from short name to the full hierarchy.
@@ -56,8 +62,7 @@
   value."
   [keyword-scheme csv-content]
   (let [all-lines (csv/read-csv csv-content)
-        ;; Line 2 contains the names of the subfield names
-        subfield-names (map csk/->kebab-case-keyword (second all-lines))
+        subfield-names (keyword-scheme keyword-scheme->field-names)
         keyword-entries (->> all-lines
                              (drop NUM_HEADER_LINES)
                              ;; Create a map for each row using the subfield-names as keys
@@ -111,6 +116,7 @@
   {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :short-name \"ETALON-2\",
   :series-entity \"ETALON\", :category \"Earth Observation Satellites\"} ..."
   [context keyword-scheme]
+  {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords
         (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
     (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
