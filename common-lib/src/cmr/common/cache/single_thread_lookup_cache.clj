@@ -19,6 +19,22 @@
             [cmr.common.lifecycle :as l]
             [cmr.common.cache.in-memory-cache :as mc]))
 
+(defn- safely-get-value-or-exception
+  "Gets a value from the delegate cache safely handling any exceptions. If an exception is thrown
+  then it will be returned"
+  [delegate-cache key lookup-fn]
+  (try
+    (c/get-value delegate-cache key lookup-fn)
+
+    ;; Guard against exceptions while getting a value from the delegate cache.
+    ;; These will most likely come from lookup function.
+    (catch Exception e
+      (error e (format "Exception occurred while fetching key %s: %s"
+                       key (.getMessage e)))
+      ;; The exception is returned so it will be put on the response channel and
+      ;; thrown to the caller.
+      e)))
+
 (defn- create-lookup-process-thread
   "Starts a thread that will listen on the lookup-request-channel for requests to fetch values
   from the cache. It will fetch the value from the cache and put it back on the response-channel
@@ -30,18 +46,17 @@
       (u/while-let
         [{:keys [key lookup-fn response-channel]} (async/<!! lookup-request-channel)]
 
-        (let [value (try
-                      (c/get-value delegate-cache key lookup-fn)
+        (try
+          ;; A when let is used in case of a nil value being returned. We just close the response
+          ;; channel in that case and a nil will be read.
+          (when-let [value (safely-get-value-or-exception delegate-cache key lookup-fn)]
+            (async/>!! response-channel value))
 
-                      ;; Guard against exceptions while getting a value from the delegate cache.
-                      ;; These will most likely come from lookup function.
-                      (catch Exception e
-                        (error e (format "Exception occurred while fetching key %s: %s"
-                                         key (.getMessage e)))
-                        ;; The exception is returned so it will be put on the response channel and
-                        ;; thrown to the caller.
-                        e))]
-          (async/>!! response-channel value)))
+          (finally
+            ;; Close the response channel whether a value was successfully written to the response
+            ;; channel or not. If there's a bug in this code that throws an exception we still
+            ;; want to close the response channel so the caller doesn't wait forever.
+            (async/close! response-channel))))
 
       ;; Guard against unexpected exceptions
       (catch Throwable t
