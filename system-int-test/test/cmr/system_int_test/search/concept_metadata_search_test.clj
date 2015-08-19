@@ -51,7 +51,6 @@
         metadata-xml (:body response)]
     (is (= expected metadata-xml))))
 
-
 (deftest retrieve-metadata-from-search-by-concept-id-concept-revision
   ;; Grant permissions before creating data.
   ;; All collections in PROV1 granted to registered users.
