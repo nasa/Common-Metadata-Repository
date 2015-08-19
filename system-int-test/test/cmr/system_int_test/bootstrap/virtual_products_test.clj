@@ -54,41 +54,42 @@
 ;; process before checking for virtual products.
 
 (deftest virtual-product-bootstrap-params
-  (testing "invalid params"
-    (are2 [exp-status exp-errors provider-id entry-title]
-      (let [{:keys [status errors]}(bootstrap/bootstrap-virtual-products provider-id entry-title)]
-             (is (= exp-status status))
-             (is (= (set exp-errors) (set errors))))
+  (s/only-with-real-database
+    (testing "invalid params"
+      (are2 [exp-status exp-errors provider-id entry-title]
+            (let [{:keys [status errors]}(bootstrap/bootstrap-virtual-products provider-id entry-title)]
+              (is (= exp-status status))
+              (is (= (set exp-errors) (set errors))))
 
-      "missing provider-id"
-      400
-      ["provider-id and entry-title are required parameters."]
-      nil
-      "et1"
+            "missing provider-id"
+            400
+            ["provider-id and entry-title are required parameters."]
+            nil
+            "et1"
 
-      "missing entry-id"
-      400
-      ["provider-id and entry-title are required parameters."]
-      "PROV1"
-      nil
+            "missing entry-id"
+            400
+            ["provider-id and entry-title are required parameters."]
+            "PROV1"
+            nil
 
-      "missing both"
-      400
-      ["provider-id and entry-title are required parameters."]
-      nil
-      nil
+            "missing both"
+            400
+            ["provider-id and entry-title are required parameters."]
+            nil
+            nil
 
-      "invalid provider-id"
-      404
-      ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
-      "FOO"
-      "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+            "invalid provider-id"
+            404
+            ["No virtual product configuration found for provider [FOO] and entry-title [ASTER L1A Reconstructed Unprocessed Instrument Data V003]"]
+            "FOO"
+            "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
 
-      "invalid entry-id"
-      404
-      ["No virtual product configuration found for provider [LPDAAC_ECS] and entry-title [BAR]"]
-      "LPDAAC_ECS"
-      "BAR")))
+            "invalid entry-id"
+            404
+            ["No virtual product configuration found for provider [LPDAAC_ECS] and entry-title [BAR]"]
+            "LPDAAC_ECS"
+            "BAR"))))
 
 (deftest virtual-product-bootstrap
   (s/only-with-real-database
