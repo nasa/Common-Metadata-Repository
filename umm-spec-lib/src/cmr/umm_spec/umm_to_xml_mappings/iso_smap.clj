@@ -46,21 +46,21 @@
 
          [:gmd:identifier
           [:gmd:MD_Identifier
-           [:gmd:code (char-string-from "/EntryId/Id")]
+           [:gmd:code (char-string-from "/EntryId")]
            [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
        [:gmd:language (char-string "eng")]
        [:gmd:extent
         [:gmd:EX_Extent
-         (for-each "/TemporalExtent/RangeDateTime"
+         (for-each "/TemporalExtents/RangeDateTimes"
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent
               [:gml:TimePeriod {:gml:id gen-id}
                [:gml:beginPosition (xpath "BeginningDateTime")]
                [:gml:endPosition (xpath "EndingDateTime")]]]]])
-         (for-each "/TemporalExtent/SingleDateTime"
+         (for-each "/TemporalExtents/SingleDateTimes"
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent

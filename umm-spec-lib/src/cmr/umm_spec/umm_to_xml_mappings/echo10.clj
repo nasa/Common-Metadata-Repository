@@ -4,7 +4,7 @@
 
 (def umm-c-to-echo10-xml
   [:Collection
-   [:ShortName (xpath "/EntryId/Id")]
+   [:ShortName (xpath "/EntryId")]
    [:VersionId "V1"]
    [:InsertTime "1999-12-31T19:00:00-05:00"]
    [:LastUpdate "1999-12-31T19:00:00-05:00"]
@@ -17,19 +17,19 @@
 
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
-   (for-each "/TemporalExtent[1]"
+   (for-each "/TemporalExtents[1]"
      [:Temporal
       [:TemporalRangeType (xpath "TemporalRangeType")]
       [:PrecisionOfSeconds (xpath "PrecisionOfSeconds")]
       [:EndsAtPresentFlag (xpath "EndsAtPresentFlag")]
-      (for-each "RangeDateTime"
+      (for-each "RangeDateTimes"
         [:RangeDateTime
          [:BeginningDateTime (xpath "BeginningDateTime")]
          [:EndingDateTime (xpath "EndingDateTime")]])
 
-      (for-each "SingleDateTime" [:SingleDateTime (xpath ".")])
+      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
 
-      (for-each "PeriodicDateTime"
+      (for-each "PeriodicDateTimes"
         [:PeriodicDateTime
          [:Name (xpath "Name")]
          [:StartDate (xpath "StartDate")]

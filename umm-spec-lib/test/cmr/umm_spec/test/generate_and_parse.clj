@@ -12,57 +12,52 @@
 (def example-record
   "This contains an example record with fields supported by all formats"
   (umm-c/map->UMM-C
-   {:DataLineage [(umm-cmn/map->LineageType
-                   {:Scope "METADATA"})]
-    :MetadataStandard (umm-cmn/map->MetadataStandardType
-                       {:Name "UMM"
-                        :Version "1.0"})
-    :Platform [(umm-cmn/map->PlatformType
-                {:ShortName "Platform"
-                 :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
-    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
-    :RelatedUrl [(umm-cmn/map->RelatedUrlType {:URL ["http://google.com"]})]
-    :ResponsibleOrganization [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                :Party (umm-cmn/map->PartyType {})})]
-    :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-    :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
-    
-    :EntryId (umm-cmn/map->EntryIdType {:Id "short_V1"})
-    :EntryTitle "The entry title V5"
-    :Abstract "A very abstract collection"
-    :TemporalExtent [(umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                                            [{:BeginningDateTime (t/date-time 2000)
-                                              :EndingDateTime (t/date-time 2001)}
-                                             {:BeginningDateTime (t/date-time 2002)
-                                              :EndingDateTime (t/date-time 2003)}])})
-                     (umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]})
-                     (umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                                               [{:Name "period1"
-                                                 :StartDate (t/date-time 2000)
-                                                 :EndDate (t/date-time 2001)
-                                                 :DurationUnit "YEAR"
-                                                 :DurationValue 4
-                                                 :PeriodCycleDurationUnit "DAY"
-                                                 :PeriodCycleDurationValue 3}
-                                                {:Name "period2"
-                                                 :StartDate (t/date-time 2000)
-                                                 :EndDate (t/date-time 2001)
-                                                 :DurationUnit "YEAR"
-                                                 :DurationValue 4
-                                                 :PeriodCycleDurationUnit "DAY"
-                                                 :PeriodCycleDurationValue 3}])})]}))
+    {:Platforms [(umm-cmn/map->PlatformType
+                   {:ShortName "Platform"
+                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+     :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                  :Party (umm-cmn/map->PartyType {})})]
+     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+
+     :EntryId "short_V1"
+     :EntryTitle "The entry title V5"
+     :Abstract "A very abstract collection"
+     :TemporalExtents [(umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
+                                                [{:BeginningDateTime (t/date-time 2000)
+                                                  :EndingDateTime (t/date-time 2001)}
+                                                 {:BeginningDateTime (t/date-time 2002)
+                                                  :EndingDateTime (t/date-time 2003)}])})
+                       (umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]})
+                       (umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
+                                                   [{:Name "period1"
+                                                     :StartDate (t/date-time 2000)
+                                                     :EndDate (t/date-time 2001)
+                                                     :DurationUnit "YEAR"
+                                                     :DurationValue 4
+                                                     :PeriodCycleDurationUnit "DAY"
+                                                     :PeriodCycleDurationValue 3}
+                                                    {:Name "period2"
+                                                     :StartDate (t/date-time 2000)
+                                                     :EndDate (t/date-time 2001)
+                                                     :DurationUnit "YEAR"
+                                                     :DurationValue 4
+                                                     :PeriodCycleDurationUnit "DAY"
+                                                     :PeriodCycleDurationValue 3}])})]}))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -74,7 +69,7 @@
   (are2 [metadata-format]
     (= (expected-conversion/convert example-record metadata-format)
        (xml-round-trip example-record metadata-format))
-    
+
     "echo10"
     :echo10
 

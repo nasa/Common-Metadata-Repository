@@ -9,11 +9,10 @@
     js/umm-c-schema
     (object
       {:EntryTitle (xpath "/DIF/Entry_Title")
-       :EntryId (object
-                  {:Id (xpath "/DIF/Entry_ID")})
+       :EntryId (xpath "/DIF/Entry_ID")
        :Abstract (xpath "/DIF/Summary/Abstract")
        :Purpose (xpath "/DIF/Summary/Purpose")
-       :TemporalExtent (for-each "."
-                         (object {:RangeDateTime (for-each "/DIF/Temporal_Coverage"
-                                                   (object {:BeginningDateTime (xpath "Start_Date")
-                                                            :EndingDateTime    (xpath "Stop_Date")}))}))})))
+       :TemporalExtents (for-each "."
+                          (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
+                                                     (object {:BeginningDateTime (xpath "Start_Date")
+                                                              :EndingDateTime    (xpath "Stop_Date")}))}))})))

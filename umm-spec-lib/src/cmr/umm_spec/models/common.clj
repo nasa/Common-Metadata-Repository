@@ -18,6 +18,8 @@
    ;; The characteristics of platform specific attributes. The characteristic names must be unique
    ;; on this platform; however the names do not have to be unique across platforms.
    Characteristics
+
+   Instruments
   ])
 (record-pretty-printer/enable-record-pretty-printing PlatformType)
 
@@ -35,7 +37,7 @@
    LongName
 
    ;; The name of the campaign/experiment (e.g. Global climate observing system).
-   Campaign
+   Campaigns
 
    ;; The starting date of the campaign.
    StartDate
@@ -71,7 +73,7 @@
    Sensors
 
    ;; The operation mode applied on the instrument when acquire the granule data.
-   OperationalMode
+   OperationalModes
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
@@ -89,7 +91,7 @@
 ;; Contains the excluded boundaries from the GPolygon.
 (defrecord ExclusiveZoneType
   [
-   Boundary
+   Boundaries
   ])
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
 
@@ -115,25 +117,13 @@
 
    HorizontalSpatialDomain
 
-   VerticalSpatialDomain
+   VerticalSpatialDomains
 
    OrbitParameters
 
    GranuleSpatialRepresentation
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialExtentType)
-
-(defrecord EntryIdType
-  [
-   ;; The version of the unique identifier.
-   Version
-
-   Id
-
-   ;; The Authority (who created it or owns it) of the unique identifier.
-   Authority
-  ])
-(record-pretty-printer/enable-record-pretty-printing EntryIdType)
 
 ;; Describes the Records the data and the changes that happened on that date for the metadata or
 ;; data (the metadata or data is described by the scope element.)
@@ -143,7 +133,7 @@
    Scope
 
    ;; This encaptulates all of the changes for a specific date.
-   Date
+   Dates
   ])
 (record-pretty-printer/enable-record-pretty-printing LineageType)
 
@@ -165,17 +155,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
 
-;; Specifies the date and its type.
-(defrecord DatesType
-  [
-   ;; This is the date a creation, update, or deletion occurred.
-   Date
-
-   ;; This is the type of date: create, update, review, delete.
-   Type
-  ])
-(record-pretty-printer/enable-record-pretty-printing DatesType)
-
 (defrecord PartyType
   [
    OrganizationName
@@ -189,13 +168,13 @@
    ContactInstructions
 
    ;; Contacts including phone, fax, email, url, etc.
-   Contact
+   Contacts
 
    ;; The address of the organization or person
-   Address
+   Addresses
 
    ;; The URL of the organization or individual
-   RelatedUrl
+   RelatedUrls
   ])
 (record-pretty-printer/enable-record-pretty-printing PartyType)
 
@@ -287,7 +266,7 @@
 
 (defrecord LineType
   [
-   Point
+   Points
 
    CenterPoint
   ])
@@ -499,11 +478,14 @@
    ;; Type is used to indicate the basis (justification) for relating one resource to another
    Type
 
-   ;; The ProviderName of the metadata record that is associated with this record.
+   ;; The description of the association.
    Description
 
    ;; ID of the metadata record that is associated with this record.
    EntryId
+
+   ;; The version of the metadata record that is associated with this record.
+   Version
 
    ;; The ProviderName of the metadata record that is associated with this record.
    ProviderId
@@ -543,9 +525,20 @@
 ;; The boundary representing the outer ring of the GPolygon.
 (defrecord BoundaryType
   [
-   Point
+   Points
   ])
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
+
+;; Specifies the date and its type.
+(defrecord DateType
+  [
+   ;; This is the date a creation, update, or deletion occurred.
+   Date
+
+   ;; This is the type of date: create, update, review, delete.
+   Type
+  ])
+(record-pretty-printer/enable-record-pretty-printing DateType)
 
 ;; This entity is used to define characteristics.
 (defrecord CharacteristicType
@@ -608,14 +601,14 @@
    EndsAtPresentFlag
 
    ;; Stores the start and end date/time of a collection.
-   RangeDateTime
+   RangeDateTimes
 
-   SingleDateTime
+   SingleDateTimes
 
    ;; This entity contains the name of the temporal period in addition to the date, time, duration
    ;; unit, and value, and cycle duration unit and value. Used at the collection level to describe a
    ;; collection having granules, which cover a regularly occurring period.
-   PeriodicDateTime
+   PeriodicDateTimes
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
@@ -633,7 +626,7 @@
    Protocol
 
    ;; The URL to the resource associated with the data set.
-   URL
+   URLs
 
    ;; The Title is a one-line description of the resource, could be used a caption when a browse
    ;; image is displayed. The title is especially useful for images such as graphs and photos.
@@ -676,7 +669,7 @@
    Description
 
    ;; Documents who made the change.
-   Responsibility
+   Responsibilities
   ])
 (record-pretty-printer/enable-record-pretty-printing LineageDateType)
 
@@ -768,7 +761,7 @@
   [
    ;; An address line for the address, used for mailing or physical addresses of organizations or
    ;; individuals who serve as points of contact.
-   StreetAddress
+   StreetAddresses
 
    ;; The city of the person or organization.
    City

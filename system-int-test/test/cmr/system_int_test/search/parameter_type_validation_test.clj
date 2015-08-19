@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.parameter-type-validation-test
   "Integration tests for validating parameter types.  Performed at the integration
-   level due to the tendency for pre-validation code to make assumptions about the
-   shape of parameters."
+  level due to the tendency for pre-validation code to make assumptions about the
+  shape of parameters."
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.search-util :as search]))
 
@@ -13,8 +13,8 @@
 
 (defn- test-map-type
   "Runs tests that the given parameter works for searches on the given concept id using
-    the valid example map and produces errors non-map values.  other-params is an optional
-    map (or maps) of other parameters to send with the query."
+  the valid example map and produces errors non-map values.  other-params is an optional
+  map (or maps) of other parameters to send with the query."
   [concept-type name valid-example-map & other-params]
   (testing (str "querying with " name " as a single value returns an error")
     (let [response (search/find-refs concept-type (into {name "a"} other-params))]
@@ -45,6 +45,12 @@
     (let [response (search/find-refs :granule {:options "bad" :page_size "twenty"})]
       (is-bad-request? response ["Parameter [options] must include a nested key, options[...]=value."
                                  "page_size must be a number between 0 and 2000"])))
+
+  (testing "invalid exclude parameter value"
+    (let [response (search/find-concepts-with-param-string
+                     :granule "exclude[echo_granule_id][][]=G1-PROV1")]
+      (is-bad-request?
+        response ["Invalid format for exclude parameter, must be in the format of exclude[name][]=value"])))
 
   (testing "multiple invalid types produce multiple errors"
     (let [response (search/find-refs :granule {:options "bad" :exclude "also-bad"})]

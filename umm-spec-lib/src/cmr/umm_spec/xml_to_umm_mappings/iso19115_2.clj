@@ -39,13 +39,13 @@
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
-    (object {:EntryId (object {:Id entry-id-xpath})
+    (object {:EntryId entry-id-xpath
              :EntryTitle entry-title-xpath
              :Abstract (xpath (make-data-id-xpath "gmd:abstract/gco:CharacterString"))
              :Purpose (xpath (make-data-id-xpath "/gmd:purpose/gco:CharacterString"))
-             :TemporalExtent (for-each (make-temporal-xpath)
-                               (object {:RangeDateTime (for-each "gml:TimePeriod"
+             :TemporalExtents (for-each (make-temporal-xpath)
+                               (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                          (object {:BeginningDateTime (xpath "gml:beginPosition")
                                                                   :EndingDateTime    (xpath "gml:endPosition")}))
-                                        :SingleDateTime (select "gml:TimeInstant/gml:timePosition")}))
+                                        :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")}))
              })))

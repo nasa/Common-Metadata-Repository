@@ -22,15 +22,18 @@
 
 (defmethod parse-primitive-value "date-time"
   [_ xpath-context]
-  (dtp/parse-datetime (extract-xpath-context-value xpath-context)))
+  (when-let [value (extract-xpath-context-value xpath-context)]
+    (dtp/parse-datetime value)))
 
 (defmethod parse-primitive-value "integer"
   [parse-type xpath-context]
-  (Long/parseLong ^String (extract-xpath-context-value xpath-context)))
+  (when-let [value (extract-xpath-context-value xpath-context)]
+    (Long/parseLong ^String value)))
 
 (defmethod parse-primitive-value "boolean"
   [parse-type xpath-context]
-  (= "true" (extract-xpath-context-value xpath-context)))
+  (when-let [value (extract-xpath-context-value xpath-context)]
+    (= "true" value)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Mapping processors
@@ -63,11 +66,11 @@
   [xpath-context {:keys [xpath template]}]
   (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
     (when-let [elements (seq (:context new-xpath-context))]
-      (for [element elements
-            :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
-        (if (and template (:type template))
-          (process-xml-mapping single-item-xpath-context template)
-          (parse-primitive-value (:parse-type template "string") single-item-xpath-context))))))
+      (vec (for [element elements
+                 :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
+             (if (and template (:type template))
+               (process-xml-mapping single-item-xpath-context template)
+               (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
