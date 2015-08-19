@@ -53,14 +53,14 @@
        [:gmd:language (char-string "eng")]
        [:gmd:extent
         [:gmd:EX_Extent
-         (for-each "/TemporalExtent/RangeDateTime"
+         (for-each "/TemporalExtents/RangeDateTimes"
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent
               [:gml:TimePeriod {:gml:id gen-id}
                [:gml:beginPosition (xpath "BeginningDateTime")]
                [:gml:endPosition (xpath "EndingDateTime")]]]]])
-         (for-each "/TemporalExtent/SingleDateTime"
+         (for-each "/TemporalExtents/SingleDateTimes"
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent

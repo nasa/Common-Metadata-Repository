@@ -34,21 +34,21 @@
   "Returns a TemporalExtentType with any SingleDateTime values mapped
   to be RangeDateTime values."
   [temporal]
-  (let [singles (:SingleDateTime temporal)]
+  (let [singles (:SingleDateTimes temporal)]
     (if (not (empty? singles))
       (-> temporal
-          (assoc :SingleDateTime nil)
-          (assoc :RangeDateTime (map single-date->range singles)))
+          (assoc :SingleDateTimes nil)
+          (assoc :RangeDateTimes (map single-date->range singles)))
       temporal)))
 
 (defn merge-ranges
-  "Returns t1 with :RangeDateTime concatenated together with t2's."
+  "Returns t1 with :RangeDateTimes concatenated together with t2's."
   [t1 t2]
-  (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2)))
+  (update-in t1 [:RangeDateTimes] concat (:RangeDateTimes t2)))
 
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
-  k (e.g. :RangeDateTime) in each source temporal extent."
+  k (e.g. :RangeDateTimes) in each source temporal extent."
   [k temporal-extents]
   (reduce (fn [result extent]
             (if-let [values (get extent k)]
@@ -65,17 +65,17 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtent] (partial take 1))))
+      (update-in [:TemporalExtents] (partial take 1))))
 
 ;; DIF 9
 
 (defn dif-temporal
-  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtent."
+  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
   (->> temporal-extents
        ;; Periodic temporal extents are not supported in DIF 9, so we
        ;; must remove them.
-       (remove :PeriodicDateTime)
+       (remove :PeriodicDateTimes)
        ;; Only ranges are supported by DIF 9, so we need to convert
        ;; single dates to range types.
        (map single-dates->ranges)
@@ -93,7 +93,7 @@
 
 (defmethod convert-internal :dif
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtent] dif-temporal))
+  (update-in umm-coll [:TemporalExtents] dif-temporal))
 
 ;; ISO 19115-2
 
@@ -104,14 +104,14 @@
                     :TemporalRangeType nil
                     :PrecisionOfSeconds nil
                     :EndsAtPresentFlag nil))
-       (remove :PeriodicDateTime)
-       (split-temporals :RangeDateTime)
-       (split-temporals :SingleDateTime)
+       (remove :PeriodicDateTimes)
+       (split-temporals :RangeDateTimes)
+       (split-temporals :SingleDateTimes)
        (map cmn/map->TemporalExtentType)))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtent] expected-iso-19115-2-temporal))
+  (update-in umm-coll [:TemporalExtents] expected-iso-19115-2-temporal))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
@@ -121,7 +121,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:Platform :ProcessingLevel :RelatedUrl :DataDate :ResponsibleOrganization :ScienceKeyword
+  #{:Platforms :ProcessingLevel :RelatedUrls :DataDates :ResponsibleOrganizations :ScienceKeywords
     :SpatialExtent})
 
 (defn- dissoc-not-implemented-fields

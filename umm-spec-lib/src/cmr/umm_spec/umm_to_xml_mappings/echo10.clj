@@ -17,19 +17,19 @@
 
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
-   (for-each "/TemporalExtent[1]"
+   (for-each "/TemporalExtents[1]"
      [:Temporal
       [:TemporalRangeType (xpath "TemporalRangeType")]
       [:PrecisionOfSeconds (xpath "PrecisionOfSeconds")]
       [:EndsAtPresentFlag (xpath "EndsAtPresentFlag")]
-      (for-each "RangeDateTime"
+      (for-each "RangeDateTimes"
         [:RangeDateTime
          [:BeginningDateTime (xpath "BeginningDateTime")]
          [:EndingDateTime (xpath "EndingDateTime")]])
 
-      (for-each "SingleDateTime" [:SingleDateTime (xpath ".")])
+      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
 
-      (for-each "PeriodicDateTime"
+      (for-each "PeriodicDateTimes"
         [:PeriodicDateTime
          [:Name (xpath "Name")]
          [:StartDate (xpath "StartDate")]

@@ -58,23 +58,26 @@
   Argument descriptions
   * schema - This is a JSON schema instance as defined in cmr.umm-spec.json-schema. It's necessary to
   pass the whole schema in so that references can be looked up.
+  * type-name-path - This contains the path of type names up to the current type being parsed. Used
+  for debugging problems in parsing.
   * type-name - Where applicable this is the name of the object type being parsed. This is used to
   locate the correct UMM Clojure Record.
   * schema-type - the is the definition of the type being parsed from the schema.
   * js-data - This is Clojure data that was parsed initially from a JSON string."
-  (fn [schema type-name schema-type js-data]
+  (fn [schema type-name-path type-name schema-type js-data]
     (cond
       (:type schema-type) (:type schema-type)
       (:$ref schema-type) :$ref)))
 
 (defmethod parse-json :default
-  [_ _ schema-type _]
-  (throw (Exception. (str "Unable to parse json for " (pr-str schema-type)))))
+  [_ type-name-path _ schema-type _]
+  (throw (Exception. (str "Unable to parse json for " (pr-str schema-type)
+                          " at path " (pr-str type-name-path)))))
 
 ;; An object is parsed by finding the equivalent clojure record and it's map->record-name constructor
 ;; function.
 (defmethod parse-json "object"
-  [schema type-name schema-type js-data]
+  [schema type-name-path type-name schema-type js-data]
   (let [record-ns (record-gen/schema-name->namespace (:schema-name schema))
         constructor-fn (var-get (find-var (symbol (str (name record-ns)
                                                        "/map->"
@@ -82,21 +85,23 @@
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get-in schema-type [:properties k])]]
-                           [k (parse-json schema k sub-type-def v)]))]
+                           [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
     (constructor-fn properties)))
 
 ;; A ref refers to another type. We lookup that type and then parse the JSON data using that type.
 (defmethod parse-json :$ref
-  [schema type-name schema-type js-data]
-  (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)]
+  [schema type-name-path type-name schema-type js-data]
+  (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)
+        type-name (get-in schema-type [:$ref :type-name])]
     (parse-json ref-schema
-                (get-in schema-type [:$ref :type-name])
+                (conj type-name-path type-name)
+                type-name
                 ref-schema-type
                 js-data)))
 
 ;; A string has additional information that might change its type in Clojure.
 (defmethod parse-json "string"
-  [_ _ schema-type js-data]
+  [_ _ _ schema-type js-data]
   (if (= (:format schema-type) "date-time")
     (dtp/parse-datetime js-data)
     js-data))
@@ -104,18 +109,18 @@
 ;; These types are parsed correctly from JSON.
 (doseq [simple-type ["number" "integer" "boolean"]]
   (defmethod parse-json simple-type
-    [_ _ _ js-data]
+    [_ _ _ _ js-data]
     js-data))
 
 (defmethod parse-json "array"
-  [schema type-name schema-type js-data]
-  (mapv #(parse-json schema type-name (:items schema-type) %) js-data))
+  [schema type-name-path type-name schema-type js-data]
+  (mapv #(parse-json schema type-name-path type-name (:items schema-type) %) js-data))
 
 (defn json->umm
   "Parses the JSON string and returns Clojure UMM records."
   [schema json-str]
   (let [root-type-def (get-in schema [:definitions (:root schema)])]
-    (parse-json schema (:root schema) root-type-def (json/decode json-str true))))
+    (parse-json schema [(:root schema)] (:root schema) root-type-def (json/decode json-str true))))
 
 
 
