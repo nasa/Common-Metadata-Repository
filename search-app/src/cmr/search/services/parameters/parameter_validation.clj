@@ -462,7 +462,7 @@
     (let [invalid-exclude-params (set/difference (set (keys exclude-kv)) exclude-params)]
       (if (empty? invalid-exclude-params)
         (let [exclude-values (flatten (vals exclude-kv))]
-          (if (every? #(= java.lang.String (type %)) exclude-values)
+          (if (every? string? exclude-values)
             (if (some #(.startsWith % "C") exclude-values)
               [(str "Exclude collection is not supported, " exclude-kv)]
               [])
