@@ -166,6 +166,33 @@
                          {:field "processing_level_id", :value-counts [["PL1" 2]]}
                          {:field "detailed_variable",
                           :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+                         {:field "platforms",
+                          :subfields ["category"],
+                          :category
+                          [{:value "Earth Observation Satellites",
+                            :count 2,
+                            :subfields ["series-entity"],
+                            :series-entity
+                            [{:value "AD (Atmospheric Dynamics)",
+                              :count 2,
+                              :subfields ["short-name"],
+                              :short-name
+                              [{:value "AD-A",
+                                :count 2,
+                                :subfields ["long-name"],
+                                :long-name
+                                [{:value "Atmosphere Dynamics A (Explorer 19)",
+                                  :count 2}]}]}
+                             {:value "AE (Atmosphere Explorer)",
+                              :count 2,
+                              :subfields ["short-name"],
+                              :short-name
+                              [{:value "AE-A",
+                                :count 2,
+                                :subfields ["long-name"],
+                                :long-name
+                                [{:value "Atmosphere Explorer A (Explorer 17)",
+                                  :count 2}]}]}]}]}
                          {:field "science_keywords",
                           :subfields ["category"],
                           :category
@@ -244,34 +271,7 @@
                             [{:value "Cool",
                               :count 2,
                               :subfields ["term"],
-                              :term [{:value "Mild", :count 2}]}]}]}
-                         {:field "platforms",
-                          :subfields ["category"],
-                          :category
-                          [{:value "Earth Observation Satellites",
-                            :count 2,
-                            :subfields ["series-entity"],
-                            :series-entity
-                            [{:value "AD (Atmospheric Dynamics)",
-                              :count 2,
-                              :subfields ["short-name"],
-                              :short-name
-                              [{:value "AD-A",
-                                :count 2,
-                                :subfields ["long-name"],
-                                :long-name
-                                [{:value "Atmosphere Dynamics A (Explorer 19)",
-                                  :count 2}]}]}
-                             {:value "AE (Atmosphere Explorer)",
-                              :count 2,
-                              :subfields ["short-name"],
-                              :short-name
-                              [{:value "AE-A",
-                                :count 2,
-                                :subfields ["long-name"],
-                                :long-name
-                                [{:value "Atmosphere Explorer A (Explorer 17)",
-                                  :count 2}]}]}]}]}]
+                              :term [{:value "Mild", :count 2}]}]}]}]
         actual-facets (get-facet-results :hierarchical)]
     (is (= expected-facets (:xml-facets actual-facets)))
     (is (= expected-facets (:json-facets actual-facets)))))
@@ -290,6 +290,7 @@
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable", :value-counts []}
+                                      {:field "platforms", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
@@ -308,8 +309,7 @@
                                          [{:value "Popular",
                                            :count 1,
                                            :subfields ["term"],
-                                           :term [{:value "Extreme", :count 1}]}]}]}
-                                      {:field "platforms", :subfields []}]
+                                           :term [{:value "Extreme", :count 1}]}]}]}]
         expected-flat-facets [{:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
@@ -328,8 +328,7 @@
                               {:field "detailed_variable", :value-counts []}]
         actual-hierarchical-facets (get-facet-results :hierarchical)
         actual-flat-facets (get-facet-results :flat)]
-    ;; TODO Fix
-    ; (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
+    (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
     (is (= expected-hierarchical-facets (:json-facets actual-hierarchical-facets)))
     (is (= expected-flat-facets (:xml-facets actual-flat-facets)))
     (is (= expected-flat-facets (:json-facets actual-flat-facets)))))
@@ -342,12 +341,10 @@
                          {:field "two_d_coordinate_system_name", :value-counts []}
                          {:field "processing_level_id", :value-counts []}
                          {:field "detailed_variable", :value-counts []}
-                         {:field "science_keywords", :subfields []}
-                         {:field "platforms", :subfields []}]
-        ;; TODO Fix XML Facets are returning
-        ;; {:field "platforms", :value-counts []}]
+                         {:field "platforms", :subfields []}
+                         {:field "science_keywords", :subfields []}]
         actual-facets (get-facet-results :hierarchical)]
-    ; (is (= expected-facets (:xml-facets actual-facets)))
+    (is (= expected-facets (:xml-facets actual-facets)))
     (is (= expected-facets (:json-facets actual-facets)))))
 
 (deftest detailed-variable-test
@@ -361,6 +358,7 @@
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
                                        :value-counts [["Detailed-No-Level2-or-3" 1]]}
+                                      {:field "platforms", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
@@ -375,8 +373,7 @@
                                            [{:value "Term",
                                              :count 1,
                                              :subfields ["variable-level-1"],
-                                             :variable-level-1 [{:value "V-L1", :count 1}]}]}]}]}
-                                      {:field "platforms", :subfields []}]
+                                             :variable-level-1 [{:value "V-L1", :count 1}]}]}]}]}]
         expected-flat-facets [{:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
@@ -394,7 +391,7 @@
                                :value-counts [["Detailed-No-Level2-or-3" 1]]}]
         actual-hierarchical-facets (get-facet-results :hierarchical)
         actual-flat-facets (get-facet-results :flat)]
-    ; TODO FIX (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
+    (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
     (is (= expected-hierarchical-facets (:json-facets actual-hierarchical-facets)))
     (is (= expected-flat-facets (:xml-facets actual-flat-facets)))
     (is (= expected-flat-facets (:json-facets actual-flat-facets)))))

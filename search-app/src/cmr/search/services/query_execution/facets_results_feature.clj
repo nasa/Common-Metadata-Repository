@@ -19,12 +19,7 @@
   {:reverse_nested {}
    :aggs {:concept-id {:terms {:field :concept-id :size 1}}}})
 
-(def ^:private nested-fields
-  "List of nested fields. Nested fields are returned hierarchically when returning hierarchical
-  facets."
-  [:science-keywords :platforms])
-
-(def ^:private field->subfield-names
+(def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
   the bottom."
   {:platforms (:platforms kms/keyword-scheme->field-names)
@@ -43,7 +38,7 @@
   "Returns the nested aggregation query for the given hierarchical field."
   [field]
   {:nested {:path field}
-   :aggs (hierarchical-aggregation-builder field (field field->subfield-names))})
+   :aggs (hierarchical-aggregation-builder field (field nested-fields-mappings))})
 
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
@@ -126,20 +121,19 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map]
-  (parse-hierarchical-bucket (field field->subfield-names) bucket-map))
+  (parse-hierarchical-bucket (field nested-fields-mappings) bucket-map))
 
 (defn- create-hierarchical-facets
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
   returns the facets."
   [elastic-aggregations]
-  ; (concat (bucket-map->facets (apply #(dissoc elastic-aggregations %) nested-fields)
-  (concat (bucket-map->facets (apply dissoc elastic-aggregations nested-fields)
+  (concat (bucket-map->facets (apply dissoc elastic-aggregations (keys nested-fields-mappings))
                               [:archive-center :project :instrument :sensor
                                :two-d-coordinate-system-name :processing-level-id
                                :detailed-variable])
           (map (fn [field]
                  (assoc (hierarchical-bucket-map->facets field (field elastic-aggregations))
-                        :field (csk/->snake_case_string field))) nested-fields)))
+                        :field (csk/->snake_case_string field))) (keys nested-fields-mappings))))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns
