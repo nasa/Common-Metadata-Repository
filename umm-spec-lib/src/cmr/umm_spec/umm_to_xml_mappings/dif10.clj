@@ -12,7 +12,7 @@
   [:DIF
    dif10-xml-namespaces
    [:Entry_ID (xpath "/EntryId")]
-   [:Version "001"]
+   [:Version (xpath "/Version")]
    [:Entry_Title (xpath "/EntryTitle")]
    [:Science_Keywords
     [:Category "dummy category"]
