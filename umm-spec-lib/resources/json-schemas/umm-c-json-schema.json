@@ -458,7 +458,7 @@
       "minItems": 1
     },
     "Projects": {
-      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "description": "The project element describes the name of the scientific program, field campaign, or project from which the data were collected. This element is intended for the non-space assets such as aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This element may also cover a long term project that continuously creates new data sets — like MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign sub-element to support multiple campaigns under the same project.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ProjectType"
