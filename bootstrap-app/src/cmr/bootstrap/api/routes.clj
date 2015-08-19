@@ -114,7 +114,7 @@
 (defn- bootstrap-virtual-products
   "Bootstrap virtual products."
   [context params]
-  (let [{:keys [provider-id entry-title]} params]
+  (let [{:keys [provider-id entry-title synchronous]} params]
     (when-not (and provider-id entry-title)
       (srv-errors/throw-service-error
         :bad-request
@@ -128,7 +128,7 @@
     (info (format "Bootstrapping virtual products for provider [%s] entry-title [%s]"
                   provider-id
                   entry-title))
-    (bs/bootstrap-virtual-products context (= "true" (:synchronous params)) provider-id entry-title)
+    (bs/bootstrap-virtual-products context (= "true" synchronous) provider-id entry-title)
     {:status 202 :body {:message "Bootstrapping virtual products."}}))
 
 (defn- build-routes [system]
