@@ -45,12 +45,25 @@
       (is (= expected actual)))))
 
 (deftest parse-entries-from-csv-test
-  (let [expected {"First Entry" {:short-name "First Entry"
-                                 :series-entity "field2"
-                                 :category "field1 value, (with commas)"}
-                  "Last Entry" {:short-name "Last Entry"
-                                :long-name "This is the Last Entry"
-                                :series-entity "field2 v2"
-                                :category "field1 value 2"}}
-        actual (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv)]
-    (is (= expected actual))))
+  (testing "Successful parsing"
+    (let [expected {"First Entry" {:short-name "First Entry"
+                                   :series-entity "field2"
+                                   :category "field1 value, (with commas)"}
+                    "Last Entry" {:short-name "Last Entry"
+                                  :long-name "This is the Last Entry"
+                                  :series-entity "field2 v2"
+                                  :category "field1 value 2"}}
+          actual (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv)]
+      (is (= expected actual))))
+
+  (testing "Invalid subfield names in the CSV throws an exception"
+    (is (thrown-with-msg?
+          Exception
+          #"Expected subfield names for instruments to be"
+          (#'cmr.transmit.kms/parse-entries-from-csv :instruments sample-csv)))))
+
+(deftest get-keywords-for-keyword-scheme-test
+  (testing "Invalid keyword scheme requested throws an exception"
+    (is (thrown? java.lang.AssertionError
+          (kms/get-keywords-for-keyword-scheme nil :not-a-kms-scheme)))))
+

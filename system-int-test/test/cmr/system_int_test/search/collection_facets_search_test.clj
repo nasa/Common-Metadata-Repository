@@ -120,7 +120,7 @@
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
   (e/grant-guest (s/context)
                  (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll2" "coll3" "coll5"]))))
-( )
+
 (defn- get-facet-results
   "Returns the facets returned by a search in both JSON and XML reference formats. Takes the type
   of facets to be returned - either :flat or :hierarchical. The format of the response is:

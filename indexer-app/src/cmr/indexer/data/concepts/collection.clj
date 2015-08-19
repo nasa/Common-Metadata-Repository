@@ -63,8 +63,8 @@
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
-        platforms-nested (platform/get-nested-elastic-docs-for-short-names context
-                                                                           platform-short-names)
+        platforms-nested (map #(platform/platform-short-name->elastic-doc context %)
+                              platform-short-names)
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
         instrument-long-names (remove nil? (map :long-name instruments))
