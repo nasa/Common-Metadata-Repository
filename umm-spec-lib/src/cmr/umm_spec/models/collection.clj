@@ -35,7 +35,7 @@
    ;; historically by the GCMD internally to identify association, responsibility and/or ownership
    ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
    ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
-   ;; translated.\
+   ;; translated.
    DirectoryNames
 
    ;; This includes any personnel responsible for this data and metadata through the party element.
