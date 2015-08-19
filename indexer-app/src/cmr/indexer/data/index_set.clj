@@ -131,7 +131,6 @@
     :long-name string-field-mapping
     :long-name.lowercase string-field-mapping}})
 
-:category :series-entity :short-name :long-name
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"

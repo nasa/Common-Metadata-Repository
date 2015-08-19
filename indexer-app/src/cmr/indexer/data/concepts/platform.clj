@@ -3,20 +3,6 @@
   (:require [clojure.string :as str]
             [cmr.common-app.services.kms-fetcher :as kf]))
 
-;; TODO will need to add something similar for searching platforms
-
-; (defn platform->keywords
-;   "Converts a platform into a vector of terms for keyword searches"
-;   [platform]
-;   (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3
-;                 detailed-variable]} platform]
-;     [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]))
-
-; (defn platforms->keywords
-;   "Converts the platforms into a sequence of terms for keyword searches"
-;   [collection]
-;   (mapcat platform->keywords (:platforms collection)))
-
 (defn platform-short-name->elastic-doc
   "Converts a platform into the portion going in an elastic document"
   [context short-name]
@@ -35,36 +21,4 @@
   "Converts a list of platform short names into a list of elastic documents"
   [context short-names]
   (map #(platform-short-name->elastic-doc context %) short-names))
-
-;; I don't think this is needed - I _think_ this was so flat facets could return these
-; (defn platform->facet-fields
-;   [platform]
-;   (let [{:keys [category topic term variable-level-1 variable-level-2
-;                 variable-level-3 detailed-variable]} platform]
-;     {:category category
-;      :topic topic
-;      :term term
-;      :variable-level-1 variable-level-1
-;      :variable-level-2 variable-level-2
-;      :variable-level-3 variable-level-3
-;      :detailed-variable detailed-variable}))
-
-; (defn platforms->facet-fields
-;   "Returns a map of the platform values in the collection for faceting storage"
-;   [collection]
-;   (reduce (fn [elastic-doc platform]
-;             (merge-with (fn [values v]
-;                           (if v
-;                             (conj values v)
-;                             values))
-;                         elastic-doc
-;                         (platform->facet-fields platform)))
-;           {:category []
-;            :topic []
-;            :term []
-;            :variable-level-1 []
-;            :variable-level-2 []
-;            :variable-level-3 []
-;            :detailed-variable []}
-;           (:platforms collection)))
 
