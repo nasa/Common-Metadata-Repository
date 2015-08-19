@@ -69,7 +69,9 @@
     (when-not (= expected-subfield-names subfield-names)
       (throw (Exception.
                (format "Expected subfield names for %s to be %s, but were %s."
-                       (name keyword-scheme) expected-subfield-names (pr-str subfield-names)))))))
+                       (name keyword-scheme)
+                       (pr-str expected-subfield-names)
+                       (pr-str subfield-names)))))))
 
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
