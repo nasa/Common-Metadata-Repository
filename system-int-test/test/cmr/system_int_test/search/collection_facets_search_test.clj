@@ -15,17 +15,25 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false}))
 
-(defn make-coll
+(defn- make-coll
   "Helper for creating and ingesting a collection"
   [n prov & attribs]
   (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
 
 ;; Attrib functions - These are helpers for creating maps with collection attributes
-(defn projects
+(defn- projects
   [& project-names]
   {:projects (apply dc/projects project-names)})
 
-(defn platforms
+(def platform-short-names
+  "List of platform short names that exist in the test KMS hierarchy."
+  ["AE-A" "AD-A" "DMSP 5D-3/F18"])
+
+(def FROM_KMS
+  "Constant indicating that the short name for the field should be a short name found in KMS."
+  "FROM_KMS")
+
+(defn- platforms
   "Creates a specified number of platforms each with a certain number of instruments and sensors"
   ([prefix num-platforms]
    (platforms prefix num-platforms 0 0))
@@ -36,7 +44,9 @@
     (for [pn (range 0 num-platforms)
           :let [platform-name (str prefix "-p" pn)]]
       (dc/platform
-        {:short-name platform-name
+        {:short-name (if (= FROM_KMS prefix)
+                       (or (get platform-short-names pn) platform-name)
+                       platform-name)
          :long-name platform-name
          :instruments
          (for [in (range 0 num-instruments)
@@ -47,7 +57,7 @@
                              :let [sensor-name (str instrument-name "-s" sn)]]
                          (dc/sensor {:short-name sensor-name}))}))}))}))
 
-(defn twod-coords
+(defn- twod-coords
   [& names]
   {:two-d-coordinate-systems (map dc/two-d names)})
 
@@ -96,15 +106,15 @@
                               :variable-level-1 "V-L1"
                               :detailed-variable "Detailed-No-Level2-or-3"}))
 
-(defn science-keywords
+(defn- science-keywords
   [& sks]
   {:science-keywords sks})
 
-(defn processing-level-id
+(defn- processing-level-id
   [id]
   {:processing-level-id id})
 
-(defn grant-permissions
+(defn- grant-permissions
   "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
   []
   (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1"))
@@ -130,34 +140,59 @@
   (let [coll1 (make-coll 1 "PROV1"
                          (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                          (projects "proj1" "PROJ2")
-                         (platforms "A" 2 2 1)
+                         (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
                          {:organizations [(dc/org :archive-center "Larc")]})
         coll2 (make-coll 2 "PROV1"
                          (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                          (projects "proj1" "PROJ2")
-                         (platforms "A" 2 2 1)
+                         (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
                          {:organizations [(dc/org :archive-center "Larc")]})
         expected-facets [{:field "archive_center", :value-counts [["Larc" 2]]}
                          {:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
-                         {:field "platform", :value-counts [["A-p0" 2] ["A-p1" 2]]}
                          {:field "instrument",
                           :value-counts
-                          [["A-p0-i0" 2] ["A-p0-i1" 2] ["A-p1-i0" 2] ["A-p1-i1" 2]]}
+                          [["FROM_KMS-p0-i0" 2] ["FROM_KMS-p0-i1" 2] ["FROM_KMS-p1-i0" 2]
+                           ["FROM_KMS-p1-i1" 2]]}
                          {:field "sensor",
                           :value-counts
-                          [["A-p0-i0-s0" 2]
-                           ["A-p0-i1-s0" 2]
-                           ["A-p1-i0-s0" 2]
-                           ["A-p1-i1-s0" 2]]}
+                          [["FROM_KMS-p0-i0-s0" 2] ["FROM_KMS-p0-i1-s0" 2] ["FROM_KMS-p1-i0-s0" 2]
+                           ["FROM_KMS-p1-i1-s0" 2]]}
                          {:field "two_d_coordinate_system_name",
                           :value-counts [["Alpha" 2]]}
                          {:field "processing_level_id", :value-counts [["PL1" 2]]}
                          {:field "detailed_variable",
                           :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+                         {:field "platforms",
+                          :subfields ["category"],
+                          :category
+                          [{:value "Earth Observation Satellites",
+                            :count 2,
+                            :subfields ["series-entity"],
+                            :series-entity
+                            [{:value "AD (Atmospheric Dynamics)",
+                              :count 2,
+                              :subfields ["short-name"],
+                              :short-name
+                              [{:value "AD-A",
+                                :count 2,
+                                :subfields ["long-name"],
+                                :long-name
+                                [{:value "Atmosphere Dynamics A (Explorer 19)",
+                                  :count 2}]}]}
+                             {:value "AE (Atmosphere Explorer)",
+                              :count 2,
+                              :subfields ["short-name"],
+                              :short-name
+                              [{:value "AE-A",
+                                :count 2,
+                                :subfields ["long-name"],
+                                :long-name
+                                [{:value "Atmosphere Explorer A (Explorer 17)",
+                                  :count 2}]}]}]}]}
                          {:field "science_keywords",
                           :subfields ["category"],
                           :category
@@ -250,12 +285,12 @@
         coll2 (make-coll 2 "PROV1" (science-keywords sk5))
         expected-hierarchical-facets [{:field "archive_center", :value-counts []}
                                       {:field "project", :value-counts []}
-                                      {:field "platform", :value-counts []}
                                       {:field "instrument", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable", :value-counts []}
+                                      {:field "platforms", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
@@ -301,12 +336,12 @@
 (deftest empty-hierarchical-facets-test
   (let [expected-facets [{:field "archive_center", :value-counts []}
                          {:field "project", :value-counts []}
-                         {:field "platform", :value-counts []}
                          {:field "instrument", :value-counts []}
                          {:field "sensor", :value-counts []}
                          {:field "two_d_coordinate_system_name", :value-counts []}
                          {:field "processing_level_id", :value-counts []}
                          {:field "detailed_variable", :value-counts []}
+                         {:field "platforms", :subfields []}
                          {:field "science_keywords", :subfields []}]
         actual-facets (get-facet-results :hierarchical)]
     (is (= expected-facets (:xml-facets actual-facets)))
@@ -317,13 +352,13 @@
   (let [coll1 (make-coll 1 "PROV1" (science-keywords sk8))
         expected-hierarchical-facets [{:field "archive_center", :value-counts []}
                                       {:field "project", :value-counts []}
-                                      {:field "platform", :value-counts []}
                                       {:field "instrument", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
                                        :value-counts [["Detailed-No-Level2-or-3" 1]]}
+                                      {:field "platforms", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category

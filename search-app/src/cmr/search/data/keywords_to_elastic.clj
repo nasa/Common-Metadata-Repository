@@ -108,8 +108,9 @@
   "Create an or filter containing the science keyword fields related to keyword searches"
   [keywd]
   (let [processed-keyword (process-keyword keywd)]
-    (map (fn [field] {:regexp {(keyword (str (name field) ".lowercase")) processed-keyword}})
-         [:category :topic :term :variable-level-1 :variable-level-1 :variable-level3])))
+    (map (fn [field] {:regexp {(keyword (str "science-keywords." (name field) ".lowercase"))
+                               processed-keyword}})
+         [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])))
 
 (defn keywords->sk-filter
   "Create a filter for keyword searches that checks science keywords"
