@@ -14,7 +14,7 @@
    [:Entry_ID (xpath "/EntryId")]
    [:Entry_Title (xpath "/EntryTitle")]
    [:Data_Set_Citation
-    [:Dataset_Title "dummy dataset title"]]
+    [:Version (xpath "/Version")]]
    [:Parameters
     [:Category "dummy category"]
     [:Topic "dummy topic"]

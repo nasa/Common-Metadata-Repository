@@ -46,4 +46,11 @@
   {:type :for-each
    :xpath xpath})
 
+(defn char-string-xpath
+  "An ISO Xpath helper. It creates an XPath that selects from the given XPath with a
+  /gco:CharacterString child. Optionally accepts a base XPath."
+  ([path]
+   (char-string-xpath "" path))
+  ([base-xpath path]
+   (xpath (str base-xpath path "/gco:CharacterString"))))
 

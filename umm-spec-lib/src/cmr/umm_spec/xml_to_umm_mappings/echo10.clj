@@ -31,6 +31,7 @@
     (object
       {:EntryTitle (xpath "/Collection/DataSetId")
        :EntryId (xpath "/Collection/ShortName")
+       :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
        :TemporalExtents temporal-mappings})))
