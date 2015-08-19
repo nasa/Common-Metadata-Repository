@@ -5,31 +5,25 @@
 
 (defrecord UMM-C
   [
-   ;; Lineage is historical data and includes how data was processed.
-   MetadataLineage
+   ;; This element permits the user to properly cite the provider and specifies how the data should
+   ;; be cited in professional scientific literature. This element provides a citation for the item
+   ;; itself, and is not designed for listing bibliographic references of scientific research
+   ;; articles arising from search results. A list of references related to the research results
+   ;; should be in the Publication Reference element. A DOI that specifically identifies the service
+   ;; is listed here.
+   CollectionCitations
 
-   ;; This attribute specifies a word or phrase that describes the temporal resolution of the
-   ;; dataset.
-   TemporalKeyword
+   ;; This includes any metadata related dates.
+   MetadataDates
 
    ;; This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic
    ;; Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code
    ;; List. It is a high-level thematic classification to assist in the grouping and search of
    ;; available services.
-   ISOTopicCategory
-
-   ;; This element allows authors to provide words or phrases to further describe the data.
-   AncillaryKeyword
+   ISOTopicCategories
 
    ;; Defines a named two-dimensional tiling system for the collection.
    TilingIdentificationSystem
-
-   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
-   ;; unique characteristics of the service which extend beyond those defined).
-   Distribution
-
-   ;; This element enables specification of Earth science keywords.
-   ScienceKeyword
 
    ;; Abstract provides a brief description of the data or service the metadata represents.
    Abstract
@@ -37,13 +31,12 @@
    ;; The language used in the metadata record.
    MetadataLanguage
 
-   ;; This element permits the user to properly cite the provider and specifies how the data should
-   ;; be cited in professional scientific literature. This element provides a citation for the item
-   ;; itself, and is not designed for listing bibliographic references of scientific research
-   ;; articles arising from search results. A list of references related to the research results
-   ;; should be in the Publication Reference element. A DOI that specifically identifies the service
-   ;; is listed here.
-   CollectionCitation
+   ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
+   ;; historically by the GCMD internally to identify association, responsibility and/or ownership
+   ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
+   ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
+   ;; translated.\
+   DirectoryNames
 
    ;; This includes any personnel responsible for this data and metadata through the party element.
    ;; The role (distributing, archiving, providing, and/or maintaining the data) is placed in the
@@ -57,14 +50,25 @@
    ;; This element contains suggested usage or purpose for the data or service.
    Purpose
 
-   ;; This element is used to identify other services, collections, visualizations, granules, and
-   ;; other metadata types and resources that are associated with or dependent on the data described
-   ;; by the metadata. This element is also used to identify a parent metadata record if it exists.
-   ;; This usage should be reserved for instances where a group of metadata records are subsets that
-   ;; can be better represented by one parent metadata record, which describes the entire set. In
-   ;; some instances, a child may point to more than one parent. The EntryId is the same as the
-   ;; element described elsewhere in this document where it contains and ID, and Version.
-   MetadataAssociation
+   ;; This element describes key bibliographic citations pertaining to the data.
+   PublicationReferences
+
+   ;; This element describes any data/service related URLs that include project home pages,
+   ;; services, related data archives/servers, metadata extensions, direct links to online software
+   ;; packages, web mapping services, links to images, or other data.
+   RelatedUrls
+
+   ;; This includes any data related dates. create,delete, and update.
+   DataDates
+
+   ;; This includes any organizations responsible for this data and metadata through the party
+   ;; element. The role (distributing, archiving, providing, and/or maintaining the data) is placed
+   ;; in the role sub element. To support components or xlinks in the future the role was split from
+   ;; the party sub elements, that way the data in the party element can be resued and stored
+   ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
+   ;; document responsibility for a specific reason. It can reuse the same person or organization
+   ;; with different roles throughout the metadata.
+   ResponsibleOrganizations
 
    ;; This element with the description field allows the author to provide information about any
    ;; constraints for accessing the service. This includes any special restrictions, legal
@@ -79,14 +83,20 @@
    ;; location, or a location outside of Earth.
    SpatialKeyword
 
-   ;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
    SpatialExtent
+
+   ;; Lineage is historical data and includes how data was processed.
+   MetadataLineages
+
+   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
+   ;; unique characteristics of the service which extend beyond those defined).
+   AdditionalAttributes
 
    ;; The entry ID of the service described by the metadata.
    EntryId
 
-   ;; This includes any metadata related dates.
-   MetadataDate
+   ;; This element enables specification of Earth science keywords.
+   ScienceKeywords
 
    ;; This element permits the author to provide the following information about an item described
    ;; in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in
@@ -101,7 +111,7 @@
 
    ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
    ;; unique characteristics of the service which extend beyond those defined).
-   AdditionalAttribute
+   Distributions
 
    ;; Describes the production status of the data set. There are three choices: PLANNED refers to
    ;; data sets to be collected in the future and are thus unavailable at the present time. For
@@ -111,28 +121,6 @@
    ;; collected continuously. COMPLETE refers to data sets in which no updates or further data
    ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
    CollectionProgress
-
-   ;; This includes any organizations responsible for this data and metadata through the party
-   ;; element. The role (distributing, archiving, providing, and/or maintaining the data) is placed
-   ;; in the role sub element. To support components or xlinks in the future the role was split from
-   ;; the party sub elements, that way the data in the party element can be resued and stored
-   ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
-   ;; document responsibility for a specific reason. It can reuse the same person or organization
-   ;; with different roles throughout the metadata.
-   ResponsibleOrganization
-
-   ;; This element describes the relevant platforms used to acquire the data related to the service.
-   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
-   ;; Station, Network, Human, etc.
-   Platform
-
-   ;; This includes any data related dates. create,delete, and update.
-   DataDate
-
-   ;; This element describes any data/service related URLs that include project home pages,
-   ;; services, related data archives/servers, metadata extensions, direct links to online software
-   ;; packages, web mapping services, links to images, or other data.
-   RelatedUrl
 
    ;; This class stores the reference frame or system in which altitudes (elevations) are given. The
    ;; information contains the datum name, distance units and encoding method, which provide the
@@ -154,24 +142,26 @@
    ;; which refers to any constraints in accessing the item.
    UseConstraints
 
-   ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
-   ;; historically by the GCMD internally to identify association, responsibility and/or ownership
-   ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
-   ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
-   ;; translated.\
-   DirectoryName
+   ;; This attribute specifies a word or phrase that describes the temporal resolution of the
+   ;; dataset.
+   TemporalKeywords
+
+   ;; This element allows authors to provide words or phrases to further describe the data.
+   AncillaryKeywords
 
    ;; This element contains the level identifier as described here:
    ;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
    ProcessingLevel
 
-   ;; This element describes key bibliographic citations pertaining to the data.
-   PublicationReference
+   ;; This element describes the relevant platforms used to acquire the data related to the service.
+   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
+   ;; Station, Network, Human, etc.
+   Platforms
 
-   ;; This class contains attributes, which describe the temporal range of a specific collection.
-   ;; This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic
-   ;; Date Time
-   TemporalExtent
+   ;; This element describes the relevant platforms used to acquire the data related to the service.
+   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
+   ;; Station, Network, Human, etc.
+   Projects
 
    ;; The Version of the metadata record.
    Version
@@ -181,26 +171,26 @@
    ;; earlier than yyyy-mm-dd = 0001-01-01.
    PaleoTemporalCoverage
 
+   ;; This class contains attributes, which describe the temporal range of a specific collection.
+   ;; This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic
+   ;; Date Time
+   TemporalExtents
+
+   ;; This element is used to identify other services, collections, visualizations, granules, and
+   ;; other metadata types and resources that are associated with or dependent on the data described
+   ;; by the metadata. This element is also used to identify a parent metadata record if it exists.
+   ;; This usage should be reserved for instances where a group of metadata records are subsets that
+   ;; can be better represented by one parent metadata record, which describes the entire set. In
+   ;; some instances, a child may point to more than one parent. The EntryId is the same as the
+   ;; element described elsewhere in this document where it contains and ID, and Version.
+   MetadataAssociations
+
    ;; Describes the language used in the preparation, storage, and description of the service It is
    ;; the language of the information object, not the language used to describe or interact with the
    ;; metadata record. It does not refer to the language of the metadata.
    DataLanguage
-
-   ;; This element describes the relevant platforms used to acquire the data related to the service.
-   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
-   ;; Station, Network, Human, etc.
-   Project
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-C)
-
-;; This element describes the relevant platforms used to acquire the data related to the service.
-;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
-;; Network, Human, etc. This platform includes zero or more instruments
-(defrecord PlatformType
-  [
-
-  ])
-(record-pretty-printer/enable-record-pretty-printing PlatformType)
 
 ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the
 ;; data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than
@@ -208,7 +198,7 @@
 (defrecord PaleoTemporalCoverageType
   [
    ;; The chronostratigraphic units are selected from a UMM builder. The vocabulary is controlled.
-   ChronostratigraphicUnit
+   ChronostratigraphicUnits
 
    ;; The number of years furthest back in time including units Ga, Ma, ka or ybp.
    StartDate
@@ -239,7 +229,7 @@
 
    Stage
 
-   Detailed_Classification
+   DetailedClassification
 
    Period
   ])
@@ -250,7 +240,7 @@
   [
    ;; This element describes the minimum distance possible between two adjacent values, expressed in
    ;; distance units of measure for collection.
-   Resolution
+   Resolutions
   ])
 (record-pretty-printer/enable-record-pretty-printing ResolutionsType)
 

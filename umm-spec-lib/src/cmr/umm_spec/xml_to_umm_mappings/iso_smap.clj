@@ -49,8 +49,8 @@
              :EntryTitle entry-title-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath
-             :TemporalExtent (for-each temporal-extent-xpath-str
-                               (object {:RangeDateTime (for-each "gml:TimePeriod"
-                                                         (object {:BeginningDateTime (xpath "gml:beginPosition")
-                                                                  :EndingDateTime    (xpath "gml:endPosition")}))
-                                        :SingleDateTime (select "gml:TimeInstant/gml:timePosition")}))})))
+             :TemporalExtents (for-each temporal-extent-xpath-str
+                                (object {:RangeDateTimes (for-each "gml:TimePeriod"
+                                                           (object {:BeginningDateTime (xpath "gml:beginPosition")
+                                                                    :EndingDateTime    (xpath "gml:endPosition")}))
+                                         :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")}))})))

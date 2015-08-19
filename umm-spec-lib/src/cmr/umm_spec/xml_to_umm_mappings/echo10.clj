@@ -10,20 +10,20 @@
       {:TemporalRangeType (xpath "TemporalRangeType")
        :PrecisionOfSeconds (xpath "PrecisionOfSeconds")
        :EndsAtPresentFlag (xpath "EndsAtPresentFlag")
-       :RangeDateTime (for-each "RangeDateTime"
-                        (object
-                          {:BeginningDateTime (xpath "BeginningDateTime")
-                           :EndingDateTime (xpath "EndingDateTime")}))
-       :SingleDateTime (select "SingleDateTime")
-       :PeriodicDateTime (for-each "PeriodicDateTime"
-                           (object
-                             {:Name (xpath "Name")
-                              :StartDate (xpath "StartDate")
-                              :EndDate (xpath "EndDate")
-                              :DurationUnit (xpath "DurationUnit")
-                              :DurationValue (xpath "DurationValue")
-                              :PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")
-                              :PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")}))})))
+       :RangeDateTimes (for-each "RangeDateTime"
+                         (object
+                           {:BeginningDateTime (xpath "BeginningDateTime")
+                            :EndingDateTime (xpath "EndingDateTime")}))
+       :SingleDateTimes (select "SingleDateTime")
+       :PeriodicDateTimes (for-each "PeriodicDateTime"
+                            (object
+                              {:Name (xpath "Name")
+                               :StartDate (xpath "StartDate")
+                               :EndDate (xpath "EndDate")
+                               :DurationUnit (xpath "DurationUnit")
+                               :DurationValue (xpath "DurationValue")
+                               :PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")
+                               :PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")}))})))
 
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
@@ -33,4 +33,4 @@
        :EntryId (xpath "/Collection/ShortName")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
-       :TemporalExtent temporal-mappings})))
+       :TemporalExtents temporal-mappings})))

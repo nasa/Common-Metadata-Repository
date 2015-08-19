@@ -29,7 +29,7 @@
           "description": "Describes the data held as either describing the metadata or data.",
           "$ref": "#/definitions/LineageScopeEnum"
         },
-        "Date": {
+        "Dates": {
           "description": "This encaptulates all of the changes for a specific date.",
           "type": "array",
           "items": {
@@ -58,7 +58,7 @@
           "description": "Describes the change.",
           "type": "string"
         },
-        "Responsibility": {
+        "Responsibilities": {
           "description": "Documents who made the change.",
           "type": "array",
           "items": {
@@ -67,7 +67,7 @@
           "minItems": 1
         }
       },
-      "required": ["Date", "Type", "Responsibility"]
+      "required": ["Date", "Type", "Responsibilities"]
     },
     "DateType": {
       "type": "object",
@@ -130,7 +130,7 @@
           "minLength": 1,
           "maxLength": 2048
         },
-        "Contact": {
+        "Contacts": {
           "description": "Contacts including phone, fax, email, url, etc.",
           "type": "array",
           "items": {
@@ -138,7 +138,7 @@
           },
           "minItems": 0
         },
-        "Address": {
+        "Addresses": {
           "description": "The address of the organization or person",
           "type": "array",
           "items": {
@@ -146,7 +146,7 @@
           },
           "minItems": 0
         },
-        "RelatedUrl": {
+        "RelatedUrls": {
           "description": "The URL of the organization or individual",
           "type": "array",
           "items": {
@@ -220,7 +220,7 @@
       "additionalProperties": false,
       "description": "This entity contains the address details for each contact.",
       "properties": {
-        "StreetAddress": {
+        "StreetAddresses": {
           "description": "An address line for the address, used for mailing or physical addresses of organizations or individuals who serve as points of contact.",
           "type": "array",
           "items": {
@@ -276,7 +276,7 @@
           "minLength": 1,
           "maxLength": 20
         },
-        "URL": {
+        "URLs": {
           "description": "The URL to the resource associated with the data set.",
           "type": "array",
           "items": {
@@ -307,7 +307,7 @@
           "$ref": "#/definitions/FileSizeType"
         }
       },
-      "required": ["URL"]
+      "required": ["URLs"]
     },
     "ContentTypeType": {
       "type": "object",
@@ -829,7 +829,7 @@
           },
           "minItems": 0
         },
-        "OperationalMode": {
+        "OperationalModes": {
           "description": "The operation mode applied on the instrument when acquire the granule data.",
           "type": "array",
           "items": {
@@ -887,7 +887,7 @@
           "minLength": 1,
           "maxLength": 80
         },
-        "Campaign": {
+        "Campaigns": {
           "description": "The name of the campaign/experiment (e.g. Global climate observing system).",
           "type": "array",
           "items": {
@@ -929,7 +929,7 @@
           "description": "This attribute will denote that a data collection which covers, temporally, a discontinuous range, currently ends at the present date. This way, the granules, which comprise the data collection, that are continuously being added to inventory need not update the data collection metadata for each one.",
           "type": "boolean"
         },
-        "RangeDateTime": {
+        "RangeDateTimes": {
           "description": "Stores the start and end date/time of a collection.",
           "type": "array",
           "items": {
@@ -937,7 +937,7 @@
           },
           "minItems": 1
         },
-        "SingleDateTime": {
+        "SingleDateTimes": {
           "type": "array",
           "items": {
             "format": "date-time",
@@ -945,7 +945,7 @@
           },
           "minItems": 1
         },
-        "PeriodicDateTime": {
+        "PeriodicDateTimes": {
           "description": "This entity contains the name of the temporal period in addition to the date, time, duration unit, and value, and cycle duration unit and value. Used at the collection level to describe a collection having granules, which cover a regularly occurring period.",
           "type": "array",
           "items": {
@@ -1024,7 +1024,7 @@
         "HorizontalSpatialDomain": {
           "$ref": "#/definitions/HorizontalSpatialDomainType"
         },
-        "VerticalSpatialDomain": {
+        "VerticalSpatialDomains": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/VerticalSpatialDomainType"
@@ -1144,7 +1144,7 @@
       "additionalProperties": false,
       "description": "The boundary representing the outer ring of the GPolygon.",
       "properties": {
-        "Point": {
+        "Points": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/PointType"
@@ -1158,7 +1158,7 @@
       "additionalProperties": false,
       "description": "Contains the excluded boundaries from the GPolygon.",
       "properties": {
-        "Boundary": {
+        "Boundaries": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/BoundaryType"
@@ -1166,13 +1166,13 @@
           "minItems": 1
         }
       },
-      "required": ["Boundary"]
+      "required": ["Boundaries"]
     },
     "LineType": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "Point": {
+        "Points": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/PointType"

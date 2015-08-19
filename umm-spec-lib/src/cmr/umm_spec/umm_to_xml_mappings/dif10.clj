@@ -24,21 +24,21 @@
     [:Instrument
      [:Short_Name "dummy instrument short name"]]]
 
-   (for-each "/TemporalExtent"
+   (for-each "/TemporalExtents"
      [:Temporal_Coverage
       [:Temporal_Range_Type (xpath "TemporalRangeType")]
       [:Precision_Of_Seconds (xpath "PrecisionOfSeconds")]
       [:Ends_At_Present_Flag (xpath "EndsAtPresentFlag")]
 
-      (for-each "RangeDateTime"
+      (for-each "RangeDateTimes"
         [:Range_DateTime
          [:Beginning_Date_Time (xpath "BeginningDateTime")]
          [:Ending_Date_Time (xpath "EndingDateTime")]])
 
-      (for-each "SingleDateTime"
+      (for-each "SingleDateTimes"
         [:Single_DateTime (xpath ".")])
 
-      (for-each "PeriodicDateTime"
+      (for-each "PeriodicDateTimes"
         [:Periodic_DateTime
          [:Name (xpath "Name")]
          [:Start_Date (xpath "StartDate")]
