@@ -29,6 +29,10 @@
   (xpath (str short-name-identification-xpath
               "/gmd:purpose/gco:CharacterString")))
 
+(def data-language-xpath
+  (xpath (str short-name-identification-xpath
+              "/gmd:language/gco:CharacterString")))
+
 (def entry-title-xpath
   (xpath (str metadata-base-xpath
               "/gmd:identificationInfo/gmd:MD_DataIdentification"
@@ -49,6 +53,7 @@
              :EntryTitle entry-title-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath
+             :DataLanguage data-language-xpath
              :TemporalExtents (for-each temporal-extent-xpath-str
                                 (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                            (object {:BeginningDateTime (xpath "gml:beginPosition")

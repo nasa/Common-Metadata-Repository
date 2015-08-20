@@ -43,6 +43,7 @@
              :EntryTitle entry-title-xpath
              :Abstract (xpath (make-data-id-xpath "gmd:abstract/gco:CharacterString"))
              :Purpose (xpath (make-data-id-xpath "/gmd:purpose/gco:CharacterString"))
+             :DataLanguage (xpath (make-data-id-xpath "gmd:language/gco:CharacterString"))
              :TemporalExtents (for-each (make-temporal-xpath)
                                (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                          (object {:BeginningDateTime (xpath "gml:beginPosition")

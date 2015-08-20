@@ -112,9 +112,7 @@
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
-  (-> umm-coll
-      (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
-      (assoc :DataLanguage nil)))
+  (update-in umm-coll [:TemporalExtents] expected-iso-19115-2-temporal))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
