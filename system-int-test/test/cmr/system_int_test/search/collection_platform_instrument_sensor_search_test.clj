@@ -71,7 +71,7 @@
            [coll4 coll5] "platform_Sn_" {:pattern true}
            [coll2] ["platform_Sn B" "platform_Sn A"] {:and true}))
 
-    (testing "Search collections by platform short-name using JSON query"
+    (testing "Search collections by platform using JSON query"
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
