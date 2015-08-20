@@ -28,6 +28,7 @@
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :DataLanguage "English"
+     :Quality "Quality description"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3
