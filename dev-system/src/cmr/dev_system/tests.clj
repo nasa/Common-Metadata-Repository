@@ -24,23 +24,28 @@
     10
     1))
 
-(def integration-test-namespaces
+(defn integration-test-namespaces
   "The list of integration test namespaces. Anything that contains 'cmr.' and 'int-test' is
-  considered an integration test namespace."
+  considered an integration test namespace. This must be a function instead of a var because of its
+  use of all-ns. It must be executed right before test execution to find all test namespaces."
+  []
   (->> (all-ns)
        (map str)
        (filter #(re-find #"cmr\..*int-test" %))
        (sort-by integration-test-ns->compare-value)))
 
-(def unit-test-namespaces
+(defn unit-test-namespaces
   "This defines a list of unit test namespaaces. Anything namespace name that contains 'cmr.' and
-  'test' that is not an integration test namespace is considered a unit test namespace."
+  'test' that is not an integration test namespace is considered a unit test namespace. This must be
+  a function instead of a var because of its use of all-ns. It must be executed right before test
+  execution to find all test namespaces."
+  []
   (set/difference
     (->> (all-ns)
          (map str)
          (filter #(re-find #"cmr\..*test" %))
          set)
-    (set integration-test-namespaces)))
+    (set (integration-test-namespaces))))
 
 (defn run-tests
   "Runs all the tests matching the list of namespace regular expressions. The tests are run
@@ -48,7 +53,7 @@
   [namespaces parallel?]
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
-              (taoensso.timbre/set-level! :warn)
+              (taoensso.timbre/set-level! :error)
               (let [[millis results] (u/time-execution (t/run-tests (find-ns (symbol test-ns))))]
                 (assoc results
                        :took millis
@@ -132,8 +137,8 @@
   (println "RUNNING ALL TESTS")
   (let [{:keys [fail-fast?]} options
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
-        unittest-results (run-tests unit-test-namespaces true)
-        inttest-results (run-tests integration-test-namespaces false)
+        unittest-results (run-tests (unit-test-namespaces) true)
+        inttest-results (run-tests (integration-test-namespaces) false)
         [took test-results] (u/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]

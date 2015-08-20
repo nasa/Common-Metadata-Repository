@@ -11,54 +11,56 @@
 (def example-record
   "This is the minimum valid UMM."
   (umm-c/map->UMM-C
-    {:Platform [(umm-cmn/map->PlatformType
-                  {:ShortName "Platform"
-                   :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+    {:Platforms [(umm-cmn/map->PlatformType
+                   {:ShortName "Platform"
+                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
-     :RelatedUrl [(umm-cmn/map->RelatedUrlType {:URL ["http://google.com"]})]
-     :ResponsibleOrganization [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                 :Party (umm-cmn/map->PartyType {})})]
-     :ScienceKeyword [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent [(umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})]
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+     :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                  :Party (umm-cmn/map->PartyType {})})]
+     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
      :EntryId "short"
      :EntryTitle "The entry title V5"
-     :DataDate [(umm-cmn/map->DateType {:Date (t/date-time 2012)
-                                        :Type "CREATE"})]
+     :Version "V5"
+     :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                         :Type "CREATE"})]
      :Abstract "A very abstract collection"
-     :TemporalExtent [(umm-cmn/map->TemporalExtentType
-                        {:TemporalRangeType "temp range"
-                         :PrecisionOfSeconds 3
-                         :EndsAtPresentFlag false
-                         :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                                              [{:BeginningDateTime (t/date-time 2000)
-                                                :EndingDateTime (t/date-time 2001)}
-                                               {:BeginningDateTime (t/date-time 2002)
-                                                :EndingDateTime (t/date-time 2003)}])})
-                      (umm-cmn/map->TemporalExtentType
-                        {:TemporalRangeType "temp range"
-                         :PrecisionOfSeconds 3
-                         :EndsAtPresentFlag false
-                         :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]})
-                      (umm-cmn/map->TemporalExtentType
-                        {:TemporalRangeType "temp range"
-                         :PrecisionOfSeconds 3
-                         :EndsAtPresentFlag false
-                         :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                                                 [{:Name "period1"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}
-                                                  {:Name "period2"
-                                                   :StartDate (t/date-time 2000)
-                                                   :EndDate (t/date-time 2001)
-                                                   :DurationUnit "YEAR"
-                                                   :DurationValue 4
-                                                   :PeriodCycleDurationUnit "DAY"
-                                                   :PeriodCycleDurationValue 3}])})]}))
+     :DataLanguage "English"
+     :TemporalExtents [(umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
+                                                [{:BeginningDateTime (t/date-time 2000)
+                                                  :EndingDateTime (t/date-time 2001)}
+                                                 {:BeginningDateTime (t/date-time 2002)
+                                                  :EndingDateTime (t/date-time 2003)}])})
+                       (umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]})
+                       (umm-cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
+                                                   [{:Name "period1"
+                                                     :StartDate (t/date-time 2000)
+                                                     :EndDate (t/date-time 2001)
+                                                     :DurationUnit "YEAR"
+                                                     :DurationValue 4
+                                                     :PeriodCycleDurationUnit "DAY"
+                                                     :PeriodCycleDurationValue 3}
+                                                    {:Name "period2"
+                                                     :StartDate (t/date-time 2000)
+                                                     :EndDate (t/date-time 2001)
+                                                     :DurationUnit "YEAR"
+                                                     :DurationValue 4
+                                                     :PeriodCycleDurationUnit "DAY"
+                                                     :PeriodCycleDurationValue 3}])})]}))
 
 
 (comment

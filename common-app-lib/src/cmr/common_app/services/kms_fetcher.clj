@@ -65,6 +65,7 @@
   "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
   nil will be returned."
   [context keyword-scheme short-name]
+  {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
   (let [cache (cache/context->cache context kms-cache-key)]
     (get-in (cache/get-value cache kms-cache-key (partial get-all-gcmd-keywords-as-map context))
             [keyword-scheme short-name])))
@@ -92,9 +93,7 @@
   (refresh-kms-cache system)
   (get-in (cache/get-value (cache/context->cache system kms-cache-key) kms-cache-key)
           [:providers "MEDIAS FRANCE"])
-
   (cache/get-keys (cache/context->cache system kms-cache-key))
-
   (get-full-hierarchy-for-short-name system :providers "MEDIAS FRANCE")
 
   )

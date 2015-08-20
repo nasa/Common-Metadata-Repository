@@ -14,20 +14,21 @@
    [:Entry_ID (xpath "/EntryId")]
    [:Entry_Title (xpath "/EntryTitle")]
    [:Data_Set_Citation
-    [:Dataset_Title "dummy dataset title"]]
+    [:Version (xpath "/Version")]]
    [:Parameters
     [:Category "dummy category"]
     [:Topic "dummy topic"]
     [:Term "dummy term"]]
    [:ISO_Topic_Category "dummy iso topic category"]
-   (for-each "/TemporalExtent/RangeDateTime"
+   (for-each "/TemporalExtents/RangeDateTimes"
              [:Temporal_Coverage
               [:Start_Date (xpath "BeginningDateTime")]
               [:Stop_Date (xpath "EndingDateTime")]])
-   (for-each "/TemporalExtent/SingleDateTime"
+   (for-each "/TemporalExtents/SingleDateTimes"
              [:Temporal_Coverage
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
+   [:Data_Set_Language (xpath "/DataLanguage")]
    ;; TODO (CMR-1933) determine if PeriodicDateTime is supported for DIF
    [:Data_Center
     [:Data_Center_Name

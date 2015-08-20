@@ -13,6 +13,7 @@
             [cmr.umm.start-end-date :as sed]
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
+            [cmr.indexer.data.concepts.platform :as platform]
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
@@ -62,6 +63,8 @@
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
+        platforms-nested (map #(platform/platform-short-name->elastic-doc context %)
+                              platform-short-names)
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
         instrument-long-names (remove nil? (map :long-name instruments))
@@ -113,6 +116,8 @@
                                                 (str/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map str/lower-case platform-short-names)
+            ;; hierarchical platforms
+            :platforms platforms-nested
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names

@@ -98,10 +98,12 @@
 
 (defn bootstrap-virtual-products
   "Call the bootstrap app to bulk index a collection."
-  []
+  [provider-id entry-title]
   (let [response (client/request
                    {:method :post
-                    :query-params {:synchronous true}
+                    :query-params (util/remove-nil-keys {:synchronous true
+                                                         :provider-id provider-id
+                                                         :entry-title entry-title})
                     :url (url/bootstrap-url "virtual_products")
                     :accept :json
                     :throw-exceptions false

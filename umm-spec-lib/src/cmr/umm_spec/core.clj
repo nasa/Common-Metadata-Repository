@@ -69,7 +69,7 @@
    (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata)
    ;; Since DIF 9 only supports ranges, this clears up issues when parsing metadata generated from
    ;; UMM records that only have periodic data.
-   (update-in [:TemporalExtent] #(filter :RangeDateTime %))
+   (update-in [:TemporalExtents] #(filter :RangeDateTimes %))
    ))
 
 (defmethod parse-metadata [:collection :dif10]

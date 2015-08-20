@@ -10,9 +10,11 @@
     (object
       {:EntryTitle (xpath "/DIF/Entry_Title")
        :EntryId (xpath "/DIF/Entry_ID")
+       :Version (xpath "/DIF/Data_Set_Citation/Version")
        :Abstract (xpath "/DIF/Summary/Abstract")
        :Purpose (xpath "/DIF/Summary/Purpose")
-       :TemporalExtent (for-each "."
-                         (object {:RangeDateTime (for-each "/DIF/Temporal_Coverage"
-                                                   (object {:BeginningDateTime (xpath "Start_Date")
-                                                            :EndingDateTime    (xpath "Stop_Date")}))}))})))
+       :DataLanguage (xpath "/DIF/Data_Set_Language")
+       :TemporalExtents (for-each "."
+                          (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
+                                                     (object {:BeginningDateTime (xpath "Start_Date")
+                                                              :EndingDateTime    (xpath "Stop_Date")}))}))})))
