@@ -65,7 +65,8 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtents] (partial take 1))))
+      (update-in [:TemporalExtents] (partial take 1))
+      (assoc :DataLanguage nil)))
 
 ;; DIF 9
 
@@ -111,7 +112,9 @@
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtents] expected-iso-19115-2-temporal))
+  (-> umm-coll
+      (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
+      (assoc :DataLanguage nil)))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]

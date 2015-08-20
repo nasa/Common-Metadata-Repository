@@ -2,10 +2,10 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
     "LanguageType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes the language used in the preparation, storage, and description of the data. It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
-      "properties": {}
+      "description": "The name of the language as defined in ISO 639",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 25
     },
     "MetadataStandardType": {
       "type": "object",
