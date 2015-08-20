@@ -80,8 +80,37 @@
 					}]
 				},
 				"platform": {
-					"description": "UMM platform short name",
-					"$ref": "#/definitions/StringCondition"
+					"description": "Search against any of the subfields in the platform hierarchy",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"category": {
+							"type": "string"
+						},
+						"series_entity": {
+							"type": "string"
+						},
+						"short_name": {
+							"type": "string"
+						},
+						"long_name": {
+							"type": "string"
+						},
+						"uuid": {
+							"type": "string"
+						},
+						"ignore_case": {
+							"$ref": "#/definitions/IgnoreCaseOption"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						},
+						"any": {
+							"description": "Search against any of the platform subfields (category, series_entity, etc.) for the provided value.",
+							"type": "string"
+						}
+					}
 				},
 				"instrument": {
 					"description": "UMM instrument short name",
@@ -145,7 +174,7 @@
 							"$ref": "#/definitions/PatternOption"
 						},
 						"any": {
-							"description": "Search against any of the science keyword sub-fields (category, term, etc.) for the provided value.",
+							"description": "Search against any of the science keyword subfields (category, term, etc.) for the provided value.",
 							"type": "string"
 						}
 					}
@@ -155,38 +184,38 @@
 					"$ref": "#/definitions/BoundingBoxCondition"
 				},
 				"temporal": {
-				  "description": "Specifies a temporal search.",
-				  "type": "object",
-				  "additionalProperties": false,
-				  "minProperties": 1,
-				  "properties": {
-				    "start_date": {
-				      "description": "The temporal coverage start date.",
-				      "format": "date-time",
-				      "type": "string"
-				      },
-				    "end_date": {
-				      "description": "The temporal coverage end date.",
-				      "format": "date-time",
-				      "type": "string"
-				      },
-				    "recurring_start_day": {
-				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period starting on or after the given day.",
-				      "type": "integer",
-				      "minimum": 0,
-				      "maximum": 366
-				      },
-				    "recurring_end_day": {
-				      "description": "An integer representing the day to get collections with a temporal extent over a recurring annual period ending on or before the given day.",
-				      "type": "integer",
-				      "minimum": 0,
-				      "maximum": 366
-				      },
-				    "exclude_boundary": {
-				      "description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches. Defaults to false.",
-				      "type": "boolean"
-				    }
-				  }
+					"description": "Specifies a temporal search.",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"start_date": {
+							"description": "The temporal coverage start date.",
+							"format": "date-time",
+							"type": "string"
+						},
+						"end_date": {
+							"description": "The temporal coverage end date.",
+							"format": "date-time",
+							"type": "string"
+						},
+						"recurring_start_day": {
+							"description": "An integer representing the day to get collections with a temporal extent over a recurring annual period starting on or after the given day.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 366
+						},
+						"recurring_end_day": {
+							"description": "An integer representing the day to get collections with a temporal extent over a recurring annual period ending on or before the given day.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 366
+						},
+						"exclude_boundary": {
+							"description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches. Defaults to false.",
+							"type": "boolean"
+						}
+					}
 				}
 			}
 		},

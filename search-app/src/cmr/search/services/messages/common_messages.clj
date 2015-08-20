@@ -61,5 +61,11 @@
 
 (defn invalid-science-keyword-json-query
   "Creates a message indicating the JSON query condition provided for science_keywords is invalid."
-  [science-keyword-condition]
-  (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any" science-keyword-condition))
+  [condition]
+  (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition))
+
+(defn invalid-platform-json-query
+  "Creates a message indicating the JSON query condition provided for platform is invalid."
+  [condition]
+  (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition))
+

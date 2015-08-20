@@ -34,7 +34,7 @@
    :version :string
    :processing-level-id :string
    :concept-id :string
-   :platform :string
+   :platform :platform
    :instrument :string
    :sensor :string
    :project :string
@@ -71,17 +71,17 @@
   present."
   [value]
   (when-not (seq (set/intersection (set (keys value))
-                                   (conj (:science-keywords nf/nested-field-mappings) :any)))
+                                   (set (conj (:science-keywords nf/nested-field-mappings) :any))))
     (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
 
 (defn- validate-platform-condition
-  "Custom validation to make sure there is at least one science keyword field being searched on.
+  "Custom validation to make sure there is at least one platform field being searched on.
   JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
   present."
   [value]
   (when-not (seq (set/intersection (set (keys value))
-                                   (conj (:platforms nf/nested-field-mappings) :any)))
-    (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
+                                   (set (conj (:platforms nf/nested-field-mappings) :any))))
+    (errors/throw-service-error :bad-request (msg/invalid-platform-json-query value))))
 
 (defn- validate-temporal-condition
   "Custom validation to make sure there is at least one temporal condition other than
@@ -157,8 +157,15 @@
                              (case-sensitive-field? condition-name value)
                              (:pattern value)))
 
-(defmethod parse-json-condition :bounding-box
+(defmethod parse-json-condition :platform
   [condition-name value]
+  (validate-platform-condition value)
+  (nf/parse-nested-condition :platforms value
+                             (case-sensitive-field? condition-name value)
+                             (:pattern value)))
+
+(defmethod parse-json-condition :bounding-box
+  [_ value]
   (let [bounding-box (if (map? value)
                        (mbr/mbr (:west value) (:north value) (:east value) (:south value))
                        (let [[west south east north] value]
@@ -167,7 +174,7 @@
     (qm/->SpatialCondition bounding-box)))
 
 (defmethod parse-json-condition :temporal
-  [condition-name value]
+  [_ value]
   (validate-temporal-condition value)
   (let [{:keys [start-date end-date recurring-start-day recurring-end-day exclude-boundary]} value]
     (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date)
@@ -177,10 +184,6 @@
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
-
-; (defmethod parse-json-condition :platform
-;   [condition-name value]
-;   nil)
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."
