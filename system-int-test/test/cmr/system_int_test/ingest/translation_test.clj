@@ -27,6 +27,7 @@
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
+     :DataLanguage "English"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3

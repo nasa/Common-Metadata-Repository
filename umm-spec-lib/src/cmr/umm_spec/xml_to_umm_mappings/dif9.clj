@@ -13,6 +13,7 @@
        :Version (xpath "/DIF/Data_Set_Citation/Version")
        :Abstract (xpath "/DIF/Summary/Abstract")
        :Purpose (xpath "/DIF/Summary/Purpose")
+       :DataLanguage (xpath "/DIF/Data_Set_Language")
        :TemporalExtents (for-each "."
                           (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                      (object {:BeginningDateTime (xpath "Start_Date")
