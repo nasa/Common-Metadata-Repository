@@ -86,18 +86,23 @@
 					"minProperties": 1,
 					"properties": {
 						"category": {
+							"description": "Top level classification of platforms.",
 							"type": "string"
 						},
 						"series_entity": {
+							"description": "Second level classification under category. These keywords usually (but not always) refer to a series of Earth or space observing satellites.",
 							"type": "string"
 						},
 						"short_name": {
+							"description": "Abbreviated name of the platform (source) used to acquire the data.",
 							"type": "string"
 						},
 						"long_name": {
+							"description": "Full name of the platform (source) used to acquire the data.",
 							"type": "string"
 						},
 						"uuid": {
+							"description": "Unique identifier for the platform within the GCMD Keyword Management System.",
 							"type": "string"
 						},
 						"ignore_case": {
