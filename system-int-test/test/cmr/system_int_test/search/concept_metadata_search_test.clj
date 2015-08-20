@@ -160,7 +160,7 @@
                                                        {:headers {transmit-config/token-header
                                                                   user1-token}}))]
           (is (= 400 status))
-          (is (= #{"Deleted concepts do not contain metadata."}
+          (is (= #{"The revision [2] of concept [C1200000001-PROV1] represents a deleted concept and does not contain metadata."}
                  (set errors)))))
 
       (testing "Unknown concept-id returns a 404 error"
