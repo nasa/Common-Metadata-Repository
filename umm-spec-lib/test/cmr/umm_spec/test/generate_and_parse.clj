@@ -24,47 +24,50 @@
     
     :EntryId "short_V1"
     :EntryTitle "The entry title V5"
-    :Abstract "A very abstract collection"
-    :TemporalExtent [(umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
-                                            [{:BeginningDateTime (t/date-time 2000)
-                                              :EndingDateTime (t/date-time 2001)}
-                                             {:BeginningDateTime (t/date-time 2002)
-                                              :EndingDateTime (t/date-time 2003)}])})
-                     (umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]})
-                     (umm-cmn/map->TemporalExtentType
-                      {:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
-                                               [{:Name "period1"
-                                                 :StartDate (t/date-time 2000)
-                                                 :EndDate (t/date-time 2001)
-                                                 :DurationUnit "YEAR"
-                                                 :DurationValue 4
-                                                 :PeriodCycleDurationUnit "DAY"
-                                                 :PeriodCycleDurationValue 3}
-                                                {:Name "period2"
-                                                 :StartDate (t/date-time 2000)
-                                                 :EndDate (t/date-time 2001)
-                                                 :DurationUnit "YEAR"
-                                                 :DurationValue 4
-                                                 :PeriodCycleDurationUnit "DAY"
-                                                 :PeriodCycleDurationValue 3}])})]}))
+    :Abstract "A very abstract collection"}))
+
+(def temporal-extents
+  "A sequence of possible values for UMM TemporalExtent."
+  [(umm-cmn/map->TemporalExtentType
+    {:TemporalRangeType "temp range"
+     :PrecisionOfSeconds 3
+     :EndsAtPresentFlag false
+     :RangeDateTime (mapv umm-cmn/map->RangeDateTimeType
+                          [{:BeginningDateTime (t/date-time 2000)
+                            :EndingDateTime (t/date-time 2001)}
+                           {:BeginningDateTime (t/date-time 2002)
+                            :EndingDateTime (t/date-time 2003)}])})
+   ;; Single Dates
+   (umm-cmn/map->TemporalExtentType
+    {:PrecisionOfSeconds 3
+     :SingleDateTime [(t/date-time 2003) (t/date-time 2004)]})
+   ;; Periodic 
+   (umm-cmn/map->TemporalExtentType
+    {:PrecisionOfSeconds 3
+     :PeriodicDateTime (mapv umm-cmn/map->PeriodicDateTimeType
+                             [{:Name "period1"
+                               :StartDate (t/date-time 2000)
+                               :EndDate (t/date-time 2001)
+                               :DurationUnit "YEAR"
+                               :DurationValue 4
+                               :PeriodCycleDurationUnit "DAY"
+                               :PeriodCycleDurationValue 3}
+                              {:Name "period2"
+                               :StartDate (t/date-time 2000)
+                               :EndDate (t/date-time 2001)
+                               :DurationUnit "YEAR"
+                               :DurationValue 4
+                               :PeriodCycleDurationUnit "DAY"
+                               :PeriodCycleDurationValue 3}])})])
 
 (def temporal-variations
   "A seq of example records for each of the values in the TemporalExtent in the base example-record
   above."
-  (for [temporal (:TemporalExtent example-record)]
-    (assoc example-record :TemporalExtent [temporal])))
- 
+  (for [temporal temporal-extents]
+    (if temporal
+      (assoc example-record :TemporalExtent [temporal])
+      example-record)))
+
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."

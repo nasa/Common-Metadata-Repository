@@ -67,9 +67,10 @@
   [_ _ metadata]
   (->
    (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata)
-   ;; Because of the weirdness with parsign DIF and the cardinality of TemporalExtent, we need to
-   ;; munge this to remove any empty TemporalExtents.
-   (update-in [:TemporalExtent] #(filter :RangeDateTime %))))
+   ;; Since DIF 9 only supports ranges, this clears up issues when parsing metadata generated from
+   ;; UMM records that only have periodic data.
+   (update-in [:TemporalExtent] #(filter :RangeDateTime %))
+   ))
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]
