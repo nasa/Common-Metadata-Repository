@@ -15,6 +15,18 @@
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
    "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
 
+(defn schema-type-constructor
+  "Returns the map->RecordName function that can be used to construct a type defined in the JSON
+  schema"
+  [schema type-name]
+  (let [record-ns (schema-name->namespace (:schema-name schema))]
+    (cmr.common.dev.capture-reveal/capture-all)
+    (-> (str (name record-ns) "/map->" (name type-name))
+        symbol
+        find-var
+        var-get)))
+
+
 (def ^:private MAX_LINE_SIZE
   "Defines the maximum line size for Clojure files."
   100)

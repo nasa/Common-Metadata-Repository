@@ -47,11 +47,7 @@
 
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
-  (let [record-ns (record-gen/schema-name->namespace (:schema-name schema))
-        constructor-fn-var (find-var
-                             (symbol (str (name record-ns)
-                                          "/map->"
-                                          (name type-name))))
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
         properties (into
                      {}
                      (for [[prop-name sub-mapping] (:properties mapping-type)
@@ -60,7 +56,7 @@
     (assoc mapping-type
            :properties properties
            :parse-type {:type :record
-                        :constructor-fn (var-get constructor-fn-var)})))
+                        :constructor-fn constructor-fn})))
 
 (defn add-parsing-types
   "Gets the mappings to umm with extra information to aid in parsing"
