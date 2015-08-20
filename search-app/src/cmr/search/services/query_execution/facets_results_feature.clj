@@ -2,7 +2,6 @@
   "This enables returning facets with collection search results"
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
-            [cmr.transmit.kms :as kms]
             [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
 
@@ -21,10 +20,12 @@
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
-  the bottom."
-  {:platforms (:platforms kms/keyword-scheme->field-names)
-   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
-                      :variable-level-3]})
+  the bottom. The order the keys are defined is the order that they will be returned in the facet
+  results."
+  (sorted-map
+    :platforms [:category :series-entity :short-name :long-name]
+    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
+                       :variable-level-3]))
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."

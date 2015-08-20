@@ -15,7 +15,7 @@
             [cmr.search.services.parameters.conversion :as pc]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
-            [cmr.search.services.parameters.converters.science-keyword :as psk]
+            [cmr.search.services.parameters.converters.nested-field :as nf]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.validation :as sv]))
 
@@ -34,7 +34,7 @@
    :version :string
    :processing-level-id :string
    :concept-id :string
-   :platform :string
+   :platform :platform
    :instrument :string
    :sensor :string
    :project :string
@@ -48,6 +48,50 @@
    :and :and
    :not :not
    :science-keywords :science-keywords})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Validations
+
+(defn- concept-type-validation
+  "Validates the provided concept type is valid for JSON query."
+  [concept-type]
+  (when-not (= :collection concept-type)
+    (errors/throw-service-error :bad-request (msg/json-query-unsupported-msg concept-type))))
+
+(defn- validate-json-query
+  "Perform all validations against the provided JSON query."
+  [concept-type json-query]
+  (concept-type-validation concept-type)
+  (when-let [errors (seq (js/validate-json json-query-schema json-query))]
+    (errors/throw-service-errors :bad-request errors)))
+
+(defn- validate-science-keywords-condition
+  "Custom validation to make sure there is at least one science keyword field being searched on.
+  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
+  present."
+  [value]
+  (when-not (seq (set/intersection (set (keys value))
+                                   (set (conj (:science-keywords nf/nested-field-mappings) :any))))
+    (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
+
+(defn- validate-platform-condition
+  "Custom validation to make sure there is at least one platform field being searched on.
+  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
+  present."
+  [value]
+  (when-not (seq (set/intersection (set (keys value))
+                                   (set (conj (:platforms nf/nested-field-mappings) :any))))
+    (errors/throw-service-error :bad-request (msg/invalid-platform-json-query value))))
+
+(defn- validate-temporal-condition
+  "Custom validation to make sure there is at least one temporal condition other than
+  exclude_boundary."
+  [value]
+  (when (empty? (dissoc value :exclude-boundary))
+    (errors/throw-service-error
+      :bad-request "Temporal condition with only exclude_boundary is invalid.")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- query-condition-name->condition-type
   "Returns the query condition type based on the given concept-type and param-name."
@@ -106,31 +150,22 @@
   [_ value]
   (qm/negated-condition (parse-json-condition-map value)))
 
-(defn- validate-science-keywords
-  "Custom validation to make sure there is at least one science keyword field being searched on.
-  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
-  present."
-  [value]
-  (when-not (seq (set/intersection (set (keys value))
-                                   (conj psk/science-keyword-fields :any)))
-    (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
-
-(defn- validate-temporal
-  "Custom validation to make sure there is at least one temporal condition other than exclude_boundary."
-  [value]
-  (when (empty? (dissoc value :exclude-boundary))
-    (errors/throw-service-error
-      :bad-request "Temporal condition with only exclude_boundary is invalid.")))
-
 (defmethod parse-json-condition :science-keywords
   [condition-name value]
-  (validate-science-keywords value)
-  (psk/parse-nested-science-keyword-condition value
-                                              (case-sensitive-field? condition-name value)
-                                              (:pattern value)))
+  (validate-science-keywords-condition value)
+  (nf/parse-nested-condition condition-name value
+                             (case-sensitive-field? condition-name value)
+                             (:pattern value)))
+
+(defmethod parse-json-condition :platform
+  [condition-name value]
+  (validate-platform-condition value)
+  (nf/parse-nested-condition :platforms value
+                             (case-sensitive-field? condition-name value)
+                             (:pattern value)))
 
 (defmethod parse-json-condition :bounding-box
-  [condition-name value]
+  [_ value]
   (let [bounding-box (if (map? value)
                        (mbr/mbr (:west value) (:north value) (:east value) (:south value))
                        (let [[west south east north] value]
@@ -139,27 +174,16 @@
     (qm/->SpatialCondition bounding-box)))
 
 (defmethod parse-json-condition :temporal
-  [condition-name value]
-  (validate-temporal value)
+  [_ value]
+  (validate-temporal-condition value)
   (let [{:keys [start-date end-date recurring-start-day recurring-end-day exclude-boundary]} value]
-    (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
-                                :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))
+    (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date)
+                                              (parser/parse-datetime start-date))
+                                :end-date (when-not (str/blank? end-date)
+                                            (parser/parse-datetime end-date))
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
-
-(defn- concept-type-validation
-  "Validates the provided concept type is valid for JSON query."
-  [concept-type]
-  (when-not (= :collection concept-type)
-    (errors/throw-service-error :bad-request (msg/json-query-unsupported-msg concept-type))))
-
-(defn- validate-json-query
-  "Perform all validations against the provided JSON query."
-  [concept-type json-query]
-  (concept-type-validation concept-type)
-  (when-let [errors (seq (js/validate-json json-query-schema json-query))]
-    (errors/throw-service-errors :bad-request errors)))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

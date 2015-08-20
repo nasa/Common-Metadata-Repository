@@ -129,7 +129,9 @@
     :short-name string-field-mapping
     :short-name.lowercase string-field-mapping
     :long-name string-field-mapping
-    :long-name.lowercase string-field-mapping}})
+    :long-name.lowercase string-field-mapping
+    :uuid string-field-mapping
+    :uuid.lowercase string-field-mapping}})
 
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
