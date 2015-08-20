@@ -2,6 +2,7 @@
   "This enables returning facets with collection search results"
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
+            [cmr.transmit.kms :as kms]
             [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
 
@@ -18,22 +19,26 @@
   {:reverse_nested {}
    :aggs {:concept-id {:terms {:field :concept-id :size 1}}}})
 
-(def ^:private science-keyword-hierarchy
-  "List containing the elements within the science keyword hierarchy from top to bottom."
-  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
+(def nested-fields-mappings
+  "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
+  the bottom."
+  {:platforms (:platforms kms/keyword-scheme->field-names)
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
+                      :variable-level-3]})
 
-(defn- science-keyword-aggregation-builder
-  "Build the science keyword aggregations query."
-  [field-hierarchy]
-  (when-let [field (first field-hierarchy)]
-    {field {:terms {:field (str "science-keywords." (name field))}
+(defn- hierarchical-aggregation-builder
+  "Build an aggregations query for the given hierarchical field."
+  [field field-hierarchy]
+  (when-let [subfield (first field-hierarchy)]
+    {subfield {:terms {:field (str (name field) "." (name subfield))}
             :aggs (merge {:coll-count collection-count-aggregation}
-                         (science-keyword-aggregation-builder (rest field-hierarchy)))}}))
+                         (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
 
-(def ^:private science-keyword-aggregations
-  "Returns the nested aggregation query for science-keyword-aggregations in a hierarchical fashion"
-  {:nested {:path :science-keywords}
-   :aggs (science-keyword-aggregation-builder science-keyword-hierarchy)})
+(defn- nested-facet
+  "Returns the nested aggregation query for the given hierarchical field."
+  [field]
+  {:nested {:path field}
+   :aggs (hierarchical-aggregation-builder field (field nested-fields-mappings))})
 
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request facetted results
@@ -58,12 +63,12 @@
   from a collection search."
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
-   :platform (terms-facet :platform-sn)
+   :platforms (nested-facet :platforms)
    :instrument (terms-facet :instrument-sn)
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
    :processing-level-id (terms-facet :processing-level-id)
-   :science-keywords science-keyword-aggregations
+   :science-keywords (nested-facet :science-keywords)
    ;; Detailed variable is technically part of the science keyword hierarchy directly below
    ;; variable level 1 (at the same level as variable level 2.)
    ;; Opened ticket CMR-1722 to address.
@@ -112,22 +117,23 @@
          field value-counts}
         empty-response))))
 
-(defn- science-keywords-bucket->facets
-  "Takes a map of elastic aggregation results for science keywords. Returns a hierarchical facet
-  map of science keywords. See parse-hierarchical-bucket for an example response."
-  [bucket-map]
-  (parse-hierarchical-bucket science-keyword-hierarchy bucket-map))
+(defn- hierarchical-bucket-map->facets
+  "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
+  that field."
+  [field bucket-map]
+  (parse-hierarchical-bucket (field nested-fields-mappings) bucket-map))
 
 (defn- create-hierarchical-facets
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
   returns the facets."
   [elastic-aggregations]
-  (concat (bucket-map->facets (dissoc elastic-aggregations :science-keywords)
-                              [:archive-center :project :platform :instrument :sensor
+  (concat (bucket-map->facets (apply dissoc elastic-aggregations (keys nested-fields-mappings))
+                              [:archive-center :project :instrument :sensor
                                :two-d-coordinate-system-name :processing-level-id
                                :detailed-variable])
-          [(assoc (science-keywords-bucket->facets (:science-keywords elastic-aggregations))
-                  :field "science_keywords")]))
+          (map (fn [field]
+                 (assoc (hierarchical-bucket-map->facets field (field elastic-aggregations))
+                        :field (csk/->snake_case_string field))) (keys nested-fields-mappings))))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns

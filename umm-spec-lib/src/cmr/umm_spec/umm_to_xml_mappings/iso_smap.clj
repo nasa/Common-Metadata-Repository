@@ -47,7 +47,12 @@
          [:gmd:identifier
           [:gmd:MD_Identifier
            [:gmd:code (char-string-from "/EntryId")]
-           [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]]]
+           [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]
+
+         [:gmd:identifier
+          [:gmd:MD_Identifier
+           [:gmd:code (char-string-from "/Version")]
+           [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
        [:gmd:language (char-string-from "/DataLanguage")]

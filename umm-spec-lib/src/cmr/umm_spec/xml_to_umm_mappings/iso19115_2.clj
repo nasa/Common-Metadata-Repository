@@ -7,46 +7,35 @@
 
 ;;; Path Utils
 
-;; ISO formats tend to have *very* long xpaths with many redundant elements.
-
-(def md-data-id-root-path
+(def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
 
-(defn- make-data-id-xpath
-  "Returns xpath from MD_DatatIdentification element."
-  [& parts]
-  (clojure.string/join "/" (cons md-data-id-root-path parts)))
-
-(defn- make-extent-xpath
-  [& parts]
-  (apply make-data-id-xpath "gmd:extent/gmd:EX_Extent" parts))
-
-(defn- make-temporal-xpath
-  [& parts]
-  (apply make-extent-xpath "gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent" parts))
-
 (def citation-base-xpath
-  (make-data-id-xpath "gmd:citation/gmd:CI_Citation"))
+  (str md-data-id-base-xpath "/gmd:citation/gmd:CI_Citation"))
 
-(def entry-id-xpath
-  (xpath (str citation-base-xpath "/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")))
-
-(def entry-title-xpath
-  (xpath (str citation-base-xpath "/gmd:title/gco:CharacterString")))
+(def identifier-base-xpath
+  (str citation-base-xpath "/gmd:identifier/gmd:MD_Identifier"))
 
 ;;; Mapping
+
+(def temporal-xpath
+  (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+
+(def temporal-mappings
+  (for-each temporal-xpath
+    (object {:RangeDateTimes (for-each "gml:TimePeriod"
+                               (object {:BeginningDateTime (xpath "gml:beginPosition")
+                                        :EndingDateTime    (xpath "gml:endPosition")}))
+             :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")})))
 
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
-    (object {:EntryId entry-id-xpath
-             :EntryTitle entry-title-xpath
-             :Abstract (xpath (make-data-id-xpath "gmd:abstract/gco:CharacterString"))
-             :Purpose (xpath (make-data-id-xpath "/gmd:purpose/gco:CharacterString"))
-             :DataLanguage (xpath (make-data-id-xpath "gmd:language/gco:CharacterString"))
-             :TemporalExtents (for-each (make-temporal-xpath)
-                               (object {:RangeDateTimes (for-each "gml:TimePeriod"
-                                                         (object {:BeginningDateTime (xpath "gml:beginPosition")
-                                                                  :EndingDateTime    (xpath "gml:endPosition")}))
-                                        :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")}))
-             })))
+    (object {:EntryId (char-string-xpath identifier-base-xpath "/gmd:code")
+             :EntryTitle (char-string-xpath citation-base-xpath "/gmd:title")
+             :Version (char-string-xpath identifier-base-xpath "/gmd:version")
+             :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
+             :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
+             :TemporalExtents temporal-mappings})))
+

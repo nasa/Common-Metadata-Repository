@@ -20,6 +20,21 @@
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
+(def keyword-scheme->field-names
+  "Maps each keyword scheme to its hierarchical field names."
+  {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+   :platforms [:category :series-entity :short-name :long-name]
+   :instruments [:category :class :type :subtype :short-name :long-name]})
+
+(def keyword-scheme->expected-field-names
+  "Maps each keyword scheme to the expected field names to be returned by KMS. There are some
+  fields which we do not extract since they are not needed for hierarchical facets. We also changed
+  the names of some fields."
+  {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
+               :long-name :data-center-url :uuid]
+   :platforms [:category :series-entity :short-name :long-name :uuid]
+   :instruments [:category :class :type :subtype :short-name :long-name :uuid]})
+
 (defn- find-invalid-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
   do not know how to correctly map from short name to the full hierarchy.
@@ -46,6 +61,18 @@
   "Number of lines which contain header information (not the actual keyword values)."
   2)
 
+(defn- validate-subfield-names
+  "Validates that the provided subfield names match the expected subfield names for the given
+  keyword scheme. Throws an exception if they do not match."
+  [keyword-scheme subfield-names]
+  (let [expected-subfield-names (keyword-scheme keyword-scheme->expected-field-names)]
+    (when-not (= expected-subfield-names subfield-names)
+      (throw (Exception.
+               (format "Expected subfield names for %s to be %s, but were %s."
+                       (name keyword-scheme)
+                       (pr-str expected-subfield-names)
+                       (pr-str subfield-names)))))))
+
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
   specific format with the first line providing metadata information, the second line providing
@@ -56,12 +83,13 @@
   value."
   [keyword-scheme csv-content]
   (let [all-lines (csv/read-csv csv-content)
-        ;; Line 2 contains the names of the subfield names
-        subfield-names (map csk/->kebab-case-keyword (second all-lines))
+        ;; Line 2 contains the subfield names
+        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
+        _ (validate-subfield-names keyword-scheme kms-subfield-names)
         keyword-entries (->> all-lines
                              (drop NUM_HEADER_LINES)
                              ;; Create a map for each row using the subfield-names as keys
-                             (map #(zipmap subfield-names %))
+                             (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                              (map remove-blank-keys)
                              ;; We only want keyword entries with a short-name (leaf entries)
                              (filter :short-name))
@@ -111,6 +139,7 @@
   {:uuid \"c9c07cf0-49eb-4c7f-aeff-2e95caae9500\", :short-name \"ETALON-2\",
   :series-entity \"ETALON\", :category \"Earth Observation Satellites\"} ..."
   [context keyword-scheme]
+  {:pre (some? (keyword-scheme keyword-scheme->field-names))}
   (let [keywords
         (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
     (debug (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))

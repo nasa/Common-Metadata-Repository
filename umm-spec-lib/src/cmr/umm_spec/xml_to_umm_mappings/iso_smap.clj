@@ -7,50 +7,53 @@
 (def metadata-base-xpath
   "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata")
 
-(def entry-id-xpath
-  ;; For now, we set the entry-id to short-name
-  (xpath (str metadata-base-xpath
-              "/gmd:identificationInfo/gmd:MD_DataIdentification"
-              "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
-              "[gmd:description/gco:CharacterString='The ECS Short Name']"
-              "/gmd:code/gco:CharacterString")))
+(def md-identification-base-xpath
+  (str metadata-base-xpath "/gmd:identificationInfo/gmd:MD_DataIdentification"))
 
 (def short-name-identification-xpath
-  (str metadata-base-xpath
-       "/gmd:identificationInfo/gmd:MD_DataIdentification"
+  (str md-identification-base-xpath
        "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
        "/gmd:description/gco:CharacterString='The ECS Short Name']"))
 
 (def abstract-xpath
-  (xpath (str short-name-identification-xpath
-              "/gmd:abstract/gco:CharacterString")))
+  (char-string-xpath short-name-identification-xpath "/gmd:abstract"))
 
 (def purpose-xpath
-  (xpath (str short-name-identification-xpath
-              "/gmd:purpose/gco:CharacterString")))
+  (char-string-xpath short-name-identification-xpath "/gmd:purpose"))
 
 (def data-language-xpath
   (xpath (str short-name-identification-xpath
               "/gmd:language/gco:CharacterString")))
 
 (def entry-title-xpath
-  (xpath (str metadata-base-xpath
-              "/gmd:identificationInfo/gmd:MD_DataIdentification"
+  (xpath (str md-identification-base-xpath
               "[gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString='DataSetId']"
               "/gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetIdentifier"
               "/gmd:MD_Identifier/gmd:code/gco:CharacterString")))
 
+(def entry-id-xpath
+  (xpath (str md-identification-base-xpath
+              "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+              "[gmd:description/gco:CharacterString='The ECS Short Name']"
+              "/gmd:code/gco:CharacterString")))
+
+(def version-xpath
+  (xpath (str md-identification-base-xpath
+              "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+              "[gmd:description/gco:CharacterString='The ECS Version ID']"
+              "/gmd:code/gco:CharacterString")))
+
+
 (def temporal-extent-xpath-str
-  (str metadata-base-xpath
-       "/gmd:identificationInfo/gmd:MD_DataIdentification"
-       "/gmd:extent/gmd:EX_Extent"
-       "/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+  (str md-identification-base-xpath
+       "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
 (def iso-smap-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
     (object {:EntryId entry-id-xpath
              :EntryTitle entry-title-xpath
+             :Version version-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath
              :DataLanguage data-language-xpath

@@ -50,6 +50,18 @@
       (finally
         (l/stop cache nil)))))
 
+(deftest lookup-function-returns-nil-test
+  (let [cache (l/start (slc/create-single-thread-lookup-cache) nil)]
+    (try
+      (testing "nil lookup value is still returned"
+        (is (nil? (c/get-value cache :a-key (constantly nil)))))
+
+      (testing "After returning nil value cache still functions as normal"
+        (is (= "normal value" (c/get-value cache :normal (constantly "normal value"))))
+        ;; It's cached now
+        (is (= "normal value" (c/get-value cache :normal))))
+      (finally
+        (l/stop cache nil)))))
 
 (deftest concurrent-request-test
   (let [cache (l/start (slc/create-single-thread-lookup-cache) nil)]

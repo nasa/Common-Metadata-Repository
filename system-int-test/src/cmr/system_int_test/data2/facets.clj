@@ -2,11 +2,8 @@
   "Contains functions for dealing with facets"
   (:require [cmr.common.xml :as cx]
             [clojure.set :as set]
+            [camel-snake-kebab.core :as csk]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
-
-(def ^:private hierarchical-fields
-  "Set of fields that are in hierarchical format"
-  #{"science_keywords"})
 
 (defn- parse-facet-xml
   "Converts an XML facet element into a nested map representation."
@@ -29,7 +26,7 @@
                  {:field field
                   :subfields [(get-in facet [:attrs :field])]})
 
-          (not (contains? hierarchical-fields field))
+          (not ((csk/->kebab-case-keyword field) frf/nested-fields-mappings))
           {:field field
            :value-counts (for [value-elem value-elems]
                            [(first (:content value-elem))
