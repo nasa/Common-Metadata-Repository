@@ -24,6 +24,7 @@
 
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
+     :Version "V5"
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
@@ -67,30 +68,30 @@
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format]
-    (= (expected-conversion/convert example-record metadata-format)
-       (xml-round-trip example-record metadata-format))
+        (= (expected-conversion/convert example-record metadata-format)
+           (xml-round-trip example-record metadata-format))
 
-    "echo10"
-    :echo10
+        "echo10"
+        :echo10
 
-    "dif9"
-    :dif
+        "dif9"
+        :dif
 
-    "dif10"
-    :dif10
+        "dif10"
+        :dif10
 
-    "iso-smap"
-    :iso-smap
+        "iso-smap"
+        :iso-smap
 
-    "ISO19115-2"
-    :iso19115))
+        "ISO19115-2"
+        :iso19115))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
     (are [fmt]
-        (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
-      :echo10
-      :dif
-      :dif10
-      :iso-smap
-      :iso19115)))
+         (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
+         :echo10
+         :dif
+         :dif10
+         :iso-smap
+         :iso19115)))

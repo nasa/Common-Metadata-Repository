@@ -1,5 +1,5 @@
 (ns cmr.indexer.data.concepts.science-keyword
-  "Contains functions for converting science keyword domains into a elastic documents"
+  "Contains functions for converting science keyword domains into elastic documents"
   (:require [clojure.string :as str]))
 
 (defn flatten-science-keywords

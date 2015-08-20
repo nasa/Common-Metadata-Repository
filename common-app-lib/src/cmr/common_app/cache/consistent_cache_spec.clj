@@ -95,8 +95,7 @@
         (c/set-value indexer2-cache :acls (lookup-fn))
         (assert-acls-from-cache [:acl1 :acl2 :acl3 :acl4])))
 
-    ;; FIXME - This test is blocked by CMR-1931. The REPL hangs right now with the error.
-    #_(testing "Do not store a key with a nil value when lookup function does not find the value"
+    (testing "Do not store a key with a nil value when lookup function does not find the value"
       (is (nil? (c/get-value indexer1-cache :unknown-key (constantly nil))))
       (su/assert-cache-keys [:acls] indexer1-cache))))
 
