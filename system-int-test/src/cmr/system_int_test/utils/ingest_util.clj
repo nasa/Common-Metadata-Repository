@@ -320,15 +320,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-provider
-  ([provider-guid provider-id]
-   (create-provider provider-guid provider-id {}))
-  ([provider-guid provider-id options]
-   (let [grant-all-search? (get options :grant-all-search? true)
-         grant-all-ingest? (get options :grant-all-ingest? true)
-         short-name (:short-name options)
-         short-name (if short-name short-name provider-id)
-         cmr-only (get options :cmr-only true)
-         small (get options :small false)]
+  ([provider-map]
+   (create-provider provider-map {}))
+  ([provider-map options]
+   (let [{:keys [provider-guid provider-id short-name small cmr-only]} provider-map
+         short-name (or short-name (:short-name options) provider-id)
+         cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
+         small (if (some? small) small (get options :small false))
+         grant-all-search? (get options :grant-all-search? true)
+         grant-all-ingest? (get options :grant-all-ingest? true)]
 
      (create-mdb-provider {:provider-id provider-id
                            :short-name short-name
@@ -353,68 +353,26 @@
    :grant-all-ingest? true})
 
 (defn reset-fixture
-  "Creates the given providers in ECHO and the CMR then clears out all data at the end."
+  "Creates the given providers in ECHO and the CMR then clears out all data at the end.
+  providers can be passed in two ways: 1) a map of provider-guids to provider-ids
+  {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
+  2) a list of provider attributes maps:
+  [{:provider-guid 'provider-guid1' :provider-id 'PROV1' :short-name 'provider short name'}...]"
   ([]
    (reset-fixture {}))
-  ([provider-guid-id-map]
-   (reset-fixture provider-guid-id-map nil))
-  ([provider-guid-id-map options]
-   (fn [f]
-     (let [{:keys [grant-all-search? grant-all-ingest?]}
-           (merge reset-fixture-default-options options)]
-       (dev-sys-util/reset)
-       (doseq [[provider-guid provider-id] provider-guid-id-map]
-         (create-provider provider-guid provider-id {:grant-all-search? grant-all-search?
-                                                     :grant-all-ingest? grant-all-ingest?}))
-       (f)))))
-
-;; TODO: We want to eventually replace all create-provider calls with this new function,
-;; but I will leave that for later.
-(defn create-new-provider
-  ([provider-map]
-   (create-new-provider provider-map {}))
-  ([provider-map options]
-   (let [{:keys [provider-guid provider-id short-name small cmr-only]} provider-map
-         short-name (or short-name provider-id)
-         cmr-only (if cmr-only cmr-only true)
-         small (if small small false)
-         grant-all-search? (get options :grant-all-search? true)
-         grant-all-ingest? (get options :grant-all-ingest? true)]
-
-     (create-mdb-provider {:provider-id provider-id
-                           :short-name short-name
-                           :cmr-only cmr-only
-                           :small small})
-     (echo-util/create-providers (s/context) {provider-guid provider-id})
-
-     (when grant-all-search?
-       (echo-util/grant (s/context)
-                        [echo-util/guest-ace
-                         echo-util/registered-user-ace]
-                        (assoc (echo-util/catalog-item-id provider-guid)
-                               :collection-applicable true
-                               :granule-applicable true)
-                        :system-object-identity
-                        nil))
-     (when grant-all-ingest?
-       (echo-util/grant-all-ingest (s/context) provider-guid)))))
-
-;; TODO: We want to eventually replace all reset-fixture calls with this new function,
-;; but I will leave that for later.
-(defn reset-new-fixture
-  "Creates the given providers in ECHO and the CMR then clears out all data at the end."
-  ([]
-   (reset-new-fixture {}))
   ([providers]
-   (reset-new-fixture providers nil))
+   (reset-fixture providers nil))
   ([providers options]
    (fn [f]
      (let [{:keys [grant-all-search? grant-all-ingest?]}
            (merge reset-fixture-default-options options)]
        (dev-sys-util/reset)
-       (doseq [provider-map providers]
-         (create-new-provider provider-map {:grant-all-search? grant-all-search?
-                                                     :grant-all-ingest? grant-all-ingest?}))
+       (let [providers (if (sequential? providers)
+                         providers
+                         (map #(hash-map :provider-guid (first %) :provider-id (get % 1)) providers))]
+         (doseq [provider-map providers]
+           (create-provider provider-map {:grant-all-search? grant-all-search?
+                                          :grant-all-ingest? grant-all-ingest?})))
        (f)))))
 
 (defn clear-caches

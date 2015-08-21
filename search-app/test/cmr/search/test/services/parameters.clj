@@ -1,9 +1,11 @@
 (ns cmr.search.test.services.parameters
   (:require [clojure.test :refer :all]
+            [cmr.common.util :refer [are2]]
             [cmr.search.services.parameters.conversion :as p]
             [cmr.search.models.query :as q]
             [cmr.search.models.group-query-conditions :as gc]
-            [cmr.search.services.parameters.legacy-parameters :as lp]))
+            [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.parameters.provider-short-name :as psn]))
 
 (deftest replace-parameter-aliases-test
   (testing "with options"
@@ -51,12 +53,12 @@
                                      {:entry-title {:ignore-case "false"}}))))
     (testing "with multiple values pattern"
       (is (= (gc/or-conds [(q/string-condition :entry-title "foo" false true)
-                          (q/string-condition :entry-title "bar" false true)])
+                           (q/string-condition :entry-title "bar" false true)])
              (p/parameter->condition :collection :entry-title ["foo" "bar"]
                                      {:entry-title {:pattern "true"}}))))
     (testing "with multiple values and'd"
       (is (= (gc/and-conds [(q/string-condition :entry-title "foo" false false)
-                          (q/string-condition :entry-title "bar" false false)])
+                            (q/string-condition :entry-title "bar" false false)])
              (p/parameter->condition :collection :entry-title ["foo" "bar"]
                                      {:entry-title {:and "true"}}))))
     (testing "case-insensitive"
@@ -78,7 +80,7 @@
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo" false false)})
            (p/parse-parameter-query :collection {:entry-title ["foo"]
-                                             :options {:entry-title {:ignore-case "true"}}}))))
+                                                 :options {:entry-title {:ignore-case "true"}}}))))
   (testing "with one condition"
     (is (= (q/query {:concept-type :collection
                      :condition (q/string-condition :entry-title "foo")})
@@ -86,7 +88,7 @@
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
                      :condition (gc/and-conds [(q/string-condition :provider "bar")
-                                              (q/string-condition :entry-title "foo")])})
+                                               (q/string-condition :entry-title "foo")])})
            (p/parse-parameter-query :collection {:entry-title ["foo"] :provider "bar"})))))
 
 (deftest parse-sort-key-test
@@ -129,5 +131,22 @@
          {:some-param ",XYZ"} {:some-param {:max-value "XYZ"}}
          {:some-param "ABC"} {:some-param {:value "ABC"}})))
 
+(deftest short-name->provider-ids
+  (are2 [matches case-sensitive? short-name]
+        (let [providers [{:provider-id "PROV1" :short-name "Provider 1"}
+                         {:provider-id "PROV2" :short-name "PROVIDER 1"}
+                         {:provider-id "PROV3" :short-name "Test provider with special chars :) ? * \\ [] {} ☺, etc."}
+                         {:provider-id "PROV4" :short-name "Not Important"}]]
+          (= matches (#'psn/short-name->provider-ids providers case-sensitive? short-name)))
 
+        "exact match, case sensitive"
+        ["PROV1"] true "Provider 1"
 
+        "exact match, case insensitive"
+        ["PROV1" "PROV2"] false "Provider 1"
+
+        "exact match, special chars"
+        ["PROV3"] true "Test provider with special chars :) ? * \\ [] {} ☺, etc."
+
+        "no match"
+        [] true "NoMatch"))

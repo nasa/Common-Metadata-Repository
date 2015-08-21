@@ -36,7 +36,9 @@
   [f]
   (dev-sys-util/reset)
   (doseq [provider-id vp/virtual-product-providers]
-    (ingest/create-provider (str provider-id "-guid") provider-id {:cmr-only true}))
+    (ingest/create-provider {:provider-guid (str provider-id "-guid")
+                             :provider-id provider-id
+                             :cmr-only true}))
   ;; turn off virtual products using eval-in-dev-sys so that it works
   ;; with integration tests when the CMR is running in another process
   (eval-in-dev-sys
