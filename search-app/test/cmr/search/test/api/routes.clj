@@ -52,7 +52,8 @@
          (= concept-id (r/path-w-extension->concept-id path-w-extension))
 
          "C1-PROV1" "C1-PROV1"
-         "C1-PROV1.xml" "C1-PROV1")
+         "C1-PROV1.xml" "C1-PROV1"
+         "C1-PROV1/3.echo10" "C1-PROV1")
 
   (testing "revision-id"
     (are [path-w-extension revision-id]
