@@ -253,7 +253,7 @@
   (let [concept-id (path-w-extension->concept-id path-w-extension)
         revision-id (path-w-extension->revision-id path-w-extension)]
     (if revision-id
-      ;; We don't support Atom or JSON (yet) for lookups that include revision-id do to
+      ;; We don't support Atom or JSON (yet) for lookups that include revision-id due to
       ;; limitations of the current transformer implementation. This will be fixed with CMR-1935.
       (let [supported-mime-types (disj supported-concept-id-retrieval-mime-types mt/atom mt/json)
             result-format (get-search-results-format path-w-extension headers
