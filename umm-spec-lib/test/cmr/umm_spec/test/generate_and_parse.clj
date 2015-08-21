@@ -26,7 +26,8 @@
     :EntryTitle "The entry title V5"
     :Version "V5"
     :Abstract "A very abstract collection"
-    :DataLanguage "English"}))
+    :DataLanguage "English"
+    :Quality "Pretty good quality"}))
 
 (def temporal-extents
   "A sequence of possible values for UMM TemporalExtent."

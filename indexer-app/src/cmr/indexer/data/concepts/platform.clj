@@ -8,7 +8,7 @@
   "Converts a platform into the portion going in an elastic document"
   [context short-name]
   (let [full-platform (kf/get-full-hierarchy-for-short-name context :platforms short-name)
-        {:keys [category series-entity long-name]} full-platform]
+        {:keys [category series-entity long-name uuid]} full-platform]
     (when-not full-platform
       (info (format "Unable to find platform short-name [%s] in KMS." short-name)))
     {:category category
@@ -18,5 +18,7 @@
      :short-name short-name
      :short-name.lowercase (str/lower-case short-name)
      :long-name long-name
-     :long-name.lowercase (when long-name (str/lower-case long-name))}))
+     :long-name.lowercase (when long-name (str/lower-case long-name))
+     :uuid uuid
+     :uuid.lowercase (when uuid (str/lower-case uuid))}))
 

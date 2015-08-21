@@ -22,21 +22,6 @@
          transmit-config/token-header
          (transmit-config/echo-system-token)))
 
-(defn invoke-wait-endpoint
-  "Temporary code to test out long request"
-  [context {:keys [num-seconds use-conn-mgr root-url]}]
-  (let [conn (transmit-config/context->app-connection context :indexer)
-        url (format "%s/wait/%s"
-                    (or root-url (transmit-conn/root-url conn))
-                    num-seconds)
-        use-conn-mgr (= use-conn-mgr "true")
-        _ (debug "Making request to" url "use-conn-mgr:" use-conn-mgr)
-        response (client/post url {:throw-exceptions false
-                                   :headers (get-headers context)
-                                   :connection-manager (when use-conn-mgr (transmit-conn/conn-mgr conn))})]
-    (debug "Received response" (pr-str response))
-    response))
-
 (defn-timed reindex-provider-collections
   "Re-indexes all the collections in the provider"
   [context provider-ids]

@@ -19,23 +19,11 @@
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.ingest.api.translation :as translation-api]
             [cmr.common-app.api.routes :as common-routes]
-            [cmr.common-app.api-docs :as api-docs]
-
-            ;; TEMPORARY require
-            [cmr.ingest.data.indexer :as indexer]
-            [cheshire.core :as json]))
+            [cmr.common-app.api-docs :as api-docs]))
 
 (defn- build-routes [system]
   (routes
     (context (get-in system [:ingest-public-conf :relative-root-url]) []
-
-      ;; TEMPORARY TESTING CODE
-      (GET "/wait" {:keys [params request-context]}
-        ;; For safety just in case this endpoint were accidentally includedin production code.
-        (acl/verify-ingest-management-permission request-context :update)
-        {:status 200
-         :content-type :json
-         :body (json/generate-string (indexer/invoke-wait-endpoint request-context params))})
 
       provider-api/provider-api-routes
 
