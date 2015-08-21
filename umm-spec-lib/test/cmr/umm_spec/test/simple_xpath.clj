@@ -7,7 +7,7 @@
 ;; From Microsoft sample XML online
 (def sample-xml
   (sx/create-xpath-context-for-xml
-    "<catalog>
+    "<catalog xmlns:foo=\"http://example.com/foo\">
       <book id=\"bk101\">
         <author>Gambardella, Matthew</author>
         <title>XML Developer's Guide</title>
@@ -17,7 +17,7 @@
           <publish_date>2000-10-01</publish_date>
         </dates>
       </book>
-      <book id=\"bk102\">
+      <book id=\"bk102\" foo:bar=\"bat\">
         <author>Ralls, Kim</author>
         <title>Midnight Rain</title>
         <genre>Fantasy</genre>
@@ -237,3 +237,13 @@
 
            "author"
            ["Gambardella, Matthew"]))))
+
+(deftest xml-attribute-predicates
+  (are [xpath result-xml]
+      (= [(x/parse-str result-xml)]
+         (:context (sx/evaluate sample-xml (sx/parse-xpath xpath))))
+    "/catalog/book[@id='bk101']/author"
+    "<author>Gambardella, Matthew</author>"
+
+    "/catalog/book[@foo:bar='bat']/title"
+    "<title>Midnight Rain</title>"))
