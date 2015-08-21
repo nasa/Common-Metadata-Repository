@@ -113,7 +113,7 @@
   "Returns the concept metadata through the search concept retrieval endpoint using the cmr
   concept-id and optionally revision-id."
   ([concept-id] (retrieve-concept concept-id nil {}))
-  ([concept-id revisions-id] (retrieve-concept concept-id {}))
+  ([concept-id revision-id] (retrieve-concept concept-id revision-id {}))
   ([concept-id revision-id options]
    (let [url-extension (get options :url-extension)
          concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
