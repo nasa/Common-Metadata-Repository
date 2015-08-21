@@ -13,12 +13,13 @@
   [context id]
   (let [conn (config/context->app-connection context :index-set)
         response (client/request
-                   {:method :get
-                    :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
-                    :accept :json
-                    :throw-exceptions false
-                    :connection-manager (conn/conn-mgr conn)
-                    :headers {config/token-header (config/echo-system-token)}})
+                   (merge
+                     (config/conn-params conn)
+                     {:method :get
+                      :url (format "%s/index-sets/%s" (conn/root-url conn) (str id))
+                      :accept :json
+                      :throw-exceptions false
+                      :headers {config/token-header (config/echo-system-token)}}))
         status (:status response)
         body (cheshire/decode (:body response) true)]
     (case status
@@ -33,9 +34,9 @@
   [context]
   (let [conn (config/context->app-connection context :index-set)
         request-url (str (conn/root-url conn) "/health")
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
+        response (client/get request-url (merge (config/conn-params conn)
+                                                {:accept :json
+                                                 :throw-exceptions false}))
         {:keys [status body]} response
         result (cheshire/decode body true)]
     (if (= 200 status)

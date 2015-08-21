@@ -64,26 +64,36 @@
 (def ALL_REVISION_REINDEX_BATCH_SIZE 2000)
 
 (deftracefn reindex-provider-collections
-  "Reindexes all the collections in the providers given."
-  [context provider-ids]
+  "Reindexes all the collections in the providers given.
 
-  ;; Refresh the ACL cache.
-  ;; We want the latest permitted groups to be indexed with the collections
-  (acl-fetcher/refresh-acl-cache context)
+  The optional all-revisions-index? will cause the following behavior changes:
+  * nil - both latest and all revisions will be indexed.
+  * true - only all revisions will be indexed
+  * false - only the latest revisions will be indexed"
+  ([context provider-ids]
+   (reindex-provider-collections context provider-ids nil true))
+  ([context provider-ids all-revisions-index? refresh-acls?]
 
-  (doseq [provider-id provider-ids]
-    (info "Reindexing latest collections for provider" provider-id)
-    (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
-      (bulk-index context [latest-collections] false))
+   (when refresh-acls?
+     ;; Refresh the ACL cache.
+     ;; We want the latest permitted groups to be indexed with the collections
+     (acl-fetcher/refresh-acl-cache context))
 
-    ;; Note that this will not unindex revisions that were removed directly from the database.
-    ;; We will handle that with the index management epic.
-    (info "Reindexing all collection revisions for provider" provider-id)
-    (let [all-revisions-batches (meta-db/find-collections-in-batches
-                                  context
-                                  ALL_REVISION_REINDEX_BATCH_SIZE
-                                  {:provider-id provider-id})]
-      (bulk-index context all-revisions-batches true))))
+   (doseq [provider-id provider-ids]
+     (when (or (nil? all-revisions-index?) (not all-revisions-index?))
+       (info "Reindexing latest collections for provider" provider-id)
+       (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
+         (bulk-index context [latest-collections] false)))
+
+     (when (or (nil? all-revisions-index?) all-revisions-index?)
+       ;; Note that this will not unindex revisions that were removed directly from the database.
+       ;; We will handle that with the index management epic.
+       (info "Reindexing all collection revisions for provider" provider-id)
+       (let [all-revisions-batches (meta-db/find-collections-in-batches
+                                     context
+                                     ALL_REVISION_REINDEX_BATCH_SIZE
+                                     {:provider-id provider-id})]
+         (bulk-index context all-revisions-batches true))))))
 
 (defn index-concept
   "Index the given concept with the parsed umm record."

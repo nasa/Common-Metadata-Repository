@@ -22,31 +22,15 @@
          transmit-config/token-header
          (transmit-config/echo-system-token)))
 
-(defn-timed reindex-provider-collections
-  "Re-indexes all the collections in the provider"
-  [context provider-ids]
-  (let [conn (transmit-config/context->app-connection context :indexer)
-        url (format "%s/reindex-provider-collections"
-                    (transmit-conn/root-url conn))
-        response (client/post url {:content-type :json
-                                   :throw-exceptions false
-                                   :body (json/generate-string provider-ids)
-                                   :accept :json
-                                   :headers (get-headers context)
-                                   :connection-manager (transmit-conn/conn-mgr conn)})
-        status (:status response)]
-    (when-not (= 200 status)
-      (errors/internal-error!
-        (str "Unexpected status"  status  " " (:body response))))))
-
 (defn- get-indexer-health-fn
   "Returns the health status of the indexer app"
   [context]
   (let [conn (transmit-config/context->app-connection context :indexer)
         request-url (str (transmit-conn/root-url conn) "/health")
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false
-                                          :connection-manager (transmit-conn/conn-mgr conn)})
+        response (client/get request-url (merge
+                                           (transmit-config/conn-params conn)
+                                           {:accept :json
+                                            :throw-exceptions false}))
         {:keys [status body]} response
         result (json/decode body true)]
     (if (= 200 status)

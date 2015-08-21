@@ -113,8 +113,9 @@
                     (conn/root-url conn)
                     (name keyword-scheme)
                     (name keyword-scheme))
-        params {:connection-manager (conn/conn-mgr conn)
-                :throw-exceptions true}
+        params (merge
+                 (config/conn-params conn)
+                 {:throw-exceptions true})
         start (System/currentTimeMillis)
         response (client/get url params)]
     (debug

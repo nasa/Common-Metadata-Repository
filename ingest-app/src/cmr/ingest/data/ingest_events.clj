@@ -13,6 +13,12 @@
          exchange-name (config/ingest-exchange-name)]
      (queue/publish-message queue-broker exchange-name msg timeout-ms)))
 
+(defn provider-collections-require-reindexing-event
+  "Indicates that all the collections within a provider require reindexing"
+  [provider-id]
+  {:action :provider-collection-reindexing
+   :provider-id provider-id})
+
 (defn collection-concept-update-event
   "Creates an event representing a collection concept being updated or created."
   [concept-id revision-id]

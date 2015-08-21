@@ -3,6 +3,7 @@
   (:require [cmr.common.jobs :as jobs :refer [def-stateful-job defjob]]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.acls :as echo-acls]
+            [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.data.ingest-events :as ingest-events]
@@ -28,13 +29,24 @@
 (defn reindex-all-collections
   "Reindexes all collections in all providers"
   [context]
+
+  ;; Refresh the acls
+  ;; This is done because we want to make sure we have the latest acls cached. This will update
+  ;; the hash code stored in the consistent cache. Both ingest and the indexer use the consistent
+  ;; cache for acls so they are kept in sync. This removes the need for the indexer to refresh
+  ;; the cache on each message that it processes.
+  (acl-fetcher/refresh-acl-cache context)
+
   (let [providers (map :provider-id (mdb/get-providers context))
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (echo-acls/get-acls-by-types context [:catalog-item]))]
-    (info "Reindexing collections in all providers:" (pr-str providers))
-    (indexer/reindex-provider-collections context providers)
+                                         (acl-fetcher/get-acls context [:catalog-item]))]
+    (info "Sending events to reindex collections in all providers:" (pr-str providers))
+    (doseq [provider providers]
+      (ingest-events/publish-event
+        context
+        (ingest-events/provider-collections-require-reindexing-event provider)))
 
-    (debug "Reindexing all collections complete. Saving provider acl hashes")
+    (debug "Reindexing all collection events submitted. Saving provider acl hashes")
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)
     (debug "Saving provider acl hashes complete")))
 
@@ -42,10 +54,18 @@
   "Reindexes all collections in a provider if the acls have changed. This is necessary because
   the groups that have permission to find collections are indexed with the collections."
   [context]
+
+  ;; Refresh the acls
+  ;; This is done because we want to make sure we have the latest acls cached. This will update
+  ;; the hash code stored in the consistent cache. Both ingest and the indexer use the consistent
+  ;; cache for acls so they are kept in sync. This removes the need for the indexer to refresh
+  ;; the cache on each message that it processes.
+  (acl-fetcher/refresh-acl-cache context)
+
   (let [providers (map :provider-id (mdb/get-providers context))
         provider-id-acl-hashes (or (pah/get-provider-id-acl-hashes context) {})
         current-provider-id-acl-hashes (acls->provider-id-hashes
-                                         (echo-acls/get-acls-by-types context [:catalog-item]))
+                                         (acl-fetcher/get-acls context [:catalog-item]))
         providers-requiring-reindex (filter (fn [provider-id]
                                               (not= (get current-provider-id-acl-hashes provider-id)
                                                     (get provider-id-acl-hashes provider-id)))
@@ -53,7 +73,10 @@
     (when (seq providers-requiring-reindex)
       (info "Providers" (pr-str providers-requiring-reindex)
             "ACLs have changed. Reindexing collections")
-      (indexer/reindex-provider-collections context providers-requiring-reindex))
+      (doseq [provider providers-requiring-reindex]
+        (ingest-events/publish-event
+          context
+          (ingest-events/provider-collections-require-reindexing-event provider))))
 
     (pah/save-provider-id-acl-hashes context current-provider-id-acl-hashes)))
 

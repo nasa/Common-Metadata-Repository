@@ -38,6 +38,18 @@
 (def-app-conn-config cubby 3007)
 (def-app-conn-config virtual-product 3009)
 
+(defn mins->ms
+  "Returns the number of minutes in milliseconds"
+  [mins]
+  (* mins 60000))
+
+(defconfig http-socket-timeout
+  "The number of milliseconds before an HTTP request will timeout."
+  ;; This is set to a value bigger than what appears to the VIP timeout. There's a problem with
+  ;; EI-3988 where responses longer than 5 minutes never return. We want to cause those to fail.
+  {:default (mins->ms 6)
+   :type Long})
+
 (defconfig echo-rest-protocol
   "The protocol to use when contructing ECHO Rest URLs."
   {:default "http"})
@@ -54,6 +66,11 @@
   "The root context for connections to ECHO Rest."
   {:default ""})
 
+(defconfig echo-http-socket-timeout
+  "The number of milliseconds before an HTTP request to ECHO will timeout."
+  {:default (mins->ms 60)
+   :type Long})
+
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
   {:default "mock-echo-system-token"})
@@ -69,6 +86,7 @@
 (defconfig kms-relative-root-url
   "The root URL for accessing GCMD KMS resources."
   {:default "/kms"})
+
 
 (def default-conn-info
   "The default values for connections."
@@ -133,4 +151,8 @@
             system
             app-names)))
 
-
+(defn conn-params
+  "Returns a map of connection params to merge in when making HTTP requests"
+  [connection]
+  {:connection-manager (conn/conn-mgr connection)
+   :socket-timeout (http-socket-timeout)})
