@@ -31,8 +31,8 @@
 
   (do
     (dev-sys-util/reset)
-    (ingest/create-provider "provguid1" "PROV1")
-    (ingest/create-provider "provguid2" "PROV2"))
+    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
+    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"}))
   )
 
 

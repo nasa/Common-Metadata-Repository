@@ -452,7 +452,7 @@
   (do
     (dev-sys-util/reset)
     (taoensso.timbre/set-level! :warn) ; turn down log level
-    (ingest/create-provider "provguid1" "PROV1")
+    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     #_(ingest-orbit-coll-and-granules-north-pole)
     #_(ingest-orbit-coll-and-granules-prime-meridian)
     #_(ingest-orbit-coll-and-granule)

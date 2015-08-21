@@ -369,7 +369,8 @@
        (dev-sys-util/reset)
        (let [providers (if (sequential? providers)
                          providers
-                         (map #(hash-map :provider-guid (first %) :provider-id (get % 1)) providers))]
+                         (for [[provider-guid provider-id] providers]
+                           {:provider-guid provider-guid :provider-id provider-id}))]
          (doseq [provider-map providers]
            (create-provider provider-map {:grant-all-search? grant-all-search?
                                           :grant-all-ingest? grant-all-ingest?})))
