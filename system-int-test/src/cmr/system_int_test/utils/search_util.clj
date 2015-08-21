@@ -113,10 +113,35 @@
   "Returns the response of finding concept metadata by concept-id/revision-id in search"
   ([concept-id revision-id] (find-concept-metadata-by-id-and-revision concept-id revision-id {}))
   ([concept-id revision-id options]
-   (let [base-url (url/concept-revision-metadata-url)
-         url (str base-url "/" concept-id (when revision-id (str "/" revision-id)))
-         headers (:headers options)]
-     (client/get url {:headers headers}))))
+   (let [url-extension (get options :url-extension)
+         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
+         format-mime-type (or (:accept options) mime-types/echo10)
+         url (url/retrieve-concept-url concept-type concept-id revision-id)
+         url (if url-extension
+               (str url "." url-extension)
+               url)]
+     (client/get url (merge {:accept (when-not url-extension format-mime-type)
+                             :throw-exceptions false
+                             :connection-manager (s/conn-mgr)}
+                            options)))))
+
+(defn get-concept-by-concept-id
+  "Returns the concept metadata through the search concept retrieval endpoint using the cmr
+  concept-id."
+  ([concept-id]
+   (get-concept-by-concept-id concept-id {}))
+  ([concept-id options]
+   (let [url-extension (get options :url-extension)
+         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
+         format-mime-type (or (:accept options) mime-types/echo10)
+         url (url/retrieve-concept-url concept-type concept-id nil)
+         url (if url-extension
+               (str url "." url-extension)
+               url)]
+     (client/get url (merge {:accept (when-not url-extension format-mime-type)
+                             :throw-exceptions false
+                             :connection-manager (s/conn-mgr)}
+                            options)))))
 
 (defn find-concepts-in-format
   "Returns the concepts in the format given."
@@ -474,23 +499,6 @@
     (get-search-failure-xml-data
       (parse-reference-response false
                                 (client/get url {:connection-manager (s/conn-mgr)})))))
-
-(defn get-concept-by-concept-id
-  "Returns the concept metadata by searching metadata-db using the given cmr concept id"
-  ([concept-id]
-   (get-concept-by-concept-id concept-id {}))
-  ([concept-id options]
-   (let [url-extension (get options :url-extension)
-         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
-         format-mime-type (or (:accept options) mime-types/echo10)
-         url (url/retrieve-concept-url concept-type concept-id)
-         url (if url-extension
-               (str url "." url-extension)
-               url)]
-     (client/get url (merge {:accept (when-not url-extension format-mime-type)
-                             :throw-exceptions false
-                             :connection-manager (s/conn-mgr)}
-                            options)))))
 
 (defn mime-type-matches-response?
   "Checks that the response's content type mime type is the given mime type."

@@ -42,13 +42,6 @@
                                       :version-id "V1"
                                       :entry-title "ET1"}))))
 
-(defn- get-concept-by-id-helper
-  [concept options]
-  (:body
-   (search/get-concept-by-concept-id
-    (:concept-id concept)
-    options)))
-
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
   (let [
@@ -182,84 +175,6 @@
           :dif10 all-colls
           (search/find-metadata :collection :dif10 {} {:url-extension "dif10"}))))
 
-    (testing "Get by concept id in formats"
-      (testing "XML Metadata formats"
-        (are [concept mime-type format-key url-extension]
-          (= (umm/umm->xml concept format-key)
-             (get-concept-by-id-helper concept {:url-extension url-extension :accept mime-type}))
-          c1-echo "application/dif+xml" :dif nil
-          c1-echo nil :dif "dif"
-          c1-echo "application/echo10+xml" :echo10 nil
-          c1-echo nil :echo10 "echo10"
-          c3-dif "application/dif+xml" :dif nil
-          c3-dif nil :dif "dif"
-          c5-iso "application/iso19115+xml" :iso19115 nil
-          c5-iso nil :iso19115 "iso19115"
-          c5-iso nil :iso19115 "iso"
-          c7-smap "application/iso:smap+xml" :iso-smap nil
-          c7-smap nil :iso-smap "iso_smap"
-          c8-dif10 "application/dif10+xml" :dif10 nil
-          c8-dif10 nil :dif10 "dif10"))
-
-      (testing "json"
-        (are [concept options]
-          (= (da/collection->expected-atom concept)
-             (dj/parse-json-collection (get-concept-by-id-helper concept options)))
-          c1-echo {:url-extension "json"}
-          c1-echo {:accept        "application/json"}
-          c3-dif  {:url-extension "json"}
-          c3-dif  {:accept        "application/json"}
-          c5-iso  {:url-extension "json"}
-          c5-iso  {:accept        "application/json"}))
-
-      (testing "atom"
-        (are [concept options]
-          (= [(da/collection->expected-atom concept)]
-             (:entries (da/parse-atom-result :collection (get-concept-by-id-helper concept options))))
-          c1-echo {:url-extension "atom"}
-          c1-echo {:accept        "application/atom+xml"}
-          c3-dif  {:url-extension "atom"}
-          c3-dif  {:accept        "application/atom+xml"}
-          c5-iso  {:url-extension "atom"}
-          c5-iso  {:accept        "application/atom+xml"}))
-
-      (testing "native format direct retrieval"
-        ;; Native format can be specified using application/xml, application/metadata+xml,
-        ;; .native extension, or not specifying any format.
-        (util/are2 [concept format-key extension accept]
-             (let [options (-> {:accept nil}
-                             (merge (when extension {:url-extension extension}))
-                             (merge (when accept {:accept accept})))
-                   response (search/get-concept-by-concept-id (:concept-id concept) options)]
-               (is (= (umm/umm->xml concept format-key) (:body response))))
-             "ECHO10 no extension" c1-echo :echo10 nil nil
-             "DIF no extension" c3-dif :dif nil nil
-             "ISO MENDS no extension" c5-iso :iso19115 nil nil
-             "SMAP ISO no extension" c7-smap :iso-smap nil nil
-             "ECHO10 .native extension" c1-echo :echo10 "native" nil
-             "DIF .native extension" c3-dif :dif "native" nil
-             "ISO MENDS .native extension" c5-iso :iso19115 "native" nil
-             "SMAP ISO .native extension" c7-smap :iso-smap "native" nil
-             "ECHO10 accept application/xml" c1-echo :echo10 nil "application/xml"
-             "DIF accept application/xml" c3-dif :dif nil "application/xml"
-             "ISO MENDS accept application/xml" c5-iso :iso19115 nil "application/xml"
-             "SMAP ISO accept application/xml" c7-smap :iso-smap nil "application/xml"
-             "ECHO10 accept application/metadata+xml" c1-echo :echo10 nil "application/metadata+xml"
-             "DIF accept application/metadata+xml" c3-dif :dif nil "application/metadata+xml"
-             "ISO MENDS accept application/metadata+xml" c5-iso :iso19115 nil "application/metadata+xml"
-             "SMAP ISO accept application/metadata+xml" c7-smap :iso-smap nil "application/metadata+xml"))
-
-      (testing "unsupported formats"
-        (are [mime-type xml?]
-             (let [response (search/get-concept-by-concept-id
-                              (:concept-id c1-echo)
-                              {:accept mime-type})
-                   err-msg (if xml?
-                             (cx/string-at-path (fx/parse-str (:body response)) [:error])
-                             (first (:errors (json/decode (:body response) true))))]
-               (and (= 400 (:status response))
-                    (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
-             "text/csv" false)))
 
     (testing "Retrieving results as XML References"
       (let [refs (search/find-refs :collection {:short-name "S1"})
