@@ -150,6 +150,3 @@
 
 (def umm-c-schema (load-schema "umm-c-json-schema.json"))
 
-(def umm-c-schema-small (load-schema "umm-c-json-schema-small.json"))
-
-

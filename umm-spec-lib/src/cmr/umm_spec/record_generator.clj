@@ -20,7 +20,6 @@
   schema"
   [schema type-name]
   (let [record-ns (schema-name->namespace (:schema-name schema))]
-    (cmr.common.dev.capture-reveal/capture-all)
     (-> (str (name record-ns) "/map->" (name type-name))
         symbol
         find-var

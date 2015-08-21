@@ -47,7 +47,7 @@
       "properties": {
         "Date": {
           "description": "The date something changed with the metadata or data.",
-          "format": "date",
+          "format": "date-time",
           "type": "string"
         },
         "Type": {
