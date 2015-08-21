@@ -16,6 +16,7 @@
             [cmr.acl.core :as acl]
             [cmr.acl.acl-fetcher :as af]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+            [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.oracle.connection :as oracle]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.ingest.api.ingest :as ingest-api]
@@ -56,8 +57,9 @@
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        pc/providers-cache-key (pc/create-providers-cache)
                        af/acl-cache-key (af/create-acl-cache
-                                          (stl-cache/create-single-thread-lookup-cache)
-                                          [:system-object :provider-object])
+                                          (stl-cache/create-single-thread-lookup-cache
+                                            (consistent-cache/create-consistent-cache))
+                                          [:catalog-item :system-object :provider-object])
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
