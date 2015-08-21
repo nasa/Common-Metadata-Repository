@@ -68,9 +68,7 @@
 (def example-records
   "A seq of example records for each of the example temporal extents above."
   (for [temporal temporal-extents]
-    (if temporal
-      (assoc example-base :TemporalExtents [temporal])
-      example-base)))
+    (assoc example-base :TemporalExtents [temporal])))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
