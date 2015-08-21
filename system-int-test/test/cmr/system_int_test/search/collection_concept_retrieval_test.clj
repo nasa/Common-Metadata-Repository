@@ -54,10 +54,7 @@
 
 (defn- get-concept-by-id-helper
   [concept options]
-  (:body
-    (search/get-concept-by-concept-id
-      (:concept-id concept)
-      options)))
+  (:body (search/retrieve-concept (:concept-id concept) nil options)))
 
 (defmulti result-matches?
   "Compare UMM record to the response from concept retrieval"
@@ -116,33 +113,31 @@
 
     (testing "retrieval of a deleted collection results in a 404"
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        (:concept-id del-coll)
-                                        {:throw-exceptions true
-                                         :headers {transmit-config/token-header
-                                                   user1-token}}))]
+                                      (search/retrieve-concept
+                                        (:concept-id del-coll) nil {:throw-exceptions true
+                                                                    :headers {transmit-config/token-header
+                                                                              user1-token}}))]
         (is (= 404 status))
         (is (= ["Concept with concept-id [C1200000002-PROV1] could not be found."] errors))))
     (testing "retrieval by collection cmr-concept-id returns the latest revision."
-      (let [response (search/get-concept-by-concept-id
-                       (:concept-id coll1)
-                       {:query-params {:token user1-token}})
+      (let [response (search/retrieve-concept
+                       (:concept-id coll1) nil {:query-params {:token user1-token}})
             parsed-collection (c/parse-collection (:body response))]
         (is (search/mime-type-matches-response? response mt/echo10))
         (is (= umm-coll parsed-collection))))
     (testing "retrieval with .xml extension returns correct mime type"
-      (let [response (search/get-concept-by-concept-id (:concept-id coll1)
-                                                       {:query-params {:token user1-token}
-                                                        :url-extension "xml"})
+      (let [response (search/retrieve-concept
+                       (:concept-id coll1) nil {:query-params {:token user1-token}
+                                                :url-extension "xml"})
             parsed-collection (c/parse-collection (:body response))]
         (is (search/mime-type-matches-response? response mt/echo10))
         (is (= umm-coll parsed-collection))))
     (testing "retrieval by collection cmr-concept-id, not found."
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        "C1111-PROV1" {:throw-exceptions true
-                                                       :headers {transmit-config/token-header
-                                                                 user1-token}}))]
+                                      (search/retrieve-concept
+                                        "C1111-PROV1"  nil {:throw-exceptions true
+                                                            :headers {transmit-config/token-header
+                                                                      user1-token}}))]
         (is (= 404 status))
         (is (= ["Concept with concept-id [C1111-PROV1] could not be found."] errors))))))
 
@@ -249,7 +244,7 @@
                    (let [options (-> {:accept nil}
                                      (merge (when extension {:url-extension extension}))
                                      (merge (when accept {:accept accept})))
-                         response (search/get-concept-by-concept-id (:concept-id concept) options)]
+                         response (search/retrieve-concept (:concept-id concept) nil options)]
                      (is (= (umm/umm->xml concept format-key) (:body response))))
                    "ECHO10 no extension" c1-echo :echo10 nil nil
                    "DIF no extension" c3-dif :dif nil nil
@@ -270,93 +265,13 @@
 
       (testing "unsupported formats"
         (are [mime-type xml?]
-             (let [response (search/get-concept-by-concept-id
-                              (:concept-id c1-echo)
-                              {:accept mime-type})
+             (let [response (search/retrieve-concept (:concept-id c1-echo) nil {:accept mime-type})
                    err-msg (if xml?
                              (cx/string-at-path (fx/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))
-             "text/csv" false)))
-
-    (testing "Retrieving results as XML References"
-      (let [refs (search/find-refs :collection {:short-name "S1"})
-            location (:location (first (:refs refs)))]
-        (is (d/refs-match? [c1-echo] refs))
-        (testing "Location allows retrieval of native XML"
-          (let [response (client/get location
-                                     {:accept :application/echo10+xml
-                                      :connection-manager (s/conn-mgr)})]
-            (is (= (umm/umm->xml c1-echo :echo10) (:body response))))))
-
-      (testing "as extension"
-        (is (d/refs-match? [c1-echo] (search/find-refs :collection
-                                                       {:short-name "S1"}
-                                                       {:url-extension "xml"})))))
-    (testing "ECHO Compatibility mode"
-      (testing "XML References"
-        (are [refs]
-             (and (d/echo-compatible-refs-match? all-colls refs)
-                  (= "array" (:type refs)))
-             (search/find-refs :collection {:echo-compatible true})
-             (search/find-refs-with-aql :collection [] [] {:query-params {:echo_compatible true}})))
-
-      (testing "ECHO10"
-        (d/assert-echo-compatible-metadata-results-match
-          :echo10 all-colls
-          (search/find-metadata :collection :echo10 {:echo-compatible true}))))))
-
-; Tests that we can ingest and find difs with spatial and that granules in the dif can also be
-; ingested and found
-(deftest dif-with-spatial
-  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
-  (e/grant-all (s/context) (e/gran-catalog-item-id "provguid1"))
-  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid2"))
-  (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif})
-        g1 (d/ingest "PROV1" (dg/granule c1))
-
-        ;; A collection with a granule spatial representation
-        c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})})
-                     {:format :dif})
-        g2 (d/ingest "PROV1" (dg/granule c2 {:spatial-coverage (dg/spatial (m/mbr -160 45 -150 35))}))
-
-
-        ;; A collections with a granule spatial representation and spatial data
-        c3 (d/ingest "PROV1"
-                     (dc/collection-dif
-                       {:spatial-coverage (dc/spatial {:gsr :geodetic
-                                                       :sr :geodetic
-                                                       :geometries [(m/mbr -10 9 0 -10)]})})
-                     {:format :dif})
-        g3 (d/ingest "PROV1" (dg/granule c3 {:spatial-coverage (dg/spatial m/whole-world)}))]
-    (index/wait-until-indexed)
-
-    (testing "spatial search for dif collections"
-      (are [wnes items]
-           (let [found (search/find-refs :collection {:bounding-box (codec/url-encode (apply m/mbr wnes))})
-                 matches? (d/refs-match? items found)]
-             (when-not matches?
-               (println "Expected:" (pr-str (map :entry-title items)))
-               (println "Actual:" (->> found :refs (map :name) pr-str)))
-             matches?)
-           ;; whole world
-           [-180 90 180 -90] [c3]
-           [-180 90 -11 -90] []
-           [-20 20 20 -20] [c3]))
-
-    (testing "spatial search for granules in dif collections"
-      (are [wnes items]
-           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))})
-                 matches? (d/refs-match? items found)]
-             (when-not matches?
-               (println "Expected:" (pr-str (map :entry-title items)))
-               (println "Actual:" (->> found :refs (map :name) pr-str)))
-             matches?)
-           ;; whole world
-           [-180 90 180 -90] [g2 g3]
-           [0 90 180 -90] [g3]
-           [-180 90 0 -90] [g2 g3]))))
+             "text/csv" false)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -405,7 +320,7 @@
     (testing "retrieve metadata from search by concept-id/revision-id"
       (testing "collections and granules"
         (are2 [item format-key accept concept-id revision-id]
-              (let [response (search/find-concept-metadata-by-id-and-revision
+              (let [response (search/retrieve-concept
                                concept-id
                                revision-id
                                {:accept accept})]
@@ -449,7 +364,7 @@
 
       (testing "Requests for tombstone revision returns a 400 error"
         (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
-                                                     (search/find-concept-metadata-by-id-and-revision
+                                                     (search/retrieve-concept
                                                        (:concept-id coll2-1) 2 {:throw-exceptions true}))]
           (is (= 400 status))
           (is (= #{"The revision [2] of concept [C1200000001-PROV1] represents a deleted concept and does not contain metadata."}
@@ -457,15 +372,15 @@
 
       (testing "Unknown concept-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                        [(search/find-concept-metadata-by-id-and-revision
-                                           "C1234-PROV1" 1 {:throw-exceptions true})])]
+                                        (search/retrieve-concept
+                                          "C1234-PROV1" 1 {:throw-exceptions true}))]
           (is (= 404 status))
           (is (= #{"Concept with concept-id [C1234-PROV1] and revision-id [1] does not exist."}
                  (set errors)))))
 
       (testing "Known concept-id with unavailable revision-id returns a 404 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                        (search/find-concept-metadata-by-id-and-revision
+                                        (search/retrieve-concept
                                           "C1200000000-PROV1" 1000000 {:throw-exceptions true}))]
           (is (= 404 status))
           (is (= #{"Concept with concept-id [C1200000000-PROV1] and revision-id [1000000] does not exist."}
@@ -473,7 +388,7 @@
 
       (testing "Non-integer revision id returns a 422 error"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                        (search/find-concept-metadata-by-id-and-revision
+                                        (search/retrieve-concept
                                           "C1200000000-PROV1" "FOO" {:throw-exceptions true}))]
           (is (= 422 status))
           (is (= #{"Revision id [FOO] must be an integer greater than 0."}
@@ -481,7 +396,7 @@
 
       (testing "JSON output not supported (yet)"
         (let [{:keys [status errors]} (search/get-search-failure-data
-                                        (search/find-concept-metadata-by-id-and-revision
+                                        (search/retrieve-concept
                                           "C1200000000-PROV1" 1 {:accept mt/json :throw-exceptions true}))]
           (is (= 400 status))
           (is (= #{"The mime types specified in the accept header [application/json] are not supported."}
@@ -489,7 +404,7 @@
 
       (testing "Atom output not supported"
         (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                        (search/find-concept-metadata-by-id-and-revision
+                                        (search/retrieve-concept
                                           "C1200000000-PROV1" 1 {:accept "application/atom+xml" :throw-exceptions true}))]
           (is (= 400 status))
           (is (= #{"The mime types specified in the accept header [application/atom+xml] are not supported."}
@@ -516,35 +431,35 @@
     (testing "ACLs - concept-id retrieval"
       ;; no token
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        (:concept-id coll1) {:throw-exceptions true
-                                                             :query-params {}}))]
+                                      (search/retrieve-concept
+                                        (:concept-id coll1) nil {:throw-exceptions true
+                                                                 :query-params {}}))]
         (is (= 404 status))
         (is(= #{"Concept with concept-id [C1200000000-PROV3] could not be found."}
               (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        (:concept-id coll1) {:throw-exceptions true
-                                                             :headers {transmit-config/token-header
-                                                                       guest-token}}))]
+                                      (search/retrieve-concept
+                                        (:concept-id coll1) nil {:throw-exceptions true
+                                                                 :headers {transmit-config/token-header
+                                                                           guest-token}}))]
         (is (= 404 status))
         (is(= #{"Concept with concept-id [C1200000000-PROV3] could not be found."}
               (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        (:concept-id coll1) {:throw-exceptions true
-                                                             :headers {transmit-config/token-header
-                                                                       user1-token}}))]
+                                      (search/retrieve-concept
+                                        (:concept-id coll1) nil {:throw-exceptions true
+                                                                 :headers {transmit-config/token-header
+                                                                           user1-token}}))]
         (is (= 200 status))
         (is(= nil errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/get-concept-by-concept-id
-                                        (:concept-id coll2) {:throw-exceptions true
-                                                             :headers {transmit-config/token-header
-                                                                       user1-token}}))]
+                                      (search/retrieve-concept
+                                        (:concept-id coll2)  nil {:throw-exceptions true
+                                                                  :headers {transmit-config/token-header
+                                                                            user1-token}}))]
         (is (= 404 status))
         (is(= #{"Concept with concept-id [C1200000001-PROV4] could not be found."}
               (set errors)))))
@@ -552,7 +467,7 @@
     (testing "ACLs - concept-id + revision-id retrieval"
       ;; no token
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/find-concept-metadata-by-id-and-revision
+                                      (search/retrieve-concept
                                         (:concept-id coll1)
                                         (:revision-id coll1)
                                         {:throw-exceptions true}))]
@@ -561,7 +476,7 @@
               (set errors))))
       ;; Guest users can't see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/find-concept-metadata-by-id-and-revision
+                                      (search/retrieve-concept
                                         (:concept-id coll1)
                                         (:revision-id coll1)
                                         {:throw-exceptions true
@@ -572,7 +487,7 @@
               (set errors))))
       ;; But registered users can see PROV3 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/find-concept-metadata-by-id-and-revision
+                                      (search/retrieve-concept
                                         (:concept-id coll1)
                                         (:revision-id coll1)
                                         {:throw-exceptions true
@@ -582,7 +497,7 @@
         (is(= nil errors)))
       ;; Even registered users can't see PROV4 collections.
       (let [{:keys [status errors]} (search/get-search-failure-xml-data
-                                      (search/find-concept-metadata-by-id-and-revision
+                                      (search/retrieve-concept
                                         (:concept-id coll2)
                                         (:revision-id coll2)
                                         {:throw-exceptions true

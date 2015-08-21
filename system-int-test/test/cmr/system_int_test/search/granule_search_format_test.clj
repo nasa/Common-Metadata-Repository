@@ -84,7 +84,7 @@
                  (let [options (-> {:accept nil}
                                    (merge (when extension {:url-extension extension}))
                                    (merge (when accept {:accept accept})))
-                       response (search/get-concept-by-concept-id (:concept-id concept) options)]
+                       response (search/retrieve-concept (:concept-id concept) nil options)]
                    (and
                      (search/mime-type-matches-response? response (mt/format->mime-type format-key))
                      (= (umm/umm->xml concept format-key) (:body response))))
@@ -99,7 +99,7 @@
 
     (testing "Get granule as concept in JSON format"
       (are [granule coll options]
-           (let [resp (search/get-concept-by-concept-id (:concept-id granule) options)]
+           (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
              (and
                (search/mime-type-matches-response? resp mt/json)
                (= (da/granule->expected-atom granule coll)
@@ -113,7 +113,7 @@
 
     (testing "Get granule as concept in Atom format"
       (are [granule coll options]
-           (let [resp (search/get-concept-by-concept-id (:concept-id granule) options)]
+           (let [resp (search/retrieve-concept (:concept-id granule) nil options)]
              (and
                (search/mime-type-matches-response? resp mt/atom)
                (= [(da/granule->expected-atom granule coll)]

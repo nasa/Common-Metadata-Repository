@@ -109,32 +109,16 @@
     (get-search-failure-data
       (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
 
-(defn find-concept-metadata-by-id-and-revision
-  "Returns the response of finding concept metadata by concept-id/revision-id in search"
-  ([concept-id revision-id] (find-concept-metadata-by-id-and-revision concept-id revision-id {}))
+(defn retrieve-concept
+  "Returns the concept metadata through the search concept retrieval endpoint using the cmr
+  concept-id and optionally revision-id."
+  ([concept-id] (retrieve-concept concept-id nil {}))
+  ([concept-id revisions-id] (retrieve-concept concept-id {}))
   ([concept-id revision-id options]
    (let [url-extension (get options :url-extension)
          concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
          format-mime-type (or (:accept options) mime-types/echo10)
          url (url/retrieve-concept-url concept-type concept-id revision-id)
-         url (if url-extension
-               (str url "." url-extension)
-               url)]
-     (client/get url (merge {:accept (when-not url-extension format-mime-type)
-                             :throw-exceptions false
-                             :connection-manager (s/conn-mgr)}
-                            options)))))
-
-(defn get-concept-by-concept-id
-  "Returns the concept metadata through the search concept retrieval endpoint using the cmr
-  concept-id."
-  ([concept-id]
-   (get-concept-by-concept-id concept-id {}))
-  ([concept-id options]
-   (let [url-extension (get options :url-extension)
-         concept-type (cs/concept-prefix->concept-type (subs concept-id 0 1))
-         format-mime-type (or (:accept options) mime-types/echo10)
-         url (url/retrieve-concept-url concept-type concept-id nil)
          url (if url-extension
                (str url "." url-extension)
                url)]

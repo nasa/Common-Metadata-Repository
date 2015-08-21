@@ -105,10 +105,7 @@
         (are2 [item format-key accept concept-id revision-id]
               (let [headers {transmit-config/token-header user1-token
                              "Accept" accept}
-                    response (search/find-concept-metadata-by-id-and-revision
-                               concept-id
-                               revision-id
-                               {:headers headers})]
+                    response (search/retrieve-concept concept-id revision-id {:headers headers})]
                 (result-matches? format-key item response))
 
               "echo10 granule revision 1"
