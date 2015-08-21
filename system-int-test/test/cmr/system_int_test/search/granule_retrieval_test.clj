@@ -30,17 +30,20 @@
     (ingest/delete-concept (d/item->concept del-gran :echo10))
     (index/wait-until-indexed)
     (testing "retrieval by granule cmr-concept-id returns the latest revision."
-      (let [response (search/get-concept-by-concept-id (:concept-id gran1))
+      (let [response (search/retrieve-concept (:concept-id gran1))
             parsed-granule (g/parse-granule (:body response))]
         (is (search/mime-type-matches-response? response mt/echo10))
         (is (= umm-gran
                parsed-granule))))
     (testing "retrieval of a deleted granule results in a 404"
-      (let [response (search/get-concept-by-concept-id (:concept-id del-gran))]
-        (is (= 404 (:status response)))
-        (is (re-find #"Concept with concept-id: .*? could not be found" (:body response)))))
+      (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                      (search/retrieve-concept
+                                        (:concept-id del-gran) nil {:throw-exceptions true}))]
+        (is (= 404 status))
+        (is (= ["Concept with concept-id [G1200000002-PROV1] could not be found."] errors))))
     (testing "retrieval by granule cmr-concept-id, not found."
-      (let [response (search/get-concept-by-concept-id "G1111-PROV1")]
-        (is (= 404 (:status response)))
-        (re-find #"Failed to retrieve concept G1111-PROV1 from metadata-db:" (:body response))
-        (re-find #"Concept with concept-id \[G1111-PROV1\] does not exist" (:body response))))))
+      (let [{:keys [status errors]} (search/get-search-failure-xml-data
+                                      (search/retrieve-concept
+                                        "G1111-PROV1" nil {:throw-exceptions true}))]
+        (is (= 404 status))
+        (is (= ["Concept with concept-id [G1111-PROV1] could not be found."] errors))))))

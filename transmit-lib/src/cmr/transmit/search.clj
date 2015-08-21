@@ -19,12 +19,13 @@
   [context params]
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules")
-        response (client/get request-url {:accept :xml
-                                          :query-params (assoc params :page-size 0)
-                                          :headers (assoc (ch/context->http-headers context)
-                                                          config/token-header (config/echo-system-token))
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
+        response (client/get request-url (merge
+                                           (config/conn-params conn)
+                                           {:accept :xml
+                                            :query-params (assoc params :page-size 0)
+                                            :headers (assoc (ch/context->http-headers context)
+                                                            config/token-header (config/echo-system-token))
+                                            :throw-exceptions false}))
         {:keys [status headers body]} response]
     (case status
       200 (Integer/parseInt (get headers "CMR-Hits"))
@@ -49,11 +50,12 @@
   (let [conn (config/context->app-connection context :search)
         request-url (str (conn/root-url conn) "/granules.xml")
         response (client/post request-url
-                              {:body (codec/form-encode params)
-                               :content-type mt/form-url-encoded
-                               :throw-exceptions false
-                               :headers (ch/context->http-headers context)
-                               :connection-manager (conn/conn-mgr conn)})
+                              (merge
+                                (config/conn-params conn)
+                                {:body (codec/form-encode params)
+                                 :content-type mt/form-url-encoded
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)}))
         {:keys [status body]} response]
     (if (= status 200)
       (parse-granule-response body)

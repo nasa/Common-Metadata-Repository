@@ -114,6 +114,17 @@
   [id]
   {:processing-level-id id})
 
+(defn- generate-science-keywords
+  "Generate science keywords based on a unique number."
+  [n]
+  (dc/science-keyword {:category (str "Cat-" n)
+                       :topic (str "Topic-" n)
+                       :term (str "Term-" n)
+                       :variable-level-1 "Level1-1"
+                       :variable-level-2 "Level1-2"
+                       :variable-level-3 "Level1-3"
+                       :detailed-variable (str "Detail-" n)}))
+
 (defn- grant-permissions
   "Grant permissions to all collections in PROV1 and a subset of collections in PROV2"
   []
@@ -641,3 +652,19 @@
         (testing "search finding no documents"
           (is (= empty-facets
                  (:facets (search/find-refs :collection {:include-facets true :entry-title "foo"})))))))))
+
+(deftest large-hierarchy-science-keyword-test
+  (grant-permissions)
+  (let [science-keywords (for [n (range 25)]
+                           (generate-science-keywords n))
+        _ (make-coll 1 "PROV1" {:science-keywords science-keywords})
+        categories (->> (get-facet-results :hierarchical)
+                        :json-facets
+                        (filter #(= "science_keywords" (:field %)))
+                        first
+                        :category
+                        (map :value))]
+    ;; Make sure that all 25 individual categories are returned in the facets
+    (is (= (set (map :category science-keywords))
+           (set categories)))))
+

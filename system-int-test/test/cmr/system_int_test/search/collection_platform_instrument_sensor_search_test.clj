@@ -16,15 +16,21 @@
         p4 (dc/platform {:short-name "platform_Snx"})
         p5 (dc/platform {:short-name "PLATFORM_X"})
         p6 (dc/platform {:short-name "platform_x"})
-        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2]}))
+
+        ;; Platforms to verify the ability to search by KMS platform subfields
+        p7 (dc/platform {:short-name "DMSP 5B/F3"})
+        p8 (dc/platform {:short-name "DIADEM-1D"})
+
+        coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p7]}))
+        coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p8]}))
         coll3 (d/ingest "PROV1" (dc/collection {:platforms [p2]}))
         coll4 (d/ingest "PROV2" (dc/collection {:platforms [p3]}))
         coll5 (d/ingest "PROV2" (dc/collection {:platforms [p4]}))
         coll6 (d/ingest "PROV2" (dc/collection {:platforms [p5]}))
         coll7 (d/ingest "PROV2" (dc/collection {:platforms [p6]}))
         coll8 (d/ingest "PROV2" (dc/collection {}))
-        ;; Added to test SMAP ISO platform and instrument support
+        ;; Added to test SMAP ISO platform and instrument support - note that this collection is
+        ;; found in KMS with a category of "Earth Observation Satellites"
         coll9 (d/ingest-concept-with-metadata-file
                 "PROV1" :collection :iso-smap
                 "data/iso_smap/sample_smap_iso_collection.xml")]
@@ -69,16 +75,31 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll1 coll2] {:platform "platform_Sn A"}
-           [coll6 coll7] {:platform "platform_x"}
-           [] {:platform "BLAH"}
-           [coll9] {:platform "SMAP"}
-           [coll1 coll2 coll4] {:or [{:platform "platform_SnA"} {:platform "platform_Sn A"}]}
-           [coll2] {:and [{:platform "platform_Sn B"} {:platform "platform_Sn A"}]}
-           [coll6 coll7] {:platform {:value "platform_x" :ignore_case true}}
-           [coll7] {:platform {:value "platform_x" :ignore_case false}}
-           [coll1 coll2 coll3] {:platform {:value "platform_Sn *" :pattern true}}
-           [coll4 coll5] {:platform {:value "platform_Sn?" :pattern true}}))))
+           [coll1 coll2] {:platform {:short_name "platform_Sn A"}}
+           [coll6 coll7] {:platform {:short_name "platform_x"}}
+           [] {:platform {:short_name "BLAH"}}
+           [coll9] {:platform {:short_name "SMAP"}}
+           [coll1 coll2 coll4] {:or [{:platform {:short_name "platform_SnA"}}
+                                     {:platform {:short_name "platform_Sn A"}}]}
+           [coll2] {:and [{:platform {:short_name "platform_Sn B"}}
+                          {:platform {:short_name "platform_Sn A"}}]}
+           [coll6 coll7] {:platform {:short_name "platform_x" :ignore_case true}}
+           [coll7] {:platform {:short_name "platform_x" :ignore_case false}}
+           [coll1 coll2 coll3] {:platform {:short_name "platform_Sn *" :pattern true}}
+           [coll4 coll5] {:platform {:short_name "platform_Sn?" :pattern true}}
+
+           ;; Test searching on KMS subfields
+           [coll1 coll2 coll9] {:platform {:category "Earth Observation Satellites"
+                                           :ignore_case false}}
+           [] {:platform {:category "EARTH OBSERVATION SATELLITES" :ignore_case false}}
+           [coll1 coll2 coll9] {:platform {:category "EARTH OBSERVATION SATELLITES"
+                                           :ignore_case true}}
+           [coll1] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
+           [coll2] {:platform {:short_name "DIADEM-1D"}}
+           [coll1] {:platform {:long_name "defense METEOR*cal S?tellite *" :pattern true}}
+           [] {:platform {:long_name "defense METEOR*cal S?tellite *"}}
+           [coll1] {:platform {:uuid "7ed12e98-95b1-406c-a58a-f4bbfa405269"}}
+           [coll1] {:platform {:any "7ed12e98*" :pattern true}}))))
 
 (deftest search-by-instrument-short-names
   (let [i1 (dc/instrument {:short-name "instrument_Sn A"})

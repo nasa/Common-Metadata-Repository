@@ -64,6 +64,7 @@
             [cmr.search.services.query-execution.highlight-results-feature]
 
             [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.parameters.provider-short-name :as psn]
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.results-handlers.provider-holdings :as ph]
@@ -162,6 +163,7 @@
                                            (lp/process-legacy-multi-params-conditions concept-type)
                                            (lp/replace-science-keywords-or-option concept-type)
 
+                                           (psn/replace-provider-short-names context)
                                            (pv/validate-parameters concept-type)
                                            (p/parse-parameter-query concept-type)))
         results (find-concepts context concept-type params query-creation-time query)]
@@ -204,7 +206,7 @@
   [concept-id]
   (errors/throw-service-error
     :not-found
-    (format "Concept with concept-id: %s could not be found" concept-id)))
+    (format "Concept with concept-id [%s] could not be found." concept-id)))
 
 (defn- throw-concept-revision-not-found
   [concept-id revision-id]

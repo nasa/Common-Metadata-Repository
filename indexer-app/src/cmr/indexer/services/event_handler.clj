@@ -17,6 +17,10 @@
   ;; Default ignores the ingest event. There may be ingest events we don't care about.
   )
 
+(defmethod handle-ingest-event :provider-collection-reindexing
+  [context all-revisions-index? {:keys [provider-id]}]
+  (indexer/reindex-provider-collections context [provider-id] all-revisions-index? false))
+
 (defmethod handle-ingest-event :concept-update
   [context all-revisions-index? {:keys [concept-id revision-id]}]
   (indexer/index-concept-by-concept-id-revision-id

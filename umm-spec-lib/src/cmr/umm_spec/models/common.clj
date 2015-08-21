@@ -673,15 +673,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LineageDateType)
 
-;; Describes the language used in the preparation, storage, and description of the data. It is the
-;; language of the information object, not the language used to describe or interact with the
-;; metadata record. It does not refer to the language of the metadata.
-(defrecord LanguageType
-  [
-
-  ])
-(record-pretty-printer/enable-record-pretty-printing LanguageType)
-
 ;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
 (defrecord OrbitParametersType
   [

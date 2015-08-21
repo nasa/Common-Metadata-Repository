@@ -21,19 +21,17 @@
             [cmr.common.log :as log :refer (debug info warn error)]))
 
 (def keyword-scheme->field-names
-  "Maps each keyword scheme to its hierarchical field names."
-  {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
-   :platforms [:category :series-entity :short-name :long-name]
-   :instruments [:category :class :type :subtype :short-name :long-name]})
-
-(def keyword-scheme->expected-field-names
-  "Maps each keyword scheme to the expected field names to be returned by KMS. There are some
-  fields which we do not extract since they are not needed for hierarchical facets. We also changed
-  the names of some fields."
-  {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
-               :long-name :data-center-url :uuid]
+  "Maps each keyword scheme to its subfield names."
+  {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :data-center-url :uuid]
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]})
+
+(def keyword-scheme->expected-field-names
+  "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
+  the names of some fields for providers."
+  (merge keyword-scheme->field-names
+         {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
+                      :long-name :data-center-url :uuid]}))
 
 (defn- find-invalid-entries
   "Checks the entries for any duplicate short names. Short names should be unique otherwise we
@@ -115,8 +113,9 @@
                     (conn/root-url conn)
                     (name keyword-scheme)
                     (name keyword-scheme))
-        params {:connection-manager (conn/conn-mgr conn)
-                :throw-exceptions true}
+        params (merge
+                 (config/conn-params conn)
+                 {:throw-exceptions true})
         start (System/currentTimeMillis)
         response (client/get url params)]
     (debug

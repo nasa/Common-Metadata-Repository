@@ -46,6 +46,22 @@
          "foo=1&options[foo][pattern]=true" nil
          "foo[]=1&options[foo][pattern]=true" nil)))
 
+(deftest find-concept-id-and-revision-id-from-path-w-extension
+  (testing "concept-id"
+    (are [path-w-extension concept-id]
+         (= concept-id (r/path-w-extension->concept-id path-w-extension))
+
+         "C1-PROV1" "C1-PROV1"
+         "C1-PROV1.xml" "C1-PROV1"
+         "C1-PROV1/3.echo10" "C1-PROV1")
+
+  (testing "revision-id"
+    (are [path-w-extension revision-id]
+         (= revision-id (r/path-w-extension->revision-id path-w-extension))
+
+         "C1-PROV1/2" 2
+         "C1-PROV1/3.echo10" 3))))
+
 (deftest get-search-results-format-test
   (testing "format from headers"
     (are [path headers default-mime-type expected-format]

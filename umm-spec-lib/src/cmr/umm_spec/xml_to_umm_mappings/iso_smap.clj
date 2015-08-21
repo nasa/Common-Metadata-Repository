@@ -21,6 +21,10 @@
 (def purpose-xpath
   (char-string-xpath short-name-identification-xpath "/gmd:purpose"))
 
+(def data-language-xpath
+  (xpath (str short-name-identification-xpath
+              "/gmd:language/gco:CharacterString")))
+
 (def entry-title-xpath
   (xpath (str md-identification-base-xpath
               "[gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString='DataSetId']"
@@ -52,6 +56,7 @@
              :Version version-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath
+             :DataLanguage data-language-xpath
              :TemporalExtents (for-each temporal-extent-xpath-str
                                 (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                            (object {:BeginningDateTime (xpath "gml:beginPosition")

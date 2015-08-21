@@ -740,6 +740,11 @@ Example: `C123456-LPDAAC_ECS`
 
      curl "%CMR-ENDPOINT%/collections?echo_collection_id\[\]=C1000000001-CMR_PROV2"
 
+#### Find collections by provider short name
+
+This searches for collections whose provider matches the given provider short names. This supports `ignore_case` option, but not the `pattern` option.
+
+    curl "%CMR-ENDPOINT%/collections?provider_short_name\[\]=SHORT_5&options\[provider_short_name\]\[ignore_case\]=true"
 
 #### Find collections by entry title
 
