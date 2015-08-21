@@ -21,9 +21,12 @@
 (def temporal-xpath
   (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
+(def precision-xpath "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult/gmd:value/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real")
+
 (def temporal-mappings
   (for-each temporal-xpath
-    (object {:RangeDateTimes (for-each "gml:TimePeriod"
+    (object {:PrecisionOfSeconds (xpath precision-xpath)
+             :RangeDateTimes (for-each "gml:TimePeriod"
                                (object {:BeginningDateTime (xpath "gml:beginPosition")
                                         :EndingDateTime    (xpath "gml:endPosition")}))
              :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")})))

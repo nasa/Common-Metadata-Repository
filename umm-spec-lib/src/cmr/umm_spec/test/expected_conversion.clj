@@ -47,7 +47,7 @@
   [k temporal-extents]
   (reduce (fn [result extent]
             (if-let [values (get extent k)]
-              (concat result (map #(cmn/map->TemporalExtentType {k [%]})
+              (concat result (map #(assoc extent k [%])
                                   values))
               (concat result [extent])))
           []
@@ -92,7 +92,6 @@
   (->> temporal-extents
        (map #(assoc %
                     :TemporalRangeType nil
-                    :PrecisionOfSeconds nil
                     :EndsAtPresentFlag nil))
        (remove :PeriodicDateTimes)
        (split-temporals :RangeDateTimes)
@@ -108,7 +107,9 @@
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
-  (convert-internal umm-coll :iso19115))
+  (-> (convert-internal umm-coll :iso19115)
+      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      (update-in [:TemporalExtents] seq)))
 
 ;;; Unimplemented Fields
 

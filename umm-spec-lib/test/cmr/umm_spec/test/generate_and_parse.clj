@@ -79,10 +79,8 @@
 (deftest roundtrip-gen-parse
   (doseq [record example-records]
     (are2 [metadata-format]
-      (if (= (expected-conversion/convert record metadata-format)
-             (xml-round-trip record metadata-format))
-        true
-        (println record))
+      (= (expected-conversion/convert record metadata-format)
+         (xml-round-trip record metadata-format))
       
       "echo10"
       :echo10
