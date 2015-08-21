@@ -48,11 +48,13 @@
   (testing "Successful parsing"
     (let [expected {"First Entry" {:short-name "First Entry"
                                    :series-entity "field2"
-                                   :category "field1 value, (with commas)"}
+                                   :category "field1 value, (with commas)"
+                                   :uuid "abc-123"}
                     "Last Entry" {:short-name "Last Entry"
                                   :long-name "This is the Last Entry"
                                   :series-entity "field2 v2"
-                                  :category "field1 value 2"}}
+                                  :category "field1 value 2"
+                                  :uuid "xyz-789"}}
           actual (#'cmr.transmit.kms/parse-entries-from-csv :platforms sample-csv)]
       (is (= expected actual))))
 

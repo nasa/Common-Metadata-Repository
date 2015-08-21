@@ -61,7 +61,7 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
-     [:gmd:language (char-string "eng")]
+     [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
       [:gmd:EX_Extent
        (for-each "/TemporalExtents/RangeDateTimes"

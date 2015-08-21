@@ -65,7 +65,8 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtents] (partial take 1))))
+      (update-in [:TemporalExtents] (partial take 1))
+      (assoc :DataLanguage nil)))
 
 ;; DIF 9
 

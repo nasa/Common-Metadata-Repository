@@ -34,7 +34,7 @@
   (routes
     (context (:relative-root-url system) []
 
-      ;; TEMPORARY CODE
+      ;; TEMPORARY CODE - Remove this after EI-3988 is fixed.
       (POST "/wait/:n" [n]
         (info "Waiting" n "seconds to respond")
         (Thread/sleep (* (Long. n) 1000))

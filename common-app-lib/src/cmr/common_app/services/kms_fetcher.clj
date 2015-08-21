@@ -26,10 +26,6 @@
             [clojure.set :as set]
             [cheshire.core :as json]))
 
-(def keyword-schemes
-  "The keyword schemes which we fetch from the GCMD KMS."
-  [:providers :platforms :instruments])
-
 (def kms-cache-key
   "The key used to store the KMS cache in the system cache map."
   :kms)
@@ -49,7 +45,7 @@
   as used in the KMS cache."
   [context]
   (into {}
-        (for [keyword-scheme keyword-schemes]
+        (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
           [keyword-scheme (kms/get-keywords-for-keyword-scheme
                             context keyword-scheme)])))
 
