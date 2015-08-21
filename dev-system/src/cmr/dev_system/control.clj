@@ -7,6 +7,10 @@
             [compojure.core :refer :all]
             [cheshire.core :as json]
             [ring.middleware.json :as ring-json]
+            [ring.middleware.params :as params]
+            [ring.middleware.nested-params :as nested-params]
+            [ring.middleware.keyword-params :as keyword-params]
+            [cmr.common-app.api.routes :as common-routes]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.transmit.echo.acls :as echo-acls]
@@ -15,7 +19,9 @@
             [cmr.ingest.config :as iconfig]
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as parser]
+            [cmr.common.mime-types :as mt]
             [cmr.elastic-utils.connect :as elastic-conn]
+            [cmr.ingest.api.translation :as ingest-translation-api]
 
             ;; Services for reseting
             [cmr.metadata-db.services.concept-service :as mdb-service]
@@ -82,6 +88,10 @@
 
 (defn- build-routes [system]
   (routes
+    ;; Allow random metadata retrieval
+    ingest-translation-api/random-metadata-routes
+
+
     ;; Retrieve KMS resources
     (GET "/kms/:keyword-scheme/:filename" [keyword-scheme filename]
       (let [resource (io/resource (str "kms_examples/" keyword-scheme "/" filename))]
@@ -201,9 +211,12 @@
 
 (defn make-api [system]
   (-> (build-routes system)
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       errors/exception-handler
-      handler/site
-      ring-json/wrap-json-response))
+      ring-json/wrap-json-response
+      common-routes/pretty-print-response-handler
+      params/wrap-params))
 
 
 
