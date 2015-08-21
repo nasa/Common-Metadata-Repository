@@ -41,13 +41,6 @@
           (assoc :RangeDateTimes (map single-date->range singles)))
       temporal)))
 
-(defn merge-ranges
-  "Returns t1 with :RangeDateTimes concatenated together with t2's."
-  ([])
-  ([t1] t1)
-  ([t1 t2]
-   (update-in t1 [:RangeDateTime] concat (:RangeDateTime t2))))
-
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
   k (e.g. :RangeDateTimes) in each source temporal extent."
@@ -85,15 +78,7 @@
        (map #(assoc %
                     :TemporalRangeType nil
                     :PrecisionOfSeconds nil
-                    :EndsAtPresentFlag nil))
-       ;; Now we need to concatenate all of the range extents into a
-       ;; single TemporalExtent.
-       (reduce merge-ranges)
-       ;; Turn that single one into a collection again.
-       vector
-       (remove nil?)
-       ;; Then make sure we get the right record type out.
-       (map cmn/map->TemporalExtentType)))
+                    :EndsAtPresentFlag nil))))
 
 (defmethod convert-internal :dif
   [umm-coll _]
