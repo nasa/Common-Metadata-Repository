@@ -50,18 +50,18 @@
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
   concept-id, revision-id, and possibly collection-concept-id"
-  [context concept format]
+  [context concept target-format]
   (let [collection-concept-id (get-in concept [:extra-fields :parent-collection-id])
         concept-format (mt/mime-type->format (:format concept))
         _ (when-not concept-format
             (errors/internal-error! "Did not recognize concept format" (pr-str (:format concept))))
-        value-map (if (or (contains? #{:xml :native} format) ;; xml is also a native format
-                          (= format concept-format))
+        value-map (if (or (contains? #{:xml :native} target-format) ;; xml is also a native format
+                          (= target-format concept-format))
                     (select-keys concept [:metadata :concept-id :revision-id :format])
-                    (let [metadata (transform-metadata context concept format)]
+                    (let [metadata (transform-metadata context concept target-format)]
                       (assoc (select-keys concept [:concept-id :revision-id])
                              :metadata metadata
-                             :format (mt/format->mime-type format))))]
+                             :format (mt/format->mime-type target-format))))]
     (if collection-concept-id
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))
@@ -69,13 +69,13 @@
 (deftracefn get-formatted-concept-revisions
   "Get concepts with given concept-id, revision-id pairs in a given format. Does not apply acls to
   the concepts found."
-  [context concepts-tuples format allow-missing?]
-  (info "Transforming" (count concepts-tuples) "concept(s) to" format)
+  [context concepts-tuples target-format allow-missing?]
+  (info "Transforming" (count concepts-tuples) "concept(s) to" target-format)
   (let [mdb-context (context->metadata-db-context context)
         [t1 concepts] (u/time-execution
                         (doall (metadata-db/get-concepts mdb-context concepts-tuples allow-missing?)))
         [t2 values] (u/time-execution
-                      (doall (pmap #(concept->value-map context % format) concepts)))]
+                      (doall (pmap #(concept->value-map context % target-format) concepts)))]
     (debug "get-concept-revisions time:" t1
            "concept->value-map time:" t2)
     values))
@@ -143,10 +143,10 @@
 (deftracefn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found."
-  ([context concept-ids format]
-   (get-latest-formatted-concepts context concept-ids format false))
-  ([context concept-ids format skip-acls?]
-   (info "Getting latest version of" (count concept-ids) "concept(s) in" format "format")
+  ([context concept-ids target-format]
+   (get-latest-formatted-concepts context concept-ids target-format false))
+  ([context concept-ids target-format skip-acls?]
+   (info "Getting latest version of" (count concept-ids) "concept(s) in" target-format "format")
    (let [mdb-context (context->metadata-db-context context)
          [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
@@ -158,7 +158,7 @@
          ;; Filtering deleted concepts
          [t3 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))
          [t4 values] (u/time-execution
-                       (doall (pmap #(concept->value-map context % format) concepts)))]
+                       (doall (pmap #(concept->value-map context % target-format) concepts)))]
      (debug "get-latest-concepts time:" t1
             "acl-filter-concepts time:" t2
             "tombstone-filter time:" t3
@@ -168,8 +168,8 @@
 (deftracefn get-formatted-concept
   "Get a specific revision of a concept with the given concept-id in a given format.
   Applies ACLs to the concept found."
-  [context concept-id revision-id format]
-   (info "Getting revision" revision-id "of concept" concept-id "in" format "format")
+  [context concept-id revision-id target-format]
+   (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
    (let [mdb-context (context->metadata-db-context context)
          [t1 concept] (u/time-execution
                          (metadata-db/get-concept mdb-context concept-id revision-id))
@@ -179,9 +179,14 @@
          concept (first concepts)
          ;; Throw a service error for deleted concepts
          _ (when (:deleted concept)
-             (errors/throw-service-errors :bad-request ["Deleted concepts do not contain metadata."]))
+             (errors/throw-service-errors
+               :bad-request
+               [(format
+                  "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
+                  revision-id
+                  concept-id)]))
          ;; format concept
-         [t4 value] (u/time-execution (when concept (concept->value-map context concept format)))]
+         [t4 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
      (debug "get-concept time:" t1
             "acl-filter-concepts time:" t2
             "concept->value-map time:" t4)

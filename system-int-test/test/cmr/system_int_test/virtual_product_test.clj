@@ -361,7 +361,7 @@
                                            src-granule-ur)
                      :page-size 20}
         virt-gran-refs (:refs (search/find-refs :granule query-param))]
-    (map #(-> % :id search/get-concept-by-concept-id :body g/parse-granule) virt-gran-refs)))
+    (map #(-> % :id search/retrieve-concept :body g/parse-granule) virt-gran-refs)))
 
 (deftest omi-aura-configuration-test
   (let [[omi-coll] (vp/ingest-source-collections

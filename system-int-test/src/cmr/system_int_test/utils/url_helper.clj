@@ -228,10 +228,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 
-(defn concept-revision-metadata-url
-  []
-  (format "http://localhost:%s/concepts" (transmit-config/search-port)))
-
 (defn search-url
   [type]
   (format "http://localhost:%s/%ss" (transmit-config/search-port) (name type)))
@@ -275,8 +271,10 @@
   (format "http://localhost:%s/provider_holdings" (transmit-config/search-port)))
 
 (defn retrieve-concept-url
-  [type concept-id]
-  (format "http://localhost:%s/concepts/%s" (transmit-config/search-port) concept-id))
+  ([type concept-id] (retrieve-concept-url type concept-id nil))
+  ([type concept-id revision-id]
+   (str "http://localhost:" (transmit-config/search-port) "/concepts/" concept-id
+        (when revision-id (str "/" revision-id)))))
 
 (defn search-root
   "Returns the search url root"
