@@ -20,9 +20,10 @@
   "Like update-in but applied to each value in seq at path."
   [m path f & args]
   (update-in m path (fn [xs]
-                      (map (fn [x]
-                             (apply f x args))
-                           xs))))
+                      (when xs
+                        (map (fn [x]
+                               (apply f x args))
+                             xs)))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -60,7 +61,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtents] (partial take 1))
+      (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)))
 
@@ -76,6 +77,7 @@
        ;; Only ranges are supported by DIF 9, so we need to convert
        ;; single dates to range types.
        (map single-dates->ranges)
+       ;; DIF 9 does not support these fields.
        (map #(assoc %
                     :TemporalRangeType nil
                     :PrecisionOfSeconds nil
@@ -90,13 +92,17 @@
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
+       ;; ISO 19115-2 does not support these fields.
        (map #(assoc %
                     :TemporalRangeType nil
                     :EndsAtPresentFlag nil))
+       ;; ISO 19115-2 does not support PeriodicDateTimes.
        (remove :PeriodicDateTimes)
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        (map cmn/map->TemporalExtentType)
+       ;; Return nil instead of an empty seq to match the parsed value in case none of the inputs
+       ;; are valid for ISO 19115-2.
        seq))
 
 (defmethod convert-internal :iso19115
@@ -108,8 +114,8 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
-      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-      (update-in [:TemporalExtents] seq)))
+      ;; ISO SMAP does not support the PrecisionOfSeconds field.
+      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)))
 
 ;;; Unimplemented Fields
 

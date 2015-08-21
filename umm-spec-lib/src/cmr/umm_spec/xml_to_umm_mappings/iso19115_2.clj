@@ -21,7 +21,10 @@
 (def temporal-xpath
   (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
-(def precision-xpath "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult/gmd:value/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real")
+(def precision-xpath (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report"
+                          "/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result"
+                          "/gmd:DQ_QuantitativeResult/gmd:value"
+                          "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
 (def temporal-mappings
   (for-each temporal-xpath
