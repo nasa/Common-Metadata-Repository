@@ -34,7 +34,12 @@
     :_all {:enabled false},
     :_id   {:path "key-name"},
     :properties {:key-name string-type
-                 :value string-type}}})
+
+                 ;; Deprecated, remove in future sprint. We changed the value to support values
+                 ;; larger than 32KB.
+                 :value string-type
+
+                 :value2 string-type}}})
 
 (def index-settings
   "Defines the cubby elasticsearch index settings."
@@ -88,7 +93,7 @@
               index-name type-name
               :query {:filtered {:query (q/match-all)
                                  :filter {:term {:key-name "foo"}}}}
-              :fields [:value])
+              :fields [:value2])
 
   )
 
@@ -148,13 +153,13 @@
   (get-value
     [this key-name]
     (get-in (esd/get conn index-name type-name key-name)
-            [:_source :value]))
+            [:_source :value2]))
 
   (set-value
     [this key-name value]
     (try-elastic-operation
       (esd/create conn index-name type-name
-                  {:key-name key-name :value value}
+                  {:key-name key-name :value2 value}
                   :id key-name
                   :refresh true)))
 
