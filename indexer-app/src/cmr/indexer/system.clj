@@ -22,7 +22,6 @@
             [cmr.acl.core :as acl]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
-            [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [cmr.common.cache.fallback-cache :as fallback-cache]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.indexer.services.event-handler :as event-handler]))
