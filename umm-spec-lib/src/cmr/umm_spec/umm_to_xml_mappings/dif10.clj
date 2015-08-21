@@ -52,6 +52,7 @@
     [:Granule_Spatial_Representation "GEODETIC"]]
    [:Project
     [:Short_Name "dummy project short name"]]
+   [:Quality (xpath "/Quality")]
    [:Dataset_Language (xpath "/DataLanguage")]
    [:Organization
     [:Organization_Type "ARCHIVER"]

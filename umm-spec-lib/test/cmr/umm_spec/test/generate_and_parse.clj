@@ -27,6 +27,7 @@
      :Version "V5"
      :Abstract "A very abstract collection"
      :DataLanguage "English"
+     :Quality "Pretty good quality"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3
