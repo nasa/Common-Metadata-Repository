@@ -63,7 +63,7 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
-     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest :search]))))
+     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest :search :cubby]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
