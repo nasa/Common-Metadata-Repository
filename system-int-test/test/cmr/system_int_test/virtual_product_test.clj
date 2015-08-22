@@ -27,7 +27,7 @@
   (do
     (dev-sys-util/reset)
     (doseq [p vp/virtual-product-providers]
-      (ingest/create-provider (str p "_guid") p)))
+      (ingest/create-provider {:provider-guid (str p "_guid") :provider-id p})))
 
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
 
