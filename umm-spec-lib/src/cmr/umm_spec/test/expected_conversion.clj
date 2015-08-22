@@ -54,6 +54,19 @@
           []
           temporal-extents))
 
+(defn merge-temporals
+  "Merges a sequence of temporal extents into a single temporal extent. Not that any values in the
+  subsequent temporal extents after the first one other than the times are thrown away."
+  [temporal-extents]
+  (when (seq temporal-extents)
+    (reduce (fn [merged-temporal temporal]
+                (-> merged-temporal
+                    (update-in [:RangeDateTimes] #(seq (concat % (:RangeDateTimes temporal))))
+                    (update-in [:SingleDateTimes] #(seq (concat % (:SingleDateTimes temporal))))
+                    (update-in [:PeriodicDateTimes] #(seq (concat % (:PeriodicDateTimes temporal))))))
+              (first temporal-extents)
+              (rest temporal-extents))))
+
 ;;; Format-Specific Translation Functions
 
 ;; ECHO 10
@@ -70,18 +83,19 @@
 (defn dif-temporal
   "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
-  (->> temporal-extents
-       ;; Periodic temporal extents are not supported in DIF 9, so we
-       ;; must remove them.
-       (remove :PeriodicDateTimes)
-       ;; Only ranges are supported by DIF 9, so we need to convert
-       ;; single dates to range types.
-       (map single-dates->ranges)
-       ;; DIF 9 does not support these fields.
-       (map #(assoc %
-                    :TemporalRangeType nil
-                    :PrecisionOfSeconds nil
-                    :EndsAtPresentFlag nil))))
+  (when-let [temporal (->> temporal-extents
+                           ;; Only ranges are supported by DIF 9, so we need to convert
+                           ;; single dates to range types.
+                           (map single-dates->ranges)
+                           ;; Merge the list of temporals together since we'll read the set of range date times as
+                           ;; a single temporal with many range date times.
+                           merge-temporals)]
+    ;; DIF 9 does not support these fields.
+    [(assoc temporal
+            :PeriodicDateTimes nil
+            :TemporalRangeType nil
+            :PrecisionOfSeconds nil
+            :EndsAtPresentFlag nil)]))
 
 (defmethod convert-internal :dif
   [umm-coll _]
