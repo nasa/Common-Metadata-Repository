@@ -230,9 +230,9 @@
    (let [collection (collection attribs)]
      (update-in collection [:data-provider-timestamps :revision-date-time]
                 (fn [revision-date-time]
-                  (when revision-date-time (->> revision-date-time
-                                                (f/unparse (f/formatters :date))
-                                                (f/parse (f/formatters :date)))))))))
+                  (some->> revision-date-time
+                           (f/unparse (f/formatters :date))
+                           (f/parse (f/formatters :date))))))))
 
 (defn collection-concept
   "Returns the collection for ingest with the given attributes"
