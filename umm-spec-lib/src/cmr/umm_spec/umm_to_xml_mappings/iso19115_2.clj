@@ -98,4 +98,17 @@
          [:gmd:valueUnit ""]
          [:gmd:value
           [:gco:Record {:xsi:type "gco:Real_PropertyType"}
-           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]])
+           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]
+   [:gmi:acquisitionInformation
+    [:gmi:MI_AcquisitionInformation
+     (for-each "/Platforms"
+       [:gmi:platform
+        [:eos:EOS_Platform {:id "not-implemented"}
+         [:gmi:identifier
+          [:gmd:MD_Identifier
+           [:gmd:code
+            [:gco:CharacterString (xpath "ShortName")]]
+           [:gmd:description
+            [:gco:CharacterString (xpath "LongName")]]]]
+         [:gmi:description [:gco:CharacterString (xpath "Type")]]
+         [:gmi:instrument {:gco:nilReason "not implemented"}]]])]]])
