@@ -47,7 +47,7 @@
    :aggs (hierarchical-aggregation-builder field (field nested-fields-mappings))})
 
 (def ^:private flat-facet-aggregations
-  "This is the aggregations map that will be passed to elasticsearch to request facetted results
+  "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
@@ -65,7 +65,7 @@
    :detailed-variable (terms-facet :detailed-variable)})
 
 (def ^:private hierarchical-facet-aggregations
-  "This is the aggregations map that will be passed to elasticsearch to request facetted results
+  "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
