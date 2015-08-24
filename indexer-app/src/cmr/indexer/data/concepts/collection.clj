@@ -63,10 +63,10 @@
         personnel (person-with-email personnel)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
-        platform-long-names (remove nil? (map :long-name platforms))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               platform-short-names)
+        platform-long-names (remove nil? (set (map :long-name (concat platforms platforms-nested))))
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))
         instrument-long-names (remove nil? (map :long-name instruments))
@@ -151,7 +151,8 @@
             :coordinate-system (when spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field concept-id collection)
+            :keyword (k/create-keywords-field
+                       concept-id collection {:platform-long-names platform-long-names})
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
