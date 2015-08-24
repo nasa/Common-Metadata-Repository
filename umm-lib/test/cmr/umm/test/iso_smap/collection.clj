@@ -98,7 +98,7 @@
         (assoc-in [:product :processing-level-id] nil)
         ;; There is no delete-time in SMAP ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
-
+        ;; SMAP uses date instead of date-time. The hours, minutes and seconds are truncated.
         (update-in [:data-provider-timestamps :revision-date-time]
                    (fn [date-time]
                      (->> date-time

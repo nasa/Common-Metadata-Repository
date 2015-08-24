@@ -110,7 +110,7 @@
         (assoc-in [:product :collection-data-type] nil)
         ;; There is no delete-time in ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
-
+        ;; Revision date time is same as update-time
         (assoc-in [:data-provider-timestamps :update-time] revision-date-time)
         ;; ISO does not have periodic-date-times
         (assoc :temporal temporal)

@@ -104,6 +104,7 @@
                                   :end-coordinate-2 end-coordinate-2})))
 
 (defn data-provider-timestamps
+  "Create the data providers time stamps record for granules"
   [attribs]
   (let [attribs (util/remove-nil-keys
                   (select-keys attribs (util/record-fields DataProviderTimestamps)))
