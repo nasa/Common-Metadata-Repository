@@ -24,10 +24,11 @@
   [context concept-id revision-id]
   (let [conn (config/context->app-connection context :metadata-db)
         response (client/get (format "%s/concepts/%s/%s" (conn/root-url conn) concept-id revision-id)
-                             {:accept :json
-                              :throw-exceptions false
-                              :headers (ch/context->http-headers context)
-                              :connection-manager (conn/conn-mgr conn)})]
+                             (merge
+                               (config/conn-params conn)
+                               {:accept :json
+                                :throw-exceptions false
+                                :headers (ch/context->http-headers context)}))]
     (if (= 200 (:status response))
       (finish-parse-concept (json/decode (:body response) true))
       (errors/throw-service-error
@@ -41,10 +42,11 @@
   ([context concept-id throw-service-error?]
    (let [conn (config/context->app-connection context :metadata-db)
          response (client/get (format "%s/concepts/%s" (conn/root-url conn) concept-id)
-                              {:accept :json
-                               :throw-exceptions false
-                               :headers (ch/context->http-headers context)
-                               :connection-manager (conn/conn-mgr conn)})
+                              (merge
+                                (config/conn-params conn)
+                                {:accept :json
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)}))
          status (:status response)]
      (if (= 200 status)
        (finish-parse-concept (json/parse-string (:body response) true))
@@ -63,10 +65,11 @@
    (let [conn (config/context->app-connection context :metadata-db)
          request-url (str (conn/root-url conn) "/concept-id/" (name concept-type) "/" provider-id "/"
                           (codec/url-encode native-id))
-         response (client/get request-url {:accept :json
-                                           :headers (ch/context->http-headers context)
-                                           :throw-exceptions false
-                                           :connection-manager (conn/conn-mgr conn)})
+         response (client/get request-url (merge
+                                            (config/conn-params conn)
+                                            {:accept :json
+                                             :headers (ch/context->http-headers context)
+                                             :throw-exceptions false}))
          status (:status response)
          body (json/decode (:body response))]
      (case status
@@ -93,13 +96,14 @@
    (let [conn (config/context->app-connection context :metadata-db)
          tuples-json-str (json/generate-string concept-tuples)
          request-url (str (conn/root-url conn) "/concepts/search/concept-revisions")
-         response (client/post request-url {:body tuples-json-str
-                                            :content-type :json
-                                            :query-params {:allow_missing allow-missing?}
-                                            :accept :json
-                                            :throw-exceptions false
-                                            :headers (ch/context->http-headers context)
-                                            :connection-manager (conn/conn-mgr conn)})
+         response (client/post request-url (merge
+                                             (config/conn-params conn)
+                                             {:body tuples-json-str
+                                              :content-type :json
+                                              :query-params {:allow_missing allow-missing?}
+                                              :accept :json
+                                              :throw-exceptions false
+                                              :headers (ch/context->http-headers context)}))
          status (:status response)]
      (case status
        404
@@ -124,13 +128,14 @@
    (let [conn (config/context->app-connection context :metadata-db)
          ids-json-str (json/generate-string concept-ids)
          request-url (str (conn/root-url conn) "/concepts/search/latest-concept-revisions")
-         response (client/post request-url {:body ids-json-str
-                                            :query-params {:allow_missing allow-missing?}
-                                            :content-type :json
-                                            :accept :json
-                                            :throw-exceptions false
-                                            :headers (ch/context->http-headers context)
-                                            :connection-manager (conn/conn-mgr conn)})
+         response (client/post request-url (merge
+                                             (config/conn-params conn)
+                                             {:body ids-json-str
+                                              :query-params {:allow_missing allow-missing?}
+                                              :content-type :json
+                                              :accept :json
+                                              :throw-exceptions false
+                                              :headers (ch/context->http-headers context)}))
          status (:status response)]
      (case status
        404
@@ -152,11 +157,12 @@
   [context params]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/concepts/search/collections")
-        response (client/get request-url {:accept :json
-                                          :query-params params
-                                          :headers (ch/context->http-headers context)
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
+        response (client/get request-url (merge
+                                           (config/conn-params conn)
+                                           {:accept :json
+                                            :query-params params
+                                            :headers (ch/context->http-headers context)
+                                            :throw-exceptions false}))
         {:keys [status body]} response]
     (case status
       200 (map finish-parse-concept (json/decode body true))
@@ -182,11 +188,12 @@
   [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/concepts/search/expired-collections")
-        response (client/get request-url {:accept :json
-                                          :query-params {:provider provider-id}
-                                          :headers (ch/context->http-headers context)
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
+        response (client/get request-url (merge
+                                           (config/conn-params conn)
+                                           {:accept :json
+                                            :query-params {:provider provider-id}
+                                            :headers (ch/context->http-headers context)
+                                            :throw-exceptions false}))
         {:keys [status body]} response]
     (case status
       200 (json/decode body true)
@@ -249,10 +256,11 @@
   [context]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/providers")]
-    (client/get request-url {:accept :json
-                             :headers (ch/context->http-headers context)
-                             :throw-exceptions false
-                             :connection-manager (conn/conn-mgr conn)})))
+    (client/get request-url (merge
+                              (config/conn-params conn)
+                              {:accept :json
+                               :headers (ch/context->http-headers context)
+                               :throw-exceptions false}))))
 
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
@@ -269,12 +277,13 @@
   (let [conn (config/context->app-connection context :metadata-db)
         concept-json-str (json/generate-string concept)
         response (client/post (str (conn/root-url conn) "/concepts")
-                              {:body concept-json-str
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :headers (ch/context->http-headers context)
-                               :connection-manager (conn/conn-mgr conn)})
+                              (merge
+                                (config/conn-params conn)
+                                {:body concept-json-str
+                                 :content-type :json
+                                 :accept :json
+                                 :throw-exceptions false
+                                 :headers (ch/context->http-headers context)}))
         status (:status response)
         body (json/decode (:body response))
         {:strs [concept-id revision-id]} body]
@@ -301,9 +310,10 @@
   [context]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/health")
-        response (client/get request-url {:accept :json
-                                          :throw-exceptions false
-                                          :connection-manager (conn/conn-mgr conn)})
+        response (client/get request-url (merge
+                                           (config/conn-params conn)
+                                           {:accept :json
+                                            :throw-exceptions false}))
         {:keys [status body]} response
         result (json/decode body true)]
     (if (= 200 status)

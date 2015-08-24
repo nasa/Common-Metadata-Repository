@@ -75,7 +75,9 @@ NOTE from CMR-1908 that when reindexing a provider the collections are not reind
 
 Virtual collections contain granules derived from a source collection. Only granules specified in the source collections in the virtual product app configuration will be considered. Virtual granules will only be created in the configured destination virtual collections if they already exist. To initialize virtual granules from existing source granules, use the following command:
 
-    curl -v -XPOST http://localhost:3006/virtual_products/
+    curl -v -XPOST http://localhost:3006/virtual_products?provider-id=PROV1&entry-title=et1
+
+Note that provider-id and entry-title are required.
 
 ### Synchronize Catalog REST and CMR
 

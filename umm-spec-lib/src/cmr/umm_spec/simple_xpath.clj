@@ -68,11 +68,18 @@
   {:type :nth-selector
    :index (dec (Long/parseLong selector-str))})
 
+(defn- parse-xpath-attrib-name
+  "Returns a namespaced keyword like :foo/bar from an xpath namespaced attribute selector like
+  \"foo:bar\"."
+  [attrib-name]
+  (let [[_ _ namespace-part name-part] (re-find #"((.*):)?(.*)" attrib-name)]
+    (keyword namespace-part name-part)))
+
 (defn- create-attrib-val-equality-selector
   "Creates a selector that selects elements with an attribute with a given value."
   [selector-str]
   (let [[_ attrib-name attrib-val] (re-matches #"@(.+)='(.+)'" selector-str)
-        attrib-name (keyword attrib-name)]
+        attrib-name (parse-xpath-attrib-name attrib-name)]
     {:type :attrib-value-selector
      :attrib-name attrib-name
      :attrib-val attrib-val}))
@@ -319,7 +326,9 @@
                             split-xpath->parsed-xpath))]
     (assoc parsed-xpath :original-xpath xpath)))
 
-(defmulti evaluate
+(defmulti
+  ^{:arglists '([xpath-context parsed-xpath])}
+  evaluate
   "Evaluates a parsed XPath against the given XPath context."
   (fn [xpath-context parsed-xpath]
     (:type xpath-context)))

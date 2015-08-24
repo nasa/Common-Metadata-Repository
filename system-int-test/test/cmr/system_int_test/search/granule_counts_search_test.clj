@@ -17,14 +17,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(comment
-
-  (dev-sys-util/reset)
-  (ingest/create-provider "provguid1" "PROV1")
-
-
-  )
-
 (defn temporal-range
   "Creates attributes for collection or granule defining a temporal range between start and stop
   which should be single digit integers."

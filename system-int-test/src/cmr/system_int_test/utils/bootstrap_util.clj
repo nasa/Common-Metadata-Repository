@@ -124,7 +124,7 @@
       (dev-sys-util/reset)
       (doseq [[provider-id cmr-only] provider-id-cmr-only-map
               :let [guid (str provider-id "-guid")]]
-        (ingest/create-provider guid provider-id {:cmr-only cmr-only})
+        (ingest/create-provider {:provider-guid guid :provider-id provider-id :cmr-only cmr-only})
         (when-not cmr-only
           (cat-rest/create-provider system provider-id))))))
 

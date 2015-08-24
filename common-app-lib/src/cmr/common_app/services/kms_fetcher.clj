@@ -40,7 +40,7 @@
       (consistent-cache/create-consistent-cache)
       (cubby-cache/create-cubby-cache))))
 
-(defn- get-all-gcmd-keywords-as-map
+(defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
@@ -55,16 +55,20 @@
   keywords from KMS. The caller is responsible for catching and logging the exception."
   [context]
   (let [cache (cache/context->cache context kms-cache-key)]
-    (cache/set-value cache kms-cache-key (get-all-gcmd-keywords-as-map context))))
+    (cache/set-value cache kms-cache-key (fetch-gcmd-keywords-map context))))
+
+(defn get-gcmd-keywords-map
+  "Retrieves the GCMD keywords map from the cache."
+  [context]
+  (let [cache (cache/context->cache context kms-cache-key)]
+    (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
 
 (defn get-full-hierarchy-for-short-name
   "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
   nil will be returned."
-  [context keyword-scheme short-name]
+  [gcmd-keywords-map keyword-scheme short-name]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (let [cache (cache/context->cache context kms-cache-key)]
-    (get-in (cache/get-value cache kms-cache-key (partial get-all-gcmd-keywords-as-map context))
-            [keyword-scheme short-name])))
+  (get-in gcmd-keywords-map [keyword-scheme short-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
@@ -83,15 +87,5 @@
    :job-key job-key
    :interval 7200})
 
-(comment
-  (def system {:system (get-in user/system [:apps :indexer])})
-
-  (refresh-kms-cache system)
-  (get-in (cache/get-value (cache/context->cache system kms-cache-key) kms-cache-key)
-          [:providers "MEDIAS FRANCE"])
-  (cache/get-keys (cache/context->cache system kms-cache-key))
-  (get-full-hierarchy-for-short-name system :providers "MEDIAS FRANCE")
-
-  )
 
 

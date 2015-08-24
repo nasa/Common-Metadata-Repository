@@ -89,9 +89,9 @@
 (comment
   (do
     (dev-sys-util/reset)
-    (ingest/create-provider "provguid1" "PROV1")
-    (ingest/create-provider "provguid2" "PROV2")
-    (ingest/create-provider "provguid3" "PROV3")
+    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
+    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
+    (ingest/create-provider {:provider-guid "provguid3" :provider-id "PROV3"})
 
     ;; Grant all holdings to registered users
     (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))

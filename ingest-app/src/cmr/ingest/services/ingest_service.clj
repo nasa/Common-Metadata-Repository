@@ -2,6 +2,7 @@
   (:require [cmr.oracle.connection :as conn]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.echo.rest :as rest]
+            [cmr.transmit.cubby :as cubby]
             [cmr.ingest.data.indexer :as indexer]
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
@@ -181,6 +182,7 @@
    :echo rest/health
    :metadata-db mdb/get-metadata-db-health
    :indexer indexer/get-indexer-health
+   :cubby cubby/get-cubby-health
    :rabbit-mq #(queue/health (get-in % [:system :queue-broker]))})
 
 (deftracefn health

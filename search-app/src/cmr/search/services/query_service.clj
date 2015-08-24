@@ -206,7 +206,7 @@
   [concept-id]
   (errors/throw-service-error
     :not-found
-    (format "Concept with concept-id: %s could not be found" concept-id)))
+    (format "Concept with concept-id [%s] could not be found." concept-id)))
 
 (defn- throw-concept-revision-not-found
   [concept-id revision-id]

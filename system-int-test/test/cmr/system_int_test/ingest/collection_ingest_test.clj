@@ -343,7 +343,7 @@
 (comment
 
   (dev-sys-util/reset)
-  (ingest/create-provider "provguid1" "PROV1")
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
   (def coll1 (d/ingest "PROV1" (dc/collection)))
   (ingest/delete-concept coll1)
   (get-in user/system [:apps :metadata-db :db])

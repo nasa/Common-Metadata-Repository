@@ -68,7 +68,7 @@
 
   (do
     (def input :dif)
-    (def output :echo10)
+    (def output :dif)
 
 
     (def metadata (umm-spec/generate-metadata :collection input example-record))
@@ -91,18 +91,21 @@
 
   (def expected (-> example-record
                     (expected-conversion/convert input)
-                    (expected-conversion/convert output)))
+                    (expected-conversion/convert output)
+                    ))
 
   )
 
 
 (def valid-formats
-  [:umm-json
+  [
+   :umm-json
    :iso-smap
    :iso19115
    :dif
    :dif10
-   :echo10])
+   :echo10
+   ])
 
 (defn assert-translate-failure
   [error-regex & args]

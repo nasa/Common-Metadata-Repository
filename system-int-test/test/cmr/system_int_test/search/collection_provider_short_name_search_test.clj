@@ -8,7 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]))
 
-(use-fixtures :each (ingest/reset-new-fixture
+(use-fixtures :each (ingest/reset-fixture
                       [{:provider-guid "provguid1"
                         :provider-id "PROV1"
                         :short-name "Provider 1"}

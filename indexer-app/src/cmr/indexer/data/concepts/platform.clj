@@ -6,11 +6,9 @@
 
 (defn platform-short-name->elastic-doc
   "Converts a platform into the portion going in an elastic document"
-  [context short-name]
-  (let [full-platform (kf/get-full-hierarchy-for-short-name context :platforms short-name)
+  [gcmd-keywords-map short-name]
+  (let [full-platform (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :platforms short-name)
         {:keys [category series-entity long-name uuid]} full-platform]
-    (when-not full-platform
-      (info (format "Unable to find platform short-name [%s] in KMS." short-name)))
     {:category category
      :category.lowercase (when category (str/lower-case category))
      :series-entity series-entity

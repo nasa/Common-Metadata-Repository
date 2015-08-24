@@ -63,11 +63,11 @@
   (let [conn (config/context->app-connection context app-name)
         response (http-response->raw-response
                    (client/request
-                     (merge {:url (url-fn conn)
+                     (merge (config/conn-params conn)
+                            {:url (url-fn conn)
                              :method method
                              :throw-exceptions false
-                             :headers {config/token-header (config/echo-system-token)}
-                             :connection-manager (conn/conn-mgr conn)}
+                             :headers {config/token-header (config/echo-system-token)}}
                             http-options)))]
     (cond
       raw? response

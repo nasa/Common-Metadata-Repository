@@ -255,7 +255,7 @@
   ;; 409 returned, Errors: [Conflict with existing concept-id [C1-PROV1] and revision-id [23]]
   (do
     (cmr.system-int-test.utils.dev-system-util/reset)
-    (ingest/create-provider "provguid1" "PROV1")
+    (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
 
     (doseq [_ (range 150)]
       (future (do (let [response (ingest/ingest-concept
