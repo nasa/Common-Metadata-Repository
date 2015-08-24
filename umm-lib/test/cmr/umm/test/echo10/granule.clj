@@ -35,9 +35,7 @@
 
 (defspec generate-and-parse-granule-test 100
   (for-all [granule gran-gen/granules]
-    (let [
-          ; granule test-gran-umm
-          xml (echo10/umm->echo10-xml granule)
+    (let [xml (echo10/umm->echo10-xml granule)
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-echo10 granule)]
       (= parsed expected-parsed))))
