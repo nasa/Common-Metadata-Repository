@@ -114,11 +114,6 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
-(comment
-
-
-
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
