@@ -35,7 +35,9 @@
 
 (defspec generate-and-parse-granule-test 100
   (for-all [granule gran-gen/granules]
-    (let [xml (echo10/umm->echo10-xml granule)
+    (let [
+          ; granule test-gran-umm
+          xml (echo10/umm->echo10-xml granule)
           parsed (g/parse-granule xml)
           expected-parsed (umm->expected-parsed-echo10 granule)]
       (= parsed expected-parsed))))
@@ -181,7 +183,7 @@
 (deftest parse-granule-test
   (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "GranuleUR100"
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                    :data-provider-timestamps (umm-g/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
                                                  :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})

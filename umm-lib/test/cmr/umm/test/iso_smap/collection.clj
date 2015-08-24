@@ -16,6 +16,7 @@
             [cmr.umm.collection :as umm-c]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.iso-smap.core :as iso]
+            [clj-time.format :as f]
             [cmr.umm.test.echo10.collection :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
@@ -97,6 +98,12 @@
         (assoc-in [:product :processing-level-id] nil)
         ;; There is no delete-time in SMAP ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
+
+        (update-in [:data-provider-timestamps :revision-date-time]
+                   (fn [date-time]
+                     (->> date-time
+                          (f/unparse (f/formatters :date))
+                          (f/parse (f/formatters :date)))))
         ;; SMAP ISO does not have periodic-date-times
         (assoc :temporal temporal)
         ;; SMAP ISO does not have distribution centers as Organization
@@ -175,7 +182,8 @@
                                 :version-description "The initial version of the Level 1A Radar executable."})
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
-                                                 :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
+                                                 :update-time (p/parse-datetime "2013-04-05T17:15:00Z")
+                                                 :revision-date-time (p/parse-date "2013-01-02")})
                     :temporal
                     (umm-c/map->Temporal
                       {:range-date-times

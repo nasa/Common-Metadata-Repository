@@ -52,11 +52,13 @@
                                   date-elements))]
             (cx/datetime-at-path tag-elem [:date :DateTime])))
         insert-time (parse-date-fn "creation")
-        update-time (parse-date-fn "revision")]
-    (when (or insert-time update-time)
+        revision-date-time (parse-date-fn "revision")]
+    (when (or insert-time revision-date-time)
       (c/map->DataProviderTimestamps
         {:insert-time insert-time
-         :update-time update-time}))))
+         ;; ISO MENDS does not have a distinct update time
+         :update-time revision-date-time
+         :revision-date-time revision-date-time}))))
 
 (defn- xml-elem->access-value
   "Returns a UMM access-value from a parsed XML structure"
@@ -232,7 +234,7 @@
      (let [{{:keys [short-name long-name version-id processing-level-id]} :product
             dataset-id :entry-title
             restriction-flag :access-value
-            {:keys [insert-time update-time]} :data-provider-timestamps
+            {:keys [insert-time update-time revision-date-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
@@ -266,7 +268,7 @@
                           (x/element
                             :gmd:CI_Citation {}
                             (h/iso-string-element :gmd:title (format "%s > %s" short-name long-name))
-                            (iso-date-element "revision" update-time)
+                            (iso-date-element "revision" revision-date-time)
                             (iso-date-element "creation" insert-time)
                             (h/iso-string-element :gmd:edition version-id)
                             (x/element :gmd:identifier {}

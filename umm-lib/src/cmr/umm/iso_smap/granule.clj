@@ -69,6 +69,18 @@
       restriction-flag-elem
       [:resourceConstraints :MD_LegalConstraints :otherConstraints :CharacterString])))
 
+(defn xml-elem->DataProviderTimestamps
+  "Returns a UMM DataProviderTimestamps from a parsed XML structure"
+  [id-elems]
+  (let [insert-time-elem (h/xml-elem-with-title-tag id-elems "InsertTime")
+        update-time-elem (h/xml-elem-with-title-tag id-elems "UpdateTime")
+        insert-time (cx/datetime-at-path insert-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
+        update-time (cx/datetime-at-path update-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])]
+    (when (or insert-time update-time)
+      (g/map->DataProviderTimestamps
+        {:insert-time insert-time
+         :update-time update-time}))))
+
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
@@ -78,7 +90,7 @@
                     :identificationInfo :MD_DataIdentification])]
     (g/map->UmmGranule
       {:granule-ur (xml-elem->granule-ur id-elems)
-       :data-provider-timestamps (c/xml-elem->DataProviderTimestamps id-elems)
+       :data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
        :collection-ref (xml-elem->CollectionRef id-elems)
        :data-granule (xml-elem->DataGranule xml-struct)
        :access-value (xml-elem->access-value id-elems)
