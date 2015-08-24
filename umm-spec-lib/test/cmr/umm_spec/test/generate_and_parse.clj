@@ -9,8 +9,8 @@
             [clj-time.core :as t]
             [cmr.common.util :refer [are2]]))
 
-(def example-record
-  "This contains an example record with fields supported by all formats"
+(def example-base
+  "This contains an base example record with fields supported by all formats."
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
                    {:ShortName "Platform"
@@ -27,40 +27,53 @@
      :Version "V5"
      :Abstract "A very abstract collection"
      :DataLanguage "English"
-     :Quality "Pretty good quality"
-     :TemporalExtents [(umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
-                                                [{:BeginningDateTime (t/date-time 2000)
-                                                  :EndingDateTime (t/date-time 2001)}
-                                                 {:BeginningDateTime (t/date-time 2002)
-                                                  :EndingDateTime (t/date-time 2003)}])})
-                       (umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]})
-                       (umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
-                                                   [{:Name "period1"
-                                                     :StartDate (t/date-time 2000)
-                                                     :EndDate (t/date-time 2001)
-                                                     :DurationUnit "YEAR"
-                                                     :DurationValue 4
-                                                     :PeriodCycleDurationUnit "DAY"
-                                                     :PeriodCycleDurationValue 3}
-                                                    {:Name "period2"
-                                                     :StartDate (t/date-time 2000)
-                                                     :EndDate (t/date-time 2001)
-                                                     :DurationUnit "YEAR"
-                                                     :DurationValue 4
-                                                     :PeriodCycleDurationUnit "DAY"
-                                                     :PeriodCycleDurationValue 3}])})]}))
+     :Quality "Pretty good quality"}))
+
+(def temporal-extents
+  "A map of example UMM TemporalExtents."
+  {"Range Dates"
+   (umm-cmn/map->TemporalExtentType
+     {:TemporalRangeType "temp range"
+      :PrecisionOfSeconds 3
+      :EndsAtPresentFlag false
+      :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
+                            [{:BeginningDateTime (t/date-time 2000)
+                              :EndingDateTime (t/date-time 2001)}
+                             {:BeginningDateTime (t/date-time 2002)
+                              :EndingDateTime (t/date-time 2003)}])})
+   "Single dates"
+   (umm-cmn/map->TemporalExtentType
+     {:TemporalRangeType "temp range"
+      :PrecisionOfSeconds 3
+      :EndsAtPresentFlag false
+      :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]})
+
+   "Periodic dates"
+   (umm-cmn/map->TemporalExtentType
+     {:TemporalRangeType "temp range"
+      :PrecisionOfSeconds 3
+      :EndsAtPresentFlag false
+      :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
+                               [{:Name "period1"
+                                 :StartDate (t/date-time 2000)
+                                 :EndDate (t/date-time 2001)
+                                 :DurationUnit "YEAR"
+                                 :DurationValue 4
+                                 :PeriodCycleDurationUnit "DAY"
+                                 :PeriodCycleDurationValue 3}
+                                {:Name "period2"
+                                 :StartDate (t/date-time 2000)
+                                 :EndDate (t/date-time 2001)
+                                 :DurationUnit "YEAR"
+                                 :DurationValue 4
+                                 :PeriodCycleDurationUnit "DAY"
+                                 :PeriodCycleDurationValue 3}])})})
+
+(def example-records
+  "A seq of example records for each of the example temporal extents above."
+  (into {}
+        (for [[example-name temporal] temporal-extents]
+          [example-name (assoc example-base :TemporalExtents [temporal])])))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -69,31 +82,35 @@
   (core/parse-metadata :collection format (core/generate-metadata :collection format record)))
 
 (deftest roundtrip-gen-parse
-  (are2 [metadata-format]
-        (= (expected-conversion/convert example-record metadata-format)
-           (xml-round-trip example-record metadata-format))
+  (doseq [[example-name record] example-records]
+    (testing example-name
+      (are2 [metadata-format]
+            (= (expected-conversion/convert record metadata-format)
+               (xml-round-trip record metadata-format))
 
-        "echo10"
-        :echo10
+            "echo10"
+            :echo10
 
-        "dif9"
-        :dif
+            "dif9"
+            :dif
 
-        "dif10"
-        :dif10
+            "dif10"
+            :dif10
 
-        "iso-smap"
-        :iso-smap
+            "iso-smap"
+            :iso-smap
 
-        "ISO19115-2"
-        :iso19115))
+            "ISO19115-2"
+            :iso19115))))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
-    (are [fmt]
-         (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt example-record)))
-         :echo10
-         :dif
-         :dif10
-         :iso-smap
-         :iso19115)))
+    (doseq [[example-name record] example-records]
+      (testing example-name
+        (are [fmt]
+             (empty? (core/validate-xml :collection fmt (core/generate-metadata :collection fmt record)))
+             :echo10
+             :dif
+             :dif10
+             :iso-smap
+             :iso19115)))))

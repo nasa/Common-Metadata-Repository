@@ -20,9 +20,10 @@
   "Like update-in but applied to each value in seq at path."
   [m path f & args]
   (update-in m path (fn [xs]
-                      (map (fn [x]
-                             (apply f x args))
-                           xs))))
+                      (when xs
+                        (map (fn [x]
+                               (apply f x args))
+                             xs)))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -41,22 +42,30 @@
           (assoc :RangeDateTimes (map single-date->range singles)))
       temporal)))
 
-(defn merge-ranges
-  "Returns t1 with :RangeDateTimes concatenated together with t2's."
-  [t1 t2]
-  (update-in t1 [:RangeDateTimes] concat (:RangeDateTimes t2)))
-
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
   k (e.g. :RangeDateTimes) in each source temporal extent."
   [k temporal-extents]
   (reduce (fn [result extent]
             (if-let [values (get extent k)]
-              (concat result (map #(cmn/map->TemporalExtentType {k [%]})
+              (concat result (map #(assoc extent k [%])
                                   values))
               (concat result [extent])))
           []
           temporal-extents))
+
+(defn merge-temporals
+  "Merges a sequence of temporal extents into a single temporal extent. Not that any values in the
+  subsequent temporal extents after the first one other than the times are thrown away."
+  [temporal-extents]
+  (when (seq temporal-extents)
+    (reduce (fn [merged-temporal temporal]
+                (-> merged-temporal
+                    (update-in [:RangeDateTimes] #(seq (concat % (:RangeDateTimes temporal))))
+                    (update-in [:SingleDateTimes] #(seq (concat % (:SingleDateTimes temporal))))
+                    (update-in [:PeriodicDateTimes] #(seq (concat % (:PeriodicDateTimes temporal))))))
+              (first temporal-extents)
+              (rest temporal-extents))))
 
 ;;; Format-Specific Translation Functions
 
@@ -65,7 +74,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtents] (partial take 1))
+      (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)))
 
@@ -74,24 +83,19 @@
 (defn dif-temporal
   "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
-  (->> temporal-extents
-       ;; Periodic temporal extents are not supported in DIF 9, so we
-       ;; must remove them.
-       (remove :PeriodicDateTimes)
-       ;; Only ranges are supported by DIF 9, so we need to convert
-       ;; single dates to range types.
-       (map single-dates->ranges)
-       (map #(assoc %
-                    :TemporalRangeType nil
-                    :PrecisionOfSeconds nil
-                    :EndsAtPresentFlag nil))
-       ;; Now we need to concatenate all of the range extents into a
-       ;; single TemporalExtent.
-       (reduce merge-ranges)
-       ;; Turn that single one into a collection again.
-       vector
-       ;; Then make sure we get the right record type out.
-       (map cmn/map->TemporalExtentType)))
+  (when-let [temporal (->> temporal-extents
+                           ;; Only ranges are supported by DIF 9, so we need to convert
+                           ;; single dates to range types.
+                           (map single-dates->ranges)
+                           ;; Merge the list of temporals together since we'll read the set of range date times as
+                           ;; a single temporal with many range date times.
+                           merge-temporals)]
+    ;; DIF 9 does not support these fields.
+    [(assoc temporal
+            :PeriodicDateTimes nil
+            :TemporalRangeType nil
+            :PrecisionOfSeconds nil
+            :EndsAtPresentFlag nil)]))
 
 (defmethod convert-internal :dif
   [umm-coll _]
@@ -102,14 +106,18 @@
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
+       ;; ISO 19115-2 does not support these fields.
        (map #(assoc %
                     :TemporalRangeType nil
-                    :PrecisionOfSeconds nil
                     :EndsAtPresentFlag nil))
+       ;; ISO 19115-2 does not support PeriodicDateTimes.
        (remove :PeriodicDateTimes)
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
-       (map cmn/map->TemporalExtentType)))
+       (map cmn/map->TemporalExtentType)
+       ;; Return nil instead of an empty seq to match the parsed value in case none of the inputs
+       ;; are valid for ISO 19115-2.
+       seq))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
@@ -119,7 +127,9 @@
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
-  (convert-internal umm-coll :iso19115))
+  (-> (convert-internal umm-coll :iso19115)
+      ;; ISO SMAP does not support the PrecisionOfSeconds field.
+      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)))
 
 ;;; Unimplemented Fields
 

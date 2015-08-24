@@ -19,7 +19,8 @@
             [cmr.indexer.data.concepts.organization :as org]
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
-            [cmr.umm.collection :as umm-c])
+            [cmr.umm.collection :as umm-c]
+            [cmr.common-app.services.kms-fetcher :as kf])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn spatial->elastic
@@ -63,7 +64,8 @@
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
         platform-long-names (remove nil? (map :long-name platforms))
-        platforms-nested (map #(platform/platform-short-name->elastic-doc context %)
+        gcmd-keywords-map (kf/get-gcmd-keywords-map context)
+        platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               platform-short-names)
         instruments (mapcat :instruments platforms)
         instrument-short-names (remove nil? (map :short-name instruments))

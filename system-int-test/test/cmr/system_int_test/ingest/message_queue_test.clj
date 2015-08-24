@@ -202,7 +202,7 @@
   ;; 3.) vagrant ssh to RabbitMQ VM
   ;; 4.) Create a provider and give everyone permissions to ingest for that provider
   (cmr.system-int-test.utils.dev-system-util/reset)
-  (ingest/create-provider "provguid1" "PROV1")
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
 
   ;; Memory Threshold Exceeded while queueing messages
 

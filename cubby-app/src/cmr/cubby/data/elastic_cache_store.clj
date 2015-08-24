@@ -13,7 +13,7 @@
   "The name of the index in elastic search."
   "cubby_cached_values")
 
-(def string-type
+(def not-indexed-string-type
   "The mapping type of saved string values"
   {:type "string"
    ;; Stored so we can retrieve the value
@@ -21,6 +21,13 @@
    ;; Do not index the field, otherwise strings are limited to 32KB. The theoretical max size for
    ;; a field that is not indexed is 2GB.
    :index "no"})
+
+(def indexed-string-type
+  "A string that is indexed but not analyzed."
+  {:type "string"
+   ;; Stored so we can retrieve the value
+   :store "yes"
+   :index "not_analyzed"})
 
 (def type-name
   "The name of the mapping type within the cubby elasticsearch index."
@@ -33,13 +40,13 @@
     :_source {:enabled true},
     :_all {:enabled false},
     :_id   {:path "key-name"},
-    :properties {:key-name string-type
+    :properties {:key-name indexed-string-type
 
                  ;; Deprecated, remove in future sprint. We changed the value to support values
                  ;; larger than 32KB.
-                 :value string-type
+                 :value indexed-string-type
 
-                 :value2 string-type}}})
+                 :value2 not-indexed-string-type}}})
 
 (def index-settings
   "Defines the cubby elasticsearch index settings."
@@ -48,6 +55,7 @@
     :number_of_replicas 1,
     :refresh_interval "1s"}})
 
+
 (defn create-index-or-update-mappings
   "Creates the index needed in Elasticsearch for data storage"
   [elastic-store]
@@ -55,8 +63,10 @@
     (if (esi/exists? conn index-name)
       (do
         (info "Updating cubby mappings and settings")
-        (doseq [[type-name mapping] mappings]
-          (esi/update-mapping conn index-name type-name mapping)))
+        (let [response (esi/update-mapping conn index-name type-name :mapping mappings :ignore_conflicts false)]
+          (when-not (= {:acknowledged true} response)
+            (errors/internal-error! (str "Unexpected response when updating elastic mappings: "
+                                         (pr-str response))))))
       (do
         (info "Creating cubby index")
         (esi/create conn index-name :settings index-settings :mappings mappings)
@@ -66,6 +76,9 @@
 (comment
 
   (def db (get-in user/system [:apps :cubby :db]))
+
+  (create-index-or-update-mappings db)
+  (esi/get-mapping (:conn db) index-name type-name)
 
   (d/reset db)
 

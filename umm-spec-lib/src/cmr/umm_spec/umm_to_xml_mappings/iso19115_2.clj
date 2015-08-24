@@ -76,4 +76,26 @@
           [:gmd:EX_TemporalExtent
            [:gmd:extent
             [:gml:TimeInstant {:gml:id gen-id}
-             [:gml:timePosition (xpath ".")]]]]])]]]]])
+             [:gml:timePosition (xpath ".")]]]]])]]]]
+
+   [:gmd:dataQualityInfo
+    [:gmd:DQ_DataQuality
+     [:gmd:scope
+      [:gmd:DQ_Scope
+       [:gmd:level
+        [:gmd:MD_ScopeCode
+         {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+          :codeListValue "series"}
+         "series"]]]]
+     [:gmd:report
+      [:gmd:DQ_AccuracyOfATimeMeasurement
+       [:gmd:measureIdentification
+        [:gmd:MD_Identifier
+         [:gmd:code
+          [:gco:CharacterString "PrecisionOfSeconds"]]]]
+       [:gmd:result
+        [:gmd:DQ_QuantitativeResult
+         [:gmd:valueUnit ""]
+         [:gmd:value
+          [:gco:Record {:xsi:type "gco:Real_PropertyType"}
+           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]])

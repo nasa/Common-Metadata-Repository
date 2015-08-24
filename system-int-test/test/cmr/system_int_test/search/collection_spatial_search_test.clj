@@ -26,14 +26,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(comment
-
-  (do
-    (dev-sys-util/reset)
-    (ingest/create-provider "provguid1" "PROV1"))
-
-  )
-
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise
   order."

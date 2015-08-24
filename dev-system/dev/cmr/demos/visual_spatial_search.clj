@@ -94,7 +94,7 @@
   [shapes search-area]
   (let [shapes (map derived/calculate-derived shapes)]
     (dev-sys-util/reset)
-    (ingest/create-provider "PROV1")
+    (ingest/create-provider {:provider-guid "provider-guid1" :provider-id "PROV1"})
 
     (let [coll-geodetic (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :geodetic})}))
           coll-cartesian (d/ingest "PROV1" (dc/collection {:spatial-coverage (dc/spatial {:gsr :cartesian})}))]
