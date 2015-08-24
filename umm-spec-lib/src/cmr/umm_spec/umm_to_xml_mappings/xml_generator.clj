@@ -16,6 +16,7 @@
     (cond
       (vector? content-generator) :element
       (string? content-generator) :constant
+      (fn? content-generator)     :fn
 
       ;; We could also interpret seq here in the same way that hiccup does by treating it as a
       ;; series of content generators. Add this if needed.
@@ -25,6 +26,10 @@
       (dsl-type content-generator)
 
       :else :default)))
+
+(defmethod generate-content :fn
+  [content-generator xpath-context]
+  (content-generator (:context xpath-context)))
 
 (defmethod generate-content :default
   [content-generator _]

@@ -13,9 +13,11 @@
   "This contains an base example record with fields supported by all formats."
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
-                  {:ShortName "Nimbus-1"
-                   :LongName "Nimbus-1"
-                   :Type "Spacecraft"
+                  {:ShortName "Platform 1"
+                   :LongName "Example Platform Long Name 1"
+                   ;; TODO This is a valid DIF 10 type; replace it with something that can't be
+                   ;; round-tripped and handle that in expected-conversion.
+                   :Type "Aircraft"
                    ;; :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]
                    })]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})

@@ -2,6 +2,22 @@
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
+(def platform-types
+  "The set of values that DIF 10 defines for platform types as enumerations in its schema"
+  #{"Not provided"
+    "Aircraft"
+    "Balloons/Rockets"
+    "Earth Observation Satellites"
+    "In Situ Land-based Platforms"
+    ;; Sic?
+    "In Sit Ocean-based Platforms"
+    "Interplanetary Spacecraft"
+    "Maps/Charts/Photographs"
+    "Models/Analyses"
+    "Navigation Platforms"
+    "Solar/Space Observation Satellites"
+    "Space Stations/Manned Spacecraft"})
+
 (def dif10-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -18,11 +34,14 @@
     [:Category "dummy category"]
     [:Topic "dummy topic"]
     [:Term "dummy term"]]
-   [:Platform
-    [:Type "Not provided"]
-    [:Short_Name "dummy platform short name"]
-    [:Instrument
-     [:Short_Name "dummy instrument short name"]]]
+
+   (for-each "/Platforms"
+     [:Platform
+      [:Type (fn [[platform]]
+               [(or (get platform-types (:Type platform) "Not provided"))])]
+      [:Short_Name (xpath "ShortName")]
+      [:Long_Name (xpath "LongName")]
+      [:Instrument [:Short_Name "Not implemented"]]])
 
    (for-each "/TemporalExtents"
      [:Temporal_Coverage

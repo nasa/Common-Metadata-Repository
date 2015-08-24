@@ -15,6 +15,11 @@
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Dataset_Language")
        :Quality (xpath "/DIF/Quality")
+       :Platforms (for-each "/DIF/Platform"
+                    (object
+                     {:ShortName (xpath "Short_Name")
+                      :LongName (xpath "Long_Name")
+                      :Type (xpath "Type")}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")
