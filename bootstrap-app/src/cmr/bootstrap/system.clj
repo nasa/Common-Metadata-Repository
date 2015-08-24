@@ -23,6 +23,7 @@
             [cmr.indexer.data.concepts.granule :as g]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.bootstrap.config :as bootstrap-config]
             [cmr.acl.core :as acl]))
@@ -85,8 +86,9 @@
              :scheduler (jobs/create-clustered-scheduler `system-holder :jobs-db bootstrap-jobs/jobs)
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
-             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}}]
-    (transmit-config/system-with-connections sys [:metadata-db :echo-rest])))
+             :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
+                      kf/kms-cache-key (kf/create-kms-cache)}}]
+    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :cubby ])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,
