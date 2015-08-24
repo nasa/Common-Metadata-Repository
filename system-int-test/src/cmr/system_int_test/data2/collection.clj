@@ -6,6 +6,7 @@
             [cmr.common.date-time-parser :as p]
             [cmr.umm.collection.temporal :as ct]
             [cmr.umm.collection.product-specific-attribute :as psa]
+            [clj-time.format :as f]
             [cmr.umm.spatial :as umm-s])
   (:import [cmr.umm.collection
             Product
@@ -220,6 +221,18 @@
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]
      (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
+
+(defn collection-smap
+  "Creates an smap collection"
+  ([]
+   (collection-smap {}))
+  ([attribs]
+   (let [collection (collection attribs)]
+     (update-in collection [:data-provider-timestamps :revision-date-time]
+                (fn [revision-date-time]
+                  (when revision-date-time (->> revision-date-time
+                                                (f/unparse (f/formatters :date))
+                                                (f/parse (f/formatters :date)))))))))
 
 (defn collection-concept
   "Returns the collection for ingest with the given attributes"
