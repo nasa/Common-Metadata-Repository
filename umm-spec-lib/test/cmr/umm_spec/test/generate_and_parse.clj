@@ -16,7 +16,8 @@
                   {:ShortName "Nimbus-1"
                    :LongName "Nimbus-1"
                    :Type "Spacecraft"
-                   :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+                   ;; :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]
+                   })]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"

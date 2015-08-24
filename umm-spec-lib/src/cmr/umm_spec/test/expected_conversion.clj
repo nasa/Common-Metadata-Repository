@@ -75,7 +75,6 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
-      (update-in-each [:Platforms] assoc :Instruments nil)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)))
 
@@ -100,7 +99,9 @@
 
 (defmethod convert-internal :dif
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtents] dif-temporal))
+  (-> umm-coll
+      (update-in [:TemporalExtents] dif-temporal)
+      (update-in-each [:Platforms] assoc :Type nil)))
 
 ;; ISO 19115-2
 
