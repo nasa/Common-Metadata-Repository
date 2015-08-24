@@ -34,4 +34,8 @@
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
-       :TemporalExtents temporal-mappings})))
+       :TemporalExtents temporal-mappings
+       :Platforms (for-each "/Collection/Platforms/Platform"
+                    (object {:ShortName (xpath "ShortName")
+                             :LongName (xpath "LongName")
+                             :Type (xpath "Type")}))})))

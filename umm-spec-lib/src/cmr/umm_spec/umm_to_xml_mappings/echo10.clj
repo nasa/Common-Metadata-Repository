@@ -38,5 +38,12 @@
          [:DurationValue (xpath "DurationValue")]
          [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
          [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
+
+   [:Platforms
+    (for-each "/Platforms"
+      [:Platform
+       [:ShortName (xpath "ShortName")]
+       [:LongName (xpath "LongName")]
+       [:Type (xpath "Type")]])]
    ])
 

@@ -75,6 +75,7 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
+      (update-in-each [:Platforms] assoc :Instruments nil)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)))
 
@@ -135,7 +136,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:Platforms :ProcessingLevel :RelatedUrls :DataDates :ResponsibleOrganizations :ScienceKeywords
+  #{:ProcessingLevel :RelatedUrls :DataDates :ResponsibleOrganizations :ScienceKeywords
     :SpatialExtent})
 
 (defn- dissoc-not-implemented-fields
