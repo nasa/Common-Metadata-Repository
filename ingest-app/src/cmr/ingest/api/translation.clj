@@ -3,7 +3,11 @@
   (:require [compojure.core :refer :all]
             [cmr.common.mime-types :as mt]
             [cmr.umm-spec.core :as umm-spec]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+
+            ;; Needed for development time random metadata generation
+            [cmr.umm-spec.test.umm-generators :as umm-generators]
+            [clojure.test.check.generators :as test-check-gen]))
 
 (def concept-type->supported-formats
   "A map of concept type to the list of formats that are supported both for input and output of
@@ -43,3 +47,15 @@
     ;; Granule translation is not supported yet. This will be done when granules are added to the UMM spec.
     ))
 
+(def random-metadata-routes
+  "This defines routes for development purposes that can generate random metadata and return it."
+  (GET "/random-metadata" {:keys [body headers request-context]}
+    (let [supported-formats (concept-type->supported-formats :collection)
+          output-mime-type (mt/extract-header-mime-type supported-formats headers "accept" true)
+          output-format (mt/mime-type->format output-mime-type)]
+
+      (let [umm (test-check-gen/generate umm-generators/umm-c-generator)
+            output-str (umm-spec/generate-metadata :collection output-format umm)]
+        {:status 200
+         :body output-str
+         :headers {"Content-Type" output-mime-type}}))))
