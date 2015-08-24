@@ -146,6 +146,33 @@
      :json-facets (get-in (search/find-concepts-json :collection search-options)
                           [:results :facets])}))
 
+(deftest platform-not-in-kms-test
+  (grant-permissions)
+  (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
+  (let [expected-platforms [{:subfields ["category"],
+                             :field "platforms",
+                             :category
+                             [{:count 1,
+                               :value "UNKNOWN",
+                               :subfields ["series-entity"],
+                               :series-entity
+                               [{:count 1,
+                                 :value "UNKNOWN",
+                                 :subfields ["short-name"],
+                                 :short-name
+                                 [{:count 1,
+                                   :value "Platform-p0",
+                                   :subfields ["long-name"],
+                                   :long-name [{:count 1, :value "UNKNOWN"}]}
+                                  {:count 1,
+                                   :value "Platform-p1",
+                                   :subfields ["long-name"],
+                                   :long-name [{:count 1, :value "UNKNOWN"}]}]}]}]}]
+        actual-platforms (->> (get-facet-results :hierarchical)
+                        :json-facets
+                        (filter #(= "platforms" (:field %))))]
+    (is (= expected-platforms actual-platforms))))
+
 (deftest all-science-keywords-fields-hierarchy
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
