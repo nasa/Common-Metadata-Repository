@@ -307,9 +307,9 @@
                                                entries-by-src-collection))]
     (map (fn [annotated-entry]
            (let [[provider-id granule-ur] (get-prov-id-gran-ur annotated-entry)]
-             (if (nil? granule-ur)
-               annotated-entry
-               (get gran-ur-src-entry-map [provider-id granule-ur]))))
+             (if granule-ur
+               (get gran-ur-src-entry-map [provider-id granule-ur])
+               annotated-entry)))
          annotated-entries)))
 
 
