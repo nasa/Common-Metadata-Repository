@@ -150,13 +150,31 @@
           record
           not-implemented-fields))
 
+(defmulti format-to-format-adjustment
+  "Performs additional transformations after converting to dest format, based on src format."
+  (fn [umm-coll src dest]
+    [src dest]))
+
+(defmethod format-to-format-adjustment :default
+  [umm-coll _ _]
+  umm-coll)
+
+(defmethod format-to-format-adjustment [:iso-smap :dif10]
+  [umm-coll _ _]
+  (update-in-each umm-coll [:Platforms] assoc :Type nil))
+
 ;;; Public API
 
 (defn convert
   "Returns input UMM-C record transformed according to the specified transformation for
   metadata-format."
-  [umm-coll metadata-format]
-  (if (= metadata-format :umm-json)
-    umm-coll
-    (dissoc-not-implemented-fields
+  ([umm-coll metadata-format]
+   (if (= metadata-format :umm-json)
+     umm-coll
+     (dissoc-not-implemented-fields
       (convert-internal umm-coll metadata-format))))
+  ([umm-coll src dest]
+   (-> umm-coll
+       (convert src)
+       (convert dest)
+       (format-to-format-adjustment src dest))))

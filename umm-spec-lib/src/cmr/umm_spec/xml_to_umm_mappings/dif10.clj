@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10
   "Defines mappings from DIF10 XML into UMM records"
-  (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
+  (:require [cmr.common.xml :as cx]
+            [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.simple-xpath :as xp]))
 
 (def dif10-xml-to-umm-c
   (apt/add-parsing-types
@@ -19,7 +21,10 @@
                     (object
                      {:ShortName (xpath "Short_Name")
                       :LongName (xpath "Long_Name")
-                      :Type (xpath "Type")}))
+                      :Type (fn [xpath-context]
+                              (let [val (-> xpath-context :context first (cx/string-at-path [:Type]))]
+                                (when (not= val "Not provided")
+                                  val)))}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")

@@ -12,8 +12,13 @@
   "This is the minimum valid UMM."
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
-                   {:ShortName "Platform"
-                    :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
+                  {:ShortName "Platform 1"
+                   :LongName "Example Platform Long Name 1"
+                   ;; TODO This is a valid DIF 10 type; replace it with something that can't be
+                   ;; round-tripped and handle that in expected-conversion.
+                   :Type "Aircraft"
+                   ;; :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]
+                   })]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
@@ -118,9 +123,7 @@
           output-format valid-formats]
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
       (let [input-str (umm-spec/generate-metadata :collection input-format example-record)
-            expected (-> example-record
-                         (expected-conversion/convert input-format)
-                         (expected-conversion/convert output-format))
+            expected (expected-conversion/convert example-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (:content-type headers)]
         (is (= 200 status))
