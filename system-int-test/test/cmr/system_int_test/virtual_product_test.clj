@@ -265,13 +265,17 @@
 
         ;; Another random non-virtual granule which belongs to the same collection as
         ;; non-virtual-granule3
-        non-virtual-granule4 (granule->entry prov-gran2)]
+        non-virtual-granule4 (granule->entry prov-gran2)
+
+        ;; A collection entry
+        ast-coll-entry (assoc (select-keys ast-coll [:entry-title :concept-id]) :granule-ur  nil)]
 
     (testing "Valid input to translate-granule-entries end-point"
       (util/are2 [request-json expected-response-json]
                  (let [response (vp/translate-granule-entries
                                   (json/generate-string request-json))]
-                   (= expected-response-json (json/parse-string (:body response) true)))
+                   (cmr.common.dev.capture-reveal/capture response)
+                   (is (= expected-response-json (json/parse-string (:body response) true))))
 
                  "Input with no virtual granules should return the original response"
                  [non-virtual-granule1 non-virtual-granule2]
@@ -295,7 +299,11 @@
                  [source-granule non-virtual-granule1 source-granule non-virtual-granule2
                   non-virtual-granule3 non-virtual-granule4 source-granule source-granule
                   non-virtual-granule3 non-virtual-granule3 source-granule source-granule
-                  non-virtual-granule1 source-granule]))
+                  non-virtual-granule1 source-granule]
+
+                 "Collection entries should not undergo any translation"
+                 [virtual-granule1 non-virtual-granule1 ast-coll-entry source-granule]
+                 [source-granule non-virtual-granule1 ast-coll-entry source-granule]))
 
     (testing "Translating a granule which is deleted"
       (util/are2 [deleted-granule request-json expected-response-json]
