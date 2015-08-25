@@ -274,7 +274,6 @@
       (util/are2 [request-json expected-response-json]
                  (let [response (vp/translate-granule-entries
                                   (json/generate-string request-json))]
-                   (cmr.common.dev.capture-reveal/capture response)
                    (is (= expected-response-json (json/parse-string (:body response) true))))
 
                  "Input with no virtual granules should return the original response"
