@@ -240,7 +240,7 @@ curl -i -XPOST %CMR-ENDPOINT%/translate-granule-entries -d
  {"granule-ur":"bar","concept-id":"G6-PROV1","entry-title":"A dataset"},
  {"granule-ur":"another virtual granule in the same dataset","concept-id":"G8-LPDAAC_ECS","entry-title":"Some virtual granule dataset"},
  {"granule-ur":"yet an another virtual granule","concept-id":"G9-LPDAAC_ECS","entry-title":"A virtual dataset with same source as G7-LPDAAC_ECS"},
- {"granule-ur":"null","concept-id":"C1-LPDAAC_ECS","entry-title":"A virtual dataset with same source as G7-LPDAAC_ECS"}]
+ {"granule-ur":"null","concept-id":"C1-PROV1","entry-title":"A dataset"}]
 ```
 
 Response:
@@ -251,7 +251,7 @@ Response:
  {"granule-ur":"bar","concept-id":"G6-PROV1","entry-title":"A dataset"},
  {"granule-ur":"another source granule","concept-id":"G2-LPDAAC_ECS","entry-title":"The source dataset"},
  {"granule-ur":"the source granule","concept-id":"G1-LPDAAC_ECS","entry-title":"The source dataset"},
- {"granule-ur":"null","concept-id":"C1-LPDAAC_ECS","entry-title":"A virtual dataset with same source as G7-LPDAAC_ECS"}]
+ {"granule-ur":"null","concept-id":"C1-PROV1","entry-title":"A dataset"}]
 ```
 
 ***
