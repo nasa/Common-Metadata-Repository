@@ -274,7 +274,7 @@
       (util/are2 [request-json expected-response-json]
                  (let [response (vp/translate-granule-entries
                                   (json/generate-string request-json))]
-                   (is (= expected-response-json (json/parse-string (:body response) true))))
+                   (= expected-response-json (json/parse-string (:body response) true)))
 
                  "Input with no virtual granules should return the original response"
                  [non-virtual-granule1 non-virtual-granule2]
