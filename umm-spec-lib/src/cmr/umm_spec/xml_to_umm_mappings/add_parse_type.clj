@@ -14,11 +14,17 @@
             [cmr.umm-spec.models.common]
             [cmr.umm-spec.models.collection]))
 
+(defn skip-add-parse-type?
+  "Returns true if mapping type does not need a parse type."
+  [mapping-type]
+  (fn? mapping-type))
+
 (defmulti ^:private add-parse-type
   "Adds an additional field to loaded mappings that defines what type to convert the XML value into.
   Parsed types could be clojure records, strings, numeric types, etc."
   (fn [schema type-name schema-type mapping-type]
     (cond
+      (skip-add-parse-type? mapping-type) :skip
       (:type schema-type) (:type schema-type)
       (:$ref schema-type) :$ref)))
 
@@ -35,6 +41,10 @@
                     ref-schema-type
                     mapping-type)))
 
+(defmethod add-parse-type :skip
+  [schema type-name schema-type mapping-type]
+  mapping-type)
+
 (defmethod add-parse-type "array"
   [schema type-name schema-type mapping-type]
   (update-in mapping-type [:template] #(add-parse-type schema type-name (:items schema-type) %)))
@@ -47,16 +57,18 @@
 
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
-  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
-        properties (into
-                     {}
-                     (for [[prop-name sub-mapping] (:properties mapping-type)
-                           :let [sub-type-def (get-in schema-type [:properties prop-name])]]
-                       [prop-name (add-parse-type schema nil sub-type-def sub-mapping)]))]
-    (assoc mapping-type
-           :properties properties
-           :parse-type {:type :record
-                        :constructor-fn constructor-fn})))
+  (if (fn? mapping-type)
+    {:type :record :constructor-fn mapping-type}
+    (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+          properties (into
+                      {}
+                      (for [[prop-name sub-mapping] (:properties mapping-type)
+                            :let [sub-type-def (get-in schema-type [:properties prop-name])]]
+                        [prop-name (add-parse-type schema nil sub-type-def sub-mapping)]))]
+      (assoc mapping-type
+             :properties properties
+             :parse-type {:type :record
+                          :constructor-fn constructor-fn}))))
 
 (defn add-parsing-types
   "Gets the mappings to umm with extra information to aid in parsing"
@@ -73,7 +85,3 @@
         (dissoc v :description :required :minItems :maxItems :minLength :maxLength :constructor-fn)
         v))
     schema))
-
-
-
-

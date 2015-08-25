@@ -38,10 +38,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Mapping processors
 
+(defn mapping-type
+  "Returns a value for process-xml-mapping to dispatch on."
+  [xml-mapping]
+  (if (fn? xml-mapping)
+    :fn
+    (:type xml-mapping)))
+
 (defmulti ^:private process-xml-mapping
   "Processes the XML Mapping by using it to extract values from the XPath Context"
   (fn [xpath-context xml-mapping]
-    (:type xml-mapping)))
+    (mapping-type xml-mapping)))
 
 (defmethod process-xml-mapping :object
   [xpath-context {:keys [parse-type properties]}]
@@ -68,13 +75,17 @@
     (when-let [elements (seq (:context new-xpath-context))]
       (vec (for [element elements
                  :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
-             (if (and template (:type template))
+             (if (and template (mapping-type template))
                (process-xml-mapping single-item-xpath-context template)
                (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
   value)
+
+(defmethod process-xml-mapping :fn
+  [xpath-context f]
+  (f xpath-context))
 
 (defn parse-xml
   "Parses an XML string with the given mappings into UMM records."

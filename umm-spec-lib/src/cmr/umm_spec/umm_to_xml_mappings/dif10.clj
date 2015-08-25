@@ -37,8 +37,9 @@
 
    (for-each "/Platforms"
      [:Platform
-      [:Type (fn [[platform]]
-               [(or (get platform-types (:Type platform) "Not provided"))])]
+      [:Type (fn [xpath-context]
+               (let [platform (-> xpath-context :context first)]
+                 [(or (get platform-types (:Type platform) "Not provided"))]))]
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
       [:Instrument [:Short_Name "Not implemented"]]])

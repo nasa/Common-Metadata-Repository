@@ -131,7 +131,9 @@
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
-      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)))
+      (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
+      (update-in-each [:Platforms] assoc :Type "Spacecraft")))
 
 ;;; Unimplemented Fields
 

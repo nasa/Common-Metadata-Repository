@@ -28,8 +28,8 @@
       :else :default)))
 
 (defmethod generate-content :fn
-  [content-generator xpath-context]
-  (content-generator (:context xpath-context)))
+  [content-generator-fn xpath-context]
+  (content-generator-fn xpath-context))
 
 (defmethod generate-content :default
   [content-generator _]
