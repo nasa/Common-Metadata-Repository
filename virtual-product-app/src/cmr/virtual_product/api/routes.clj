@@ -28,7 +28,8 @@
                                     "type" "object"
                                     "properties" {"concept-id" {"type" "string"}
                                                   "entry-title" {"type" "string"}
-                                                  "granule-ur" {"type" "string"}}
+                                                  "granule-ur" {"anyOf" [{"type" "string"}
+                                                                         {"type" "null"}]}}
                                     "required" ["concept-id" "entry-title" "granule-ur"]}})))
 
 (defn- translate

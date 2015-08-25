@@ -229,27 +229,29 @@ Translate virtual granule entries within a list of granule-entries into the corr
          "required" ["concept-id" "entry-title" "granule-ur"]}}
 ```
 
-The response body has the same schema but with virtual granule entries substituted by the corresponding source granule entries and non-virtual entries remaining unchanged. The ordering of the entries in the response remains the same as the corresponding entries in the request. Note that there can be duplicate entries in the response since multiple virtual granules could be mapped to the same source granule. If the request has an entry for a granule which is deleted, the entry is translated to "null" in the JSON response. This end-point will be called by ECHO during ordering process.
+The response body has the same schema but with virtual granule entries substituted by the corresponding source granule entries and non-virtual entries remaining unchanged. The ordering of the entries in the response remains the same as the corresponding entries in the request. Note that there can be duplicate entries in the response since multiple virtual granules could be mapped to the same source granule. If the request has an entry for a granule which is deleted (or non-existent), the entry is translated to "null" in the JSON response. If the granule-ur of an entry is null, it is considered a collection entry and is ignored during translation. This end-point will be called by ECHO during ordering process.
 
 Sample Request:
 
 ```
 curl -i -XPOST %CMR-ENDPOINT%/translate-granule-entries -d
-[{:concept-id "G5-PROV1" :entry-title "A dataset" :granule-ur "foo"}
- {:concept-id "G7-LPDAAC_ECS" :entry-title "Some virtual granule dataset" :granule-ur "a virtual granule"}
- {:concept-id "G6-PROV1" :entry-title "A dataset" :granule-ur "bar"}
- {:concept-id "G8-LPDAAC_ECS" :entry-title "Some virtual granule dataset" :granule-ur "another virtual granule in the same dataset"}
- {:concept-id "G9-LPDAAC_ECS" :entry-title "A virtual dataset with same source as G7-LPDAAC_ECS" :granule-ur "yet an another virtual granule"}]
+[{"granule-ur":"foo","concept-id":"G5-PROV1","entry-title":"A dataset"},
+ {"granule-ur":"a virtual granule","concept-id":"G7-LPDAAC_ECS","entry-title":"Some virtual granule dataset"},
+ {"granule-ur":"bar","concept-id":"G6-PROV1","entry-title":"A dataset"},
+ {"granule-ur":"another virtual granule in the same dataset","concept-id":"G8-LPDAAC_ECS","entry-title":"Some virtual granule dataset"},
+ {"granule-ur":"yet an another virtual granule","concept-id":"G9-LPDAAC_ECS","entry-title":"A virtual dataset with same source as G7-LPDAAC_ECS"},
+ {"granule-ur":"null","concept-id":"C1-PROV1","entry-title":"A dataset"}]
 ```
 
 Response:
 
 ```
-[{:concept-id "G5-PROV1" :entry-title "A dataset" :granule-ur "foo"}
- {:concept-id "G1-LPDAAC_ECS" :entry-title "The source dataset" :granule-ur "the source granule"}
- {:concept-id "G6-PROV1" :entry-title "A dataset" :granule-ur "bar"}
- {:concept-id "G2-LPDAAC_ECS" :entry-title "The source dataset" :granule-ur "another source granule"}
- {:concept-id "G1-LPDAAC_ECS" :entry-title "The source dataset" :granule-ur "the source granule"}]
+[{"granule-ur":"foo","concept-id":"G5-PROV1","entry-title":"A dataset"},
+ {"granule-ur":"the source granule","concept-id":"G1-LPDAAC_ECS","entry-title":"The source dataset"},
+ {"granule-ur":"bar","concept-id":"G6-PROV1","entry-title":"A dataset"},
+ {"granule-ur":"another source granule","concept-id":"G2-LPDAAC_ECS","entry-title":"The source dataset"},
+ {"granule-ur":"the source granule","concept-id":"G1-LPDAAC_ECS","entry-title":"The source dataset"},
+ {"granule-ur":"null","concept-id":"C1-PROV1","entry-title":"A dataset"}]
 ```
 
 ***
