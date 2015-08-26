@@ -61,22 +61,25 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+     [:gmd:resourceConstraints
+      [:gmd:MD_LegalConstraints
+       [:gmd:useLimitation (char-string-from "/UseConstraints")]]]
      [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
       [:gmd:EX_Extent
        (for-each "/TemporalExtents/RangeDateTimes"
-         [:gmd:temporalElement
-          [:gmd:EX_TemporalExtent
-           [:gmd:extent
-            [:gml:TimePeriod {:gml:id gen-id}
-             [:gml:beginPosition (xpath "BeginningDateTime")]
-             [:gml:endPosition (xpath "EndingDateTime")]]]]])
+                 [:gmd:temporalElement
+                  [:gmd:EX_TemporalExtent
+                   [:gmd:extent
+                    [:gml:TimePeriod {:gml:id gen-id}
+                     [:gml:beginPosition (xpath "BeginningDateTime")]
+                     [:gml:endPosition (xpath "EndingDateTime")]]]]])
        (for-each "/TemporalExtents/SingleDateTimes"
-         [:gmd:temporalElement
-          [:gmd:EX_TemporalExtent
-           [:gmd:extent
-            [:gml:TimeInstant {:gml:id gen-id}
-             [:gml:timePosition (xpath ".")]]]]])]]]]
+                 [:gmd:temporalElement
+                  [:gmd:EX_TemporalExtent
+                   [:gmd:extent
+                    [:gml:TimeInstant {:gml:id gen-id}
+                     [:gml:timePosition (xpath ".")]]]]])]]]]
 
    [:gmd:dataQualityInfo
     [:gmd:DQ_DataQuality

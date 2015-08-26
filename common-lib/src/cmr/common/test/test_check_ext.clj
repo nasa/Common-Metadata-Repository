@@ -22,8 +22,8 @@
   (println (pr-str (list 'comment v))))
 
 (defn print-failing-value
-  [_ v]
-  (print-value-in-comment (list 'def 'failing-value v)))
+  [_ & v]
+  (print-value-in-comment (concat (list 'def 'failing-value) v)))
 
 (defn- assert-check
   [{:keys [result shrunk fail] :as m} {:keys [printer-fn]}]
