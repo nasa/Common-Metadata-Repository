@@ -14,10 +14,7 @@
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
                   {:ShortName "Platform 1"
-                   :LongName "Example Platform Long Name 1"
-                   ;; TODO This is a valid DIF 10 type; replace it with something that can't be
-                   ;; round-tripped and handle that in expected-conversion.
-                   :Type "Aircraft"})]
+                   :LongName "Example Platform Long Name 1"})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
@@ -74,11 +71,22 @@
                                  :PeriodCycleDurationUnit "DAY"
                                  :PeriodCycleDurationValue 3}])})})
 
+(def platform-types
+  {"DIF-supported platform type"
+   "Aircraft"
+
+   "Non-DIF platform type"
+   "A Platform Type"})
+
 (def example-records
   "A seq of example records for each of the example temporal extents above."
   (into {}
-        (for [[example-name temporal] temporal-extents]
-          [example-name (assoc example-base :TemporalExtents [temporal])])))
+        (for [[temporal-example-name temporal] temporal-extents
+              [platform-type-example-name platform-type] platform-types]
+          [(str temporal-example-name ", " platform-type-example-name)
+           (-> example-base
+               (assoc :TemporalExtents [temporal])
+               (update-in [:Platforms 0] assoc :Type platform-type))])))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
