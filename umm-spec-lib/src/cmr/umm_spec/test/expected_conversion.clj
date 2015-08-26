@@ -102,8 +102,8 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] dif-temporal)
-      ;; DIF 9 does not support Platform Type.
-      (update-in-each [:Platforms] assoc :Type nil)))
+      ;; DIF 9 does not support Platform Type or Characteristics.
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
 
 ;; DIF 10
 
