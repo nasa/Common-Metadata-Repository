@@ -17,6 +17,7 @@
 (defn skip-add-parse-type?
   "Returns true if mapping type does not need a parse type."
   [mapping-type]
+  ;; Functions are responsible for returning the proper type and do not need additional mapping.
   (fn? mapping-type))
 
 (defmulti ^:private add-parse-type
