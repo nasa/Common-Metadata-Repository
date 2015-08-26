@@ -24,6 +24,12 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"})
 
+(defn- generate-platform-type
+  "Returns content for the Platform Type field."
+  [xpath-context]
+  (let [platform (-> xpath-context :context first)]
+    [(or (get platform-types (:Type platform) "Not provided"))]))
+
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
@@ -37,9 +43,7 @@
 
    (for-each "/Platforms"
      [:Platform
-      [:Type (fn [xpath-context]
-               (let [platform (-> xpath-context :context first)]
-                 [(or (get platform-types (:Type platform) "Not provided"))]))]
+      [:Type generate-platform-type]
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
       [:Instrument [:Short_Name "Not implemented"]]])
