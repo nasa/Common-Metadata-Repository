@@ -2,7 +2,8 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.umm-spec.models.common :as cmn]))
+  (:require [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -101,7 +102,19 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] dif-temporal)
+      ;; DIF 9 does not support Platform Type.
       (update-in-each [:Platforms] assoc :Type nil)))
+
+;; DIF 10
+
+(defn fix-dif10-platform
+  [platform]
+  ;; Only a limited subset of platform types are supported by DIF 10.
+  (assoc platform :Type (get dif10/platform-types (:Type platform))))
+
+(defmethod convert-internal :dif10
+  [umm-coll _]
+  (update-in-each umm-coll [:Platforms] fix-dif10-platform))
 
 ;; ISO 19115-2
 
@@ -150,19 +163,6 @@
           record
           not-implemented-fields))
 
-(defmulti format-to-format-adjustment
-  "Performs additional transformations after converting to dest format, based on src format."
-  (fn [umm-coll src dest]
-    [src dest]))
-
-(defmethod format-to-format-adjustment :default
-  [umm-coll _ _]
-  umm-coll)
-
-(defmethod format-to-format-adjustment [:iso-smap :dif10]
-  [umm-coll _ _]
-  (update-in-each umm-coll [:Platforms] assoc :Type nil))
-
 ;;; Public API
 
 (defn convert
@@ -176,5 +176,4 @@
   ([umm-coll src dest]
    (-> umm-coll
        (convert src)
-       (convert dest)
-       (format-to-format-adjustment src dest))))
+       (convert dest))))
