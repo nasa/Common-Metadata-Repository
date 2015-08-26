@@ -17,9 +17,7 @@
                    :LongName "Example Platform Long Name 1"
                    ;; TODO This is a valid DIF 10 type; replace it with something that can't be
                    ;; round-tripped and handle that in expected-conversion.
-                   :Type "Aircraft"
-                   ;; :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]
-                   })]
+                   :Type "Aircraft"})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
