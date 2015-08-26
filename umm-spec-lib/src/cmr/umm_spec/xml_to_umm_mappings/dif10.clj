@@ -6,7 +6,8 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :as xp]))
 
-(defn parse-platform-type
+(defn- parse-platform-type
+  "Returns a UMM Platform Type value parsed from a DIF 10 Platform element context."
   [xpath-context]
   (let [val (-> xpath-context :context first (cx/string-at-path [:Type]))]
     (when (not= val "Not provided")
