@@ -66,7 +66,9 @@
                ;; "Aircraft" for now.
                [(format "Aircraft > DUMMY > %s > %s"
                         (:ShortName platform)
-                        (:LongName platform))])]])]]
+                        ;; Because LongName is optional, we want an empty string instead of "null"
+                        ;; here to prevent problems when parsing.
+                        (str (:LongName platform)))])]])]]
        [:gmd:language (char-string-from "/DataLanguage")]
        [:gmd:extent
         [:gmd:EX_Extent
