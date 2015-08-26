@@ -7,6 +7,8 @@
 
 ;;; Path Utils
 
+(def char-string "gco:CharacterString")
+
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
 
@@ -44,6 +46,21 @@
 (def platform-short-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
 
+(def platform-characteristics-xpath
+  "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
+
+(def pc-attr-base-path
+  "eos:reference/eos:EOS_AdditionalAttributeDescription")
+
+(def platform-characteristics-mapping
+  (for-each platform-characteristics-xpath
+    (object
+     {:Name        (xpath pc-attr-base-path "eos:name" char-string)
+      :Description (xpath pc-attr-base-path "eos:description" char-string)
+      :DataType    (xpath pc-attr-base-path "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode")
+      :Unit        (xpath pc-attr-base-path "eos:parameterUnitsOfMeasure" char-string)
+      :Value       (xpath "eos:value" char-string)})))
+
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -57,4 +74,5 @@
              :Platforms (for-each platforms-xpath
                           (object {:ShortName (xpath platform-short-name-xpath)
                                    :LongName (xpath platform-long-name-xpath)
-                                   :Type (xpath "gmi:description/gco:CharacterString")}))})))
+                                   :Type (xpath "gmi:description/gco:CharacterString")
+                                   :Characteristics platform-characteristics-mapping}))})))

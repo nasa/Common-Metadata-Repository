@@ -8,7 +8,8 @@
   Clojure object to construct when parsing from the XML.
 
   You may also provide a function anywhere a parsing type map is allowed. The function will be
-  called with the current xpath-context and should return the desired parsed value.")
+  called with the current xpath-context and should return the desired parsed value."
+  (:require clojure.string))
 
 (defn object
   "Defines a mapping for an object with the given properties map. A UMM record will be instantiated
@@ -20,8 +21,8 @@
 (defn xpath
   "Defines a mapping from a value at a specific XPath into the XML. The value from the XPath
   will be parsed based on the associated type in the schema."
-  [value]
-  {:type :xpath :value value})
+  [& components]
+  {:type :xpath :value (clojure.string/join "/" components)})
 
 (defn constant
   "Defines a mapping that returns a constant value"

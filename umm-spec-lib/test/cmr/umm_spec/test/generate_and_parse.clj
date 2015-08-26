@@ -133,3 +133,6 @@
              :dif10
              :iso-smap
              :iso19115)))))
+
+;; For interactive development/testing
+;; (core/generate-metadata :collection :iso19115 (first (vals example-records)))
