@@ -146,7 +146,8 @@
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft")))
+      ;; Platform Characteristics are also not supported.
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
 
 ;;; Unimplemented Fields
 
