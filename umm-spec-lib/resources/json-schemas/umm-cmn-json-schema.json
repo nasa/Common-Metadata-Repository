@@ -7,19 +7,6 @@
       "minLength": 1,
       "maxLength": 25
     },
-    "MetadataStandardType": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "Name": {
-          "$ref": "#/definitions/MetadataStandardNameEnum"
-        },
-        "Version": {
-          "$ref": "#/definitions/MetadataStandardVersionEnum"
-        }
-      },
-      "required": ["Name", "Version"]
-    },
     "LineageType": {
       "type": "object",
       "additionalProperties": false,
@@ -1263,15 +1250,6 @@
     },
     "UuidType": {
       "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",
-      "type": "string"
-    },
-    "MetadataStandardNameEnum": {
-      "description": "The name of supported metadata conventions",
-      "type": "string",
-      "enum": ["SERF", "UMM", "ECHO10", "DIF", "ISO 19115-2", "ISO 19115-1"]
-    },
-    "MetadataStandardVersionEnum": {
-      "description": "The value of the metadata version.",
       "type": "string"
     },
     "LineageScopeEnum": {

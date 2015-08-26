@@ -317,7 +317,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />
-            <xs:maxLength value="80" />
+            <xs:maxLength value="240" />
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
@@ -354,7 +354,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:minLength value="1" />
-            <xs:maxLength value="80" />
+            <xs:maxLength value="240" />
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
@@ -1347,14 +1347,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       Interchange Format).</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="EntryId">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:minLength value="1" />
-            <xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
+      <xs:element name="EntryId" type="CommonEntryId"/>
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="Temporal">

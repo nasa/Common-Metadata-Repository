@@ -729,14 +729,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
-(defrecord MetadataStandardType
-  [
-   Name
-
-   Version
-  ])
-(record-pretty-printer/enable-record-pretty-printing MetadataStandardType)
-
 ;; consists of the organization ShortName and LongName, which is the name of the organization that
 ;; distributes, archives, or processes the data.
 (defrecord OrganizationNameType

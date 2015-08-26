@@ -285,7 +285,7 @@
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
     <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
     <Collection>
-      <DataSetId>AQUARIUS_L1A_SSS:1</DataSetId>
+      <DataSetId>AQUARIUS_L1A_SSS</DataSetId>
     </Collection>
     <RestrictionFlag>0.0</RestrictionFlag>
     <Orderable>false</Orderable>
@@ -310,7 +310,7 @@
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
     <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
     <Collection>
-      <EntryId>AQUARIUS_L1A_SSS:1</EntryId>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
     </Collection>
     <RestrictionFlag>0.0</RestrictionFlag>
     <Orderable>false</Orderable>
@@ -322,8 +322,8 @@
     <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
     <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
     <Collection>
-      <DataSetId>AQUARIUS_L1A_SSS:1</DataSetId>
-      <EntryId>AQUARIUS_L1A_SSS:1</EntryId>
+      <DataSetId>AQUARIUS_L1A_SSS</DataSetId>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
     </Collection>
     <RestrictionFlag>0.0</RestrictionFlag>
     <Orderable>false</Orderable>
@@ -331,11 +331,11 @@
 
 (deftest validate-xml
   (testing "valid granule collection ref with dataset id"
-    (is (= 0 (count (g/validate-xml valid-granule-xml-w-datasetid)))))
+    (is (empty? (g/validate-xml valid-granule-xml-w-datasetid))))
   (testing "valid granule collection ref with short name and version id"
-    (is (= 0 (count (g/validate-xml valid-granule-xml-w-sn-ver)))))
+    (is (empty? (g/validate-xml valid-granule-xml-w-sn-ver))))
   (testing "valid granule collection ref with entry id"
-    (is (= 0 (count (g/validate-xml valid-granule-xml-w-entryid)))))
+    (is (empty? (g/validate-xml valid-granule-xml-w-entryid))))
   (testing "invalid granule collection ref with multiple choice fields"
     (is (= ["Line 7 - cvc-complex-type.2.4.d: Invalid content was found starting with element 'EntryId'. No child element is expected at this point."]
            (g/validate-xml invalid-collection-ref-granule-xml))))
