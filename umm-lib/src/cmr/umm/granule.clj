@@ -17,6 +17,13 @@
    entry-id
    ])
 
+(defrecord DataProviderTimestamps
+  [
+   insert-time
+   update-time
+   delete-time
+   ])
+
 (defrecord DataGranule
   [
    ;; maps to  Granule/DataGranule/ProducerGranuleID in echo granule schema

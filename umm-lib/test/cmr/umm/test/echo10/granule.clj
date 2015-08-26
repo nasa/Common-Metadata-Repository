@@ -181,7 +181,7 @@
 (deftest parse-granule-test
   (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "GranuleUR100"
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                    :data-provider-timestamps (umm-g/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
                                                  :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})

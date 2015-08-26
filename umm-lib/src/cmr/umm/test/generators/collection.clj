@@ -43,7 +43,8 @@
                      (ext-gen/optional collection-data-types)))
 
 (def data-provider-timestamps
-  (ext-gen/model-gen c/->DataProviderTimestamps ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
+  (ext-gen/model-gen c/->DataProviderTimestamps
+                     ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time) ext-gen/date-time))
 
 (def entry-ids
   (ext-gen/string-alpha-numeric 1 10))

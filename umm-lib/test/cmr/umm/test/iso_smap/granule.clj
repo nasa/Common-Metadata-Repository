@@ -99,7 +99,7 @@
 (deftest parse-granule-test
   (let [expected (umm-g/map->UmmGranule
                    {:granule-ur "SC:SPL1AA.001:12345"
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                    :data-provider-timestamps (umm-g/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
                     :collection-ref (umm-g/map->CollectionRef
