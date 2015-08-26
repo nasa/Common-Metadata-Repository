@@ -9,8 +9,7 @@
     "Balloons/Rockets"
     "Earth Observation Satellites"
     "In Situ Land-based Platforms"
-    ;; Sic?
-    "In Sit Ocean-based Platforms"
+    "In Situ Ocean-based Platforms"
     "Interplanetary Spacecraft"
     "Maps/Charts/Photographs"
     "Models/Analyses"
