@@ -92,7 +92,7 @@
        [:gmd:measureIdentification
         [:gmd:MD_Identifier
          [:gmd:code
-          [:gco:CharacterString "PrecisionOfSeconds"]]]]
+          (char-string "PrecisionOfSeconds")]]]
        [:gmd:result
         [:gmd:DQ_QuantitativeResult
          [:gmd:valueUnit ""]
@@ -107,8 +107,8 @@
          [:gmi:identifier
           [:gmd:MD_Identifier
            [:gmd:code
-            [:gco:CharacterString (xpath "ShortName")]]
+            (char-string-from "ShortName")]
            [:gmd:description
-            [:gco:CharacterString (xpath "LongName")]]]]
-         [:gmi:description [:gco:CharacterString (xpath "Type")]]
+            (char-string-from "LongName")]]]
+         [:gmi:description (char-string-from "Type")]
          [:gmi:instrument {:gco:nilReason "not implemented"}]]])]]])
