@@ -30,6 +30,8 @@
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
      :Version "V5"
+     :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
+                                         :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :DataLanguage "English"
      :Quality "Pretty good quality"}))

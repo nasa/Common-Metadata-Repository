@@ -6,68 +6,11 @@
             [clj-time.core :as t]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
+            [cmr.umm-spec.test.generate-and-parse :as gap]))
 
-(def example-record
-  "This is the minimum valid UMM."
-  (umm-c/map->UMM-C
-    {:Platforms [(umm-cmn/map->PlatformType
-                  {:ShortName "Platform 1"
-                   :LongName "Example Platform Long Name 1"
-                   ;; TODO This is a valid DIF 10 type; replace it with something that can't be
-                   ;; round-tripped and handle that in expected-conversion.
-                   :Type "Aircraft"
-                   ;; :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]
-                   })]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
-     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                  :Party (umm-cmn/map->PartyType {})})]
-     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-
-     :EntryId "short"
-     :EntryTitle "The entry title V5"
-     :Version "V5"
-     :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
-                                         :Type "CREATE"})]
-     :Abstract "A very abstract collection"
-     :DataLanguage "English"
-     :Quality "Quality description"
-     :TemporalExtents [(umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
-                                                [{:BeginningDateTime (t/date-time 2000)
-                                                  :EndingDateTime (t/date-time 2001)}
-                                                 {:BeginningDateTime (t/date-time 2002)
-                                                  :EndingDateTime (t/date-time 2003)}])})
-                       (umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :SingleDateTimes [(t/date-time 2003) (t/date-time 2004)]})
-                       (umm-cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :PeriodicDateTimes (mapv umm-cmn/map->PeriodicDateTimeType
-                                                   [{:Name "period1"
-                                                     :StartDate (t/date-time 2000)
-                                                     :EndDate (t/date-time 2001)
-                                                     :DurationUnit "YEAR"
-                                                     :DurationValue 4
-                                                     :PeriodCycleDurationUnit "DAY"
-                                                     :PeriodCycleDurationValue 3}
-                                                    {:Name "period2"
-                                                     :StartDate (t/date-time 2000)
-                                                     :EndDate (t/date-time 2001)
-                                                     :DurationUnit "YEAR"
-                                                     :DurationValue 4
-                                                     :PeriodCycleDurationUnit "DAY"
-                                                     :PeriodCycleDurationValue 3}])})]}))
-
+;; Borrowing from the example records defined in generate-and-parse.
+(def example-record (get gap/example-records "Range Dates"))
 
 (comment
 
