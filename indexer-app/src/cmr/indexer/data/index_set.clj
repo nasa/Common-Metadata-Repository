@@ -246,19 +246,12 @@
                                     ;; nested document. However the counts that come back are counts
                                     ;; of the nested documents. We want counts of collections for each
                                     ;; value so we must also capture the values at the parent level.
-                                    :category string-field-mapping
                                     :category.lowercase string-field-mapping
-                                    :topic string-field-mapping
                                     :topic.lowercase string-field-mapping
-                                    :term string-field-mapping
                                     :term.lowercase string-field-mapping
-                                    :variable-level-1 string-field-mapping
                                     :variable-level-1.lowercase string-field-mapping
-                                    :variable-level-2 string-field-mapping
                                     :variable-level-2.lowercase string-field-mapping
-                                    :variable-level-3 string-field-mapping
                                     :variable-level-3.lowercase string-field-mapping
-                                    :detailed-variable string-field-mapping
                                     :detailed-variable.lowercase string-field-mapping
 
                                     ;; mappings added for atom
