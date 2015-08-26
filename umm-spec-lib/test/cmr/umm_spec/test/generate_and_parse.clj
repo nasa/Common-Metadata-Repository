@@ -14,7 +14,13 @@
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
                   {:ShortName "Platform 1"
-                   :LongName "Example Platform Long Name 1"})]
+                   :LongName "Example Platform Long Name 1"
+                   :Characteristics [(umm-cmn/map->CharacteristicType
+                                      {:Name "OrbitalPeriod"
+                                       :Description "Orbital period in decimal minutes."
+                                       :DataType "float"
+                                       :Unit "Minutes"
+                                       :Value "96.7"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"

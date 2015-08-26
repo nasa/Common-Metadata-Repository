@@ -28,7 +28,14 @@
                     (object
                      {:ShortName (xpath "Short_Name")
                       :LongName (xpath "Long_Name")
-                      :Type parse-platform-type}))
+                      :Type parse-platform-type
+                      :Characteristics (for-each "Characteristics"
+                                         (object
+                                          {:Name         (xpath "Name")
+                                           :Description  (xpath "Description")
+                                           :DataType     (xpath "DataType")
+                                           :Unit         (xpath "Unit")
+                                           :Value        (xpath "Value")}))}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")

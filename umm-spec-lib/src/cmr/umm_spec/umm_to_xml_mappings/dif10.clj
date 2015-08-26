@@ -45,6 +45,13 @@
       [:Type generate-platform-type]
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
+      (for-each "Characteristics"
+        [:Characteristics
+         [:Name        (xpath "Name")]
+         [:Description (xpath "Description")]
+         [:DataType    (xpath "DataType")]
+         [:Unit        (xpath "Unit")]
+         [:Value       (xpath "Value")]])
       [:Instrument [:Short_Name "Not implemented"]]])
 
    (for-each "/TemporalExtents"
