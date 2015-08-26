@@ -39,7 +39,8 @@
   [collection-content]
   (c/map->DataProviderTimestamps {:insert-time (cx/datetime-at-path collection-content [:InsertTime])
                                   :update-time (cx/datetime-at-path collection-content [:LastUpdate])
-                                  :delete-time (cx/datetime-at-path collection-content [:DeleteTime])}))
+                                  :delete-time (cx/datetime-at-path collection-content [:DeleteTime])
+                                  :revision-date-time (cx/datetime-at-path collection-content [:RevisionDate])}))
 
 (defn- xml-elem->OrbitParameters
   "Returns a UMM OrbitParameters record from a parsed OrbitParameters XML structure"
@@ -148,7 +149,7 @@
                     processing-level-id collection-data-type]} :product
             dataset-id :entry-title
             restriction-flag :access-value
-            {:keys [insert-time update-time delete-time]} :data-provider-timestamps
+            {:keys [insert-time update-time revision-date-time delete-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
@@ -168,6 +169,8 @@
                       (x/element :CollectionDataType {} collection-data-type))
                     (x/element :Orderable {} "true")
                     (x/element :Visible {} "true")
+                    (when revision-date-time
+                      (x/element :RevisionDate {} (str revision-date-time)))
                     ;; archive center to follow processing center
                     (when purpose
                       (x/element :SuggestedUsage {} purpose))

@@ -30,11 +30,11 @@
 
 (def temporal-mappings
   (for-each temporal-xpath
-    (object {:PrecisionOfSeconds (xpath precision-xpath)
-             :RangeDateTimes (for-each "gml:TimePeriod"
-                               (object {:BeginningDateTime (xpath "gml:beginPosition")
-                                        :EndingDateTime    (xpath "gml:endPosition")}))
-             :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")})))
+            (object {:PrecisionOfSeconds (xpath precision-xpath)
+                     :RangeDateTimes (for-each "gml:TimePeriod"
+                                               (object {:BeginningDateTime (xpath "gml:beginPosition")
+                                                        :EndingDateTime    (xpath "gml:endPosition")}))
+                     :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")})))
 
 (def platforms-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
@@ -69,6 +69,9 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :UseConstraints
+             (char-string-xpath md-data-id-base-xpath
+                                "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation")
              :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
              :TemporalExtents temporal-mappings
              :Platforms (for-each platforms-xpath

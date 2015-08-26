@@ -83,6 +83,7 @@
    [:Project
     [:Short_Name "dummy project short name"]]
    [:Quality (xpath "/Quality")]
+   [:Use_Constraints (xpath "/UseConstraints")]
    [:Dataset_Language (xpath "/DataLanguage")]
    [:Organization
     [:Organization_Type "ARCHIVER"]

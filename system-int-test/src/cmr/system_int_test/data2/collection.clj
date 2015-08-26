@@ -6,6 +6,7 @@
             [cmr.common.date-time-parser :as p]
             [cmr.umm.collection.temporal :as ct]
             [cmr.umm.collection.product-specific-attribute :as psa]
+            [clj-time.format :as f]
             [cmr.umm.spatial :as umm-s])
   (:import [cmr.umm.collection
             Product
@@ -64,7 +65,8 @@
                   (select-keys attribs (util/record-fields DataProviderTimestamps)))
         attribs (into {} (for [[k v] attribs] [k (p/parse-datetime v)]))
         minimal-timestamps {:insert-time (d/make-datetime 10 false)
-                            :update-time (d/make-datetime 18 false)}]
+                            :update-time (d/make-datetime 18 false)
+                            :revision-date-time (d/make-datetime 18 false)}]
     (c/map->DataProviderTimestamps (merge minimal-timestamps attribs))))
 
 (defn temporal
@@ -197,7 +199,7 @@
                                                                          :term "Mild"})]
                                     :organizations [(org :distribution-center "Larc")]}
          attribs (merge required-extra-dif-fields attribs)]
-     (collection attribs))))
+     (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
 
 (defn collection-dif10
   "Creates a dif collection"
@@ -218,7 +220,19 @@
                                       :beginning-date-time "1965-12-12T07:00:00.000-05:00"
                                       :ending-date-time "1967-12-12T07:00:00.000-05:00"}
          attribs (merge required-extra-dif10-fields attribs)]
-     (collection attribs))))
+     (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
+
+(defn collection-smap
+  "Creates an smap collection"
+  ([]
+   (collection-smap {}))
+  ([attribs]
+   (let [collection (collection attribs)]
+     (update-in collection [:data-provider-timestamps :revision-date-time]
+                (fn [revision-date-time]
+                  (some->> revision-date-time
+                           (f/unparse (f/formatters :date))
+                           (f/parse (f/formatters :date))))))))
 
 (defn collection-concept
   "Returns the collection for ingest with the given attributes"

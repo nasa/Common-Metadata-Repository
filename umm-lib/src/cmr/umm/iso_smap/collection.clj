@@ -38,17 +38,28 @@
                      :version-id version-id
                      :version-description version-description})))
 
+(defn- xml-elem->RevisionDate
+  "Returns revision date from a parsed XML structure"
+  [revision-elem]
+  (let [date-elem (cx/element-at-path revision-elem [:citation :CI_Citation :date :CI_Date])
+        date-type-code (cx/string-at-path date-elem [:dateType :CI_DateTypeCode])]
+    (when date-type-code
+      (cx/date-at-path date-elem [:date :Date]))))
+
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
   [id-elems]
   (let [insert-time-elem (h/xml-elem-with-title-tag id-elems "InsertTime")
         update-time-elem (h/xml-elem-with-title-tag id-elems "UpdateTime")
         insert-time (cx/datetime-at-path insert-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
-        update-time (cx/datetime-at-path update-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])]
+        update-time (cx/datetime-at-path update-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
+        revision-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
+        revision-date (xml-elem->RevisionDate revision-elem)]
     (when (or insert-time update-time)
       (c/map->DataProviderTimestamps
         {:insert-time insert-time
-         :update-time update-time}))))
+         :update-time update-time
+         :revision-date-time revision-date}))))
 
 (defn- xml-elem->associated-difs
   "Returns associated difs from a parsed XML structure"
@@ -103,6 +114,7 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
@@ -128,7 +140,7 @@
                             "mission")))))
 
 (defn- generate-dif-element
-  "Returns the smap iso update-time/insert-time element"
+  "Returns the smap iso DIFID element"
   [dif-id datetime]
   (x/element
     :gmd:identificationInfo {}
@@ -172,7 +184,7 @@
     ([collection]
      (let [{{:keys [short-name long-name version-id version-description]} :product
             dataset-id :entry-title
-            {:keys [insert-time update-time]} :data-provider-timestamps
+            {:keys [insert-time update-time revision-date-time]} :data-provider-timestamps
             :keys [organizations temporal platforms spatial-coverage summary purpose
                    associated-difs science-keywords metadata-language]} collection
            ;; UMM model has a nested relationship between instruments and platforms,
@@ -203,11 +215,7 @@
                      (x/element
                        :gmd:CI_Citation {}
                        (h/iso-string-element :gmd:title long-name)
-                       ;; This should be the RevisionDate, but we don't really index it
-                       ;; and the type for ECHO10 is datetime, for DIF and SMAP ISO is date.
-                       ;; We need to work out how to handle it.
-                       ;; For now, just use the update time to replace the revision date.
-                       (h/iso-date-element "revision" update-time true)
+                       (h/iso-date-element "revision" revision-date-time true)
                        (h/generate-short-name-element short-name)
                        (h/generate-version-id-element version-id)
                        (org/generate-processing-center organizations)))

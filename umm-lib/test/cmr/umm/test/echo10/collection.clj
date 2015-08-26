@@ -109,6 +109,7 @@
     <CollectionDataType>NEAR_REAL_TIME</CollectionDataType>
     <Orderable>true</Orderable>
     <Visible>true</Visible>
+    <RevisionDate>1999-12-30T19:00:00-05:00</RevisionDate>
     <ProcessingCenter>SEDAC PC</ProcessingCenter>
     <ProcessingLevelId>1B</ProcessingLevelId>
     <ArchiveCenter>SEDAC AC</ArchiveCenter>
@@ -369,7 +370,8 @@
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
                                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
-                                                 :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})
+                                                 :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")
+                                                 :revision-date-time (p/parse-datetime "1999-12-30T19:00:00-05:00")})
                     :spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal
                     (umm-c/map->Temporal

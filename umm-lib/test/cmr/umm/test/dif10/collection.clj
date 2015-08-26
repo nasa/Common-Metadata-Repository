@@ -117,6 +117,7 @@
       (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
               :temporal-keywords :two-d-coordinate-systems)
       (assoc-in  [:product :processing-level-id] nil)
+      (assoc-in [:data-provider-timestamps :revision-date-time] nil)
       (assoc-in [:product :version-description] nil)
       (update-in [:publication-references] remove-field-from-records :doi)
       (update-in [:related-urls] remove-field-from-records :size)
@@ -237,14 +238,14 @@
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
-           (let [xml (dif10/umm->dif10-xml collection)
-                 parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
-                 echo10-xml (echo10/umm->echo10-xml parsed-dif10)
-                 parsed-echo10 (echo10-c/parse-collection echo10-xml)
-                 expected-parsed (test-echo10/umm->expected-parsed-echo10
-                                   (remove-unsupported-fields collection))]
-             (and (= expected-parsed parsed-echo10)
-                  (empty? (echo10-c/validate-xml echo10-xml))))))
+    (let [xml (dif10/umm->dif10-xml collection)
+          parsed-dif10 (restore-modified-fields (c/parse-collection xml) collection)
+          echo10-xml (echo10/umm->echo10-xml parsed-dif10)
+          parsed-echo10 (echo10-c/parse-collection echo10-xml)
+          expected-parsed (test-echo10/umm->expected-parsed-echo10
+                            (remove-unsupported-fields collection))]
+      (and (= expected-parsed parsed-echo10)
+           (empty? (echo10-c/validate-xml echo10-xml))))))
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">

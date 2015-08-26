@@ -77,7 +77,8 @@
   (-> umm-coll
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
-      (assoc :Quality nil)))
+      (assoc :Quality nil)
+      (assoc :UseConstraints nil)))
 
 ;; DIF 9
 
@@ -147,14 +148,20 @@
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+      (assoc :UseConstraints nil)))
 
 ;;; Unimplemented Fields
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:ProcessingLevel :RelatedUrls :DataDates :ResponsibleOrganizations :ScienceKeywords
-    :SpatialExtent})
+  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
+    :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
+    :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeyword
+    :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
+    :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
+    :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
+    :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

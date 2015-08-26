@@ -7,8 +7,11 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.spatial :as umm-s]
+            [cmr.common.util :as util]
             [cmr.spatial.orbits.swath-geometry :as swath])
-  (:import [cmr.umm.granule Orbit]))
+  (:import [cmr.umm.granule
+            Orbit
+            DataProviderTimestamps]))
 
 (defn psa
   "Creates product specific attribute ref"
@@ -100,12 +103,22 @@
                                   :start-coordinate-2 start-coordinate-2
                                   :end-coordinate-2 end-coordinate-2})))
 
+(defn data-provider-timestamps
+  "Create the data providers time stamps record for granules"
+  [attribs]
+  (let [attribs (util/remove-nil-keys
+                  (select-keys attribs (util/record-fields DataProviderTimestamps)))
+        attribs (into {} (for [[k v] attribs] [k (p/parse-datetime v)]))
+        minimal-timestamps {:insert-time (d/make-datetime 10 false)
+                            :update-time (d/make-datetime 18 false)}]
+    (g/map->DataProviderTimestamps (merge minimal-timestamps attribs))))
+
 (defn granule
   "Creates a granule"
   ([collection]
    (granule collection {}))
   ([collection attribs]
-   (let [timestamps {:data-provider-timestamps (dc/data-provider-timestamps attribs)}
+   (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
          {:keys [format-key entry-title entry-id] {:keys [short-name version-id]} :product} collection
          coll-ref (g/map->CollectionRef {:entry-title entry-title
                                          :entry-id entry-id
