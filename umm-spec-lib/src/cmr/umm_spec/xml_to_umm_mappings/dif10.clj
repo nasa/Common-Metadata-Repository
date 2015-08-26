@@ -6,6 +6,12 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :as xp]))
 
+(defn parse-platform-type
+  [xpath-context]
+  (let [val (-> xpath-context :context first (cx/string-at-path [:Type]))]
+    (when (not= val "Not provided")
+      val)))
+
 (def dif10-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -21,10 +27,7 @@
                     (object
                      {:ShortName (xpath "Short_Name")
                       :LongName (xpath "Long_Name")
-                      :Type (fn [xpath-context]
-                              (let [val (-> xpath-context :context first (cx/string-at-path [:Type]))]
-                                (when (not= val "Not provided")
-                                  val)))}))
+                      :Type parse-platform-type}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")
