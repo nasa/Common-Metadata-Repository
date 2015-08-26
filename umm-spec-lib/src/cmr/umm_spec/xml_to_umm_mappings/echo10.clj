@@ -38,4 +38,11 @@
        :Platforms (for-each "/Collection/Platforms/Platform"
                     (object {:ShortName (xpath "ShortName")
                              :LongName (xpath "LongName")
-                             :Type (xpath "Type")}))})))
+                             :Type (xpath "Type")
+                             :Characteristics (for-each "Characteristics/Characteristic"
+                                                (simple-object :Name
+                                                               :Description
+                                                               :DataType
+                                                               :Unit
+                                                               :Value))}))}
+      )))

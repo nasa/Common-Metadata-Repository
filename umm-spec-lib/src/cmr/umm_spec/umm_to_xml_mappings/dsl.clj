@@ -55,3 +55,14 @@
   [value]
   [:gco:CharacterString value])
 
+(defn simple-field
+  "Returns a mapping description for an XML element that is named by and pulled from the
+  corresponding key in the current context."
+  [k]
+  [k (xpath (name k))])
+
+(defn simple-object
+  "Returns a mapping describing an element with given tag and child mappings using simple-field over
+  ks."
+  [tag & ks]
+  (vec (cons tag (map simple-field ks))))

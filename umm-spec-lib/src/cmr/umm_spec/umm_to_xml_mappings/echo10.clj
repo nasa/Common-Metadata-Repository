@@ -44,6 +44,14 @@
       [:Platform
        [:ShortName (xpath "ShortName")]
        [:LongName (xpath "LongName")]
-       [:Type (xpath "Type")]])]
+       [:Type (xpath "Type")]
+       [:Characteristics
+        (for-each "Characteristics"
+          (simple-object :Characteristic
+                         :Name
+                         :Description
+                         :DataType
+                         :Unit
+                         :Value))]])]
+   
    ])
-
