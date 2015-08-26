@@ -10,7 +10,7 @@
             [cmr.umm-spec.test.generate-and-parse :as gap]))
 
 ;; Borrowing from the example records defined in generate-and-parse.
-(def example-record (get gap/example-records "Range Dates"))
+(def example-record (first (vals gap/example-records)))
 
 (comment
 
