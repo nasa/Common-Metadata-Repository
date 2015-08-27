@@ -17,7 +17,7 @@
             [cmr.bootstrap.services.jobs :as bootstrap-jobs]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.transmit.config :as transmit-config]
-            [cmr.common.jobs :as jobs]
+            [cmr.common.jobs :as cj]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.indexer.system :as idx-system]
             [cmr.indexer.data.concepts.granule :as g]
@@ -83,8 +83,8 @@
              :db (oracle/create-db (mdb-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
-             :scheduler (when (bootstrap-jobs/jobs)
-                          (jobs/create-clustered-scheduler `system-holder :jobs-db (bootstrap-jobs/jobs)))
+             :scheduler (when-let [jobs (bootstrap-jobs/jobs)]
+                          (cj/create-clustered-scheduler `system-holder :jobs-db jobs))
              :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
