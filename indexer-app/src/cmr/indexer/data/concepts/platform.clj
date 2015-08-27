@@ -8,19 +8,25 @@
   "A string to indicate that a field is not present within a KMS keyword."
   "Not Provided")
 
+(def default-platform-values
+  (zipmap [:category :series-entity :long-name]
+        (repeat FIELD_NOT_PRESENT)))
+
 (defn platform-short-name->elastic-doc
   "Converts a platform into the portion going in an elastic document. If a field is not present in
   the KMS hierarchy we use a dummy value to indicate the field was not present."
   [gcmd-keywords-map short-name]
-  (let [full-platform (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :platforms short-name)
+  (let [full-platform
+        (merge default-platform-values
+               (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :platforms short-name))
         {:keys [category series-entity long-name uuid]} full-platform]
-    {:category (or category FIELD_NOT_PRESENT)
-     :category.lowercase (str/lower-case (or category FIELD_NOT_PRESENT))
-     :series-entity (or series-entity FIELD_NOT_PRESENT)
-     :series-entity.lowercase (str/lower-case (or series-entity FIELD_NOT_PRESENT))
+    {:category category
+     :category.lowercase (str/lower-case category)
+     :series-entity series-entity
+     :series-entity.lowercase (str/lower-case series-entity)
      :short-name short-name
      :short-name.lowercase (str/lower-case short-name)
-     :long-name (or long-name FIELD_NOT_PRESENT)
-     :long-name.lowercase (str/lower-case (or long-name FIELD_NOT_PRESENT))
+     :long-name long-name
+     :long-name.lowercase (str/lower-case long-name)
      :uuid uuid
      :uuid.lowercase (when uuid (str/lower-case uuid))}))
