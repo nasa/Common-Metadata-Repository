@@ -19,39 +19,38 @@
    ;; address questions about temporal mappings.
    (for-each "/TemporalExtents[1]"
      [:Temporal
-      [:TemporalRangeType (xpath "TemporalRangeType")]
-      [:PrecisionOfSeconds (xpath "PrecisionOfSeconds")]
-      [:EndsAtPresentFlag (xpath "EndsAtPresentFlag")]
+      :TemporalRangeType
+      :PrecisionOfSeconds
+      :EndsAtPresentFlag
+
       (for-each "RangeDateTimes"
         [:RangeDateTime
-         [:BeginningDateTime (xpath "BeginningDateTime")]
-         [:EndingDateTime (xpath "EndingDateTime")]])
+         :BeginningDateTime
+         :EndingDateTime])
 
       (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
 
       (for-each "PeriodicDateTimes"
         [:PeriodicDateTime
-         [:Name (xpath "Name")]
-         [:StartDate (xpath "StartDate")]
-         [:EndDate (xpath "EndDate")]
-         [:DurationUnit (xpath "DurationUnit")]
-         [:DurationValue (xpath "DurationValue")]
-         [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
+         :Name
+         :StartDate
+         :EndDate
+         :DurationUnit
+         :DurationValue
+         :PeriodCycleDurationUnit
+         :PeriodCycleDurationValue])])
 
    [:Platforms
     (for-each "/Platforms"
       [:Platform
-       [:ShortName (xpath "ShortName")]
-       [:LongName (xpath "LongName")]
-       [:Type (xpath "Type")]
+       :ShortName
+       :LongName
+       :Type
        [:Characteristics
         (for-each "Characteristics"
-          (simple-object :Characteristic
-                         :Name
-                         :Description
-                         :DataType
-                         :Unit
-                         :Value))]])]
-   
-   ])
+          [:Characteristic
+           :Name
+           :Description
+           :DataType
+           :Unit
+           :Value])]])]])
