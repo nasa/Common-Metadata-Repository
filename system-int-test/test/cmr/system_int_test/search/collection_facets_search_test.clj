@@ -680,34 +680,34 @@
                              :field "platforms",
                              :category
                              [{:count 1,
-                               :value "not provided",
+                               :value "Not Provided",
                                :subfields ["series-entity"],
                                :series-entity
                                [{:count 1,
-                                 :value "not provided",
+                                 :value "Not Provided",
                                  :subfields ["short-name"],
                                  :short-name
                                  [{:count 1,
-                                   :value "platform-p0",
+                                   :value "Platform-p0",
                                    :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "not provided"}]}
+                                   :long-name [{:count 1, :value "Not Provided"}]}
                                   {:count 1,
-                                   :value "platform-p1",
+                                   :value "Platform-p1",
                                    :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "not provided"}]}]}]}
-                              {:value "aircraft",
+                                   :long-name [{:count 1, :value "Not Provided"}]}]}]}
+                              {:value "Aircraft",
                                :count 1,
                                :subfields ["series-entity"],
                                :series-entity
-                               [{:value "not provided",
+                               [{:value "Not Provided",
                                  :count 1,
                                  :subfields ["short-name"],
                                  :short-name
-                                 [{:value "a340-600",
+                                 [{:value "A340-600",
                                    :count 1,
                                    :subfields ["long-name"],
                                    :long-name
-                                   [{:value "airbus a340-600", :count 1}]}]}]}]}]
+                                   [{:value "Airbus A340-600", :count 1}]}]}]}]}]
         actual-platforms (->> (get-facet-results :hierarchical)
                         :json-facets
                         (filter #(= "platforms" (:field %))))]
