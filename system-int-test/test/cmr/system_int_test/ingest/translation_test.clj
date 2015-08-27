@@ -7,10 +7,8 @@
             [cmr.umm-spec.core :as umm-spec]
             [cmr.common.mime-types :as mt]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            [cmr.umm-spec.test.generate-and-parse :as gap]))
-
-;; Borrowing from the example records defined in generate-and-parse.
-(def example-record (first (vals gap/example-records)))
+            ;; Borrowing the example defined in umm-spec lib tests.
+            [cmr.umm-spec.test.generate-and-parse :refer [example-record]]))
 
 (comment
 

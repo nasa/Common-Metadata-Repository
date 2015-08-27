@@ -2,7 +2,8 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.umm-spec.models.common :as cmn]
+  (:require [cmr.common.util :refer [update-in-each]]
+            [cmr.umm-spec.models.common :as cmn]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (defmulti ^:private convert-internal
@@ -16,15 +17,6 @@
   umm-coll)
 
 ;;; Utililty Functions
-
-(defn update-in-each
-  "Like update-in but applied to each value in seq at path."
-  [m path f & args]
-  (update-in m path (fn [xs]
-                      (when xs
-                        (map (fn [x]
-                               (apply f x args))
-                             xs)))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
