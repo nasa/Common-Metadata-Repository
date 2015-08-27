@@ -14,7 +14,7 @@
   ;; FIXME: We shouldn't try to handle this many different values.
   ;; We should have a limit and if that's exceeded in the elastic response we should note that in
   ;; the values returned. This can be handled as a part of CMR-1101.
-  {:terms {:field (keyword (str (name field) ".lowercase")) :size UNLIMITED_TERMS_SIZE}})
+  {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
 (def ^:private collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
@@ -35,7 +35,7 @@
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy]
   (when-let [subfield (first field-hierarchy)]
-    {subfield {:terms {:field (str (name field) "." (name subfield) ".lowercase")
+    {subfield {:terms {:field (str (name field) "." (name subfield))
                        :size UNLIMITED_TERMS_SIZE}
             :aggs (merge {:coll-count collection-count-aggregation}
                          (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
