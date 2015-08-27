@@ -99,6 +99,8 @@ This will start a synchronization process in the background and return immediate
   3. Synchronize missing granules
   4. Synchronize deleted granules
 
+The configuration parameter `CMR_DB_SYNCHRONIZATION_ENABLED` can be used to enable/disable the db synchronization endpoint and background job.
+
 #### Synchronizing Missing Items
 
   1. It finds any items in the Catalog REST database matching the params. These items are inserted into a table for processing.

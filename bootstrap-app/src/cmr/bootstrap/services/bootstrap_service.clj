@@ -3,6 +3,7 @@
   (:require [clojure.core.async :as async :refer [go >!]]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.bootstrap.config :as cfg]
             [cmr.bootstrap.data.bulk-index :as bulk]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.db-synchronization :as dbs]
@@ -70,6 +71,8 @@
   "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
   start date and end date"
   [context synchronous params]
+  (when-not (cfg/db-synchronization-enabled)
+    (errors/throw-service-error :bad-request "db-synchronization is disabled."))
   (if synchronous
     (dbs/synchronize-databases (:system context) params)
     (let [channel (get-in context [:system :db-synchronize-channel])]
