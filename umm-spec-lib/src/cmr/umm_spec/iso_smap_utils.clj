@@ -5,7 +5,7 @@
   the keywords. But currently it is always set to 'theme'. We will propose to get this changed,
   but in the mean time, we will have to parse the keyword string to determine the type of the keyword."
   (:require [clojure.data.xml :as x]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [cmr.common.xml :as cx]
             [cmr.umm-spec.models.common :as c]))
 
@@ -32,8 +32,7 @@
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO SMAP keyword string."
   [keyword-str]
-  (->> (.split keyword-str ">")
-       (map s/trim)
+  (->> (str/split keyword-str #"\s*>\s*")
        (remove empty?)))
 
 (defn keyword-type
