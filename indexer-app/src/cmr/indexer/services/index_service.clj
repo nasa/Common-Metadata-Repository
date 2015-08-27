@@ -24,7 +24,9 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.common.lifecycle :as lifecycle]))
+            [cmr.common.lifecycle :as lifecycle]
+            [clj-time.core :as t]
+            [clj-time.format :as f]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -134,9 +136,21 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [concept (meta-db/get-concept context concept-id revision-id)
+      (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
             umm-record (umm/parse-concept concept)]
-        (index-concept context concept umm-record options)))))
+        (index-concept context concept umm-record options)
+        ;; Guard against revision-date that is not set or set to the future by a provider or a test.
+        (try
+          (info
+            (format "Concept [%s] took [%d] msec from start of ingest to become visible in search."
+                    (:concept-id concept)
+                    (t/in-millis (t/interval (f/parse (f/formatters :date-time) revision-date)
+                                             (t/now)))))
+          (catch Exception _
+            (warn (format
+                    "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
+                    concept-id
+                    revision-date))))))))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
@@ -149,7 +163,7 @@
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
       (let [index-name (idx-set/get-concept-index-name
-                            context concept-id revision-id all-revisions-index?)
+                         context concept-id revision-id all-revisions-index?)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
