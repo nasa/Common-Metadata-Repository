@@ -51,13 +51,13 @@
   [science-keyword]
   (let [{:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword]
-    {:category.lowercase (when category (str/lower-case category))
-     :topic.lowercase (when topic (str/lower-case topic))
-     :term.lowercase (when term (str/lower-case term))
-     :variable-level-1.lowercase (when variable-level-1 (str/lower-case variable-level-1))
-     :variable-level-2.lowercase (when variable-level-2 (str/lower-case variable-level-2))
-     :variable-level-3.lowercase (when variable-level-3 (str/lower-case variable-level-3))
-     :detailed-variable.lowercase (when detailed-variable (str/lower-case detailed-variable))}))
+    {:category category
+     :topic topic
+     :term term
+     :variable-level-1 variable-level-1
+     :variable-level-2 variable-level-2
+     :variable-level-3 variable-level-3
+     :detailed-variable detailed-variable}))
 
 (defn science-keywords->facet-fields
   "Returns a map of the science keyword values in the collection for faceting storage"
@@ -69,12 +69,12 @@
                             values))
                         elastic-doc
                         (science-keyword->facet-fields science-keyword)))
-          {:category.lowercase []
-           :topic.lowercase []
-           :term.lowercase []
-           :variable-level-1.lowercase []
-           :variable-level-2.lowercase []
-           :variable-level-3.lowercase []
-           :detailed-variable.lowercase []}
+          {:category []
+           :topic []
+           :term []
+           :variable-level-1 []
+           :variable-level-2 []
+           :variable-level-3 []
+           :detailed-variable []}
           (:science-keywords collection)))
 
