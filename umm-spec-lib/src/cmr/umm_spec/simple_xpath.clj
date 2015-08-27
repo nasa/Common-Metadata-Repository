@@ -254,7 +254,6 @@
 ;; Select the values of the attributes given by attrib-name
 (defmethod process-xml-selector :attrib-selector
   [elements {:keys [attrib-name]}]
-  (cmr.common.dev.capture-reveal/capture-all)
   (persistent!
     (reduce (fn [attrib-values element]
               (if-let [attrib-value (get-in element [:attrs attrib-name])]
