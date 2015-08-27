@@ -6,7 +6,7 @@
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
-  "UNKNOWN")
+  "Not Provided")
 
 (defn platform-short-name->elastic-doc
   "Converts a platform into the portion going in an elastic document. If a field is not present in

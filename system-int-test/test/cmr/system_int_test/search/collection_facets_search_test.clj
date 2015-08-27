@@ -147,33 +147,6 @@
      :json-facets (get-in (search/find-concepts-json :collection search-options)
                           [:results :facets])}))
 
-(deftest platform-not-in-kms-test
-  (grant-permissions)
-  (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
-  (let [expected-platforms [{:subfields ["category"],
-                             :field "platforms",
-                             :category
-                             [{:count 1,
-                               :value "UNKNOWN",
-                               :subfields ["series-entity"],
-                               :series-entity
-                               [{:count 1,
-                                 :value "UNKNOWN",
-                                 :subfields ["short-name"],
-                                 :short-name
-                                 [{:count 1,
-                                   :value "Platform-p0",
-                                   :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "UNKNOWN"}]}
-                                  {:count 1,
-                                   :value "Platform-p1",
-                                   :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "UNKNOWN"}]}]}]}]}]
-        actual-platforms (->> (get-facet-results :hierarchical)
-                        :json-facets
-                        (filter #(= "platforms" (:field %))))]
-    (is (= expected-platforms actual-platforms))))
-
 (deftest all-science-keywords-fields-hierarchy
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
@@ -690,4 +663,49 @@
     ;; Make sure that all 25 individual categories are returned in the facets
     (is (= (set (map #(str/lower-case (:category %)) science-keywords))
            (set categories)))))
+
+(deftest platform-missing-fields-test
+  (grant-permissions)
+  ;; Test that if the platforms do not exist in KMS, they will still be returned, but with a value
+  ;; of "not provided" for all of the values in the hierarchy other than short name.
+  (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
+  ;; Test that even with a nil series-entity the platform will still be returned, but with a
+  ;; value of "not provided" for the series-entity
+  (make-coll 2 "PROV1" {:platforms [(dc/platform {:short-name "A340-600"})]})
+  (let [expected-platforms [{:subfields ["category"],
+                             :field "platforms",
+                             :category
+                             [{:count 1,
+                               :value "not provided",
+                               :subfields ["series-entity"],
+                               :series-entity
+                               [{:count 1,
+                                 :value "not provided",
+                                 :subfields ["short-name"],
+                                 :short-name
+                                 [{:count 1,
+                                   :value "platform-p0",
+                                   :subfields ["long-name"],
+                                   :long-name [{:count 1, :value "not provided"}]}
+                                  {:count 1,
+                                   :value "platform-p1",
+                                   :subfields ["long-name"],
+                                   :long-name [{:count 1, :value "not provided"}]}]}]}
+                              {:value "aircraft",
+                               :count 1,
+                               :subfields ["series-entity"],
+                               :series-entity
+                               [{:value "not provided",
+                                 :count 1,
+                                 :subfields ["short-name"],
+                                 :short-name
+                                 [{:value "a340-600",
+                                   :count 1,
+                                   :subfields ["long-name"],
+                                   :long-name
+                                   [{:value "airbus a340-600", :count 1}]}]}]}]}]
+        actual-platforms (->> (get-facet-results :hierarchical)
+                        :json-facets
+                        (filter #(= "platforms" (:field %))))]
+    (is (= expected-platforms actual-platforms))))
 
