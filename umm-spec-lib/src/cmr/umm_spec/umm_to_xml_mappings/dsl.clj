@@ -13,10 +13,17 @@
   name of the element. The rest of the contents of the vector are treated as a list of content
   generators that specify the content of the element.
 
-  Note that first inner map without a ::type will be treated as attributes for the element. The
-  attributes map is treated as a map of attribute names to content generators for each attribute. A
-  zero-argument function may be supplied for an attribute value which will be called to generate the
-  actual output value.
+  Keywords may be used as a shorthand for a child element whose contents are to be taken from the
+  corresponding path in the current context, as a convenience for formats which map closely to the
+  UMM model itself. e.g.:
+
+      [:foo :bar bat]
+      ;; is equivalent to
+      [:foo [:bar (xpath \"bar\")] [:bat (xpath \"bat\")]]
+
+  A map immediately following the tag name (without a ::type) will be treated as attributes for the
+  element. The attributes map is treated as a map of attribute names to content generators for each
+  attribute.
 
   ## String
 
@@ -28,7 +35,13 @@
 
   Maps with a namespaced type key are used to specifying various other types of content generators
   with specific parameters that will be stored in the map as other keys. The maps are usually
-  constructed with functions from this namespace. See individual functions for documentation")
+  constructed with functions from this namespace. See individual functions for documentation
+
+  ## Functions
+
+  Functions may be supplied wherever a content generator is expected. The function will be called
+  with the current xpath context, and must return a sequence of resulting elements.")
+
 
 (defn xpath
   "Specifies a content generator that pulls a value from the source Clojure data at a given XPath."

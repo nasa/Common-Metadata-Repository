@@ -14,9 +14,10 @@
   (fn [content-generator xpath-context]
     ;; We will eventually add custom function support through (fn? content-generator) :fn
     (cond
-      (vector? content-generator) :element
-      (string? content-generator) :constant
-      (fn? content-generator)     :fn
+      (vector? content-generator)  :element
+      (keyword? content-generator) :keyword
+      (string? content-generator)  :constant
+      (fn? content-generator)      :fn
 
       ;; We could also interpret seq here in the same way that hiccup does by treating it as a
       ;; series of content generators. Add this if needed.
@@ -34,6 +35,10 @@
 (defmethod generate-content :default
   [content-generator _]
   (throw (Exception. (str "Unknown content generator type: " (pr-str content-generator)))))
+
+(defmethod generate-content :keyword
+  [kw xpath-context]
+  (generate-content (dsl/simple-field kw) xpath-context))
 
 (defn- realize-attributes
   "Returns map with function values replaced by the result of calling generate-content on them."
