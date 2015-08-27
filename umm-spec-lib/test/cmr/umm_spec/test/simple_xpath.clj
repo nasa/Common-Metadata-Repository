@@ -23,7 +23,7 @@
         <genre>Fantasy</genre>
         <price>5.95</price>
         <dates>
-          <publish_date>2000-12-16</publish_date>
+          <publish_date importance=\"high\">2000-12-16</publish_date>
         </dates>
       </book>
       <book id=\"bk103\">
@@ -33,7 +33,7 @@
         <genre>Fantasy</genre>
         <price>5.95</price>
         <dates>
-          <publish_date>2000-11-17</publish_date>
+          <publish_date importance=\"low\">2000-11-17</publish_date>
         </dates>
       </book>
       <book id=\"bk104\">
@@ -42,7 +42,7 @@
         <genre>Fantasy</genre>
         <price>5.95</price>
         <dates>
-          <publish_date>2001-03-10</publish_date>
+          <publish_date importance=\"high\">2001-03-10</publish_date>
         </dates>
       </book>
       <book id=\"bk105\">
@@ -51,7 +51,7 @@
         <genre>Fantasy</genre>
         <price>5.95</price>
         <dates>
-          <publish_date>2001-09-10</publish_date>
+          <publish_date importance=\"medium\">2001-09-10</publish_date>
         </dates>
       </book>
     </catalog>"))
@@ -118,6 +118,7 @@
                             "<author>Corets, Eva</author>"
                             "<author>Corets, Eva</author>"])
 
+
          "/catalog/book[@id='bk101']/author"
          [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
@@ -146,6 +147,18 @@
          ;; Uses nested elements in subselector
          "/catalog/book[dates/publish_date='2001-09-10']/title"
          [(x/parse-str "<title>The Sundered Grail</title>")]
+
+         ;; Select an attribute
+         "/catalog/book/dates/publish_date/@importance"
+         ["high"
+          "low"
+          "high"
+          "medium"]
+
+         "/catalog/book[dates/publish_date/@importance='high']/title"
+         [(x/parse-str "<title>Midnight Rain</title>")
+          (x/parse-str "<title>Oberon's Legacy</title>")]
+
 
          ;; Doesn't reference a real element
          "/catalog/foo[1]"
@@ -239,11 +252,13 @@
            ["Gambardella, Matthew"]))))
 
 (deftest xml-attribute-predicates
-  (are [xpath result-xml]
+  (are2 [xpath result-xml]
       (= [(x/parse-str result-xml)]
          (:context (sx/evaluate sample-xml (sx/parse-xpath xpath))))
+    "XPath with attribute without namespace predicate"
     "/catalog/book[@id='bk101']/author"
     "<author>Gambardella, Matthew</author>"
 
+    "XPath with attribute with namespace predicate"
     "/catalog/book[@foo:bar='bat']/title"
     "<title>Midnight Rain</title>"))
