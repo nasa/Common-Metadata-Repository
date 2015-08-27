@@ -78,10 +78,7 @@
 ;; function.
 (defmethod parse-json "object"
   [schema type-name-path type-name schema-type js-data]
-  (let [record-ns (record-gen/schema-name->namespace (:schema-name schema))
-        constructor-fn (var-get (find-var (symbol (str (name record-ns)
-                                                       "/map->"
-                                                       (name type-name)))))
+  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
         properties (into {}
                          (for [[k v] js-data
                                :let [sub-type-def (get-in schema-type [:properties k])]]

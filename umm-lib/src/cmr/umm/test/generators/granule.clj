@@ -103,12 +103,16 @@
       [(gen/hash-map :geometries (gen/vector spatial-gen/geometries 1 5))
        (gen/hash-map :orbit spatial-gen/orbits)])))
 
+(def data-provider-timestamps
+  (ext-gen/model-gen g/->DataProviderTimestamps
+                     ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time)))
+
 (def granules
   (ext-gen/model-gen
     g/map->UmmGranule
     (gen/hash-map
       :granule-ur granule-urs
-      :data-provider-timestamps c/data-provider-timestamps
+      :data-provider-timestamps data-provider-timestamps
       :collection-ref coll-refs
       :data-granule (ext-gen/optional data-granules)
       :access-value (ext-gen/optional (ext-gen/choose-double -10 10))

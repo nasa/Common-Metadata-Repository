@@ -98,6 +98,7 @@
                      (umm-c/map->Temporal {:range-date-times []
                                            :single-date-times single-date-times
                                            :periodic-date-times []})))
+        revision-date-time (get-in coll [:data-provider-timestamps :revision-date-time])
         personnel (not-empty (collection->personnel coll))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))]
     (-> coll
@@ -109,6 +110,8 @@
         (assoc-in [:product :collection-data-type] nil)
         ;; There is no delete-time in ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
+        ;; Revision date time is same as update-time
+        (assoc-in [:data-provider-timestamps :update-time] revision-date-time)
         ;; ISO does not have periodic-date-times
         (assoc :temporal temporal)
         ;; ISO does not support mime-type in RelatedURLs
@@ -210,7 +213,8 @@
                     :use-constraints "Restriction Comment:"
                     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
-                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})
+                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
+                                                 :revision-date-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})
                     :spatial-keywords ["Word-2" "Word-1" "Word-0"]
                     :temporal-keywords ["Word-5" "Word-3" "Word-4"]
                     :temporal

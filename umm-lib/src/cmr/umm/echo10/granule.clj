@@ -93,11 +93,18 @@
                               (s/generate-geometry-xml geometries)
                               (s/generate-orbit-xml orbit)))))))
 
+(defn xml-elem->DataProviderTimestamps
+  "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
+  [granule-content]
+  (g/map->DataProviderTimestamps {:insert-time (cx/datetime-at-path granule-content [:InsertTime])
+                                  :update-time (cx/datetime-at-path granule-content [:LastUpdate])
+                                  :delete-time (cx/datetime-at-path granule-content [:DeleteTime])}))
+
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
   (let [coll-ref (xml-elem->CollectionRef xml-struct)
-        data-provider-timestamps (c/xml-elem->DataProviderTimestamps xml-struct)]
+        data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)]
     (g/map->UmmGranule {:granule-ur (cx/string-at-path xml-struct [:GranuleUR])
                         :data-provider-timestamps data-provider-timestamps
                         :collection-ref coll-ref

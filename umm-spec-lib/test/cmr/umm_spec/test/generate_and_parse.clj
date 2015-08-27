@@ -2,12 +2,16 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
+            [clojure.test.check.generators :as gen]
+            [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
+            [cmr.common.test.test-check-ext :as ext :refer [defspec]]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.core :as core]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as umm-cmn]
             [clj-time.core :as t]
-            [cmr.common.util :refer [are2]]))
+            [cmr.common.util :refer [are2]]
+            [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
 (def example-base
   "This contains an base example record with fields supported by all formats."
@@ -114,3 +118,14 @@
              :dif10
              :iso-smap
              :iso19115)))))
+
+(defspec roundtrip-generator-gen-parse 100
+  (for-all [umm-record umm-gen/umm-c-generator
+            metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap :iso19115])]
+    ;; TODO: right now, the TemporalExtents roundtrip conversion does not work with the generator
+    ;; generated umm record. We exclude it from the comparison for now. This should be addressed
+    ;; within CMR-1933.
+    (is (= (dissoc (expected-conversion/convert umm-record metadata-format) :TemporalExtents)
+           (dissoc (xml-round-trip umm-record metadata-format) :TemporalExtents)))))
+
+

@@ -29,6 +29,7 @@
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
    [:Quality (xpath "/Quality")]
+   [:Use_Constraints (xpath "/UseConstraints")]
    [:Data_Set_Language (xpath "/DataLanguage")]
    ;; TODO (CMR-1933) determine if PeriodicDateTime is supported for DIF
    [:Data_Center

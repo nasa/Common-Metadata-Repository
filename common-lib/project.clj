@@ -8,7 +8,8 @@
                  [ring/ring-jetty-adapter "1.3.2"]
                  ;; Needed for parsing accept header
                  [ring-middleware-format "0.5.0"]
-                 [org.clojure/test.check "0.7.0"]
+                 [org.clojure/test.check "0.8.0"]
+                 [com.gfredericks/test.chuck "0.1.21"]
                  [org.clojure/data.xml "0.0.8"]
                  [camel-snake-kebab "0.3.0" :exclusions [org.clojure/clojure]]
                  [org.clojure/core.cache "0.6.4"]

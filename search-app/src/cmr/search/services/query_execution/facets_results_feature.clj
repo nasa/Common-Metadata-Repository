@@ -14,7 +14,7 @@
   ;; FIXME: We shouldn't try to handle this many different values.
   ;; We should have a limit and if that's exceeded in the elastic response we should note that in
   ;; the values returned. This can be handled as a part of CMR-1101.
-  {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
+  {:terms {:field (keyword (str (name field) ".lowercase")) :size UNLIMITED_TERMS_SIZE}})
 
 (def ^:private collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
@@ -35,7 +35,7 @@
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy]
   (when-let [subfield (first field-hierarchy)]
-    {subfield {:terms {:field (str (name field) "." (name subfield))
+    {subfield {:terms {:field (str (name field) "." (name subfield) ".lowercase")
                        :size UNLIMITED_TERMS_SIZE}
             :aggs (merge {:coll-count collection-count-aggregation}
                          (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
@@ -47,7 +47,7 @@
    :aggs (hierarchical-aggregation-builder field (field nested-fields-mappings))})
 
 (def ^:private flat-facet-aggregations
-  "This is the aggregations map that will be passed to elasticsearch to request facetted results
+  "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
@@ -65,7 +65,7 @@
    :detailed-variable (terms-facet :detailed-variable)})
 
 (def ^:private hierarchical-facet-aggregations
-  "This is the aggregations map that will be passed to elasticsearch to request facetted results
+  "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)

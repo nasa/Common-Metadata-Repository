@@ -16,21 +16,29 @@
 
 (def ^:dynamic  *default-test-count* 100)
 
+(defn print-value-in-comment
+  "Prints a clojure value to the repl inside a comment block. This helps with code formatting in Sublime"
+  [v]
+  (println (pr-str (list 'comment v))))
+
+(defn print-failing-value
+  [_ & v]
+  (print-value-in-comment (concat (list 'def 'failing-value) v)))
+
 (defn- assert-check
   [{:keys [result shrunk fail] :as m} {:keys [printer-fn]}]
-  (println (pr-str m))
+  (let [printer-fn (or printer-fn print-failing-value)]
 
-  (when printer-fn
-    (when fail
-      (println "-----------------------------------------------------------------------")
-      (apply printer-fn :first-fail fail))
+    (print-value-in-comment m)
+
     (when (:smallest shrunk)
       (println "-----------------------------------------------------------------------")
-      (apply printer-fn :shrunken (:smallest shrunk))))
+      (println "Smallest failing value:")
+      (apply printer-fn :shrunken (:smallest shrunk)))
 
-  (if (instance? Throwable result)
-    (throw result)
-    (clojure.test/is result)))
+    (if (instance? Throwable result)
+      (throw result)
+      (clojure.test/is result))))
 
 (defmacro defspec
   "Defines a new clojure.test test var that uses `quick-check` to verify
@@ -43,7 +51,7 @@
   Valid options:
   * times: The number of times to run the test.
   * printer-fn: A function that will be called with the first failure and the shrunken failure to
-  print out extra information. It should take "
+  print out extra information."
   ([name property]
    `(defspec ~name {:times ~*default-test-count*} ~property))
 

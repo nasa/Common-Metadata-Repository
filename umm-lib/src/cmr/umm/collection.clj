@@ -17,6 +17,7 @@
    insert-time
    update-time
    delete-time
+   revision-date-time
    ])
 
 (defrecord RangeDateTime

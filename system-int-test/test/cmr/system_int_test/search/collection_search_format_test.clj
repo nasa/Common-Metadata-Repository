@@ -71,8 +71,8 @@
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :version-id "V6"})
                          {:format :iso19115})
-        c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
-                                                  :version-id "V7"})
+        c7-smap (d/ingest "PROV1" (dc/collection-smap {:short-name "S7"
+                                                       :version-id "V7"})
                           {:format :iso-smap})
         c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-id "S8"
                                                          :short-name "S8"

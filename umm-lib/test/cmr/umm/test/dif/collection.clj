@@ -102,6 +102,7 @@
         (dissoc :access-value)
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
+        (assoc-in [:data-provider-timestamps :revision-date-time] nil)
         ;; DIF only has range-date-times
         (assoc :temporal temporal)
         ;; DIF only has distribution centers as Organization
