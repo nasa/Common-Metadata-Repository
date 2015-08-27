@@ -30,17 +30,16 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
-
-(defmethod schema-type->generator "object"
+(defn- object-like-schema-type->generator
+  "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
+  with keys properties, required, and additionalProperties. This is used to handle a normal object
+  with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :additionalProperties :required} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
         properties (:properties schema-type)
-
-        ;; Remove this after implementing CMR-1943
-        properties (dissoc properties :TODOMultiChoice)
 
         ;; Create a map of property keys to generators for those properties
         prop-gens (into {} (for [[k subtype] properties]
@@ -60,6 +59,25 @@
                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
                ;; Construct a record from the hash map
                (constructor-fn prop-map))))
+
+(defmethod schema-type->generator "object"
+  [schema type-name schema-type]
+  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf} schema-type)
+  (if-let [one-of (:oneOf schema-type)]
+    (do
+      (when (:properties schema-type)
+        (throw (Exception. (str  "UMM generator can not handle an object with both top level "
+                                "properties and oneOf. You must choose properties within the oneOf."
+                                " schema-type: " (pr-str schema-type)))))
+      (when (:required schema-type)
+        (throw (Exception. (str  "UMM generator can not handle an object with both top level required "
+                                "and oneOf. You must choose required properties within the oneOf."
+                                " schema-type: " (pr-str schema-type)))))
+
+      (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of)))
+    (object-like-schema-type->generator
+      schema type-name
+      (select-keys schema-type [:properties :required :additionalProperties]))))
 
 (def array-defaults
   {:minItems 0
@@ -143,7 +161,6 @@
 (comment
 
   (last (gen/sample (schema->generator js/umm-c-schema) 10))
-
 
   )
 

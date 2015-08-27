@@ -160,27 +160,37 @@
     },
     "HorizontalCoordinateSystemType": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "GeodeticModel": {
-          "$ref": "#/definitions/GeodeticModelType"
-        },
-        "TODOMultiChoice": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "GeographicCoordinateSystem": {
-                "$ref": "#/definitions/GeographicCoordinateSystemType"
-              },
-              "LocalCoordinateSystem": {
-                "$ref": "#/definitions/LocalCoordinateSystemType"
-              }
-            }
+      "oneOf": [{
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
           }
-        }
-      }
+        },
+        "required": ["GeodeticModel"]
+      }, {
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "GeographicCoordinateSystem": {
+            "$ref": "#/definitions/GeographicCoordinateSystemType"
+          }
+        },
+        "required": ["GeographicCoordinateSystem"]
+      }, {
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "LocalCoordinateSystem": {
+            "$ref": "#/definitions/LocalCoordinateSystemType"
+          }
+        },
+        "required": ["LocalCoordinateSystem"]
+      }]
     },
     "GeodeticModelType": {
       "type": "object",

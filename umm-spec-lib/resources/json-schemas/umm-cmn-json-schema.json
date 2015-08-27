@@ -1051,25 +1051,28 @@
         "CoordinateSystem": {
           "$ref": "#/definitions/CoordinateSystemEnum"
         },
-        "TODOMultiChoice": {
+        "Points": {
           "type": "array",
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "Point": {
-                "$ref": "#/definitions/PointType"
-              },
-              "BoundingRectangle": {
-                "$ref": "#/definitions/BoundingRectangleType"
-              },
-              "GPolygon": {
-                "$ref": "#/definitions/GPolygonType"
-              },
-              "Line": {
-                "$ref": "#/definitions/LineType"
-              }
-            }
+            "$ref": "#/definitions/PointType"
+          }
+        },
+        "BoundingRectangles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BoundingRectangleType"
+          }
+        },
+        "GPolygons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GPolygonType"
+          }
+        },
+        "Lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LineType"
           }
         }
       }
