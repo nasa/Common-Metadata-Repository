@@ -27,3 +27,8 @@
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
+
+(defconfig db-synchronization-enabled
+  "Defines whether db-synchronization is enabled."
+  {:default true
+   :type Boolean})
