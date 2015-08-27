@@ -14,6 +14,7 @@
             [cmr.indexer.data.concepts.attribute :as attrib]
             [cmr.indexer.data.concepts.science-keyword :as sk]
             [cmr.indexer.data.concepts.platform :as platform]
+            [cmr.indexer.data.concepts.instrument :as instrument]
             [cmr.indexer.data.concepts.spatial :as spatial]
             [cmr.indexer.data.concepts.keyword :as k]
             [cmr.indexer.data.concepts.organization :as org]
@@ -69,7 +70,9 @@
         platform-long-names (seq (set (keep :long-name (concat platforms platforms-nested))))
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
-        instrument-long-names (keep :long-name instruments)
+        instruments-nested (map #(instrument/instrument-short-name->elastic-doc gcmd-keywords-map %)
+                              instrument-short-names)
+        instrument-long-names (seq (set (keep :long-name (concat instruments instruments-nested))))
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
@@ -118,8 +121,11 @@
                                                 (str/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map str/lower-case platform-short-names)
-            ;; hierarchical platforms
+
+            ;; hierarchical platforms and instruments
             :platforms platforms-nested
+            :instruments instruments-nested
+
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
@@ -151,8 +157,9 @@
             :coordinate-system (when spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
             ;; fields added to support keyword searches
-            :keyword (k/create-keywords-field
-                       concept-id collection {:platform-long-names platform-long-names})
+            :keyword (k/create-keywords-field concept-id collection
+                                              {:platform-long-names platform-long-names
+                                               :instrument-long-names instrument-long-names})
             :long-name.lowercase (when long-name (str/lower-case long-name))
             :platform-ln.lowercase (map str/lower-case platform-long-names)
             :instrument-ln.lowercase (map str/lower-case instrument-long-names)
