@@ -707,10 +707,10 @@
 (deftest platform-missing-fields-test
   (grant-permissions)
   ;; Test that if the platforms do not exist in KMS, they will still be returned, but with a value
-  ;; of "not provided" for all of the values in the hierarchy other than short name.
+  ;; of "Not Provided" for all of the values in the hierarchy other than short name.
   (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
   ;; Test that even with a nil series-entity the platform will still be returned, but with a
-  ;; value of "not provided" for the series-entity
+  ;; value of "Not Provided" for the series-entity
   (make-coll 2 "PROV1" {:platforms [(dc/platform {:short-name "A340-600"})]})
   (let [expected-platforms [{:subfields ["category"],
                              :field "platforms",
@@ -748,4 +748,76 @@
                               :json-facets
                               (filter #(= "platforms" (:field %))))]
     (is (= expected-platforms actual-platforms))))
+
+(deftest instrument-missing-fields-test
+  (grant-permissions)
+  ;; Test that if the instruments do not exist in KMS, they will still be returned, but with a value
+  ;; of "Not Provided" for all of the values in the hierarchy other than short name.
+  (make-coll 1 "PROV1" (platforms "instrument-test" 2 2 1))
+  ;; Test that even with a nil type and sub-type the instrument will still be returned, but with a
+  ;; value of "Not Provided" for those fields.
+  (make-coll 2 "PROV1" {:platforms [(dc/platform
+                                      {:instruments [(dc/instrument {:short-name "ADS"})]})]})
+  (let [expected-instruments [{:field "instruments",
+                               :subfields ["category"],
+                               :category
+                               [{:value "Not Provided",
+                                 :count 1,
+                                 :subfields ["class"],
+                                 :class
+                                 [{:value "Not Provided",
+                                   :count 1,
+                                   :subfields ["type"],
+                                   :type
+                                   [{:value "Not Provided",
+                                     :count 1,
+                                     :subfields ["subtype"],
+                                     :subtype
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["short-name"],
+                                       :short-name
+                                       [{:value "instrument-test-p0-i0",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p0-i1",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i0",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i1",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name
+                                         [{:value "Not Provided", :count 1}]}]}]}]}]}
+                                {:value "In Situ/Laboratory Instruments",
+                                 :count 1,
+                                 :subfields ["class"],
+                                 :class
+                                 [{:value "Chemical Meters/Analyzers",
+                                   :count 1,
+                                   :subfields ["type"],
+                                   :type
+                                   [{:value "Not Provided",
+                                     :count 1,
+                                     :subfields ["subtype"],
+                                     :subtype
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["short-name"],
+                                       :short-name
+                                       [{:value "ADS",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name
+                                         [{:value "Automated DNA Sequencer",
+                                           :count 1}]}]}]}]}]}]}]
+        actual-instruments (->> (get-facet-results :hierarchical)
+                                :json-facets
+                                (filter #(= "instruments" (:field %))))]
+    (is (= expected-instruments actual-instruments))))
 
