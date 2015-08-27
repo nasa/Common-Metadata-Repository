@@ -125,6 +125,23 @@
               revision-id
               elastic-options)))))))
 
+(defn- log-ingest-to-index-time
+  "Add a log message indicating the time it took to go from ingest to completed indexing."
+  [{:keys [concept-id revision-date]}]
+  (let [now (tk/now)
+        rev-datetime (f/parse (f/formatters :date-time) revision-date)]
+    ;; Guard against revision-date that is set to the future by a provider or a test.
+    (if (t/before? rev-datetime now)
+      ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
+      ;; Splunk searches used by ops.
+      (info (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
+                    concept-id
+                    (t/in-millis (t/interval rev-datetime now))))
+      (warn (format
+              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
+              concept-id
+              revision-date)))))
+
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
@@ -139,18 +156,7 @@
       (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
             umm-record (umm/parse-concept concept)]
         (index-concept context concept umm-record options)
-        ;; Guard against revision-date that is not set or set to the future by a provider or a test.
-        (try
-          (info
-            (format "Concept [%s] took [%d] msec from start of ingest to become visible in search."
-                    (:concept-id concept)
-                    (t/in-millis (t/interval (f/parse (f/formatters :date-time) revision-date)
-                                             (t/now)))))
-          (catch Exception _
-            (warn (format
-                    "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
-                    concept-id
-                    revision-date))))))))
+        (log-ingest-to-index-time concept)))))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
