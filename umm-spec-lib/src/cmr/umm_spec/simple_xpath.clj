@@ -78,11 +78,13 @@
 (defn- create-attrib-val-equality-selector
   "Creates a selector that selects elements with an attribute with a given value."
   [selector-str]
-  (let [[_ attrib-name attrib-val] (re-matches #"@(.+)='(.+)'" selector-str)
-        attrib-name (parse-xpath-attrib-name attrib-name)]
+  (let [[_ xpath value] (re-matches #"(.+)='(.+)'" selector-str)
+        parsed-xpath (parse-xpath xpath)]
+    (when (not= (:source parsed-xpath) :from-context)
+      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
     {:type :attrib-value-selector
-     :attrib-name attrib-name
-     :attrib-val attrib-val}))
+     :selectors (:selectors parsed-xpath)
+     :value value}))
 
 ;; Needed for create the element value selector
 (declare parse-xpath)
@@ -111,6 +113,16 @@
     {:type :tag-selector
      :tag-name (keyword tag-name)}))
 
+(defn- create-attribute-name-selector
+  "Creates a selector that selects an attribute value with a specific name. This is usually the last
+  part of an xpath since you can't go any further down."
+  [attrib-name]
+  ;; This changes namespaces in XPath attribute names. clojure.data.xml will represent an attribute
+  ;; in a specific namespace like so :namespace/attribute-name
+  (let [attrib-name (keyword (str/replace (name attrib-name) #":" "/"))]
+    {:type :attrib-selector
+     :attrib-name (keyword attrib-name)}))
+
 (def child-of-selector
   "A selector that selects the children of a set of elements."
   {:type :child-of})
@@ -126,7 +138,7 @@
     (re-matches #"\d+" selector-str)
     (create-nth-selector selector-str)
 
-    (re-matches #"@.+='.+'" selector-str)
+    (re-matches #".*@.+='.+'" selector-str)
     (create-attrib-val-equality-selector selector-str)
 
     (re-matches #".+='.+'" selector-str)
@@ -146,12 +158,14 @@
     [current-context-selector]
 
     :else
-    (if-let [[_ tag-name element-selector-str] (re-matches #"([^\[]+)(?:\[(.+)\])?" xpath-elem)]
-      (let [tag-name-selector (create-tag-name-selector (keyword tag-name))]
-        (if element-selector-str
-          [tag-name-selector (parse-element-sub-selector element-selector-str)]
-          [tag-name-selector]))
-      (throw (Exception. (str "XPath element was not recognized: " xpath-elem))))))
+    (if-let [[_ attrib-name] (re-matches #"@(.+)" xpath-elem)]
+      [(create-attribute-name-selector attrib-name)]
+      (if-let [[_ tag-name element-selector-str] (re-matches #"([^\[]+)(?:\[(.+)\])?" xpath-elem)]
+        (let [tag-name-selector (create-tag-name-selector (keyword tag-name))]
+          (if element-selector-str
+            [tag-name-selector (parse-element-sub-selector element-selector-str)]
+            [tag-name-selector]))
+        (throw (Exception. (str "XPath element was not recognized: " xpath-elem)))))))
 
 (defn- join-split-selectors
   "When we split an XPath by / that inadvertently splits subselectors that contain XPaths. This
@@ -192,7 +206,16 @@
                          ;; We add an initial / here because an xpath like "books" is inherently
                          ;; within the top element.
                          [:from-context (cons "/" parts)])
-        selectors (u/mapcatv parse-xpath-element parts)]
+        selectors (u/mapcatv parse-xpath-element parts)
+
+        ;; This is a special case for when the last selector is an attribute value. We remove the
+        ;; child of selector preceeding it since attributes aren't in the children.
+        last-selector (last selectors)
+        selectors (if (= :attrib-selector (:type last-selector))
+                    (if (> (count selectors) 2)
+                      (conj (subvec selectors 0 (- (count selectors) 2)) last-selector)
+                      [last-selector])
+                    selectors)]
     {:source source
      :selectors selectors}))
 
@@ -228,10 +251,25 @@
   [elements {:keys [tag-name]}]
   (filterv #(= tag-name (:tag %)) elements))
 
+;; Select the values of the attributes given by attrib-name
+(defmethod process-xml-selector :attrib-selector
+  [elements {:keys [attrib-name]}]
+  (cmr.common.dev.capture-reveal/capture-all)
+  (persistent!
+    (reduce (fn [attrib-values element]
+              (if-let [attrib-value (get-in element [:attrs attrib-name])]
+                (conj! attrib-values attrib-value)
+                attrib-values))
+            (transient [])
+            elements)))
+
+;; Select the elements which have attributes with a attribute name and value given
 (defmethod process-xml-selector :attrib-value-selector
-  [elements {:keys [attrib-name attrib-val]}]
-  (filterv (fn [{:keys [attrs]}]
-             (= attrib-val (get attrs attrib-name)))
+  [elements {:keys [selectors value]}]
+  (filterv (fn [element]
+             (when-let [selected-value (first (process-selectors
+                                                  [element] selectors process-xml-selector))]
+               (= selected-value value)))
            elements))
 
 (defmethod process-xml-selector :element-value-selector
@@ -276,9 +314,16 @@
   [data {:keys [tag-name]}]
   (u/mapcatv #(-> % tag-name as-vector) (as-vector data)))
 
+(defmethod process-data-selector :attrib-selector
+  [data {:keys [attrib-name]}]
+  (u/mapcatv #(-> % attrib-name as-vector) (as-vector data)))
+
 (defmethod process-data-selector :attrib-value-selector
-  [data {:keys [attrib-name attrib-val]}]
-  (filterv #(= attrib-val (get % attrib-name))
+  [data {:keys [selectors value]}]
+  (filterv (fn [d]
+             (when-let [result (first (process-selectors
+                                        [d] selectors process-data-selector))]
+               (= (str result) value)))
            (as-vector data)))
 
 (defmethod process-data-selector :element-value-selector
