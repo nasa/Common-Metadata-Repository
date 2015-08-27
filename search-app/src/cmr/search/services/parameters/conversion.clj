@@ -301,6 +301,7 @@
                       (when (:keyword params) [{:order :desc :field :score}]))
         echo-compatible? (= "true" (:echo-compatible params))
         hierarchical-facets? (= "true" (:hierarchical-facets params))
+        {:keys [begin-tag end-tag snippet-length num-fragments]} (get-in params [:options :highlights])
         result-features (concat (when (= (:include-granule-counts params) "true")
                                   [:granule-counts])
                                 (when (= (:include-has-granules params) "true")
@@ -318,7 +319,11 @@
      :result-format (:result-format params)
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?
-     :all-revisions? all-revisions?}))
+     :all-revisions? all-revisions?
+     :highlights-options {:begin-tag begin-tag
+                          :end-tag end-tag
+                          :snippet-length (when snippet-length (Integer. snippet-length))
+                          :num-fragments (when num-fragments (Integer. num-fragments))}}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."

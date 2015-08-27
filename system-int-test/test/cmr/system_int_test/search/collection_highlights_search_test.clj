@@ -41,14 +41,15 @@
 (deftest summary-highlighting-using-parameter-api
   (ingest-collections-for-test)
   (util/are2
-    [expected-results search-options]
+    [expected-results search-params options]
     (= expected-results
        (get-search-results-summaries
-         (search/find-concepts-json :collection (merge {:include-highlights true} search-options))))
+         (search/find-concepts-json :collection (merge {:include-highlights true} search-params options))))
 
     "No matching highlight in the summary field"
     [nil]
     {:keyword "coll1"}
+    {}
 
     "Long summary with multiple snippets and case insensitive"
     [[(str "This summary has a lot of characters in it. **<em>Findme</em>** So many that "
@@ -56,6 +57,7 @@
       (str " figure out what keyword to search for in order to make two different snippets have a "
            "match, but that seems (<em>findme</em>) doable.")]]
     {:keyword "FiNdmE"}
+    {}
 
     "Some highlights and some not using a wildcard"
     [nil
@@ -65,25 +67,46 @@
      ["Match on either 'ocean' or '<em>collection</em>'."]
      ["Match on 'ocean <em>collection</em>'"]]
     {:keyword "c?ll*"}
+    {}
 
     "Search with keyword with spaces treats as two separate keywords AND'ed together"
     [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
      ["Match on '<em>ocean</em> <em>collection</em>'"]]
-    {:keyword "ocean collection"}))
+    {:keyword "ocean collection"}
+    {}
+
+    "Search with keyord and begin-tag"
+    [["Match on either '<br>ocean</em>' or '<br>collection</em>'."]
+     ["Match on '<br>ocean</em> <br>collection</em>'"]]
+    {:keyword "ocean collection"}
+    {"options[highlights][begin-tag]" "<br>"}
+
+    "Search with keyord and end-tag"
+    [["Match on either '<em>ocean</br>' or '<em>collection</br>'."]
+     ["Match on '<em>ocean</br> <em>collection</br>'"]]
+    {:keyword "ocean collection"}
+    {"options[highlights][end-tag]" "</br>"}
+
+    "Search with keyord and snippet-length and num-fragments"
+    [[" it. **<em>Findme</em>** So"]]
+    {:keyword "findme"}
+    {"options[highlights][snippet-length]" 20
+     "options[highlights][num-fragments]" 1}))
 
 (deftest summary-highlighting-using-json-query
   (ingest-collections-for-test)
   (util/are2
-    [expected-results json-query-conditions]
+    [expected-results json-query-conditions options]
     (= expected-results (get-search-results-summaries (search/find-concepts-in-json-with-json-query
                                                         :collection
-                                                        {:include-highlights true}
+                                                        (merge {:include-highlights true} options)
                                                         json-query-conditions)))
 
     "JSON Query keyword with spaces treats as two separate keywords AND'ed together"
     [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
      ["Match on '<em>ocean</em> <em>collection</em>'"]]
     {:keyword "ocean collection"}
+    {}
 
     "JSON Query AND multiple keyword conditions highlights multiple terms"
     [["Match on either '<em>ocean</em>' or '<em>collection</em>'."]
@@ -91,6 +114,7 @@
     {:and [{:keyword "ocean"}
            {:keyword "collection"}
            {:not {:keyword "foo"}}]}
+    {}
 
     "JSON Query OR multiple keyword conditions highlights multiple terms"
     [nil
@@ -101,4 +125,29 @@
      ["Match on '<em>ocean</em> <em>collection</em>'"]]
     {:or [{:keyword "ocean"}
           {:keyword "collection"}
-          {:not {:keyword "foo"}}]}))
+          {:not {:keyword "foo"}}]}
+    {}
+
+    "Search with keyord and begin-tag"
+    [["Match on either '<br>ocean</em>' or '<br>collection</em>'."]
+     ["Match on '<br>ocean</em> <br>collection</em>'"]]
+    {:keyword "ocean collection"}
+    {"options[highlights][begin-tag]" "<br>"}
+
+    "Search with keyord and end-tag"
+    [["Match on either '<em>ocean</br>' or '<em>collection</br>'."]
+     ["Match on '<em>ocean</br> <em>collection</br>'"]]
+    {:keyword "ocean collection"}
+    {"options[highlights][end-tag]" "</br>"}
+
+    "Search with keyord and snippet-length and num-fragments"
+    [[" it. **<em>Findme</em>** So"]]
+    {:keyword "findme"}
+    {"options[highlights][snippet-length]" 20
+     "options[highlights][num-fragments]" 1}))
+
+(deftest validate-highlight-options
+  (testing "include_highlights must be set to true for highlights options"
+    (is (= {:status 400
+            :errors ["Highlights options are not allowed unless the include-highlights is true."]}
+           (search/find-concepts-json :collection {"options[highlights][begin-tag]" "<br>"})))))

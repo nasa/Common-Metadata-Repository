@@ -3,7 +3,8 @@
   provided keyword search."
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.common.util :as util]))
 
 (defn get-keyword-conditions
   "Returns a list of the keyword text conditions from a condition"
@@ -15,12 +16,33 @@
                                              (conj conditions condition)
                                              conditions))))))
 
+(defn- add-tag
+  "Add a tag to the highlight query map if its value is not nil."
+  [query-map tag value]
+  (if value
+    (assoc query-map tag [value])
+    query-map))
+
+(defn- add-fragment-options
+  "Add highlight fragment options to highlight query if available."
+  [query-map snippet-length num-fragments]
+  (let [fragment-options (util/remove-nil-keys
+                           {:fragment_size snippet-length :number_of_fragments num-fragments})]
+    (if (empty? fragment-options)
+      query-map
+      (update-in query-map [:fields :summary] merge fragment-options))))
+
 (defn- build-highlight-query
   "Creates the highlight query that will be passed into elastic"
   [query]
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
-    (let [conditions-as-string (str/join " " (map :query-str keyword-conditions))]
-      {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}})))
+    (let [{:keys [begin-tag end-tag snippet-length num-fragments]} (:highlights-options query)
+          conditions-as-string (str/join " " (map :query-str keyword-conditions))
+          query-map {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}}]
+      (-> query-map
+          (add-tag :pre_tags begin-tag)
+          (add-tag :post_tags end-tag)
+          (add-fragment-options snippet-length num-fragments)))))
 
 (defmethod query-execution/pre-process-query-result-feature :highlights
   [_ query _]
@@ -30,9 +52,9 @@
   "Returns a map of id to highlighted summary snippets for a set of elastic results."
   [elastic-results]
   (into {} (map (fn [hit] (let [id (:_id hit)
-                       summary (get-in hit [:highlight :summary])]
-                   {id summary}))
-       (get-in elastic-results [:hits :hits]))))
+                                summary (get-in hit [:highlight :summary])]
+                            {id summary}))
+                (get-in elastic-results [:hits :hits]))))
 
 (defn- replace-fields-with-highlighted-fields
   "Replaces the appropriate fields with the highlighted snippets for each field."
