@@ -60,24 +60,35 @@
                ;; Construct a record from the hash map
                (constructor-fn prop-map))))
 
+(defn- assert-field-not-present-with-one-of
+  [schema-type k]
+  (when (k schema-type)
+    (throw (Exception. (format (str "UMM generator can not handle an object with both a top level "
+                                    "%s and oneOf. schema-type: %s")
+                               (name k) (pr-str schema-type))))))
+
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf} schema-type)
+  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (do
-      (when (:properties schema-type)
-        (throw (Exception. (str  "UMM generator can not handle an object with both top level "
-                                "properties and oneOf. You must choose properties within the oneOf."
-                                " schema-type: " (pr-str schema-type)))))
-      (when (:required schema-type)
-        (throw (Exception. (str  "UMM generator can not handle an object with both top level required "
-                                "and oneOf. You must choose required properties within the oneOf."
-                                " schema-type: " (pr-str schema-type)))))
+      ;; These fields aren't supported in schema-type if oneOf is used
+      (doseq [f [:anyOf :properties :required]]
+        (assert-field-not-present-with-one-of schema-type f))
 
       (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of)))
-    (object-like-schema-type->generator
-      schema type-name
-      (select-keys schema-type [:properties :required :additionalProperties]))))
+
+    ;; else
+    (if-let [any-of (:anyOf schema-type)]
+      (->> any-of
+           (map #(merge-with into schema-type %))
+           (map #(dissoc % :anyOf))
+           (map #(object-like-schema-type->generator schema type-name %))
+           vec
+           gen/one-of)
+      (object-like-schema-type->generator
+        schema type-name
+        (select-keys schema-type [:properties :required :additionalProperties])))))
 
 (def array-defaults
   {:minItems 0

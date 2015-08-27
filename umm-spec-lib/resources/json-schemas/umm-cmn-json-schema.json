@@ -940,7 +940,14 @@
           },
           "minItems": 1
         }
-      }
+      },
+      "anyOf": [{
+        "required": ["RangeDateTimes"]
+      }, {
+        "required": ["SingleDateTimes"]
+      }, {
+        "required": ["PeriodicDateTimes"]
+      }]
     },
     "RangeDateTimeType": {
       "type": "object",
