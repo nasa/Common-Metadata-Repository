@@ -2,6 +2,7 @@
   "Implements parsing of XML into UMM records."
   (:require [clojure.string :as str]
             [cmr.common.date-time-parser :as dtp]
+            [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :as sxp]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,10 +46,12 @@
 
 (defmethod process-xml-mapping :object
   [xpath-context {:keys [parse-type properties]}]
-  (let [{:keys [constructor-fn]} parse-type]
-    (constructor-fn
-      (into {} (for [[prop-name sub-def] properties]
-                 [prop-name (process-xml-mapping xpath-context sub-def)])))))
+  (let [{:keys [constructor-fn]} parse-type
+        record-map (util/remove-nil-keys
+                     (into {} (for [[prop-name sub-def] properties]
+                                [prop-name (process-xml-mapping xpath-context sub-def)])))]
+    (when (seq (keys record-map))
+      (constructor-fn record-map))))
 
 (defmethod process-xml-mapping :xpath
   [xpath-context {:keys [parse-type value]}]
@@ -65,12 +68,16 @@
 (defmethod process-xml-mapping :for-each
   [xpath-context {:keys [xpath template]}]
   (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
-    (when-let [elements (seq (:context new-xpath-context))]
-      (vec (for [element elements
-                 :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
-             (if (and template (:type template))
-               (process-xml-mapping single-item-xpath-context template)
-               (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
+    (let [elements (seq (:context new-xpath-context))
+          values (remove nil?
+                         (for [element elements
+                               :let [single-item-xpath-context (assoc new-xpath-context
+                                                                      :context [element])]]
+                           (if (and template (:type template))
+                             (process-xml-mapping single-item-xpath-context template)
+                             (parse-primitive-value (:parse-type template "string")
+                                                    single-item-xpath-context))))]
+      (when (seq values) (vec values)))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]

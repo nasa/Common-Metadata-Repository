@@ -2,7 +2,8 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.umm-spec.models.common :as cmn]))
+  (:require [cmr.umm-spec.models.common :as cmn]
+            [cmr.common.util :as util]))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -80,23 +81,23 @@
       (assoc :UseConstraints nil)))
 
 ;; DIF 9
-
 (defn dif-temporal
   "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
-  (when-let [temporal (->> temporal-extents
-                           ;; Only ranges are supported by DIF 9, so we need to convert
-                           ;; single dates to range types.
-                           (map single-dates->ranges)
-                           ;; Merge the list of temporals together since we'll read the set of range date times as
-                           ;; a single temporal with many range date times.
-                           merge-temporals)]
-    ;; DIF 9 does not support these fields.
-    [(assoc temporal
-            :PeriodicDateTimes nil
-            :TemporalRangeType nil
-            :PrecisionOfSeconds nil
-            :EndsAtPresentFlag nil)]))
+  (let [temporal (->> temporal-extents
+                      ;; Only ranges are supported by DIF 9, so we need to convert
+                      ;; single dates to range types.
+                      (map single-dates->ranges)
+                      ;; Merge the list of temporals together since we'll read the set of range date times as
+                      ;; a single temporal with many range date times.
+                      merge-temporals)
+        ;; DIF 9 does not support these fields.
+        temporal  (util/remove-nil-keys (assoc temporal :PeriodicDateTimes nil
+                                               :TemporalRangeType nil
+                                               :PrecisionOfSeconds nil
+                                               :EndsAtPresentFlag nil))]
+    (when (seq (keys temporal))
+      [(cmn/map->TemporalExtentType temporal)])))
 
 (defmethod convert-internal :dif
   [umm-coll _]
