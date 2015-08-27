@@ -75,6 +75,9 @@
   (let [[_ _ namespace-part name-part] (re-find #"((.*):)?(.*)" attrib-name)]
     (keyword namespace-part name-part)))
 
+;; Needed for create the element value selector
+(declare parse-xpath)
+
 (defn- create-attrib-val-equality-selector
   "Creates a selector that selects elements with an attribute with a given value."
   [selector-str]
@@ -85,9 +88,6 @@
     {:type :attrib-value-selector
      :selectors (:selectors parsed-xpath)
      :value value}))
-
-;; Needed for create the element value selector
-(declare parse-xpath)
 
 (defn- create-elem-val-equality-selector
   "Creates a selector that selects elements which have a child element with a given value.
