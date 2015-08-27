@@ -146,7 +146,20 @@
     {"options[highlights][snippet-length]" 20
      "options[highlights][num-fragments]" 1}))
 
-(deftest validate-highlight-options
+(deftest validate-highlights-options
+  (testing "include_highlights must be set to true for highlights options"
+    (is (= {:status 400
+            :errors ["Highlights options are not allowed unless the include-highlights is true."]}
+           (search/find-concepts-json :collection {"options[highlights][begin-tag]" "<br>"}))))
+
+  (testing "snippet-length and num-fragments must be valid integers"
+    (is (= {:status 400
+            :errors ["snippet-length [FOO] option for highlights is not a valid integer."
+                     "num-fragments [10.5] option for highlights is not a valid integer."]}
+           (search/find-concepts-json :collection {:include-highlights true
+                                                   "options[highlights][snippet-length]" "FOO"
+                                                   "options[highlights][num-fragments]" 10.5}))))
+
   (testing "include_highlights must be set to true for highlights options"
     (is (= {:status 400
             :errors ["Highlights options are not allowed unless the include-highlights is true."]}

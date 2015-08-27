@@ -553,10 +553,40 @@
 (defn- highlights-option-validation
   "Validates that the include-highlights parameter is set to true if any of the highlights
   options params are set."
-  [conept-type params]
+  [concept-type params]
   (if (and (get-in params [:options :highlights])
            (not= "true" (:include-highlights params)))
     ["Highlights options are not allowed unless the include-highlights is true."]
+    []))
+
+(defn highlights-snippet-length-validation
+  "Validates that the snippet-length highlights option (if present) is an integer."
+  [concept-type params]
+  (if-let [snippet-length-param (get-in params [:options :highlights :snippet-length])]
+    (try
+      (let [snippet-length (Integer/parseInt snippet-length-param)]
+        (if (< snippet-length 1)
+          [(format "snippet-length [%d] option for highlights must be an integer greater than 0."
+                   snippet-length)]
+          []))
+      (catch NumberFormatException e
+        [(format "snippet-length [%s] option for highlights is not a valid integer."
+                 snippet-length-param)]))
+    []))
+
+(defn highlights-num-fragments-validation
+  "Validates that the page-size (if present) is a number in the valid range."
+  [concept-type params]
+  (if-let [num-fragments-param (get-in params [:options :highlights :num-fragments])]
+    (try
+      (let [num-fragments (Integer/parseInt num-fragments-param)]
+        (if (< num-fragments 1)
+          [(format "num-fragments [%d] option for highlights must be an integer greater than 0."
+                   num-fragments)]
+          []))
+      (catch NumberFormatException e
+        [(format "num-fragments [%s] option for highlights is not a valid integer."
+                 num-fragments-param)]))
     []))
 
 (def valid-timeline-intervals
@@ -647,7 +677,9 @@
    bounding-box-validation
    point-validation
    line-validation
-   highlights-option-validation])
+   highlights-option-validation
+   highlights-snippet-length-validation
+   highlights-num-fragments-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.
