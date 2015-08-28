@@ -118,7 +118,7 @@
 					}
 				},
 				"instrument": {
-					"description": "Search against any of the subfields in the platform hierarchy",
+					"description": "Search against any of the subfields in the instrument hierarchy",
 					"type": "object",
 					"additionalProperties": false,
 					"minProperties": 1,
