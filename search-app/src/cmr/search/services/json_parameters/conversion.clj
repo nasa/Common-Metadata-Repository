@@ -35,7 +35,7 @@
    :processing-level-id :string
    :concept-id :string
    :platform :platform
-   :instrument :string
+   :instrument :instrument
    :sensor :string
    :project :string
    :archive-center :string
@@ -82,6 +82,15 @@
   (when-not (seq (set/intersection (set (keys value))
                                    (set (conj (:platforms nf/nested-field-mappings) :any))))
     (errors/throw-service-error :bad-request (msg/invalid-platform-json-query value))))
+
+(defn- validate-instrument-condition
+  "Custom validation to make sure there is at least one instrument field being searched on.
+  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
+  present."
+  [value]
+  (when-not (seq (set/intersection (set (keys value))
+                                   (set (conj (:instruments nf/nested-field-mappings) :any))))
+    (errors/throw-service-error :bad-request (msg/invalid-instrument-json-query value))))
 
 (defn- validate-temporal-condition
   "Custom validation to make sure there is at least one temporal condition other than
@@ -161,6 +170,13 @@
   [condition-name value]
   (validate-platform-condition value)
   (nf/parse-nested-condition :platforms value
+                             (case-sensitive-field? condition-name value)
+                             (:pattern value)))
+
+(defmethod parse-json-condition :instrument
+  [condition-name value]
+  (validate-instrument-condition value)
+  (nf/parse-nested-condition :instruments value
                              (case-sensitive-field? condition-name value)
                              (:pattern value)))
 

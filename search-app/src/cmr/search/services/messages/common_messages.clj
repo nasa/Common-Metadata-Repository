@@ -69,3 +69,8 @@
   [condition]
   (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition))
 
+(defn invalid-instrument-json-query
+  "Creates a message indicating the JSON query condition provided for instrument is invalid."
+  [condition]
+  (format "Invalid instrument query condition [%s]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any." condition))
+

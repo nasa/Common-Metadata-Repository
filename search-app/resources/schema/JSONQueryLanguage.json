@@ -118,8 +118,50 @@
 					}
 				},
 				"instrument": {
-					"description": "UMM instrument short name",
-					"$ref": "#/definitions/StringCondition"
+					"description": "Search against any of the subfields in the platform hierarchy",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"category": {
+							"description": "Top level classification of instruments.",
+							"type": "string"
+						},
+						"class": {
+							"description": "Second level classification under category.",
+							"type": "string"
+						},
+						"type": {
+							"description": "Third level classification under class.",
+							"type": "string"
+						},
+						"subtype": {
+							"description": "Fourth level classification under type.",
+							"type": "string"
+						},
+						"short_name": {
+							"description": "Abbreviated name of the instrument used to acquire the data.",
+							"type": "string"
+						},
+						"long_name": {
+							"description": "Full name of the instrument used to acquire the data.",
+							"type": "string"
+						},
+						"uuid": {
+							"description": "Unique identifier for the instrument within the GCMD Keyword Management System.",
+							"type": "string"
+						},
+						"ignore_case": {
+							"$ref": "#/definitions/IgnoreCaseOption"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						},
+						"any": {
+							"description": "Search against any of the instrument subfields (category, class, etc.) for the provided value.",
+							"type": "string"
+						}
+					}
 				},
 				"sensor": {
 					"description": "UMM sensor short name",

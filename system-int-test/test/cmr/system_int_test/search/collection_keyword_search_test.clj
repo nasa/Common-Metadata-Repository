@@ -22,7 +22,8 @@
               :instruments
               [(dc/instrument {:short-name "isnA" :long-name "ilnA" :technique "itechniqueA"
                                :sensors [(dc/sensor {:short-name "ssnA" :long-name "slnA"})
-                                         (dc/sensor {:short-name "ssnD" :long-name "slnD" :technique "techniqueD"})]})]})
+                                         (dc/sensor {:short-name "ssnD" :long-name "slnD"
+                                                     :technique "techniqueD"})]})]})
         p2 (dc/platform
              {:short-name "platform_SnA spoonA"
               :long-name "platform_LnA"
@@ -30,10 +31,13 @@
                                 (dc/characteristic {:name "char2" :description "char2desc"})]
               :instruments
               [(dc/instrument {:short-name "isnB" :long-name "ilnB" :technique "itechniqueB"
-                               :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
-                                         (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]})]})
+                               :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB"
+                                                     :technique "techniqueB"})
+                                         (dc/sensor {:short-name "ssnC" :long-name "slnC"
+                                                     :technique "techniqueC"})]})]})
         p3 (dc/platform {:short-name "spoonA"})
-        p4 (dc/platform {:short-name "SMAP"})
+        p4 (dc/platform {:short-name "SMAP"
+                         :instruments [(dc/instrument {:short-name "SMAP L-BAND RADIOMETER"})]})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -52,7 +56,7 @@
         coll1 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "coll1" :version-description "VersionDescription"}))
         coll2 (d/ingest "PROV1" (dc/collection
-                                  {:entry-title "coll2" :short-name "ABC!XYZ":version-id "V001" }))
+                                  {:entry-title "coll2" :short-name "ABC!XYZ" :version-id "V001"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3" :collection-data-type "OTHER"}))
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4" :collection-data-type "OTHER"}))
         coll5 (d/ingest "PROV2" (dc/collection {:entry-title "coll5" :long-name "ABC" :short-name "Space!Laser"}))
@@ -190,8 +194,10 @@
            ;; Instruments
            ;; - short name
            "isnA" [coll15]
-           ;; - long name
+           ;; - long name (from metadata - not from KMS)
            "ilnB" [coll11]
+           ;; - long name (from KMS - not from metadata)
+           "SMAP L-Band Radiometer" [coll24]
            ;; - technique
            "itechniqueB" [coll11]
            "itechniqueA" [coll15]
@@ -260,8 +266,10 @@
 
            ;; instrument short-name
            (:short-name (first (:instruments p1))) [k2e/instrument-boost]
-           ;; instrument long-name
+           ;; instrument long-name (from metadata)
            (:long-name (first (:instruments p1))) [k2e/instrument-boost]
+           ;; instrument long-name (from KMS)
+           "L-Band Radiometer" [k2e/instrument-boost]
 
            ;; sensor short-name
            (:short-name (first (:sensors (first (:instruments p1))))) [k2e/sensor-boost]
