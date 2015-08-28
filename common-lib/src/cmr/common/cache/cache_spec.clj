@@ -1,7 +1,8 @@
 (ns cmr.common.cache.cache-spec
   "Defines a common set of tests for checking cache implementations"
   (:require [clojure.test :refer :all]
-            [cmr.common.cache :as c]))
+            [cmr.common.cache :as c]
+            [cmr.common.cache.spec-util :as su]))
 
 (defn- check-initial-cache-state
   [cache]
@@ -46,8 +47,7 @@
   (is (= "string" (c/get-value cache "foo")))
   (is (= "symbol" (c/get-value cache 'foo)))
 
-  (is (= (set [:foo ":foo" "foo" 'foo])
-         (set (c/get-keys cache))))
+  (su/assert-cache-keys [:foo ":foo" "foo" 'foo] cache true)
 
   (are [k]
        (do
