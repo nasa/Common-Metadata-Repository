@@ -122,6 +122,9 @@
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
     (if-let [{:keys [entry-titles access-value]} collection-identifier]
+
+      ;; TODO convert rolling temporal to query condition
+
       (let [entry-titles-cond (provider+entry-titles->collection-condition
                                 context query-coll-ids provider-id entry-titles)
             access-value-cond (some-> (access-value->query-condition access-value)
@@ -138,6 +141,9 @@
 (defn granule-identifier->query-cond
   "Converts an acl granule identifier into a query condition."
   [granule-identifier]
+
+  ;; TODO support rolling temporal as a granule query condition
+
   (some-> granule-identifier
           :access-value
           access-value->query-condition))

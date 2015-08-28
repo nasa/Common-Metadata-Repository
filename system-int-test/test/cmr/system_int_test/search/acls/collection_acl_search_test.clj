@@ -35,6 +35,8 @@
   (is (= {:errors ["Token [expired-token] has expired."], :status 401}
          (search/find-refs :collection {:token "expired-token"}))))
 
+;; TODO add separate rolling temporal test
+
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
@@ -55,7 +57,6 @@
   (e/grant-group (s/context) "group-guid3"
                  (e/coll-catalog-item-id "provguid4"
                                          (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
-
 
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))

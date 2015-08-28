@@ -128,6 +128,15 @@
   (fn [concept]
     (:concept-type concept)))
 
+;; TODO extract rolling temporal fields from granules and collections
+;; How do we extract it from the XML?
+;; I like the way the SMAP extraction works for access value. We should test the difference in performance
+;; for echo10 when using the regular expression vs parsing the XML and pulling it out. We could parse
+;; the XML once into clojure.data.xml and then get both access value and temporal fields at the same time.
+
+;; We'll do that first in this pull request and then in a subsequent pull request we'll do the
+;; performance optimization of only pulling out the values when we need to.
+
 (defmethod add-acl-enforcement-fields :collection
   [concept]
   (assoc concept

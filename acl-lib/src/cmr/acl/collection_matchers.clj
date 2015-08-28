@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]))
 
+;; TODO add rolling temporal
 (def supported-collection-identifier-keys
   #{:entry-titles :access-value})
 
@@ -29,6 +30,7 @@
       ;; collection's without a value will only be included if include-undefined is true
       include-undefined)))
 
+;; TODO add support for rolling temporal here
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
@@ -46,6 +48,7 @@
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
 
+    ;; TODO refactor this out into a function
     ;; Verify the collection identifier isn't using any unsupported ACL features.
     (when collection-identifier
       (let [unsupported-keys (set/difference (set (keys collection-identifier))

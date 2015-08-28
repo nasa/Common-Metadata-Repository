@@ -22,20 +22,8 @@
    {:entry-title (or entry-title "entry title")
     :access-value access-value}))
 
-(defn truthy?
-  "Returns true if v is a truthy value"
-  [v]
-  (not (or (nil? v)
-           (false? v))))
 
-(deftest truthy-helper-test
-  (is (truthy? true))
-  (is (truthy? "something"))
-  (is (truthy? '()))
-  (is (truthy? []))
-  (is (not (truthy? false)))
-  (is (not (truthy? nil))))
-
+;; TODO add rolling temporal acls to this test
 (deftest collection-applicable-acl-test
   (testing "collection-applicable flag false"
     (is (not (a/coll-applicable-acl?
@@ -59,7 +47,7 @@
                  :collection-identifier {:entry-titles ["d1" "d2"]}})]
       (are [applicable? coll]
            (= applicable?
-              (truthy? (a/coll-applicable-acl? "PROV1" coll acl)))
+              (boolean (a/coll-applicable-acl? "PROV1" coll acl)))
 
            ;; dataset id
            true (collection {:entry-title "d1"})
@@ -74,7 +62,7 @@
                       (apply collection-identifier-with-access-value
                              access-value-fields)})]
            (= applicable?
-              (truthy? (a/coll-applicable-acl? "PROV1"
+              (boolean (a/coll-applicable-acl? "PROV1"
                                                (collection {:access-value coll-access-value})
                                                acl))))
 
@@ -141,7 +129,7 @@
                  :collection-identifier collection-identifier})]
       (are [applicable? coll]
            (= applicable?
-              (truthy? (a/coll-applicable-acl? "PROV1" coll acl)))
+              (boolean (a/coll-applicable-acl? "PROV1" coll acl)))
 
            ;; matches none
            false (collection)

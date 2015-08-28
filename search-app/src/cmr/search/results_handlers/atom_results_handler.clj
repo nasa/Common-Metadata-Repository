@@ -54,6 +54,7 @@
    "ords-info"
    "ords"
    "_score"
+   ;; TODO refactor list of fields which are required to enforce acls on a response to a central location
    "access-value" ;; needed for acl enforcment
    ])
 
