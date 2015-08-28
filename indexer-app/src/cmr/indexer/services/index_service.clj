@@ -24,7 +24,9 @@
             [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
             [cmr.indexer.data.elasticsearch :as es]
-            [cmr.common.lifecycle :as lifecycle]))
+            [cmr.common.lifecycle :as lifecycle]
+            [clj-time.core :as t]
+            [clj-time.format :as f]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -123,6 +125,23 @@
               revision-id
               elastic-options)))))))
 
+(defn- log-ingest-to-index-time
+  "Add a log message indicating the time it took to go from ingest to completed indexing."
+  [{:keys [concept-id revision-date]}]
+  (let [now (tk/now)
+        rev-datetime (f/parse (f/formatters :date-time) revision-date)]
+    ;; Guard against revision-date that is set to the future by a provider or a test.
+    (if (t/before? rev-datetime now)
+      ;; WARNING: Splunk is dependent on this log message. DO NOT change this without updating
+      ;; Splunk searches used by ops.
+      (info (format "Concept [%s] took [%d] ms from start of ingest to become visible in search."
+                    concept-id
+                    (t/in-millis (t/interval rev-datetime now))))
+      (warn (format
+              "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
+              concept-id
+              revision-date)))))
+
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
@@ -134,9 +153,10 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [concept (meta-db/get-concept context concept-id revision-id)
+      (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
             umm-record (umm/parse-concept concept)]
-        (index-concept context concept umm-record options)))))
+        (index-concept context concept umm-record options)
+        (log-ingest-to-index-time concept)))))
 
 (deftracefn delete-concept
   "Delete the concept with the given id"
@@ -149,7 +169,7 @@
       (info (format "Deleting concept %s, revision-id %s, all-revisions-index? %s"
                     concept-id revision-id all-revisions-index?))
       (let [index-name (idx-set/get-concept-index-name
-                            context concept-id revision-id all-revisions-index?)
+                         context concept-id revision-id all-revisions-index?)
             concept-mapping-types (idx-set/get-concept-mapping-types context)
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
