@@ -32,7 +32,7 @@
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO SMAP keyword string."
   [keyword-str]
-  (->> (str/split keyword-str #"\s*>\s*")
+  (->> (str/split keyword-str #" > ")
        (remove empty?)))
 
 (defn keyword-type
