@@ -466,12 +466,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
-(defrecord KeywordUuidStringType
-  [
-
-  ])
-(record-pretty-printer/enable-record-pretty-printing KeywordUuidStringType)
-
 ;; This element is used to identify other services, collections, visualizations, granules, and other
 ;; metadata types and resources that are associated with or dependent on the data described by the
 ;; metadata. This element is also used to identify a parent metadata record if it exists. This usage

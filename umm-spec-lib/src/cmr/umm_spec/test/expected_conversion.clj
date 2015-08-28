@@ -139,7 +139,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem :Platforms
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
-    :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeyword
+    :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
     :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage

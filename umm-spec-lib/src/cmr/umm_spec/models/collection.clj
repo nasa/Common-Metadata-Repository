@@ -16,6 +16,10 @@
    ;; This includes any metadata related dates.
    MetadataDates
 
+   ;; This class specifies the name of a place on Earth, a location within the Earth, a vertical
+   ;; location, or a location outside of Earth.
+   SpatialKeywords
+
    ;; This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic
    ;; Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code
    ;; List. It is a high-level thematic classification to assist in the grouping and search of
@@ -78,10 +82,6 @@
    ;; (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide
    ;; metadata when it isn't ready for public consumption.
    AccessConstraints
-
-   ;; This class specifies the name of a place on Earth, a location within the Earth, a vertical
-   ;; location, or a location outside of Earth.
-   SpatialKeyword
 
    SpatialExtent
 
