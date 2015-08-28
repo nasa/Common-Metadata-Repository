@@ -33,7 +33,7 @@
                  processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
-        {:keys [platform-long-names]} other-fields
+        {:keys [platform-long-names instrument-long-names]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                nrt-aliases
@@ -44,7 +44,6 @@
         platform-short-names (map :short-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
-        instrument-long-names (keep :long-name instruments)
         instrument-techiques (keep :technique instruments)
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)

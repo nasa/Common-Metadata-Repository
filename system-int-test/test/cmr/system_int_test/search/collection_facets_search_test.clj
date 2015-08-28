@@ -29,6 +29,10 @@
   "List of platform short names that exist in the test KMS hierarchy."
   ["AE-A" "AD-A" "DMSP 5D-3/F18"])
 
+(def instrument-short-names
+  "List of instrument short names that exist in the test KMS hierarchy."
+  ["ATM" "LVIS" "CLOUDSAT-CPR"])
+
 (def FROM_KMS
   "Constant indicating that the short name for the field should be a short name found in KMS."
   "FROM_KMS")
@@ -52,7 +56,9 @@
          (for [in (range 0 num-instruments)
                :let [instrument-name (str platform-name "-i" in)]]
            (dc/instrument
-             {:short-name instrument-name
+             {:short-name (if (= FROM_KMS prefix)
+                            (or (get instrument-short-names in) instrument-name)
+                            instrument-name)
               :sensors (for [sn (range 0 num-sensors)
                              :let [sensor-name (str instrument-name "-s" sn)]]
                          (dc/sensor {:short-name sensor-name}))}))}))}))
@@ -146,7 +152,7 @@
      :json-facets (get-in (search/find-concepts-json :collection search-options)
                           [:results :facets])}))
 
-(deftest all-science-keywords-fields-hierarchy
+(deftest all-hierarchical-fields-test
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
                          (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
@@ -162,15 +168,14 @@
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
                          {:organizations [(dc/org :archive-center "Larc")]})
+
         expected-facets [{:field "archive_center", :value-counts [["Larc" 2]]}
                          {:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
-                         {:field "instrument",
-                          :value-counts
-                          [["FROM_KMS-p0-i0" 2] ["FROM_KMS-p0-i1" 2] ["FROM_KMS-p1-i0" 2]
-                           ["FROM_KMS-p1-i1" 2]]}
                          {:field "sensor",
                           :value-counts
-                          [["FROM_KMS-p0-i0-s0" 2] ["FROM_KMS-p0-i1-s0" 2] ["FROM_KMS-p1-i0-s0" 2]
+                          [["FROM_KMS-p0-i0-s0" 2]
+                           ["FROM_KMS-p0-i1-s0" 2]
+                           ["FROM_KMS-p1-i0-s0" 2]
                            ["FROM_KMS-p1-i1-s0" 2]]}
                          {:field "two_d_coordinate_system_name",
                           :value-counts [["Alpha" 2]]}
@@ -204,6 +209,37 @@
                                 :long-name
                                 [{:value "Atmosphere Explorer A (Explorer 17)",
                                   :count 2}]}]}]}]}
+                         {:field "instruments",
+                          :subfields ["category"],
+                          :category
+                          [{:value "Earth Remote Sensing Instruments",
+                            :count 2,
+                            :subfields ["class"],
+                            :class
+                            [{:value "Active Remote Sensing",
+                              :count 2,
+                              :subfields ["type"],
+                              :type
+                              [{:value "Altimeters",
+                                :count 2,
+                                :subfields ["subtype"],
+                                :subtype
+                                [{:value "Lidar/Laser Altimeters",
+                                  :count 2,
+                                  :subfields ["short-name"],
+                                  :short-name
+                                  [{:value "ATM",
+                                    :count 2,
+                                    :subfields ["long-name"],
+                                    :long-name
+                                    [{:value "Airborne Topographic Mapper",
+                                      :count 2}]}
+                                   {:value "LVIS",
+                                    :count 2,
+                                    :subfields ["long-name"],
+                                    :long-name
+                                    [{:value "Land, Vegetation, and Ice Sensor",
+                                      :count 2}]}]}]}]}]}]}
                          {:field "science_keywords",
                           :subfields ["category"],
                           :category
@@ -296,12 +332,12 @@
         coll2 (make-coll 2 "PROV1" (science-keywords sk5))
         expected-hierarchical-facets [{:field "archive_center", :value-counts []}
                                       {:field "project", :value-counts []}
-                                      {:field "instrument", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable", :value-counts []}
                                       {:field "platforms", :subfields []}
+                                      {:field "instruments", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
@@ -347,12 +383,12 @@
 (deftest empty-hierarchical-facets-test
   (let [expected-facets [{:field "archive_center", :value-counts []}
                          {:field "project", :value-counts []}
-                         {:field "instrument", :value-counts []}
                          {:field "sensor", :value-counts []}
                          {:field "two_d_coordinate_system_name", :value-counts []}
                          {:field "processing_level_id", :value-counts []}
                          {:field "detailed_variable", :value-counts []}
                          {:field "platforms", :subfields []}
+                         {:field "instruments", :subfields []}
                          {:field "science_keywords", :subfields []}]
         actual-facets (get-facet-results :hierarchical)]
     (is (= expected-facets (:xml-facets actual-facets)))
@@ -363,13 +399,13 @@
   (let [coll1 (make-coll 1 "PROV1" (science-keywords sk8))
         expected-hierarchical-facets [{:field "archive_center", :value-counts []}
                                       {:field "project", :value-counts []}
-                                      {:field "instrument", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
                                        :value-counts [["Detailed-No-Level2-or-3" 1]]}
                                       {:field "platforms", :subfields []}
+                                      {:field "instruments", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
@@ -671,10 +707,10 @@
 (deftest platform-missing-fields-test
   (grant-permissions)
   ;; Test that if the platforms do not exist in KMS, they will still be returned, but with a value
-  ;; of "not provided" for all of the values in the hierarchy other than short name.
+  ;; of "Not Provided" for all of the values in the hierarchy other than short name.
   (make-coll 1 "PROV1" (platforms "Platform" 2 2 1))
   ;; Test that even with a nil series-entity the platform will still be returned, but with a
-  ;; value of "not provided" for the series-entity
+  ;; value of "Not Provided" for the series-entity
   (make-coll 2 "PROV1" {:platforms [(dc/platform {:short-name "A340-600"})]})
   (let [expected-platforms [{:subfields ["category"],
                              :field "platforms",
@@ -709,7 +745,79 @@
                                    :long-name
                                    [{:value "Airbus A340-600", :count 1}]}]}]}]}]
         actual-platforms (->> (get-facet-results :hierarchical)
-                        :json-facets
-                        (filter #(= "platforms" (:field %))))]
+                              :json-facets
+                              (filter #(= "platforms" (:field %))))]
     (is (= expected-platforms actual-platforms))))
+
+(deftest instrument-missing-fields-test
+  (grant-permissions)
+  ;; Test that if the instruments do not exist in KMS, they will still be returned, but with a value
+  ;; of "Not Provided" for all of the values in the hierarchy other than short name.
+  (make-coll 1 "PROV1" (platforms "instrument-test" 2 2 1))
+  ;; Test that even with a nil type and sub-type the instrument will still be returned, but with a
+  ;; value of "Not Provided" for those fields.
+  (make-coll 2 "PROV1" {:platforms [(dc/platform
+                                      {:instruments [(dc/instrument {:short-name "ADS"})]})]})
+  (let [expected-instruments [{:field "instruments",
+                               :subfields ["category"],
+                               :category
+                               [{:value "Not Provided",
+                                 :count 1,
+                                 :subfields ["class"],
+                                 :class
+                                 [{:value "Not Provided",
+                                   :count 1,
+                                   :subfields ["type"],
+                                   :type
+                                   [{:value "Not Provided",
+                                     :count 1,
+                                     :subfields ["subtype"],
+                                     :subtype
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["short-name"],
+                                       :short-name
+                                       [{:value "instrument-test-p0-i0",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p0-i1",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i0",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name [{:value "Not Provided", :count 1}]}
+                                        {:value "instrument-test-p1-i1",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name
+                                         [{:value "Not Provided", :count 1}]}]}]}]}]}
+                                {:value "In Situ/Laboratory Instruments",
+                                 :count 1,
+                                 :subfields ["class"],
+                                 :class
+                                 [{:value "Chemical Meters/Analyzers",
+                                   :count 1,
+                                   :subfields ["type"],
+                                   :type
+                                   [{:value "Not Provided",
+                                     :count 1,
+                                     :subfields ["subtype"],
+                                     :subtype
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["short-name"],
+                                       :short-name
+                                       [{:value "ADS",
+                                         :count 1,
+                                         :subfields ["long-name"],
+                                         :long-name
+                                         [{:value "Automated DNA Sequencer",
+                                           :count 1}]}]}]}]}]}]}]
+        actual-instruments (->> (get-facet-results :hierarchical)
+                                :json-facets
+                                (filter #(= "instruments" (:field %))))]
+    (is (= expected-instruments actual-instruments))))
 
