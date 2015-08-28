@@ -1271,7 +1271,8 @@
     "IdType": {
       "description": "The unique identifier.",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "pattern":"[^\\\\/:\\s]{1,255}"
     },
     "VersionType": {
       "description": "The version of the metadata record.",
