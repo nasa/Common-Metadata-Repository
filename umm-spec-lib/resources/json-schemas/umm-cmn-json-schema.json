@@ -1324,7 +1324,7 @@
       "minLength": 1,
       "maxLength": 80,
       "pattern": "[^>]+"
-    }
+    },
     "LongNameType": {
       "description": "The expanded or long name of the short name.",
       "type": "string",
