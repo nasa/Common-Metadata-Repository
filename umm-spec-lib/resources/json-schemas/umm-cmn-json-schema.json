@@ -569,12 +569,7 @@
         }
       }
     },
-    "KeywordUuidStringType": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {}
-    },
-    "ScienceKeywordType": {
+   "ScienceKeywordType": {
       "type": "object",
       "additionalProperties": false,
       "description": "This element enables specification of Earth science keywords.",
@@ -1260,7 +1255,8 @@
     },
     "UuidType": {
       "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",
-      "type": "string"
+      "type": "string",
+      "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89abAB][0-9a-f]{3}-[0-9a-f]{12}"
     },
     "LineageScopeEnum": {
       "description": "The name of supported lineage date types",

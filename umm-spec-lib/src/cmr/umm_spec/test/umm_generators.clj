@@ -120,7 +120,7 @@
 
 (defmethod schema-type->generator "string"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:format :enum :minLength :maxLength} schema-type)
+  (rejected-unexpected-fields #{:format :enum :minLength :maxLength :pattern} schema-type)
   (cond
     (= (:format schema-type) "date-time")
     ext-gen/date-time
@@ -132,6 +132,9 @@
 
     (:enum schema-type)
     (gen/elements (:enum schema-type))
+
+    (:pattern schema-type)
+    (chgen/string-from-regex (re-pattern (:pattern schema-type)))
 
     :else
     (let [{:keys [minLength maxLength]} (merge string-defaults schema-type)]

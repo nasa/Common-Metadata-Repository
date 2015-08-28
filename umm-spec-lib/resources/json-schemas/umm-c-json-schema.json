@@ -388,7 +388,7 @@
       "description": "This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List. It is a high-level thematic classification to assist in the grouping and search of available services.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
       },
       "minItems": 0
     },
@@ -457,7 +457,7 @@
     },
     "SpatialKeyword": {
       "description": "This class specifies the name of a place on Earth, a location within the Earth, a vertical location, or a location outside of Earth.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+      "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
     },
     "Platforms": {
       "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
