@@ -15,8 +15,7 @@
   (let [full-instrument
         (merge default-instrument-values
                (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :instruments short-name))
-        {:keys [category type subtype long-name uuid]} full-instrument
-        i-class (:class full-instrument)]
+        {:keys [category type subtype long-name uuid] i-class :class} full-instrument]
     {:category category
      :category.lowercase (str/lower-case category)
      :class i-class
