@@ -87,10 +87,9 @@
                    :let [match (re-matches regex (-> element :content first))]
                    :when match
                    :let [nil-if-empty (fn [s] (if (empty? s) nil s))]]
-               ;; A string response implies there is no group in the regular expression and the
-               ;; entire matching string is returned and if there is a group in the regular
-               ;; expression, the first group of the matching string is returned.
-               (if (string? match) match (nil-if-empty (second match))))))))
+               ;; The entire string at the xpath is returned if there are no groups in the regular
+               ;; expression otherwise the substring corresponding to first group is returned.
+               (nil-if-empty (if (string? match) match (second match))))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
