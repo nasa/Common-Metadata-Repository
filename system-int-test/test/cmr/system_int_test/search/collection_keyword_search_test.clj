@@ -33,6 +33,7 @@
                                :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
                                          (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]})]})
         p3 (dc/platform {:short-name "spoonA"})
+        p4 (dc/platform {:short-name "SMAP"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -78,7 +79,8 @@
         coll20 (d/ingest "PROV2" (dc/collection {:projects pr1}))
         coll21 (d/ingest "PROV2" (dc/collection {:entry-title "coll21" :long-name "ABC!"}))
         coll22 (d/ingest "PROV2" (dc/collection {:collection-data-type "NEAR_REAL_TIME"}))
-        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))]
+        coll23 (d/ingest "PROV1" (dc/collection {:entry-title "coll23" :long-name "\"Quoted\" collection" }))
+        coll24 (d/ingest "PROV2" (dc/collection {:entry-title "coll24" :platforms [p4]}))]
 
     (index/wait-until-indexed)
 
@@ -172,8 +174,10 @@
            ;; Platforms
            ;; - short name
            "platform_SnA" [coll11]
-           ;; - long name
+           ;; - long name (from metadata - not from KMS)
            "platform_ln" [coll15]
+           ;; - long name (from KMS - not from the metadata)
+           "Soil Moisture Active and Passive Observatory" [coll24]
            ;; - characteristic name
            "char1" [coll11]
            "char2" [coll11]
@@ -249,8 +253,10 @@
 
            ;; platform short-name
            (:short-name p1) [k2e/platform-boost]
-           ;; platform long-name
+           ;; platform long-name (from metadata)
            (:long-name p1) [k2e/platform-boost]
+           ;; platform long-name (from KMS)
+           "Soil Moisture Active and Passive Observatory" [k2e/platform-boost]
 
            ;; instrument short-name
            (:short-name (first (:instruments p1))) [k2e/instrument-boost]

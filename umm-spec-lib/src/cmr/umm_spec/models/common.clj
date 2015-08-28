@@ -380,7 +380,13 @@
   [
    CoordinateSystem
 
-   TODOMultiChoice
+   Points
+
+   BoundingRectangles
+
+   GPolygons
+
+   Lines
   ])
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
 

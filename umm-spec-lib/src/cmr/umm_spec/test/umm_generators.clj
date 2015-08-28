@@ -30,17 +30,16 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
-
-(defmethod schema-type->generator "object"
+(defn- object-like-schema-type->generator
+  "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
+  with keys properties, required, and additionalProperties. This is used to handle a normal object
+  with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:properties :additionalProperties :required} schema-type)
+  (rejected-unexpected-fields #{:properties :required :additionalProperties} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
         properties (:properties schema-type)
-
-        ;; Remove this after implementing CMR-1943
-        properties (dissoc properties :TODOMultiChoice)
 
         ;; Create a map of property keys to generators for those properties
         prop-gens (into {} (for [[k subtype] properties]
@@ -60,6 +59,36 @@
                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
                ;; Construct a record from the hash map
                (constructor-fn prop-map))))
+
+(defn- assert-field-not-present-with-one-of
+  [schema-type k]
+  (when (k schema-type)
+    (throw (Exception. (format (str "UMM generator can not handle an object with both a top level "
+                                    "%s and oneOf. schema-type: %s")
+                               (name k) (pr-str schema-type))))))
+
+(defmethod schema-type->generator "object"
+  [schema type-name schema-type]
+  (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
+  (if-let [one-of (:oneOf schema-type)]
+    (do
+      ;; These fields aren't supported in schema-type if oneOf is used
+      (doseq [f [:anyOf :properties :required]]
+        (assert-field-not-present-with-one-of schema-type f))
+
+      (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of)))
+
+    ;; else
+    (if-let [any-of (:anyOf schema-type)]
+      (->> any-of
+           (map #(merge-with into schema-type %))
+           (map #(dissoc % :anyOf))
+           (map #(object-like-schema-type->generator schema type-name %))
+           vec
+           gen/one-of)
+      (object-like-schema-type->generator
+        schema type-name
+        (select-keys schema-type [:properties :required :additionalProperties])))))
 
 (def array-defaults
   {:minItems 0
@@ -93,7 +122,7 @@
 
 (defmethod schema-type->generator "string"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:format :enum :minLength :maxLength} schema-type)
+  (rejected-unexpected-fields #{:format :enum :minLength :maxLength :pattern} schema-type)
   (cond
     (= (:format schema-type) "date-time")
     ext-gen/date-time
@@ -105,6 +134,9 @@
 
     (:enum schema-type)
     (gen/elements (:enum schema-type))
+
+    (:pattern schema-type)
+    (chgen/string-from-regex (re-pattern (:pattern schema-type)))
 
     :else
     (let [{:keys [minLength maxLength]} (merge string-defaults schema-type)]
@@ -145,7 +177,6 @@
 (comment
 
   (last (gen/sample (schema->generator js/umm-c-schema) 10))
-
 
   )
 

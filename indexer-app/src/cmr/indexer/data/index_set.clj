@@ -133,6 +133,28 @@
     :uuid string-field-mapping
     :uuid.lowercase string-field-mapping}})
 
+(def instrument-hierarchical-mapping
+  "Defines hierarchical mappings for instruments."
+  {:type "nested"
+   :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
+   :properties
+   {:category string-field-mapping
+    :category.lowercase string-field-mapping
+    :class string-field-mapping
+    :class.lowercase string-field-mapping
+    :type string-field-mapping
+    :type.lowercase string-field-mapping
+    :subtype string-field-mapping
+    :subtype.lowercase string-field-mapping
+    :short-name string-field-mapping
+    :short-name.lowercase string-field-mapping
+    :long-name string-field-mapping
+    :long-name.lowercase string-field-mapping
+    :uuid string-field-mapping
+    :uuid.lowercase string-field-mapping}})
+
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
@@ -240,19 +262,20 @@
                                     ;; hierarchical facets
                                     :science-keywords science-keywords-field-mapping
                                     :platforms platform-hierarchical-mapping
+                                    :instruments instrument-hierarchical-mapping
 
                                     ;; Facet fields
                                     ;; We can run aggregations on the above science keywords as a
                                     ;; nested document. However the counts that come back are counts
                                     ;; of the nested documents. We want counts of collections for each
                                     ;; value so we must also capture the values at the parent level.
-                                    :category.lowercase string-field-mapping
-                                    :topic.lowercase string-field-mapping
-                                    :term.lowercase string-field-mapping
-                                    :variable-level-1.lowercase string-field-mapping
-                                    :variable-level-2.lowercase string-field-mapping
-                                    :variable-level-3.lowercase string-field-mapping
-                                    :detailed-variable.lowercase string-field-mapping
+                                    :category string-field-mapping
+                                    :topic string-field-mapping
+                                    :term string-field-mapping
+                                    :variable-level-1 string-field-mapping
+                                    :variable-level-2 string-field-mapping
+                                    :variable-level-3 string-field-mapping
+                                    :detailed-variable string-field-mapping
 
                                     ;; mappings added for atom
                                     :browsable (stored bool-field-mapping)

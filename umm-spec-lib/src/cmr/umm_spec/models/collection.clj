@@ -333,9 +333,11 @@
 
 (defrecord HorizontalCoordinateSystemType
   [
-   GeodeticModel
+   LocalCoordinateSystem
 
-   TODOMultiChoice
+   GeographicCoordinateSystem
+
+   GeodeticModel
   ])
 (record-pretty-printer/enable-record-pretty-printing HorizontalCoordinateSystemType)
 

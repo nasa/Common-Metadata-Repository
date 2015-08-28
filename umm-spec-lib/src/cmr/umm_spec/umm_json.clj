@@ -79,9 +79,10 @@
 (defmethod parse-json "object"
   [schema type-name-path type-name schema-type js-data]
   (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+        merged-prop-types (apply merge (:properties schema-type) (map :properties (:oneOf schema-type)))
         properties (into {}
                          (for [[k v] js-data
-                               :let [sub-type-def (get-in schema-type [:properties k])]]
+                               :let [sub-type-def (get merged-prop-types k)]]
                            [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
     (constructor-fn properties)))
 

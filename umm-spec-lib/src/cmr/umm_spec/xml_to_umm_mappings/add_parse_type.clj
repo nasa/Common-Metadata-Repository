@@ -56,20 +56,31 @@
     [_ _ schema-type mapping-type]
     (assoc mapping-type :parse-type schema-type)))
 
+(defn- add-parse-type-to-properties
+  "Adds parse type to mapping type which contains a properties field."
+  [schema schema-type mapping-type]
+  (if (:properties mapping-type)
+    (assoc mapping-type
+           :properties
+           (into {} (for [[prop-name sub-mapping] (:properties mapping-type)
+                          :let [sub-type-def (get-in schema-type [:properties prop-name])]]
+                      [prop-name (add-parse-type schema nil sub-type-def sub-mapping)])))
+    mapping-type))
+
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
   (if (fn? mapping-type)
     {:type :record :constructor-fn mapping-type}
     (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
-          properties (into
-                      {}
-                      (for [[prop-name sub-mapping] (:properties mapping-type)
-                            :let [sub-type-def (get-in schema-type [:properties prop-name])]]
-                        [prop-name (add-parse-type schema nil sub-type-def sub-mapping)]))]
-      (assoc mapping-type
-             :properties properties
-             :parse-type {:type :record
-                          :constructor-fn constructor-fn}))))
+          one-of-props (some->> (:oneOf mapping-type)
+                                (map #(add-parse-type-to-properties schema schema-type %))
+                                seq
+                                vec)]
+      (util/remove-nil-keys
+       (assoc (add-parse-type-to-properties schema schema-type mapping-type)
+              :oneOf one-of-props
+              :parse-type {:type :record
+                           :constructor-fn constructor-fn})))))
 
 (defn add-parsing-types
   "Gets the mappings to umm with extra information to aid in parsing"

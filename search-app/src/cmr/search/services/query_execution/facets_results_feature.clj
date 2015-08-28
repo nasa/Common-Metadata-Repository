@@ -14,7 +14,7 @@
   ;; FIXME: We shouldn't try to handle this many different values.
   ;; We should have a limit and if that's exceeded in the elastic response we should note that in
   ;; the values returned. This can be handled as a part of CMR-1101.
-  {:terms {:field (keyword (str (name field) ".lowercase")) :size UNLIMITED_TERMS_SIZE}})
+  {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
 (def ^:private collection-count-aggregation
   "Used to build an aggregation to get a count of unique concepts included in the current nested
@@ -22,20 +22,23 @@
   {:reverse_nested {}
    :aggs {:concept-id {:terms {:field :concept-id :size 1}}}})
 
+(def hierarchical-facet-order
+  "Order in which hierarchical facets are returned in the facet response."
+  [:platforms :instruments :science-keywords])
+
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
-  the bottom. The order the keys are defined is the order that they will be returned in the facet
-  results."
-  (sorted-map
-    :platforms [:category :series-entity :short-name :long-name]
-    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
-                       :variable-level-3]))
+  the bottom."
+  {:platforms [:category :series-entity :short-name :long-name]
+   :instruments [:category :class :type :subtype :short-name :long-name]
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
+                      :variable-level-3]})
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy]
   (when-let [subfield (first field-hierarchy)]
-    {subfield {:terms {:field (str (name field) "." (name subfield) ".lowercase")
+    {subfield {:terms {:field (str (name field) "." (name subfield))
                        :size UNLIMITED_TERMS_SIZE}
             :aggs (merge {:coll-count collection-count-aggregation}
                          (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
@@ -70,7 +73,7 @@
   {:archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn)
    :platforms (nested-facet :platforms)
-   :instrument (terms-facet :instrument-sn)
+   :instruments (nested-facet :instruments)
    :sensor (terms-facet :sensor-sn)
    :two-d-coordinate-system-name (terms-facet :two-d-coord-name)
    :processing-level-id (terms-facet :processing-level-id)
@@ -133,13 +136,12 @@
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and
   returns the facets."
   [elastic-aggregations]
-  (concat (bucket-map->facets (apply dissoc elastic-aggregations (keys nested-fields-mappings))
-                              [:archive-center :project :instrument :sensor
-                               :two-d-coordinate-system-name :processing-level-id
-                               :detailed-variable])
+  (concat (bucket-map->facets (apply dissoc elastic-aggregations hierarchical-facet-order)
+                              [:archive-center :project :sensor :two-d-coordinate-system-name
+                               :processing-level-id :detailed-variable])
           (map (fn [field]
                  (assoc (hierarchical-bucket-map->facets field (field elastic-aggregations))
-                        :field (csk/->snake_case_string field))) (keys nested-fields-mappings))))
+                        :field (csk/->snake_case_string field))) hierarchical-facet-order)))
 
 (defn- create-flat-facets
   "Create the facets response with flat facets. Takes an elastic aggregations result and returns

@@ -26,13 +26,14 @@
       (into [field-value] (str/split field-value keywords-separator-regex)))))
 
 (defn create-keywords-field
-  [concept-id collection]
+  [concept-id collection other-fields]
   "Create a keyword field for keyword searches by concatenating several other fields
   into a single string"
   (let [{{:keys [short-name long-name version-id version-description
                  processing-level-id collection-data-type]} :product
          :keys [entry-id entry-title summary spatial-keywords temporal-keywords associated-difs
                 projects]} collection
+        {:keys [platform-long-names instrument-long-names]} other-fields
         provider-id (:provider-id (concepts/parse-concept-id concept-id))
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                nrt-aliases
@@ -41,10 +42,8 @@
         project-short-names (map :short-name projects)
         platforms (:platforms collection)
         platform-short-names (map :short-name platforms)
-        platform-long-names (map :long-name platforms)
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
-        instrument-long-names (keep :long-name instruments)
         instrument-techiques (keep :technique instruments)
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
