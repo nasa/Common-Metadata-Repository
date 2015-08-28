@@ -129,7 +129,7 @@
 
 (defmethod parameter->condition :keyword
   [_ _ value _]
-    (qm/text-condition :keyword (str/lower-case value)))
+  (qm/text-condition :keyword (str/lower-case value)))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id
@@ -320,10 +320,11 @@
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?
      :all-revisions? all-revisions?
-     :highlights-options {:begin-tag begin-tag
-                          :end-tag end-tag
-                          :snippet-length (when snippet-length (Integer. snippet-length))
-                          :num-fragments (when num-fragments (Integer. num-fragments))}}))
+     :highlights-options (when (or begin-tag end-tag snippet-length num-fragments)
+                           {:begin-tag begin-tag
+                            :end-tag end-tag
+                            :snippet-length (when snippet-length (Integer. snippet-length))
+                            :num-fragments (when num-fragments (Integer. num-fragments))})}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."
