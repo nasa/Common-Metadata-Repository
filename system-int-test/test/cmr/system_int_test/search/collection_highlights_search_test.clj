@@ -153,14 +153,20 @@
            (search/find-concepts-json :collection {"options[highlights][begin-tag]" "<br>"}))))
 
   (testing "snippet-length and num-fragments must be valid integers"
-    (is (= {:status 400
-            :errors ["snippet-length [FOO] option for highlights is not a valid integer."
-                     "num-fragments [10.5] option for highlights is not a valid integer."]}
-           (search/find-concepts-json :collection {:include-highlights true
-                                                   "options[highlights][snippet-length]" "FOO"
-                                                   "options[highlights][num-fragments]" 10.5}))))
+    (are [param value error]
+         (= {:status 400 :errors [error]}
+            (search/find-concepts-json :collection
+                                       {:include-highlights true
+                                        (format "options[highlights][%s]" param) value}))
+         "snippet-length" "FOO" "snippet-length [FOO] option for highlights is not a valid integer."
+         "snippet-length" 10.5 "snippet-length [10.5] option for highlights is not a valid integer."
+         "snippet-length" -5 "snippet-length [-5] option for highlights must be an integer greater than 0."
+         "num-fragments" "FOO" "num-fragments [FOO] option for highlights is not a valid integer."
+         "num-fragments" 10.5 "num-fragments [10.5] option for highlights is not a valid integer."
+         "num-fragments" -5 "num-fragments [-5] option for highlights must be an integer greater than 0."))
 
-  (testing "include_highlights must be set to true for highlights options"
+  (testing "invalid highlights options"
     (is (= {:status 400
-            :errors ["Highlights options are not allowed unless the include-highlights is true."]}
-           (search/find-concepts-json :collection {"options[highlights][begin-tag]" "<br>"})))))
+            :errors ["Option [bad_option] is not supported for param [highlights]"]}
+           (search/find-concepts-json :collection {:include-highlights true
+                                                   "options[highlights][bad-option]" "<br>"})))))
