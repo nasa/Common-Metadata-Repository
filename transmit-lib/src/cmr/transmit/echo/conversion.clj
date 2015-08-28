@@ -52,19 +52,34 @@
     (merge {:permissions (mapv (comp str/upper-case name) permissions)}
            (cmr-sid->echo-sid (or group-guid user-type)))))
 
+(defn- echo-rolling-temporal->cmr-rolling-temporal
+  [rt]
+  (-> rt
+      (update-in [:mask] csk/->kebab-case-keyword)
+      (update-in [:temporal-field] csk/->kebab-case-keyword)))
+
+(defn- cmr-rolling-temporal->echo-rolling-temporal
+  [rt]
+  (-> rt
+      (update-in [:mask] csk/->SCREAMING_SNAKE_CASE_STRING)
+      (update-in [:temporal-field] csk/->SCREAMING_SNAKE_CASE_STRING)))
+
 (defn- echo-coll-id->cmr-coll-id
   [cid]
-  (when-let [{:keys [collection-ids restriction-flag]} cid]
+  (when-let [{:keys [collection-ids restriction-flag rolling-temporal]} cid]
     (merge {}
            (when collection-ids
              {:entry-titles (mapv :data-set-id collection-ids)})
            (when restriction-flag
              {:access-value (set/rename-keys restriction-flag
-                                             {:include-undefined-value :include-undefined})}))))
+                                             {:include-undefined-value :include-undefined})})
+           (when rolling-temporal
+             {:rolling-temporal
+              (echo-rolling-temporal->cmr-rolling-temporal rolling-temporal)}))))
 
 (defn cmr-coll-id->echo-coll-id
   [cid]
-  (when-let [{:keys [entry-titles access-value]} cid]
+  (when-let [{:keys [entry-titles access-value rolling-temporal]} cid]
     (merge {}
            (when entry-titles
              {:collection-ids (for [et entry-titles]
@@ -72,20 +87,33 @@
            (when access-value
              {:restriction-flag
               (set/rename-keys access-value
-                               {:include-undefined :include-undefined-value})}))))
+                               {:include-undefined :include-undefined-value})})
+           (when rolling-temporal
+             {:rolling-temporal
+              (cmr-rolling-temporal->echo-rolling-temporal rolling-temporal)}))))
 
 (defn cmr-gran-id->echo-gran-id
   [gid]
-  (when-let [access-value (:access-value gid)]
-    {:restriction-flag
-     (set/rename-keys access-value
-                      {:include-undefined :include-undefined-value})}))
+  (when-let [{:keys [access-value rolling-temporal]} gid]
+    (merge {}
+           (when access-value
+             {:restriction-flag
+              (set/rename-keys access-value
+                               {:include-undefined :include-undefined-value})})
+           (when rolling-temporal
+             {:rolling-temporal
+              (cmr-rolling-temporal->echo-rolling-temporal rolling-temporal)}))))
 
 (defn echo-gran-id->cmr-gran-id
   [gid]
-  (when-let [restriction-flag (:restriction-flag gid)]
-    {:access-value (set/rename-keys restriction-flag
-                                    {:include-undefined-value :include-undefined})}))
+  (when-let [{:keys [restriction-flag rolling-temporal]} gid]
+    (merge {}
+           (when restriction-flag
+             {:access-value (set/rename-keys restriction-flag
+                                             {:include-undefined-value :include-undefined})})
+           (when rolling-temporal
+             {:rolling-temporal
+              (echo-rolling-temporal->cmr-rolling-temporal rolling-temporal)}))))
 
 (defn echo-catalog-item-identity->cmr-catalog-item-identity
   [cid]
