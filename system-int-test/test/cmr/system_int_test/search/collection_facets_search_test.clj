@@ -27,11 +27,11 @@
 
 (def platform-short-names
   "List of platform short names that exist in the test KMS hierarchy."
-  ["AE-A" "AD-A" "DMSP 5D-3/F18"])
+  ["DIADEM-1D" "DMSP 5B/F3" "A340-600" "SMAP"])
 
 (def instrument-short-names
   "List of instrument short names that exist in the test KMS hierarchy."
-  ["ATM" "LVIS" "CLOUDSAT-CPR"])
+  ["ATM" "LVIS" "ADS" "SMAP L-BAND RADIOMETER"])
 
 (def FROM_KMS
   "Constant indicating that the short name for the field should be a short name found in KMS."
@@ -189,25 +189,25 @@
                             :count 2,
                             :subfields ["series-entity"],
                             :series-entity
-                            [{:value "AD (Atmospheric Dynamics)",
+                            [{:value "DIADEM",
                               :count 2,
                               :subfields ["short-name"],
                               :short-name
-                              [{:value "AD-A",
+                              [{:value "DIADEM-1D",
                                 :count 2,
                                 :subfields ["long-name"],
-                                :long-name
-                                [{:value "Atmosphere Dynamics A (Explorer 19)",
-                                  :count 2}]}]}
-                             {:value "AE (Atmosphere Explorer)",
+                                :long-name [{:value "Not Provided", :count 2}]}]}
+                             {:value
+                              "DMSP (Defense Meteorological Satellite Program)",
                               :count 2,
                               :subfields ["short-name"],
                               :short-name
-                              [{:value "AE-A",
+                              [{:value "DMSP 5B/F3",
                                 :count 2,
                                 :subfields ["long-name"],
                                 :long-name
-                                [{:value "Atmosphere Explorer A (Explorer 17)",
+                                [{:value
+                                  "Defense Meteorological Satellite Program-F3",
                                   :count 2}]}]}]}]}
                          {:field "instruments",
                           :subfields ["category"],

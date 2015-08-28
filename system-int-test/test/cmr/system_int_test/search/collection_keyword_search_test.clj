@@ -33,7 +33,7 @@
                                :sensors [(dc/sensor {:short-name "ssnB" :long-name "slnB" :technique "techniqueB"})
                                          (dc/sensor {:short-name "ssnC" :long-name "slnC" :technique "techniqueC"})]})]})
         p3 (dc/platform {:short-name "spoonA"})
-        p4 (dc/platform {:short-name "AE-A"})
+        p4 (dc/platform {:short-name "SMAP"})
         pr1 (dc/projects "project-short-name")
         sk1 (dc/science-keyword {:category "Cat1"
                                  :topic "Topic1"
@@ -177,7 +177,7 @@
            ;; - long name (from metadata - not from KMS)
            "platform_ln" [coll15]
            ;; - long name (from KMS - not from the metadata)
-           "Atmosphere Explorer A (Explorer 17)" [coll24]
+           "Soil Moisture Active and Passive Observatory" [coll24]
            ;; - characteristic name
            "char1" [coll11]
            "char2" [coll11]
@@ -256,7 +256,7 @@
            ;; platform long-name (from metadata)
            (:long-name p1) [k2e/platform-boost]
            ;; platform long-name (from KMS)
-           "Explorer" [k2e/platform-boost]
+           "Soil Moisture Active and Passive Observatory" [k2e/platform-boost]
 
            ;; instrument short-name
            (:short-name (first (:instruments p1))) [k2e/instrument-boost]
