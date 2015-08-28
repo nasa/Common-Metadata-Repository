@@ -101,7 +101,18 @@
 
 (defmethod convert-internal :dif
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtents] dif-temporal))
+  (-> umm-coll
+       (update-in [:TemporalExtents] dif-temporal)
+       (update-in [:AccessConstraints] (fn [access-constraints]
+                                               (when access-constraints
+                                                 (assoc access-constraints :Value nil))))))
+
+(defmethod convert-internal :dif10
+  [umm-coll _]
+  (-> umm-coll
+      (update-in [:AccessConstraints] (fn [access-constraints]
+                                               (when access-constraints
+                                                 (assoc access-constraints :Value nil))))))
 
 ;; ISO 19115-2
 
@@ -125,14 +136,26 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
-      (assoc :Quality nil)))
+      (assoc :Quality nil)
+      (update-in [:AccessConstraints] (fn [{:keys [Description Value]}]
+                                        (when-not (nil? Description)
+                                          (cmn/map->AccessConstraintsType
+                                          {:Description (or Description "")
+                                           :Value Value}))))
+      ;; Added this since currently we map User Constraints to the same field as Access
+      ;; Constraints and treat it as a single string. UserConstraints will likely need to be modified.
+      (update-in [:UseConstraints] (fn [use-constraints]
+                                     (or use-constraints
+                                       (str "Restriction Comment:"
+                                            (or  (get-in umm-coll [:AccessConstraints :Description]) "")))))))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-      (assoc :UseConstraints nil)))
+      (assoc :UseConstraints nil)
+      (assoc :AccessConstraints nil)))
 
 ;;; Unimplemented Fields
 
@@ -140,7 +163,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem :Platforms
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
-    :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeywords
+    :RelatedUrls :DataDates :ResponsibleOrganizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
     :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage

@@ -25,6 +25,9 @@
                                                                   :Party (umm-cmn/map->PartyType {})})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+     :AccessConstraints (umm-cmn/map->AccessConstraintsType
+                          {:Description "Access constraint description"
+                           :Value "0"})
 
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"

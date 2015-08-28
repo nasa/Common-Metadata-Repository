@@ -54,3 +54,8 @@
   ([base-xpath path]
    (xpath (str base-xpath path "/gco:CharacterString"))))
 
+(defn xpath-with-regex
+  [xpath regex]
+  {:type :xpath-with-regex
+   :xpath xpath
+   :regex regex})

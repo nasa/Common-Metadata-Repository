@@ -445,7 +445,7 @@
           "maxLength": 80
         }
       },
-      "required": ["Description", "Value"]
+      "required": ["Description"]
     },
     "MetadataAssociationType": {
       "type": "object",

@@ -42,6 +42,18 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :AccessConstraints (object
+                                  {:Description (xpath-with-regex
+                                                  (str md-data-id-base-xpath
+                                                       "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString")
+                                                  #"Restriction Comment:(.*)")
+                                   :Value (xpath-with-regex
+                                                  (str md-data-id-base-xpath
+                                                       "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString")
+                                                  #"Restriction Flag:(.*)")})
+             ;; TODO: Fix UserConstraints. UserConstraints is mapped to the same field as
+             ;; AccessConstraints and is treated as as single string. Use Constraints should likely
+             ;; containt everything that is not AccessConstraints.
              :UseConstraints
              (char-string-xpath md-data-id-base-xpath
                                 "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation")

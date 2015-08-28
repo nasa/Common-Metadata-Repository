@@ -15,6 +15,8 @@
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Data_Set_Language")
        :Quality (xpath "/DIF/Quality")
+       :AccessConstraints (object
+                            {:Description (xpath "/DIF/Access_Constraints")})
        :UseConstraints (xpath "/DIF/Use_Constraints")
        :TemporalExtents (for-each "."
                           (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"

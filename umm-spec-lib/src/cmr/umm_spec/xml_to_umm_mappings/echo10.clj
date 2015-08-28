@@ -34,4 +34,7 @@
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
+       :AccessConstraints (object
+                            {:Description (xpath "/Collection/RestrictionComment")
+                             :Value (xpath "/Collection/RestrictionFlag")})
        :TemporalExtents temporal-mappings})))

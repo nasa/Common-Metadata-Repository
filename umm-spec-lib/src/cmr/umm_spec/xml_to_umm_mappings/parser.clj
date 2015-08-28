@@ -79,6 +79,19 @@
                                                     single-item-xpath-context))))]
       (when (seq values) (vec values)))))
 
+(defmethod process-xml-mapping :xpath-with-regex
+  [xpath-context {:keys [xpath regex]}]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
+    (let [elements (seq (:context new-xpath-context))]
+      (first (for [element elements
+                   :let [match (re-matches regex (-> element :content first))]
+                   :when match
+                   :let [nil-if-empty (fn [s] (if (empty? s) nil s))]]
+               ;; A string response implies there is no group in the regular expression and the
+               ;; entire matching string is returned and if there is a group in the regular
+               ;; expression, the first group of the matching string is returned.
+               (if (string? match) match (nil-if-empty (second match))))))))
+
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
   value)
@@ -88,4 +101,10 @@
   [root-def xml-string]
   (let [xpath-context (sxp/create-xpath-context-for-xml xml-string)]
     (process-xml-mapping xpath-context root-def)))
+
+(defn first-char-string-matching
+  [xpath regex]
+  {:type :first-char-string-matching
+   :xpath (str xpath "/gco:CharacterString")
+   :regex regex})
 
