@@ -59,9 +59,9 @@
   [concept-type]
   (format "Searching using JSON query conditions is not supported for %ss." (name concept-type)))
 
-(defn invalid-hierarchical-json-query-condition
-  "Creates a message indicating the JSON query condition provided for the provided condition name is
-  invalid."
+(defn invalid-nested-json-query-condition
+  "Creates a message indicating the JSON query condition provided for the provided nested condition
+  is invalid."
   [condition-name condition-value]
   (case condition-name
     :science-keywords (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition-value)

@@ -74,7 +74,7 @@
   (when-not (seq (set/intersection (set (keys value))
                                    (set (conj (condition-name nf/nested-field-mappings) :any))))
     (errors/throw-service-error
-      :bad-request (msg/invalid-hierarchical-json-query-condition condition-name value))))
+      :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
 (defn- validate-temporal-condition
   "Custom validation to make sure there is at least one temporal condition other than
