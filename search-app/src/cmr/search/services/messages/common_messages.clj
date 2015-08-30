@@ -59,18 +59,15 @@
   [concept-type]
   (format "Searching using JSON query conditions is not supported for %ss." (name concept-type)))
 
-(defn invalid-science-keyword-json-query
-  "Creates a message indicating the JSON query condition provided for science_keywords is invalid."
-  [condition]
-  (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition))
+(defn invalid-hierarchical-json-query-condition
+  "Creates a message indicating the JSON query condition provided for the provided condition name is
+  invalid."
+  [condition-name condition-value]
+  (case condition-name
+    :science-keywords (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition-value)
+    :platforms (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition-value)
+    :instruments (format "Invalid instrument query condition [%s]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any." condition-value)
 
-(defn invalid-platform-json-query
-  "Creates a message indicating the JSON query condition provided for platform is invalid."
-  [condition]
-  (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition))
-
-(defn invalid-instrument-json-query
-  "Creates a message indicating the JSON query condition provided for instrument is invalid."
-  [condition]
-  (format "Invalid instrument query condition [%s]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any." condition))
+    ;; else
+    (format "Invalid json query condition [%s] for field [%s]", (name condition-name) condition-value)))
 
