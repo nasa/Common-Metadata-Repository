@@ -769,3 +769,12 @@
     (when (seq errors)
       (errors/throw-service-errors :bad-request errors)))
   params)
+
+(defn validate-highlights-format
+  "Validates that the include_highlights parameter is only set to true when the result format is
+  JSON"
+  [params resp-format]
+  (when (and (= "true" (:include_highlights params))
+             (not= :json resp-format))
+    (errors/throw-service-errors :bad-request
+                                 ["Highlights are only supported in the JSON format."])))

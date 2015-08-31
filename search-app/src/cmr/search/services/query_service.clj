@@ -139,6 +139,7 @@
   "Common functionality for find-concepts-by-parameters and find-concepts-by-aql."
   [context concept-type params query-creation-time query]
   (validate-query context query)
+  (pv/validate-highlights-format params (:result-format query))
   (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
         took (+ query-creation-time query-execution-time)
         [result-gen-time result-str] (u/time-execution

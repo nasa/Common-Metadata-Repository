@@ -6,7 +6,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.common.mime-types :as mt]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -93,7 +94,8 @@
 
     ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
-    ;; This test should be updated to expect the correct length when the bug is fixed.
+    ;; This test should be updated to expect the correct length when the bug is fixed
+    ;; See JIRA issue CMR-1986.
     "Search with keyword and snippet_length = 50 and num_snippets = 2"
     [[". **<em>Findme</em>** So many that elasticsearch will break this"
       " seems (<em>findme</em>) doable. The quick brown fox jumped"]]
@@ -151,6 +153,7 @@
     ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed.
+    ;; See JIRA issue CMR-1986.
     "Search with keyword and snippet_length and num_snippets"
     [[" it. **<em>Findme</em>** So"
       " seems (<em>findme</em>) doable"
@@ -183,3 +186,25 @@
             :errors ["Option [bad_option] is not supported for param [highlights]"]}
            (search/find-concepts-json :collection {:include-highlights true
                                                    "options[highlights][bad-option]" "<br>"})))))
+
+(deftest invalid-highlight-response-formats
+  (testing "invalid xml response formats"
+    (are [resp-format]
+         (= {:status 400 :errors ["Highlights are only supported in the JSON format."]}
+            (search/get-search-failure-xml-data
+              (search/find-concepts-in-format resp-format :collection {:include-highlights true})))
+         mt/echo10
+         mt/dif
+         mt/dif10
+         mt/xml
+         mt/kml
+         mt/atom
+         mt/iso19115))
+
+  (testing "invalid json repsone formats"
+     (are [resp-format]
+         (= {:status 400 :errors ["Highlights are only supported in the JSON format."]}
+            (search/get-search-failure-data
+              (search/find-concepts-in-format resp-format :collection {:include-highlights true})))
+         mt/umm-json
+         mt/opendata)))
