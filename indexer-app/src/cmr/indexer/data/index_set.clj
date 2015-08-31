@@ -155,6 +155,30 @@
     :uuid string-field-mapping
     :uuid.lowercase string-field-mapping}})
 
+(def archive-center-hierarchical-mapping
+  "Defines hierarchical mappings for archive centers."
+  {:type "nested"
+   :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
+   :properties
+   {:level-0 string-field-mapping
+    :level-0.lowercase string-field-mapping
+    :level-1 string-field-mapping
+    :level-1.lowercase string-field-mapping
+    :level-2 string-field-mapping
+    :level-2.lowercase string-field-mapping
+    :level-3 string-field-mapping
+    :level-3.lowercase string-field-mapping
+    :short-name string-field-mapping
+    :short-name.lowercase string-field-mapping
+    :long-name string-field-mapping
+    :long-name.lowercase string-field-mapping
+    :data-center-url string-field-mapping
+    :data-center-url.lowercase string-field-mapping
+    :uuid string-field-mapping
+    :uuid.lowercase string-field-mapping}})
+
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
@@ -263,6 +287,7 @@
                                     :science-keywords science-keywords-field-mapping
                                     :platforms platform-hierarchical-mapping
                                     :instruments instrument-hierarchical-mapping
+                                    :archive-centers archive-center-hierarchical-mapping
 
                                     ;; Facet fields
                                     ;; We can run aggregations on the above science keywords as a

@@ -24,12 +24,13 @@
 
 (def hierarchical-facet-order
   "Order in which hierarchical facets are returned in the facet response."
-  [:platforms :instruments :science-keywords])
+  [:archive-centers :platforms :instruments :science-keywords])
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
   the bottom."
-  {:platforms [:category :series-entity :short-name :long-name]
+  {:archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+   :platforms [:category :series-entity :short-name :long-name]
    :instruments [:category :class :type :subtype :short-name :long-name]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
                       :variable-level-3]})
@@ -70,7 +71,7 @@
 (def ^:private hierarchical-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
-  {:archive-center (terms-facet :archive-center)
+  {:archive-centers (nested-facet :archive-centers)
    :project (terms-facet :project-sn)
    :platforms (nested-facet :platforms)
    :instruments (nested-facet :instruments)
@@ -137,7 +138,7 @@
   returns the facets."
   [elastic-aggregations]
   (concat (bucket-map->facets (apply dissoc elastic-aggregations hierarchical-facet-order)
-                              [:archive-center :project :sensor :two-d-coordinate-system-name
+                              [:project :sensor :two-d-coordinate-system-name
                                :processing-level-id :detailed-variable])
           (map (fn [field]
                  (assoc (hierarchical-bucket-map->facets field (field elastic-aggregations))
