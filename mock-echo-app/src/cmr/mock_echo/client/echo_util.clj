@@ -53,8 +53,11 @@
   ([entry-titles]
    (coll-id entry-titles nil))
   ([entry-titles access-value-filter]
+   (coll-id entry-titles access-value-filter nil))
+  ([entry-titles access-value-filter rollling-temporal]
    {:entry-titles entry-titles
-    :access-value access-value-filter}))
+    :access-value access-value-filter
+    :rolling-temporal rollling-temporal}))
 
 (defn gran-id
   "Creates an ACL granule identifier"
