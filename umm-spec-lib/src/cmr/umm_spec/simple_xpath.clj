@@ -10,6 +10,8 @@
   * Subselect by attribute equality: /catalog/books[@id='bk101']/author
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
+  * Subselect by range of child indexes /catalog/books[2..4]/author.  Openended ranges like [2..]
+  are supported as well. (Note this is not a standard XPath feature.)
 
   Note that there will be undefined behavior if an unsupported XPath is used.
 
@@ -67,6 +69,18 @@
   {:post [(>= (:index %) 0)]}
   {:type :nth-selector
    :index (dec (Long/parseLong selector-str))})
+
+(defn- create-range-selector
+  "Creates a selector that selects a range of selectors of a set of elements."
+  [selector-str]
+  (let [[_ start-str end-str] (re-matches #"(\d+)\.\.(\d*)" selector-str)
+        ;; Start index will be 0 based inclusive
+        start-index (dec (Long/parseLong start-str))
+        ;; End index will be 0 based exclusive
+        end-index (when-not (str/blank? end-str) (Long/parseLong end-str))]
+    {:type :range-selector
+     :start-index start-index
+     :end-index end-index}))
 
 (defn- parse-xpath-attrib-name
   "Returns a namespaced keyword like :foo/bar from an xpath namespaced attribute selector like
@@ -137,6 +151,9 @@
   (cond
     (re-matches #"\d+" selector-str)
     (create-nth-selector selector-str)
+
+    (re-matches #"\d+\.\.\d*" selector-str)
+    (create-range-selector selector-str)
 
     (re-matches #".*@.+='.+'" selector-str)
     (create-attrib-val-equality-selector selector-str)
@@ -285,6 +302,14 @@
     [(nth elements index)]
     []))
 
+(defmethod process-xml-selector :range-selector
+  [elements {:keys [start-index end-index]}]
+  (if (seq elements)
+    (if end-index
+      (subvec (vec elements) start-index end-index)
+      (subvec (vec elements) start-index))
+    []))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data processors
 
@@ -338,6 +363,15 @@
   (if (seq data)
     [(nth (as-vector data) index)]
     []))
+
+(defmethod process-data-selector :range-selector
+  [data {:keys [start-index end-index]}]
+  (if (seq data)
+    (if end-index
+      (subvec (as-vector data) start-index end-index)
+      (subvec (as-vector data) start-index))
+    []))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
