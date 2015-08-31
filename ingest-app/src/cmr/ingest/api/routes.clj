@@ -16,6 +16,7 @@
             [cmr.ingest.services.ingest-service :as ingest]
             [cmr.system-trace.http :as http-trace]
             [cmr.ingest.api.provider :as provider-api]
+            [cmr.ingest.api.keyword :as keyword-api]
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.ingest.api.translation :as translation-api]
             [cmr.common-app.api.routes :as common-routes]
@@ -37,6 +38,9 @@
       (api-docs/docs-routes (get-in system [:ingest-public-conf :protocol])
                             (get-in system [:ingest-public-conf :relative-root-url])
                             "public/ingest_index.html")
+
+      ;; Add routes for retrieving GCMD keywords
+      keyword-api/keyword-api-routes
 
       ;; add routes for managing jobs
       (common-routes/job-api-routes
