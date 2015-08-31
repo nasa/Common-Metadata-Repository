@@ -18,39 +18,40 @@
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
    (for-each "/TemporalExtents[1]"
-     [:Temporal
-      :TemporalRangeType
-      :PrecisionOfSeconds
-      :EndsAtPresentFlag
+     (matching-object :Temporal
+                      :Temporal
+                      :TemporalRangeType
+                      :PrecisionOfSeconds
+                      :EndsAtPresentFlag
 
-      (for-each "RangeDateTimes"
-        [:RangeDateTime
-         :BeginningDateTime
-         :EndingDateTime])
+                      (for-each "RangeDateTimes"
+                        (matching-object :RangeDateTime
+                                         :BeginningDateTime
+                                         :EndingDateTime))
 
-      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
+                      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
 
-      (for-each "PeriodicDateTimes"
-        [:PeriodicDateTime
-         :Name
-         :StartDate
-         :EndDate
-         :DurationUnit
-         :DurationValue
-         :PeriodCycleDurationUnit
-         :PeriodCycleDurationValue])])
+                      (for-each "PeriodicDateTimes"
+                        (matching-object :PeriodicDateTime
+                                         :Name
+                                         :StartDate
+                                         :EndDate
+                                         :DurationUnit
+                                         :DurationValue
+                                         :PeriodCycleDurationUnit
+                                         :PeriodCycleDurationValue))))
 
    [:Platforms
     (for-each "/Platforms"
-      [:Platform
-       :ShortName
-       :LongName
-       :Type
-       [:Characteristics
-        (for-each "Characteristics"
-          [:Characteristic
-           :Name
-           :Description
-           :DataType
-           :Unit
-           :Value])]])]])
+      (matching-object :Platform
+                       :ShortName
+                       :LongName
+                       :Type
+                       [:Characteristics
+                        (for-each "Characteristics"
+                          (matching-object :Characteristic
+                                           :Name
+                                           :Description
+                                           :DataType
+                                           :Unit
+                                           :Value))]))]])

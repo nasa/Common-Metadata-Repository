@@ -38,7 +38,7 @@
 
 (defmethod generate-content :keyword
   [kw xpath-context]
-  (generate-content (dsl/simple-field kw) xpath-context))
+  (generate-content (dsl/matching-field kw) xpath-context))
 
 (defn- realize-attributes
   "Returns map with function values replaced by the result of calling generate-content on them."

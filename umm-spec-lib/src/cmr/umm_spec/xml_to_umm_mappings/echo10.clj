@@ -11,11 +11,11 @@
        :PrecisionOfSeconds (xpath "PrecisionOfSeconds")
        :EndsAtPresentFlag (xpath "EndsAtPresentFlag")
        :RangeDateTimes (for-each "RangeDateTime"
-                         (simple-object :BeginningDateTime :EndingDateTime))
+                         (matching-object :BeginningDateTime :EndingDateTime))
        :SingleDateTimes (select "SingleDateTime")
        :PeriodicDateTimes (for-each "PeriodicDateTime"
-                            (simple-object :Name :StartDate :EndDate :DurationUnit :DurationValue
-                                           :PeriodCycleDurationUnit :PeriodCycleDurationValue))})))
+                            (matching-object :Name :StartDate :EndDate :DurationUnit :DurationValue
+                                             :PeriodCycleDurationUnit :PeriodCycleDurationValue))})))
 
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
@@ -32,8 +32,8 @@
                              :LongName (xpath "LongName")
                              :Type (xpath "Type")
                              :Characteristics (for-each "Characteristics/Characteristic"
-                                                (simple-object :Name
-                                                               :Description
-                                                               :DataType
-                                                               :Unit
-                                                               :Value))}))})))
+                                                (matching-object :Name
+                                                                 :Description
+                                                                 :DataType
+                                                                 :Unit
+                                                                 :Value))}))})))

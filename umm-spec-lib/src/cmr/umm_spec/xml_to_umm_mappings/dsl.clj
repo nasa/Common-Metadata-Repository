@@ -58,11 +58,13 @@
   ([base-xpath path]
    (xpath (str base-xpath path "/gco:CharacterString"))))
 
-(defn simple-object
+(defn matching-object
   "Returns a UMM parser mapping that creates an object using each key in ks as an object property
   key and corresponding xpath."
   [& ks]
   (object
    (into {}
          (for [k ks]
-           [k (xpath (name k))]))))
+           (if (keyword? k)
+             [k (xpath (name k))]
+             k)))))

@@ -46,12 +46,12 @@
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
       (for-each "Characteristics"
-        [:Characteristics
-         :Name
-         :Description
-         :DataType
-         :Unit
-         :Value])
+        (matching-object :Characteristics
+                         :Name
+                         :Description
+                         :DataType
+                         :Unit
+                         :Value))
       [:Instrument [:Short_Name "Not implemented"]]])
 
    (for-each "/TemporalExtents"
@@ -70,7 +70,7 @@
 
       (for-each "PeriodicDateTimes"
         [:Periodic_DateTime
-         :Name
+         (matching-field :Name)
          [:Start_Date (xpath "StartDate")]
          [:End_Date (xpath "EndDate")]
          [:Duration_Unit (xpath "DurationUnit")]
