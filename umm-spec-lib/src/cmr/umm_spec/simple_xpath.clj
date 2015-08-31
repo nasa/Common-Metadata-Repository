@@ -11,7 +11,7 @@
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
   * Subselect by range of child indexes /catalog/books[2..4]/author.  Openended ranges like [2..]
-  are supported as well
+  are supported as well. (Note this is not a standard XPath feature.)
 
   Note that there will be undefined behavior if an unsupported XPath is used.
 
