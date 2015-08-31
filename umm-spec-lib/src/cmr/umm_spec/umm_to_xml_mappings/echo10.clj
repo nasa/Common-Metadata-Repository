@@ -54,4 +54,14 @@
                                            :Description
                                            :DataType
                                            :Unit
-                                           :Value))]))]])
+                                           :Value))]
+                       [:Instruments
+                        (for-each "Instruments"
+                          (matching-object :Instrument
+                                           :ShortName
+                                           :LongName
+                                           :Technique
+                                           :NumberOfSensors
+                                           [:OperationModes
+                                            (for-each "OperationalModes"
+                                              [:OperationMode (xpath ".")])]))]))]])

@@ -65,6 +65,4 @@
   (object
    (into {}
          (for [k ks]
-           (if (keyword? k)
-             [k (xpath (name k))]
-             k)))))
+           [k (xpath (name k))]))))

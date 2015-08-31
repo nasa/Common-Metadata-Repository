@@ -36,4 +36,10 @@
                                                                  :Description
                                                                  :DataType
                                                                  :Unit
-                                                                 :Value))}))})))
+                                                                 :Value))
+                             :Instruments (for-each "Instruments/Instrument"
+                                            (object {:ShortName (xpath "ShortName")
+                                                     :LongName (xpath "LongName")
+                                                     :Technique (xpath "Technique")
+                                                     :NumberOfSensors (xpath "NumberOfSensors")
+                                                     :OperationalModes (select "OperationModes/OperationMode")}))}))})))

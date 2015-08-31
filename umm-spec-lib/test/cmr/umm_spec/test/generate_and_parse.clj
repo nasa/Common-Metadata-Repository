@@ -26,7 +26,13 @@
                                       :Description "Orbital period in decimal minutes."
                                       :DataType "float"
                                       :Unit "Minutes"
-                                      :Value "96.7"})]})]
+                                      :Value "96.7"})]
+                  :Instruments [(umm-cmn/map->InstrumentType
+                                 {:ShortName "An Instrument"
+                                  :LongName "The Full Name of An Instrument v123.4"
+                                  :Technique "Two cans and a string"
+                                  :NumberOfSensors 1
+                                  :OperationalModes ["on" "off"]})]})]
     :TemporalExtents [(umm-cmn/map->TemporalExtentType
                        {:TemporalRangeType "temp range"
                         :PrecisionOfSeconds 3
