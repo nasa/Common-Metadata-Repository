@@ -29,6 +29,14 @@
   (let [platform (-> xpath-context :context first)]
     [(or (get platform-types (:Type platform) "Not provided"))]))
 
+(def characteristic-type-mapping
+  (matching-object :Characteristics
+                   :Name
+                   :Description
+                   :DataType
+                   :Unit
+                   :Value))
+
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
@@ -46,13 +54,17 @@
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
       (for-each "Characteristics"
-        (matching-object :Characteristics
-                         :Name
-                         :Description
-                         :DataType
-                         :Unit
-                         :Value))
-      [:Instrument [:Short_Name "Not implemented"]]])
+        characteristic-type-mapping)
+      (for-each "Instruments"
+        [:Instrument
+         [:Short_Name (xpath "ShortName")]
+         [:Long_Name (xpath "LongName")]
+         [:Technique (xpath "Technique")]
+         [:NumberOfSensors (xpath "NumberOfSensors")]
+         (for-each "Characteristics"
+           characteristic-type-mapping)
+         (for-each "OperationalModes"
+           [:OperationalMode (xpath ".")])])])
 
    (for-each "/TemporalExtents"
      [:Temporal_Coverage
