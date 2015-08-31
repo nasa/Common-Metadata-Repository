@@ -32,7 +32,13 @@
                                   :LongName "The Full Name of An Instrument v123.4"
                                   :Technique "Two cans and a string"
                                   :NumberOfSensors 1
-                                  :OperationalModes ["on" "off"]})]})]
+                                  :OperationalModes ["on" "off"]
+                                  :Characteristics [(umm-cmn/map->CharacteristicType
+                                                     {:Name "Signal to Noise Ratio"
+                                                      :Description "Is that necessary?"
+                                                      :DataType "float"
+                                                      :Unit "dB"
+                                                      :Value "10"})]})]})]
     :TemporalExtents [(umm-cmn/map->TemporalExtentType
                        {:TemporalRangeType "temp range"
                         :PrecisionOfSeconds 3
