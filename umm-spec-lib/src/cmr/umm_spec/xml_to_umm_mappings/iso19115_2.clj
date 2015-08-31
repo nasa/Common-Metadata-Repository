@@ -28,6 +28,12 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def temporal-keywords-xpath
+  (select (str md-data-id-base-xpath
+       "/gmd:descriptiveKeywords/gmd:MD_Keywords"
+       "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='temporal']"
+       "/gmd:keyword/gco:CharacterString")))
+
 (def temporal-mappings
   (for-each temporal-xpath
             (object {:PrecisionOfSeconds (xpath precision-xpath)
@@ -69,6 +75,7 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :TemporalKeywords temporal-keywords-xpath
              :UseConstraints
              (char-string-xpath md-data-id-base-xpath
                                 "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation")

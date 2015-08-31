@@ -30,7 +30,10 @@
 
 (defmethod generate-content :fn
   [content-generator-fn xpath-context]
-  (content-generator-fn xpath-context))
+  (let [result (content-generator-fn xpath-context)]
+    (if (string? (first result))
+      result
+      (generate-content result xpath-context))))
 
 (defmethod generate-content :default
   [content-generator _]

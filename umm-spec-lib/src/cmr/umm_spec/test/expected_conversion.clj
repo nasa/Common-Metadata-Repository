@@ -181,7 +181,8 @@
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-      (assoc :UseConstraints nil)))
+      (assoc :UseConstraints nil)
+      (assoc :TemporalKeywords nil)))
 
 ;;; Unimplemented Fields
 
@@ -191,7 +192,7 @@
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
     :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
-    :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
+    :CollectionProgress :SpatialInformation :CollectionDataType
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 

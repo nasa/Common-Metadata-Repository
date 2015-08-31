@@ -26,6 +26,7 @@
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
+       :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"
                     (object {:ShortName (xpath "ShortName")

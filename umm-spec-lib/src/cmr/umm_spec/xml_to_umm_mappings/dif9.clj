@@ -14,6 +14,8 @@
        :Abstract (xpath "/DIF/Summary/Abstract")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Data_Set_Language")
+       :TemporalKeywords (for-each "/DIF/Data_Resolution"
+                                   (xpath "Temporal_Resolution"))
        :Quality (xpath "/DIF/Quality")
        :UseConstraints (xpath "/DIF/Use_Constraints")
        :Platforms (for-each "/DIF/Source_Name"
