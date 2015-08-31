@@ -27,6 +27,7 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
             [cmr.acl.core :as acl]
+            [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
 
@@ -352,6 +353,9 @@
         (acl/verify-ingest-management-permission request-context)
         (cache/reset-caches request-context)
         {:status 204})
+
+      ;; Add routes for retrieving GCMD keywords
+      keyword-api/keyword-api-routes
 
       ;; add routes for accessing caches
       common-routes/cache-api-routes

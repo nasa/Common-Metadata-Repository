@@ -20,6 +20,7 @@
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.search.services.transformer :as transformer]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -84,7 +85,8 @@
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       coll-cache/cache-key (coll-cache/create-cache)
                       transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
-                      acl/token-imp-cache-key (acl/create-token-imp-cache)}
+                      acl/token-imp-cache-key (acl/create-token-imp-cache)
+                      kf/kms-cache-key (kf/create-kms-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
@@ -93,7 +95,7 @@
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
-    (transmit-config/system-with-connections sys [:index-set :echo-rest])))
+    (transmit-config/system-with-connections sys [:index-set :echo-rest :kms])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

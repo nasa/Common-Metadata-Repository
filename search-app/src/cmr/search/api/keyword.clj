@@ -1,11 +1,12 @@
-(ns cmr.ingest.api.keyword
-  "Defines the HTTP URL routes for the keyword endpoint in the ingest application."
+(ns cmr.search.api.keyword
+  "Defines the HTTP URL routes for the keyword endpoint in the search application."
   (:require [compojure.core :refer :all]
             [cheshire.core :as json]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.transmit.kms :as kms]
             [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
@@ -16,18 +17,16 @@
                            (name keyword-scheme)
                            (pr-str (map name (keys kms/keyword-scheme->field-names)))))))
 
+; (defn- parse-hierarchical-keywords
+;   "Returns keywords in a hierarchical fashion for the given keyword scheme and keywords."
+;   [keyword-scheme keyword-hierarchy keywords]
+;   (when-let [subfield (first keyword-hierarchy)]
+;     (let [all-values-for-subfield (map subfield keywords)]
+;       (for [value all-values-for-subfield]
+;         (parse-hierarchical-keywords keyword-scheme (rest keyword-hierarchy) keywords)))))
+
 (def keyword-api-routes
   (context "/keywords" []
-    ;; Return a map of keyword-schemes to the list of keywords for each scheme
-    (GET "/" {:keys [request-context]}
-      (let [keywords (into {}
-                           (for [[keyword-scheme short-name-value-maps]
-                                 (kf/get-gcmd-keywords-map request-context)]
-                             [keyword-scheme (vals short-name-value-maps)]))]
-        {:status 200
-         :headers {"Content-Type" (mt/format->mime-type :json)}
-         :body (json/generate-string keywords)}))
-
     ;; Return a list of keywords for the given scheme
     (GET "/:keyword-scheme" {{:keys [keyword-scheme] :as params} :params
                              request-context :request-context}
