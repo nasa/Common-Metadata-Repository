@@ -3,8 +3,48 @@
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
   (:require [cmr.common.util :refer [update-in-each]]
+            [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
+            [clj-time.core :as t]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
+
+(def example-record
+  "An example record with fields supported by most formats."
+  (umm-c/map->UMM-C
+   {:Platforms [(cmn/map->PlatformType
+                 {:ShortName "Platform 1"
+                  :LongName "Example Platform Long Name 1"
+                  :Type "Aircraft"
+                  :Characteristics [(cmn/map->CharacteristicType
+                                     {:Name "OrbitalPeriod"
+                                      :Description "Orbital period in decimal minutes."
+                                      :DataType "float"
+                                      :Unit "Minutes"
+                                      :Value "96.7"})]})]
+    :TemporalExtents [(cmn/map->TemporalExtentType
+                       {:TemporalRangeType "temp range"
+                        :PrecisionOfSeconds 3
+                        :EndsAtPresentFlag false
+                        :RangeDateTimes (mapv cmn/map->RangeDateTimeType
+                                              [{:BeginningDateTime (t/date-time 2000)
+                                                :EndingDateTime (t/date-time 2001)}
+                                               {:BeginningDateTime (t/date-time 2002)
+                                                :EndingDateTime (t/date-time 2003)}])})]
+    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+    :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+    :ResponsibleOrganizations [(cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                 :Party (cmn/map->PartyType {})})]
+    :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+    :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+
+    :EntryId "short_V1"
+    :EntryTitle "The entry title V5"
+    :Version "V5"
+    :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
+                                        :Type "CREATE"})]
+    :Abstract "A very abstract collection"
+    :DataLanguage "English"
+    :Quality "Pretty good quality"}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the

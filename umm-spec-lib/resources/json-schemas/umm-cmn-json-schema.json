@@ -936,7 +936,7 @@
           "minItems": 1
         }
       },
-      "anyOf": [{
+      "oneOf": [{
         "required": ["RangeDateTimes"]
       }, {
         "required": ["SingleDateTimes"]

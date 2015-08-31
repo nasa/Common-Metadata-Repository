@@ -6,42 +6,7 @@
             [clj-time.core :as t]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.common.mime-types :as mt]
-            [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-            ;; Borrowing the example defined in umm-spec lib tests.
-            [cmr.umm-spec.test.generate-and-parse :refer [example-record]]))
-
-(comment
-
-  (do
-    (def input :dif)
-    (def output :dif)
-
-
-    (def metadata (umm-spec/generate-metadata :collection input example-record))
-
-    (def parsed-from-metadata (umm-spec/parse-metadata :collection input metadata))
-
-    (def metadata-regen (umm-spec/generate-metadata :collection output parsed-from-metadata))
-
-    (def parsed-from-metadata-regen (umm-spec/parse-metadata :collection output metadata-regen))
-    )
-
-  (println metadata)
-
-  (println metadata-regen)
-
-  (= metadata-regen metadata)
-
-
-  (println (:body (ingest/translate-metadata :collection :echo10 metadata :echo10)))
-
-  (def expected (-> example-record
-                    (expected-conversion/convert input)
-                    (expected-conversion/convert output)
-                    ))
-
-  )
-
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (def valid-formats
   [
@@ -63,8 +28,8 @@
   (doseq [input-format valid-formats
           output-format valid-formats]
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
-      (let [input-str (umm-spec/generate-metadata :collection input-format example-record)
-            expected (expected-conversion/convert example-record input-format output-format)
+      (let [input-str (umm-spec/generate-metadata :collection input-format expected-conversion/example-record)
+            expected (expected-conversion/convert expected-conversion/example-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
             content-type (:content-type headers)]
         (is (= 200 status))
@@ -101,10 +66,42 @@
       (testing "wrong xml format"
         (assert-translate-failure
           #"Invalid content was found starting with element 'Version'"
-          :collection :dif (umm-spec/generate-metadata :collection :dif10 example-record) :umm-json))
+          :collection :dif (umm-spec/generate-metadata :collection :dif10 expected-conversion/example-record) :umm-json))
 
       (testing "bad json"
         (assert-translate-failure #"object has missing required properties"
                                   :collection :umm-json "{}" :echo10)))))
 
 
+
+(comment
+
+  (do
+    (def input :dif)
+    (def output :dif)
+
+
+    (def metadata (umm-spec/generate-metadata :collection input expected-conversion/example-record))
+
+    (def parsed-from-metadata (umm-spec/parse-metadata :collection input metadata))
+
+    (def metadata-regen (umm-spec/generate-metadata :collection output parsed-from-metadata))
+
+    (def parsed-from-metadata-regen (umm-spec/parse-metadata :collection output metadata-regen))
+    )
+
+  (println metadata)
+
+  (println metadata-regen)
+
+  (= metadata-regen metadata)
+
+
+  (println (:body (ingest/translate-metadata :collection :echo10 metadata :echo10)))
+
+  (def expected (-> expected-conversion/example-record
+                    (expected-conversion/convert input)
+                    (expected-conversion/convert output)
+                    ))
+
+  )
