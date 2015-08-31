@@ -92,12 +92,12 @@
                       ;; a single temporal with many range date times.
                       merge-temporals)
         ;; DIF 9 does not support these fields.
-        temporal  (util/remove-nil-keys (assoc temporal :PeriodicDateTimes nil
-                                               :TemporalRangeType nil
-                                               :PrecisionOfSeconds nil
-                                               :EndsAtPresentFlag nil))]
-    (when (seq (keys temporal))
-      [(cmn/map->TemporalExtentType temporal)])))
+        temporal  (assoc temporal
+                         :PeriodicDateTimes nil
+                         :TemporalRangeType nil
+                         :PrecisionOfSeconds nil
+                         :EndsAtPresentFlag nil)]
+    (when (seq (:RangeDateTimes temporal)) [temporal])))
 
 (defmethod convert-internal :dif
   [umm-coll _]
@@ -140,10 +140,15 @@
       (update-in [:AccessConstraints] (fn [{:keys [Description Value]}]
                                         (when-not (nil? Description)
                                           (cmn/map->AccessConstraintsType
-                                          {:Description (or Description "")
+                                          {:Description Description
                                            :Value Value}))))
-      ;; Added this since currently we map User Constraints to the same field as Access
-      ;; Constraints and treat it as a single string. UserConstraints will likely need to be modified.
+      ;; Currently Use Constraints is setup to map to the same xpath
+      ;; (/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString)
+      ;; as Access Constraints. But Access constraint's Description field is supposed to have a prefix called
+      ;; "Restriction Comment:", but there is no such requirement for Use constraint. Use Constaints mapping
+      ;; that we set up wrongly assumes that there can only be one value in the xpath.
+      ;; The round-trip tests add this prefix to the value at the xpath and overwrite whatever is
+      ;; originally in the UserConstraints. This is a temporary fix until Use Constraints is fixed.
       (update-in [:UseConstraints] (fn [use-constraints]
                                      (or use-constraints
                                        (str "Restriction Comment:"
@@ -154,8 +159,8 @@
   (-> (convert-internal umm-coll :iso19115)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
-      (assoc :UseConstraints nil)
-      (assoc :AccessConstraints nil)))
+      ;; Fields not supported by ISO-SMAP
+      (assoc :UseConstraints nil :AccessConstraints nil)))
 
 ;;; Unimplemented Fields
 

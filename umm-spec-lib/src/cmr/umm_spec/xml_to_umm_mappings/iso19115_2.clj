@@ -21,6 +21,9 @@
 (def temporal-xpath
   (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
+(def access-constraint-xpath
+  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString"))
+
 (def precision-xpath (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report"
                           "/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result"
                           "/gmd:DQ_QuantitativeResult/gmd:value"
@@ -43,14 +46,11 @@
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
              :AccessConstraints (object
-                                  {:Description (xpath-with-regex
-                                                  (str md-data-id-base-xpath
-                                                       "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString")
-                                                  #"Restriction Comment:(.*)")
-                                   :Value (xpath-with-regex
-                                                  (str md-data-id-base-xpath
-                                                       "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString")
-                                                  #"Restriction Flag:(.*)")})
+                                  {:Description
+                                   (xpath-with-regex access-constraint-xpath #"Restriction Comment:(.*)")
+
+                                   :Value
+                                   (xpath-with-regex access-constraint-xpath #"Restriction Flag:(.*)")})
              ;; TODO: Fix UserConstraints. UserConstraints is mapped to the same field as
              ;; AccessConstraints and is treated as as single string. Use Constraints should likely
              ;; containt everything that is not AccessConstraints.

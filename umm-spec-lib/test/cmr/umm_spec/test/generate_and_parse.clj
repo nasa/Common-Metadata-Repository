@@ -38,7 +38,8 @@
 
 (def temporal-extents
   "A map of example UMM TemporalExtents."
-  {"Range Dates"
+  {
+   "Range Dates"
    (umm-cmn/map->TemporalExtentType
      {:TemporalRangeType "temp range"
       :PrecisionOfSeconds 3

@@ -55,6 +55,10 @@
    (xpath (str base-xpath path "/gco:CharacterString"))))
 
 (defn xpath-with-regex
+  "Similar to xpath, but value at the XPath is expected to be a character string. The value at the
+  xpath is returned only if it matches the regex, nil otherwise. If the regex has one or more groups
+  in it, the subset of the string corresponding to the first matching group will be returned instead
+  of the whole string."
   [xpath regex]
   {:type :xpath-with-regex
    :xpath xpath

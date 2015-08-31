@@ -67,17 +67,16 @@
 
 (defmethod process-xml-mapping :for-each
   [xpath-context {:keys [xpath template]}]
-  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
-    (let [elements (seq (:context new-xpath-context))
-          values (remove nil?
-                         (for [element elements
-                               :let [single-item-xpath-context (assoc new-xpath-context
-                                                                      :context [element])]]
-                           (if (and template (:type template))
-                             (process-xml-mapping single-item-xpath-context template)
-                             (parse-primitive-value (:parse-type template "string")
-                                                    single-item-xpath-context))))]
-      (when (seq values) (vec values)))))
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))
+        values (remove nil?
+                       (for [element (:context new-xpath-context)
+                             :let [single-item-xpath-context (assoc new-xpath-context
+                                                                    :context [element])]]
+                         (if (and template (:type template))
+                           (process-xml-mapping single-item-xpath-context template)
+                           (parse-primitive-value (:parse-type template "string")
+                                                  single-item-xpath-context))))]
+    (when (seq values) (vec values))))
 
 (defmethod process-xml-mapping :xpath-with-regex
   [xpath-context {:keys [xpath regex]}]
@@ -100,10 +99,3 @@
   [root-def xml-string]
   (let [xpath-context (sxp/create-xpath-context-for-xml xml-string)]
     (process-xml-mapping xpath-context root-def)))
-
-(defn first-char-string-matching
-  [xpath regex]
-  {:type :first-char-string-matching
-   :xpath (str xpath "/gco:CharacterString")
-   :regex regex})
-
