@@ -46,6 +46,15 @@
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [clojure.set :as set]))
 
+
+(defn- key->hash-cache-key
+  "Returns the key to use to store the hash code."
+  [k]
+  ;; pr-str is used here because no matter what the key is we have to be able to store it in the hash
+  ;; code cache. pr-str will differentiate the keys :foo "foo" and 'foo which otherwise might be
+  ;; saved identically.
+  (str (pr-str k) "-hash-code"))
+
 (defrecord ConsistentMemoryCache
   [
    ;; The in memory cache holding values. Should implement CmrCache protocol.
@@ -62,16 +71,15 @@
     ;; This is an expensive operation. Any keys that we return here must have a value in memory cache
     ;; and a value in the hash cache. The hash code of the value in the memory cache must match
     ;; the value in the hash cache.
-    (let [key-set (set/intersection (set (c/get-keys memory-cache))
-                                    (set (c/get-keys hash-cache)))]
-      (for [k key-set
-            :when (= (hash (c/get-value memory-cache k)) (c/get-value hash-cache k))]
-        k)))
+    (for [k (c/get-keys memory-cache)
+          :let [hash-key (key->hash-cache-key k)]
+          :when (= (hash (c/get-value memory-cache k)) (c/get-value hash-cache hash-key))]
+      k))
 
   (get-value
     [this key]
     (when-let [mem-value (c/get-value memory-cache key)]
-      (when (= (hash mem-value) (c/get-value hash-cache key))
+      (when (= (hash mem-value) (c/get-value hash-cache (key->hash-cache-key key)))
         mem-value)))
 
   (get-value
@@ -89,7 +97,7 @@
   (set-value
     [this key value]
     (c/set-value memory-cache key value)
-    (c/set-value hash-cache key (hash value))))
+    (c/set-value hash-cache (key->hash-cache-key key) (hash value))))
 
 (defn create-consistent-cache
   "Creates an instance of the consistent cache."

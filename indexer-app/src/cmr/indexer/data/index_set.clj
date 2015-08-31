@@ -133,6 +133,28 @@
     :uuid string-field-mapping
     :uuid.lowercase string-field-mapping}})
 
+(def instrument-hierarchical-mapping
+  "Defines hierarchical mappings for instruments."
+  {:type "nested"
+   :dynamic "strict"
+   :_source {:enabled false}
+   :_all {:enabled false}
+   :properties
+   {:category string-field-mapping
+    :category.lowercase string-field-mapping
+    :class string-field-mapping
+    :class.lowercase string-field-mapping
+    :type string-field-mapping
+    :type.lowercase string-field-mapping
+    :subtype string-field-mapping
+    :subtype.lowercase string-field-mapping
+    :short-name string-field-mapping
+    :short-name.lowercase string-field-mapping
+    :long-name string-field-mapping
+    :long-name.lowercase string-field-mapping
+    :uuid string-field-mapping
+    :uuid.lowercase string-field-mapping}})
+
 (def orbit-calculated-spatial-domain-mapping
   {:type "nested"
    :dynamic "strict"
@@ -240,6 +262,7 @@
                                     ;; hierarchical facets
                                     :science-keywords science-keywords-field-mapping
                                     :platforms platform-hierarchical-mapping
+                                    :instruments instrument-hierarchical-mapping
 
                                     ;; Facet fields
                                     ;; We can run aggregations on the above science keywords as a

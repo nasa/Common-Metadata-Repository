@@ -1,3 +1,7 @@
 This directory contains sample files with controlled vocabulary definitions as provided by the
 GCMD Keyword Management System (KMS). The files are used in integration tests in order to avoid
 an external dependency on the GCMD system in local testing as well as the CI environment.
+
+The files with _full designation are the full files from the GCMD system as of 8/28/15. In order
+to speed up the integration tests we use only a few samples from each file. If you need to test
+against the full files you can copy the <type>_full.csv to <type>.csv

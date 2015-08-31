@@ -32,7 +32,6 @@
   (or (:type type-def)
       (cond
         (:$ref type-def) :$ref
-        (:allOf type-def) :allOf
         ;; This is needed for a nested properties def in an allOf
         (:properties type-def) "object"
 
@@ -63,13 +62,17 @@
                             {:schema-name (str/replace ref-schema-name "#" "")
                              :type-name (keyword type-name)}))))
 
-(defmethod resolve-ref :allOf
-  [schema-name type-def]
-  (update-in type-def [:allOf] #(map (partial resolve-ref schema-name) %)))
-
 (defmethod resolve-ref "object"
   [schema-name type-def]
-  (update-in type-def [:properties] (partial resolve-ref-deflist schema-name)))
+  (let [updated (if (:properties type-def)
+                  (update-in type-def [:properties] (partial resolve-ref-deflist schema-name))
+                  type-def)]
+    (if (:oneOf updated)
+      (update-in updated [:oneOf]
+                 (fn [one-ofs]
+                   (map #(update-in % [:properties] (partial resolve-ref-deflist schema-name))
+                        one-ofs)))
+      updated)))
 
 (defmethod resolve-ref "array"
   [schema-name type-def]
@@ -92,18 +95,15 @@
   (when-let [schema-name (get-in type-def [:$ref :schema-name])]
     [schema-name]))
 
-(defmethod referenced-schema-names :allOf
-  [type-def]
-  (mapcat referenced-schema-names (:allOf type-def)))
-
 (defmethod referenced-schema-names "object"
   [type-def]
-  (mapcat referenced-schema-names (vals (:properties type-def))))
+  (concat
+    (mapcat referenced-schema-names (vals (:properties type-def)))
+    (mapcat referenced-schema-names (mapcat (comp vals :properties) (:oneOf type-def)))))
 
 (defmethod referenced-schema-names "array"
   [type-def]
   (referenced-schema-names (:items type-def)))
-
 
 (defn- load-schema
   "Loads a JSON schema into a Clojure structure. Returns a map with the following keys

@@ -160,27 +160,37 @@
     },
     "HorizontalCoordinateSystemType": {
       "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "GeodeticModel": {
-          "$ref": "#/definitions/GeodeticModelType"
-        },
-        "TODOMultiChoice": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "GeographicCoordinateSystem": {
-                "$ref": "#/definitions/GeographicCoordinateSystemType"
-              },
-              "LocalCoordinateSystem": {
-                "$ref": "#/definitions/LocalCoordinateSystemType"
-              }
-            }
+      "oneOf": [{
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
           }
-        }
-      }
+        },
+        "required": ["GeodeticModel"]
+      }, {
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "GeographicCoordinateSystem": {
+            "$ref": "#/definitions/GeographicCoordinateSystemType"
+          }
+        },
+        "required": ["GeographicCoordinateSystem"]
+      }, {
+        "additionalProperties": false,
+        "properties": {
+          "GeodeticModel": {
+            "$ref": "#/definitions/GeodeticModelType"
+          },
+          "LocalCoordinateSystem": {
+            "$ref": "#/definitions/LocalCoordinateSystemType"
+          }
+        },
+        "required": ["LocalCoordinateSystem"]
+      }]
     },
     "GeodeticModelType": {
       "type": "object",
@@ -378,7 +388,7 @@
       "description": "This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List. It is a high-level thematic classification to assist in the grouping and search of available services.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
       },
       "minItems": 0
     },
@@ -445,9 +455,13 @@
       "description": "This class stores the reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
       "$ref": "#/definitions/SpatialInformationType"
     },
-    "SpatialKeyword": {
+    "SpatialKeywords": {
       "description": "This class specifies the name of a place on Earth, a location within the Earth, a vertical location, or a location outside of Earth.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/KeywordUuidStringType"
+      "type": "array",
+      "items": {
+        "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
+      },
+      "minItems": 1
     },
     "Platforms": {
       "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",

@@ -27,7 +27,7 @@
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
-     :TemporalExtents [(umm-cmn/map->TemporalExtentType {})]}))
+     :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]}))
 
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929

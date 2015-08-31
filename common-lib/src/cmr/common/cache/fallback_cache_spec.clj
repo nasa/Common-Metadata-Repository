@@ -14,9 +14,9 @@
 
     (testing "Initial state with items in both caches"
       (su/assert-values-in-caches (conj caches fallback-cache) initial-values)
-      (su/assert-cache-keys [:foo :bar] primary-cache)
-      (su/assert-cache-keys [:foo :bar] backup-cache)
-      (su/assert-cache-keys [:foo :bar] fallback-cache))
+      (su/assert-cache-keys [:foo :bar] primary-cache true)
+      (su/assert-cache-keys [:foo :bar] backup-cache true)
+      (su/assert-cache-keys [:foo :bar] fallback-cache true))
 
     (testing "Change a value in the backup cache"
       (c/set-value backup-cache :foo "new foo value")
@@ -31,10 +31,10 @@
       (c/set-value backup-cache :alpha "alpha value")
 
       (testing "Cache keys contain all keys found in either primary or backup cache"
-        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache))
+        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true))
 
       (testing "The key and value are not present in the primary cache"
-        (su/assert-cache-keys [:foo :bar] primary-cache)
+        (su/assert-cache-keys [:foo :bar] primary-cache true)
         (is (nil? (c/get-value primary-cache :alpha))))
 
       (testing "Fallback cache uses the backup cache if value is not found in primary"
@@ -47,7 +47,7 @@
       (is (nil? (c/get-value fallback-cache :beta)))
 
       (testing "Key with nil value is not added to the cache"
-        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache)))
+        (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
 
     (testing "Add a value to the fallback cache"
       (c/set-value fallback-cache :omega "The last test")
@@ -63,8 +63,8 @@
   [fallback-cache primary-cache backup-cache]
   (let [initial-values {:foo "foo value" :bar "bar value"}]
     (su/put-values-in-caches [fallback-cache] initial-values)
-    (su/assert-cache-keys [:foo :bar] primary-cache)
-    (su/assert-cache-keys [:foo :bar] backup-cache)
+    (su/assert-cache-keys [:foo :bar] primary-cache true)
+    (su/assert-cache-keys [:foo :bar] backup-cache true)
     (c/reset fallback-cache)
     (is (empty? (c/get-keys fallback-cache)))
     (is (empty? (c/get-keys primary-cache)))
@@ -93,7 +93,7 @@
       (is (= "lookup function value" (c/get-value backup-cache :alpha)))))
 
   	(testing "Get keys returns all of the keys"
-     (su/assert-cache-keys [:foo :bar :alpha] fallback-cache)))
+     (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
 
 (def ^:private cache-test-fns
   "Defines the set of test functions that check a cache implementation"

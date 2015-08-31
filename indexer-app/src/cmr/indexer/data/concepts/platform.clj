@@ -1,16 +1,12 @@
 (ns cmr.indexer.data.concepts.platform
   "Contains functions for converting platform hierarchies into elastic documents"
   (:require [clojure.string :as str]
-            [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common-app.services.kms-fetcher :as kf]))
 
-(def FIELD_NOT_PRESENT
-  "A string to indicate that a field is not present within a KMS keyword."
-  "Not Provided")
-
 (def default-platform-values
+  "Default values to use for any platform fields which are nil."
   (zipmap [:category :series-entity :long-name]
-        (repeat FIELD_NOT_PRESENT)))
+          (repeat kf/FIELD_NOT_PRESENT)))
 
 (defn platform-short-name->elastic-doc
   "Converts a platform into the portion going in an elastic document. If a field is not present in

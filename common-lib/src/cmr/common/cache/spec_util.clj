@@ -19,6 +19,11 @@
 
 (defn assert-cache-keys
   "Asserts that the expected keys are in the cache."
-  [expected-keys cache]
-  (is (= (sort expected-keys) (sort (c/get-keys cache)))))
+  ([expected-keys cache]
+   (assert-cache-keys expected-keys cache false))
+  ([expected-keys cache extra-allowed?]
+   (if extra-allowed?
+     (let [actual-keys (set (c/get-keys cache))]
+       (is (every? actual-keys expected-keys)))
+     (is (= (set expected-keys) (set (c/get-keys cache)))))))
 

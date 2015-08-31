@@ -26,6 +26,10 @@
             [clojure.set :as set]
             [cheshire.core :as json]))
 
+(def FIELD_NOT_PRESENT
+  "A string to indicate that a field is not present within a KMS keyword."
+  "Not Provided")
+
 (def kms-cache-key
   "The key used to store the KMS cache in the system cache map."
   :kms)

@@ -103,7 +103,12 @@
   (testing "Platform must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid platform query condition [{:ignore-case true}]. Must contain category, series_entity, short_name, long_name, uuid, or any."]}
-            (search/find-refs-with-json-query :collection {} {:platform {:ignore_case true}})))))
+            (search/find-refs-with-json-query :collection {} {:platform {:ignore_case true}}))))
+
+  (testing "Instrument must contain one of the subfields as part of the search"
+    (is (= {:status 400
+            :errors ["Invalid instrument query condition [{:ignore-case true}]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any."]}
+            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}})))))
 
 
 (comment

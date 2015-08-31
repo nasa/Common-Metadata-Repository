@@ -17,7 +17,8 @@
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.nested-field :as nf]
             [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.validation :as sv]))
+            [cmr.spatial.validation :as sv]
+            [inflections.core :as inf]))
 
 (def json-query-schema
   "JSON Schema for querying for collections."
@@ -34,8 +35,8 @@
    :version :string
    :processing-level-id :string
    :concept-id :string
-   :platform :platform
-   :instrument :string
+   :platform :nested-condition
+   :instrument :nested-condition
    :sensor :string
    :project :string
    :archive-center :string
@@ -47,7 +48,7 @@
    :or :or
    :and :and
    :not :not
-   :science-keywords :science-keywords})
+   :science-keywords :nested-condition})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
@@ -65,23 +66,15 @@
   (when-let [errors (seq (js/validate-json json-query-schema json-query))]
     (errors/throw-service-errors :bad-request errors)))
 
-(defn- validate-science-keywords-condition
-  "Custom validation to make sure there is at least one science keyword field being searched on.
-  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
-  present."
-  [value]
+(defn- validate-nested-condition
+  "Custom validation to make sure there is at least one subfield being searched on in a nested
+  condition. JSON schema does not provide a mechanism for ensuring at least one of a subset of
+  properties is present."
+  [condition-name value]
   (when-not (seq (set/intersection (set (keys value))
-                                   (set (conj (:science-keywords nf/nested-field-mappings) :any))))
-    (errors/throw-service-error :bad-request (msg/invalid-science-keyword-json-query value))))
-
-(defn- validate-platform-condition
-  "Custom validation to make sure there is at least one platform field being searched on.
-  JSON schema does not provide a mechanism for ensuring at least one of a subset of properties is
-  present."
-  [value]
-  (when-not (seq (set/intersection (set (keys value))
-                                   (set (conj (:platforms nf/nested-field-mappings) :any))))
-    (errors/throw-service-error :bad-request (msg/invalid-platform-json-query value))))
+                                   (set (conj (condition-name nf/nested-field-mappings) :any))))
+    (errors/throw-service-error
+      :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
 (defn- validate-temporal-condition
   "Custom validation to make sure there is at least one temporal condition other than
@@ -150,19 +143,14 @@
   [_ value]
   (qm/negated-condition (parse-json-condition-map value)))
 
-(defmethod parse-json-condition :science-keywords
+(defmethod parse-json-condition :nested-condition
   [condition-name value]
-  (validate-science-keywords-condition value)
-  (nf/parse-nested-condition condition-name value
-                             (case-sensitive-field? condition-name value)
-                             (:pattern value)))
-
-(defmethod parse-json-condition :platform
-  [condition-name value]
-  (validate-platform-condition value)
-  (nf/parse-nested-condition :platforms value
-                             (case-sensitive-field? condition-name value)
-                             (:pattern value)))
+  ;; Some nested condition names like :platform and :instrument are saved in elastic as plural
+  (let [plural-condition-name (inf/plural condition-name)]
+    (validate-nested-condition plural-condition-name value)
+    (nf/parse-nested-condition plural-condition-name value
+                               (case-sensitive-field? condition-name value)
+                               (:pattern value))))
 
 (defmethod parse-json-condition :bounding-box
   [_ value]

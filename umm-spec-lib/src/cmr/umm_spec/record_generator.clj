@@ -107,11 +107,12 @@
   for it. Returns nil otherwise."
   [type-name type-def]
   (when (= "object" (:type type-def))
-    {:record-name (name type-name)
-     :description (:description type-def)
-     :fields (for [[property-name prop-def] (:properties type-def)]
-               {:field-name (name property-name)
-                :description (:description prop-def)})}))
+    (let [merged-properties (apply merge (:properties type-def) (map :properties (:oneOf type-def)))]
+      {:record-name (name type-name)
+       :description (:description type-def)
+       :fields (for [[property-name prop-def] merged-properties]
+                 {:field-name (name property-name)
+                  :description (:description prop-def)})})))
 
 (defn- generate-clojure-records
   "Generates a string containing clojure record definitions from the given schema."

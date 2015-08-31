@@ -9,7 +9,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-(deftest search-by-platform-short-names
+(deftest search-by-platform
   (let [p1 (dc/platform {:short-name "platform_Sn A"})
         p2 (dc/platform {:short-name "platform_Sn B"})
         p3 (dc/platform {:short-name "platform_SnA"})
@@ -101,15 +101,20 @@
            [coll1] {:platform {:uuid "7ed12e98-95b1-406c-a58a-f4bbfa405269"}}
            [coll1] {:platform {:any "7ed12e98*" :pattern true}}))))
 
-(deftest search-by-instrument-short-names
+(deftest search-by-instrument
   (let [i1 (dc/instrument {:short-name "instrument_Sn A"})
         i2 (dc/instrument {:short-name "instrument_Sn B"})
         i3 (dc/instrument {:short-name "instrument_SnA"})
         i4 (dc/instrument {:short-name "instrument_Snx"})
         i5 (dc/instrument {:short-name "InstruMENT_X"})
         i6 (dc/instrument {:short-name "instrument_x"})
-        p1 (dc/platform {:short-name "platform_1" :instruments [i1]})
-        p2 (dc/platform {:short-name "platform_2" :instruments [i2]})
+
+        ;; Instruments to verify the ability to search by KMS instrument subfields
+        i7 (dc/instrument {:short-name "ATM"})
+        i8 (dc/instrument {:short-name "LVIS"})
+
+        p1 (dc/platform {:short-name "platform_1" :instruments [i1 i7]})
+        p2 (dc/platform {:short-name "platform_2" :instruments [i2 i8]})
         p3 (dc/platform {:short-name "platform_3" :instruments [i3]})
         p4 (dc/platform {:short-name "platform_4" :instruments [i4]})
         p5 (dc/platform {:short-name "platform_5" :instruments [i1 i2]})
@@ -169,19 +174,35 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll1 coll2 coll6] {:instrument "instrument_Sn A"}
-           [coll7 coll8] {:instrument "instrument_x"}
-           [] {:instrument "BLAH"}
-           [coll10] {:instrument "SMAP L-BAND RADAR"}
-           [coll10] {:and [{:instrument "SMAP L-BAND RADAR"}
-                           {:instrument "SMAP L-BAND RADIOMETER"}]}
-           [coll1 coll2 coll4 coll6] {:or [{:instrument "instrument_SnA"}
-                                           {:instrument "instrument_Sn A"}]}
-           [coll2 coll6] {:and [{:instrument "instrument_Sn B"} {:instrument "instrument_Sn A"}]}
-           [coll7 coll8] {:instrument {:value "instrument_x" :ignore_case true}}
-           [coll8] {:instrument {:value "instrument_x" :ignore_case false}}
-           [coll1 coll2 coll3 coll6] {:instrument {:value "instrument_Sn *" :pattern true}}
-           [coll4 coll5] {:instrument {:value "instrument_Sn?" :pattern true}}))))
+           [coll1 coll2 coll6] {:instrument {:short_name "instrument_Sn A"}}
+           [coll7 coll8] {:instrument {:short_name "instrument_x"}}
+           [] {:instrument {:short_name "BLAH"}}
+           [coll10] {:instrument {:short_name "SMAP L-BAND RADAR"}}
+           [coll10] {:and [{:instrument {:short_name "SMAP L-BAND RADAR"}}
+                           {:instrument {:short_name "SMAP L-BAND RADIOMETER"}}]}
+           [coll1 coll2 coll4 coll6] {:or [{:instrument {:short_name "instrument_SnA"}}
+                                           {:instrument {:short_name "instrument_Sn A"}}]}
+           [coll2 coll6] {:and [{:instrument {:short_name "instrument_Sn B"}}
+                                {:instrument {:short_name "instrument_Sn A"}}]}
+           [coll7 coll8] {:instrument {:short_name "instrument_x" :ignore_case true}}
+           [coll8] {:instrument {:short_name "instrument_x" :ignore_case false}}
+           [coll1 coll2 coll3 coll6] {:instrument {:short_name "instrument_Sn *" :pattern true}}
+           [coll4 coll5] {:instrument {:short_name "instrument_Sn?" :pattern true}}
+
+           ; Test searching on KMS subfields
+           [coll1 coll2 coll3 coll10] {:instrument {:category "Earth Remote Sensing Instruments"
+                                              :ignore_case false}}
+           [] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS" :ignore_case false}}
+           [coll1 coll2 coll3 coll10] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS"
+                                              :ignore_case true}}
+           [coll1 coll2 coll3] {:instrument {:class "Active Remote Sensing"}}
+           [coll1 coll2 coll3] {:instrument {:type "Altimeters"}}
+           [coll10] {:instrument {:subtype "Imaging Spectrometers/Radiometers"}}
+           [coll10] {:instrument {:short_name "SMAP L-BAND RADIOMETER"}}
+           [coll2 coll3] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor" :pattern true}}
+           [] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor"}}
+           [coll1 coll2] {:instrument {:uuid "c2428a35-a87c-4ec7-aefd-13ff410b3271"}}
+           [coll1 coll2] {:instrument {:any "c2428a35*" :pattern true}}))))
 
 (deftest search-by-sensor-short-names
   (let [s1 (dc/sensor {:short-name "sensor_Sn A"})
