@@ -146,7 +146,7 @@
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
 (def string-plus-and-options #{:pattern :ignore-case :and})
 (def string-plus-or-options #{:pattern :ignore-case :or})
-(def highlights-option #{:begin-tag :end-tag :snippet-length :num-fragments})
+(def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
 
 (def param->valid-options
@@ -574,7 +574,7 @@
             (format
               "%s option [%s] for highlights is not a valid integer."
               (csk/->snake_case_string param) value)))))
-    [:snippet-length :num-fragments]))
+    [:snippet-length :num-snippets]))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."

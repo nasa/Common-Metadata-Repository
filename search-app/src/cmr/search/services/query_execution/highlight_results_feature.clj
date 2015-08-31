@@ -25,9 +25,9 @@
 
 (defn- add-fragment-options
   "Add highlight fragment options to highlight query if available."
-  [query-map snippet-length num-fragments]
+  [query-map snippet-length num-snippets]
   (let [fragment-options (util/remove-nil-keys
-                           {:fragment_size snippet-length :number_of_fragments num-fragments})]
+                           {:fragment_size snippet-length :number_of_fragments num-snippets})]
     (if (empty? fragment-options)
       query-map
       (update-in query-map [:fields :summary] merge fragment-options))))
@@ -36,14 +36,14 @@
   "Creates the highlight query that will be passed into elastic"
   [query]
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
-    (let [{:keys [begin-tag end-tag snippet-length num-fragments]}
+    (let [{:keys [begin-tag end-tag snippet-length num-snippets]}
           (get-in query [:result-options :highlights])
           conditions-as-string (str/join " " (map :query-str keyword-conditions))
           query-map {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}}]
       (-> query-map
           (add-tag :pre_tags begin-tag)
           (add-tag :post_tags end-tag)
-          (add-fragment-options snippet-length num-fragments)))))
+          (add-fragment-options snippet-length num-snippets)))))
 
 (defmethod query-execution/pre-process-query-result-feature :highlights
   [_ query _]

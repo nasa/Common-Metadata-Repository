@@ -94,12 +94,12 @@
     ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed.
-    "Search with keyword and snippet_length = 50 and num_fragments = 2"
+    "Search with keyword and snippet_length = 50 and num_snippets = 2"
     [[". **<em>Findme</em>** So many that elasticsearch will break this"
       " seems (<em>findme</em>) doable. The quick brown fox jumped"]]
     {:keyword "findme"}
     {"options[highlights][snippet_length]" 50
-     "options[highlights][num_fragments]" 2}))
+     "options[highlights][num_snippets]" 2}))
 
 (deftest summary-highlighting-using-json-query
   (ingest-collections-for-test)
@@ -151,13 +151,13 @@
     ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
     ;; https://github.com/elastic/elasticsearch/issues/9442
     ;; This test should be updated to expect the correct length when the bug is fixed.
-    "Search with keyword and snippet_length and num_fragments"
+    "Search with keyword and snippet_length and num_snippets"
     [[" it. **<em>Findme</em>** So"
       " seems (<em>findme</em>) doable"
       " jumped --<em>findme</em>"]]
     {:keyword "findme"}
     {"options[highlights][snippet_length]" 20
-     "options[highlights][num_fragments]" 3}))
+     "options[highlights][num_snippets]" 3}))
 
 (deftest validate-highlights-options
   (testing "include_highlights must be set to true for highlights options"
@@ -165,7 +165,7 @@
             :errors ["Highlights options are not allowed unless the include-highlights is true."]}
            (search/find-concepts-json :collection {"options[highlights][begin_tag]" "<br>"}))))
 
-  (testing "snippet_length and num_fragments must be valid integers"
+  (testing "snippet_length and num_snippets must be valid integers"
     (are [param value error]
          (= {:status 400 :errors [error]}
             (search/find-concepts-json :collection
@@ -174,9 +174,9 @@
          "snippet_length" "FOO" "snippet_length option [FOO] for highlights is not a valid integer."
          "snippet_length" 10.5 "snippet_length option [10.5] for highlights is not a valid integer."
          "snippet_length" -5 "snippet_length option [-5] for highlights must be an integer greater than 0."
-         "num_fragments" "FOO" "num_fragments option [FOO] for highlights is not a valid integer."
-         "num_fragments" 10.5 "num_fragments option [10.5] for highlights is not a valid integer."
-         "num_fragments" -5 "num_fragments option [-5] for highlights must be an integer greater than 0."))
+         "num_snippets" "FOO" "num_snippets option [FOO] for highlights is not a valid integer."
+         "num_snippets" 10.5 "num_snippets option [10.5] for highlights is not a valid integer."
+         "num_snippets" -5 "num_snippets option [-5] for highlights must be an integer greater than 0."))
 
   (testing "invalid highlights options"
     (is (= {:status 400
