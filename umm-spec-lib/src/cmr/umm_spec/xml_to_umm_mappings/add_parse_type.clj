@@ -14,11 +14,18 @@
             [cmr.umm-spec.models.common]
             [cmr.umm-spec.models.collection]))
 
+(defn skip-add-parse-type?
+  "Returns true if mapping type does not need a parse type."
+  [mapping-type]
+  ;; Functions are responsible for returning the proper type and do not need additional mapping.
+  (fn? mapping-type))
+
 (defmulti ^:private add-parse-type
   "Adds an additional field to loaded mappings that defines what type to convert the XML value into.
   Parsed types could be clojure records, strings, numeric types, etc."
   (fn [schema type-name schema-type mapping-type]
     (cond
+      (skip-add-parse-type? mapping-type) :skip
       (:type schema-type) (:type schema-type)
       (:$ref schema-type) :$ref)))
 
@@ -34,6 +41,10 @@
                     (or type-name (get-in schema-type [:$ref :type-name]))
                     ref-schema-type
                     mapping-type)))
+
+(defmethod add-parse-type :skip
+  [schema type-name schema-type mapping-type]
+  mapping-type)
 
 (defmethod add-parse-type "array"
   [schema type-name schema-type mapping-type]
@@ -58,16 +69,18 @@
 
 (defmethod add-parse-type "object"
   [schema type-name schema-type mapping-type]
-  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
-        one-of-props (some->> (:oneOf mapping-type)
-                              (map #(add-parse-type-to-properties schema schema-type %))
-                              seq
-                              vec)]
-    (util/remove-nil-keys
-      (assoc (add-parse-type-to-properties schema schema-type mapping-type)
-             :oneOf one-of-props
-             :parse-type {:type :record
-                          :constructor-fn constructor-fn}))))
+  (if (fn? mapping-type)
+    {:type :record :constructor-fn mapping-type}
+    (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+          one-of-props (some->> (:oneOf mapping-type)
+                                (map #(add-parse-type-to-properties schema schema-type %))
+                                seq
+                                vec)]
+      (util/remove-nil-keys
+       (assoc (add-parse-type-to-properties schema schema-type mapping-type)
+              :oneOf one-of-props
+              :parse-type {:type :record
+                           :constructor-fn constructor-fn})))))
 
 (defn add-parsing-types
   "Gets the mappings to umm with extra information to aid in parsing"
@@ -84,7 +97,3 @@
         (dissoc v :description :required :minItems :maxItems :minLength :maxLength :constructor-fn)
         v))
     schema))
-
-
-
-

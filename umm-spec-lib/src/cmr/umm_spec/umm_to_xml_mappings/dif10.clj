@@ -2,11 +2,32 @@
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
+(def platform-types
+  "The set of values that DIF 10 defines for platform types as enumerations in its schema"
+  #{"Not provided"
+    "Aircraft"
+    "Balloons/Rockets"
+    "Earth Observation Satellites"
+    "In Situ Land-based Platforms"
+    "In Situ Ocean-based Platforms"
+    "Interplanetary Spacecraft"
+    "Maps/Charts/Photographs"
+    "Models/Analyses"
+    "Navigation Platforms"
+    "Solar/Space Observation Satellites"
+    "Space Stations/Manned Spacecraft"})
+
 (def dif10-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"})
+
+(defn- generate-platform-type
+  "Returns content for the Platform Type field."
+  [xpath-context]
+  (let [platform (-> xpath-context :context first)]
+    [(or (get platform-types (:Type platform) "Not provided"))]))
 
 (def umm-c-to-dif10-xml
   [:DIF
@@ -18,11 +39,20 @@
     [:Category "dummy category"]
     [:Topic "dummy topic"]
     [:Term "dummy term"]]
-   [:Platform
-    [:Type "Not provided"]
-    [:Short_Name "dummy platform short name"]
-    [:Instrument
-     [:Short_Name "dummy instrument short name"]]]
+
+   (for-each "/Platforms"
+     [:Platform
+      [:Type generate-platform-type]
+      [:Short_Name (xpath "ShortName")]
+      [:Long_Name (xpath "LongName")]
+      (for-each "Characteristics"
+        (matching-object :Characteristics
+                         :Name
+                         :Description
+                         :DataType
+                         :Unit
+                         :Value))
+      [:Instrument [:Short_Name "Not implemented"]]])
 
    (for-each "/TemporalExtents"
      [:Temporal_Coverage
@@ -40,7 +70,7 @@
 
       (for-each "PeriodicDateTimes"
         [:Periodic_DateTime
-         [:Name (xpath "Name")]
+         (matching-field :Name)
          [:Start_Date (xpath "StartDate")]
          [:End_Date (xpath "EndDate")]
          [:Duration_Unit (xpath "DurationUnit")]

@@ -2,8 +2,50 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.umm-spec.models.common :as cmn]
-            [cmr.common.util :as util]))
+  (:require [cmr.common.util :refer [update-in-each]]
+            [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.umm-spec.models.common :as cmn]
+            [clj-time.core :as t]
+            [cmr.common.util :as util]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
+
+(def example-record
+  "An example record with fields supported by most formats."
+  (umm-c/map->UMM-C
+   {:Platforms [(cmn/map->PlatformType
+                 {:ShortName "Platform 1"
+                  :LongName "Example Platform Long Name 1"
+                  :Type "Aircraft"
+                  :Characteristics [(cmn/map->CharacteristicType
+                                     {:Name "OrbitalPeriod"
+                                      :Description "Orbital period in decimal minutes."
+                                      :DataType "float"
+                                      :Unit "Minutes"
+                                      :Value "96.7"})]})]
+    :TemporalExtents [(cmn/map->TemporalExtentType
+                       {:TemporalRangeType "temp range"
+                        :PrecisionOfSeconds 3
+                        :EndsAtPresentFlag false
+                        :RangeDateTimes (mapv cmn/map->RangeDateTimeType
+                                              [{:BeginningDateTime (t/date-time 2000)
+                                                :EndingDateTime (t/date-time 2001)}
+                                               {:BeginningDateTime (t/date-time 2002)
+                                                :EndingDateTime (t/date-time 2003)}])})]
+    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+    :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+    :ResponsibleOrganizations [(cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+                                                                 :Party (cmn/map->PartyType {})})]
+    :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+    :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+
+    :EntryId "short_V1"
+    :EntryTitle "The entry title V5"
+    :Version "V5"
+    :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
+                                        :Type "CREATE"})]
+    :Abstract "A very abstract collection"
+    :DataLanguage "English"
+    :Quality "Pretty good quality"}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -16,15 +58,6 @@
   umm-coll)
 
 ;;; Utililty Functions
-
-(defn update-in-each
-  "Like update-in but applied to each value in seq at path."
-  [m path f & args]
-  (update-in m path (fn [xs]
-                      (when xs
-                        (map (fn [x]
-                               (apply f x args))
-                             xs)))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -109,12 +142,21 @@
   [umm-coll _]
   (-> umm-coll
        (update-in [:TemporalExtents] dif-temporal)
-       (update-in [:AccessConstraints] dif-access-constraints)))
+       (update-in [:AccessConstraints] dif-access-constraints)
+       ;; DIF 9 does not support Platform Type or Characteristics.
+       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
+
+;; DIF 10
+(defn fix-dif10-platform
+  [platform]
+  ;; Only a limited subset of platform types are supported by DIF 10.
+  (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:AccessConstraints] dif-access-constraints)))
+      (update-in [:AccessConstraints] dif-access-constraints)
+      (update-in-each [:Platforms] fix-dif10-platform)))
 
 ;; ISO 19115-2
 
@@ -162,13 +204,17 @@
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :UseConstraints nil :AccessConstraints nil)))
+      (assoc :UseConstraints nil :AccessConstraints nil)
+      ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
+      ;; Platform Characteristics are also not supported.
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+      (assoc :UseConstraints nil)))
 
 ;;; Unimplemented Fields
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem :Platforms
+  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
     :RelatedUrls :DataDates :ResponsibleOrganizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
@@ -189,8 +235,12 @@
 (defn convert
   "Returns input UMM-C record transformed according to the specified transformation for
   metadata-format."
-  [umm-coll metadata-format]
-  (if (= metadata-format :umm-json)
-    umm-coll
-    (dissoc-not-implemented-fields
+  ([umm-coll metadata-format]
+   (if (= metadata-format :umm-json)
+     umm-coll
+     (dissoc-not-implemented-fields
       (convert-internal umm-coll metadata-format))))
+  ([umm-coll src dest]
+   (-> umm-coll
+       (convert src)
+       (convert dest))))

@@ -140,6 +140,9 @@
     ;; Reads and evaluates code sent to dev system then encodes the response as clojure EDN for the
     ;; caller to read. This avoids having to add a million different endpoints to dev system control
     ;; to do different things inside the system.
+    ;;
+    ;; Example usage:
+    ;; curl -XPOST -H "Content-Type: text" http://localhost:2999/eval -d "(+ 1 1)"
     (POST "/eval" {:keys [body]}
       (let [body-str (slurp body)]
         (debug (str "dev-system evaling [" body-str "]"))

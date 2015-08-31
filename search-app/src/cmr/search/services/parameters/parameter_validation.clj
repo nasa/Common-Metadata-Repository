@@ -146,6 +146,7 @@
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
 (def string-plus-and-options #{:pattern :ignore-case :and})
 (def string-plus-or-options #{:pattern :ignore-case :or})
+(def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
 
 (def param->valid-options
@@ -178,7 +179,8 @@
    :provider string-param-options
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
-   :revision-date and-option})
+   :revision-date and-option
+   :highlights highlights-option})
 
 (defn parameter-options-validation
   [concept-type params]
@@ -268,7 +270,9 @@
   (if-let [options (:options params)]
     (map #(str "Parameter [" (csk/->snake_case_string %)"] with option was not recognized.")
          (set/difference (set (keys options))
-                         (concept-type->valid-param-names concept-type)))
+                         ;; Adding in :highlights since this option does not have any
+                         ;; corresponding search parameters
+                         (conj (concept-type->valid-param-names concept-type) :highlights)))
     []))
 
 (defn- validate-date-time
@@ -546,6 +550,31 @@
       ;; The date times are invalid. This error should be handled by other validations
       [])))
 
+(defn- no-highlight-options-without-highlights-validation
+  "Validates that the include-highlights parameter is set to true if any of the highlights
+  options params are set."
+  [concept-type params]
+  (if (and (get-in params [:options :highlights])
+           (not= "true" (:include-highlights params)))
+    ["Highlights options are not allowed unless the include-highlights is true."]
+    []))
+
+(defn highlights-numeric-options-validation
+  "Validates that the highlights option (if present) is an integer greater than zero."
+  [concept-type params]
+  (keep
+    (fn [param]
+      (when-let [value (get-in params [:options :highlights param])]
+        (try
+          (let [int-value (Integer/parseInt value)]
+            (when (< int-value 1)
+              (format "%s option [%d] for highlights must be an integer greater than 0."
+                      (csk/->snake_case_string param) int-value)))
+          (catch NumberFormatException e
+            (format
+              "%s option [%s] for highlights is not a valid integer."
+              (csk/->snake_case_string param) value)))))
+    [:snippet-length :num-snippets]))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -634,7 +663,9 @@
    polygon-validation
    bounding-box-validation
    point-validation
-   line-validation])
+   line-validation
+   no-highlight-options-without-highlights-validation
+   highlights-numeric-options-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

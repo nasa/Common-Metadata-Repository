@@ -5,6 +5,8 @@
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.cache.cache-spec :as cache-spec]
             [cmr.common-app.cache.consistent-cache-spec :as consistent-cache-spec]
+            [cmr.common.cache.fallback-cache :as fallback-cache]
+            [cmr.common.cache.fallback-cache-spec :as fallback-cache-spec]
             [cmr.common.cache :as c]
             [cmr.common.cache.single-thread-lookup-cache :as slc]
             [cmr.common.lifecycle :as l]))
@@ -39,3 +41,12 @@
         (l/stop slc-cache1 nil)
         (l/stop slc-cache2 nil)))))
 
+(deftest consistent-cache-with-fallback-cache-test
+  (let [fake-cubby-cache (mem-cache/create-in-memory-cache)
+        primary-cache (cc/create-consistent-cache
+                             (mem-cache/create-in-memory-cache)
+                             fake-cubby-cache) ;; Cubby would be used for the hash code cache
+        backup-cache fake-cubby-cache ;; And the backup cache
+        fallback-cache (fallback-cache/create-fallback-cache primary-cache backup-cache)]
+    (cache-spec/assert-cache fallback-cache)
+    (fallback-cache-spec/assert-fallback-cache fallback-cache primary-cache backup-cache)))

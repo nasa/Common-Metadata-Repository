@@ -70,7 +70,10 @@
     (if (:oneOf updated)
       (update-in updated [:oneOf]
                  (fn [one-ofs]
-                   (map #(update-in % [:properties] (partial resolve-ref-deflist schema-name))
+                   (map (fn [o]
+                          (if (:properties o)
+                            (update-in o [:properties] (partial resolve-ref-deflist schema-name))
+                            o))
                         one-ofs)))
       updated)))
 

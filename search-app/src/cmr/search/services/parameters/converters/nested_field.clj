@@ -9,7 +9,8 @@
   "Maps each of the nested fields to its subfields."
   {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                        :detailed-variable]
-   :platforms (:platforms kms/keyword-scheme->field-names)})
+   :platforms (:platforms kms/keyword-scheme->field-names)
+   :instruments (:instruments kms/keyword-scheme->field-names)})
 
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.

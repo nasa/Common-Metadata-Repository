@@ -39,10 +39,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Mapping processors
 
+(defn mapping-type
+  "Returns a value for process-xml-mapping to dispatch on."
+  [xml-mapping]
+  (if (fn? xml-mapping)
+    :fn
+    (:type xml-mapping)))
+
 (defmulti ^:private process-xml-mapping
   "Processes the XML Mapping by using it to extract values from the XPath Context"
   (fn [xpath-context xml-mapping]
-    (:type xml-mapping)))
+    (mapping-type xml-mapping)))
 
 (defmethod process-xml-mapping :object
   [xpath-context {:keys [parse-type properties]}]
@@ -50,7 +57,7 @@
         record-map (util/remove-nil-keys
                      (into {} (for [[prop-name sub-def] properties]
                                 [prop-name (process-xml-mapping xpath-context sub-def)])))]
-    (when (seq (keys record-map))
+    (when (seq record-map)
       (constructor-fn record-map))))
 
 (defmethod process-xml-mapping :xpath
@@ -67,16 +74,13 @@
 
 (defmethod process-xml-mapping :for-each
   [xpath-context {:keys [xpath template]}]
-  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))
-        values (remove nil?
-                       (for [element (:context new-xpath-context)
-                             :let [single-item-xpath-context (assoc new-xpath-context
-                                                                    :context [element])]]
-                         (if (and template (:type template))
-                           (process-xml-mapping single-item-xpath-context template)
-                           (parse-primitive-value (:parse-type template "string")
-                                                  single-item-xpath-context))))]
-    (when (seq values) (vec values))))
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
+    (when-let [elements (seq (:context new-xpath-context))]
+      (vec (for [element elements
+                 :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
+             (if (and template (mapping-type template))
+               (process-xml-mapping single-item-xpath-context template)
+               (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
 
 (defmethod process-xml-mapping :xpath-with-regex
   [xpath-context {:keys [xpath regex]}]
@@ -86,16 +90,22 @@
                    :let [match (re-matches regex (-> element :content first))]
                    :when match
                    :let [nil-if-empty (fn [s] (if (empty? s) nil s))]]
-               ;; The entire string at the xpath is returned if there are no groups in the regular
-               ;; expression otherwise the substring corresponding to first group is returned.
-               (nil-if-empty (if (string? match) match (second match))))))))
+               ;; A string response implies there is no group in the regular expression and the
+               ;; entire matching string is returned and if there is a group in the regular
+               ;; expression, the first group of the matching string is returned.
+               (if (string? match) match (nil-if-empty (second match))))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
   value)
+
+(defmethod process-xml-mapping :fn
+  [xpath-context f]
+  (f xpath-context))
 
 (defn parse-xml
   "Parses an XML string with the given mappings into UMM records."
   [root-def xml-string]
   (let [xpath-context (sxp/create-xpath-context-for-xml xml-string)]
     (process-xml-mapping xpath-context root-def)))
+

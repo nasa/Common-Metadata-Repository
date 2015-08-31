@@ -67,16 +67,43 @@
                                     "%s and oneOf. schema-type: %s")
                                (name k) (pr-str schema-type))))))
 
+(defn- object-one-of->generator
+  "Creates a generator for a schema type with a oneOf option. oneOf in JSON schema lists separate
+  sub-schemas of which only _one_ must be valid. This is difficult to generate so we limit the
+  possibilities when used within an object mapping. It can be used in two different ways
+
+  1. Specifying different sets of required fields. Similar to the choice in XML.
+  2. Specifying complete different definitions of an object by specifying properties, required, and
+  additionalProperties."
+  [schema type-name schema-type]
+  (let [one-of (:oneOf schema-type)
+        uniq-keys (set (mapcat keys one-of))]
+    (if (= uniq-keys #{:required})
+      ;; Using oneOfs with each only specifying :required
+      (let [field-sets (mapv (comp set (partial mapv keyword)) (mapv :required one-of))
+              all-required-fields (reduce into field-sets)
+              all-fields (set (keys (:properties schema-type)))
+              one-of-types (for [field-set field-sets
+                                 :let [excluded-fields (set/difference all-required-fields field-set)]]
+                             (-> schema-type
+                                 (update-in [:properties] #(apply dissoc % excluded-fields))
+                                 (update-in [:required] concat field-set)
+                                 (dissoc :oneOf)))]
+          (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of-types)))
+      ;; Using oneOf with each specifying the full object mapping
+      (do
+        ;; These fields aren't supported in schema-type if oneOf is used with other fields
+        (doseq [f [:anyOf :properties :required]]
+          (assert-field-not-present-with-one-of schema-type f))
+
+        (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of))))))
+
+
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
   (if-let [one-of (:oneOf schema-type)]
-    (do
-      ;; These fields aren't supported in schema-type if oneOf is used
-      (doseq [f [:anyOf :properties :required]]
-        (assert-field-not-present-with-one-of schema-type f))
-
-      (gen/one-of (mapv #(object-like-schema-type->generator schema type-name %) one-of)))
+    (object-one-of->generator schema type-name schema-type)
 
     ;; else
     (if-let [any-of (:anyOf schema-type)]
@@ -98,11 +125,13 @@
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:items :minItems :maxItems} schema-type)
   (let [{:keys [items minItems maxItems]} (merge array-defaults schema-type)
-        item-generator (schema-type->generator schema type-name items)]
-    (gen/vector item-generator
-                minItems
-                ;; Limit the maximum number of items in an array to 5.
-                (min maxItems 5))))
+        item-generator (schema-type->generator schema type-name items)
+        ;; Limit the maximum number of items in an array to 5.
+        maxItems (min maxItems 5)]
+    (if (= minItems 0)
+      ;; Return nil instead of empty vectors.
+      (gen/one-of [(gen/return nil) (gen/vector item-generator 1 maxItems)])
+      (gen/vector item-generator minItems maxItems))))
 
 (defmethod schema-type->generator :$ref
   [schema type-name schema-type]
