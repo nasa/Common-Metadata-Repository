@@ -98,11 +98,13 @@
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:items :minItems :maxItems} schema-type)
   (let [{:keys [items minItems maxItems]} (merge array-defaults schema-type)
-        item-generator (schema-type->generator schema type-name items)]
-    (gen/vector item-generator
-                minItems
-                ;; Limit the maximum number of items in an array to 5.
-                (min maxItems 5))))
+        item-generator (schema-type->generator schema type-name items)
+        ;; Limit the maximum number of items in an array to 5.
+        maxItems (min maxItems 5)]
+    (if (= minItems 0)
+      ;; Return nil instead of empty vectors.
+      (gen/one-of [(gen/return nil) (gen/vector item-generator 1 maxItems)])
+      (gen/vector item-generator minItems maxItems))))
 
 (defmethod schema-type->generator :$ref
   [schema type-name schema-type]

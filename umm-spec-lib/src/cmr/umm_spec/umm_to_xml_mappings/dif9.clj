@@ -20,6 +20,10 @@
     [:Topic "dummy topic"]
     [:Term "dummy term"]]
    [:ISO_Topic_Category "dummy iso topic category"]
+   (for-each "/Platforms"
+     [:Source_Name
+      [:Short_Name (xpath "ShortName")]
+      [:Long_Name (xpath "LongName")]])
    (for-each "/TemporalExtents/RangeDateTimes"
              [:Temporal_Coverage
               [:Start_Date (xpath "BeginningDateTime")]
@@ -31,7 +35,6 @@
    [:Quality (xpath "/Quality")]
    [:Use_Constraints (xpath "/UseConstraints")]
    [:Data_Set_Language (xpath "/DataLanguage")]
-   ;; TODO (CMR-1933) determine if PeriodicDateTime is supported for DIF
    [:Data_Center
     [:Data_Center_Name
      [:Short_Name "datacenter_short_name"]

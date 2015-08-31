@@ -2,7 +2,9 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.umm-spec.models.common :as cmn]))
+  (:require [cmr.common.util :refer [update-in-each]]
+            [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -15,15 +17,6 @@
   umm-coll)
 
 ;;; Utililty Functions
-
-(defn update-in-each
-  "Like update-in but applied to each value in seq at path."
-  [m path f & args]
-  (update-in m path (fn [xs]
-                      (when xs
-                        (map (fn [x]
-                               (apply f x args))
-                             xs)))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -100,7 +93,21 @@
 
 (defmethod convert-internal :dif
   [umm-coll _]
-  (update-in umm-coll [:TemporalExtents] dif-temporal))
+  (-> umm-coll
+      (update-in [:TemporalExtents] dif-temporal)
+      ;; DIF 9 does not support Platform Type or Characteristics.
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
+
+;; DIF 10
+
+(defn fix-dif10-platform
+  [platform]
+  ;; Only a limited subset of platform types are supported by DIF 10.
+  (assoc platform :Type (get dif10/platform-types (:Type platform))))
+
+(defmethod convert-internal :dif10
+  [umm-coll _]
+  (update-in-each umm-coll [:Platforms] fix-dif10-platform))
 
 ;; ISO 19115-2
 
@@ -131,13 +138,16 @@
   (-> (convert-internal umm-coll :iso19115)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
+      ;; Platform Characteristics are also not supported.
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
       (assoc :UseConstraints nil)))
 
 ;;; Unimplemented Fields
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem :Platforms
+  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
     :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
@@ -158,8 +168,12 @@
 (defn convert
   "Returns input UMM-C record transformed according to the specified transformation for
   metadata-format."
-  [umm-coll metadata-format]
-  (if (= metadata-format :umm-json)
-    umm-coll
-    (dissoc-not-implemented-fields
+  ([umm-coll metadata-format]
+   (if (= metadata-format :umm-json)
+     umm-coll
+     (dissoc-not-implemented-fields
       (convert-internal umm-coll metadata-format))))
+  ([umm-coll src dest]
+   (-> umm-coll
+       (convert src)
+       (convert dest))))

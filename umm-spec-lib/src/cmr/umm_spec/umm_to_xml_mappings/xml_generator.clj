@@ -14,8 +14,10 @@
   (fn [content-generator xpath-context]
     ;; We will eventually add custom function support through (fn? content-generator) :fn
     (cond
-      (vector? content-generator) :element
-      (string? content-generator) :constant
+      (vector? content-generator)  :element
+      (keyword? content-generator) :keyword
+      (string? content-generator)  :constant
+      (fn? content-generator)      :fn
 
       ;; We could also interpret seq here in the same way that hiccup does by treating it as a
       ;; series of content generators. Add this if needed.
@@ -26,15 +28,27 @@
 
       :else :default)))
 
+(defmethod generate-content :fn
+  [content-generator-fn xpath-context]
+  (content-generator-fn xpath-context))
+
 (defmethod generate-content :default
   [content-generator _]
   (throw (Exception. (str "Unknown content generator type: " (pr-str content-generator)))))
 
+(defmethod generate-content :keyword
+  [kw xpath-context]
+  (generate-content (dsl/matching-field kw) xpath-context))
+
 (defn- realize-attributes
-  "Returns map with function values replaced by the result of calling them."
-  [m]
+  "Returns map with function values replaced by the result of calling generate-content on them."
+  [m xpath-context]
   (zipmap (keys m)
-          (map #(if (fn? %) (%) %)
+          (map (fn [attr-gen]
+                 (let [result (generate-content attr-gen xpath-context)]
+                   (if (string? result)
+                     result
+                     (apply str result))))
                (vals m))))
 
 (defmethod generate-content :element
@@ -44,7 +58,7 @@
                                                  (not (dsl-type maybe-attributes)))
                                           [(first content-generators) (rest content-generators)]
                                           [{} content-generators])
-        attributes (realize-attributes attributes)
+        attributes (realize-attributes attributes xpath-context)
         content (mapcat #(generate-content % xpath-context) content-generators)]
     (when (or (seq attributes) (seq content))
       [(x/element tag attributes content)])))

@@ -11,19 +11,11 @@
        :PrecisionOfSeconds (xpath "PrecisionOfSeconds")
        :EndsAtPresentFlag (xpath "EndsAtPresentFlag")
        :RangeDateTimes (for-each "RangeDateTime"
-                         (object
-                           {:BeginningDateTime (xpath "BeginningDateTime")
-                            :EndingDateTime (xpath "EndingDateTime")}))
+                         (matching-object :BeginningDateTime :EndingDateTime))
        :SingleDateTimes (select "SingleDateTime")
        :PeriodicDateTimes (for-each "PeriodicDateTime"
-                            (object
-                              {:Name (xpath "Name")
-                               :StartDate (xpath "StartDate")
-                               :EndDate (xpath "EndDate")
-                               :DurationUnit (xpath "DurationUnit")
-                               :DurationValue (xpath "DurationValue")
-                               :PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")
-                               :PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")}))})))
+                            (matching-object :Name :StartDate :EndDate :DurationUnit :DurationValue
+                                             :PeriodCycleDurationUnit :PeriodCycleDurationValue))})))
 
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
@@ -34,4 +26,14 @@
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
-       :TemporalExtents temporal-mappings})))
+       :TemporalExtents temporal-mappings
+       :Platforms (for-each "/Collection/Platforms/Platform"
+                    (object {:ShortName (xpath "ShortName")
+                             :LongName (xpath "LongName")
+                             :Type (xpath "Type")
+                             :Characteristics (for-each "Characteristics/Characteristic"
+                                                (matching-object :Name
+                                                                 :Description
+                                                                 :DataType
+                                                                 :Unit
+                                                                 :Value))}))})))

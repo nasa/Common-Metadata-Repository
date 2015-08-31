@@ -714,10 +714,10 @@
           "maxLength": 80
         },
         "ShortName": {
-          "$ref": "#/definitions/ShortNameType"
+          "$ref": "#/definitions/PlatformShortNameType"
         },
         "LongName": {
-          "$ref": "#/definitions/LongNameType"
+          "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
           "description": "The characteristics of platform specific attributes. The characteristic names must be unique on this platform; however the names do not have to be unique across platforms.",
@@ -1318,11 +1318,25 @@
       "minLength": 1,
       "maxLength": 80
     },
+    "PlatformShortNameType": {
+      "description": "The unique name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,79}"
+    },
     "LongNameType": {
       "description": "The expanded or long name of the short name.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1024
+    },
+    "PlatformLongNameType": {
+      "description": "The expanded or long name of the short name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,1023}"
     },
     "QualityType": {
       "description": "Field allows the author to provide information about the quality of the data or any quality assurance procedures followed in producing the data described in the metadata. Suggestions for information to include in the Quality field: Description should be succinct. Include indicators of data quality or quality flags. Include recognized or potential problems with quality. Established quality control mechanisms should be included. Established quantitative quality measurements should be included.",

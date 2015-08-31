@@ -16,6 +16,9 @@
        :DataLanguage (xpath "/DIF/Data_Set_Language")
        :Quality (xpath "/DIF/Quality")
        :UseConstraints (xpath "/DIF/Use_Constraints")
+       :Platforms (for-each "/DIF/Source_Name"
+                    (object {:ShortName (xpath "Short_Name")
+                             :LongName (xpath "Long_Name")}))
        :TemporalExtents (for-each "."
                           (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                      (object {:BeginningDateTime (xpath "Start_Date")

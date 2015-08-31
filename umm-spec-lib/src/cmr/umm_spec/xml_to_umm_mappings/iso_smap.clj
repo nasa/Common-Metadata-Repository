@@ -2,7 +2,8 @@
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.iso-smap-utils :as utils]))
 
 (def metadata-base-xpath
   "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata")
@@ -48,6 +49,10 @@
   (str md-identification-base-xpath
        "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
+(def keywords-xpath-str
+  (str md-identification-base-xpath
+       "/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString"))
+
 (def iso-smap-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -57,6 +62,10 @@
              :Abstract abstract-xpath
              :Purpose purpose-xpath
              :DataLanguage data-language-xpath
+             :Platforms (for-each keywords-xpath-str
+                          (fn [xpath-context]
+                            (let [keyword-str (->> xpath-context :context first :content (apply str))]
+                              (utils/parse-platform keyword-str))))
              :TemporalExtents (for-each temporal-extent-xpath-str
                                 (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                            (object {:BeginningDateTime (xpath "gml:beginPosition")
