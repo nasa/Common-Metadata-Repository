@@ -93,7 +93,7 @@
                ;; A string response implies there is no group in the regular expression and the
                ;; entire matching string is returned and if there is a group in the regular
                ;; expression, the first group of the matching string is returned.
-               (if (string? match) match (nil-if-empty (second match))))))))
+               (nil-if-empty (if (string? match) match (second match))))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]
