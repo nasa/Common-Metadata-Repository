@@ -13,14 +13,6 @@
   name of the element. The rest of the contents of the vector are treated as a list of content
   generators that specify the content of the element.
 
-  Keywords may be used as a shorthand for a child element whose contents are to be taken from the
-  corresponding path in the current context, as a convenience for formats which map closely to the
-  UMM model itself. e.g.:
-
-      [:foo :bar bat]
-      ;; is equivalent to
-      [:foo [:bar (xpath \"bar\")] [:bat (xpath \"bat\")]]
-
   A map immediately following the tag name (without a ::type) will be treated as attributes for the
   element. The attributes map is treated as a map of attribute names to content generators for each
   attribute.
