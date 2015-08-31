@@ -33,6 +33,14 @@
     (when-not (get (concept-type->supported-result-formats concept-type) result-format)
       [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))])))
 
+(defn validate-highlights-format
+  "Validates that the include_highlights parameter is only set to true when the result format is
+  JSON"
+  [result-features result-format]
+  (when (and (some #{:highlights} result-features)
+             (not= :json result-format))
+    ["Highlights are only supported in the JSON format."]))
+
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
   A sequence of errors should be returned if validation fails, otherwise an empty sequence is returned."
@@ -43,9 +51,10 @@
 (extend-protocol Validator
   cmr.search.models.query.Query
   (validate
-    [{:keys [concept-type result-format all-revisions? condition]}]
+    [{:keys [concept-type result-format all-revisions? condition result-features]}]
     (let [errors (concat (validate-concept-type-result-format concept-type result-format)
-                         (validate-result-format-for-all-revisions all-revisions? result-format))]
+                         (validate-result-format-for-all-revisions all-revisions? result-format)
+                         (validate-highlights-format result-features result-format))]
       (if (seq errors) errors (validate condition))))
 
   cmr.search.models.query.ConditionGroup
