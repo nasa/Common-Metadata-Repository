@@ -31,7 +31,10 @@
                               "elasticsearch will break this summary into multiple snippets. I may "
                               "just have to keep typing until that happens. I will have to figure "
                               "out what keyword to search for in order to make two different "
-                              "snippets have a match, but that seems (findme) doable.")})
+                              "snippets have a match, but that seems (findme) doable. "
+                              "The quick brown fox jumped --findme-- over the lazy dog. "
+                              "Now is the time for all good men >>FINDME<< to come to the aid of"
+                              "the party.")})
   (make-coll 3 {:summary "Match on 'collection'"})
   (make-coll 4 {:summary "Match on 'ocean'."})
   (make-coll 5 {:summary "Match on either 'ocean' or 'collection'."})
@@ -52,10 +55,9 @@
     {}
 
     "Long summary with multiple snippets and case insensitive"
-    [[(str "This summary has a lot of characters in it. **<em>Findme</em>** So many that "
-           "elasticsearch will break this")
-      (str " figure out what keyword to search for in order to make two different snippets have a "
-           "match, but that seems (<em>findme</em>) doable.")]]
+    [["This summary has a lot of characters in it. **<em>Findme</em>** So many that elasticsearch will break this"
+      " seems (<em>findme</em>) doable. The quick brown fox jumped --<em>findme</em>-- over the lazy dog. Now is the time for"
+      " all good men >><em>FINDME</em><< to come to the aid ofthe party."]]
     {:keyword "FiNdmE"}
     {}
 
@@ -75,23 +77,29 @@
     {:keyword "ocean collection"}
     {}
 
-    "Search with keyord and begin-tag"
-    [["Match on either '<br>ocean</em>' or '<br>collection</em>'."]
-     ["Match on '<br>ocean</em> <br>collection</em>'"]]
+    "Search with keyword and begin_tag/end-tag"
+    [["Match on either '<b>ocean</b>' or '<b>collection</b>'."]
+     ["Match on '<b>ocean</b> <b>collection</b>'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][begin-tag]" "<br>"}
+    {"options[highlights][begin_tag]" "<b>"
+     "options[highlights][end_tag]" "</b>"}
 
-    "Search with keyord and end-tag"
-    [["Match on either '<em>ocean</br>' or '<em>collection</br>'."]
-     ["Match on '<em>ocean</br> <em>collection</br>'"]]
+    "Search with keyword and non-html begin_tag/end-tag"
+    [["Match on either '!!!!!ocean!!!!!' or '!!!!!collection!!!!!'."]
+     ["Match on '!!!!!ocean!!!!! !!!!!collection!!!!!'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][end-tag]" "</br>"}
+    {"options[highlights][begin_tag]" "!!!!!"
+     "options[highlights][end_tag]" "!!!!!"}
 
-    "Search with keyord and snippet-length and num-fragments"
-    [[" it. **<em>Findme</em>** So"]]
+    ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
+    ;; https://github.com/elastic/elasticsearch/issues/9442
+    ;; This test should be updated to expect the correct length when the bug is fixed.
+    "Search with keyword and snippet_length = 50 and num_fragments = 2"
+    [[". **<em>Findme</em>** So many that elasticsearch will break this"
+      " seems (<em>findme</em>) doable. The quick brown fox jumped"]]
     {:keyword "findme"}
-    {"options[highlights][snippet-length]" 20
-     "options[highlights][num-fragments]" 1}))
+    {"options[highlights][snippet_length]" 50
+     "options[highlights][num_fragments]" 2}))
 
 (deftest summary-highlighting-using-json-query
   (ingest-collections-for-test)
@@ -128,42 +136,47 @@
           {:not {:keyword "foo"}}]}
     {}
 
-    "Search with keyord and begin-tag"
+    "Search with keyword and begin_tag"
     [["Match on either '<br>ocean</em>' or '<br>collection</em>'."]
      ["Match on '<br>ocean</em> <br>collection</em>'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][begin-tag]" "<br>"}
+    {"options[highlights][begin_tag]" "<br>"}
 
-    "Search with keyord and end-tag"
+    "Search with keyword and end_tag"
     [["Match on either '<em>ocean</br>' or '<em>collection</br>'."]
      ["Match on '<em>ocean</br> <em>collection</br>'"]]
     {:keyword "ocean collection"}
-    {"options[highlights][end-tag]" "</br>"}
+    {"options[highlights][end_tag]" "</br>"}
 
-    "Search with keyord and snippet-length and num-fragments"
-    [[" it. **<em>Findme</em>** So"]]
+    ;; TODO There is a known bug in Elasticsearch highlighting with regard to snippet_length:
+    ;; https://github.com/elastic/elasticsearch/issues/9442
+    ;; This test should be updated to expect the correct length when the bug is fixed.
+    "Search with keyword and snippet_length and num_fragments"
+    [[" it. **<em>Findme</em>** So"
+      " seems (<em>findme</em>) doable"
+      " jumped --<em>findme</em>"]]
     {:keyword "findme"}
-    {"options[highlights][snippet-length]" 20
-     "options[highlights][num-fragments]" 1}))
+    {"options[highlights][snippet_length]" 20
+     "options[highlights][num_fragments]" 3}))
 
 (deftest validate-highlights-options
   (testing "include_highlights must be set to true for highlights options"
     (is (= {:status 400
             :errors ["Highlights options are not allowed unless the include-highlights is true."]}
-           (search/find-concepts-json :collection {"options[highlights][begin-tag]" "<br>"}))))
+           (search/find-concepts-json :collection {"options[highlights][begin_tag]" "<br>"}))))
 
-  (testing "snippet-length and num-fragments must be valid integers"
+  (testing "snippet_length and num_fragments must be valid integers"
     (are [param value error]
          (= {:status 400 :errors [error]}
             (search/find-concepts-json :collection
                                        {:include-highlights true
                                         (format "options[highlights][%s]" param) value}))
-         "snippet-length" "FOO" "snippet-length [FOO] option for highlights is not a valid integer."
-         "snippet-length" 10.5 "snippet-length [10.5] option for highlights is not a valid integer."
-         "snippet-length" -5 "snippet-length [-5] option for highlights must be an integer greater than 0."
-         "num-fragments" "FOO" "num-fragments [FOO] option for highlights is not a valid integer."
-         "num-fragments" 10.5 "num-fragments [10.5] option for highlights is not a valid integer."
-         "num-fragments" -5 "num-fragments [-5] option for highlights must be an integer greater than 0."))
+         "snippet_length" "FOO" "snippet_length option [FOO] for highlights is not a valid integer."
+         "snippet_length" 10.5 "snippet_length option [10.5] for highlights is not a valid integer."
+         "snippet_length" -5 "snippet_length option [-5] for highlights must be an integer greater than 0."
+         "num_fragments" "FOO" "num_fragments option [FOO] for highlights is not a valid integer."
+         "num_fragments" 10.5 "num_fragments option [10.5] for highlights is not a valid integer."
+         "num_fragments" -5 "num_fragments option [-5] for highlights must be an integer greater than 0."))
 
   (testing "invalid highlights options"
     (is (= {:status 400

@@ -55,8 +55,8 @@
    ;; then the latest revisions of the concept type will be searched.
    all-revisions?
 
-   ;; Options for applying highlighting to the search response
-   highlights-options
+   ;; Options for the search response.
+   result-options
    ])
 
 (defrecord ConditionGroup

@@ -320,11 +320,11 @@
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?
      :all-revisions? all-revisions?
-     :highlights-options (when (or begin-tag end-tag snippet-length num-fragments)
-                           {:begin-tag begin-tag
-                            :end-tag end-tag
-                            :snippet-length (when snippet-length (Integer. snippet-length))
-                            :num-fragments (when num-fragments (Integer. num-fragments))})}))
+     :result-options (when (or begin-tag end-tag snippet-length num-fragments)
+                       {:highlights {:begin-tag begin-tag
+                                     :end-tag end-tag
+                                     :snippet-length (when snippet-length (Integer. snippet-length))
+                                     :num-fragments (when num-fragments (Integer. num-fragments))}})}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."

@@ -36,7 +36,8 @@
   "Creates the highlight query that will be passed into elastic"
   [query]
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
-    (let [{:keys [begin-tag end-tag snippet-length num-fragments]} (:highlights-options query)
+    (let [{:keys [begin-tag end-tag snippet-length num-fragments]}
+          (get-in query [:result-options :highlights])
           conditions-as-string (str/join " " (map :query-str keyword-conditions))
           query-map {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}}]
       (-> query-map

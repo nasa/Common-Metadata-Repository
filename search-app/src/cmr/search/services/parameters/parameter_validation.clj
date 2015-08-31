@@ -550,7 +550,7 @@
       ;; The date times are invalid. This error should be handled by other validations
       [])))
 
-(defn- highlights-option-validation
+(defn- no-highlight-options-without-highlights-validation
   "Validates that the include-highlights parameter is set to true if any of the highlights
   options params are set."
   [concept-type params]
@@ -559,35 +559,22 @@
     ["Highlights options are not allowed unless the include-highlights is true."]
     []))
 
-(defn highlights-snippet-length-validation
-  "Validates that the snippet-length highlights option (if present) is an integer."
+(defn highlights-numeric-options-validation
+  "Validates that the highlights option (if present) is an integer greater than zero."
   [concept-type params]
-  (if-let [snippet-length-param (get-in params [:options :highlights :snippet-length])]
-    (try
-      (let [snippet-length (Integer/parseInt snippet-length-param)]
-        (if (< snippet-length 1)
-          [(format "snippet-length [%d] option for highlights must be an integer greater than 0."
-                   snippet-length)]
-          []))
-      (catch NumberFormatException e
-        [(format "snippet-length [%s] option for highlights is not a valid integer."
-                 snippet-length-param)]))
-    []))
-
-(defn highlights-num-fragments-validation
-  "Validates that the page-size (if present) is a number in the valid range."
-  [concept-type params]
-  (if-let [num-fragments-param (get-in params [:options :highlights :num-fragments])]
-    (try
-      (let [num-fragments (Integer/parseInt num-fragments-param)]
-        (if (< num-fragments 1)
-          [(format "num-fragments [%d] option for highlights must be an integer greater than 0."
-                   num-fragments)]
-          []))
-      (catch NumberFormatException e
-        [(format "num-fragments [%s] option for highlights is not a valid integer."
-                 num-fragments-param)]))
-    []))
+  (keep
+    (fn [param]
+      (when-let [value (get-in params [:options :highlights param])]
+        (try
+          (let [int-value (Integer/parseInt value)]
+            (when (< int-value 1)
+              (format "%s option [%d] for highlights must be an integer greater than 0."
+                      (csk/->snake_case_string param) int-value)))
+          (catch NumberFormatException e
+            (format
+              "%s option [%s] for highlights is not a valid integer."
+              (csk/->snake_case_string param) value)))))
+    [:snippet-length :num-fragments]))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -677,9 +664,8 @@
    bounding-box-validation
    point-validation
    line-validation
-   highlights-option-validation
-   highlights-snippet-length-validation
-   highlights-num-fragments-validation])
+   no-highlight-options-without-highlights-validation
+   highlights-numeric-options-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.
