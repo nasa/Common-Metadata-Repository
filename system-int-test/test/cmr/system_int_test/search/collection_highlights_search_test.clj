@@ -201,7 +201,7 @@
          mt/atom
          mt/iso19115))
 
-  (testing "invalid json repsone formats"
+  (testing "invalid json response formats"
      (are [resp-format]
          (= {:status 400 :errors ["Highlights are only supported in the JSON format."]}
             (search/get-search-failure-data
