@@ -99,20 +99,22 @@
                          :EndsAtPresentFlag nil)]
     (when (seq (:RangeDateTimes temporal)) [temporal])))
 
+(defn dif-access-constraints
+  "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
+  [access-constraints]
+  (when access-constraints
+    (assoc access-constraints :Value nil)))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
        (update-in [:TemporalExtents] dif-temporal)
-       (update-in [:AccessConstraints] (fn [access-constraints]
-                                               (when access-constraints
-                                                 (assoc access-constraints :Value nil))))))
+       (update-in [:AccessConstraints] dif-access-constraints)))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:AccessConstraints] (fn [access-constraints]
-                                               (when access-constraints
-                                                 (assoc access-constraints :Value nil))))))
+      (update-in [:AccessConstraints] dif-access-constraints)))
 
 ;; ISO 19115-2
 
