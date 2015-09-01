@@ -141,7 +141,12 @@
           },
           "minItems": 0
         }
-      }
+      },
+      "oneOf": [{
+        "required": ["OrganizationName"]
+      }, {
+        "required": ["Person"]
+      }]
     },
     "OrganizationNameType": {
       "type": "object",

@@ -32,7 +32,7 @@
                                                 :EndingDateTime (t/date-time 2003)}])})]
     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
     :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-    :ResponsibleOrganizations [(cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
+    :Organizations [(cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
                                                                  :Party (cmn/map->PartyType {})})]
     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
@@ -203,8 +203,8 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
-    :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
-    :RelatedUrls :DataDates :ResponsibleOrganizations :SpatialKeywords
+    :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
+    :RelatedUrls :DataDates :Organizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
     :CollectionProgress :SpatialInformation :CollectionDataType
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
