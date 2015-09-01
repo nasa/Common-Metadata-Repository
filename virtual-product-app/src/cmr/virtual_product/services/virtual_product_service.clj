@@ -31,11 +31,10 @@
 (defn subscribe-to-ingest-events
   "Subscribe to messages on the indexing queue."
   [context]
-  (when (config/virtual-products-enabled)
-    (let [queue-broker (get-in context [:system :queue-broker])
-          queue-name (config/virtual-product-queue-name)]
-      (dotimes [n (config/queue-listener-count)]
-        (queue/subscribe queue-broker queue-name #(handle-ingest-event context %))))))
+  (let [queue-broker (get-in context [:system :queue-broker])
+        queue-name (config/virtual-product-queue-name)]
+    (dotimes [n (config/queue-listener-count)]
+      (queue/subscribe queue-broker queue-name #(handle-ingest-event context %)))))
 
 (def source-provider-id-entry-titles
   "A set of the provider id entry titles for the source collections."
