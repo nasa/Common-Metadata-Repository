@@ -578,6 +578,8 @@
 
    ;; Last name of the individual.
    LastName
+
+   Uuid
   ])
 (record-pretty-printer/enable-record-pretty-printing PersonType)
 
@@ -736,6 +738,8 @@
    ShortName
 
    LongName
+
+   Uuid
   ])
 (record-pretty-printer/enable-record-pretty-printing OrganizationNameType)
 

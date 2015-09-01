@@ -158,6 +158,9 @@
         },
         "LongName": {
           "$ref": "#/definitions/LongNameType"
+        },
+        "Uuid": {
+          "$ref": "#/definitions/UuidType"
         }
       },
       "required": ["ShortName"]
@@ -184,6 +187,9 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 255
+        },
+        "Uuid": {
+          "$ref": "#/definitions/UuidType"
         }
       },
       "required": ["LastName"]
