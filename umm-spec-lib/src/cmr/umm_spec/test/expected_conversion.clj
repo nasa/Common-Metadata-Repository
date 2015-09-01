@@ -191,7 +191,9 @@
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :UseConstraints nil :AccessConstraints nil)
+      (assoc :UseConstraints nil)
+      (assoc :AccessConstraints nil)
+      (assoc :TemporalKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
@@ -204,7 +206,7 @@
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
     :RelatedUrls :DataDates :ResponsibleOrganizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
-    :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
+    :CollectionProgress :SpatialInformation :CollectionDataType
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 

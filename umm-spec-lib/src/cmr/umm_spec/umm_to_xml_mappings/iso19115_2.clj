@@ -36,6 +36,23 @@
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
 
+(defn- generate-descriptive-keywords
+  "Returns content generator instruction for the descriptive keywords field. We create this function
+  because we don't want to generate the parent elements when there are no TemporalKeywords."
+  [xpath-context]
+  (when-let [temporal-keywords (-> xpath-context :context first :TemporalKeywords seq)]
+    (vec (concat
+           [:gmd:MD_Keywords]
+
+           (for [temporal-keyword temporal-keywords]
+             [:gmd:keyword [:gco:CharacterString temporal-keyword]])
+
+           [[:gmd:type
+             [:gmd:MD_KeywordTypeCode
+              {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+               :codeListValue "temporal"} "temporal"]]
+            [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))))
+
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
    iso19115-2-xml-namespaces
@@ -65,6 +82,7 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+     [:gmd:descriptiveKeywords generate-descriptive-keywords]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
        [:gmd:useLimitation (char-string-from "/UseConstraints")]

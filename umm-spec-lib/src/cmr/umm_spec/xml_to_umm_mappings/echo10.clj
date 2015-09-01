@@ -29,6 +29,7 @@
        :AccessConstraints (object
                             {:Description (xpath "/Collection/RestrictionComment")
                              :Value (xpath "/Collection/RestrictionFlag")})
+       :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"
                     (object {:ShortName (xpath "ShortName")

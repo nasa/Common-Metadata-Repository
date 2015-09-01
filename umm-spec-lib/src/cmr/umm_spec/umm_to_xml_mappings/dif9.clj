@@ -32,6 +32,9 @@
              [:Temporal_Coverage
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
+   (for-each "/TemporalKeywords"
+             [:Data_Resolution
+              [:Temporal_Resolution (xpath ".")]])
    [:Quality (xpath "/Quality")]
    [:Access_Constraints (xpath "/AccessConstraints/Description")]
    [:Use_Constraints (xpath "/UseConstraints")]
