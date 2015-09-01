@@ -21,7 +21,7 @@
   "Returns ISO SMAP keyword content for an XPath context containing a UMM Platform/Instrument/etc.
   record."
   [{[record] :context}]
-  [(util/smap-keyword-str record)])
+  (util/smap-keyword-str record))
 
 (defn- date-mapping
   "Returns the date element mapping for the given name and date value in string format."
@@ -103,4 +103,3 @@
                                         :codeListValue "largerWorkCitation"}
            "largerWorkCitation"]]]]
        [:gmd:language (char-string "eng")]]]]]])
-

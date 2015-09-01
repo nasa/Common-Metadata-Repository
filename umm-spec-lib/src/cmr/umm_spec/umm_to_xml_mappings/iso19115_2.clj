@@ -33,9 +33,9 @@
 
 (defn- make-instrument-title
   [{[instrument] :context}]
-  [(str (:ShortName instrument)
-        ">"
-        (:LongName instrument))])
+  (str (:ShortName instrument)
+       ">"
+       (:LongName instrument)))
 
 (comment
   ;; The following two functions are unused, pending some answers on IDs in ISO XML platforms and
