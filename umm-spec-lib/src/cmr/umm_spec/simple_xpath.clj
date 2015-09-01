@@ -325,6 +325,7 @@
   (cond
     (nil? data) []
     (vector? data) data
+    (sequential? data) (vec data)
     :else [data]))
 
 (defmulti process-data-selector
