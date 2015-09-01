@@ -18,6 +18,11 @@
   [record format]
   (let [metadata-xml (core/generate-metadata :collection format record)]
     ;; validate xml
+    ;; Since our UMM JSON schema is not complete in defining things like enumeration values for
+    ;; controlled vocabulary fields, the generator generated fields would not create validate field
+    ;; values for those fields (e.g. Dataset_Language field). Until we change the schema to be
+    ;; explicit on those enumeration values and other things, we can't turn validation on xml on.
+    ;; See CMR-1990
     ; (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 

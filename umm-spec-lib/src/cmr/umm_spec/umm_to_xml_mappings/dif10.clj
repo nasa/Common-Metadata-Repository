@@ -85,13 +85,17 @@
                          :Value))
       [:Instrument [:Short_Name "Not implemented"]]])
 
-    (for-each "/TemporalExtents[1]"
-              (conj temporal-coverage-without-temporal-keywords
-                    [:Temporal_Info
-                     (for-each "/TemporalKeywords"
-                               [:Ancillary_Temporal_Keyword (xpath ".")])]))
-    (for-each "/TemporalExtents[2..]"
-              temporal-coverage-without-temporal-keywords)
+   ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
+   ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
+   ;; be associated with. This is something DIF10 team will look into at improving, but in the
+   ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
+   (for-each "/TemporalExtents[1]"
+             (conj temporal-coverage-without-temporal-keywords
+                   [:Temporal_Info
+                    (for-each "/TemporalKeywords"
+                              [:Ancillary_Temporal_Keyword (xpath ".")])]))
+   (for-each "/TemporalExtents[2..]"
+             temporal-coverage-without-temporal-keywords)
 
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]

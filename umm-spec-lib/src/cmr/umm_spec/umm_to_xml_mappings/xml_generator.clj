@@ -30,7 +30,7 @@
 
 (defmethod generate-content :fn
   [content-generator-fn xpath-context]
-  (let [result (content-generator-fn xpath-context)]
+  (when-let [result (content-generator-fn xpath-context)]
     (if (string? (first result))
       result
       (generate-content result xpath-context))))
@@ -69,10 +69,10 @@
 (defmethod generate-content :xpath
   [{:keys [value]} xpath-context]
   (some->> (sxp/evaluate xpath-context (sxp/parse-xpath value))
-             :context
-             first
-             str
-             vector))
+           :context
+           first
+           str
+           vector))
 
 (defmethod generate-content :constant
   [value _]
