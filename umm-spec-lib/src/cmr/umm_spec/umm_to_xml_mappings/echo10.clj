@@ -14,6 +14,8 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:RestrictionFlag (xpath "/AccessConstraints/Value")]
+   [:RestrictionComment (xpath "/AccessConstraints/Description")]
    [:TemporalKeywords
     (for-each "/TemporalKeywords"
               [:Keyword (xpath ".")])]

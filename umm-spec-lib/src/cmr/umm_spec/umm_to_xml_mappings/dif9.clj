@@ -36,6 +36,7 @@
              [:Data_Resolution
               [:Temporal_Resolution (xpath ".")]])
    [:Quality (xpath "/Quality")]
+   [:Access_Constraints (xpath "/AccessConstraints/Description")]
    [:Use_Constraints (xpath "/UseConstraints")]
    [:Data_Set_Language (xpath "/DataLanguage")]
    [:Data_Center

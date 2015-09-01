@@ -26,6 +26,9 @@
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
        :Purpose (xpath "/Collection/SuggestedUsage")
+       :AccessConstraints (object
+                            {:Description (xpath "/Collection/RestrictionComment")
+                             :Value (xpath "/Collection/RestrictionFlag")})
        :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"

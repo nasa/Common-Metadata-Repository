@@ -11,7 +11,8 @@
   * Subselect by element equality: /catalog/books[price='5.95']/title
   * Subselect by child index: /catalog/books[1]/author
   * Subselect by range of child indexes /catalog/books[2..4]/author.  Openended ranges like [2..]
-  are supported as well. (Note this is not a standard XPath feature.)
+  are supported as well. (Note this is not a standard XPath feature.) Indexes are 1 based arrays. Both
+  start and end indexes are inclusive.
 
   Note that there will be undefined behavior if an unsupported XPath is used.
 
@@ -76,7 +77,7 @@
   (let [[_ start-str end-str] (re-matches #"(\d+)\.\.(\d*)" selector-str)
         ;; Start index will be 0 based inclusive
         start-index (dec (Long/parseLong start-str))
-        ;; End index will be 0 based exclusive
+        ;; The end index is 1 based inclusive. We can treat the same number as 0 based exclusive.
         end-index (when-not (str/blank? end-str) (Long/parseLong end-str))]
     {:type :range-selector
      :start-index start-index
@@ -305,9 +306,14 @@
 (defmethod process-xml-selector :range-selector
   [elements {:keys [start-index end-index]}]
   (if (seq elements)
-    (if end-index
-      (subvec (vec elements) start-index end-index)
-      (subvec (vec elements) start-index))
+    (let [elements-vec (vec elements)
+          size (count elements-vec)]
+      (if (< start-index size)
+        (if end-index
+          (subvec elements-vec start-index (min end-index size))
+          (subvec elements-vec start-index))
+        ;; It's past the end of the index
+        []))
     []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -367,9 +373,14 @@
 (defmethod process-data-selector :range-selector
   [data {:keys [start-index end-index]}]
   (if (seq data)
-    (if end-index
-      (subvec (as-vector data) start-index end-index)
-      (subvec (as-vector data) start-index))
+    (let [data-vec (as-vector data)
+          size (count data-vec)]
+      (if (< start-index size)
+        (if end-index
+          (subvec data-vec start-index (min end-index size))
+          (subvec data-vec start-index))
+        ;; It's past the end of the index
+        []))
     []))
 
 

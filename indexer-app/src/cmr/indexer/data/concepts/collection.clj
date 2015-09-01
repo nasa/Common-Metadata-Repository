@@ -80,6 +80,8 @@
         project-long-names (keep :long-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-center-val (org/extract-archive-centers collection)
+        archive-centers (map #(org/archive-center-short-name->elastic-doc gcmd-keywords-map %)
+                             archive-center-val)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
@@ -122,9 +124,11 @@
             :platform-sn platform-short-names
             :platform-sn.lowercase  (map str/lower-case platform-short-names)
 
-            ;; hierarchical platforms and instruments
+            ;; hierarchical fields
             :platforms platforms-nested
             :instruments instruments-nested
+            :archive-centers archive-centers
+            :science-keywords (sk/science-keywords->elastic-doc collection)
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
@@ -137,7 +141,6 @@
             :spatial-keyword spatial-keywords
             :spatial-keyword.lowercase  (map str/lower-case spatial-keywords)
             :attributes (attrib/psas->elastic-docs collection)
-            :science-keywords (sk/science-keywords->elastic-doc collection)
             :science-keywords-flat (sk/flatten-science-keywords collection)
             :personnel (json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
@@ -156,6 +159,7 @@
             :associated-difs.lowercase (map str/lower-case associated-difs)
             :coordinate-system (when spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
+
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field concept-id collection
                                               {:platform-long-names platform-long-names

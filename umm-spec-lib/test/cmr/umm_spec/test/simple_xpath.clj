@@ -156,6 +156,13 @@
                             "<title>Maeve Ascendant</title>"
                             "<title>Oberon's Legacy</title>"])
 
+         ;; Range past the end of the list
+         "/catalog/book[2..9]/title"
+         (mapv x/parse-str ["<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"
+                            "<title>Oberon's Legacy</title>"
+                            "<title>The Sundered Grail</title>"])
+
          ;; Select open ended index range
          "/catalog/book[2..]/title"
          (mapv x/parse-str ["<title>Midnight Rain</title>"
@@ -163,6 +170,19 @@
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
+         ;; From very end
+         "/catalog/book[5..]/title"
+         [(x/parse-str "<title>The Sundered Grail</title>")]
+
+         ;; Using the same index for both
+         "/catalog/book[5..5]/title"
+         [(x/parse-str "<title>The Sundered Grail</title>")]
+
+         ;; Past the end of the list
+         "/catalog/book[7..]/title"
+         []
+         "/catalog/book[7..9]/title"
+         []
 
          ;; Uses nested elements in subselector
          "/catalog/book[dates/publish_date='2001-09-10']/title"
@@ -258,12 +278,25 @@
           "Maeve Ascendant"
           "Oberon's Legacy"]
 
+         ;; Range end past the end of the list
+         "/books[2..10]/title"
+         ["Midnight Rain"
+          "Maeve Ascendant"
+          "Oberon's Legacy"
+          "The Sundered Grail"]
+
          ;; Select open ended index range
          "/books[2..]/title"
          ["Midnight Rain"
           "Maeve Ascendant"
           "Oberon's Legacy"
           "The Sundered Grail"]
+
+         ;; Past the end of the list
+         "/books[7..]/title"
+         []
+         "/books[7..9]/title"
+         []
 
          ;; Doesn't reference a real element
          "/catalog/foo[1]"
