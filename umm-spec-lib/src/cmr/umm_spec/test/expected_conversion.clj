@@ -6,7 +6,6 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
-            [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (def example-record
