@@ -2,6 +2,7 @@
   "Implements parsing of XML into UMM records."
   (:require [clojure.string :as str]
             [cmr.common.date-time-parser :as dtp]
+            [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :as sxp]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,10 +53,12 @@
 
 (defmethod process-xml-mapping :object
   [xpath-context {:keys [parse-type properties]}]
-  (let [{:keys [constructor-fn]} parse-type]
-    (constructor-fn
-      (into {} (for [[prop-name sub-def] properties]
-                 [prop-name (process-xml-mapping xpath-context sub-def)])))))
+  (let [{:keys [constructor-fn]} parse-type
+        record-map (util/remove-nil-keys
+                     (into {} (for [[prop-name sub-def] properties]
+                                [prop-name (process-xml-mapping xpath-context sub-def)])))]
+    (when (seq record-map)
+      (constructor-fn record-map))))
 
 (defmethod process-xml-mapping :xpath
   [xpath-context {:keys [parse-type value]}]
@@ -78,6 +81,18 @@
              (if (and template (mapping-type template))
                (process-xml-mapping single-item-xpath-context template)
                (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
+
+(defmethod process-xml-mapping :xpath-with-regex
+  [xpath-context {:keys [xpath regex]}]
+  (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
+    (let [elements (seq (:context new-xpath-context))]
+      (first (for [element elements
+                   :let [match (re-matches regex (-> element :content first))]
+                   :when match]
+               ;; A string response implies there is no group in the regular expression and the
+               ;; entire matching string is returned and if there is a group in the regular
+               ;; expression, the first group of the matching string is returned.
+               (if (string? match) match (second match)))))))
 
 (defmethod process-xml-mapping :constant
   [_ {:keys [value]}]

@@ -36,7 +36,10 @@
                                                                  :Party (cmn/map->PartyType {})})]
     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-
+    :AccessConstraints (cmn/map->AccessConstraintsType
+                          {:Description "Access constraints"
+                           :Value "0"})
+    :UseConstraints "Use constraints"
     :EntryId "short_V1"
     :EntryTitle "The entry title V5"
     :Version "V5"
@@ -113,41 +116,50 @@
       (assoc :UseConstraints nil)))
 
 ;; DIF 9
-
-(defn dif-temporal
+(defn dif9-temporal
   "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
-  (when-let [temporal (->> temporal-extents
-                           ;; Only ranges are supported by DIF 9, so we need to convert
-                           ;; single dates to range types.
-                           (map single-dates->ranges)
-                           ;; Merge the list of temporals together since we'll read the set of range date times as
-                           ;; a single temporal with many range date times.
-                           merge-temporals)]
-    ;; DIF 9 does not support these fields.
-    [(assoc temporal
-            :PeriodicDateTimes nil
-            :TemporalRangeType nil
-            :PrecisionOfSeconds nil
-            :EndsAtPresentFlag nil)]))
+  (let [temporal (->> temporal-extents
+                      ;; Only ranges are supported by DIF 9, so we need to convert
+                      ;; single dates to range types.
+                      (map single-dates->ranges)
+                      ;; Merge the list of temporals together since we'll read the set of range date times as
+                      ;; a single temporal with many range date times.
+                      merge-temporals)
+        ;; DIF 9 does not support these fields.
+        temporal  (assoc temporal
+                         :PeriodicDateTimes nil
+                         :TemporalRangeType nil
+                         :PrecisionOfSeconds nil
+                         :EndsAtPresentFlag nil)]
+    ;; DIF 9 only supports range date times
+    (when (seq (:RangeDateTimes temporal)) [temporal])))
+
+(defn dif-access-constraints
+  "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
+  [access-constraints]
+  (when access-constraints
+    (assoc access-constraints :Value nil)))
 
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (update-in [:TemporalExtents] dif-temporal)
-      ;; DIF 9 does not support Platform Type or Characteristics.
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
+       (update-in [:TemporalExtents] dif9-temporal)
+       (update-in [:AccessConstraints] dif-access-constraints)
+       ;; DIF 9 does not support Platform Type or Characteristics.
+       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
 
 ;; DIF 10
-
-(defn fix-dif10-platform
+(defn dif10-platform
   [platform]
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
-  (update-in-each umm-coll [:Platforms] fix-dif10-platform))
+  (-> umm-coll
+      (update-in [:AccessConstraints] dif-access-constraints)
+      (update-in-each [:Platforms] dif10-platform)))
 
 ;; ISO 19115-2
 
@@ -178,10 +190,11 @@
   (-> (convert-internal umm-coll :iso19115)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      ;; Fields not supported by ISO-SMAP
+      (assoc :UseConstraints nil :AccessConstraints nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-      (assoc :UseConstraints nil)))
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
 
 ;;; Unimplemented Fields
 
@@ -189,7 +202,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :ResponsiblePersonnel :PublicationReferences
-    :RelatedUrls :DataDates :ResponsibleOrganizations :AccessConstraints :SpatialKeywords
+    :RelatedUrls :DataDates :ResponsibleOrganizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
     :CollectionProgress :SpatialInformation :CollectionDataType :TemporalKeywords
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage

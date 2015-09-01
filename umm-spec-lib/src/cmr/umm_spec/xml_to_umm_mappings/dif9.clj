@@ -15,6 +15,8 @@
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Data_Set_Language")
        :Quality (xpath "/DIF/Quality")
+       :AccessConstraints (object
+                            {:Description (xpath "/DIF/Access_Constraints")})
        :UseConstraints (xpath "/DIF/Use_Constraints")
        :Platforms (for-each "/DIF/Source_Name"
                     (object {:ShortName (xpath "Short_Name")

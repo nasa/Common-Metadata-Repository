@@ -52,8 +52,6 @@
     [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
    [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
    [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
-
-
    [:gmd:identificationInfo
     [:gmd:MD_DataIdentification
      [:gmd:citation
@@ -69,7 +67,11 @@
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
-       [:gmd:useLimitation (char-string-from "/UseConstraints")]]]
+       [:gmd:useLimitation (char-string-from "/UseConstraints")]
+       [:gmd:useLimitation
+        [:gco:CharacterString (concat-parts "Restriction Comment:" (xpath "/AccessConstraints/Description"))]]
+       [:gmd:otherConstraints
+        [:gco:CharacterString (concat-parts "Restriction Flag:" (xpath "/AccessConstraints/Value"))]]]]
      [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
       [:gmd:EX_Extent

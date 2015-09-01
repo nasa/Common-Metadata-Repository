@@ -33,6 +33,7 @@
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
    [:Quality (xpath "/Quality")]
+   [:Access_Constraints (xpath "/AccessConstraints/Description")]
    [:Use_Constraints (xpath "/UseConstraints")]
    [:Data_Set_Language (xpath "/DataLanguage")]
    [:Data_Center

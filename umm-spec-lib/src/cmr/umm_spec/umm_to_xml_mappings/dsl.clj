@@ -60,6 +60,13 @@
   [value]
   [:gco:CharacterString value])
 
+(defn concat-parts
+  "Defines a mapping that returns a concatenation of other parts. The parts will all be evaluated
+  with parse type of string."
+  [& parts]
+  {::type :concat
+   :parts (vec parts)})
+
 (defn matching-field
   "Returns an element mapping with an XML element name matching the corresponding UMM field."
   [k]
