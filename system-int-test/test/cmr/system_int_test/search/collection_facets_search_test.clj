@@ -160,17 +160,16 @@
                          (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")]})
+                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
         coll2 (make-coll 2 "PROV1"
                          (science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                          (projects "proj1" "PROJ2")
                          (platforms FROM_KMS 2 2 1)
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")]})
+                         {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
 
-        expected-facets [{:field "archive_center", :value-counts [["Larc" 2]]}
-                         {:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
+        expected-facets [{:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
                          {:field "sensor",
                           :value-counts
                           [["FROM_KMS-p0-i0-s0" 2]
@@ -182,6 +181,32 @@
                          {:field "processing_level_id", :value-counts [["PL1" 2]]}
                          {:field "detailed_variable",
                           :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+                         {:field "archive_centers",
+                          :subfields ["level-0"],
+                          :level-0
+                          [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
+                            :count 2,
+                            :subfields ["level-1"],
+                            :level-1
+                            [{:value "DOI",
+                              :count 2,
+                              :subfields ["level-2"],
+                              :level-2
+                              [{:value "USGS",
+                                :count 2,
+                                :subfields ["level-3"],
+                                :level-3
+                                [{:value "Added level 3 value",
+                                  :count 2,
+                                  :subfields ["short-name"],
+                                  :short-name
+                                  [{:value "DOI/USGS/CMG/WHSC",
+                                    :count 2,
+                                    :subfields ["long-name"],
+                                    :long-name
+                                    [{:value
+                                      "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
+                                      :count 2}]}]}]}]}]}]}
                          {:field "platforms",
                           :subfields ["category"],
                           :category
@@ -330,12 +355,12 @@
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1" (science-keywords sk3))
         coll2 (make-coll 2 "PROV1" (science-keywords sk5))
-        expected-hierarchical-facets [{:field "archive_center", :value-counts []}
-                                      {:field "project", :value-counts []}
+        expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable", :value-counts []}
+                                      {:field "archive_centers", :subfields []}
                                       {:field "platforms", :subfields []}
                                       {:field "instruments", :subfields []}
                                       {:field "science_keywords",
@@ -381,12 +406,12 @@
     (is (= expected-flat-facets (:json-facets actual-flat-facets)))))
 
 (deftest empty-hierarchical-facets-test
-  (let [expected-facets [{:field "archive_center", :value-counts []}
-                         {:field "project", :value-counts []}
+  (let [expected-facets [{:field "project", :value-counts []}
                          {:field "sensor", :value-counts []}
                          {:field "two_d_coordinate_system_name", :value-counts []}
                          {:field "processing_level_id", :value-counts []}
                          {:field "detailed_variable", :value-counts []}
+                         {:field "archive_centers", :subfields []}
                          {:field "platforms", :subfields []}
                          {:field "instruments", :subfields []}
                          {:field "science_keywords", :subfields []}]
@@ -397,13 +422,13 @@
 (deftest detailed-variable-test
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1" (science-keywords sk8))
-        expected-hierarchical-facets [{:field "archive_center", :value-counts []}
-                                      {:field "project", :value-counts []}
+        expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
                                        :value-counts [["Detailed-No-Level2-or-3" 1]]}
+                                      {:field "archive_centers", :subfields []}
                                       {:field "platforms", :subfields []}
                                       {:field "instruments", :subfields []}
                                       {:field "science_keywords",
@@ -820,4 +845,65 @@
                                 :json-facets
                                 (filter #(= "instruments" (:field %))))]
     (is (= expected-instruments actual-instruments))))
+
+(deftest archive-center-missing-fields-test
+  (grant-permissions)
+  ;; Test that if the archive-centers do not exist in KMS, they will still be returned, but with a
+  ;; value of "Not Provided" for all of the values in the hierarchy other than short name.
+  (make-coll 1 "PROV1" {:organizations [(dc/org :archive-center "Larc")]})
+  ;; Test that even with a nil Level-1, Level-2, and Level-3 the archive-center will still be
+  ;; returned, but with a value of "Not Provided" for each nil field
+  (make-coll 2 "PROV1" {:organizations [(dc/org :archive-center "ESA/ED")]})
+  (let [expected-archive-centers [{:field "archive_centers",
+                                   :subfields ["level-0"],
+                                   :level-0
+                                   [{:value "CONSORTIA/INSTITUTIONS",
+                                     :count 1,
+                                     :subfields ["level-1"],
+                                     :level-1
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["level-2"],
+                                       :level-2
+                                       [{:value "Not Provided",
+                                         :count 1,
+                                         :subfields ["level-3"],
+                                         :level-3
+                                         [{:value "Not Provided",
+                                           :count 1,
+                                           :subfields ["short-name"],
+                                           :short-name
+                                           [{:value "ESA/ED",
+                                             :count 1,
+                                             :subfields ["long-name"],
+                                             :long-name
+                                             [{:value
+                                               "Educational Office, Ecological Society of America",
+                                               :count 1}]}]}]}]}]}
+                                    {:value "Not Provided",
+                                     :count 1,
+                                     :subfields ["level-1"],
+                                     :level-1
+                                     [{:value "Not Provided",
+                                       :count 1,
+                                       :subfields ["level-2"],
+                                       :level-2
+                                       [{:value "Not Provided",
+                                         :count 1,
+                                         :subfields ["level-3"],
+                                         :level-3
+                                         [{:value "Not Provided",
+                                           :count 1,
+                                           :subfields ["short-name"],
+                                           :short-name
+                                           [{:value "Larc",
+                                             :count 1,
+                                             :subfields ["long-name"],
+                                             :long-name
+                                             [{:value "Not Provided", :count 1}]}]}]}]}]}]}]
+        actual-archive-centers (->> (get-facet-results :hierarchical)
+                                    :json-facets
+                                    (filter #(= "archive_centers" (:field %))))]
+    (is (= expected-archive-centers actual-archive-centers))))
+
 
