@@ -14,29 +14,46 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:RestrictionFlag (xpath "/AccessConstraints/Value")]
+   [:RestrictionComment (xpath "/AccessConstraints/Description")]
 
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
    (for-each "/TemporalExtents[1]"
-     [:Temporal
-      [:TemporalRangeType (xpath "TemporalRangeType")]
-      [:PrecisionOfSeconds (xpath "PrecisionOfSeconds")]
-      [:EndsAtPresentFlag (xpath "EndsAtPresentFlag")]
-      (for-each "RangeDateTimes"
-        [:RangeDateTime
-         [:BeginningDateTime (xpath "BeginningDateTime")]
-         [:EndingDateTime (xpath "EndingDateTime")]])
+     (matching-object :Temporal
+                      :Temporal
+                      :TemporalRangeType
+                      :PrecisionOfSeconds
+                      :EndsAtPresentFlag
 
-      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
+                      (for-each "RangeDateTimes"
+                        (matching-object :RangeDateTime
+                                         :BeginningDateTime
+                                         :EndingDateTime))
 
-      (for-each "PeriodicDateTimes"
-        [:PeriodicDateTime
-         [:Name (xpath "Name")]
-         [:StartDate (xpath "StartDate")]
-         [:EndDate (xpath "EndDate")]
-         [:DurationUnit (xpath "DurationUnit")]
-         [:DurationValue (xpath "DurationValue")]
-         [:PeriodCycleDurationUnit (xpath "PeriodCycleDurationUnit")]
-         [:PeriodCycleDurationValue (xpath "PeriodCycleDurationValue")]])])
-   ])
+                      (for-each "SingleDateTimes" [:SingleDateTime (xpath ".")])
 
+                      (for-each "PeriodicDateTimes"
+                        (matching-object :PeriodicDateTime
+                                         :Name
+                                         :StartDate
+                                         :EndDate
+                                         :DurationUnit
+                                         :DurationValue
+                                         :PeriodCycleDurationUnit
+                                         :PeriodCycleDurationValue))))
+
+   [:Platforms
+    (for-each "/Platforms"
+      (matching-object :Platform
+                       :ShortName
+                       :LongName
+                       :Type
+                       [:Characteristics
+                        (for-each "Characteristics"
+                          (matching-object :Characteristic
+                                           :Name
+                                           :Description
+                                           :DataType
+                                           :Unit
+                                           :Value))]))]])

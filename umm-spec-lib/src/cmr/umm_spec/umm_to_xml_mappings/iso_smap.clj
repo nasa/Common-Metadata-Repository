@@ -55,6 +55,20 @@
            [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+       [:gmd:descriptiveKeywords
+        [:gmd:MD_Keywords
+         (for-each "/Platforms"
+           [:gmd:keyword
+            [:gco:CharacterString
+             (fn [{[platform] :context}]
+               ;; Note from the original umm mappings: There is a disconnect between UMM platform
+               ;; type and the SMAP ISO platform keyword category. We will just hardcode it to be
+               ;; "Aircraft" for now.
+               [(format "Aircraft > DUMMY > %s > %s"
+                        (:ShortName platform)
+                        ;; Because LongName is optional, we want an empty string instead of "null"
+                        ;; here to prevent problems when parsing.
+                        (str (:LongName platform)))])]])]]
        [:gmd:language (char-string-from "/DataLanguage")]
        [:gmd:extent
         [:gmd:EX_Extent

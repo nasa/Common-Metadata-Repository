@@ -406,3 +406,11 @@
   (let [path-values (map->path-values matching-map)]
     (filter #(map-matches-path-values? path-values %) maps)))
 
+(defn update-in-each
+  "Like update-in but applied to each value in seq at path."
+  [m path f & args]
+  (update-in m path (fn [xs]
+                      (when xs
+                        (map (fn [x]
+                               (apply f x args))
+                             xs)))))

@@ -30,6 +30,12 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
+(def attribute-type-code-list
+  "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode")
+
+(def attribute-data-type-code-list
+  "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
+
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
    iso19115-2-xml-namespaces
@@ -46,8 +52,6 @@
     [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
    [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
    [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
-
-
    [:gmd:identificationInfo
     [:gmd:MD_DataIdentification
      [:gmd:citation
@@ -63,7 +67,11 @@
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
-       [:gmd:useLimitation (char-string-from "/UseConstraints")]]]
+       [:gmd:useLimitation (char-string-from "/UseConstraints")]
+       [:gmd:useLimitation
+        [:gco:CharacterString (concat-parts "Restriction Comment:" (xpath "/AccessConstraints/Description"))]]
+       [:gmd:otherConstraints
+        [:gco:CharacterString (concat-parts "Restriction Flag:" (xpath "/AccessConstraints/Value"))]]]]
      [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
       [:gmd:EX_Extent
@@ -95,10 +103,54 @@
        [:gmd:measureIdentification
         [:gmd:MD_Identifier
          [:gmd:code
-          [:gco:CharacterString "PrecisionOfSeconds"]]]]
+          (char-string "PrecisionOfSeconds")]]]
        [:gmd:result
         [:gmd:DQ_QuantitativeResult
          [:gmd:valueUnit ""]
          [:gmd:value
           [:gco:Record {:xsi:type "gco:Real_PropertyType"}
-           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]])
+           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]
+   [:gmi:acquisitionInformation
+    [:gmi:MI_AcquisitionInformation
+     (for-each "/Platforms"
+       [:gmi:platform
+        [:eos:EOS_Platform {:id "not-implemented"}
+         [:gmi:identifier
+          [:gmd:MD_Identifier
+           [:gmd:code
+            (char-string-from "ShortName")]
+           [:gmd:description
+            (char-string-from "LongName")]]]
+         [:gmi:description (char-string-from "Type")]
+         [:gmi:instrument {:gco:nilReason "not implemented"}]
+
+         ;; Characteristics
+         (for-each "Characteristics[1]"
+           [:eos:otherPropertyType
+            [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+             "Echo Additional Attributes"]])
+         [:eos:otherProperty
+          [:gco:Record
+           [:eos:AdditionalAttributes
+            (for-each "Characteristics"
+              [:eos:AdditionalAttribute
+               [:eos:reference
+                [:eos:EOS_AdditionalAttributeDescription
+                 [:eos:type
+                  [:eos:EOS_AdditionalAttributeTypeCode {:codeList attribute-type-code-list
+                                                         :codeListValue "platformInformation"}
+                   "platformInformation"]]
+                 [:eos:name
+                  (char-string-from "Name")]
+                 [:eos:description
+                  (char-string-from "Description")]
+                 [:eos:dataType
+                  [:eos:EOS_AdditionalAttributeDataTypeCode {:codeList attribute-data-type-code-list
+                                                             :codeListValue (xpath "DataType")}
+                   (xpath "DataType")]]
+                 [:eos:parameterUnitsOfMeasure
+                  (char-string-from "Unit")]]]
+               [:eos:value
+                (char-string-from "Value")]])]]]
+
+         ]])]]])

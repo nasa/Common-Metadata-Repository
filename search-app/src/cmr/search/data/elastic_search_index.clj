@@ -248,7 +248,6 @@
     (when (> extra-provider-count 0)
       (e/internal-error! "There were [%s] more providers with granules than we ever expected to see."))
 
-
     (into {} (for [provider-bucket (get-in results [:aggregations :by-provider :buckets])
                    :let [extra-collection-count (get-in provider-bucket [:by-collection-id :sum_other_doc_count])]
                    coll-bucket (get-in provider-bucket [:by-collection-id :buckets])
