@@ -160,7 +160,6 @@
             :coordinate-system (when spatial-representation
                                  (csk/->SCREAMING_SNAKE_CASE_STRING spatial-representation))
 
-
             ;; fields added to support keyword searches
             :keyword (k/create-keywords-field concept-id collection
                                               {:platform-long-names platform-long-names
