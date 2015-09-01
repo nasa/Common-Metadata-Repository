@@ -1,5 +1,5 @@
 (ns cmr.indexer.data.concepts.organization
-  "Contains functions to extract organizaiton fields"
+  "Contains functions to extract organization fields"
   (require [cmr.common-app.services.kms-fetcher :as kf]
            [clojure.string :as str]))
 
