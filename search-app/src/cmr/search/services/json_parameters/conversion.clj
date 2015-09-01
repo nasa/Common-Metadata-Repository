@@ -39,7 +39,7 @@
    :instrument :nested-condition
    :sensor :string
    :project :string
-   :archive-center :string
+   :archive-center :nested-condition
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :keyword :keyword

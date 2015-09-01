@@ -108,7 +108,12 @@
   (testing "Instrument must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid instrument query condition [{:ignore-case true}]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any."]}
-            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}})))))
+            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}}))))
+
+  (testing "Archive center must contain one of the subfields as part of the search"
+    (is (= {:status 400
+            :errors ["Invalid archive center query condition [{:ignore-case true}]. Must contain level_0, level_1, level_2, level_3, short_name, long_name, url, uuid, or any."]}
+            (search/find-refs-with-json-query :collection {} {:archive_center {:ignore_case true}})))))
 
 
 (comment

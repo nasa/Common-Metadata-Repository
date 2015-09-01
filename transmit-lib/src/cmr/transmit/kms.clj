@@ -22,7 +22,7 @@
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
-  {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :data-center-url :uuid]
+  {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]})
 

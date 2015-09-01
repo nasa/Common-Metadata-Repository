@@ -67,6 +67,7 @@
     :science-keywords (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition-value)
     :platforms (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition-value)
     :instruments (format "Invalid instrument query condition [%s]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any." condition-value)
+    :archive-centers (format "Invalid archive center query condition [%s]. Must contain level_0, level_1, level_2, level_3, short_name, long_name, url, uuid, or any." condition-value)
 
     ;; else
     (format "Invalid json query condition [%s] for field [%s]", (name condition-name) condition-value)))
