@@ -37,7 +37,10 @@
                                                                  :Party (cmn/map->PartyType {})})]
     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-
+    :AccessConstraints (cmn/map->AccessConstraintsType
+                          {:Description "Access constraints"
+                           :Value "0"})
+    :UseConstraints "Use constraints"
     :EntryId "short_V1"
     :EntryTitle "The entry title V5"
     :Version "V5"
@@ -114,7 +117,7 @@
       (assoc :UseConstraints nil)))
 
 ;; DIF 9
-(defn dif-temporal
+(defn dif9-temporal
   "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
   [temporal-extents]
   (let [temporal (->> temporal-extents
@@ -130,6 +133,7 @@
                          :TemporalRangeType nil
                          :PrecisionOfSeconds nil
                          :EndsAtPresentFlag nil)]
+    ;; DIF 9 only supports range date times
     (when (seq (:RangeDateTimes temporal)) [temporal])))
 
 (defn dif-access-constraints
@@ -141,13 +145,13 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-       (update-in [:TemporalExtents] dif-temporal)
+       (update-in [:TemporalExtents] dif9-temporal)
        (update-in [:AccessConstraints] dif-access-constraints)
        ;; DIF 9 does not support Platform Type or Characteristics.
        (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
 
 ;; DIF 10
-(defn fix-dif10-platform
+(defn dif10-platform
   [platform]
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
@@ -156,7 +160,7 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
-      (update-in-each [:Platforms] fix-dif10-platform)))
+      (update-in-each [:Platforms] dif10-platform)))
 
 ;; ISO 19115-2
 
@@ -180,23 +184,7 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
-      (assoc :Quality nil)
-      (update-in [:AccessConstraints] (fn [{:keys [Description Value]}]
-                                        (when-not (nil? Description)
-                                          (cmn/map->AccessConstraintsType
-                                          {:Description Description
-                                           :Value Value}))))
-      ;; Currently Use Constraints is setup to map to the same xpath
-      ;; (/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString)
-      ;; as Access Constraints. But Access constraint's Description field is supposed to have a prefix called
-      ;; "Restriction Comment:", but there is no such requirement for Use constraint. Use Constaints mapping
-      ;; that we set up wrongly assumes that there can only be one value in the xpath.
-      ;; The round-trip tests add this prefix to the value at the xpath and overwrite whatever is
-      ;; originally in the UserConstraints. This is a temporary fix until Use Constraints is fixed.
-      (update-in [:UseConstraints] (fn [use-constraints]
-                                     (or use-constraints
-                                       (str "Restriction Comment:"
-                                            (or  (get-in umm-coll [:AccessConstraints :Description]) "")))))))
+      (assoc :Quality nil)))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
@@ -207,8 +195,7 @@
       (assoc :UseConstraints nil :AccessConstraints nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
-      (assoc :UseConstraints nil)))
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
 
 ;;; Unimplemented Fields
 

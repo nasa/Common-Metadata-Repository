@@ -23,9 +23,6 @@
 (def temporal-xpath
   (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
-(def access-constraint-xpath
-  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString"))
-
 (def precision-xpath (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report"
                           "/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result"
                           "/gmd:DQ_QuantitativeResult/gmd:value"
@@ -55,6 +52,9 @@
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
+(def constraints-xpath
+  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
+
 (def platform-characteristics-mapping
   (for-each platform-characteristics-xpath
     (object
@@ -72,18 +72,23 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
+             ;; in the JSON schema instead of a single object. CMR-1989.
              :AccessConstraints (object
                                   {:Description
-                                   (xpath-with-regex access-constraint-xpath #"Restriction Comment:(.*)")
+                                   (xpath-with-regex (str constraints-xpath
+                                                          "/gmd:useLimitation/gco:CharacterString")
+                                                     #"Restriction Comment:(.+)")
 
                                    :Value
-                                   (xpath-with-regex access-constraint-xpath #"Restriction Flag:(.*)")})
-             ;; TODO: Fix UserConstraints. UserConstraints is mapped to the same field as
-             ;; AccessConstraints and is treated as as single string. Use Constraints should likely
-             ;; containt everything that is not AccessConstraints.
+                                   (xpath-with-regex (str constraints-xpath
+                                                          "/gmd:otherConstraints/gco:CharacterString")
+                                                     #"Restriction Flag:(.+)")})
+             ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
+             ;; in the JSON schema instead of a single string. CMR-1989.
              :UseConstraints
-             (char-string-xpath md-data-id-base-xpath
-                                "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation")
+             (xpath-with-regex (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                               #"^(?!Restriction Comment:).+")
              :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
              :TemporalExtents temporal-mappings
              :Platforms (for-each platforms-xpath

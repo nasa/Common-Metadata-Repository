@@ -86,7 +86,7 @@
 
 (defmethod generate-content :concat
   [{:keys [parts]} xpath-context]
-    (vector (str/join (mapcat #(generate-content % xpath-context) parts))))
+  [(str/join (mapcat #(generate-content % xpath-context) parts))])
 
 
 (defn generate-xml

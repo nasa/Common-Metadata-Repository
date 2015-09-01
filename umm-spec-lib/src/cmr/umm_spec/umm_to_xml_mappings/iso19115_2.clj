@@ -70,7 +70,7 @@
        [:gmd:useLimitation (char-string-from "/UseConstraints")]
        [:gmd:useLimitation
         [:gco:CharacterString (concat-parts "Restriction Comment:" (xpath "/AccessConstraints/Description"))]]
-       [:gmd:useLimitation
+       [:gmd:otherConstraints
         [:gco:CharacterString (concat-parts "Restriction Flag:" (xpath "/AccessConstraints/Value"))]]]]
      [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
