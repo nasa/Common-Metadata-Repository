@@ -61,6 +61,14 @@
       :Unit        (xpath pc-attr-base-path "eos:parameterUnitsOfMeasure" char-string)
       :Value       (xpath "eos:value" char-string)})))
 
+(def platform-instruments-mapping
+  (for-each "gmi:instrument/eos:EOS_Instrument"
+    (object
+     {:ShortName (xpath platform-short-name-xpath)
+      :LongName (xpath platform-long-name-xpath)
+      :Technique (xpath "gmi:type/gco:CharacterString")
+      :Characteristics platform-characteristics-mapping})))
+
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -78,4 +86,5 @@
                           (object {:ShortName (xpath platform-short-name-xpath)
                                    :LongName (xpath platform-long-name-xpath)
                                    :Type (xpath "gmi:description/gco:CharacterString")
-                                   :Characteristics platform-characteristics-mapping}))})))
+                                   :Characteristics platform-characteristics-mapping
+                                   :Instruments platform-instruments-mapping}))})))
