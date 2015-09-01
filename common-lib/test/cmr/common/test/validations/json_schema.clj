@@ -26,6 +26,33 @@
                                                    "properties" {"zeta" {"type" "integer"}}
                                                    "required" ["zeta"]}}})))
 
+(comment
+
+  ;; This is handy for trying out different capabilities of JSON schema.
+
+  (js/validate-json
+    (js/parse-json-schema-from-string
+      (json/generate-string {:$schema "http://json-schema.org/draft-04/schema#"
+                             :definitions {:omega {:type "object"
+                                                   :properties {:a {"type" "integer"}
+                                                                :b {"type" "integer"}
+                                                                :c {"type" "integer"}}
+                                                   :oneOf [{:required [:a]}
+                                                           {:required [:b]}
+                                                           {:required [:c]}]}}
+                            :title "The title"
+                            :description "A description"
+                            :type "object"
+                            :additionalProperties false
+                            :properties {:omega {"$ref" "#/definitions/omega"}}
+                            :required ["omega"]}))
+
+    (json/generate-string {:omega {:b 2}}))
+
+)
+
+
+
 (deftest validate-json-test
   (testing "Valid json"
     (are [json]

@@ -93,7 +93,8 @@
 (deftest xpaths-with-xml-test
   (testing "xpaths from root"
     (are [xpath value]
-         (is (= value (:context (sx/evaluate sample-xml (sx/parse-xpath xpath)))))
+         (testing xpath
+           (is (= value (:context (sx/evaluate sample-xml (sx/parse-xpath xpath))))))
 
          "/"
          (get-in sample-xml [:root :content])
@@ -144,6 +145,45 @@
          "/catalog/book[3]/author[2]"
          [(x/parse-str "<author>Lucy, Steven</author>")]
 
+         ;; Select index range
+         "/catalog/book[1..3]/title"
+         (mapv x/parse-str ["<title>XML Developer's Guide</title>"
+                            "<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"])
+
+         "/catalog/book[2..4]/title"
+         (mapv x/parse-str ["<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"
+                            "<title>Oberon's Legacy</title>"])
+
+         ;; Range past the end of the list
+         "/catalog/book[2..9]/title"
+         (mapv x/parse-str ["<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"
+                            "<title>Oberon's Legacy</title>"
+                            "<title>The Sundered Grail</title>"])
+
+         ;; Select open ended index range
+         "/catalog/book[2..]/title"
+         (mapv x/parse-str ["<title>Midnight Rain</title>"
+                            "<title>Maeve Ascendant</title>"
+                            "<title>Oberon's Legacy</title>"
+                            "<title>The Sundered Grail</title>"])
+
+         ;; From very end
+         "/catalog/book[5..]/title"
+         [(x/parse-str "<title>The Sundered Grail</title>")]
+
+         ;; Using the same index for both
+         "/catalog/book[5..5]/title"
+         [(x/parse-str "<title>The Sundered Grail</title>")]
+
+         ;; Past the end of the list
+         "/catalog/book[7..]/title"
+         []
+         "/catalog/book[7..9]/title"
+         []
+
          ;; Uses nested elements in subselector
          "/catalog/book[dates/publish_date='2001-09-10']/title"
          [(x/parse-str "<title>The Sundered Grail</title>")]
@@ -175,13 +215,13 @@
 
            "."
            (:content (x/parse-str "<book id=\"bk101\">
-                                    <author>Gambardella, Matthew</author>
-                                    <title>XML Developer's Guide</title>
-                                    <genre>Computer</genre>
-                                    <price>44.95</price>
-                                    <dates>
-                                      <publish_date>2000-10-01</publish_date>
-                                    </dates>
+                                  <author>Gambardella, Matthew</author>
+                                  <title>XML Developer's Guide</title>
+                                  <genre>Computer</genre>
+                                  <price>44.95</price>
+                                  <dates>
+                                  <publish_date>2000-10-01</publish_date>
+                                  </dates>
                                   </book>"))
            "author"
            [(x/parse-str "<author>Gambardella, Matthew</author>")]))))
@@ -226,6 +266,37 @@
 
          "/books[3]/author[2]"
          ["Lucy, Steven"]
+
+         ;; Select index range
+         "/books[1..3]/title"
+         ["XML Developer's Guide"
+          "Midnight Rain"
+          "Maeve Ascendant"]
+
+         "/books[2..4]/title"
+         ["Midnight Rain"
+          "Maeve Ascendant"
+          "Oberon's Legacy"]
+
+         ;; Range end past the end of the list
+         "/books[2..10]/title"
+         ["Midnight Rain"
+          "Maeve Ascendant"
+          "Oberon's Legacy"
+          "The Sundered Grail"]
+
+         ;; Select open ended index range
+         "/books[2..]/title"
+         ["Midnight Rain"
+          "Maeve Ascendant"
+          "Oberon's Legacy"
+          "The Sundered Grail"]
+
+         ;; Past the end of the list
+         "/books[7..]/title"
+         []
+         "/books[7..9]/title"
+         []
 
          ;; Doesn't reference a real element
          "/catalog/foo[1]"

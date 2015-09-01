@@ -2,100 +2,56 @@
   "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
             [clojure.test.check.generators :as gen]
             [com.gfredericks.test.chuck.clojure-test :refer [for-all]]
             [cmr.common.util :refer [update-in-each]]
             [cmr.common.test.test-check-ext :as ext :refer [defspec]]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]
             [cmr.umm-spec.core :as core]
-            [cmr.umm-spec.models.collection :as umm-c]
-            [cmr.umm-spec.models.common :as umm-cmn]
-            [clj-time.core :as t]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
-
-(def example-record
-  "An example record with fields supported by most formats."
-  (umm-c/map->UMM-C
-   {:Platforms [(umm-cmn/map->PlatformType
-                 {:ShortName "Platform 1"
-                  :LongName "Example Platform Long Name 1"
-                  :Type "Aircraft"
-                  :Characteristics [(umm-cmn/map->CharacteristicType
-                                     {:Name "OrbitalPeriod"
-                                      :Description "Orbital period in decimal minutes."
-                                      :DataType "float"
-                                      :Unit "Minutes"
-                                      :Value "96.7"})]
-                  :Instruments [(umm-cmn/map->InstrumentType
-                                 {:ShortName "An Instrument"
-                                  :LongName "The Full Name of An Instrument v123.4"
-                                  :Technique "Two cans and a string"
-                                  :NumberOfSensors 1
-                                  :OperationalModes ["on" "off"]
-                                  :Characteristics [(umm-cmn/map->CharacteristicType
-                                                     {:Name "Signal to Noise Ratio"
-                                                      :Description "Is that necessary?"
-                                                      :DataType "float"
-                                                      :Unit "dB"
-                                                      :Value "10"})]})]})]
-    :TemporalExtents [(umm-cmn/map->TemporalExtentType
-                       {:TemporalRangeType "temp range"
-                        :PrecisionOfSeconds 3
-                        :EndsAtPresentFlag false
-                        :RangeDateTimes (mapv umm-cmn/map->RangeDateTimeType
-                                              [{:BeginningDateTime (t/date-time 2000)
-                                                :EndingDateTime (t/date-time 2001)}
-                                               {:BeginningDateTime (t/date-time 2002)
-                                                :EndingDateTime (t/date-time 2003)}])})]
-    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
-    :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-    :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                 :Party (umm-cmn/map->PartyType {})})]
-    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-    :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-
-    :EntryId "short_V1"
-    :EntryTitle "The entry title V5"
-    :Version "V5"
-    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
-                                        :Type "CREATE"})]
-    :Abstract "A very abstract collection"
-    :DataLanguage "English"
-    :Quality "Pretty good quality"}))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [record format]
-  (core/parse-metadata :collection format (core/generate-metadata :collection format record)))
+  (let [metadata-xml (core/generate-metadata :collection format record)]
+    ;; validate xml
+    ;; Since our UMM JSON schema is not complete in defining things like enumeration values for
+    ;; controlled vocabulary fields, the generator generated fields would not create validate field
+    ;; values for those fields (e.g. Dataset_Language field). Until we change the schema to be
+    ;; explicit on those enumeration values and other things, we can't turn validation on xml on.
+    ;; See CMR-1990
+    ; (is (empty? (core/validate-xml :collection format metadata-xml)))
+    (core/parse-metadata :collection format metadata-xml)))
 
 (deftest roundtrip-gen-parse
   (are2 [metadata-format]
-    (= (expected-conversion/convert example-record metadata-format)
-       (xml-round-trip example-record metadata-format))
+        (= (expected-conversion/convert expected-conversion/example-record metadata-format)
+           (xml-round-trip expected-conversion/example-record metadata-format))
 
-    "echo10"
-    :echo10
+        "echo10"
+        :echo10
 
-    "dif9"
-    :dif
+        "dif9"
+        :dif
 
-    "dif10"
-    :dif10
+        "dif10"
+        :dif10
 
-    "iso-smap"
-    :iso-smap
+        "iso-smap"
+        :iso-smap
 
-    "ISO19115-2"
-    :iso19115))
+        "ISO19115-2"
+        :iso19115))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
     (are [fmt]
         (empty?
          (core/validate-xml :collection fmt
-                            (core/generate-metadata :collection fmt example-record)))
+                            (core/generate-metadata :collection fmt expected-conversion/example-record)))
       :echo10
       :dif
       :dif10
@@ -118,3 +74,25 @@
     (let [expected (fixup-generated-collection (expected-conversion/convert umm-record metadata-format))
           actual   (fixup-generated-collection (xml-round-trip umm-record metadata-format))]
       (is (= expected actual)))))
+
+
+(comment
+
+  (let [metadata-format :dif
+        umm-record user/failing-value]
+    (is (=
+          (expected-conversion/convert user/failing-value :iso19115)
+          (xml-round-trip user/failing-value :iso19115))))
+
+  (let [xml (slurp (io/resource "example_data/echo10.xml"))
+        parsed (core/parse-metadata :collection :echo10 xml)]
+    (println (core/generate-metadata :collection :echo10 parsed)))
+
+  )
+
+
+
+
+
+
+

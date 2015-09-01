@@ -445,7 +445,7 @@
           "maxLength": 80
         }
       },
-      "required": ["Description", "Value"]
+      "required": ["Description"]
     },
     "MetadataAssociationType": {
       "type": "object",
@@ -936,7 +936,7 @@
           "minItems": 1
         }
       },
-      "anyOf": [{
+      "oneOf": [{
         "required": ["RangeDateTimes"]
       }, {
         "required": ["SingleDateTimes"]

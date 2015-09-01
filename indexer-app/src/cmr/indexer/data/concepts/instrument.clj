@@ -9,8 +9,9 @@
           (repeat kf/FIELD_NOT_PRESENT)))
 
 (defn instrument-short-name->elastic-doc
-  "Converts a instrument into the portion going in an elastic document. If a field is not present in
-  the KMS hierarchy we use a dummy value to indicate the field was not present."
+  "Converts an instrument short-name into an elastic document with the full nested hierarchy for
+  that short-name from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
+  use a dummy value to indicate the field was not present."
   [gcmd-keywords-map short-name]
   (let [full-instrument
         (merge default-instrument-values

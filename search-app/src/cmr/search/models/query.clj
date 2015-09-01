@@ -54,6 +54,9 @@
    ;; If this is true all revisions of the concept will be searched. If false, the default,
    ;; then the latest revisions of the concept type will be searched.
    all-revisions?
+
+   ;; Options for the search response.
+   result-options
    ])
 
 (defrecord ConditionGroup
