@@ -49,7 +49,5 @@
   "Migrates the database down from version 19."
   []
   (println "migrations.019-setup-tags-table down...")
-  (try
-    (h/sql "DROP SEQUENCE METADATA_DB.tags_seq")
-    (h/sql "DROP TABLE METADATA_DB.tags")
-    (catch Exception e)))
+  (h/sql "DROP SEQUENCE METADATA_DB.tags_seq")
+  (h/sql "DROP TABLE METADATA_DB.tags"))
