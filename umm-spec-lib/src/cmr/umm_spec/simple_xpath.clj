@@ -316,19 +316,6 @@
         []))
     []))
 
-(defmethod process-data-selector :range-selector
-  [data {:keys [start-index end-index]}]
-  (if (seq data)
-    (let [data-vec (as-vector data)
-          size (count data-vec)]
-      (if (< start-index size)
-        (if end-index
-          (subvec data-vec start-index (min end-index size))
-          (subvec data-vec start-index))
-        ;; It's past the end of the index
-        []))
-    []))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Data processors
 
