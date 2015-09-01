@@ -142,6 +142,11 @@
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+      (update-in-each [:Platforms] update-in-each [:Instruments] assoc
+                      :Characteristics nil
+                      :OperationalModes nil
+                      :NumberOfSensors nil
+                      :Technique nil)
       (assoc :UseConstraints nil)))
 
 ;;; Unimplemented Fields

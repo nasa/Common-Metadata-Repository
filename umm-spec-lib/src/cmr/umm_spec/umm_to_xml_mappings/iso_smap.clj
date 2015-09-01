@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
-            [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
+            [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
+            [cmr.umm-spec.iso-smap-utils :as util]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"
@@ -15,6 +16,12 @@
    :xmlns:srv "http://www.isotc211.org/2005/srv"
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
+
+(defn generate-keyword
+  "Returns ISO SMAP keyword content for an XPath context containing a UMM Platform/Instrument/etc.
+  record."
+  [{[record] :context}]
+  [(util/smap-keyword-str record)])
 
 (defn- date-mapping
   "Returns the date element mapping for the given name and date value in string format."
@@ -59,16 +66,10 @@
         [:gmd:MD_Keywords
          (for-each "/Platforms"
            [:gmd:keyword
-            [:gco:CharacterString
-             (fn [{[platform] :context}]
-               ;; Note from the original umm mappings: There is a disconnect between UMM platform
-               ;; type and the SMAP ISO platform keyword category. We will just hardcode it to be
-               ;; "Aircraft" for now.
-               [(format "Aircraft > DUMMY > %s > %s"
-                        (:ShortName platform)
-                        ;; Because LongName is optional, we want an empty string instead of "null"
-                        ;; here to prevent problems when parsing.
-                        (str (:LongName platform)))])]])]]
+            [:gco:CharacterString generate-keyword]])
+         (for-each "/Platforms/Instruments"
+           [:gmd:keyword
+            [:gco:CharacterString generate-keyword]])]]
        [:gmd:language (char-string-from "/DataLanguage")]
        [:gmd:extent
         [:gmd:EX_Extent
