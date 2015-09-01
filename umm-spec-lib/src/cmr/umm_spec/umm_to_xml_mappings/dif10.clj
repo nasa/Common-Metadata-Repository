@@ -27,13 +27,13 @@
   "Returns content for the version field."
   [xpath-context]
   (let [version (-> xpath-context :context first :Version)]
-    [(or version "Not provided")]))
+    (or version "Not provided")))
 
 (defn- generate-platform-type
   "Returns content for the Platform Type field."
   [xpath-context]
   (let [platform (-> xpath-context :context first)]
-    [(or (get platform-types (:Type platform) "Not provided"))]))
+    (or (get platform-types (:Type platform) "Not provided"))))
 
 (def ^:private temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
