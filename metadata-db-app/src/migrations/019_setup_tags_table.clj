@@ -8,13 +8,10 @@
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   metadata BLOB NOT NULL,
-  format VARCHAR(255) DEFAULT 'application/edn' NOT NULL,
+  format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
-  delete_time TIMESTAMP WITH TIME ZONE,
-  namespace VARCHAR(1024) NOT NULL,
-  value VARCHAR(255) NOT NULL,
   user_id VARCHAR(30)")
 
 (def ^:private tags-constraint-sql
@@ -34,8 +31,7 @@
 
 (defn- create-tags-indices
   []
-  (h/sql "CREATE INDEX tags_crdi ON tags (concept_id, revision_id, deleted, delete_time)")
-  (h/sql "CREATE INDEX tags_nsval_i ON tags (namespace, value)"))
+  (h/sql "CREATE INDEX tags_crdi ON tags (concept_id, revision_id, deleted)"))
 
 (defn- create-tags-sequence
   []
