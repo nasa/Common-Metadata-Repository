@@ -72,7 +72,8 @@
   properties is present."
   [condition-name value]
   (when-not (seq (set/intersection (set (keys value))
-                                   (set (conj (condition-name nf/nested-field-mappings) :any))))
+                                   (set (conj ((inf/plural condition-name) nf/nested-field-mappings)
+                                              :any))))
     (errors/throw-service-error
       :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
@@ -145,12 +146,10 @@
 
 (defmethod parse-json-condition :nested-condition
   [condition-name value]
-  ;; Some nested condition names like :platform and :instrument are saved in elastic as plural
-  (let [plural-condition-name (inf/plural condition-name)]
-    (validate-nested-condition plural-condition-name value)
-    (nf/parse-nested-condition plural-condition-name value
+    (validate-nested-condition condition-name value)
+    (nf/parse-nested-condition (inf/plural condition-name) value
                                (case-sensitive-field? condition-name value)
-                               (:pattern value))))
+                               (:pattern value)))
 
 (defmethod parse-json-condition :bounding-box
   [_ value]
