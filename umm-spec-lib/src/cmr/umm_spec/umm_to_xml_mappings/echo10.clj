@@ -65,9 +65,9 @@
                                            :LongName
                                            :Technique
                                            :NumberOfSensors
-                                           [:OperationModes
-                                            (for-each "OperationalModes"
-                                              [:OperationMode (xpath ".")])]
                                            [:Characteristics
                                             (for-each "Characteristics"
-                                              characteristic-mapping)]))]))]])
+                                              characteristic-mapping)]
+                                           [:OperationModes
+                                            (for-each "OperationalModes"
+                                              [:OperationMode (xpath ".")])]))]))]])
