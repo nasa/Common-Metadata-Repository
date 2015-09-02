@@ -134,6 +134,10 @@
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
             :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
+            ;; TODO Remove deprecated project-sn and project-sn.lowercase fields with CMR-1995
+            :project-sn project-short-names
+            :project-sn.lowercase  (map str/lower-case project-short-names)
+
             :project-sn2 project-short-names
             :project-sn2.lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names

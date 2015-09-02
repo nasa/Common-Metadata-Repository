@@ -54,7 +54,8 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
-   :project (terms-facet :project-sn2)
+   ;; TODO Change to use project-sn2 field with CMR-1995
+   :project (terms-facet :project-sn)
    :platform (terms-facet :platform-sn)
    :instrument (terms-facet :instrument-sn)
    :sensor (terms-facet :sensor-sn)
@@ -72,7 +73,8 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-centers (nested-facet :archive-centers)
-   :project (terms-facet :project-sn2)
+   ;; TODO Change to use project-sn2 field with CMR-1995
+   :project (terms-facet :project-sn)
    :platforms (nested-facet :platforms)
    :instruments (nested-facet :instruments)
    :sensor (terms-facet :sensor-sn)
