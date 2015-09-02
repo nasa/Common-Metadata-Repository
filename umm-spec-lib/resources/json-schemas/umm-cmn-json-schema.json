@@ -141,18 +141,29 @@
           },
           "minItems": 0
         }
-      }
+      },
+      "oneOf": [{
+        "required": ["OrganizationName"]
+      }, {
+        "required": ["Person"]
+      }]
     },
     "OrganizationNameType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "consists of the organization ShortName and LongName, which is the name of the organization that distributes, archives, or processes the data.",
+      "description": "consists of the organization ShortName, LongName and Uuid, which is the name of the organization that distributes, archives, or processes the data.",
       "properties": {
         "ShortName": {
+          "description": "Short name of the organization.",
           "$ref": "#/definitions/ShortNameType"
         },
         "LongName": {
+          "description": "Long name of the organization.",
           "$ref": "#/definitions/LongNameType"
+        },
+        "Uuid": {
+          "description": "Uuid of the organization.",
+          "$ref": "#/definitions/UuidType"
         }
       },
       "required": ["ShortName"]
@@ -179,6 +190,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 255
+        },
+        "Uuid": {
+          "description": "Uuid of the individual.",
+          "$ref": "#/definitions/UuidType"
         }
       },
       "required": ["LastName"]
