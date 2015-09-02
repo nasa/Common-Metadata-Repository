@@ -11,43 +11,43 @@
 (def example-record
   "An example record with fields supported by most formats."
   (umm-c/map->UMM-C
-   {:Platforms [(cmn/map->PlatformType
-                 {:ShortName "Platform 1"
-                  :LongName "Example Platform Long Name 1"
-                  :Type "Aircraft"
-                  :Characteristics [(cmn/map->CharacteristicType
-                                     {:Name "OrbitalPeriod"
-                                      :Description "Orbital period in decimal minutes."
-                                      :DataType "float"
-                                      :Unit "Minutes"
-                                      :Value "96.7"})]})]
-    :TemporalExtents [(cmn/map->TemporalExtentType
-                       {:TemporalRangeType "temp range"
-                        :PrecisionOfSeconds 3
-                        :EndsAtPresentFlag false
-                        :RangeDateTimes (mapv cmn/map->RangeDateTimeType
-                                              [{:BeginningDateTime (t/date-time 2000)
-                                                :EndingDateTime (t/date-time 2001)}
-                                               {:BeginningDateTime (t/date-time 2002)
-                                                :EndingDateTime (t/date-time 2003)}])})]
-    :ProcessingLevel (umm-c/map->ProcessingLevelType {})
-    :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-    :Organizations [(cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                 :Party (cmn/map->PartyType {})})]
-    :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-    :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-    :AccessConstraints (cmn/map->AccessConstraintsType
+    {:Platforms [(cmn/map->PlatformType
+                   {:ShortName "Platform 1"
+                    :LongName "Example Platform Long Name 1"
+                    :Type "Aircraft"
+                    :Characteristics [(cmn/map->CharacteristicType
+                                        {:Name "OrbitalPeriod"
+                                         :Description "Orbital period in decimal minutes."
+                                         :DataType "float"
+                                         :Unit "Minutes"
+                                         :Value "96.7"})]})]
+     :TemporalExtents [(cmn/map->TemporalExtentType
+                         {:TemporalRangeType "temp range"
+                          :PrecisionOfSeconds 3
+                          :EndsAtPresentFlag false
+                          :RangeDateTimes (mapv cmn/map->RangeDateTimeType
+                                                [{:BeginningDateTime (t/date-time 2000)
+                                                  :EndingDateTime (t/date-time 2001)}
+                                                 {:BeginningDateTime (t/date-time 2002)
+                                                  :EndingDateTime (t/date-time 2003)}])})]
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+     :Organizations [(cmn/map->ResponsibilityType {:Role "CUSTODIAN"
+                                                   :Party (cmn/map->PartyType {})})]
+     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
+     :AccessConstraints (cmn/map->AccessConstraintsType
                           {:Description "Access constraints"
                            :Value "0"})
-    :UseConstraints "Use constraints"
-    :EntryId "short_V1"
-    :EntryTitle "The entry title V5"
-    :Version "V5"
-    :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
-                                        :Type "CREATE"})]
-    :Abstract "A very abstract collection"
-    :DataLanguage "English"
-    :Quality "Pretty good quality"}))
+     :UseConstraints "Use constraints"
+     :EntryId "short_V1"
+     :EntryTitle "The entry title V5"
+     :Version "V5"
+     :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
+                                     :Type "CREATE"})]
+     :Abstract "A very abstract collection"
+     :DataLanguage "English"
+     :Quality "Pretty good quality"}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -96,12 +96,12 @@
   [temporal-extents]
   (when (seq temporal-extents)
     (reduce (fn [merged-temporal temporal]
-                (-> merged-temporal
-                    (update-in [:RangeDateTimes] #(seq (concat % (:RangeDateTimes temporal))))
-                    (update-in [:SingleDateTimes] #(seq (concat % (:SingleDateTimes temporal))))
-                    (update-in [:PeriodicDateTimes] #(seq (concat % (:PeriodicDateTimes temporal))))))
-              (first temporal-extents)
-              (rest temporal-extents))))
+              (-> merged-temporal
+                  (update-in [:RangeDateTimes] #(seq (concat % (:RangeDateTimes temporal))))
+                  (update-in [:SingleDateTimes] #(seq (concat % (:SingleDateTimes temporal))))
+                  (update-in [:PeriodicDateTimes] #(seq (concat % (:PeriodicDateTimes temporal))))))
+            (first temporal-extents)
+            (rest temporal-extents))))
 
 ;;; Format-Specific Translation Functions
 
@@ -144,10 +144,10 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-       (update-in [:TemporalExtents] dif9-temporal)
-       (update-in [:AccessConstraints] dif-access-constraints)
-       ;; DIF 9 does not support Platform Type or Characteristics.
-       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
+      (update-in [:TemporalExtents] dif9-temporal)
+      (update-in [:AccessConstraints] dif-access-constraints)
+      ;; DIF 9 does not support Platform Type or Characteristics.
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
 
 ;; DIF 10
 (defn dif10-platform
@@ -227,7 +227,7 @@
    (if (= metadata-format :umm-json)
      umm-coll
      (dissoc-not-implemented-fields
-      (convert-internal umm-coll metadata-format))))
+       (convert-internal umm-coll metadata-format))))
   ([umm-coll src dest]
    (-> umm-coll
        (convert src)

@@ -118,6 +118,22 @@
      :selectors (:selectors parsed-xpath)
      :element-value element-value}))
 
+(defn- create-elem-val-inequality-selector
+  "Creates a selector that selects elements which have a child element with a value not equal to
+  the given value.
+  Example: foo/bar[charlie/name!='alpha']
+  charlie/name!='alpha' is the selector in that case. charlie/name is an xpath and alpha is the value
+  that it will match on."
+  [selector-str]
+  (let [[_ xpath element-value] (re-matches #"(.+)!='(.+)'" selector-str)
+        parsed-xpath (parse-xpath xpath)]
+    (when (not= (:source parsed-xpath) :from-context)
+      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
+    {:type :element-value-selector
+     :selectors (:selectors parsed-xpath)
+     :element-value element-value
+     :not-equal? true}))
+
 (defn- create-tag-name-selector
   "Creates a selector that selects elements with a specific tag name."
   [tag-name]
@@ -158,6 +174,9 @@
 
     (re-matches #".*@.+='.+'" selector-str)
     (create-attrib-val-equality-selector selector-str)
+
+    (re-matches #".+!='.+'" selector-str)
+    (create-elem-val-inequality-selector selector-str)
 
     (re-matches #".+='.+'" selector-str)
     (create-elem-val-equality-selector selector-str)
@@ -285,16 +304,18 @@
   [elements {:keys [selectors value]}]
   (filterv (fn [element]
              (when-let [selected-value (first (process-selectors
-                                                  [element] selectors process-xml-selector))]
+                                                [element] selectors process-xml-selector))]
                (= selected-value value)))
            elements))
 
 (defmethod process-xml-selector :element-value-selector
-  [elements {:keys [selectors element-value]}]
+  [elements {:keys [selectors element-value not-equal?]}]
   (filterv (fn [element]
              (when-let [selected-element (first (process-selectors
                                                   [element] selectors process-xml-selector))]
-               (= (-> selected-element :content first) element-value)))
+               (if not-equal?
+                 (not= (-> selected-element :content first) element-value)
+                 (= (-> selected-element :content first) element-value))))
            elements))
 
 (defmethod process-xml-selector :nth-selector
@@ -357,11 +378,13 @@
            (as-vector data)))
 
 (defmethod process-data-selector :element-value-selector
-  [data {:keys [selectors element-value]}]
+  [data {:keys [selectors element-value not-equal?]}]
   (filterv (fn [d]
              (when-let [result (first (process-selectors
                                         [d] selectors process-data-selector))]
-               (= (str result) element-value)))
+               (if not-equal?
+                 (not= (str result) element-value)
+                 (= (str result) element-value))))
            (as-vector data)))
 
 (defmethod process-data-selector :nth-selector
