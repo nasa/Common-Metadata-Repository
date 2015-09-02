@@ -5,9 +5,10 @@
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.common.concepts :as c]
+            [cmr.common.date-time-parser :as date-time-parser]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.acl.collection-matchers :as coll-matchers]
+            [cmr.acl.umm-matchers :as umm-matchers]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.services.errors :as errors]
             [cmr.common.time-keeper :as tk]
@@ -234,17 +235,19 @@
 (defn granule-identifier-matches-concept?
   "Returns true if the granule identifier is nil or it matches the concept."
   [gran-id concept]
-  ;; TODO refactor access value to it's own function and add a new function for temporal filter
-  (if-let [{:keys [min-value max-value include-undefined]} (:access-value gran-id)]
-    (let [access-value (:access-value concept)]
-      (or (and (nil? access-value) include-undefined)
-          (and access-value
-               (or (and (and min-value max-value)
-                        (>= access-value min-value)
-                        (<= access-value max-value))
-                   (and min-value (nil? max-value) (>= access-value min-value))
-                   (and max-value (nil? min-value) (<= access-value max-value))))))
-    true))
+  (let [{:keys [access-value temporal]} gran-id
+        {:keys [start-date end-date]} concept]
+
+    (and (if access-value
+           (umm-matchers/matches-access-value-filter? concept access-value)
+           true)
+         (if temporal
+           (when start-date
+             (umm-matchers/matches-temporal-filter?
+               (date-time-parser/parse-datetime start-date)
+               (when end-date (date-time-parser/parse-datetime end-date))
+               temporal))
+           true))))
 
 (defn collection-identifier-matches-concept?
   "Returns true if the collection identifier is nil or it matches the concept."
@@ -256,7 +259,7 @@
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
                   collection-concept-id)))
-      (coll-matchers/coll-matches-collection-identifier? collection coll-id))
+      (umm-matchers/coll-matches-collection-identifier? collection coll-id))
     true))
 
 (defn acl-match-concept?

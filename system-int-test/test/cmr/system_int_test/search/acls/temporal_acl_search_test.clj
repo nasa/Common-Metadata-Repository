@@ -150,33 +150,57 @@
           gran5 (range-date-gran 3 nil) ;; no end date
           gran6 (single-date-gran 8)
           gran7 (single-date-gran 9)
+          all-grans [gran1 gran2 gran3 gran4 gran5 gran6 gran7]
 
           ;; User tokens
           ;; Each user is associated with one of the groups above.
           user1 (e/login (s/context) "user1" ["group-guid1"])
           user2 (e/login (s/context) "user2" ["group-guid2"])
           user3 (e/login (s/context) "user3" ["group-guid3"])
-          user4 (e/login (s/context) "user4" ["group-guid4"])]
+          user4 (e/login (s/context) "user4" ["group-guid4"])
+
+          ;; Create sets of granules visible for each group
+          group1-granules [gran1 gran2 gran3 gran4 gran5]
+          group2-granules [gran4 gran5 gran6 gran7]
+          group3-granules [gran1 gran6 gran7]
+          group4-granules [gran3 gran4]
+
+          ]
       (index/wait-until-indexed)
 
       (testing "Parameter searching ACL enforcement"
         (are2 [token items]
               (d/refs-match? items (search/find-refs :granule (when token {:token token})))
+              "Guests find nothing" nil []
+              "group1" user1 group1-granules
+              "group2" user2 group2-granules
+              "group3" user3 group3-granules
+              "group4" user4 group4-granules))
 
-              "Guests find nothing"
-              nil []
+      (testing "ATOM ACL Enforcement by concept id"
+        (are2 [token items]
+              (let [concept-ids (map :concept-id all-grans)
+                    gran-atom (da/granules->expected-atom
+                                items
+                                (repeat collection)
+                                (str "granules.atom?"
+                                     (when token (str "token=" token "&"))
+                                     "page_size=100&concept_id="
+                                     (str/join "&concept_id=" concept-ids)
+                                     "&sort_key=granule_ur"))]
+                (is (= gran-atom (:results (search/find-concepts-atom
+                                             :granule (util/remove-nil-keys
+                                                        {:token token
+                                                         :page-size 100
+                                                         :concept-id concept-ids
+                                                         :sort-key "granule_ur"}))))))
+              "Guests find nothing" nil []
+              "group1" user1 group1-granules
+              "group2" user2 group2-granules
+              "group3" user3 group3-granules
+              "group4" user4 group4-granules
 
-              "group1"
-              user1 [gran1 gran2 gran3 gran4 gran5]
 
-              "group2"
-              user2 [gran4 gran5 gran6 gran7]
-
-              "group3"
-              user3 [gran1 gran6 gran7]
-
-              "group4"
-              user4 [gran3 gran4]
               ))
 
 

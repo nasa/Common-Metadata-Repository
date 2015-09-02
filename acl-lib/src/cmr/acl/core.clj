@@ -5,7 +5,7 @@
             [cmr.transmit.config :as tc]
             [cmr.transmit.echo.acls :as echo-acls]
             [cmr.transmit.echo.tokens :as echo-tokens]
-            [cmr.acl.collection-matchers :as cm]
+            [cmr.acl.umm-matchers :as um]
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [clojure.core.cache :as clj-cache]))
@@ -79,7 +79,7 @@
 
   (->> (acl-fetcher/get-acls context [:catalog-item])
        ;; Find only acls that are applicable to this collection
-       (filter (partial cm/coll-applicable-acl? provider-id coll))
+       (filter (partial um/coll-applicable-acl? provider-id coll))
        ;; Get the permissions they grant
        (mapcat :aces)
        ;; Find permissions that grant read

@@ -1,6 +1,6 @@
-(ns cmr.acl.test.collection-matchers
+(ns cmr.acl.test.umm-matchers
   (:require [clojure.test :refer :all]
-            [cmr.acl.collection-matchers :as a]
+            [cmr.acl.umm-matchers :as a]
             [cmr.common.util :refer [are2]]
             [cmr.common.test.time-util :as tu]
             [cmr.common.time-keeper :as tk]))

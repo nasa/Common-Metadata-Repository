@@ -13,7 +13,24 @@
             [cmr.umm.iso-mends.granule :as iso-mends-g]
             [cmr.umm.iso-smap.core :as iso-smap]
             [cmr.umm.iso-smap.collection :as iso-smap-c]
-            [cmr.umm.iso-smap.granule :as iso-smap-g]))
+            [cmr.umm.iso-smap.granule :as iso-smap-g]
+            [cmr.umm.collection]
+            [cmr.umm.granule])
+  (:import cmr.umm.collection.UmmCollection
+           cmr.umm.granule.UmmGranule))
+
+(defmulti item->concept-type
+  "Returns the concept type of the item"
+  (fn [item]
+    (type item)))
+
+(defmethod item->concept-type UmmCollection
+  [item]
+  :collection)
+
+(defmethod item->concept-type UmmGranule
+  [item]
+  :granule)
 
 (defmulti validate-concept-xml
   "Validates the concept metadata against its xml schema."

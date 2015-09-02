@@ -1,9 +1,10 @@
-(ns cmr.acl.collection-matchers
+(ns cmr.acl.umm-matchers
   "Contains code for determining if a collection matches an acl"
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
+            [cmr.umm.core :as umm]
             [cmr.umm.start-end-date :as sed]
             [cmr.common.time-keeper :as tk]))
 
@@ -15,21 +16,21 @@
   [coll collection-id]
   (= (:data-set-id collection-id) (:entry-title coll)))
 
-(defn- coll-matches-access-value-filter?
-  "Returns true if the collection matches the access-value filter"
-  [coll access-value-filter]
+(defn matches-access-value-filter?
+  "Returns true if the umm item matches the access-value filter"
+  [umm access-value-filter]
   (let [{:keys [min-value max-value include-undefined]} access-value-filter]
     (when (and (not min-value) (not max-value) (not include-undefined))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
-    (if-let [^double access-value (:access-value coll)]
-      ;; If there's no range specified then a collection without a value is restricted
+    (if-let [^double access-value (:access-value umm)]
+      ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
         (and (or (nil? min-value)
                  (>= access-value ^double min-value))
              (or (nil? max-value)
                  (<= access-value ^double max-value))))
-      ;; collection's without a value will only be included if include-undefined is true
+      ;; umm item's without a value will only be included if include-undefined is true
       include-undefined)))
 
 (defn- time-ranges-intersect?
@@ -57,23 +58,28 @@
       ;; Is end2 in the range
       (or (= end1 end2) (= start1 end2) (t/within? interval1 end2)))))
 
+(defn matches-temporal-filter?
+  "Returns true if the umm item matches the temporal filter"
+  [umm-start umm-end temporal-filter]
+  (when-not (= :acquisition (:temporal-field temporal-filter))
+    (errors/internal-error!
+      (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
+
+  (let [{:keys [start-date end-date mask]} temporal-filter
+        umm-end (or umm-end (tk/now))]
+    (case mask
+      :intersects (time-ranges-intersect? start-date end-date umm-start umm-end)
+      ;; Per ECHO10 API documentation disjoint is the negation of intersects
+      :disjoint (not (time-ranges-intersect? start-date end-date umm-start umm-end))
+      :contains (time-range1-contains-range2? start-date end-date umm-start umm-end))))
+
 (defn- coll-matches-temporal-filter?
-  "Returns true if the collection matches the temporal from a collection identifier."
+  "Returns true if the umm item matches the temporal filter"
   [coll temporal-filter]
   (when-let [temporal (:temporal coll)]
-
-    (when-not (= :acquisition (:temporal-field temporal-filter))
-      (errors/internal-error!
-        (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
-
-    (let [{:keys [start-date end-date mask]} temporal-filter
-          coll-start (sed/start-date :collection temporal)
-          coll-end (or (sed/end-date :collection temporal) (tk/now))]
-      (case mask
-        :intersects (time-ranges-intersect? start-date end-date coll-start coll-end)
-        ;; Per ECHO10 API documentation disjoint is the negation of intersects
-        :disjoint (not (time-ranges-intersect? start-date end-date coll-start coll-end))
-        :contains (time-range1-contains-range2? start-date end-date coll-start coll-end)))))
+    (let [umm-start (sed/start-date :collection temporal)
+          umm-end (sed/end-date :collection temporal)]
+      (matches-temporal-filter? umm-start umm-end temporal-filter))))
 
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
@@ -83,7 +89,7 @@
     (and (or (empty? entry-titles)
              (some (partial = coll-entry-title) entry-titles))
          (or (nil? access-value)
-             (coll-matches-access-value-filter? coll access-value))
+             (matches-access-value-filter? coll access-value))
          (or (nil? temporal)
              (coll-matches-temporal-filter? coll temporal)))))
 
