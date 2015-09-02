@@ -32,6 +32,7 @@
                             :codeListValue date-name} date-name]]]])
 
 (defn- make-instrument-title
+  "Returns an ISO title string from a XPath context containing an instrument record."
   [{[instrument] :context}]
   (str (:ShortName instrument)
        ">"
