@@ -36,6 +36,23 @@
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
 
+(defn- generate-descriptive-keywords
+  "Returns content generator instruction for the descriptive keywords field. We create this function
+  because we don't want to generate the parent elements when there are no TemporalKeywords."
+  [xpath-context]
+  (when-let [temporal-keywords (-> xpath-context :context first :TemporalKeywords seq)]
+    (vec (concat
+           [:gmd:MD_Keywords]
+
+           (for [temporal-keyword temporal-keywords]
+             [:gmd:keyword [:gco:CharacterString temporal-keyword]])
+
+           [[:gmd:type
+             [:gmd:MD_KeywordTypeCode
+              {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+               :codeListValue "temporal"} "temporal"]]
+            [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))))
+
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
    iso19115-2-xml-namespaces
@@ -52,8 +69,6 @@
     [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
    [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
    [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
-
-
    [:gmd:identificationInfo
     [:gmd:MD_DataIdentification
      [:gmd:citation
@@ -67,9 +82,14 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+     [:gmd:descriptiveKeywords generate-descriptive-keywords]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
-       [:gmd:useLimitation (char-string-from "/UseConstraints")]]]
+       [:gmd:useLimitation (char-string-from "/UseConstraints")]
+       [:gmd:useLimitation
+        [:gco:CharacterString (concat-parts "Restriction Comment:" (xpath "/AccessConstraints/Description"))]]
+       [:gmd:otherConstraints
+        [:gco:CharacterString (concat-parts "Restriction Flag:" (xpath "/AccessConstraints/Value"))]]]]
      [:gmd:language (char-string-from "/DataLanguage")]
      [:gmd:extent
       [:gmd:EX_Extent

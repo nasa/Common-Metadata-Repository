@@ -3,6 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.umm-spec.simple-xpath :as sxp]
             [cmr.umm-spec.umm-to-xml-mappings.dsl :as dsl]
+            [clojure.string :as str]
             [cmr.common.util :as u]))
 
 (def dsl-type
@@ -30,7 +31,8 @@
 
 (defmethod generate-content :fn
   [content-generator-fn xpath-context]
-  (content-generator-fn xpath-context))
+  (when-let [result (content-generator-fn xpath-context)]
+    (generate-content result xpath-context)))
 
 (defmethod generate-content :default
   [content-generator _]
@@ -66,10 +68,10 @@
 (defmethod generate-content :xpath
   [{:keys [value]} xpath-context]
   (some->> (sxp/evaluate xpath-context (sxp/parse-xpath value))
-             :context
-             first
-             str
-             vector))
+           :context
+           first
+           str
+           vector))
 
 (defmethod generate-content :constant
   [value _]
@@ -82,6 +84,11 @@
           :let [single-item-xpath-context (assoc new-xpath-context :context [data])]
           item (generate-content template single-item-xpath-context)]
       item)))
+
+(defmethod generate-content :concat
+  [{:keys [parts]} xpath-context]
+  [(str/join (mapcat #(generate-content % xpath-context) parts))])
+
 
 (defn generate-xml
   "Generates XML using a root content generator and a source UMM record."

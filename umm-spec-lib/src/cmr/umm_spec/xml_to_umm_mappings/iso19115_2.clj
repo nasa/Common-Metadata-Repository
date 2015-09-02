@@ -28,6 +28,12 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def temporal-keywords-xpath
+  (select (str md-data-id-base-xpath
+       "/gmd:descriptiveKeywords/gmd:MD_Keywords"
+       "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='temporal']"
+       "/gmd:keyword/gco:CharacterString")))
+
 (def temporal-mappings
   (for-each temporal-xpath
             (object {:PrecisionOfSeconds (xpath precision-xpath)
@@ -52,6 +58,9 @@
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
+(def constraints-xpath
+  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
+
 (def platform-characteristics-mapping
   (for-each platform-characteristics-xpath
     (object
@@ -69,9 +78,24 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
+             ;; in the JSON schema instead of a single object. CMR-1989.
+             :AccessConstraints (object
+                                  {:Description
+                                   (xpath-with-regex (str constraints-xpath
+                                                          "/gmd:useLimitation/gco:CharacterString")
+                                                     #"Restriction Comment:(.+)")
+
+                                   :Value
+                                   (xpath-with-regex (str constraints-xpath
+                                                          "/gmd:otherConstraints/gco:CharacterString")
+                                                     #"Restriction Flag:(.+)")})
+             ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
+             ;; in the JSON schema instead of a single string. CMR-1989.
              :UseConstraints
-             (char-string-xpath md-data-id-base-xpath
-                                "/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation")
+             (xpath-with-regex (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                               #"^(?!Restriction Comment:).+")
+             :TemporalKeywords temporal-keywords-xpath
              :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
              :TemporalExtents temporal-mappings
              :Platforms (for-each platforms-xpath

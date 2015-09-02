@@ -14,6 +14,11 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:RestrictionFlag (xpath "/AccessConstraints/Value")]
+   [:RestrictionComment (xpath "/AccessConstraints/Description")]
+   [:TemporalKeywords
+    (for-each "/TemporalKeywords"
+              [:Keyword (xpath ".")])]
 
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
