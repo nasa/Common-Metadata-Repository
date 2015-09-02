@@ -68,6 +68,14 @@
                    :Unit
                    :Value))
 
+(def sensor-mapping
+  [:Sensor
+   [:Short_Name (xpath "ShortName")]
+   [:Long_Name (xpath "LongName")]
+   [:Technique (xpath "Technique")]
+   (for-each "Characteristics"
+     characteristic-type-mapping)])
+
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
@@ -94,6 +102,8 @@
          [:NumberOfSensors (xpath "NumberOfSensors")]
          (for-each "Characteristics"
            characteristic-type-mapping)
+         (for-each "Sensors"
+           sensor-mapping)
          (for-each "OperationalModes"
            [:OperationalMode (xpath ".")])])])
 

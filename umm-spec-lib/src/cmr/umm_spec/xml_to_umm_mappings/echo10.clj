@@ -24,6 +24,24 @@
                    :Unit
                    :Value))
 
+(def sensor-mapping
+  (object {:ShortName (xpath "ShortName")
+           :LongName (xpath "LongName")
+           :Technique (xpath "Technique")
+           :Characteristics (for-each "Characteristics/Characteristic"
+                              characteristic-mapping)}))
+
+(def instrument-mapping
+  (object {:ShortName (xpath "ShortName")
+           :LongName (xpath "LongName")
+           :Technique (xpath "Technique")
+           :NumberOfSensors (xpath "NumberOfSensors")
+           :OperationalModes (select "OperationModes/OperationMode")
+           :Characteristics (for-each "Characteristics/Characteristic"
+                              characteristic-mapping)
+           :Sensors (for-each "Sensors/Sensor"
+                      sensor-mapping)}))
+
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -45,10 +63,4 @@
                              :Characteristics (for-each "Characteristics/Characteristic"
                                                 characteristic-mapping)
                              :Instruments (for-each "Instruments/Instrument"
-                                            (object {:ShortName (xpath "ShortName")
-                                                     :LongName (xpath "LongName")
-                                                     :Technique (xpath "Technique")
-                                                     :NumberOfSensors (xpath "NumberOfSensors")
-                                                     :OperationalModes (select "OperationModes/OperationMode")
-                                                     :Characteristics (for-each "Characteristics/Characteristic"
-                                                                        characteristic-mapping)}))}))})))
+                                            instrument-mapping)}))})))

@@ -73,6 +73,15 @@
                                            [:Characteristics
                                             (for-each "Characteristics"
                                               characteristic-mapping)]
+                                           [:Sensors
+                                            (for-each "Sensors"
+                                              (matching-object :Sensor
+                                                               :ShortName
+                                                               :LongName
+                                                               :Technique
+                                                               [:Characteristics
+                                                                (for-each "Characteristics"
+                                                                  characteristic-mapping)]))]
                                            [:OperationModes
                                             (for-each "OperationalModes"
                                               [:OperationMode (xpath ".")])]))]))]])
