@@ -11,7 +11,8 @@
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
   {"C" :collection
-   "G" :granule})
+   "G" :granule
+   "T" :tag})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
@@ -20,7 +21,7 @@
 (defn concept-id-validation
   "Validates the concept id and returns errors if it's invalid. Returns nil if valid."
   [concept-id]
-  (let [regex #"[CG]\d+-[A-Za-z0-9_]+"]
+  (let [regex #"[CGT]\d+-[A-Za-z0-9_]+"]
     (when-not (re-matches regex concept-id)
       [(format "Concept-id [%s] is not valid." concept-id)])))
 

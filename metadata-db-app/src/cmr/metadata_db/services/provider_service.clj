@@ -35,7 +35,10 @@
   ([context provider-id]
    (get-provider-by-id context provider-id false))
   ([context provider-id throw-error?]
-   (or (providers/get-provider (mdb-util/context->db context) provider-id)
+   (or (when (= "cmr" provider-id)
+         {:provider-id "cmr"
+          :small false})
+       (providers/get-provider (mdb-util/context->db context) provider-id)
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
 
