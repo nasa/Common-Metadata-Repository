@@ -134,7 +134,7 @@
                           :short-name.lowercase keywords
                           short-name-long-name-boost)
    ;; project (ECHO campaign)
-   (keywords->name-filter :project-ln.lowercase :project-sn.lowercase keywords project-boost)
+   (keywords->name-filter :project-ln.lowercase :project-sn2.lowercase keywords project-boost)
    ;; platform
    (keywords->name-filter :platform-ln.lowercase :platform-sn.lowercase keywords platform-boost)
    ;; instrument

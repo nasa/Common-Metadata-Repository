@@ -134,8 +134,8 @@
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
             :sensor-sn.lowercase  (map str/lower-case sensor-short-names)
-            :project-sn project-short-names
-            :project-sn.lowercase  (map str/lower-case project-short-names)
+            :project-sn2 project-short-names
+            :project-sn2.lowercase  (map str/lower-case project-short-names)
             :two-d-coord-name two-d-coord-names
             :two-d-coord-name.lowercase  (map str/lower-case two-d-coord-names)
             :spatial-keyword spatial-keywords

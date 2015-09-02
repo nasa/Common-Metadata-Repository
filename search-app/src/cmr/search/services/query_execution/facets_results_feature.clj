@@ -54,7 +54,7 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-center (terms-facet :archive-center)
-   :project (terms-facet :project-sn)
+   :project (terms-facet :project-sn2)
    :platform (terms-facet :platform-sn)
    :instrument (terms-facet :instrument-sn)
    :sensor (terms-facet :sensor-sn)
@@ -72,7 +72,7 @@
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
   {:archive-centers (nested-facet :archive-centers)
-   :project (terms-facet :project-sn)
+   :project (terms-facet :project-sn2)
    :platforms (nested-facet :platforms)
    :instruments (nested-facet :instruments)
    :sensor (terms-facet :sensor-sn)
