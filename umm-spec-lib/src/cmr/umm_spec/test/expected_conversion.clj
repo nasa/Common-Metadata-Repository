@@ -217,7 +217,7 @@
 
 (defn- normalize-instruments
   [platforms]
-  (let [all-instruments (mapcat :Instruments platforms)]
+  (let [all-instruments (seq (mapcat :Instruments platforms))]
     (for [platform platforms]
       (assoc platform :Instruments all-instruments))))
 
