@@ -9,6 +9,10 @@
             [cmr.common.xml :as cx]
             [cmr.umm-spec.models.common :as c]))
 
+(def KEYWORD_SEPARATOR
+  "Separator used to separator keyword into keyword fields"
+  #" > ")
+
 (def platform-categories
   "Category keywords that identifies a descriptive keyword as a platform.
   We are doing this because GCMD currently is not setting the proper value in the type element
@@ -31,25 +35,64 @@
 
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO SMAP keyword string."
-  [keyword-str]
-  (->> (str/split keyword-str #" > ")
-       (remove empty?)))
+  [smap-keyword]
+  (for [s (str/split smap-keyword KEYWORD_SEPARATOR)]
+    (if (empty? s)
+      nil
+      s)))
 
 (defn keyword-type
   "Returns a value indicating the category of the given keyword string."
-  [keyword-str]
-  (let [category (first (parse-keyword-str keyword-str))]
+  [smap-keyword]
+  (let [category (first (parse-keyword-str smap-keyword))]
     (cond
       (science-keyword-categories category)    :science
       (re-matches #".* Instruments$" category) :instrument
       (platform-categories category)           :platform
       :else                                    :other)))
 
-(defn parse-platform
-  "Returns a UMM PlatformType record from the given keyword string."
-  [keyword-str]
+(defn parse-instrument
+  "Converts the SMAP keyword string into an Instrument and returns it"
+  [smap-keyword]
+  (let [[_ _ _ _ short-name long-name] (parse-keyword-str smap-keyword)]
+    (c/map->InstrumentType
+     {:ShortName short-name
+      :LongName long-name})))
+
+(defn platform
+  "Returns the platform with the given keyword string and instruments"
+  [instruments keyword-str]
   (let [[_ _ short-name long-name] (parse-keyword-str keyword-str)]
     (c/map->PlatformType
-      {:ShortName short-name
-       :LongName long-name
-       :Type "Spacecraft"})))
+     {:ShortName short-name
+      :LongName long-name
+      :Type "Spacecraft"
+      :Instruments instruments})))
+
+(defn parse-platforms
+  "Returns UMM PlatformType records with associated instruments from a seq of ISO SMAP keywords."
+  [smap-keywords]
+  (let [groups (group-by keyword-type smap-keywords)
+        instruments (seq (map parse-instrument (:instrument groups)))]
+    ;; There is no nested relationship between platform and instrument in SMAP ISO xml
+    ;; So we put all instruments in each platform in the UMM
+    (seq (map (partial platform instruments) (:platform groups)))))
+
+(defmulti smap-keyword-str
+  "Returns a SMAP keyword string for a given UMM record."
+  (fn [record]
+    (type record)))
+
+(defmethod smap-keyword-str cmr.umm_spec.models.common.PlatformType
+  [platform]
+  (format "Aircraft > DUMMY > %s > %s"
+          (:ShortName platform)
+          ;; Because LongName is optional, we want an empty string instead of "null"
+          ;; here to prevent problems when parsing.
+          (str (:LongName platform))))
+
+(defmethod smap-keyword-str cmr.umm_spec.models.common.InstrumentType
+  [instrument]
+  (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
+          (:ShortName instrument)
+          (str (:LongName instrument))))

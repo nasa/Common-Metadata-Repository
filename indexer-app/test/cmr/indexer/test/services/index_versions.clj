@@ -31,8 +31,11 @@
      :short-name.lowercase (s/lower-case short-name)
      :version-id version-id
      :version-id.lowercase (s/lower-case version-id)
+     ;; TODO Remove deprecated project-sn and project-sn.lowercase fields with CMR-1995
      :project-sn project-short-names
-     :project-sn.lowercase (map s/lower-case project-short-names)}))
+     :project-sn.lowercase (map s/lower-case project-short-names)
+     :project-sn2 project-short-names
+     :project-sn2.lowercase (map s/lower-case project-short-names)}))
 
 (def test-config
   "Return the configuration for elasticsearch"

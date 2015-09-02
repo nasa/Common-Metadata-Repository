@@ -49,15 +49,14 @@
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
     (are [fmt]
-         (->> expected-conversion/example-record
-              (core/generate-metadata :collection fmt)
-              (core/validate-xml :collection fmt)
-              empty?)
-         :echo10
-         :dif
-         :dif10
-         :iso-smap
-         :iso19115)))
+        (empty?
+         (core/validate-xml :collection fmt
+                            (core/generate-metadata :collection fmt expected-conversion/example-record)))
+      :echo10
+      :dif
+      :dif10
+      :iso-smap
+      :iso19115)))
 
 (defn fixup-generated-collection
   [umm-coll]

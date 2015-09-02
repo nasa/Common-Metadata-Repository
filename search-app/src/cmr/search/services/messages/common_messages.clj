@@ -1,7 +1,8 @@
 (ns cmr.search.services.messages.common-messages
   "Contains messages for reporting responses to the user"
   (require [clojure.string :as str]
-           [camel-snake-kebab.core :as csk]))
+           [camel-snake-kebab.core :as csk]
+           [cmr.common.validations.core :as v]))
 
 (defn invalid-aql
   [msg]
@@ -60,14 +61,10 @@
   (format "Searching using JSON query conditions is not supported for %ss." (name concept-type)))
 
 (defn invalid-nested-json-query-condition
-  "Creates a message indicating the JSON query condition provided for the provided nested condition
-  is invalid."
+  "Creates a message indicating the JSON query condition value for the given nested condition is
+  invalid."
   [condition-name condition-value]
-  (case condition-name
-    :science-keywords (format "Invalid science keyword query condition [%s]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any." condition-value)
-    :platforms (format "Invalid platform query condition [%s]. Must contain category, series_entity, short_name, long_name, uuid, or any." condition-value)
-    :instruments (format "Invalid instrument query condition [%s]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any." condition-value)
-
-    ;; else
-    (format "Invalid json query condition [%s] for field [%s]", (name condition-name) condition-value)))
+  (format "Invalid %s query condition %s. Must contain at least one subfield."
+          (v/humanize-field condition-name)
+          condition-value))
 

@@ -20,7 +20,11 @@
         coll6 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Larc")]}))
 
         coll7 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
-                                                                (dc/org :processing-center "Sedac")]}))]
+                                                                (dc/org :processing-center "Sedac")]}))
+        coll8 (d/ingest "PROV1" (dc/collection
+                                  {:organizations [(dc/org :archive-center "UCAR/NCAR/EOL/CEOPDM")]}))
+        coll9 (d/ingest "PROV1" (dc/collection
+                                  {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]}))]
 
     (index/wait-until-indexed)
 
@@ -68,21 +72,38 @@
       (are [items search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
-           [coll4 coll6] {:archive_center "Larc"}
-           [coll5 coll7] {:archive_center "SEDAC AC"}
-           [coll5 coll7] {:archive_center "Sedac AC"}
-           [] {:archive_center "SEDAC PC"}
-           [] {:archive_center "BLAH"}
-           [coll4 coll5 coll6 coll7] {:or [{:archive_center "SEDAC AC"} {:archive_center "Larc"}]}
-           [] {:and [{:archive_center "SEDAC AC"} {:archive_center "Larc"}]}
-           [coll1 coll2 coll3 coll4 coll6] {:not {:archive_center "SEDAC AC"}}
+           [coll4 coll6] {:archive_center {:short_name "Larc"}}
+           [coll5 coll7] {:archive_center {:short_name "SEDAC AC"}}
+           [coll5 coll7] {:archive_center {:short_name "Sedac AC"}}
+           [] {:archive_center {:short_name "SEDAC PC"}}
+           [] {:archive_center {:short_name "BLAH"}}
+           [coll4 coll5 coll6 coll7] {:or [{:archive_center {:short_name "SEDAC AC"}} {:archive_center {:short_name "Larc"}}]}
+           [] {:and [{:archive_center {:short_name "SEDAC AC"}} {:archive_center {:short_name "Larc"}}]}
+           [coll1 coll2 coll3 coll4 coll6 coll8 coll9] {:not {:archive_center {:short_name "SEDAC AC"}}}
 
            ;; Wildcards
-           [coll5 coll7] {:archive_center {:value "S*" :pattern true}}
-           [coll5 coll7] {:archive_center {:value "SEDAC ?C" :pattern true}}
-           [coll5] {:archive_center {:value "SEDAC ?C" :pattern true :ignore_case false}}
-           [] {:archive_center {:value "*Q*" :pattern true}}
+           [coll5 coll7] {:archive_center {:short_name "S*" :pattern true}}
+           [coll5 coll7] {:archive_center {:short_name "SEDAC ?C" :pattern true}}
+           [coll5] {:archive_center {:short_name "SEDAC ?C" :pattern true :ignore_case false}}
+           [] {:archive_center {:short_name "*Q*" :pattern true}}
 
            ;; Ignore case
-           [coll5 coll7] {:archive_center {:value "sedac ac" :ignore_case true}}
-           [] {:archive_center {:value "sedac ac" :ignore_case false}}))))
+           [coll5 coll7] {:archive_center {:short_name "sedac ac" :ignore_case true}}
+           [] {:archive_center {:short_name "sedac ac" :ignore_case false}}
+
+           ;; Test searching on KMS subfields
+           [coll8 coll9] {:archive_center {:level_0 "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES"
+                                           :ignore_case false}}
+           [] {:archive_center {:level_0 "government agencies-u.s. federal agencies" :ignore_case false}}
+           [coll8 coll9] {:archive_center {:level_0 "government agencies-u.s. federal agencies"
+                                                 :ignore_case true}}
+           [coll8] {:archive_center {:level_1 "NSF"}}
+           [coll9] {:archive_center {:level_2 "USGS"}}
+           [coll9] {:archive_center {:level_3 "Added level 3 value"}}
+           [coll8] {:archive_center {:long_name "ceop data M?nagement*" :pattern true}}
+           [] {:archive_center {:long_name "ceop data M?nagement*"}}
+           [coll8] {:archive_center {:url "http://www.eol.ucar.edu/projects/ceop/dm/"}}
+           [coll9] {:archive_center {:uuid "69db99c6-54d6-40b9-9f72-47eab9c34869"}}
+           [coll9] {:archive_center {:any "69db99c6*" :pattern true}}))))
+
+

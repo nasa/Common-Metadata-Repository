@@ -17,6 +17,13 @@
                             (matching-object :Name :StartDate :EndDate :DurationUnit :DurationValue
                                              :PeriodCycleDurationUnit :PeriodCycleDurationValue))})))
 
+(def characteristic-mapping
+  (matching-object :Name
+                   :Description
+                   :DataType
+                   :Unit
+                   :Value))
+
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -36,8 +43,12 @@
                              :LongName (xpath "LongName")
                              :Type (xpath "Type")
                              :Characteristics (for-each "Characteristics/Characteristic"
-                                                (matching-object :Name
-                                                                 :Description
-                                                                 :DataType
-                                                                 :Unit
-                                                                 :Value))}))})))
+                                                characteristic-mapping)
+                             :Instruments (for-each "Instruments/Instrument"
+                                            (object {:ShortName (xpath "ShortName")
+                                                     :LongName (xpath "LongName")
+                                                     :Technique (xpath "Technique")
+                                                     :NumberOfSensors (xpath "NumberOfSensors")
+                                                     :OperationalModes (select "OperationModes/OperationMode")
+                                                     :Characteristics (for-each "Characteristics/Characteristic"
+                                                                        characteristic-mapping)}))}))})))

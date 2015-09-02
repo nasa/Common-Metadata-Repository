@@ -20,7 +20,19 @@
                                          :Description "Orbital period in decimal minutes."
                                          :DataType "float"
                                          :Unit "Minutes"
-                                         :Value "96.7"})]})]
+                                         :Value "96.7"})]
+                    :Instruments [(cmn/map->InstrumentType
+                                    {:ShortName "An Instrument"
+                                     :LongName "The Full Name of An Instrument v123.4"
+                                     :Technique "Two cans and a string"
+                                     :NumberOfSensors 1
+                                     :OperationalModes ["on" "off"]
+                                     :Characteristics [(cmn/map->CharacteristicType
+                                                         {:Name "Signal to Noise Ratio"
+                                                          :Description "Is that necessary?"
+                                                          :DataType "float"
+                                                          :Unit "dB"
+                                                          :Value "10"})]})]})]
      :TemporalExtents [(cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3
@@ -146,8 +158,10 @@
   (-> umm-coll
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:AccessConstraints] dif-access-constraints)
-      ;; DIF 9 does not support Platform Type or Characteristics.
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil)))
+      ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
+      ;; unable to be implemented as specified.
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)))
+
 
 ;; DIF 10
 (defn dif10-platform
@@ -183,6 +197,11 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
+      ;; The following platform instrument properties are not supported in ISO 19115-2
+      (update-in-each [:Platforms] update-in-each [:Instruments] assoc
+                      :NumberOfSensors nil
+                      :Sensors nil
+                      :OperationalModes nil)
       (assoc :Quality nil)))
 
 (defmethod convert-internal :iso-smap
@@ -196,7 +215,12 @@
       (assoc :TemporalKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
-      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)))
+      (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+      (update-in-each [:Platforms] update-in-each [:Instruments] assoc
+                      :Characteristics nil
+                      :OperationalModes nil
+                      :NumberOfSensors nil
+                      :Technique nil)))
 
 ;;; Unimplemented Fields
 

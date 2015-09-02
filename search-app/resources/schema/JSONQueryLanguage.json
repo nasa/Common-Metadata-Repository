@@ -172,8 +172,54 @@
 					"$ref": "#/definitions/StringCondition"
 				},
 				"archive_center": {
-					"description": "UMM archive center",
-					"$ref": "#/definitions/StringCondition"
+					"description": "Search against any of the subfields in the archive center hierarchy",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"level_0": {
+							"description": "Top level classification of archive centers.",
+							"type": "string"
+						},
+						"level_1": {
+							"description": "Second level classification under level 0.",
+							"type": "string"
+						},
+						"level_2": {
+							"description": "Third level classification under level 1.",
+							"type": "string"
+						},
+						"level_3": {
+							"description": "Fourth level classification under level 2.",
+							"type": "string"
+						},
+						"short_name": {
+							"description": "Abbreviated name of the archive center.",
+							"type": "string"
+						},
+						"long_name": {
+							"description": "The full name of the archive center.",
+							"type": "string"
+						},
+						"url": {
+							"description": "The Uniform Resource Locator (URL) of the archive center.",
+							"type": "string"
+						},
+						"uuid": {
+							"description": "Unique identifier for the instrument within the GCMD Keyword Management System.",
+							"type": "string"
+						},
+						"ignore_case": {
+							"$ref": "#/definitions/IgnoreCaseOption"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						},
+						"any": {
+							"description": "Search against any of the archive center subfields (level0, url, etc.) for the provided value.",
+							"type": "string"
+						}
+					}
 				},
 				"spatial_keyword": {
 					"description": "UMM spatial keyword",
