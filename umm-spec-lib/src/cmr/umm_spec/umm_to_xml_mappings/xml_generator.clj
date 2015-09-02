@@ -13,7 +13,6 @@
 (defmulti generate-content
   "Generates content using a content generator and values from the XPath context."
   (fn [content-generator xpath-context]
-    ;; We will eventually add custom function support through (fn? content-generator) :fn
     (cond
       (vector? content-generator)  :element
       (keyword? content-generator) :keyword
