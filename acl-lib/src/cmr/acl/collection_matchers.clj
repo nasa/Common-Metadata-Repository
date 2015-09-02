@@ -3,13 +3,12 @@
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
-            [cmr.common.time-keeper :as tk]
             [clj-time.core :as t]
-            [clj-time.coerce :as c]
-            [cmr.umm.start-end-date :as sed]))
+            [cmr.umm.start-end-date :as sed]
+            [cmr.common.time-keeper :as tk]))
 
 (def ^:private supported-collection-identifier-keys
-  #{:entry-titles :access-value :rolling-temporal})
+  #{:entry-titles :access-value :temporal})
 
 (defn- coll-matches-collection-id?
   "Returns true if the collection matches the collection id"
@@ -58,45 +57,35 @@
       ;; Is end2 in the range
       (or (= end1 end2) (= start1 end2) (t/within? interval1 end2)))))
 
-(defn- t-minus-millis
-  "Returns the time minus the specified number of milliseconds. This had be used because clj-time
-  and underlying period can only take Integer instead of Long for milliseconds"
-  [date-time millis]
-  (c/from-long (- (c/to-long date-time) millis)))
-
-(defn- coll-matches-rolling-temporal?
-  "Returns true if the collection matches the rolling-temporal from a collection identifier."
-  [coll rolling-temporal]
+(defn- coll-matches-temporal-filter?
+  "Returns true if the collection matches the temporal from a collection identifier."
+  [coll temporal-filter]
   (when-let [temporal (:temporal coll)]
 
-    (when-not (= :acquisition (:temporal-field rolling-temporal))
+    (when-not (= :acquisition (:temporal-field temporal-filter))
       (errors/internal-error!
-        (str "Found acl with unsupported rolling temporal field " (:temporal-field rolling-temporal))))
+        (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
 
-    (let [{:keys [end duration mask]} rolling-temporal
-          now (tk/now)
-          rolling-end (t-minus-millis now end)
-          rolling-start (t-minus-millis rolling-end duration)
+    (let [{:keys [start-date end-date mask]} temporal-filter
           coll-start (sed/start-date :collection temporal)
-          coll-end (or (sed/end-date :collection temporal) now)]
-
+          coll-end (or (sed/end-date :collection temporal) (tk/now))]
       (case mask
-        :intersects (time-ranges-intersect? rolling-start rolling-end coll-start coll-end)
+        :intersects (time-ranges-intersect? start-date end-date coll-start coll-end)
         ;; Per ECHO10 API documentation disjoint is the negation of intersects
-        :disjoint (not (time-ranges-intersect? rolling-start rolling-end coll-start coll-end))
-        :contains (time-range1-contains-range2? rolling-start rolling-end coll-start coll-end)))))
+        :disjoint (not (time-ranges-intersect? start-date end-date coll-start coll-end))
+        :contains (time-range1-contains-range2? start-date end-date coll-start coll-end)))))
 
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
   (let [coll-entry-title (:entry-title coll)
-        {:keys [entry-titles access-value rolling-temporal]} coll-id]
+        {:keys [entry-titles access-value temporal]} coll-id]
     (and (or (empty? entry-titles)
              (some (partial = coll-entry-title) entry-titles))
          (or (nil? access-value)
              (coll-matches-access-value-filter? coll access-value))
-         (or (nil? rolling-temporal)
-             (coll-matches-rolling-temporal? coll rolling-temporal)))))
+         (or (nil? temporal)
+             (coll-matches-temporal-filter? coll temporal)))))
 
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."

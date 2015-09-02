@@ -54,15 +54,18 @@
    (coll-id entry-titles nil))
   ([entry-titles access-value-filter]
    (coll-id entry-titles access-value-filter nil))
-  ([entry-titles access-value-filter rollling-temporal]
+  ([entry-titles access-value-filter temporal]
    {:entry-titles entry-titles
     :access-value access-value-filter
-    :rolling-temporal rollling-temporal}))
+    :temporal temporal}))
 
 (defn gran-id
   "Creates an ACL granule identifier"
-  [access-value-filter]
-  {:access-value access-value-filter})
+  ([access-value-filter]
+   (gran-id access-value-filter nil))
+  ([access-value-filter temporal]
+   {:access-value access-value-filter
+    :temporal temporal}))
 
 (defn catalog-item-id
   "Creates a catalog item identity"

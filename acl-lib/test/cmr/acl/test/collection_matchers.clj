@@ -149,11 +149,11 @@
   cmr.common.test.time-util."
   10)
 
-(defn rolling-temporal
-  "Creates a rolling temporal between the two given N times"
+(defn temporal-filter
+  "Creates a temporal between the two given N times"
   [mask start-n end-n]
-  {:duration (tu/millis-between-n start-n end-n)
-   :end (tu/millis-between-n end-n now-n)
+  {:start-date (tu/n->date-time start-n)
+   :end-date (tu/n->date-time end-n)
    :mask mask
    :temporal-field :acquisition})
 
@@ -166,95 +166,94 @@
     [{:beginning-date-time (tu/n->date-time start-n)
       :ending-date-time (tu/n->date-time end-n)}]}})
 
-
-(deftest collection-applicable-rolling-temporal-acl-test
+(deftest collection-applicable-temporal-acl-test
   (tk/set-time-override! (tu/n->date-time now-n))
-  (are2 [applicable? rt coll]
+  (are2 [applicable? tf coll]
         (= applicable? (boolean (a/coll-applicable-acl?
                                   "PROV1" coll
                                   (acl-with-cat-identity
                                     {:collection-applicable true
                                      :provider-id "PROV1"
                                      :collection-identifier
-                                     {:rolling-temporal rt}}))))
+                                     {:temporal tf}}))))
 
         "Collection with no temporal"
-        false (rolling-temporal :intersects 1 3) (collection)
+        false (temporal-filter :intersects 1 3) (collection)
 
         ;; Intersects Mask
         "Intersects - Collection is exact match"
-        true (rolling-temporal :intersects 1 3) (coll-w-temporal 1 3)
+        true (temporal-filter :intersects 1 3) (coll-w-temporal 1 3)
         "Contains - Collection start matches range start and end within"
-        true (rolling-temporal :intersects 1 4) (coll-w-temporal 1 2)
+        true (temporal-filter :intersects 1 4) (coll-w-temporal 1 2)
         "Contains - Collection end matches range end and starts within"
-        true (rolling-temporal :intersects 1 4) (coll-w-temporal 2 4)
-        "Intersects - Collection contained within rolling temporal range"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 3 4)
-        "Intersects - rolling temporal within collection"
-        true (rolling-temporal :intersects 3 4) (coll-w-temporal 2 5)
-        "Intersects - collection end = rolling start"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 1 2)
-        "Intersects - collection start = rolling end"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 7 8)
+        true (temporal-filter :intersects 1 4) (coll-w-temporal 2 4)
+        "Intersects - Collection contained within temporal range"
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 3 4)
+        "Intersects - temporal within collection"
+        true (temporal-filter :intersects 3 4) (coll-w-temporal 2 5)
+        "Intersects - collection end = start"
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 1 2)
+        "Intersects - collection start = end"
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 7 8)
         "Intersects - collection before with no end date"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 1 nil)
-        "Intersects - collection start and end equal rolling range end"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 7 7)
-        "Intersects - collection start and end equal rolling range start"
-        true (rolling-temporal :intersects 2 7) (coll-w-temporal 2 2)
-        "Intersects - collection after rolling temporal range"
-        false (rolling-temporal :intersects 1 3) (coll-w-temporal 4 5)
-        "Intersects - collection before rolling temporal range"
-        false (rolling-temporal :intersects 2 4) (coll-w-temporal 0 1)
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 1 nil)
+        "Intersects - collection start and end equal range end"
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 7 7)
+        "Intersects - collection start and end equal range start"
+        true (temporal-filter :intersects 2 7) (coll-w-temporal 2 2)
+        "Intersects - collection after temporal range"
+        false (temporal-filter :intersects 1 3) (coll-w-temporal 4 5)
+        "Intersects - collection before temporal range"
+        false (temporal-filter :intersects 2 4) (coll-w-temporal 0 1)
 
         ;; Disjoint Mask (The opposite of intersects)
         "Disjoint - Collection is exact match"
-        false (rolling-temporal :disjoint 1 3) (coll-w-temporal 1 3)
+        false (temporal-filter :disjoint 1 3) (coll-w-temporal 1 3)
         "Contains - Collection start matches range start and end within"
-        false (rolling-temporal :disjoint 1 4) (coll-w-temporal 1 2)
+        false (temporal-filter :disjoint 1 4) (coll-w-temporal 1 2)
         "Contains - Collection end matches range end and starts within"
-        false (rolling-temporal :disjoint 1 4) (coll-w-temporal 2 4)
-        "Disjoint - Collection contained within rolling temporal range"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 3 4)
-        "Disjoint - rolling temporal within collection"
-        false (rolling-temporal :disjoint 3 4) (coll-w-temporal 2 5)
-        "Disjoint - collection end = rolling start"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 1 2)
-        "Disjoint - collection start = rolling end"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 7 8)
+        false (temporal-filter :disjoint 1 4) (coll-w-temporal 2 4)
+        "Disjoint - Collection contained within temporal range"
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 3 4)
+        "Disjoint - temporal within collection"
+        false (temporal-filter :disjoint 3 4) (coll-w-temporal 2 5)
+        "Disjoint - collection end = start"
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 1 2)
+        "Disjoint - collection start = end"
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 7 8)
         "Disjoint - collection before with no end date"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 1 nil)
-        "Disjoin - collection start and end equal rolling range end"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 7 7)
-        "Disjoint - collection start and end equal rolling range start"
-        false (rolling-temporal :disjoint 2 7) (coll-w-temporal 2 2)
-        "Disjoint - collection after rolling temporal range"
-        true (rolling-temporal :disjoint 1 3) (coll-w-temporal 4 5)
-        "Disjoint - collection before rolling temporal range"
-        true (rolling-temporal :disjoint 2 4) (coll-w-temporal 0 1)
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 1 nil)
+        "Disjoin - collection start and end equal range end"
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 7 7)
+        "Disjoint - collection start and end equal range start"
+        false (temporal-filter :disjoint 2 7) (coll-w-temporal 2 2)
+        "Disjoint - collection after temporal range"
+        true (temporal-filter :disjoint 1 3) (coll-w-temporal 4 5)
+        "Disjoint - collection before temporal range"
+        true (temporal-filter :disjoint 2 4) (coll-w-temporal 0 1)
 
         ;; Contains
         "Contains - Collection is exact match"
-        true (rolling-temporal :contains 1 3) (coll-w-temporal 1 3)
+        true (temporal-filter :contains 1 3) (coll-w-temporal 1 3)
         "Contains - Collection start matches range start and end within"
-        true (rolling-temporal :contains 1 4) (coll-w-temporal 1 2)
+        true (temporal-filter :contains 1 4) (coll-w-temporal 1 2)
         "Contains - Collection end matches range end and starts within"
-        true (rolling-temporal :contains 1 4) (coll-w-temporal 2 4)
-        "Contains - Collection contained within rolling temporal range"
-        true (rolling-temporal :contains 2 7) (coll-w-temporal 3 4)
-        "Contains - rolling temporal within collection"
-        false (rolling-temporal :contains 3 4) (coll-w-temporal 2 5)
-        "Contains - collection end = rolling start"
-        false (rolling-temporal :contains 2 7) (coll-w-temporal 1 2)
-        "Contains - collection start = rolling end"
-        false (rolling-temporal :contains 2 7) (coll-w-temporal 7 8)
-        "Contains - collection start and end equal rolling range end"
-        true (rolling-temporal :contains 2 7) (coll-w-temporal 7 7)
-        "Contains - collection start and end equal rolling range start"
-        true (rolling-temporal :contains 2 7) (coll-w-temporal 2 2)
+        true (temporal-filter :contains 1 4) (coll-w-temporal 2 4)
+        "Contains - Collection contained within temporal range"
+        true (temporal-filter :contains 2 7) (coll-w-temporal 3 4)
+        "Contains - temporal within collection"
+        false (temporal-filter :contains 3 4) (coll-w-temporal 2 5)
+        "Contains - collection end = start"
+        false (temporal-filter :contains 2 7) (coll-w-temporal 1 2)
+        "Contains - collection start = end"
+        false (temporal-filter :contains 2 7) (coll-w-temporal 7 8)
+        "Contains - collection start and end equal range end"
+        true (temporal-filter :contains 2 7) (coll-w-temporal 7 7)
+        "Contains - collection start and end equal range start"
+        true (temporal-filter :contains 2 7) (coll-w-temporal 2 2)
         "Contains - collection before with no end date"
-        false (rolling-temporal :contains 2 7) (coll-w-temporal 1 nil)
-        "Contains - collection after rolling temporal range"
-        false (rolling-temporal :contains 1 3) (coll-w-temporal 4 5)
-        "Contains - collection before rolling temporal range"
-        false (rolling-temporal :contains 2 4) (coll-w-temporal 0 1)))
+        false (temporal-filter :contains 2 7) (coll-w-temporal 1 nil)
+        "Contains - collection after temporal range"
+        false (temporal-filter :contains 1 3) (coll-w-temporal 4 5)
+        "Contains - collection before temporal range"
+        false (temporal-filter :contains 2 4) (coll-w-temporal 0 1)))

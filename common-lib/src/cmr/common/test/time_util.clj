@@ -22,7 +22,3 @@
   [n]
   (when n (str (n->date-time n))))
 
-(defn millis-between-n
-  "Returns the number of milliseconds between two given dates represented by Ns"
-  [start-n end-n]
-  (t/in-millis (t/interval (n->date-time start-n) (n->date-time end-n))))

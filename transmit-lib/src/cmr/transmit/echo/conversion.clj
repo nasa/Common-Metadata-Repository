@@ -3,7 +3,9 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [cmr.common.util :as util]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [clj-time.format :as f]
+            [clj-time.core :as t]))
 
 (defn echo-sid->cmr-sid
   "Converts an ECHO sid into a cmr style sid.
@@ -52,34 +54,54 @@
     (merge {:permissions (mapv (comp str/upper-case name) permissions)}
            (cmr-sid->echo-sid (or group-guid user-type)))))
 
-(defn- echo-rolling-temporal->cmr-rolling-temporal
+
+(def ^:private echo-temporal-formatter
+  "A clj-time formatter that can parse the times returned by ECHO in ACL temporal filters."
+  (f/formatter "EEE MMM dd HH:mm:ss Z yyyy"))
+
+(defn- parse-echo-temporal-date
+  "Parses an ECHO temporal date which is of the format Tue Sep 01 12:22:41 -0400 2015. It may contain
+  UTC for the timezone as well."
+  [s]
+  (f/parse echo-temporal-formatter (str/replace s "UTC" "+0000")))
+
+(defn- generate-echo-temporal-date
+  "Generates an ECHO temporal date from a clj-time date."
+  [dt]
+  (f/unparse echo-temporal-formatter dt))
+
+(defn- echo-temporal->cmr-temporal
   [rt]
   (-> rt
       (update-in [:mask] csk/->kebab-case-keyword)
-      (update-in [:temporal-field] csk/->kebab-case-keyword)))
+      (update-in [:temporal-field] csk/->kebab-case-keyword)
+      (update-in [:start-date] parse-echo-temporal-date)
+      (update-in [:end-date] parse-echo-temporal-date)))
 
-(defn- cmr-rolling-temporal->echo-rolling-temporal
+(defn- cmr-temporal->echo-temporal
   [rt]
   (-> rt
       (update-in [:mask] csk/->SCREAMING_SNAKE_CASE_STRING)
-      (update-in [:temporal-field] csk/->SCREAMING_SNAKE_CASE_STRING)))
+      (update-in [:temporal-field] csk/->SCREAMING_SNAKE_CASE_STRING)
+      (update-in [:start-date] generate-echo-temporal-date)
+      (update-in [:end-date] generate-echo-temporal-date)))
 
 (defn- echo-coll-id->cmr-coll-id
   [cid]
-  (when-let [{:keys [collection-ids restriction-flag rolling-temporal]} cid]
+  (when-let [{:keys [collection-ids restriction-flag temporal]} cid]
     (merge {}
            (when collection-ids
              {:entry-titles (mapv :data-set-id collection-ids)})
            (when restriction-flag
              {:access-value (set/rename-keys restriction-flag
                                              {:include-undefined-value :include-undefined})})
-           (when rolling-temporal
-             {:rolling-temporal
-              (echo-rolling-temporal->cmr-rolling-temporal rolling-temporal)}))))
+           (when temporal
+             {:temporal
+              (echo-temporal->cmr-temporal temporal)}))))
 
 (defn cmr-coll-id->echo-coll-id
   [cid]
-  (when-let [{:keys [entry-titles access-value rolling-temporal]} cid]
+  (when-let [{:keys [entry-titles access-value temporal]} cid]
     (merge {}
            (when entry-titles
              {:collection-ids (for [et entry-titles]
@@ -88,32 +110,32 @@
              {:restriction-flag
               (set/rename-keys access-value
                                {:include-undefined :include-undefined-value})})
-           (when rolling-temporal
-             {:rolling-temporal
-              (cmr-rolling-temporal->echo-rolling-temporal rolling-temporal)}))))
+           (when temporal
+             {:temporal
+              (cmr-temporal->echo-temporal temporal)}))))
 
 (defn cmr-gran-id->echo-gran-id
   [gid]
-  (when-let [{:keys [access-value rolling-temporal]} gid]
+  (when-let [{:keys [access-value temporal]} gid]
     (merge {}
            (when access-value
              {:restriction-flag
               (set/rename-keys access-value
                                {:include-undefined :include-undefined-value})})
-           (when rolling-temporal
-             {:rolling-temporal
-              (cmr-rolling-temporal->echo-rolling-temporal rolling-temporal)}))))
+           (when temporal
+             {:temporal
+              (cmr-temporal->echo-temporal temporal)}))))
 
 (defn echo-gran-id->cmr-gran-id
   [gid]
-  (when-let [{:keys [restriction-flag rolling-temporal]} gid]
+  (when-let [{:keys [restriction-flag temporal]} gid]
     (merge {}
            (when restriction-flag
              {:access-value (set/rename-keys restriction-flag
                                              {:include-undefined-value :include-undefined})})
-           (when rolling-temporal
-             {:rolling-temporal
-              (echo-rolling-temporal->cmr-rolling-temporal rolling-temporal)}))))
+           (when temporal
+             {:temporal
+              (echo-temporal->cmr-temporal temporal)}))))
 
 (defn echo-catalog-item-identity->cmr-catalog-item-identity
   [cid]

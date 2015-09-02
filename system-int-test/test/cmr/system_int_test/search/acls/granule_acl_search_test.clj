@@ -58,8 +58,6 @@
     (ingest/create-provider {:provider-guid "provguid5" :provider-id "PROV5"} {:grant-all-search? false}))
   )
 
-;; TODO add separate rolling temporal test
-
 (deftest granule-search-with-acls-test
   (do
     ;; -- PROV1 --

@@ -1,41 +1,52 @@
 (ns cmr.transmit.test.echo.conversion
   (:require [clojure.test :refer :all]
-            [cmr.transmit.echo.conversion :as c]))
+            [cmr.transmit.echo.conversion :as c]
+            [clj-time.core :as t]))
+
+
+
+(deftest parse-and-generate-echo-temporal-dates
+  (testing "parsing with UTC"
+    (is (= (t/date-time 2010 1 1)
+          (#'c/parse-echo-temporal-date "Fri Jan 01 00:00:00 UTC 2010"))))
+  (testing "parsing with in another timezone"
+    (is (= (t/date-time 2015 9 1 16 22 41)
+          (#'c/parse-echo-temporal-date "Tue Sep 01 12:22:41 -0400 2015")))))
 
 
 (def echo-collection-identifier
   {:collection_ids [{:data_set_id "Landsat 1-5 Multispectral Scanner V1"}
                     {:data_set_id "Landsat 4-5 Thematic Mapper V1"}]
    :restriction_flag {:include_undefined_value false, :max_value 3.0, :min_value 3.0}
-   :rolling_temporal {:duration 259200000,
-                      :end 691200000,
-                      :mask "DISJOINT",
-                      :temporal_field "ACQUISITION"}})
+   :temporal {:start_date "Fri Jan 01 00:00:00 +0000 2010"
+              :end_date "Tue Sep 01 12:22:41 +0000 2015"
+              :mask "DISJOINT",
+              :temporal_field "ACQUISITION"}})
 
 (def cmr-collection-identifier
   {:entry-titles ["Landsat 1-5 Multispectral Scanner V1"
                   "Landsat 4-5 Thematic Mapper V1"]
    :access-value {:include-undefined false, :max-value 3.0, :min-value 3.0}
-   :rolling-temporal {:duration 259200000,
-                      :end 691200000,
-                      :mask :disjoint,
-                      :temporal-field :acquisition}})
+   :temporal {:start-date (t/date-time 2010 1 1)
+              :end-date (t/date-time 2015 9 1 12 22 41)
+              :mask :disjoint,
+              :temporal-field :acquisition}})
 
 
 (def echo-granule-identifier
   {:restriction_flag {:include_undefined_value true
                       :max_value 5.0, :min_value 3.0}
-   :rolling_temporal {:duration 259200000,
-                      :end 691200000,
-                      :mask "DISJOINT",
-                      :temporal_field "ACQUISITION"}})
+   :temporal {:start_date "Fri Jan 01 00:00:00 +0000 2010"
+              :end_date "Tue Sep 01 12:22:41 +0000 2015"
+              :mask "DISJOINT",
+              :temporal_field "ACQUISITION"}})
 
 (def cmr-granule-identifier
   {:access-value {:include-undefined true, :max-value 5.0, :min-value 3.0}
-   :rolling-temporal {:duration 259200000,
-                      :end 691200000,
-                      :mask :disjoint,
-                      :temporal-field :acquisition}})
+   :temporal {:start-date (t/date-time 2010 1 1)
+              :end-date (t/date-time 2015 9 1 12 22 41)
+              :mask :disjoint,
+              :temporal-field :acquisition}})
 
 (def echo-acl
   {:acl {:id "5C1B77E7-48E5-4579-E516-7D933F500F23"

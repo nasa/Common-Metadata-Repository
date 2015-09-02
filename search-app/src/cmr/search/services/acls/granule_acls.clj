@@ -10,6 +10,7 @@
             [cmr.acl.collection-matchers :as coll-matchers]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.services.errors :as errors]
+            [cmr.common.time-keeper :as tk]
             [clojure.set :as set]))
 
 (defmulti filter-applicable-granule-acls
@@ -45,7 +46,7 @@
                        (some (coll-ids-by-prov provider-id) acl-coll-ids)))))
           acls))
 
-(defn access-value->query-condition
+(defn- access-value->query-condition
   "Converts an access value filter from an ACL into a query condition."
   [access-value-filter]
   (when-let [{:keys [include-undefined min-value max-value]} access-value-filter]
@@ -57,6 +58,27 @@
       (if (and value-cond include-undefined-cond)
         (gc/or-conds [value-cond include-undefined-cond])
         (or value-cond include-undefined-cond)))))
+
+(defn- temporal->query-condition
+  "Converts a temporal filter from an ACL into a query condition"
+  [temporal-filter]
+  (when-not (= :acquisition (:temporal-field temporal-filter))
+    (errors/internal-error!
+      (str "Found acl with unsupported temporal field " (:temporal-field temporal-filter))))
+
+  (let [{:keys [start-date end-date mask]} temporal-filter]
+    (case mask
+      ;; The granule just needs to intersect with the date range.
+      :intersects (q/map->TemporalCondition {:start-date start-date
+                                             :end-date end-date
+                                             :exclusive? false})
+      ;; Disjoint is intersects negated.
+      :disjoint (q/->NegatedCondition (temporal->query-condition
+                                        (assoc temporal-filter :mask :intersects)))
+      ;; The granules temporal must start and end within the temporal range
+      :contains (gc/and-conds [(q/date-range-condition :start-date start-date end-date false)
+                               (q/->ExistCondition :end-date)
+                               (q/date-range-condition :end-date start-date end-date false)]))))
 
 (defmulti provider->collection-condition
   "Converts a provider id from an ACL into a collection query condition that will find all collections
@@ -123,7 +145,7 @@
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
     (if-let [{:keys [entry-titles access-value]} collection-identifier]
 
-      ;; TODO convert rolling temporal to query condition
+      ;; TODO convert temporal filter to query condition
 
       (let [entry-titles-cond (provider+entry-titles->collection-condition
                                 context query-coll-ids provider-id entry-titles)
@@ -139,14 +161,15 @@
       colls-in-prov-cond)))
 
 (defn granule-identifier->query-cond
-  "Converts an acl granule identifier into a query condition."
+  "Converts an acl granule identifier into a query condition. Returns nil if no granule identifier
+  is present."
   [granule-identifier]
-
-  ;; TODO support rolling temporal as a granule query condition
-
-  (some-> granule-identifier
-          :access-value
-          access-value->query-condition))
+  (when-let [{:keys [access-value temporal]} granule-identifier]
+    (let [access-value-cond (some-> access-value access-value->query-condition)
+          temporal-cond (some-> temporal temporal->query-condition)]
+      (if (and access-value-cond temporal-cond)
+        (gc/and-conds access-value-cond temporal-cond)
+        (or access-value-cond temporal-cond)))))
 
 (defn acl->query-condition
   "Converts an acl into the equivalent query condition. Ths can return nil if the doesn't grant anything.
@@ -211,6 +234,7 @@
 (defn granule-identifier-matches-concept?
   "Returns true if the granule identifier is nil or it matches the concept."
   [gran-id concept]
+  ;; TODO refactor access value to it's own function and add a new function for temporal filter
   (if-let [{:keys [min-value max-value include-undefined]} (:access-value gran-id)]
     (let [access-value (:access-value concept)]
       (or (and (nil? access-value) include-undefined)

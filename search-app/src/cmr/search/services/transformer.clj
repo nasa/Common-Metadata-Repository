@@ -128,7 +128,7 @@
   (fn [concept]
     (:concept-type concept)))
 
-;; TODO extract rolling temporal fields from granules and collections
+;; TODO extract temporal fields from granules and collections
 ;; How do we extract it from the XML?
 ;; I like the way the SMAP extraction works for access value. We should test the difference in performance
 ;; for echo10 when using the regular expression vs parsing the XML and pulling it out. We could parse
