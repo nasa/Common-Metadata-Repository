@@ -102,10 +102,10 @@
          [:NumberOfSensors (xpath "NumberOfSensors")]
          (for-each "Characteristics"
            characteristic-type-mapping)
-         (for-each "Sensors"
-           sensor-mapping)
          (for-each "OperationalModes"
-           [:OperationalMode (xpath ".")])])])
+           [:OperationalMode (xpath ".")])
+         (for-each "Sensors"
+           sensor-mapping)])])
 
    ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
    ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
