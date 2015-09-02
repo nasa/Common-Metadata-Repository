@@ -332,7 +332,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "CollectionDataType": {
       "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
