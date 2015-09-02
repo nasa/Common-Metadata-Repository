@@ -271,8 +271,10 @@
                                     :instrument-sn.lowercase string-field-mapping
                                     :sensor-sn             string-field-mapping
                                     :sensor-sn.lowercase   string-field-mapping
-                                    :project-sn            (stored string-field-mapping)
+                                    :project-sn            string-field-mapping
                                     :project-sn.lowercase  string-field-mapping
+                                    :project-sn2            (stored string-field-mapping)
+                                    :project-sn2.lowercase  string-field-mapping
                                     :archive-center        (stored string-field-mapping)
                                     :archive-center.lowercase string-field-mapping
                                     :spatial-keyword        string-field-mapping

@@ -18,6 +18,7 @@
   map if the query field name matches the field name in elastic search."
   {:collection {:provider :provider-id
                 :version :version-id
+                ;; TODO Change to use project-sn2 field with CMR-1995
                 :project :project-sn
                 :updated-since :revision-date2
                 :two-d-coordinate-system-name :two-d-coord-name
