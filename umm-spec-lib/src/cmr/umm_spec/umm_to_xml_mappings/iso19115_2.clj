@@ -103,6 +103,19 @@
                :codeListValue "temporal"} "temporal"]]
             [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))))
 
+(def short-name-long-name-identifier
+  [:gmi:identifier
+   [:gmd:MD_Identifier
+    [:gmd:code
+     (char-string-from "ShortName")]
+    [:gmd:description
+     (char-string-from "LongName")]]])
+
+(def echo-attributes-info
+  [:eos:otherPropertyType
+   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+    "Echo Additional Attributes"]])
+
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
    iso19115-2-xml-namespaces
@@ -212,11 +225,29 @@
              [:eos:otherPropertyType
               [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
                "Echo Additional Attributes"]]
-             ;; TODO see if this can be abstracted out since it is mostly duplicated in the next
-             ;; section
              (make-characteristics-mapping "instrumentInformation")
-             
-             ]])
+
+             ;; The Sensors mapping is very similar to the Instruments mapping above.
+
+             (for-each "Sensors"
+               [:eos:sensor
+                [:eos:EOS_Sensor
+                 [:eos:citation
+                  [:gmd:CI_Citation
+                   [:gmd:title
+                    [:gco:CharacterString make-instrument-title]]
+                   [:gmd:date {:gco:nilReason "unknown"}]]]
+                 [:eos:identifier
+                  [:gmd:MD_Identifier
+                   [:gmd:code
+                    (char-string-from "ShortName")]
+                   [:gmd:description
+                    (char-string-from "LongName")]]]
+                 [:eos:type
+                  (char-string-from "Technique")]
+                 [:eos:description {:gco:nilReason "missing"}]
+                 echo-attributes-info
+                 (make-characteristics-mapping "sensorInformation")]])]])
 
          ;; Characteristics
          (for-each "Characteristics[1]"
