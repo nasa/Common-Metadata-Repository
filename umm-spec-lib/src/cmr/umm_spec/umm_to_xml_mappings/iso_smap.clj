@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
-  (:require [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+  (:require [clojure.string :as s]
+            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
             [cmr.umm-spec.iso-smap-utils :as util]))
 
@@ -40,7 +41,7 @@
   (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
     [:gmd:MD_ProgressCode
      {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-      :codeListValue collection-progress}
+      :codeListValue (s/lower-case collection-progress)}
      collection-progress]))
 
 (def umm-c-to-iso-smap-xml
