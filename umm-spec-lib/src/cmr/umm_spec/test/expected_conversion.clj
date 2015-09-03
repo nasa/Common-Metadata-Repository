@@ -215,7 +215,9 @@
 
 ;; ISO-SMAP
 
-(defn- normalize-instruments
+(defn- normalize-smap-instruments
+  "Collects all instruments across given platforms and returns a seq of platforms with all
+  instruments under each one."
   [platforms]
   (let [all-instruments (seq (mapcat :Instruments platforms))]
     (for [platform platforms]
@@ -240,7 +242,7 @@
                       :NumberOfSensors nil
                       :Sensors nil
                       :Technique nil)
-      (update-in [:Platforms] normalize-instruments)))
+      (update-in [:Platforms] normalize-smap-instruments)))
 
 ;;; Unimplemented Fields
 
