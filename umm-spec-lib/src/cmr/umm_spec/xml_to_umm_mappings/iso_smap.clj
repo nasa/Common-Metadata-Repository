@@ -23,6 +23,10 @@
 (def purpose-xpath
   (char-string-xpath short-name-identification-xpath "/gmd:purpose"))
 
+(def collection-progress-xpath
+  (xpath (str md-identification-base-xpath
+              "/gmd:status/gmd:MD_ProgressCode")))
+
 (def data-language-xpath
   (xpath (str short-name-identification-xpath
               "/gmd:language/gco:CharacterString")))
@@ -62,6 +66,7 @@
              :Version version-xpath
              :Abstract abstract-xpath
              :Purpose purpose-xpath
+             :CollectionProgress collection-progress-xpath
              :DataLanguage data-language-xpath
              :Platforms (fn [xpath-context]
                           (let [smap-keywords (map xp/text (:context (xp/evaluate xpath-context keywords-xpath-str)))]
@@ -71,3 +76,4 @@
                                                            (object {:BeginningDateTime (xpath "gml:beginPosition")
                                                                     :EndingDateTime    (xpath "gml:endPosition")}))
                                          :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")}))})))
+

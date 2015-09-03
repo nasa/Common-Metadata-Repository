@@ -61,6 +61,10 @@
 (def constraints-xpath
   (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
+(def collection-progress-xpath
+  (xpath (str md-data-id-base-xpath
+              "/gmd:status/gmd:MD_ProgressCode")))
+
 (def platform-characteristics-mapping
   (for-each platform-characteristics-xpath
     (object
@@ -95,6 +99,7 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :CollectionProgress collection-progress-xpath
              ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
              ;; in the JSON schema instead of a single object. CMR-1989.
              :AccessConstraints (object
@@ -121,3 +126,4 @@
                                    :Type (xpath "gmi:description/gco:CharacterString")
                                    :Characteristics platform-characteristics-mapping
                                    :Instruments platform-instruments-mapping}))})))
+

@@ -244,8 +244,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations :SpatialKeywords
-    :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions
-    :CollectionProgress :SpatialInformation
+    :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions :SpatialInformation
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 

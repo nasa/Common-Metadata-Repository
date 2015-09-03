@@ -17,6 +17,7 @@
        :DataLanguage (xpath "/DIF/Data_Set_Language")
        :TemporalKeywords (for-each "/DIF/Data_Resolution"
                                    (xpath "Temporal_Resolution"))
+       :CollectionProgress (xpath "/DIF/Data_Set_Progress")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})

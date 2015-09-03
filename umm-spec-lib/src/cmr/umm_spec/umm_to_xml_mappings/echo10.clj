@@ -23,6 +23,7 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:CollectionState (xpath "/CollectionProgress")]
    [:RestrictionFlag (xpath "/AccessConstraints/Value")]
    [:RestrictionComment (xpath "/AccessConstraints/Description")]
    [:TemporalKeywords
