@@ -12,6 +12,11 @@
 
 (def all-concept-types [:collection :granule])
 
+(defmulti get-table-name
+  "Get the name for the table for a given provider and concept-type"
+  (fn [provider concept-type]
+    concept-type))
+
 (defn get-table-name
   "Get the name for the table for a given provider and concept-type"
   [provider concept-type]

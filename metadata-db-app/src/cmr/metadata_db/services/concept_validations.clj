@@ -1,10 +1,15 @@
 (ns cmr.metadata-db.services.concept-validations
   (:require [cmr.metadata-db.services.messages :as msg]
+            [cmr.metadata-db.services.provider-service :as providers]
             [cmr.common.concepts :as cc]
             [clojure.set :as set]
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]))
+
+;;TODO add validation of concept types with provider type
+;; system level providers support :tag
+;; normal providers support :collection and :granule
 
 (defn concept-type-missing-validation
   [concept]
@@ -80,23 +85,45 @@
                        (= provider-id (:provider-id concept)))
           [(msg/invalid-concept-id concept-id (:provider-id concept) (:concept-type concept))])))))
 
+(def ^:private base-concept-validations
+  "Validations for all concept types"
+  [concept-type-missing-validation
+   provider-id-missing-validation
+   native-id-missing-validation
+   concept-id-validation
+   nil-fields-validation
+   nil-extra-fields-validation
+   concept-id-match-fields-validation
+   (datetime-validator [:revision-date])
+   (datetime-validator [:extra-fields :delete-time])])
 
-(def concept-validation
-  "Validates a concept and returns a list of errors"
-  (util/compose-validations [concept-type-missing-validation
-                             provider-id-missing-validation
-                             native-id-missing-validation
-                             concept-id-validation
-                             extra-fields-missing-validation
-                             nil-fields-validation
-                             nil-extra-fields-validation
-                             concept-id-match-fields-validation
-                             (datetime-validator [:revision-date])
-                             (datetime-validator [:extra-fields :delete-time])]))
+(def default-concept-validation
+  "Builds a function that validates a concept and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations extra-fields-missing-validation)))
 
-(def validate-concept
+(def tag-concept-validation
+  "Creates a function tht validates a tag concept and returns a listg of errors"
+  (util/compose-validations base-concept-validations))
+(def validate-concept-default
   "Validates a concept. Throws an error if invalid."
-  (util/build-validator :invalid-data concept-validation))
+  (util/build-validator :invalid-data default-concept-validation))
+
+(def validate-concept-tag
+  "validates a tag concept. Throws an error if invalid."
+  (util/build-validator :invalid-data tag-concept-validation))
+
+(defmulti validate-concept
+  "Validates a concept. Throws an error if invalid."
+  (fn [concept]
+    (:concept-type concept)))
+
+(defmethod validate-concept :tag
+  [concept]
+  (validate-concept-tag concept))
+
+(defmethod validate-concept :default
+  [concept]
+  (validate-concept-default concept))
 
 (def valid-tombstone-keys
   #{:concept-id :revision-id :revision-date :concept-type :deleted :user-id})

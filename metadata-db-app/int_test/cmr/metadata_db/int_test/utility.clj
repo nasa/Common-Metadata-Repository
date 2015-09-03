@@ -59,8 +59,11 @@
                         :provider-id provider-id
                         :metadata (str "data here " uniq-num)
                         :deleted false}
-                       specific-concept-map)]
-    (update-in (merge concept main-attributes) [:extra-fields] merge extra-fields)))
+                       specific-concept-map
+                       main-attributes)]
+    (if extra-fields
+      (update-in concept [:extra-fields] merge extra-fields)
+      concept)))
 
 (defn collection-concept
   "Creates a collection concept"
@@ -96,15 +99,9 @@
   ([uniq-num attributes]
    (let [namespace (str "namespace" uniq-num)
          value (str "value" uniq-num)
-         specific-concept-map {:format "application/edn"
-                               :extra-fields {:tag-namespace namespace
-                                              :value value}
-                               :metadata {:tag-namespace namespace
-                                          :category (str "category " uniq-num)
-                                          :value value
-                                          :description (str "description " uniq-num)
-                                          :originator-id (str "orig-id " uniq-num)}}]
-     (concept "cmr" :tag uniq-num specific-concept-map attributes))))
+         specific-concept-map {:user-id (str "user" uniq-num)
+                               :format "application/edn"}]
+     (concept "CMR" :tag uniq-num specific-concept-map attributes))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -295,27 +292,12 @@
         {:keys [revision-id errors]} body]
     {:status status :revision-id revision-id :errors errors}))
 
-(defmulti verify-concept-was-saved
+(defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
-  (fn [concept]
-    (:concept-type concept)))
-
-(defmethod verify-concept-was-saved :default
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (= concept (dissoc stored-concept :revision-date))))
-
-(defmethod verify-concept-was-saved :tag
-  [concept]
-  (let [{:keys [concept-id revision-id]} concept
-        stored-concept (-> (get-concept-by-id-and-revision concept-id revision-id)
-                           :concept
-                           ;; We don't pass in collection associations or revision-date when we
-                           ;; save a tag, so we don't have them to compare to the returned tag.
-                           (update-in [:metadata] dissoc :collection-associations)
-                           (dissoc :revision-date))]
-    (= concept stored-concept)))
 
 (defn assert-no-errors
   [save-result]

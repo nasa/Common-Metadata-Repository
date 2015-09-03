@@ -46,6 +46,15 @@
 
 ;;; utility methods
 
+(defn- validate-system-level-provider-for-tags
+  "Validates that tags are only created with a system level provider; throws an
+  error otherwise."
+  [concept provider]
+  (let [{:keys [concept-type provider-id]} concept]
+    (when (and (= concept-type :tag)
+               (not (:system-level? provider)))
+      (errors/throw-service-errors :invalid-data [(msg/no-tags-permission provider-id)]))))
+
 (defn- validate-providers-exist
   "Validates that all of the providers in the list exist."
   [db provider-ids]
@@ -356,6 +365,7 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider (provider-service/get-provider-by-id context (:provider-id concept) true)
+        _ (validate-system-level-provider-for-tags concept provider)
         concept (set-or-generate-concept-id db provider concept)]
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept

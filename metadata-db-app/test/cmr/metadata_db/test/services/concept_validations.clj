@@ -23,6 +23,12 @@
    :extra-fields {:parent-collection-id "C1-PROV1"
                   :granule-ur "GR-UR"}})
 
+(def valid-tag
+  {:concept-id "T1-CMR"
+   :native-id "foo"
+   :provider-id "CMR"
+   :concept-type :tag})
+
 
 (deftest find-params-validation-test
   (testing "valid params"
@@ -71,34 +77,34 @@
 
 (deftest collection-validation-test
   (testing "valid-concept"
-    (is (= [] (v/concept-validation valid-collection))))
+    (is (= [] (v/default-concept-validation valid-collection))))
   (testing "missing concept type"
     (is (= [(msg/missing-concept-type)
             (msg/invalid-concept-id "C1-PROV1" "PROV1" nil)]
-           (v/concept-validation (dissoc valid-collection :concept-type)))))
+           (v/default-concept-validation (dissoc valid-collection :concept-type)))))
   (testing "missing provider id"
     (is (= [(msg/missing-provider-id)
             (msg/invalid-concept-id "C1-PROV1" nil :collection)]
-           (v/concept-validation (dissoc valid-collection :provider-id)))))
+           (v/default-concept-validation (dissoc valid-collection :provider-id)))))
   (testing "missing native id"
     (is (= [(msg/missing-native-id)]
-           (v/concept-validation (dissoc valid-collection :native-id)))))
+           (v/default-concept-validation (dissoc valid-collection :native-id)))))
   (testing "invalid concept-id"
     (is (= ["Concept-id [1234] is not valid."]
-           (v/concept-validation (assoc valid-collection :concept-id "1234")))))
+           (v/default-concept-validation (assoc valid-collection :concept-id "1234")))))
   (testing "provider id and concept-id don't match"
     (is (= [(msg/invalid-concept-id "C1-PROV1" "PROV2" :collection)]
-           (v/concept-validation (assoc valid-collection :provider-id "PROV2")))))
+           (v/default-concept-validation (assoc valid-collection :provider-id "PROV2")))))
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "C1-PROV1" "PROV1" :granule)]
-           (v/concept-validation (assoc valid-collection
+           (v/default-concept-validation (assoc valid-collection
                                         :concept-type :granule
                                         :extra-fields (:extra-fields valid-granule))))))
   (testing "extra fields missing"
     (is (= [(msg/missing-extra-fields)]
-           (v/concept-validation (dissoc valid-collection :extra-fields))))
+           (v/default-concept-validation (dissoc valid-collection :extra-fields))))
     (are [field] (= [(msg/missing-extra-field field)]
-                    (v/concept-validation (update-in valid-collection [:extra-fields] dissoc field)))
+                    (v/default-concept-validation (update-in valid-collection [:extra-fields] dissoc field)))
          :short-name
          :version-id
          :entry-id
@@ -106,35 +112,60 @@
 
 (deftest granule-validation-test
   (testing "valid-concept"
-    (is (= [] (v/concept-validation valid-granule))))
+    (is (= [] (v/default-concept-validation valid-granule))))
   (testing "missing concept type"
     (is (= [(msg/missing-concept-type)
             (msg/invalid-concept-id "G1-PROV1" "PROV1" nil)]
-           (v/concept-validation (dissoc valid-granule :concept-type)))))
+           (v/default-concept-validation (dissoc valid-granule :concept-type)))))
   (testing "missing provider id"
     (is (= [(msg/missing-provider-id)
             (msg/invalid-concept-id "G1-PROV1" nil :granule)]
-           (v/concept-validation (dissoc valid-granule :provider-id)))))
+           (v/default-concept-validation (dissoc valid-granule :provider-id)))))
   (testing "missing native id"
     (is (= [(msg/missing-native-id)]
-           (v/concept-validation (dissoc valid-granule :native-id)))))
+           (v/default-concept-validation (dissoc valid-granule :native-id)))))
   (testing "invalid concept-id"
     (is (= ["Concept-id [1234] is not valid."]
-           (v/concept-validation (assoc valid-granule :concept-id "1234")))))
+           (v/default-concept-validation (assoc valid-granule :concept-id "1234")))))
   (testing "provider id and concept-id don't match"
     (is (= [(msg/invalid-concept-id "G1-PROV1" "PROV2" :granule)]
-           (v/concept-validation (assoc valid-granule :provider-id "PROV2")))))
+           (v/default-concept-validation (assoc valid-granule :provider-id "PROV2")))))
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "G1-PROV1" "PROV1" :collection)]
-           (v/concept-validation (assoc valid-granule
+           (v/default-concept-validation (assoc valid-granule
                                         :concept-type :collection
                                         :extra-fields (:extra-fields valid-collection))))))
   (testing "extra fields missing"
     (is (= [(msg/missing-extra-fields)]
-           (v/concept-validation (dissoc valid-granule :extra-fields))))
+           (v/default-concept-validation (dissoc valid-granule :extra-fields))))
     (is (= [(msg/missing-extra-field :parent-collection-id)]
-           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
+           (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
     (is (= [(msg/missing-extra-field :granule-ur)]
-           (v/concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
+           (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
 
+(deftest tag-validation-test
+  (testing "valid-concept"
+    (is (= [] (v/tag-concept-validation valid-tag))))
+  (testing "missing concept type"
+    (is (= [(msg/missing-concept-type)
+            (msg/invalid-concept-id "T1-CMR" "CMR" nil)]
+           (v/tag-concept-validation (dissoc valid-tag :concept-type)))))
+  (testing "missing provider id"
+    (is (= [(msg/missing-provider-id)
+            (msg/invalid-concept-id "T1-CMR" nil :tag)]
+           (v/tag-concept-validation (dissoc valid-tag :provider-id)))))
+  (testing "missing native id"
+    (is (= [(msg/missing-native-id)]
+           (v/tag-concept-validation (dissoc valid-tag :native-id)))))
+  (testing "invalid concept-id"
+    (is (= ["Concept-id [1234] is not valid."]
+           (v/tag-concept-validation (assoc valid-tag :concept-id "1234")))))
+  (testing "provider id and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "T1-CMR" "PROV2" :tag)]
+           (v/tag-concept-validation (assoc valid-tag :provider-id "PROV2")))))
+  (testing "concept type and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "T1-CMR" "CMR" :collection)]
+           (v/tag-concept-validation (assoc valid-tag
+                                        :concept-type :collection
+                                        :extra-fields (:extra-fields valid-collection)))))))
 

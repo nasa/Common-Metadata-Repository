@@ -9,6 +9,14 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
+(def cmr-provider
+  "The system level CMR provider for tags"
+  {:provider-id "CMR"
+   :short-name "CMR"
+   :system-level? true
+   :cmr-only true
+   :small false})
+
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]
@@ -23,7 +31,7 @@
     (providers/save-provider db provider)))
 
 (deftracefn get-providers
-  "Get the list of providers."
+  "Get the list of providers. The special provider 'cmr' is not included in the returned list."
   [context]
   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)]
@@ -35,9 +43,8 @@
   ([context provider-id]
    (get-provider-by-id context provider-id false))
   ([context provider-id throw-error?]
-   (or (when (= "cmr" provider-id)
-         {:provider-id "cmr"
-          :small false})
+   (or (when (= "CMR" provider-id)
+         cmr-provider)
        (providers/get-provider (mdb-util/context->db context) provider-id)
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))

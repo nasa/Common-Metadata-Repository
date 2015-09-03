@@ -35,7 +35,8 @@
    mt/iso-smap "ISO_SMAP"
    mt/iso      "ISO19115"
    mt/dif      "DIF"
-   mt/dif10    "DIF10"})
+   mt/dif10    "DIF10"
+   mt/edn      "EDN"})
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
@@ -308,7 +309,7 @@
                              seq-name
                              (str/join "," (repeat (count values) "?")))]
             ;; Uncomment to debug what's inserted
-            ; (debug "Executing" stmt "with values" (pr-str values))
+            (debug "Executing" stmt "with values" (pr-str values))
             (j/db-do-prepared db stmt values)
             (after-save conn provider concept)
 
@@ -390,7 +391,8 @@
     (j/db-do-commands this (format "CREATE SEQUENCE concept_id_seq
                                    START WITH %d
                                    INCREMENT BY 1
-                                   CACHE 20" INITIAL_CONCEPT_NUM)))
+                                   CACHE 20" INITIAL_CONCEPT_NUM))
+    (j/db-do-commands this "DELETE FROM CMR_tags"))
 
   (get-expired-concepts
     [this provider concept-type]
