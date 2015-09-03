@@ -8,6 +8,16 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
+(defn- generate-collection-data-type
+  "Returns content generator instruction for the CollectionDataType field. We create this function
+  because we don't want to generate the sibling elements when there is no CollectionDataType value."
+  [xpath-context]
+  (when-let [collection-data-type (-> xpath-context :context first :CollectionDataType)]
+    [:Metadata
+     [:Group "ECHO"]
+     [:Name "CollectionDataType"]
+     [:Value collection-data-type]]))
+
 (def umm-c-to-dif9-xml
   [:DIF
    dif9-xml-namespaces
@@ -21,9 +31,9 @@
     [:Term "dummy term"]]
    [:ISO_Topic_Category "dummy iso topic category"]
    (for-each "/Platforms"
-     [:Source_Name
-      [:Short_Name (xpath "ShortName")]
-      [:Long_Name (xpath "LongName")]])
+             [:Source_Name
+              [:Short_Name (xpath "ShortName")]
+              [:Long_Name (xpath "LongName")]])
    (for-each "/TemporalExtents/RangeDateTimes"
              [:Temporal_Coverage
               [:Start_Date (xpath "BeginningDateTime")]
@@ -65,6 +75,7 @@
                [:Value {:type "ParameterUnitsOfMeasure"} (xpath "ParameterUnitsOfMeasure")]
                [:Value {:type "ParameterValueAccuracy"} (xpath "ParameterValueAccuracy")]
                [:Value {:type "ValueAccuracyExplanation"} (xpath "ValueAccuracyExplanation")]
-               [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])]])
+               [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])
+    generate-collection-data-type]])
 
 

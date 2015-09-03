@@ -19,6 +19,7 @@
    [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
+   [:CollectionDataType (xpath "/CollectionDataType")]
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]

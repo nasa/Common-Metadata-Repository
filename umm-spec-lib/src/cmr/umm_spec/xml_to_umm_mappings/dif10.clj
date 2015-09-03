@@ -32,6 +32,7 @@
        :EntryId (xpath "/DIF/Entry_ID")
        :Version parse-version
        :Abstract (xpath "/DIF/Summary/Abstract")
+       :CollectionDataType (xpath "/DIF/Collection_Data_Type")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Dataset_Language")
        :TemporalKeywords (select "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
