@@ -125,7 +125,10 @@
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
-      (assoc :UseConstraints nil)))
+      (assoc :UseConstraints nil)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
+                      :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
+                      :ValueAccuracyExplanation nil :UpdateDate nil)))
 
 ;; DIF 9
 (defn dif9-temporal
@@ -160,7 +163,8 @@
       (update-in [:AccessConstraints] dif-access-constraints)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)))
+      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
+      (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")))
 
 
 ;; DIF 10
@@ -173,7 +177,8 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
-      (update-in-each [:Platforms] dif10-platform)))
+      (update-in-each [:Platforms] dif10-platform)
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)))
 
 ;; ISO 19115-2
 
@@ -202,7 +207,8 @@
                       :NumberOfSensors nil
                       :Sensors nil
                       :OperationalModes nil)
-      (assoc :Quality nil)))
+      (assoc :Quality nil)
+      (assoc :AdditionalAttributes nil)))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
@@ -213,6 +219,7 @@
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :TemporalKeywords nil)
+      (assoc :AdditionalAttributes nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -229,7 +236,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations :SpatialKeywords
-    :SpatialExtent :MetadataLineages :AdditionalAttributes :ScienceKeywords :Distributions
+    :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions
     :CollectionProgress :SpatialInformation :CollectionDataType
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
     :MetadataAssociations})

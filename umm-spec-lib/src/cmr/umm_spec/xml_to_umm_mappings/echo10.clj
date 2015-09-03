@@ -51,4 +51,7 @@
                                                      :NumberOfSensors (xpath "NumberOfSensors")
                                                      :OperationalModes (select "OperationModes/OperationMode")
                                                      :Characteristics (for-each "Characteristics/Characteristic"
-                                                                        characteristic-mapping)}))}))})))
+                                                                        characteristic-mapping)}))}))
+       :AdditionalAttributes (for-each "/Collection/AdditionalAttributes/AdditionalAttribute"
+                               (matching-object :Name :Description :DataType :ParameterRangeBegin
+                                                :ParameterRangeEnd :Value))})))

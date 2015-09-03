@@ -80,9 +80,8 @@
 
   (let [metadata-format :dif
         umm-record user/failing-value]
-    (is (=
-          (expected-conversion/convert user/failing-value :iso19115)
-          (xml-round-trip user/failing-value :iso19115))))
+    (is (= (expected-conversion/convert user/failing-value :dif)
+          (xml-round-trip user/failing-value :dif))))
 
   (let [xml (slurp (io/resource "example_data/echo10.xml"))
         parsed (core/parse-metadata :collection :echo10 xml)]

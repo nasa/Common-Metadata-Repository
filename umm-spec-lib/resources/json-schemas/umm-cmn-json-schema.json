@@ -686,7 +686,8 @@
           "format": "date-time",
           "type": "string"
         }
-      }
+      },
+      "required": ["Name", "DataType"]
     },
     "DistributionType": {
       "type": "object",
