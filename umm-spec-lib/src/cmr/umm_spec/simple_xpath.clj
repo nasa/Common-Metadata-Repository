@@ -118,6 +118,22 @@
      :selectors (:selectors parsed-xpath)
      :element-value element-value}))
 
+(defn- create-elem-val-inequality-selector
+  "Creates a selector that selects elements which have a child element with a value not equal to
+  the given value.
+  Example: foo/bar[charlie/name!='alpha']
+  charlie/name!='alpha' is the selector in that case. charlie/name is an xpath and alpha is the value
+  that it will match on."
+  [selector-str]
+  (let [[_ xpath element-value] (re-matches #"(.+)!='(.+)'" selector-str)
+        parsed-xpath (parse-xpath xpath)]
+    (when (not= (:source parsed-xpath) :from-context)
+      (throw (Exception. (str "Nested XPath selectors can not be from the root. XPath: " xpath))))
+    {:type :element-value-selector
+     :selectors (:selectors parsed-xpath)
+     :element-value element-value
+     :not-equal? true}))
+
 (defn- create-tag-name-selector
   "Creates a selector that selects elements with a specific tag name."
   [tag-name]
@@ -158,6 +174,9 @@
 
     (re-matches #".*@.+='.+'" selector-str)
     (create-attrib-val-equality-selector selector-str)
+
+    (re-matches #".+!='.+'" selector-str)
+    (create-elem-val-inequality-selector selector-str)
 
     (re-matches #".+='.+'" selector-str)
     (create-elem-val-equality-selector selector-str)
@@ -285,16 +304,18 @@
   [elements {:keys [selectors value]}]
   (filterv (fn [element]
              (when-let [selected-value (first (process-selectors
-                                                  [element] selectors process-xml-selector))]
+                                                [element] selectors process-xml-selector))]
                (= selected-value value)))
            elements))
 
 (defmethod process-xml-selector :element-value-selector
-  [elements {:keys [selectors element-value]}]
+  [elements {:keys [selectors element-value not-equal?]}]
   (filterv (fn [element]
              (when-let [selected-element (first (process-selectors
                                                   [element] selectors process-xml-selector))]
-               (= (-> selected-element :content first) element-value)))
+               (if not-equal?
+                 (not= (-> selected-element :content first) element-value)
+                 (= (-> selected-element :content first) element-value))))
            elements))
 
 (defmethod process-xml-selector :nth-selector
@@ -325,6 +346,7 @@
   (cond
     (nil? data) []
     (vector? data) data
+    (sequential? data) (vec data)
     :else [data]))
 
 (defmulti process-data-selector
@@ -357,11 +379,13 @@
            (as-vector data)))
 
 (defmethod process-data-selector :element-value-selector
-  [data {:keys [selectors element-value]}]
+  [data {:keys [selectors element-value not-equal?]}]
   (filterv (fn [d]
              (when-let [result (first (process-selectors
                                         [d] selectors process-data-selector))]
-               (= (str result) element-value)))
+               (if not-equal?
+                 (not= (str result) element-value)
+                 (= (str result) element-value))))
            (as-vector data)))
 
 (defmethod process-data-selector :nth-selector
@@ -369,6 +393,13 @@
   (if (seq data)
     [(nth (as-vector data) index)]
     []))
+
+(defn- xpath-context?
+  [x]
+  (and (map? x)
+       (:type x)
+       (:root x)
+       (:context x)))
 
 (defmethod process-data-selector :range-selector
   [data {:keys [start-index end-index]}]
@@ -382,7 +413,6 @@
         ;; It's past the end of the index
         []))
     []))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public API
@@ -417,12 +447,12 @@
 
 (defmulti
   ^{:arglists '([xpath-context parsed-xpath])}
-  evaluate
+  evaluate-internal
   "Evaluates a parsed XPath against the given XPath context."
   (fn [xpath-context parsed-xpath]
     (:type xpath-context)))
 
-(defmethod evaluate :xml
+(defmethod evaluate-internal :xml
   [xpath-context {:keys [source selectors original-xpath]}]
   (try
     (let [source-elements (cond
@@ -434,7 +464,7 @@
     (catch Exception e
       (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
-(defmethod evaluate :data
+(defmethod evaluate-internal :data
   [xpath-context {:keys [source selectors original-xpath]}]
   (try
     (let [data (cond
@@ -451,3 +481,25 @@
     (catch Exception e
       (throw (Exception. (str "Error processing xpath: " original-xpath) e)))))
 
+
+(defn evaluate
+  "Returns the XPath context resulting from evaluating an XPath expression against XML or Clojure
+  data. The given context may be an XPath context, an XML string, or a Clojure data structure. The
+  given xpath-expression may be a string or a value as returned by parse-xpath."
+  [context xpath-expression]
+  (let [context (cond
+                  (xpath-context? context) context
+                  (string? context)        (create-xpath-context-for-xml context)
+                  :else                    (create-xpath-context-for-data context))
+        xpath-expression (if (string? xpath-expression)
+                           (parse-xpath xpath-expression)
+                           xpath-expression)]
+    (evaluate-internal context xpath-expression)))
+
+(defn text
+  "Returns the text of all nodes selected in an XPath context."
+  [context-or-node]
+  (cond
+    (string? context-or-node) context-or-node
+    (xpath-context? context-or-node) (apply str (map text (:context context-or-node)))
+    (:content context-or-node) (str/join (map text (:content context-or-node)))))

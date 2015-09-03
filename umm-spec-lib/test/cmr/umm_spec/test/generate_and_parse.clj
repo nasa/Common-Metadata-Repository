@@ -49,15 +49,14 @@
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
     (are [fmt]
-         (->> expected-conversion/example-record
-              (core/generate-metadata :collection fmt)
-              (core/validate-xml :collection fmt)
-              empty?)
-         :echo10
-         :dif
-         :dif10
-         :iso-smap
-         :iso19115)))
+        (empty?
+         (core/validate-xml :collection fmt
+                            (core/generate-metadata :collection fmt expected-conversion/example-record)))
+      :echo10
+      :dif
+      :dif10
+      :iso-smap
+      :iso19115)))
 
 (defn fixup-generated-collection
   [umm-coll]
@@ -81,9 +80,8 @@
 
   (let [metadata-format :dif
         umm-record user/failing-value]
-    (is (=
-          (expected-conversion/convert user/failing-value :iso19115)
-          (xml-round-trip user/failing-value :iso19115))))
+    (is (= (expected-conversion/convert user/failing-value :dif)
+          (xml-round-trip user/failing-value :dif))))
 
   (let [xml (slurp (io/resource "example_data/echo10.xml"))
         parsed (core/parse-metadata :collection :echo10 xml)]

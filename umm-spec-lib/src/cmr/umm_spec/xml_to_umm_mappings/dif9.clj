@@ -26,4 +26,18 @@
        :TemporalExtents (for-each "."
                           (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                      (object {:BeginningDateTime (xpath "Start_Date")
-                                                              :EndingDateTime    (xpath "Stop_Date")}))}))})))
+                                                              :EndingDateTime    (xpath "Stop_Date")}))}))
+       :AdditionalAttributes (for-each "/DIF/Extended_Metadata/Metadata[Group='AdditionalAttribute']"
+                               (object {:Name (xpath "Name")
+                                        :Description (xpath "Description")
+                                        :DataType (xpath "Type")
+                                        :Group (constant "AdditionalAttribute")
+                                        :ParameterRangeBegin (xpath "Value[@type='ParamRangeBegin']")
+                                        :ParameterRangeEnd (xpath "Value[@type='ParamRangeEnd']")
+                                        :Value (xpath "Value[@type='Value']")
+                                        :MeasurementResolution (xpath "Value[@type='MeasurementResolution']")
+                                        :ParameterUnitsOfMeasure (xpath "Value[@type='ParameterUnitsOfMeasure']")
+                                        :ParameterValueAccuracy (xpath "Value[@type='ParameterValueAccuracy']")
+                                        :ValueAccuracyExplanation (xpath "Value[@type='ValueAccuracyExplanation']")
+                                        :UpdateDate (xpath "Value[@type='UpdateDate']")}))})))
+

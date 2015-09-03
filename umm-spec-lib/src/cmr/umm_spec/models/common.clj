@@ -578,6 +578,9 @@
 
    ;; Last name of the individual.
    LastName
+
+   ;; Uuid of the individual.
+   Uuid
   ])
 (record-pretty-printer/enable-record-pretty-printing PersonType)
 
@@ -729,13 +732,18 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
-;; consists of the organization ShortName and LongName, which is the name of the organization that
-;; distributes, archives, or processes the data.
+;; consists of the organization ShortName, LongName and Uuid, which is the name of the organization
+;; that distributes, archives, or processes the data.
 (defrecord OrganizationNameType
   [
+   ;; Short name of the organization.
    ShortName
 
+   ;; Long name of the organization.
    LongName
+
+   ;; Uuid of the organization.
+   Uuid
   ])
 (record-pretty-printer/enable-record-pretty-printing OrganizationNameType)
 

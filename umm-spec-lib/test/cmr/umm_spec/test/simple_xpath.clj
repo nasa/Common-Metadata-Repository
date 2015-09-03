@@ -129,6 +129,9 @@
                             "<title>Oberon's Legacy</title>"
                             "<title>The Sundered Grail</title>"])
 
+          "/catalog/book[price!='5.95']/title"
+         (mapv x/parse-str ["<title>XML Developer's Guide</title>"])
+
          "/catalog/book[1]/author"
          [(x/parse-str "<author>Gambardella, Matthew</author>")]
 
@@ -250,6 +253,9 @@
           "Maeve Ascendant"
           "Oberon's Legacy"
           "The Sundered Grail"]
+
+         "/books[price!='5.95']/title"
+         ["XML Developer's Guide"]
 
          "/books[1]/author"
          ["Gambardella, Matthew"]

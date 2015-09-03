@@ -2,6 +2,14 @@
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
+(def characteristic-mapping
+  (matching-object :Characteristic
+                   :Name
+                   :Description
+                   :DataType
+                   :Unit
+                   :Value))
+
 (def umm-c-to-echo10-xml
   [:Collection
    [:ShortName (xpath "/EntryId")]
@@ -54,9 +62,21 @@
                        :Type
                        [:Characteristics
                         (for-each "Characteristics"
-                          (matching-object :Characteristic
-                                           :Name
-                                           :Description
-                                           :DataType
-                                           :Unit
-                                           :Value))]))]])
+                          characteristic-mapping)]
+                       [:Instruments
+                        (for-each "Instruments"
+                          (matching-object :Instrument
+                                           :ShortName
+                                           :LongName
+                                           :Technique
+                                           :NumberOfSensors
+                                           [:Characteristics
+                                            (for-each "Characteristics"
+                                              characteristic-mapping)]
+                                           [:OperationModes
+                                            (for-each "OperationalModes"
+                                              [:OperationMode (xpath ".")])]))]))]
+   [:AdditionalAttributes
+    (for-each "/AdditionalAttributes"
+      (matching-object :AdditionalAttribute :Name :Description :DataType :ParameterRangeBegin
+                       :ParameterRangeEnd :Value))]])

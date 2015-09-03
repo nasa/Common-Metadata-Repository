@@ -60,6 +60,14 @@
               [:Period_Cycle_Duration_Unit (xpath "PeriodCycleDurationUnit")]
               [:Period_Cycle_Duration_Value (xpath "PeriodCycleDurationValue")]])])
 
+(def characteristic-type-mapping
+  (matching-object :Characteristics
+                   :Name
+                   :Description
+                   :DataType
+                   :Unit
+                   :Value))
+
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
@@ -77,13 +85,17 @@
       [:Short_Name (xpath "ShortName")]
       [:Long_Name (xpath "LongName")]
       (for-each "Characteristics"
-        (matching-object :Characteristics
-                         :Name
-                         :Description
-                         :DataType
-                         :Unit
-                         :Value))
-      [:Instrument [:Short_Name "Not implemented"]]])
+        characteristic-type-mapping)
+      (for-each "Instruments"
+        [:Instrument
+         [:Short_Name (xpath "ShortName")]
+         [:Long_Name (xpath "LongName")]
+         [:Technique (xpath "Technique")]
+         [:NumberOfSensors (xpath "NumberOfSensors")]
+         (for-each "Characteristics"
+           characteristic-type-mapping)
+         (for-each "OperationalModes"
+           [:OperationalMode (xpath ".")])])])
 
    ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
    ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
@@ -125,4 +137,9 @@
     [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
     [:Data_Creation "1970-01-01T00:00:00"]
     [:Data_Last_Revision "1970-01-01T00:00:00"]]
+   (for-each "/AdditionalAttributes"
+    (matching-object :AdditionalAttributes :Name :DataType :Description :MeasurementResolution
+                     :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
+                     :ParameterValueAccuracy :ValueAccuracyExplanation :Value))
    [:Product_Flag "Not provided"]])
+

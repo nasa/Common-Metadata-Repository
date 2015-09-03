@@ -17,8 +17,11 @@
                     :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :ResponsibleOrganizations [(umm-cmn/map->ResponsibilityType {:Role "RESOURCEPROVIDER"
-                                                                  :Party (umm-cmn/map->PartyType {})})]
+     :Organizations [(umm-cmn/map->ResponsibilityType
+                       {:Role "RESOURCEPROVIDER"
+                        :Party (umm-cmn/map->PartyType
+                                 {:OrganizationName (umm-cmn/map->OrganizationNameType
+                                                      {:ShortName "custodian"})})})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
@@ -54,9 +57,9 @@
   ;; as normal.
 
   (let [json (uj/umm->json user/failing-value)
-          _ (is (empty? (js/validate-umm-json json)))
-          parsed (uj/json->umm js/umm-c-schema json)]
-      (is (= user/failing-value parsed)))
+        _ (is (empty? (js/validate-umm-json json)))
+        parsed (uj/json->umm js/umm-c-schema json)]
+    (is (= user/failing-value parsed)))
 
   )
 

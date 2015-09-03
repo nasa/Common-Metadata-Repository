@@ -21,6 +21,9 @@
     (when (not= val "Not provided")
       val)))
 
+(def characteristic-parser
+  (matching-object :Name :Description :DataType :Unit :Value))
+
 (def dif10-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -41,8 +44,16 @@
                      {:ShortName (xpath "Short_Name")
                       :LongName (xpath "Long_Name")
                       :Type parse-platform-type
-                      :Characteristics (for-each "Characteristics"
-                                         (matching-object :Name :Description :DataType :Unit :Value))}))
+                      :Characteristics (for-each "Characteristics" characteristic-parser)
+                      :Instruments (for-each "Instrument"
+                                     (object
+                                      {:ShortName (xpath "Short_Name")
+                                       :LongName (xpath "Long_Name")
+                                       :Technique (xpath "Technique")
+                                       :NumberOfSensors (xpath "NumberOfSensors")
+                                       :Characteristics (for-each "Characteristics"
+                                                          characteristic-parser)
+                                       :OperationalModes (select "OperationalMode")}))}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")
@@ -61,4 +72,9 @@
                                                      :DurationUnit (xpath "Duration_Unit")
                                                      :DurationValue (xpath "Duration_Value")
                                                      :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
-                                                     :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))})))
+                                                     :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))
+       :AdditionalAttributes
+       (for-each "/DIF/AdditionalAttributes"
+                 (matching-object :Name :Description :DataType :ParameterRangeBegin :ParameterRangeEnd
+                                  :Value :MeasurementResolution :ParameterUnitsOfMeasure
+                                  :ParameterValueAccuracy :ValueAccuracyExplanation))})))
