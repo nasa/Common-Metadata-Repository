@@ -12,6 +12,7 @@
             [clj-time.core :as time]
             [cheshire.core :as json]
             [cmr.common.util :as util]
+            [cmr.common.date-time-parser :as dtp]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
@@ -88,6 +89,12 @@
                       "access-value"}]
     (vec (into atom-fields orbit-swath-helper/orbit-elastic-fields))))
 
+(defn- parse-elastic-datetime
+  "Parses a date time string received from Elasticsearch"
+  [dts]
+  (when dts
+    (dtp/parse-datetime (str/replace dts "+0000" "Z"))))
+
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
@@ -117,8 +124,8 @@
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
           [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        start-date (parse-elastic-datetime start-date)
+        end-date (parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
         ;; For DIF collection, its entry-id is the same as its short-name
@@ -154,7 +161,11 @@
      :concept-type :collection
      :provider-id provider-id
      :access-value access-value
-     :entry-title entry-title}))
+     :entry-title entry-title
+     :temporal {:range-date-times (when start-date [{:beginning-date-time start-date
+                                                     :ending-date-time end-date}])}
+
+     }))
 
 (defn- granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
@@ -184,8 +195,6 @@
           ords-info :ords-info
           ords :ords
           [access-value] :access-value} :fields} elastic-result
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
         atom-links (map (fn [link-str]
                           (update-in (json/decode link-str true) [:size] #(when % (str %))))
                         atom-links)
@@ -210,8 +219,8 @@
      :size (when size (str size))
      :original-format (metadata-format->atom-original-format metadata-format)
      :data-center provider-id
-     :start-date start-date
-     :end-date end-date
+     :start-date (parse-elastic-datetime start-date)
+     :end-date (parse-elastic-datetime end-date)
      :atom-links atom-links
      :orbit orbit
      :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
@@ -378,8 +387,8 @@
                (x/element :echo:dataCenter {} data-center)
                (when archive-center (x/element :echo:archiveCenter {} archive-center))
                (when processing-level-id (x/element :echo:processingLevelId {} processing-level-id))
-               (when start-date (x/element :time:start {} start-date))
-               (when end-date (x/element :time:end {} end-date))
+               (when start-date (x/element :time:start {} (str start-date)))
+               (when end-date (x/element :time:end {} (str end-date)))
                (map atom-link->xml-element atom-links)
                (when coordinate-system (x/element :echo:coordinateSystem {} coordinate-system))
                (when orbit-parameters (orbit-parameters->xml-element orbit-parameters))
@@ -408,8 +417,8 @@
                (when size (x/element :echo:granuleSizeMB {} size))
                (x/element :echo:originalFormat {} original-format)
                (x/element :echo:dataCenter {} data-center)
-               (when start-date (x/element :time:start {} start-date))
-               (when end-date (x/element :time:end {} end-date))
+               (when start-date (x/element :time:start {} (str start-date)))
+               (when end-date (x/element :time:end {} (str end-date)))
                (map atom-link->xml-element atom-links)
                (when orbit (orbit->xml-element orbit))
                (map ocsd->xml-element orbit-calculated-spatial-domains)

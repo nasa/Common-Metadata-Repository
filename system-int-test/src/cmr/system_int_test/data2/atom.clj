@@ -282,9 +282,10 @@
 (defn collections->expected-atom
   "Returns the atom map of the collections"
   [collections atom-path]
-  {:id (str (url/search-root) atom-path)
-   :title "ECHO dataset metadata"
-   :entries (map collection->expected-atom collections)})
+  (util/remove-nil-keys
+    {:id (str (url/search-root) atom-path)
+     :title "ECHO dataset metadata"
+     :entries (seq (map collection->expected-atom collections))}))
 
 (defn atom-collection-results-match?
   [expected-items atom-results]

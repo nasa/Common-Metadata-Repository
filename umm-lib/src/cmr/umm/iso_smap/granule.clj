@@ -103,17 +103,6 @@
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
 
-(defn xml->access-value
-  "Parse and return the access-value for the given SMAP ISO granule xml.
-  This function is used by cmr-search-app to retrieve the access-value from xml directly"
-  [xml]
-  (let [xml-struct (x/parse-str xml)
-        id-elems (cx/elements-at-path
-                   xml-struct
-                   [:composedOf :DS_DataSet :has :MI_Metadata
-                    :identificationInfo :MD_DataIdentification])]
-    (xml-elem->access-value id-elems)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 

@@ -31,7 +31,7 @@
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
-  [{:keys [condition concept-type page-num page-size sort-keys result-format all-revisions?] :as query}]
+  [{:keys [condition concept-type page-num page-size sort-keys] :as query}]
   (and (#{StringCondition StringsCondition} (type condition))
        (= :concept-id (:field condition))
        (= page-num 1)

@@ -144,20 +144,17 @@
   passed in are limited to the provider of the collection identifier."
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
-    (if-let [{:keys [entry-titles access-value]} collection-identifier]
-
-      ;; TODO convert temporal filter to query condition
-
+    (if-let [{:keys [entry-titles access-value temporal]} collection-identifier]
       (let [entry-titles-cond (provider+entry-titles->collection-condition
                                 context query-coll-ids provider-id entry-titles)
             access-value-cond (some-> (access-value->query-condition access-value)
-                                      q/->CollectionQueryCondition)]
-        (if (and entry-titles-cond access-value-cond)
-          (gc/and-conds [entry-titles-cond access-value-cond])
-          (or entry-titles-cond
-              ;; If there's no entry title condition the access value condition must be scoped
-              ;; by provider
-              (gc/and-conds [colls-in-prov-cond access-value-cond]))))
+                                      q/->CollectionQueryCondition)
+            temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
+
+        ;; If there's no entry title condition the other conditions must be scoped by provider
+        (gc/and-conds (remove nil? [(or entry-titles-cond colls-in-prov-cond)
+                                    access-value-cond
+                                    temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
       colls-in-prov-cond)))
 
@@ -243,10 +240,7 @@
            true)
          (if temporal
            (when start-date
-             (umm-matchers/matches-temporal-filter?
-               (date-time-parser/parse-datetime start-date)
-               (when end-date (date-time-parser/parse-datetime end-date))
-               temporal))
+             (umm-matchers/matches-temporal-filter? start-date end-date temporal))
            true))))
 
 (defn collection-identifier-matches-concept?

@@ -137,6 +137,9 @@
      :start-date start-date
      :end-date end-date
      :provider-id provider-id
+
+     ;; TODO add more acl enforcment stuff and separate it out
+
      :access-value access-value ;; needed for acl enforcment
      :science-keywords-flat science-keywords-flat
      :entry-title entry-title
