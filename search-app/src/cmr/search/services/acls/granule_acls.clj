@@ -215,17 +215,6 @@
       context
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
 
-
-(comment
-
-  (def query (cmr.common.dev.capture-reveal/reveal query))
-  (def context (cmr.common.dev.capture-reveal/reveal context))
-
-  (acl-service/add-acl-conditions-to-query context query)
-
-)
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; acls match concept functions
 
@@ -233,14 +222,14 @@
   "Returns true if the granule identifier is nil or it matches the concept."
   [gran-id concept]
   (let [{:keys [access-value temporal]} gran-id
-        {:keys [start-date end-date]} concept]
+        umm-temporal (:temporal concept)]
 
     (and (if access-value
            (umm-matchers/matches-access-value-filter? concept access-value)
            true)
          (if temporal
-           (when start-date
-             (umm-matchers/matches-temporal-filter? start-date end-date temporal))
+           (when umm-temporal
+             (umm-matchers/matches-temporal-filter? :granule umm-temporal temporal))
            true))))
 
 (defn collection-identifier-matches-concept?

@@ -18,7 +18,8 @@
             [cmr.search.services.url-helper :as url]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
-            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]))
+            [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
 
 (def metadata-format->atom-original-format
   "Defines the concept metadata format to atom original-format mapping"
@@ -29,41 +30,37 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom]
   [concept-type query]
-  ["short-name"
-   "version-id"
-   "summary"
-   "update-time"
-   "entry-title"
-   "collection-data-type"
-   "data-center"
-   "archive-center"
-   "processing-level-id"
-   "metadata-format"
-   "provider-id"
-   "start-date"
-   "end-date"
-   "atom-links"
-   "associated-difs"
-   "downloadable"
-   "browsable"
-   "coordinate-system"
-   "swath-width"
-   "period"
-   "inclination-angle"
-   "number-of-orbits"
-   "start-circular-latitude"
-   "ords-info"
-   "ords"
-   "_score"
-   ;; TODO refactor list of fields which are required to enforce acls on a response to a central location
-   ;; We could create results handler helper with the lists of fields needed for elastic and then
-   ;; code for extracting those values into the data structures needed for acl enforcment
-   "access-value" ;; needed for acl enforcment
-   ])
+  (let [atom-fields ["short-name"
+                     "version-id"
+                     "summary"
+                     "update-time"
+                     "entry-title"
+                     "collection-data-type"
+                     "data-center"
+                     "archive-center"
+                     "processing-level-id"
+                     "metadata-format"
+                     "provider-id"
+                     "start-date"
+                     "end-date"
+                     "atom-links"
+                     "associated-difs"
+                     "downloadable"
+                     "browsable"
+                     "coordinate-system"
+                     "swath-width"
+                     "period"
+                     "inclination-angle"
+                     "number-of-orbits"
+                     "start-circular-latitude"
+                     "ords-info"
+                     "ords"
+                     "_score"]]
+    (distinct (concat atom-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
-  (let [atom-fields #{"granule-ur"
+  (let [atom-fields ["granule-ur"
                       "collection-concept-id"
                       "update-time"
                       "entry-title"
@@ -86,10 +83,11 @@
                       "cloud-cover"
                       "coordinate-system"
                       "ords-info"
-                      "ords"
-                      ;; needed for acl enforcment
-                      "access-value"}]
-    (vec (into atom-fields orbit-swath-helper/orbit-elastic-fields))))
+                      "ords"]]
+    (vec (distinct
+           (concat atom-fields
+                   orbit-swath-helper/orbit-elastic-fields
+                   acl-rhh/granule-elastic-fields)))))
 
 (defn- parse-elastic-datetime
   "Parses a date time string received from Elasticsearch"
@@ -126,48 +124,40 @@
           [inclination-angle] :inclination-angle
           [number-of-orbits] :number-of-orbits
           [start-circular-latitude] :start-circular-latitude} :fields} elastic-result
-        start-date (parse-elastic-datetime start-date)
-        end-date (parse-elastic-datetime end-date)
+        start-date (acl-rhh/parse-elastic-datetime start-date)
+        end-date (acl-rhh/parse-elastic-datetime end-date)
         atom-links (map #(json/decode % true) atom-links)
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
         ;; For DIF collection, its entry-id is the same as its short-name
         associated-difs (if (#{"dif" "dif10"} metadata-format)
                           [short-name] associated-difs)]
-    {:id concept-id
-     :score (r/normalize-score score)
-     :title entry-title
-     :short-name short-name
-     :version-id version-id
-     :summary summary
-     :updated update-time
-     :dataset-id entry-title
-     :collection-data-type collection-data-type
-     :processing-level-id processing-level-id
-     :original-format (metadata-format->atom-original-format metadata-format)
-     :data-center provider-id
-     :archive-center archive-center
-     :start-date start-date
-     :end-date end-date
-     :atom-links atom-links
-     :online-access-flag downloadable
-     :browse-flag browsable
-     :associated-difs associated-difs
-     :coordinate-system coordinate-system
-     :shapes (srl/ords-info->shapes ords-info ords)
-     :orbit-parameters {:swath-width swath-width
-                        :period period
-                        :inclination-angle inclination-angle
-                        :number-of-orbits number-of-orbits
-                        :start-circular-latitude start-circular-latitude}
-     ;; Fields required for ACL enforcment
-     :concept-type :collection
-     :provider-id provider-id
-     :access-value access-value
-     :entry-title entry-title
-     :temporal {:range-date-times (when start-date [{:beginning-date-time start-date
-                                                     :ending-date-time end-date}])}
-
-     }))
+    (merge {:id concept-id
+            :score (r/normalize-score score)
+            :title entry-title
+            :short-name short-name
+            :version-id version-id
+            :summary summary
+            :updated update-time
+            :dataset-id entry-title
+            :collection-data-type collection-data-type
+            :processing-level-id processing-level-id
+            :original-format (metadata-format->atom-original-format metadata-format)
+            :data-center provider-id
+            :archive-center archive-center
+            :start-date start-date
+            :end-date end-date
+            :atom-links atom-links
+            :online-access-flag downloadable
+            :browse-flag browsable
+            :associated-difs associated-difs
+            :coordinate-system coordinate-system
+            :shapes (srl/ords-info->shapes ords-info ords)
+            :orbit-parameters {:swath-width swath-width
+                               :period period
+                               :inclination-angle inclination-angle
+                               :number-of-orbits number-of-orbits
+                               :start-circular-latitude start-circular-latitude}}
+           (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item
   [orbits-by-collection elastic-result]
@@ -212,31 +202,27 @@
                        (when (and start-date end-date)
                          (orbit-swath-helper/elastic-result->swath-shapes
                            orbits-by-collection elastic-result)))]
-    {:id concept-id
-     :title granule-ur
-     :collection-concept-id collection-concept-id
-     :updated update-time
-     :dataset-id entry-title
-     :producer-gran-id producer-gran-id
-     :size (when size (str size))
-     :original-format (metadata-format->atom-original-format metadata-format)
-     :data-center provider-id
-     :start-date (parse-elastic-datetime start-date)
-     :end-date (parse-elastic-datetime end-date)
-     :atom-links atom-links
-     :orbit orbit
-     :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
-     :online-access-flag downloadable
-     :browse-flag browsable
-     :day-night day-night
-     :cloud-cover (when cloud-cover (str cloud-cover))
-     :coordinate-system coordinate-system
-     :shapes shapes
-
-     ;; Fields required for ACL enforcment
-     :concept-type :granule
-     :provider-id provider-id
-     :access-value access-value}))
+    (merge {:id concept-id
+            :title granule-ur
+            :collection-concept-id collection-concept-id
+            :updated update-time
+            :dataset-id entry-title
+            :producer-gran-id producer-gran-id
+            :size (when size (str size))
+            :original-format (metadata-format->atom-original-format metadata-format)
+            :data-center provider-id
+            :start-date (parse-elastic-datetime start-date)
+            :end-date (parse-elastic-datetime end-date)
+            :atom-links atom-links
+            :orbit orbit
+            :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
+            :online-access-flag downloadable
+            :browse-flag browsable
+            :day-night day-night
+            :cloud-cover (when cloud-cover (str cloud-cover))
+            :coordinate-system coordinate-system
+            :shapes shapes}
+           (acl-rhh/parse-elastic-item :granule elastic-result))))
 
 (defn- granule-elastic-results->query-result-items
   [context query elastic-matches]

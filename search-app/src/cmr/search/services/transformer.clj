@@ -99,13 +99,10 @@
 
 (defmethod add-acl-enforcement-fields :granule
   [concept]
-  (let [umm (ummc/parse-concept concept)
-        temporal (:temporal umm)]
+  (let [umm (ummc/parse-concept concept)]
     (assoc concept
            :access-value (:access-value umm)
-           ;; TOOD should we change the way granules and collections work to be the same?
-           :start-date (some->> temporal (sed/start-date :granule))
-           :end-date (some->> temporal (sed/end-date :granule))
+           :temporal (:temporal umm)
            :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
 
 (deftracefn get-latest-formatted-concepts

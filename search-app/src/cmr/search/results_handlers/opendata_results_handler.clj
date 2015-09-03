@@ -4,6 +4,7 @@
             [cmr.search.data.elastic-search-index :as elastic-search-index]
             [cmr.search.services.query-service :as qs]
             [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [clojure.walk :as walk]
             [clojure.string :as str]
             [clojure.set :as set]
@@ -55,25 +56,22 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :opendata]
   [concept-type query]
-  ["entry-title"
-   "summary"
-   "science-keywords-flat"
-   "update-time"
-   "insert-time"
-   "concept-id"
-   "short-name"
-   "project-sn"
-   "related-urls"
-   "start-date"
-   "end-date"
-   "ords-info"
-   "ords"
-   "personnel"
-   "archive-center"
-   ;; needed for acl enforcment
-   "access-value"
-   "provider-id"
-   ])
+  (let [opendata-fields ["entry-title"
+                         "summary"
+                         "science-keywords-flat"
+                         "update-time"
+                         "insert-time"
+                         "concept-id"
+                         "short-name"
+                         "project-sn"
+                         "related-urls"
+                         "start-date"
+                         "end-date"
+                         "ords-info"
+                         "ords"
+                         "personnel"
+                         "archive-center"]]
+    (distinct (concat opendata-fields acl-rhh/collection-elastic-fields))))
 
 (defn personnel->contact-name
   "Returns a contact name from the personnel record or the default if one
@@ -108,7 +106,6 @@
           [insert-time] :insert-time
           [provider-id] :provider-id
           project-sn :project-sn
-          [access-value] :access-value
           science-keywords-flat :science-keywords-flat
           [opendata-format] :opendata-format
           related-urls :related-urls
@@ -123,27 +120,24 @@
         related-urls  (map #(json/decode % true) related-urls)
         start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
         end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))]
-    {:id concept-id
-     :title entry-title
-     :short-name short-name
-     :summary summary
-     :update-time update-time
-     :insert-time insert-time
-     :concept-type :collection
-     :related-urls related-urls
-     :project-sn project-sn
-     :shapes (srl/ords-info->shapes ords-info ords)
-     :personnel personnel
-     :start-date start-date
-     :end-date end-date
-     :provider-id provider-id
-
-     ;; TODO add more acl enforcment stuff and separate it out
-
-     :access-value access-value ;; needed for acl enforcment
-     :science-keywords-flat science-keywords-flat
-     :entry-title entry-title
-     :archive-center archive-center}))
+    (merge {:id concept-id
+            :title entry-title
+            :short-name short-name
+            :summary summary
+            :update-time update-time
+            :insert-time insert-time
+            :concept-type :collection
+            :related-urls related-urls
+            :project-sn project-sn
+            :shapes (srl/ords-info->shapes ords-info ords)
+            :personnel personnel
+            :start-date start-date
+            :end-date end-date
+            :provider-id provider-id
+            :science-keywords-flat science-keywords-flat
+            :entry-title entry-title
+            :archive-center archive-center}
+           (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn temporal
   "Get the temporal field from the start-date and end-date"

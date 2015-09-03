@@ -38,4 +38,3 @@
           applicable-acls (filter (comp applicable-field :catalog-item-identity) acls)]
       (filter (partial acls-match-concept? context applicable-acls) concepts))))
 
-

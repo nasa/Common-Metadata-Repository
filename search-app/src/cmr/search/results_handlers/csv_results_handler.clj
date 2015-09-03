@@ -5,7 +5,8 @@
             [cmr.search.services.query-service :as qs]
             [cheshire.core :as json]
             [clojure.data.csv :as csv]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh])
   (:import
     [java.io StringWriter]))
 
@@ -14,18 +15,15 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :csv]
   [concept-type query]
-  ["granule-ur"
-   "producer-gran-id"
-   "start-date"
-   "end-date"
-   "atom-links"
-   "cloud-cover"
-   "day-night"
-   "size"
-   ;; needed for acl enforcement
-   "provider-id"
-   "collection-concept-id"
-   "access-value"])
+  (let [csv-fields ["granule-ur"
+                    "producer-gran-id"
+                    "start-date"
+                    "end-date"
+                    "atom-links"
+                    "cloud-cover"
+                    "day-night"
+                    "size"]]
+    (distinct (concat csv-fields acl-rhh/granule-elastic-fields))))
 
 (defmethod elastic-results/elastic-result->query-result-item :csv
   [context query elastic-result]
@@ -47,13 +45,9 @@
                                     (filter #(= (:link-type %) "data") atom-links)))
         browse-urls (seq (map :href
                               (filter #(= (:link-type %) "browse") atom-links)))]
-    {:row [granule-ur producer-gran-id start-date end-date (str/join "," downloadable-urls)
-           (str/join "," browse-urls) (str cloud-cover) day-night (str size)]
-     ;; Fields required for ACL enforcment
-     :concept-type :granule
-     :collection-concept-id collection-concept-id
-     :provider-id provider-id
-     :access-value access-value}))
+    (merge {:row [granule-ur producer-gran-id start-date end-date (str/join "," downloadable-urls)
+                  (str/join "," browse-urls) (str cloud-cover) day-night (str size)]}
+           (acl-rhh/parse-elastic-item :granule elastic-result))))
 
 (defmethod qs/search-results->response :csv
   [context query results]

@@ -60,26 +60,20 @@
 
 (defn matches-temporal-filter?
   "Returns true if the umm item matches the temporal filter"
-  [umm-start umm-end temporal-filter]
-  (when-not (= :acquisition (:temporal-field temporal-filter))
-    (errors/internal-error!
-      (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
+  [concept-type umm-temporal temporal-filter]
+  (when umm-temporal
+    (when-not (= :acquisition (:temporal-field temporal-filter))
+      (errors/internal-error!
+        (format "Found acl with unsupported temporal filter field [%s]" (:temporal-field temporal-filter))))
 
-  (let [{:keys [start-date end-date mask]} temporal-filter
-        umm-end (or umm-end (tk/now))]
-    (case mask
-      :intersects (time-ranges-intersect? start-date end-date umm-start umm-end)
-      ;; Per ECHO10 API documentation disjoint is the negation of intersects
-      :disjoint (not (time-ranges-intersect? start-date end-date umm-start umm-end))
-      :contains (time-range1-contains-range2? start-date end-date umm-start umm-end))))
-
-(defn- coll-matches-temporal-filter?
-  "Returns true if the umm item matches the temporal filter"
-  [coll temporal-filter]
-  (when-let [temporal (:temporal coll)]
-    (let [umm-start (sed/start-date :collection temporal)
-          umm-end (sed/end-date :collection temporal)]
-      (matches-temporal-filter? umm-start umm-end temporal-filter))))
+    (let [{:keys [start-date end-date mask]} temporal-filter
+          umm-start (sed/start-date concept-type umm-temporal)
+          umm-end (or (sed/end-date concept-type umm-temporal) (tk/now))]
+      (case mask
+        :intersects (time-ranges-intersect? start-date end-date umm-start umm-end)
+        ;; Per ECHO10 API documentation disjoint is the negation of intersects
+        :disjoint (not (time-ranges-intersect? start-date end-date umm-start umm-end))
+        :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
 
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
@@ -91,7 +85,19 @@
          (or (nil? access-value)
              (matches-access-value-filter? coll access-value))
          (or (nil? temporal)
-             (coll-matches-temporal-filter? coll temporal)))))
+             (matches-temporal-filter? :collection (:temporal coll) temporal)))))
+
+(defn- validate-collection-identiier
+  "Verifies the collection identifier isn't using any unsupported ACL features."
+  [acl collection-identifier]
+  (when collection-identifier
+      (let [unsupported-keys (set/difference (set (keys collection-identifier))
+                                             supported-collection-identifier-keys)]
+        (when-not (empty? unsupported-keys)
+          (errors/internal-error!
+            (format "The ACL with GUID %s had unsupported attributes set: %s"
+                    (:id acl)
+                    (str/join ", " unsupported-keys)))))))
 
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
@@ -100,16 +106,7 @@
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
 
-    ;; TODO refactor this out into a function
-    ;; Verify the collection identifier isn't using any unsupported ACL features.
-    (when collection-identifier
-      (let [unsupported-keys (set/difference (set (keys collection-identifier))
-                                             supported-collection-identifier-keys)]
-        (when-not (empty? unsupported-keys)
-          (errors/internal-error!
-            (format "The ACL with GUID %s had unsupported attributes set: %s"
-                    (:id acl)
-                    (str/join ", " unsupported-keys))))))
+    (validate-collection-identiier acl collection-identifier)
 
     (and collection-applicable
          (= coll-prov-id provider-id)

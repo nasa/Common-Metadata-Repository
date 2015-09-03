@@ -155,22 +155,11 @@
                        :query-collection-ids collection-ids
                        :query-concept-type (:concept-type query))
         elastic-results (->> processed-query
-                             ;; TODO try moving this below the acl processing
-                             (c2s/reduce-query context)
                              (#(if (:skip-acls? %)
                                  %
-                                 (c2s/reduce-query context
-                                   (acl-service/add-acl-conditions-to-query context %))))
+                                 (acl-service/add-acl-conditions-to-query context %)))
+                             (c2s/reduce-query context)
                              (idx/execute-query context))
         query-results (rc/elastic-results->query-results context pre-processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))
-
-
-(comment
-  (def context {:system (get-in user/system [:apps :search])})
-  (execute-query context @last-query)
-
-
-  )
-
 
