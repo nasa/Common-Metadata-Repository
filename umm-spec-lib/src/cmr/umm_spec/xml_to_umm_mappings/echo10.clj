@@ -63,4 +63,7 @@
                              :Characteristics (for-each "Characteristics/Characteristic"
                                                 characteristic-mapping)
                              :Instruments (for-each "Instruments/Instrument"
-                                            instrument-mapping)}))})))
+                                            instrument-mapping)}))
+       :AdditionalAttributes (for-each "/Collection/AdditionalAttributes/AdditionalAttribute"
+                               (matching-object :Name :Description :DataType :ParameterRangeBegin
+                                                :ParameterRangeEnd :Value))})))

@@ -72,3 +72,17 @@
     (let [expected (fixup-generated-collection (expected-conversion/convert umm-record metadata-format))
           actual   (fixup-generated-collection (xml-round-trip umm-record metadata-format))]
       (is (= expected actual)))))
+
+
+(comment
+
+  (let [metadata-format :dif
+        umm-record user/failing-value]
+    (is (= (expected-conversion/convert user/failing-value :dif)
+          (xml-round-trip user/failing-value :dif))))
+
+  (let [xml (slurp (io/resource "example_data/echo10.xml"))
+        parsed (core/parse-metadata :collection :echo10 xml)]
+    (println (core/generate-metadata :collection :echo10 parsed)))
+
+  )
