@@ -118,18 +118,18 @@
    (let [mdb-context (context->metadata-db-context context)
          [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
-         [t2 concepts] (u/time-execution (if skip-acls?
+         ;; Filtering deleted concepts
+         [t2 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))
+         [t3 concepts] (u/time-execution (if skip-acls?
                                            concepts
                                            (doall (acl-service/filter-concepts
                                                     context
                                                     (pmap add-acl-enforcement-fields concepts)))))
-         ;; Filtering deleted concepts
-         [t3 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))
          [t4 values] (u/time-execution
                        (doall (pmap #(concept->value-map context % target-format) concepts)))]
      (debug "get-latest-concepts time:" t1
-            "acl-filter-concepts time:" t2
-            "tombstone-filter time:" t3
+            "tombstone-filter time:" t2
+            "acl-filter-concepts time:" t3
             "concept->value-map time:" t4)
      values)))
 
@@ -141,10 +141,6 @@
    (let [mdb-context (context->metadata-db-context context)
          [t1 concept] (u/time-execution
                          (metadata-db/get-concept mdb-context concept-id revision-id))
-         [t2 concepts] (u/time-execution (doall (acl-service/filter-concepts
-                                                    context
-                                                    [(add-acl-enforcement-fields concept)])))
-         concept (first concepts)
          ;; Throw a service error for deleted concepts
          _ (when (:deleted concept)
              (errors/throw-service-errors
@@ -153,6 +149,10 @@
                   "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
                   revision-id
                   concept-id)]))
+         [t2 concepts] (u/time-execution (doall (acl-service/filter-concepts
+                                                    context
+                                                    [(add-acl-enforcement-fields concept)])))
+         concept (first concepts)
          ;; format concept
          [t4 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
      (debug "get-concept time:" t1

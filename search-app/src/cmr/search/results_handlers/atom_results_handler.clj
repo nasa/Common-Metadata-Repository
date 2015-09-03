@@ -56,6 +56,8 @@
    "ords"
    "_score"
    ;; TODO refactor list of fields which are required to enforce acls on a response to a central location
+   ;; We could create results handler helper with the lists of fields needed for elastic and then
+   ;; code for extracting those values into the data structures needed for acl enforcment
    "access-value" ;; needed for acl enforcment
    ])
 

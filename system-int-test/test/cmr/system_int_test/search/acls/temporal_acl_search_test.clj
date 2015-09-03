@@ -324,7 +324,6 @@
               "group3" user3 group3-granules
               "group4" user4 group4-granules))
 
-      ;; TODO figure out why csv worked without modification. Was it already getting start date as a date time?
       (testing "CSV ACL Enforcement by concept id"
         (are2 [token items]
               (let [concept-ids (map :concept-id all-grans)
