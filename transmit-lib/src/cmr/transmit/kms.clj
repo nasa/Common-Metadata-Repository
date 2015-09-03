@@ -43,15 +43,15 @@
                       :long-name :data-center-url :uuid]}))
 
 (defn- find-invalid-entries
-  "Checks the entries for any duplicate short names. Short names should be unique otherwise we
-  do not know how to correctly map from short name to the full hierarchy.
+  "Checks the entries for any duplicate leaf field values. The leaf field should be unique
+  otherwise we do not know how to correctly map from the provided leaf value to the full hierarchy.
 
   Takes a list of the keywords represented as a map with each subfield name being a key.
   Returns a sequence of invalid entries."
-  [keyword-entries]
+  [keyword-entries leaf-field-name]
   (->> keyword-entries
-       (group-by :short-name)
-       ;; Keep all the ones that have duplicate short names
+       (group-by leaf-field-name)
+       ;; Keep all the ones that have duplicate leaf field names
        (util/remove-map-keys #(= (count %) 1))
        ;; Get all the entries with duplicates as a single sequence
        vals
@@ -101,7 +101,7 @@
                              (map remove-blank-keys)
                              ;; We only want keyword entries with a short-name (leaf entries)
                              (filter leaf-field-name))
-        invalid-entries (find-invalid-entries keyword-entries)]
+        invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
     (doseq [entry invalid-entries]
