@@ -58,31 +58,8 @@
       :iso-smap
       :iso19115)))
 
-(defn fixup-generated-collection
-  [umm-coll]
-  (-> umm-coll
-      ;; TODO: right now, the TemporalExtents roundtrip conversion does not work with the generator
-      ;; generated umm record. We exclude it from the comparison for now. This should be addressed
-      ;; within CMR-1933.
-      (assoc :TemporalExtents nil)))
-
 (defspec roundtrip-generator-gen-parse 100
   (for-all [umm-record umm-gen/umm-c-generator
             metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap :iso19115])]
-    (let [expected (fixup-generated-collection (expected-conversion/convert umm-record metadata-format))
-          actual   (fixup-generated-collection (xml-round-trip umm-record metadata-format))]
-      (is (= expected actual)))))
-
-
-(comment
-
-  (let [metadata-format :dif
-        umm-record user/failing-value]
-    (is (= (expected-conversion/convert user/failing-value :dif)
-          (xml-round-trip user/failing-value :dif))))
-
-  (let [xml (slurp (io/resource "example_data/echo10.xml"))
-        parsed (core/parse-metadata :collection :echo10 xml)]
-    (println (core/generate-metadata :collection :echo10 parsed)))
-
-  )
+    (is (= (expected-conversion/convert umm-record metadata-format)
+           (xml-round-trip umm-record metadata-format)))))
