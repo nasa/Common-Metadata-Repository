@@ -119,6 +119,7 @@
    (for-each "/TemporalExtents[2..]"
              temporal-coverage-without-temporal-keywords)
 
+   [:Data_Set_Progress (xpath "/CollectionProgress")]
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]
    [:Project

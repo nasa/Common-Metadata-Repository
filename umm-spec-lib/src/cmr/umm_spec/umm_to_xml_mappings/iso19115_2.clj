@@ -41,7 +41,7 @@
 (comment
   ;; The following two functions are unused, pending some answers on IDs in ISO XML platforms and
   ;; instruments.
-  
+
   (defn- unique-id
     "Returns a unique ID string for the first value in the XPath context."
     [{[x] :context}]
@@ -85,6 +85,15 @@
            (char-string-from "Unit")]]]
         [:eos:value
          (char-string-from "Value")]])]]])
+
+(defn- generate-collection-progress
+  "Returns content generator instruction for the CollectionProgress field."
+  [xpath-context]
+  (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
+    [:gmd:MD_ProgressCode
+     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+      :codeListValue collection-progress}
+     collection-progress]))
 
 (defn- generate-descriptive-keywords
   "Returns content generator instruction for the descriptive keywords field. We create this function
@@ -145,6 +154,7 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+     [:gmd:status generate-collection-progress]
      [:gmd:descriptiveKeywords generate-descriptive-keywords]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints

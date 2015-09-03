@@ -34,6 +34,15 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
+(defn- generate-collection-progress
+  "Returns content generator instruction for the CollectionProgress field."
+  [xpath-context]
+  (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
+    [:gmd:MD_ProgressCode
+     {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+      :codeListValue collection-progress}
+     collection-progress]))
+
 (def umm-c-to-iso-smap-xml
   [:gmd:DS_Series
    iso-smap-xml-namespaces
@@ -62,6 +71,7 @@
            [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+       [:gmd:status generate-collection-progress]
        [:gmd:descriptiveKeywords
         [:gmd:MD_Keywords
          (for-each "/Platforms"
@@ -103,3 +113,4 @@
                                         :codeListValue "largerWorkCitation"}
            "largerWorkCitation"]]]]
        [:gmd:language (char-string "eng")]]]]]])
+

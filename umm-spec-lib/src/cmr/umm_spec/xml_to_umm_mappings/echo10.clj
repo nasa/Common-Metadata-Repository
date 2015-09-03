@@ -52,6 +52,7 @@
        :Abstract (xpath "/Collection/Description")
        :CollectionDataType (xpath "/Collection/CollectionDataType")
        :Purpose (xpath "/Collection/SuggestedUsage")
+       :CollectionProgress (xpath "/Collection/CollectionState")
        :AccessConstraints (object
                             {:Description (xpath "/Collection/RestrictionComment")
                              :Value (xpath "/Collection/RestrictionFlag")})
