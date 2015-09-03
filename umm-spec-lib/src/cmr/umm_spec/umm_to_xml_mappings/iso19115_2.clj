@@ -254,28 +254,4 @@
            [:eos:otherPropertyType
             [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
              "Echo Additional Attributes"]])
-         [:eos:otherProperty
-          [:gco:Record
-           [:eos:AdditionalAttributes
-            (for-each "Characteristics"
-              [:eos:AdditionalAttribute
-               [:eos:reference
-                [:eos:EOS_AdditionalAttributeDescription
-                 [:eos:type
-                  [:eos:EOS_AdditionalAttributeTypeCode {:codeList attribute-type-code-list
-                                                         :codeListValue "platformInformation"}
-                   "platformInformation"]]
-                 [:eos:name
-                  (char-string-from "Name")]
-                 [:eos:description
-                  (char-string-from "Description")]
-                 [:eos:dataType
-                  [:eos:EOS_AdditionalAttributeDataTypeCode {:codeList attribute-data-type-code-list
-                                                             :codeListValue (xpath "DataType")}
-                   (xpath "DataType")]]
-                 [:eos:parameterUnitsOfMeasure
-                  (char-string-from "Unit")]]]
-               [:eos:value
-                (char-string-from "Value")]])]]]
-
-         ]])]]])
+         (make-characteristics-mapping "platformInformation")]])]]])
