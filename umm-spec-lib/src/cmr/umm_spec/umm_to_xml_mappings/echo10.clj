@@ -2,6 +2,14 @@
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
 
+(def characteristic-mapping
+  (matching-object :Characteristic
+                   :Name
+                   :Description
+                   :DataType
+                   :Unit
+                   :Value))
+
 (def umm-c-to-echo10-xml
   [:Collection
    [:ShortName (xpath "/EntryId")]
@@ -11,11 +19,15 @@
    [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
+   [:CollectionDataType (xpath "/CollectionDataType")]
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
    [:RestrictionFlag (xpath "/AccessConstraints/Value")]
    [:RestrictionComment (xpath "/AccessConstraints/Description")]
+   [:TemporalKeywords
+    (for-each "/TemporalKeywords"
+              [:Keyword (xpath ".")])]
 
    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
    ;; address questions about temporal mappings.
@@ -51,9 +63,30 @@
                        :Type
                        [:Characteristics
                         (for-each "Characteristics"
-                          (matching-object :Characteristic
-                                           :Name
-                                           :Description
-                                           :DataType
-                                           :Unit
-                                           :Value))]))]])
+                          characteristic-mapping)]
+                       [:Instruments
+                        (for-each "Instruments"
+                          (matching-object :Instrument
+                                           :ShortName
+                                           :LongName
+                                           :Technique
+                                           :NumberOfSensors
+                                           [:Characteristics
+                                            (for-each "Characteristics"
+                                              characteristic-mapping)]
+                                           [:Sensors
+                                            (for-each "Sensors"
+                                              (matching-object :Sensor
+                                                               :ShortName
+                                                               :LongName
+                                                               :Technique
+                                                               [:Characteristics
+                                                                (for-each "Characteristics"
+                                                                  characteristic-mapping)]))]
+                                           [:OperationModes
+                                            (for-each "OperationalModes"
+                                              [:OperationMode (xpath ".")])]))]))]
+   [:AdditionalAttributes
+    (for-each "/AdditionalAttributes"
+      (matching-object :AdditionalAttribute :Name :Description :DataType :ParameterRangeBegin
+                       :ParameterRangeEnd :Value))]])

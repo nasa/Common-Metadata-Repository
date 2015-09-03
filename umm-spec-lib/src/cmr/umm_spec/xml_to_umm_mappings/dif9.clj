@@ -12,8 +12,11 @@
        :EntryId (xpath "/DIF/Entry_ID")
        :Version (xpath "/DIF/Data_Set_Citation/Version")
        :Abstract (xpath "/DIF/Summary/Abstract")
+       :CollectionDataType (xpath "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Data_Set_Language")
+       :TemporalKeywords (for-each "/DIF/Data_Resolution"
+                                   (xpath "Temporal_Resolution"))
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})
@@ -24,4 +27,18 @@
        :TemporalExtents (for-each "."
                           (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                      (object {:BeginningDateTime (xpath "Start_Date")
-                                                              :EndingDateTime    (xpath "Stop_Date")}))}))})))
+                                                              :EndingDateTime    (xpath "Stop_Date")}))}))
+       :AdditionalAttributes (for-each "/DIF/Extended_Metadata/Metadata[Group='AdditionalAttribute']"
+                               (object {:Name (xpath "Name")
+                                        :Description (xpath "Description")
+                                        :DataType (xpath "Type")
+                                        :Group (constant "AdditionalAttribute")
+                                        :ParameterRangeBegin (xpath "Value[@type='ParamRangeBegin']")
+                                        :ParameterRangeEnd (xpath "Value[@type='ParamRangeEnd']")
+                                        :Value (xpath "Value[@type='Value']")
+                                        :MeasurementResolution (xpath "Value[@type='MeasurementResolution']")
+                                        :ParameterUnitsOfMeasure (xpath "Value[@type='ParameterUnitsOfMeasure']")
+                                        :ParameterValueAccuracy (xpath "Value[@type='ParameterValueAccuracy']")
+                                        :ValueAccuracyExplanation (xpath "Value[@type='ValueAccuracyExplanation']")
+                                        :UpdateDate (xpath "Value[@type='UpdateDate']")}))})))
+

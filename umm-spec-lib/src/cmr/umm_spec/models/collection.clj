@@ -35,13 +35,6 @@
    ;; The language used in the metadata record.
    MetadataLanguage
 
-   ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
-   ;; historically by the GCMD internally to identify association, responsibility and/or ownership
-   ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
-   ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
-   ;; translated.
-   DirectoryNames
-
    ;; This includes any personnel responsible for this data and metadata through the party element.
    ;; The role (distributing, archiving, providing, and/or maintaining the data) is placed in the
    ;; role sub element. To support components or xlinks in the future the role was split from the
@@ -49,7 +42,14 @@
    ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
    ;; document responsibility for a specific reason. It can reuse the same person or organization
    ;; with different roles throughout the metadata.
-   ResponsiblePersonnel
+   Personnel
+
+   ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
+   ;; historically by the GCMD internally to identify association, responsibility and/or ownership
+   ;; of the dataset, service or supplemental information. Note: This field only occurs in the DIF.
+   ;; When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be
+   ;; translated.
+   DirectoryNames
 
    ;; This element contains suggested usage or purpose for the data or service.
    Purpose
@@ -72,7 +72,7 @@
    ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
    ;; document responsibility for a specific reason. It can reuse the same person or organization
    ;; with different roles throughout the metadata.
-   ResponsibleOrganizations
+   Organizations
 
    ;; This element with the description field allows the author to provide information about any
    ;; constraints for accessing the service. This includes any special restrictions, legal

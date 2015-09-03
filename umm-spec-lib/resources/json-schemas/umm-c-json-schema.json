@@ -318,7 +318,7 @@
       },
       "minItems": 1
     },
-    "ResponsibleOrganizations": {
+    "Organizations": {
       "description": "This includes any organizations responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
       "type": "array",
       "items": {
@@ -326,13 +326,13 @@
       },
       "minItems": 1
     },
-    "ResponsiblePersonnel": {
+    "Personnel": {
       "description": "This includes any personnel responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "CollectionDataType": {
       "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
@@ -496,5 +496,5 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
-  "required": ["EntryId", "EntryTitle", "Abstract", "DataDates", "ResponsibleOrganizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
+  "required": ["EntryId", "EntryTitle", "Abstract", "DataDates", "Organizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
 }

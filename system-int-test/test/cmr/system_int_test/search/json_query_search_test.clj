@@ -97,18 +97,23 @@
 
   (testing "Science keywords must contain one of the subfields as part of the search"
     (is (= {:status 400
-            :errors ["Invalid science keyword query condition [{:ignore-case true}]. Must contain category, topic, term, variable_level_1, variable_level_2, variable_level_3, detailed_variable, or any."]}
+            :errors ["Invalid Science Keywords query condition {:ignore-case true}. Must contain at least one subfield."]}
             (search/find-refs-with-json-query :collection {} {:science_keywords {:ignore_case true}}))))
 
   (testing "Platform must contain one of the subfields as part of the search"
     (is (= {:status 400
-            :errors ["Invalid platform query condition [{:ignore-case true}]. Must contain category, series_entity, short_name, long_name, uuid, or any."]}
+            :errors ["Invalid Platform query condition {:ignore-case true}. Must contain at least one subfield."]}
             (search/find-refs-with-json-query :collection {} {:platform {:ignore_case true}}))))
 
   (testing "Instrument must contain one of the subfields as part of the search"
     (is (= {:status 400
-            :errors ["Invalid instrument query condition [{:ignore-case true}]. Must contain category, class, type, subtype, short_name, long_name, uuid, or any."]}
-            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}})))))
+            :errors ["Invalid Instrument query condition {:ignore-case true}. Must contain at least one subfield."]}
+            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}}))))
+
+  (testing "Archive center must contain one of the subfields as part of the search"
+    (is (= {:status 400
+            :errors ["Invalid Archive Center query condition {:ignore-case true}. Must contain at least one subfield."]}
+            (search/find-refs-with-json-query :collection {} {:archive_center {:ignore_case true}})))))
 
 
 (comment

@@ -28,6 +28,12 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def temporal-keywords-xpath
+  (select (str md-data-id-base-xpath
+       "/gmd:descriptiveKeywords/gmd:MD_Keywords"
+       "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='temporal']"
+       "/gmd:keyword/gco:CharacterString")))
+
 (def temporal-mappings
   (for-each temporal-xpath
             (object {:PrecisionOfSeconds (xpath precision-xpath)
@@ -64,6 +70,23 @@
       :Unit        (xpath pc-attr-base-path "eos:parameterUnitsOfMeasure" char-string)
       :Value       (xpath "eos:value" char-string)})))
 
+(def instrument-sensors-mapping
+  (for-each "eos:sensor/eos:EOS_Sensor"
+    (object
+     {:ShortName (xpath "eos:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
+      :LongName (xpath "eos:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
+      :Technique (xpath "eos:type/gco:CharacterString")
+      :Characteristics platform-characteristics-mapping})))
+
+(def platform-instruments-mapping
+  (for-each "gmi:instrument/eos:EOS_Instrument"
+    (object
+     {:ShortName (xpath platform-short-name-xpath)
+      :LongName (xpath platform-long-name-xpath)
+      :Technique (xpath "gmi:type/gco:CharacterString")
+      :Characteristics platform-characteristics-mapping
+      :Sensors instrument-sensors-mapping})))
+
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -89,10 +112,12 @@
              :UseConstraints
              (xpath-with-regex (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                                #"^(?!Restriction Comment:).+")
+             :TemporalKeywords temporal-keywords-xpath
              :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
              :TemporalExtents temporal-mappings
              :Platforms (for-each platforms-xpath
                           (object {:ShortName (xpath platform-short-name-xpath)
                                    :LongName (xpath platform-long-name-xpath)
                                    :Type (xpath "gmi:description/gco:CharacterString")
-                                   :Characteristics platform-characteristics-mapping}))})))
+                                   :Characteristics platform-characteristics-mapping
+                                   :Instruments platform-instruments-mapping}))})))

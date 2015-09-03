@@ -63,7 +63,7 @@
                          "insert-time"
                          "concept-id"
                          "short-name"
-                         "project-sn"
+                         "project-sn2"
                          "related-urls"
                          "start-date"
                          "end-date"
@@ -105,7 +105,7 @@
           [update-time] :update-time
           [insert-time] :insert-time
           [provider-id] :provider-id
-          project-sn :project-sn
+          project-sn :project-sn2
           science-keywords-flat :science-keywords-flat
           [opendata-format] :opendata-format
           related-urls :related-urls

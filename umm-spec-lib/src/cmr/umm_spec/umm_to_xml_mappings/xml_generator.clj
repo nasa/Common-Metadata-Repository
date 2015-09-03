@@ -13,7 +13,6 @@
 (defmulti generate-content
   "Generates content using a content generator and values from the XPath context."
   (fn [content-generator xpath-context]
-    ;; We will eventually add custom function support through (fn? content-generator) :fn
     (cond
       (vector? content-generator)  :element
       (keyword? content-generator) :keyword
@@ -31,7 +30,8 @@
 
 (defmethod generate-content :fn
   [content-generator-fn xpath-context]
-  (content-generator-fn xpath-context))
+  (when-let [result (content-generator-fn xpath-context)]
+    (generate-content result xpath-context)))
 
 (defmethod generate-content :default
   [content-generator _]
@@ -67,10 +67,10 @@
 (defmethod generate-content :xpath
   [{:keys [value]} xpath-context]
   (some->> (sxp/evaluate xpath-context (sxp/parse-xpath value))
-             :context
-             first
-             str
-             vector))
+           :context
+           first
+           str
+           vector))
 
 (defmethod generate-content :constant
   [value _]

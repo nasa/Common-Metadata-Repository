@@ -2,6 +2,7 @@
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
+            [cmr.umm-spec.simple-xpath :as xp]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.iso-smap-utils :as utils]))
 
@@ -62,10 +63,9 @@
              :Abstract abstract-xpath
              :Purpose purpose-xpath
              :DataLanguage data-language-xpath
-             :Platforms (for-each keywords-xpath-str
-                          (fn [xpath-context]
-                            (let [keyword-str (->> xpath-context :context first :content (apply str))]
-                              (utils/parse-platform keyword-str))))
+             :Platforms (fn [xpath-context]
+                          (let [smap-keywords (map xp/text (:context (xp/evaluate xpath-context keywords-xpath-str)))]
+                            (utils/parse-platforms smap-keywords)))
              :TemporalExtents (for-each temporal-extent-xpath-str
                                 (object {:RangeDateTimes (for-each "gml:TimePeriod"
                                                            (object {:BeginningDateTime (xpath "gml:beginPosition")

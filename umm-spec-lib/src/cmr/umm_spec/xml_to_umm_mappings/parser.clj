@@ -72,15 +72,22 @@
        (mapv #(process-xml-mapping xpath-context %))
        str/join))
 
+(defn- vecseq
+  "Returns xs as a vector when xs is not empty."
+  [xs]
+  (when (seq xs)
+    (vec xs)))
+
 (defmethod process-xml-mapping :for-each
   [xpath-context {:keys [xpath template]}]
   (let [new-xpath-context (sxp/evaluate xpath-context (sxp/parse-xpath xpath))]
-    (when-let [elements (seq (:context new-xpath-context))]
-      (vec (for [element elements
-                 :let [single-item-xpath-context (assoc new-xpath-context :context [element])]]
-             (if (and template (mapping-type template))
-               (process-xml-mapping single-item-xpath-context template)
-               (parse-primitive-value (:parse-type template "string") single-item-xpath-context)))))))
+    (vecseq
+     (keep (fn [element]
+             (let [single-item-xpath-context (assoc new-xpath-context :context [element])]
+               (if (and template (mapping-type template))
+                 (process-xml-mapping single-item-xpath-context template)
+                 (parse-primitive-value (:parse-type template "string") single-item-xpath-context))))
+           (:context new-xpath-context)))))
 
 (defmethod process-xml-mapping :xpath-with-regex
   [xpath-context {:keys [xpath regex]}]
