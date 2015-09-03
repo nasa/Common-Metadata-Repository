@@ -44,8 +44,11 @@
                                                   :EndingDateTime (t/date-time 2003)}])})]
      :ProcessingLevel (umm-c/map->ProcessingLevelType {})
      :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :Organizations [(cmn/map->ResponsibilityType {:Role "CUSTODIAN"
-                                                   :Party (cmn/map->PartyType {})})]
+     :Organizations [(cmn/map->ResponsibilityType
+                       {:Role "CUSTODIAN"
+                        :Party (cmn/map->PartyType
+                                 {:OrganizationName (cmn/map->OrganizationNameType
+                                                      {:ShortName "custodian"})})})]
      :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
      :AccessConstraints (cmn/map->AccessConstraintsType
