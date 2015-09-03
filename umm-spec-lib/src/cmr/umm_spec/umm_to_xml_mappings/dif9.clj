@@ -50,4 +50,21 @@
     [:Abstract (xpath "/Abstract")]
     [:Purpose (xpath "/Purpose")]]
    [:Metadata_Name "CEOS IDN DIF"]
-   [:Metadata_Version "VERSION 9.9.3"]])
+   [:Metadata_Version "VERSION 9.9.3"]
+   [:Extended_Metadata
+    (for-each "/AdditionalAttributes"
+              [:Metadata
+               [:Group "AdditionalAttribute"]
+               [:Name (xpath "Name")]
+               [:Description (xpath "Description")]
+               [:Type (xpath "DataType")]
+               [:Value {:type "Value"} (xpath "Value")]
+               [:Value {:type "ParamRangeBegin"} (xpath "ParameterRangeBegin")]
+               [:Value {:type "ParamRangeEnd"} (xpath "ParameterRangeEnd")]
+               [:Value {:type "MeasurementResolution"} (xpath "MeasurementResolution")]
+               [:Value {:type "ParameterUnitsOfMeasure"} (xpath "ParameterUnitsOfMeasure")]
+               [:Value {:type "ParameterValueAccuracy"} (xpath "ParameterValueAccuracy")]
+               [:Value {:type "ValueAccuracyExplanation"} (xpath "ValueAccuracyExplanation")]
+               [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])]])
+
+

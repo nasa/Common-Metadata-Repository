@@ -75,4 +75,8 @@
                                               characteristic-mapping)]
                                            [:OperationModes
                                             (for-each "OperationalModes"
-                                              [:OperationMode (xpath ".")])]))]))]])
+                                              [:OperationMode (xpath ".")])]))]))]
+   [:AdditionalAttributes
+    (for-each "/AdditionalAttributes"
+      (matching-object :AdditionalAttribute :Name :Description :DataType :ParameterRangeBegin
+                       :ParameterRangeEnd :Value))]])

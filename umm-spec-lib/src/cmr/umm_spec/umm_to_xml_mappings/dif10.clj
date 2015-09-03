@@ -137,4 +137,9 @@
     [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
     [:Data_Creation "1970-01-01T00:00:00"]
     [:Data_Last_Revision "1970-01-01T00:00:00"]]
+   (for-each "/AdditionalAttributes"
+    (matching-object :AdditionalAttributes :Name :DataType :Description :MeasurementResolution
+                     :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
+                     :ParameterValueAccuracy :ValueAccuracyExplanation :Value))
    [:Product_Flag "Not provided"]])
+

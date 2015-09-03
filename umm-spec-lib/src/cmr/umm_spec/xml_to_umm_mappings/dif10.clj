@@ -72,4 +72,9 @@
                                                      :DurationUnit (xpath "Duration_Unit")
                                                      :DurationValue (xpath "Duration_Value")
                                                      :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
-                                                     :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))})))
+                                                     :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))
+       :AdditionalAttributes
+       (for-each "/DIF/AdditionalAttributes"
+                 (matching-object :Name :Description :DataType :ParameterRangeBegin :ParameterRangeEnd
+                                  :Value :MeasurementResolution :ParameterUnitsOfMeasure
+                                  :ParameterValueAccuracy :ValueAccuracyExplanation))})))
