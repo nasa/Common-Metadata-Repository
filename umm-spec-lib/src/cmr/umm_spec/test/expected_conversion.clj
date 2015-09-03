@@ -32,7 +32,17 @@
                                                           :Description "Is that necessary?"
                                                           :DataType "float"
                                                           :Unit "dB"
-                                                          :Value "10"})]})]})]
+                                                          :Value "10"})]
+                                     :Sensors [(cmn/map->SensorType
+                                             {:ShortName "ABC"
+                                              :LongName "Long Range Sensor"
+                                              :Characteristics [(cmn/map->CharacteristicType
+                                                                 {:Name "Signal to Noise Ratio"
+                                                                  :Description "Is that necessary?"
+                                                                  :DataType "float"
+                                                                  :Unit "dB"
+                                                                  :Value "10"})]
+                                              :Technique "Drunken Fist"})]})]})]
      :TemporalExtents [(cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3
@@ -208,10 +218,19 @@
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                       :NumberOfSensors nil
-                      :Sensors nil
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :AdditionalAttributes nil)))
+
+;; ISO-SMAP
+
+(defn- normalize-smap-instruments
+  "Collects all instruments across given platforms and returns a seq of platforms with all
+  instruments under each one."
+  [platforms]
+  (let [all-instruments (seq (mapcat :Instruments platforms))]
+    (for [platform platforms]
+      (assoc platform :Instruments all-instruments))))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
@@ -226,11 +245,14 @@
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
+      ;; The following instrument fields are not supported by SMAP.
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                       :Characteristics nil
                       :OperationalModes nil
                       :NumberOfSensors nil
-                      :Technique nil)))
+                      :Sensors nil
+                      :Technique nil)
+      (update-in [:Platforms] normalize-smap-instruments)))
 
 ;;; Unimplemented Fields
 
