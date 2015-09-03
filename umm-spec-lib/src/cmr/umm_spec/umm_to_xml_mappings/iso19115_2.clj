@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as str]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
             [cmr.umm-spec.simple-xpath :as xp]))
@@ -93,7 +93,7 @@
   (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
     [:gmd:MD_ProgressCode
      {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-      :codeListValue (s/lower-case collection-progress)}
+      :codeListValue (str/lower-case collection-progress)}
      collection-progress]))
 
 (defn- generate-descriptive-keywords
