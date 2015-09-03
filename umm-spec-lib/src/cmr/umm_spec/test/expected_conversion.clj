@@ -92,17 +92,6 @@
   (cmn/map->RangeDateTimeType {:BeginningDateTime date
                                :EndingDateTime    date}))
 
-(defn single-dates->ranges
-  "Returns a TemporalExtentType with any SingleDateTime values mapped
-  to be RangeDateTime values."
-  [temporal]
-  (let [singles (:SingleDateTimes temporal)]
-    (if (not (empty? singles))
-      (-> temporal
-          (assoc :SingleDateTimes nil)
-          (assoc :RangeDateTimes (map single-date->range singles)))
-      temporal)))
-
 (defn split-temporals
   "Returns a seq of temporal extents with a new extent for each value under key
   k (e.g. :RangeDateTimes) in each source temporal extent."
@@ -114,19 +103,6 @@
               (concat result [extent])))
           []
           temporal-extents))
-
-(defn merge-temporals
-  "Merges a sequence of temporal extents into a single temporal extent. Not that any values in the
-  subsequent temporal extents after the first one other than the times are thrown away."
-  [temporal-extents]
-  (when (seq temporal-extents)
-    (reduce (fn [merged-temporal temporal]
-              (-> merged-temporal
-                  (update-in [:RangeDateTimes] #(seq (concat % (:RangeDateTimes temporal))))
-                  (update-in [:SingleDateTimes] #(seq (concat % (:SingleDateTimes temporal))))
-                  (update-in [:PeriodicDateTimes] #(seq (concat % (:PeriodicDateTimes temporal))))))
-            (first temporal-extents)
-            (rest temporal-extents))))
 
 ;;; Format-Specific Translation Functions
 
@@ -144,24 +120,19 @@
                       :ValueAccuracyExplanation nil :UpdateDate nil)))
 
 ;; DIF 9
+
 (defn dif9-temporal
-  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
+  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents. All dates under
+  SingleDateTimes are converted into ranges and concatenated with all ranges into a single
+  TemporalExtentType."
   [temporal-extents]
-  (let [temporal (->> temporal-extents
-                      ;; Only ranges are supported by DIF 9, so we need to convert
-                      ;; single dates to range types.
-                      (map single-dates->ranges)
-                      ;; Merge the list of temporals together since we'll read the set of range date times as
-                      ;; a single temporal with many range date times.
-                      merge-temporals)
-        ;; DIF 9 does not support these fields.
-        temporal  (assoc temporal
-                         :PeriodicDateTimes nil
-                         :TemporalRangeType nil
-                         :PrecisionOfSeconds nil
-                         :EndsAtPresentFlag nil)]
-    ;; DIF 9 only supports range date times
-    (when (seq (:RangeDateTimes temporal)) [temporal])))
+  (let [singles (mapcat :SingleDateTimes temporal-extents)
+        ranges (mapcat :RangeDateTimes temporal-extents)
+        all-ranges (concat ranges
+                           (map single-date->range singles))]
+    (when (seq all-ranges)
+      [(cmn/map->TemporalExtentType
+        {:RangeDateTimes all-ranges})])))
 
 (defn dif-access-constraints
   "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
@@ -195,6 +166,20 @@
 
 ;; ISO 19115-2
 
+(defn normalize-iso-19115-precisions
+  "Returns seq of temporal extents all having the same precision as the first."
+  [extents]
+  (let [precision (-> extents first :PrecisionOfSeconds)]
+    (map #(assoc % :PrecisionOfSeconds precision)
+         extents)))
+
+(defn sort-by-date-type-iso
+  "Returns temporal extent records to match the order in which they are generated in ISO XML."
+  [extents]
+  (let [ranges (filter :RangeDateTimes extents)
+        singles (filter :SingleDateTimes extents)]
+    (seq (concat ranges singles))))
+
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
@@ -202,14 +187,10 @@
        (map #(assoc %
                     :TemporalRangeType nil
                     :EndsAtPresentFlag nil))
-       ;; ISO 19115-2 does not support PeriodicDateTimes.
-       (remove :PeriodicDateTimes)
+       normalize-iso-19115-precisions
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
-       (map cmn/map->TemporalExtentType)
-       ;; Return nil instead of an empty seq to match the parsed value in case none of the inputs
-       ;; are valid for ISO 19115-2.
-       seq))
+       sort-by-date-type-iso))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
