@@ -122,13 +122,13 @@
 ;; DIF 9
 
 (defn dif9-temporal
-  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents."
+  "Returns the expected value of a parsed DIF 9 UMM record's :TemporalExtents. All dates under
+  SingleDateTimes are converted into ranges and concatenated with all ranges into a single
+  TemporalExtentType."
   [temporal-extents]
   (let [singles (mapcat :SingleDateTimes temporal-extents)
         ranges (mapcat :RangeDateTimes temporal-extents)
         all-ranges (concat ranges
-                           ;; Only ranges are supported by DIF 9, so we need to convert single dates
-                           ;; to range types.
                            (map single-date->range singles))]
     (when (seq all-ranges)
       [(cmn/map->TemporalExtentType
