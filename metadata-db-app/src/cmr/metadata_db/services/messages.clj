@@ -108,8 +108,11 @@
 (defn provider-small-field-cannot-be-modified [provider-id]
   (format "Provider [%s] small field cannot be modified." provider-id))
 
-(defn small-provider-cannot-be-deleted []
-  "Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted.")
+(defn reserved-provider-cannot-be-deleted [provider-id]
+  (format "Provider [%s] is a reserved provider of CMR and cannot be deleted." provider-id))
+
+(defn cmr-provider-cannot-be-deleted []
+  "Provider [CMR] is a reserved provider of CMR and cannot be deleted.")
 
 (defn provider-does-not-exist [provider-id]
   (format "Provider with provider-id [%s] does not exist."
@@ -130,8 +133,8 @@
 (defn field-too-long [value limit]
   (format "%%s [%s] exceeds %d characters" value limit))
 
-(defn provider-id-reserved []
-  "%s [SMALL_PROV] is reserved")
+(defn provider-id-reserved [provider-id]
+  (format "%%s [%s] is reserved" provider-id))
 
 (defn invalid-provider-id [provider-id]
   (format "%%s [%s] is invalid" provider-id))

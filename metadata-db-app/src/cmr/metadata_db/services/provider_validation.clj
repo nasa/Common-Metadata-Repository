@@ -9,6 +9,14 @@
   "Provider id of the small provider"
   "SMALL_PROV")
 
+(def cmr-provider
+  "The system level CMR provider for tags"
+  {:provider-id "CMR"
+   :short-name "CMR"
+   :system-level? true
+   :cmr-only true
+   :small false})
+
 (def ^:private ^:const PROVIDER_ID_MAX_LENGTH 10)
 (def ^:private ^:const PROVIDER_SHORT_NAME_MAX_LENGTH 128)
 
@@ -37,10 +45,11 @@
     {field-path [(msg/invalid-provider-id provider-id)]}))
 
 (defn- provider-id-reserved-validation
-  "Validates the provider id isn't SMALL_PROV which is reserved."
+  "Validates the provider id isn't SMALL_PROV or CMR which are reserved."
   [field-path provider-id]
-  (when (= small-provider-id provider-id)
-    {field-path [(msg/provider-id-reserved)]}))
+  (when (or (= small-provider-id provider-id)
+            (= (:provider-id cmr-provider) provider-id))
+    {field-path [(msg/provider-id-reserved provider-id)]}))
 
 (defn- must-be-boolean
   "Validates the value given is of Boolean type."

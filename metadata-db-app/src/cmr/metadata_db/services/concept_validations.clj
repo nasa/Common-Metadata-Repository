@@ -76,6 +76,15 @@
   (when-let [concept-id (:concept-id concept)]
     (cc/concept-id-validation concept-id)))
 
+(defn tag-concept-id-match-fields-validation
+  "Validate that the concept-id is a match for the values in the concept fields"
+  [concept]
+  (when-let [concept-id (:concept-id concept)]
+    (when-not (cc/concept-id-validation concept-id)
+      (let [{:keys [concept-type _]} (cc/parse-concept-id concept-id)]
+        (when-not (= concept-type (:concept-type concept))
+          [(msg/invalid-concept-id concept-id "CMR" (:concept-type concept))])))))
+
 (defn concept-id-match-fields-validation
   [concept]
   (when-let [concept-id (:concept-id concept)]
@@ -88,22 +97,25 @@
 (def ^:private base-concept-validations
   "Validations for all concept types"
   [concept-type-missing-validation
-   provider-id-missing-validation
    native-id-missing-validation
    concept-id-validation
    nil-fields-validation
    nil-extra-fields-validation
-   concept-id-match-fields-validation
    (datetime-validator [:revision-date])
    (datetime-validator [:extra-fields :delete-time])])
 
 (def default-concept-validation
   "Builds a function that validates a concept and returns a list of errors"
-  (util/compose-validations (conj base-concept-validations extra-fields-missing-validation)))
+  (util/compose-validations
+    (conj base-concept-validations
+          extra-fields-missing-validation
+          concept-id-match-fields-validation
+          provider-id-missing-validation)))
 
 (def tag-concept-validation
   "Creates a function tht validates a tag concept and returns a listg of errors"
-  (util/compose-validations base-concept-validations))
+  (util/compose-validations (conj base-concept-validations tag-concept-id-match-fields-validation)))
+
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))

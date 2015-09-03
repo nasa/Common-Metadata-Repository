@@ -83,8 +83,8 @@
             (msg/invalid-concept-id "C1-PROV1" "PROV1" nil)]
            (v/default-concept-validation (dissoc valid-collection :concept-type)))))
   (testing "missing provider id"
-    (is (= [(msg/missing-provider-id)
-            (msg/invalid-concept-id "C1-PROV1" nil :collection)]
+    (is (= [(msg/invalid-concept-id "C1-PROV1" nil :collection)
+            (msg/missing-provider-id)]
            (v/default-concept-validation (dissoc valid-collection :provider-id)))))
   (testing "missing native id"
     (is (= [(msg/missing-native-id)]
@@ -118,8 +118,8 @@
             (msg/invalid-concept-id "G1-PROV1" "PROV1" nil)]
            (v/default-concept-validation (dissoc valid-granule :concept-type)))))
   (testing "missing provider id"
-    (is (= [(msg/missing-provider-id)
-            (msg/invalid-concept-id "G1-PROV1" nil :granule)]
+    (is (= [(msg/invalid-concept-id "G1-PROV1" nil :granule)
+            (msg/missing-provider-id)]
            (v/default-concept-validation (dissoc valid-granule :provider-id)))))
   (testing "missing native id"
     (is (= [(msg/missing-native-id)]
@@ -150,19 +150,12 @@
     (is (= [(msg/missing-concept-type)
             (msg/invalid-concept-id "T1-CMR" "CMR" nil)]
            (v/tag-concept-validation (dissoc valid-tag :concept-type)))))
-  (testing "missing provider id"
-    (is (= [(msg/missing-provider-id)
-            (msg/invalid-concept-id "T1-CMR" nil :tag)]
-           (v/tag-concept-validation (dissoc valid-tag :provider-id)))))
   (testing "missing native id"
     (is (= [(msg/missing-native-id)]
            (v/tag-concept-validation (dissoc valid-tag :native-id)))))
   (testing "invalid concept-id"
     (is (= ["Concept-id [1234] is not valid."]
            (v/tag-concept-validation (assoc valid-tag :concept-id "1234")))))
-  (testing "provider id and concept-id don't match"
-    (is (= [(msg/invalid-concept-id "T1-CMR" "PROV2" :tag)]
-           (v/tag-concept-validation (assoc valid-tag :provider-id "PROV2")))))
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "T1-CMR" "CMR" :collection)]
            (v/tag-concept-validation (assoc valid-tag

@@ -9,14 +9,6 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.system-trace.core :refer [deftracefn]]))
 
-(def cmr-provider
-  "The system level CMR provider for tags"
-  {:provider-id "CMR"
-   :short-name "CMR"
-   :system-level? true
-   :cmr-only true
-   :small false})
-
 (deftracefn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]
@@ -43,8 +35,8 @@
   ([context provider-id]
    (get-provider-by-id context provider-id false))
   ([context provider-id throw-error?]
-   (or (when (= "CMR" provider-id)
-         cmr-provider)
+   (or (when (= (:provider-id pv/cmr-provider) provider-id)
+         pv/cmr-provider)
        (providers/get-provider (mdb-util/context->db context) provider-id)
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
@@ -69,8 +61,10 @@
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
-  (when (= pv/small-provider-id provider-id)
-    (cmsg/data-error :bad-request msg/small-provider-cannot-be-deleted))
+  ;; TODO - Move this into a separate validation function
+  (when (or (= pv/small-provider-id provider-id)
+            (= (:provider-id pv/cmr-provider) provider-id))
+    (cmsg/data-error :bad-request msg/reserved-provider-cannot-be-deleted provider-id))
   (let [db (mdb-util/context->db context)
         provider (get-provider-by-id context provider-id true)
         result (providers/delete-provider db provider)]

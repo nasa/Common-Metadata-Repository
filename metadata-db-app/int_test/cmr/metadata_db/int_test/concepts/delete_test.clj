@@ -130,6 +130,39 @@
       (is (= status 201))
       (is (= revision-id 4)))))
 
+(deftest delete-tag-using-delete-end-point-test
+  (let [tag1 (util/create-and-save-tag 1 3)
+        tag2 (util/create-and-save-tag 2)
+        {:keys [status revision-id]} (util/delete-concept (:concept-id tag1))
+        stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
+    (is (= 201 status))
+    (is (= 4 revision-id))
+    (is (= true (:deleted stored-tag1)))
+    (is (= "" (:metadata stored-tag1)))
+
+    ;; Other data left in database
+    (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
+
+(deftest delete-tag-using-save-end-point-test
+  (let [tag1 (util/create-and-save-tag 1 3)
+        tag2 (util/create-and-save-tag 2)
+        {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id tag1)
+                                                         :deleted true})
+        stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
+    (is (= status 201))
+    (is (= revision-id 4))
+    (is (= true (:deleted stored-tag1)))
+    (is (= "" (:metadata stored-tag1)))
+
+    ;; Other data left in database
+    (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
+
+(deftest delete-tag-with-valid-revision-test
+  (let [tag1 (util/create-and-save-tag 1 3)
+        {:keys [status revision-id]} (util/delete-concept (:concept-id tag1) 4)]
+    (is (= status 201))
+    (is (= revision-id 4))))
+
 (deftest delete-concept-with-skipped-revisions-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)

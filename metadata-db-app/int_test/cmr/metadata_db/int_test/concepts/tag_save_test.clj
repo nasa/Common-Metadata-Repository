@@ -22,17 +22,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-tag-test
   (testing "saving new tags"
-    (are2 [options exp-status exp-errors]
-          (let [tag (util/tag-concept 1 options)
-                {:keys [status errors]} (util/save-concept tag)]
+    (are2 [tag exp-status exp-errors]
+          (let [{:keys [status errors]} (util/save-concept tag)]
             (is (= exp-status status))
             (is (= (set exp-errors) (set errors))))
 
           "valid save"
-          {} 201 []
+          (util/tag-concept 1) 201 []
 
           "failure when using non system-level provider"
-          {:provider-id "REG_PROV"} 422 ["Provider [REG_PROV] does not have permission to create tags."])))
+          (assoc (util/tag-concept 2) :provider-id "REG_PROV")
+          422
+          ["Provider [REG_PROV] does not have permission to create tags."])))
 
 (deftest save-tag-with-concept-id
   (testing "with concept-id"
@@ -41,13 +42,15 @@
           {:keys [status revision-id concept-id]} (util/save-concept tag)]
       (is (= 201 status))
       (is (= revision-id 1))
-      (is (util/verify-concept-was-saved (assoc tag :revision-id revision-id)))
+      (is (= true (util/verify-concept-was-saved
+                    (assoc tag :revision-id revision-id :provider-id "CMR"))))
 
       (testing "new revision"
         (let [{:keys [status revision-id]} (util/save-concept (assoc tag :revision-id 2))]
           (is (= 201 status))
           (is (= revision-id 2))
-          (is (util/verify-concept-was-saved (assoc tag :revision-id revision-id)))))
+          (is (util/verify-concept-was-saved
+                (assoc tag :revision-id revision-id :provider-id "CMR")))))
 
 
       ;; error cases

@@ -101,7 +101,8 @@
          value (str "value" uniq-num)
          specific-concept-map {:user-id (str "user" uniq-num)
                                :format "application/edn"}]
-     (concept "CMR" :tag uniq-num specific-concept-map attributes))))
+     ;; no provider-id should be specified for tags
+     (dissoc (concept nil :tag uniq-num specific-concept-map attributes) :provider-id))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -305,7 +306,7 @@
   save-result)
 
 (defn create-and-save-collection
-  "Creates, saves, and returns a concept with its data from metadata-db. "
+  "Creates, saves, and returns a collection concept with its data from metadata-db. "
   ([provider-id uniq-num]
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
@@ -318,13 +319,26 @@
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-granule
-  "Creates, saves, and returns a concept with its data from metadata-db"
+  "Creates, saves, and returns a granule concept with its data from metadata-db"
   ([provider-id parent-collection-id uniq-num]
    (create-and-save-granule provider-id parent-collection-id uniq-num 1))
   ([provider-id parent-collection-id uniq-num num-revisions]
    (create-and-save-granule provider-id parent-collection-id uniq-num num-revisions {}))
   ([provider-id parent-collection-id uniq-num num-revisions attributes]
    (let [concept (granule-concept provider-id parent-collection-id uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-tag
+  "Creates, saves, and returns a tag concept with its data from metadata-db"
+  ([uniq-num]
+   (create-and-save-tag uniq-num 1))
+  ([uniq-num num-revisions]
+   (create-and-save-tag uniq-num num-revisions {}))
+  ([uniq-num num-revisions attributes]
+   (let [concept (tag-concept uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

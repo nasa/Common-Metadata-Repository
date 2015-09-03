@@ -46,11 +46,12 @@
 
 ;;; utility methods
 
-(defn- validate-system-level-provider-for-tags
+(defn validate-system-level-provider-for-tags
   "Validates that tags are only created with a system level provider; throws an
   error otherwise."
   [concept provider]
-  (let [{:keys [concept-type provider-id]} concept]
+  (let [{concept-type :concept-type} concept
+        {provider-id :provider-id} provider]
     (when (and (= concept-type :tag)
                (not (:system-level? provider)))
       (errors/throw-service-errors :invalid-data [(msg/no-tags-permission provider-id)]))))
@@ -331,6 +332,7 @@
         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
         db (util/context->db context)
         provider (provider-service/get-provider-by-id context provider-id true)
+        _ (validate-system-level-provider-for-tags concept provider)
         previous-revision (c/get-concept db concept-type provider concept-id)]
     (if previous-revision
       ;; For a concept which is already deleted (i.e. previous revision is a tombstone),
@@ -364,7 +366,13 @@
   [context concept]
   (cv/validate-concept concept)
   (let [db (util/context->db context)
-        provider (provider-service/get-provider-by-id context (:provider-id concept) true)
+        provider-id (or (:provider-id concept)
+                        (if (= :tag (:concept-type concept))
+                          "CMR"))
+        ;; need this for tags since they don't have a provider-id in their concept maps, but
+        ;; later processing requires it
+        concept (assoc concept :provider-id provider-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-provider-for-tags concept provider)
         concept (set-or-generate-concept-id db provider concept)]
     (validate-concept-revision-id db provider concept)

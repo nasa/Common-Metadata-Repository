@@ -12,16 +12,13 @@
 
 (def all-concept-types [:collection :granule])
 
-(defmulti get-table-name
-  "Get the name for the table for a given provider and concept-type"
-  (fn [provider concept-type]
-    concept-type))
-
 (defn get-table-name
   "Get the name for the table for a given provider and concept-type"
   [provider concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
-  (pv/validate-provider provider)
+  (when-not (and (= :tag concept-type)
+                 (= "CMR" (:provider-id provider)))
+    (pv/validate-provider provider))
   (let [{:keys [provider-id small]} provider
         db-provider-id (if small pv/small-provider-id provider-id)]
     (format "%s_%s" (string/lower-case db-provider-id) (inf/plural (name concept-type)))))

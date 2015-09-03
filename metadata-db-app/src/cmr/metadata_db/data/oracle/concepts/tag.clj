@@ -19,7 +19,6 @@
 ;; as well.
 (defmethod c/concept->insert-args [:tag false]
   [concept _]
-  (cmr.common.dev.capture-reveal/capture concept)
   (let [{user-id :user-id} concept
         [cols values] (c/concept->common-insert-args concept)]
     [(concat cols ["user_id"])
