@@ -151,5 +151,6 @@
     (matching-object :AdditionalAttributes :Name :DataType :Description :MeasurementResolution
                      :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
                      :ParameterValueAccuracy :ValueAccuracyExplanation :Value))
+   [:Collection_Data_Type (xpath "/CollectionDataType")]
    [:Product_Flag "Not provided"]])
 

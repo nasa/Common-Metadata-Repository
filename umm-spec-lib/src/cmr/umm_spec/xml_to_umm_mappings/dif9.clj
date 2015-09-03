@@ -12,6 +12,7 @@
        :EntryId (xpath "/DIF/Entry_ID")
        :Version (xpath "/DIF/Data_Set_Citation/Version")
        :Abstract (xpath "/DIF/Summary/Abstract")
+       :CollectionDataType (xpath "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Data_Set_Language")
        :TemporalKeywords (for-each "/DIF/Data_Resolution"

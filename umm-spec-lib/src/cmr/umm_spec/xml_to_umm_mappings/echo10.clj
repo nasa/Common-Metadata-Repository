@@ -50,6 +50,7 @@
        :EntryId (xpath "/Collection/ShortName")
        :Version (xpath "/Collection/VersionId")
        :Abstract (xpath "/Collection/Description")
+       :CollectionDataType (xpath "/Collection/CollectionDataType")
        :Purpose (xpath "/Collection/SuggestedUsage")
        :AccessConstraints (object
                             {:Description (xpath "/Collection/RestrictionComment")

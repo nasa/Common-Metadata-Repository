@@ -220,6 +220,7 @@
                       :NumberOfSensors nil
                       :OperationalModes nil)
       (assoc :Quality nil)
+      (assoc :CollectionDataType nil)
       (assoc :AdditionalAttributes nil)))
 
 ;; ISO-SMAP
@@ -241,6 +242,7 @@
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :TemporalKeywords nil)
+      (assoc :CollectionDataType nil)
       (assoc :AdditionalAttributes nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
@@ -262,7 +264,7 @@
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions
-    :CollectionProgress :SpatialInformation :CollectionDataType
+    :CollectionProgress :SpatialInformation
     :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 
