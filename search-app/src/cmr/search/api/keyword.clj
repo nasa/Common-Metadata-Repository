@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the keyword endpoint in the search application."
   (:require [compojure.core :refer :all]
             [cheshire.core :as json]
+            [camel-snake-kebab.core :as csk]
             [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.transmit.kms :as kms]
             [cmr.common.mime-types :as mt]
@@ -30,7 +31,7 @@
     ;; Return a list of keywords for the given scheme
     (GET "/:keyword-scheme" {{:keys [keyword-scheme] :as params} :params
                              request-context :request-context}
-      (let [keyword-scheme (keyword keyword-scheme)]
+      (let [keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
         (validate-keyword-scheme keyword-scheme)
         (let [keywords (vals (keyword-scheme (kf/get-gcmd-keywords-map request-context)))]
           {:staus 200
