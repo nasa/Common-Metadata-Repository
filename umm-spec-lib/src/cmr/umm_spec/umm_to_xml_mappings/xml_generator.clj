@@ -31,12 +31,7 @@
 (defmethod generate-content :fn
   [content-generator-fn xpath-context]
   (when-let [result (content-generator-fn xpath-context)]
-    ;; If the instruction is vectors within vector (e.g. [[:a "a"] [:b "b"]]), we take that as an
-    ;; indication that the instructions in the inner vectors will be generated in place rather than
-    ;; being placed under a wrapping element.
-    (if (vector? (first result))
-      (map #(generate-content % xpath-context) result)
-      (generate-content result xpath-context))))
+    (generate-content result xpath-context)))
 
 (defmethod generate-content :default
   [content-generator _]

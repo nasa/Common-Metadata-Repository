@@ -13,7 +13,8 @@
   because we don't want to generate the sibling elements when there is no CollectionDataType value."
   [xpath-context]
   (when-let [collection-data-type (-> xpath-context :context first :CollectionDataType)]
-    [[:Group "ECHO"]
+    [:Metadata
+     [:Group "ECHO"]
      [:Name "CollectionDataType"]
      [:Value collection-data-type]]))
 
@@ -75,6 +76,6 @@
                [:Value {:type "ParameterValueAccuracy"} (xpath "ParameterValueAccuracy")]
                [:Value {:type "ValueAccuracyExplanation"} (xpath "ValueAccuracyExplanation")]
                [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])
-    [:Metadata generate-collection-data-type]]])
+    generate-collection-data-type]])
 
 
