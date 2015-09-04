@@ -68,6 +68,14 @@
                    :Unit
                    :Value))
 
+(def sensor-mapping
+  [:Sensor
+   [:Short_Name (xpath "ShortName")]
+   [:Long_Name (xpath "LongName")]
+   [:Technique (xpath "Technique")]
+   (for-each "Characteristics"
+     characteristic-type-mapping)])
+
 (def umm-c-to-dif10-xml
   [:DIF
    dif10-xml-namespaces
@@ -95,7 +103,9 @@
          (for-each "Characteristics"
            characteristic-type-mapping)
          (for-each "OperationalModes"
-           [:OperationalMode (xpath ".")])])])
+           [:OperationalMode (xpath ".")])
+         (for-each "Sensors"
+           sensor-mapping)])])
 
    ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
    ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
@@ -109,6 +119,7 @@
    (for-each "/TemporalExtents[2..]"
              temporal-coverage-without-temporal-keywords)
 
+   [:Data_Set_Progress (xpath "/CollectionProgress")]
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]
    [:Project
@@ -141,5 +152,6 @@
     (matching-object :AdditionalAttributes :Name :DataType :Description :MeasurementResolution
                      :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
                      :ParameterValueAccuracy :ValueAccuracyExplanation :Value))
+   [:Collection_Data_Type (xpath "/CollectionDataType")]
    [:Product_Flag "Not provided"]])
 

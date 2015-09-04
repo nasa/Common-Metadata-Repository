@@ -19,9 +19,11 @@
    [:LongName "dummy-long-name"]
    [:DataSetId (xpath "/EntryTitle")]
    [:Description (xpath "/Abstract")]
+   [:CollectionDataType (xpath "/CollectionDataType")]
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:CollectionState (xpath "/CollectionProgress")]
    [:RestrictionFlag (xpath "/AccessConstraints/Value")]
    [:RestrictionComment (xpath "/AccessConstraints/Description")]
    [:TemporalKeywords
@@ -73,6 +75,15 @@
                                            [:Characteristics
                                             (for-each "Characteristics"
                                               characteristic-mapping)]
+                                           [:Sensors
+                                            (for-each "Sensors"
+                                              (matching-object :Sensor
+                                                               :ShortName
+                                                               :LongName
+                                                               :Technique
+                                                               [:Characteristics
+                                                                (for-each "Characteristics"
+                                                                  characteristic-mapping)]))]
                                            [:OperationModes
                                             (for-each "OperationalModes"
                                               [:OperationMode (xpath ".")])]))]))]

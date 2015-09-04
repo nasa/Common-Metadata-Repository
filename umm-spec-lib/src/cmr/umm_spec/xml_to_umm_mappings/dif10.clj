@@ -32,9 +32,11 @@
        :EntryId (xpath "/DIF/Entry_ID")
        :Version parse-version
        :Abstract (xpath "/DIF/Summary/Abstract")
+       :CollectionDataType (xpath "/DIF/Collection_Data_Type")
        :Purpose (xpath "/DIF/Summary/Purpose")
        :DataLanguage (xpath "/DIF/Dataset_Language")
        :TemporalKeywords (select "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
+       :CollectionProgress (xpath "/DIF/Data_Set_Progress")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})
@@ -53,7 +55,14 @@
                                        :NumberOfSensors (xpath "NumberOfSensors")
                                        :Characteristics (for-each "Characteristics"
                                                           characteristic-parser)
-                                       :OperationalModes (select "OperationalMode")}))}))
+                                       :OperationalModes (select "OperationalMode")
+                                       :Sensors (for-each "Sensor"
+                                                  (object
+                                                   {:ShortName (xpath "Short_Name")
+                                                    :LongName (xpath "Long_Name")
+                                                    :Technique (xpath "Technique")
+                                                    :Characteristics (for-each "Characteristics"
+                                                                       characteristic-parser)}))}))}))
        :TemporalExtents (for-each "/DIF/Temporal_Coverage"
                           (object
                             {:TemporalRangeType (xpath "Temporal_Range_Type")

@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
-  (:require [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
             [cmr.umm-spec.iso-smap-utils :as util]))
 
@@ -34,6 +35,15 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
+(defn- generate-collection-progress
+  "Returns content generator instruction for the CollectionProgress field."
+  [xpath-context]
+  (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
+    [:gmd:MD_ProgressCode
+     {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+      :codeListValue (str/lower-case collection-progress)}
+     collection-progress]))
+
 (def umm-c-to-iso-smap-xml
   [:gmd:DS_Series
    iso-smap-xml-namespaces
@@ -62,6 +72,7 @@
            [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
        [:gmd:abstract (char-string-from "/Abstract")]
        [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+       [:gmd:status generate-collection-progress]
        [:gmd:descriptiveKeywords
         [:gmd:MD_Keywords
          (for-each "/Platforms"
@@ -103,3 +114,4 @@
                                         :codeListValue "largerWorkCitation"}
            "largerWorkCitation"]]]]
        [:gmd:language (char-string "eng")]]]]]])
+

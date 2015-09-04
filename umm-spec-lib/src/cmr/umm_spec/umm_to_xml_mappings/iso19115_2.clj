@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
-  (:require [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
             [cmr.umm-spec.simple-xpath :as xp]))
 
@@ -41,7 +42,7 @@
 (comment
   ;; The following two functions are unused, pending some answers on IDs in ISO XML platforms and
   ;; instruments.
-  
+
   (defn- unique-id
     "Returns a unique ID string for the first value in the XPath context."
     [{[x] :context}]
@@ -86,6 +87,15 @@
         [:eos:value
          (char-string-from "Value")]])]]])
 
+(defn- generate-collection-progress
+  "Returns content generator instruction for the CollectionProgress field."
+  [xpath-context]
+  (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
+    [:gmd:MD_ProgressCode
+     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+      :codeListValue (str/lower-case collection-progress)}
+     collection-progress]))
+
 (defn- generate-descriptive-keywords
   "Returns content generator instruction for the descriptive keywords field. We create this function
   because we don't want to generate the parent elements when there are no TemporalKeywords."
@@ -102,6 +112,19 @@
               {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
                :codeListValue "temporal"} "temporal"]]
             [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))))
+
+(def short-name-long-name-identifier
+  [:gmi:identifier
+   [:gmd:MD_Identifier
+    [:gmd:code
+     (char-string-from "ShortName")]
+    [:gmd:description
+     (char-string-from "LongName")]]])
+
+(def echo-attributes-info
+  [:eos:otherPropertyType
+   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+    "Echo Additional Attributes"]])
 
 (def umm-c-to-iso19115-2-xml
   [:gmi:MI_Metadata
@@ -132,6 +155,7 @@
          [:gmd:version (char-string-from "/Version")]]]]]
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
+     [:gmd:status generate-collection-progress]
      [:gmd:descriptiveKeywords generate-descriptive-keywords]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
@@ -212,39 +236,33 @@
              [:eos:otherPropertyType
               [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
                "Echo Additional Attributes"]]
-             ;; TODO see if this can be abstracted out since it is mostly duplicated in the next
-             ;; section
              (make-characteristics-mapping "instrumentInformation")
-             
-             ]])
+
+             ;; The Sensors mapping is very similar to the Instruments mapping above.
+
+             (for-each "Sensors"
+               [:eos:sensor
+                [:eos:EOS_Sensor
+                 [:eos:citation
+                  [:gmd:CI_Citation
+                   [:gmd:title
+                    [:gco:CharacterString make-instrument-title]]
+                   [:gmd:date {:gco:nilReason "unknown"}]]]
+                 [:eos:identifier
+                  [:gmd:MD_Identifier
+                   [:gmd:code
+                    (char-string-from "ShortName")]
+                   [:gmd:description
+                    (char-string-from "LongName")]]]
+                 [:eos:type
+                  (char-string-from "Technique")]
+                 [:eos:description {:gco:nilReason "missing"}]
+                 echo-attributes-info
+                 (make-characteristics-mapping "sensorInformation")]])]])
 
          ;; Characteristics
          (for-each "Characteristics[1]"
            [:eos:otherPropertyType
             [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
              "Echo Additional Attributes"]])
-         [:eos:otherProperty
-          [:gco:Record
-           [:eos:AdditionalAttributes
-            (for-each "Characteristics"
-              [:eos:AdditionalAttribute
-               [:eos:reference
-                [:eos:EOS_AdditionalAttributeDescription
-                 [:eos:type
-                  [:eos:EOS_AdditionalAttributeTypeCode {:codeList attribute-type-code-list
-                                                         :codeListValue "platformInformation"}
-                   "platformInformation"]]
-                 [:eos:name
-                  (char-string-from "Name")]
-                 [:eos:description
-                  (char-string-from "Description")]
-                 [:eos:dataType
-                  [:eos:EOS_AdditionalAttributeDataTypeCode {:codeList attribute-data-type-code-list
-                                                             :codeListValue (xpath "DataType")}
-                   (xpath "DataType")]]
-                 [:eos:parameterUnitsOfMeasure
-                  (char-string-from "Unit")]]]
-               [:eos:value
-                (char-string-from "Value")]])]]]
-
-         ]])]]])
+         (make-characteristics-mapping "platformInformation")]])]]])

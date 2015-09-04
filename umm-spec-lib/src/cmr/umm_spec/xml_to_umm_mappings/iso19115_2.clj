@@ -61,6 +61,10 @@
 (def constraints-xpath
   (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
+(def collection-progress-xpath
+  (xpath (str md-data-id-base-xpath
+              "/gmd:status/gmd:MD_ProgressCode")))
+
 (def platform-characteristics-mapping
   (for-each platform-characteristics-xpath
     (object
@@ -70,13 +74,22 @@
       :Unit        (xpath pc-attr-base-path "eos:parameterUnitsOfMeasure" char-string)
       :Value       (xpath "eos:value" char-string)})))
 
+(def instrument-sensors-mapping
+  (for-each "eos:sensor/eos:EOS_Sensor"
+    (object
+     {:ShortName (xpath "eos:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
+      :LongName (xpath "eos:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
+      :Technique (xpath "eos:type/gco:CharacterString")
+      :Characteristics platform-characteristics-mapping})))
+
 (def platform-instruments-mapping
   (for-each "gmi:instrument/eos:EOS_Instrument"
     (object
      {:ShortName (xpath platform-short-name-xpath)
       :LongName (xpath platform-long-name-xpath)
       :Technique (xpath "gmi:type/gco:CharacterString")
-      :Characteristics platform-characteristics-mapping})))
+      :Characteristics platform-characteristics-mapping
+      :Sensors instrument-sensors-mapping})))
 
 (def iso19115-2-xml-to-umm-c
   (apt/add-parsing-types
@@ -86,6 +99,7 @@
              :Version (char-string-xpath identifier-base-xpath "/gmd:version")
              :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
              :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
+             :CollectionProgress collection-progress-xpath
              ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
              ;; in the JSON schema instead of a single object. CMR-1989.
              :AccessConstraints (object
@@ -112,3 +126,4 @@
                                    :Type (xpath "gmi:description/gco:CharacterString")
                                    :Characteristics platform-characteristics-mapping
                                    :Instruments platform-instruments-mapping}))})))
+
