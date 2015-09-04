@@ -85,7 +85,7 @@
       (s/only-with-real-database
         (testing "list caches for bootstrap"
           (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
-            (is (= ["token-imp"] response))))))
+            (is (= ["token-imp" "kms"] response))))))
 
 
     (testing "normal user cannot access cache list API"
