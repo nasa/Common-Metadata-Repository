@@ -11,7 +11,8 @@
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [cmr.system-int-test.data2.atom :as atom]
-            [cmr.system-int-test.data2.facets :as f]))
+            [cmr.system-int-test.data2.facets :as f]
+            [cmr.common.date-time-parser :as dtp]))
 
 (defn json-polygons->polygons
   [polygons]
@@ -113,8 +114,8 @@
        :archive-center archive-center
        :processing-level-id processing-level-id
        :links (seq links)
-       :start time-start
-       :end time-end
+       :start (some-> time-start dtp/parse-datetime)
+       :end (some-> time-end dtp/parse-datetime)
        :associated-difs dif-ids
        :online-access-flag online-access-flag
        :browse-flag browse-flag
@@ -146,8 +147,8 @@
        :links (seq links)
        :orbit (parse-orbit orbit)
        :orbit-calculated-spatial-domains (seq (map parse-ocsd orbit-calculated-spatial-domains))
-       :start time-start
-       :end time-end
+       :start (some-> time-start dtp/parse-datetime)
+       :end (some-> time-end dtp/parse-datetime)
        :online-access-flag online-access-flag
        :browse-flag browse-flag
        :day-night-flag day-night-flag

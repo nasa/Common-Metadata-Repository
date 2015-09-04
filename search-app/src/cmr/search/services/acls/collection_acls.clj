@@ -4,7 +4,7 @@
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
-            [cmr.acl.collection-matchers :as coll-matchers]))
+            [cmr.acl.umm-matchers :as umm-matchers]))
 
 
 (defmethod acl-service/add-acl-conditions-to-query :collection
@@ -16,4 +16,4 @@
 
 (defmethod acl-service/acls-match-concept? :collection
   [context acls concept]
-  (some (partial coll-matchers/coll-applicable-acl? (:provider-id concept) concept) acls))
+  (some (partial umm-matchers/coll-applicable-acl? (:provider-id concept) concept) acls))

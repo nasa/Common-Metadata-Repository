@@ -340,11 +340,10 @@
        (echo-util/grant (s/context)
                         [echo-util/guest-ace
                          echo-util/registered-user-ace]
+                        :catalog-item-identity
                         (assoc (echo-util/catalog-item-id provider-guid)
                                :collection-applicable true
-                               :granule-applicable true)
-                        :system-object-identity
-                        nil))
+                               :granule-applicable true)))
      (when grant-all-ingest?
        (echo-util/grant-all-ingest (s/context) provider-guid)))))
 

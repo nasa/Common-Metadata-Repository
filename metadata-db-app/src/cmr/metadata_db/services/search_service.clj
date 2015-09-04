@@ -69,8 +69,6 @@
   "Find providers that match the given parameters. If no providers are specified we return all
   providers as possible providers that could match the parameters."
   [context params]
-  ;; TODO - Add support for finding provider from concept-id parameter when support is added
-  ;; to find-concepts for that parameter
   (if-let [provider-id (:provider-id params)]
     (when-let [provider (provider-service/get-provider-by-id context provider-id)]
       [provider])

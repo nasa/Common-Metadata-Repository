@@ -15,6 +15,7 @@
             [camel-snake-kebab.core :as csk]
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
+            [cmr.umm.start-end-date :as sed]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.facets :as facets]
@@ -137,8 +138,8 @@
      :archive-center (cx/string-at-path entry-elem [:archiveCenter])
      :processing-level-id (cx/string-at-path entry-elem [:processingLevelId])
      :links (seq (map :attrs (cx/elements-at-path entry-elem [:link])))
-     :start (cx/string-at-path entry-elem [:start])
-     :end (cx/string-at-path entry-elem [:end])
+     :start (cx/datetime-at-path entry-elem [:start])
+     :end (cx/datetime-at-path entry-elem [:end])
      :associated-difs (seq (cx/strings-at-path entry-elem [:difId]))
      :online-access-flag (cx/bool-at-path entry-elem [:onlineAccessFlag])
      :browse-flag (cx/bool-at-path entry-elem [:browseFlag])
@@ -171,8 +172,8 @@
                                            (cx/elements-at-path
                                              entry-elem
                                              [:orbitCalSpatialDomain])))
-     :start (cx/string-at-path entry-elem [:start])
-     :end (cx/string-at-path entry-elem [:end])
+     :start (cx/datetime-at-path entry-elem [:start])
+     :end (cx/datetime-at-path entry-elem [:end])
      :online-access-flag (cx/bool-at-path entry-elem [:onlineAccessFlag])
      :browse-flag (cx/bool-at-path entry-elem [:browseFlag])
      :day-night-flag (cx/string-at-path entry-elem [:dayNightFlag])
@@ -249,10 +250,6 @@
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
         {:keys [beginning-date-time ending-date-time]} (first (get-in collection
                                                                       [:temporal :range-date-times]))
-        start (when beginning-date-time
-                (f/unparse (f/formatters :date-time-no-ms) beginning-date-time))
-        end (when ending-date-time
-              (f/unparse (f/formatters :date-time-no-ms) ending-date-time))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
         ;; DIF collections have special cases on short-name and associated-difs
@@ -271,8 +268,8 @@
        :data-center (:provider-id (cu/parse-concept-id concept-id))
        :archive-center archive-center
        :processing-level-id processing-level-id
-       :start start
-       :end end
+       :start (some->> (:temporal collection) (sed/start-date :collection))
+       :end (some->> (:temporal collection) (sed/end-date :collection))
        :links (seq (related-urls->links related-urls))
        :coordinate-system coordinate-system
        ;; Need to create UMM OrbitParameters record into map so test comparisons don't fail
@@ -285,9 +282,10 @@
 (defn collections->expected-atom
   "Returns the atom map of the collections"
   [collections atom-path]
-  {:id (str (url/search-root) atom-path)
-   :title "ECHO dataset metadata"
-   :entries (map collection->expected-atom collections)})
+  (util/remove-nil-keys
+    {:id (str (url/search-root) atom-path)
+     :title "ECHO dataset metadata"
+     :entries (seq (map collection->expected-atom collections))}))
 
 (defn atom-collection-results-match?
   [expected-items atom-results]
@@ -300,7 +298,7 @@
   "Returns the atom map of the granule"
   [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time day-night cloud-cover format-key
+                beginning-date-time ending-date-time single-date-time day-night cloud-cover format-key
                 orbit-calculated-spatial-domains]} granule
         related-urls (add-collection-links coll related-urls)
         dataset-id (get-in granule [:collection-ref :entry-title])
@@ -325,8 +323,8 @@
        :links (seq (related-urls->links related-urls))
        :orbit (when orbit (into {} orbit))
        :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
-       :start beginning-date-time
-       :end ending-date-time
+       :start (some->> (:temporal granule) (sed/start-date :granule))
+       :end (some->> (:temporal granule) (sed/end-date :granule))
        :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
        :browse-flag (not (empty? (ru/browse-urls related-urls)))
        :day-night-flag day-night
