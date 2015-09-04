@@ -17,6 +17,21 @@
     "Solar/Space Observation Satellites"
     "Space Stations/Manned Spacecraft"})
 
+(def product-levels
+  "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
+  #{"Not provided"
+    "Level 0"
+    "Level 1"
+    "Level 1A"
+    "Level 1B"
+    "Level 1T"
+    "Level 2"
+    "Level 2G"
+    "Level 2P"
+    "Level 3"
+    "Level 4"
+    "Level NA"})
+
 (def dif10-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -33,7 +48,13 @@
   "Returns content for the Platform Type field."
   [xpath-context]
   (let [platform (-> xpath-context :context first)]
-    (or (get platform-types (:Type platform) "Not provided"))))
+    (get platform-types (:Type platform) "Not provided")))
+
+(defn- generate-product-level-id
+  "Returns content for the Product level id field."
+  [xpath-context]
+  (let [process-level-id (-> xpath :context first :ProcessingLevel :Id)]
+    (get product-levels process-level-id)))
 
 (def ^:private temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
@@ -152,6 +173,7 @@
     (matching-object :AdditionalAttributes :Name :DataType :Description :MeasurementResolution
                      :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
                      :ParameterValueAccuracy :ValueAccuracyExplanation :Value))
+   [:Product_Level_Id generate-product-level-id]
    [:Collection_Data_Type (xpath "/CollectionDataType")]
    [:Product_Flag "Not provided"]])
 
