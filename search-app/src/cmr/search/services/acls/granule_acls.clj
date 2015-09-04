@@ -219,7 +219,8 @@
 ;; acls match concept functions
 
 (defn granule-identifier-matches-concept?
-  "Returns true if the granule identifier is nil or it matches the concept."
+  "Returns true if the granule identifier (a field in catalog item identities in ACLs) is nil or it
+  matches the concept."
   [gran-identifier concept]
   (let [{:keys [access-value temporal]} gran-identifier
         umm-temporal (:temporal concept)]
@@ -233,7 +234,8 @@
            true))))
 
 (defn collection-identifier-matches-concept?
-  "Returns true if the collection identifier is nil or it matches the concept."
+  "Returns true if the collection identifier (a field in catalog item identities in ACLs) is nil or
+  it matches the concept."
   [context coll-identifier concept]
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
