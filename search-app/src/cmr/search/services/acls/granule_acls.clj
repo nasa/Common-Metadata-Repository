@@ -220,8 +220,8 @@
 
 (defn granule-identifier-matches-concept?
   "Returns true if the granule identifier is nil or it matches the concept."
-  [gran-id concept]
-  (let [{:keys [access-value temporal]} gran-id
+  [gran-identifier concept]
+  (let [{:keys [access-value temporal]} gran-identifier
         umm-temporal (:temporal concept)]
 
     (and (if access-value
@@ -234,26 +234,26 @@
 
 (defn collection-identifier-matches-concept?
   "Returns true if the collection identifier is nil or it matches the concept."
-  [context coll-id concept]
-  (if coll-id
+  [context coll-identifier concept]
+  (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
           collection (coll-cache/get-collection context collection-concept-id)]
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
                   collection-concept-id)))
-      (umm-matchers/coll-matches-collection-identifier? collection coll-id))
+      (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))
     true))
 
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
   (let [{provider-id :provider-id
-         gran-id :granule-identifier
-         coll-id :collection-identifier} (:catalog-item-identity acl)]
+         gran-identifier :granule-identifier
+         coll-identifier :collection-identifier} (:catalog-item-identity acl)]
     (and (= provider-id (:provider-id concept))
-         (granule-identifier-matches-concept? gran-id concept)
-         (collection-identifier-matches-concept? context coll-id concept))))
+         (granule-identifier-matches-concept? gran-identifier concept)
+         (collection-identifier-matches-concept? context coll-identifier concept))))
 
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
