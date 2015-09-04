@@ -82,6 +82,8 @@
                                                      :DurationValue (xpath "Duration_Value")
                                                      :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
                                                      :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))
+       :ProcessingLevel (object
+                          {:Id (xpath "/DIF/Product_Level_Id")})
        :AdditionalAttributes
        (for-each "/DIF/AdditionalAttributes"
                  (matching-object :Name :Description :DataType :ParameterRangeBegin :ParameterRangeEnd

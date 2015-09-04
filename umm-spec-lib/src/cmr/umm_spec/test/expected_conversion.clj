@@ -167,13 +167,20 @@
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
+(defn- dif10-processing-level
+  [processing-level]
+  (-> processing-level
+    (assoc :ProcessingLevelDescription nil)
+    (assoc :Id (get dif10/product-levels (:Id processing-level)))
+    convert-empty-record-to-nil))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
-      (assoc :ProcessingLevel nil)))
+      (update-in [:ProcessingLevel] dif10-processing-level)))
 
 ;; ISO 19115-2
 
