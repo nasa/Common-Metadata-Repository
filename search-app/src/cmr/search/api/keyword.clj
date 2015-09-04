@@ -81,7 +81,7 @@
     {:category all-topics})
 
 
-  {:category (parse-hierarchical-keywords keyword-hierarchy keywords nil nil)}
+  {:category (parse-hierarchical-keywords keyword-hierarchy keywords)}
 
   (def keywords
    (vals (kms/get-keywords-for-keyword-scheme
@@ -89,19 +89,18 @@
   )
 
 (defn- parse-hierarchical-keywords
-  "Returns keywords in a hierarchical fashion for the given keyword scheme and keywords."
-  [keyword-hierarchy keywords prev-field prev-value]
+  "Returns keywords in a hierarchical fashion based on the provided keyword hierarchy and keywords."
+  [keyword-hierarchy keywords]
   (when-let [field (first keyword-hierarchy)]
     (let [next-field (second keyword-hierarchy)]
       (let [values-for-field (keep (fn [k-word] (when (and (nil? (next-field k-word))
-                                                           (field k-word)
-                                                           (or (nil? prev-field)
-                                                               (= prev-value (prev-field k-word))))
+                                                           (field k-word))
                                                   {:value (field k-word)
                                                    :uuid  (:uuid k-word)})) keywords)]
         (for [value values-for-field
               :let [subfields (parse-hierarchical-keywords
-                                (rest keyword-hierarchy) keywords field (:value value))]]
+                                (rest keyword-hierarchy)
+                                (filter #(= (:value value) (field %)) keywords))]]
           (if (seq subfields)
             (assoc value
                    :subfields [(name next-field)]
