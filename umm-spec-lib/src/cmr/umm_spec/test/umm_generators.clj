@@ -4,7 +4,6 @@
             [cmr.common.test.test-check-ext :as ext-gen]
             [com.gfredericks.test.chuck.generators :as chgen]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.common.util :as util]
             [cmr.umm-spec.record-generator :as record-gen]
             [clojure.set :as set]))
 
