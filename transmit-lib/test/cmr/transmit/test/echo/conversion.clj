@@ -1,17 +1,16 @@
 (ns cmr.transmit.test.echo.conversion
   (:require [clojure.test :refer :all]
             [cmr.transmit.echo.conversion :as c]
-            [clj-time.core :as t]))
-
-
+            [clj-time.core :as t]
+            [schema.core :as s]))
 
 (deftest parse-and-generate-echo-temporal-dates
   (testing "parsing with UTC"
     (is (= (t/date-time 2010 1 1)
-          (#'c/parse-echo-temporal-date "Fri Jan 01 00:00:00 UTC 2010"))))
+           (#'c/parse-echo-temporal-date "Fri Jan 01 00:00:00 UTC 2010"))))
   (testing "parsing with in another timezone"
     (is (= (t/date-time 2015 9 1 16 22 41)
-          (#'c/parse-echo-temporal-date "Tue Sep 01 12:22:41 -0400 2015")))))
+           (#'c/parse-echo-temporal-date "Tue Sep 01 12:22:41 -0400 2015")))))
 
 
 (def echo-collection-identifier
@@ -19,7 +18,7 @@
                     {:data_set_id "Landsat 4-5 Thematic Mapper V1"}]
    :restriction_flag {:include_undefined_value false, :max_value 3.0, :min_value 3.0}
    :temporal {:start_date "Fri Jan 01 00:00:00 +0000 2010"
-              :end_date "Tue Sep 01 12:22:41 +0000 2015"
+              :stop_date "Tue Sep 01 12:22:41 +0000 2015"
               :mask "DISJOINT",
               :temporal_field "ACQUISITION"}})
 
@@ -37,7 +36,7 @@
   {:restriction_flag {:include_undefined_value true
                       :max_value 5.0, :min_value 3.0}
    :temporal {:start_date "Fri Jan 01 00:00:00 +0000 2010"
-              :end_date "Tue Sep 01 12:22:41 +0000 2015"
+              :stop_date "Tue Sep 01 12:22:41 +0000 2015"
               :mask "DISJOINT",
               :temporal_field "ACQUISITION"}})
 

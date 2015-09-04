@@ -70,7 +70,7 @@
           umm-start (sed/start-date concept-type umm-temporal)
           umm-end (or (sed/end-date concept-type umm-temporal) (tk/now))]
       (case mask
-        :intersects (time-ranges-intersect? start-date end-date umm-start umm-end)
+        :intersect (time-ranges-intersect? start-date end-date umm-start umm-end)
         ;; Per ECHO10 API documentation disjoint is the negation of intersects
         :disjoint (not (time-ranges-intersect? start-date end-date umm-start umm-end))
         :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))

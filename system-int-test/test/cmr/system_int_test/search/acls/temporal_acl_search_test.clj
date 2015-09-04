@@ -21,17 +21,10 @@
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
-;; Change this to test with granules as well.
-
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"}
                                              {:grant-all-search? false})
                        (dev-sys-util/freeze-resume-time-fixture)]))
-
-(comment
-  (dev-sys-util/reset)
-  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-  )
 
 (def now-n
   "The N value for the current time. Uses N values for date times as describd in
@@ -81,8 +74,8 @@
     ;; Set current time
     (dev-sys-util/freeze-time! (tu/n->date-time-string now-n))
 
-    (grant-temporal :collection "group-guid1" :intersects 0 5)
-    (grant-temporal :collection "group-guid2" :intersects 5 9)
+    (grant-temporal :collection "group-guid1" :intersect 0 5)
+    (grant-temporal :collection "group-guid2" :intersect 5 9)
     (grant-temporal :collection "group-guid3" :disjoint 3 5)
     (grant-temporal :collection "group-guid4" :contains 3 7)
 
@@ -231,8 +224,8 @@
 
     ;; Users have access to the collection
     (e/grant-registered-users (s/context) (e/coll-catalog-item-id "provguid1"))
-    (grant-temporal :granule "group-guid1" :intersects 0 5)
-    (grant-temporal :granule "group-guid2" :intersects 5 9)
+    (grant-temporal :granule "group-guid1" :intersect 0 5)
+    (grant-temporal :granule "group-guid2" :intersect 5 9)
     (grant-temporal :granule "group-guid3" :disjoint 3 5)
     (grant-temporal :granule "group-guid4" :contains 3 7)
 

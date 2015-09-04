@@ -178,33 +178,33 @@
                                      {:temporal tf}}))))
 
         "Collection with no temporal"
-        false (temporal-filter :intersects 1 3) (collection)
+        false (temporal-filter :intersect 1 3) (collection)
 
         ;; Intersects Mask
         "Intersects - Collection is exact match"
-        true (temporal-filter :intersects 1 3) (coll-w-temporal 1 3)
+        true (temporal-filter :intersect 1 3) (coll-w-temporal 1 3)
         "Contains - Collection start matches range start and end within"
-        true (temporal-filter :intersects 1 4) (coll-w-temporal 1 2)
+        true (temporal-filter :intersect 1 4) (coll-w-temporal 1 2)
         "Contains - Collection end matches range end and starts within"
-        true (temporal-filter :intersects 1 4) (coll-w-temporal 2 4)
+        true (temporal-filter :intersect 1 4) (coll-w-temporal 2 4)
         "Intersects - Collection contained within temporal range"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 3 4)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 3 4)
         "Intersects - temporal within collection"
-        true (temporal-filter :intersects 3 4) (coll-w-temporal 2 5)
+        true (temporal-filter :intersect 3 4) (coll-w-temporal 2 5)
         "Intersects - collection end = start"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 1 2)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 1 2)
         "Intersects - collection start = end"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 7 8)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 7 8)
         "Intersects - collection before with no end date"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 1 nil)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 1 nil)
         "Intersects - collection start and end equal range end"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 7 7)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 7 7)
         "Intersects - collection start and end equal range start"
-        true (temporal-filter :intersects 2 7) (coll-w-temporal 2 2)
+        true (temporal-filter :intersect 2 7) (coll-w-temporal 2 2)
         "Intersects - collection after temporal range"
-        false (temporal-filter :intersects 1 3) (coll-w-temporal 4 5)
+        false (temporal-filter :intersect 1 3) (coll-w-temporal 4 5)
         "Intersects - collection before temporal range"
-        false (temporal-filter :intersects 2 4) (coll-w-temporal 0 1)
+        false (temporal-filter :intersect 2 4) (coll-w-temporal 0 1)
 
         ;; Disjoint Mask (The opposite of intersects)
         "Disjoint - Collection is exact match"

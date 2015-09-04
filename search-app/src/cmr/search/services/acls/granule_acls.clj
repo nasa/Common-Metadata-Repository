@@ -70,12 +70,12 @@
   (let [{:keys [start-date end-date mask]} temporal-filter]
     (case mask
       ;; The granule just needs to intersect with the date range.
-      :intersects (q/map->TemporalCondition {:start-date start-date
+      :intersect (q/map->TemporalCondition {:start-date start-date
                                              :end-date end-date
                                              :exclusive? false})
       ;; Disjoint is intersects negated.
       :disjoint (q/->NegatedCondition (temporal->query-condition
-                                        (assoc temporal-filter :mask :intersects)))
+                                        (assoc temporal-filter :mask :intersect)))
       ;; The granules temporal must start and end within the temporal range
       :contains (gc/and-conds [(q/date-range-condition :start-date start-date end-date false)
                                (q/->ExistCondition :end-date)
