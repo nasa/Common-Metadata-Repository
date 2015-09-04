@@ -205,8 +205,8 @@
             :size (when size (str size))
             :original-format (metadata-format->atom-original-format metadata-format)
             :data-center provider-id
-            :start-date (parse-elastic-datetime start-date)
-            :end-date (parse-elastic-datetime end-date)
+            :start-date (acl-rhh/parse-elastic-datetime start-date)
+            :end-date (acl-rhh/parse-elastic-datetime end-date)
             :atom-links atom-links
             :orbit orbit
             :orbit-calculated-spatial-domains orbit-calculated-spatial-domains
