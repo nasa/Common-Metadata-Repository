@@ -4,7 +4,6 @@
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
-            [cmr.umm.core :as umm]
             [cmr.umm.start-end-date :as sed]
             [cmr.common.time-keeper :as tk]))
 
