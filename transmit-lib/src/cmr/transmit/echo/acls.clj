@@ -83,7 +83,6 @@
                                        (str/join "," (map acl-type->object-identity-type-string types))
                                        :reference false}
                                       (when provider-id {:provider_id provider-id}))})]
-     (cmr.common.dev.capture-reveal/capture-all)
      (case status
        200 (let [acls (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
                                   c/echo-acl->cmr-acl)
