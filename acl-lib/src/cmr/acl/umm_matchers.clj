@@ -33,21 +33,6 @@
       ;; umm item's without a value will only be included if include-undefined is true
       include-undefined)))
 
-(defn- time-ranges-intersect?
-  "Returns true if the time ranges given by the start and end date times intersect. Start and ends
-  are inclusive."
-  [start1 end1 start2 end2]
-  (let [interval1 (t/interval start1 end1)
-        interval2 (t/interval start2 end2)]
-    (or (t/within? interval1 start2)
-        (t/within? interval1 end2)
-        (t/within? interval2 start1)
-        (t/within? interval2 end1)
-        (= start1 end2)
-        (= start1 start2)
-        (= end1 end2)
-        (= end1 start2))))
-
 (defn- time-range1-contains-range2?
   "Returns true if the time range1 completely contains range 2. Start and ends are inclusive."
   [start1 end1 start2 end2]
@@ -70,9 +55,9 @@
           umm-start (sed/start-date concept-type umm-temporal)
           umm-end (or (sed/end-date concept-type umm-temporal) (tk/now))]
       (case mask
-        :intersect (time-ranges-intersect? start-date end-date umm-start umm-end)
+        :intersect (t/overlaps? start-date end-date umm-start umm-end)
         ;; Per ECHO10 API documentation disjoint is the negation of intersects
-        :disjoint (not (time-ranges-intersect? start-date end-date umm-start umm-end))
+        :disjoint (not (t/overlaps? start-date end-date umm-start umm-end))
         :contains (time-range1-contains-range2? start-date end-date umm-start umm-end)))))
 
 (defn coll-matches-collection-identifier?

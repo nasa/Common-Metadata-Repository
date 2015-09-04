@@ -89,12 +89,6 @@
                    orbit-swath-helper/orbit-elastic-fields
                    acl-rhh/granule-elastic-fields)))))
 
-(defn- parse-elastic-datetime
-  "Parses a date time string received from Elasticsearch"
-  [dts]
-  (when dts
-    (dtp/parse-datetime (str/replace dts "+0000" "Z"))))
-
 (defn- collection-elastic-result->query-result-item
   [elastic-result]
   (let [{concept-id :_id
