@@ -66,6 +66,9 @@
                                                 characteristic-mapping)
                              :Instruments (for-each "Instruments/Instrument"
                                             instrument-mapping)}))
+       :ProcessingLevel (object
+                          {:Id (xpath "/Collection/ProcessingLevelId")
+                           :ProcessingLevelDescription (xpath "/Collection/ProcessingLevelDescription")})
        :AdditionalAttributes (for-each "/Collection/AdditionalAttributes/AdditionalAttribute"
                                (matching-object :Name :Description :DataType :ParameterRangeBegin
                                                 :ParameterRangeEnd :Value))})))

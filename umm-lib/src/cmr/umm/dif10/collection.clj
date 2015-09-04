@@ -87,7 +87,7 @@
   UmmCollection
   (umm->dif10-xml
     ([collection]
-     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [version-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords
                    platforms product-specific-attributes projects related-urls spatial-coverage

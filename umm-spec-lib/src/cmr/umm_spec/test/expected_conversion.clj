@@ -6,6 +6,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
+            [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (def example-record
@@ -52,7 +53,8 @@
                                                   :EndingDateTime (t/date-time 2001)}
                                                  {:BeginningDateTime (t/date-time 2002)
                                                   :EndingDateTime (t/date-time 2003)}])})]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"
+                                                       :ProcessingLevelDescription "Processing level description"})
      :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :Organizations [(cmn/map->ResponsibilityType
                        {:Role "CUSTODIAN"
@@ -106,6 +108,12 @@
 
 ;;; Format-Specific Translation Functions
 
+(defn- convert-empty-record-to-nil
+  [record]
+  (if (seq (util/remove-nil-keys record))
+    record
+    nil))
+
 ;; ECHO 10
 
 (defmethod convert-internal :echo10
@@ -115,6 +123,7 @@
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)))
@@ -148,6 +157,7 @@
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")))
 
 
@@ -162,7 +172,8 @@
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)))
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
+      (assoc :ProcessingLevel nil)))
 
 ;; ISO 19115-2
 
@@ -202,6 +213,7 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (assoc :AdditionalAttributes nil)))
 
 ;; ISO-SMAP
@@ -225,6 +237,7 @@
       (assoc :TemporalKeywords nil)
       (assoc :CollectionDataType nil)
       (assoc :AdditionalAttributes nil)
+      (assoc :ProcessingLevel nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -245,7 +258,7 @@
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations :SpatialKeywords
     :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions :SpatialInformation
-    :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
+    :AncillaryKeywords :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields

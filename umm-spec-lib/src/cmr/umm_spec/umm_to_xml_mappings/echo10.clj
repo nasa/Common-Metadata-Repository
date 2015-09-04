@@ -23,6 +23,8 @@
    [:Orderable "true"]
    [:Visible "true"]
    [:SuggestedUsage (xpath "/Purpose")]
+   [:ProcessingLevelId (xpath "/ProcessingLevel/Id")]
+   [:ProcessingLevelDescription (xpath "/ProcessingLevel/ProcessingLevelDescription")]
    [:CollectionState (xpath "/CollectionProgress")]
    [:RestrictionFlag (xpath "/AccessConstraints/Value")]
    [:RestrictionComment (xpath "/AccessConstraints/Description")]

@@ -4,6 +4,7 @@
             [cmr.common.test.test-check-ext :as ext-gen]
             [com.gfredericks.test.chuck.generators :as chgen]
             [cmr.umm-spec.json-schema :as js]
+            [cmr.common.util :as util]
             [cmr.umm-spec.record-generator :as record-gen]
             [clojure.set :as set]))
 
@@ -58,7 +59,9 @@
                 ;; Generate a hash map containing the properties
                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
                ;; Construct a record from the hash map
-               (constructor-fn prop-map))))
+               ; (when (seq (util/remove-nil-keys prop-map))
+                 (constructor-fn prop-map))))
+; )
 
 (defn- assert-field-not-present-with-one-of
   [schema-type k]
