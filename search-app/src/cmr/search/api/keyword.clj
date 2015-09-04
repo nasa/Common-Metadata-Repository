@@ -97,6 +97,11 @@
    (vals (kms/get-keywords-for-keyword-scheme
            {:system (cmr.indexer.system/create-system)} :providers)))
 
+  (def test-keywords
+    (take 20 keywords))
+
+  (get-subfields-for-keyword [:level-1 :level-2 :level-3 :short-name :long-name] test-keywords
+                            :level-0 "U.S. STATE/REGIONAL/LOCAL AGENCIES")
   (def keywords
    (vals (kms/get-keywords-for-keyword-scheme
            {:system (cmr.indexer.system/create-system)} :platforms)))
@@ -107,6 +112,38 @@
 
   )
 
+(defn- is-leaf?
+  "Determines if we are at the leaf point within the hierarchy for the provided keyword."
+  [remaining-hierarchy k-word]
+  (not (some? (seq (keep #(% k-word) remaining-hierarchy)))))
+
+(comment
+
+  (def test1
+    [{:a "A" :b "B" :c "C"}
+     {:a "D" :c "D"}
+     {:a "A" :d "D"}])
+
+  (get-subfields-for-keyword [:b :c :d] test1 :a "A")
+
+  )
+(defn- get-subfields-for-keyword
+  "Figure out which subfield is directly below the current keyword. It is possible the next field
+  field in the hierarchy is nil, but further down the chain there is a non-nil field."
+  [remaining-hierarchy keywords field value]
+  (loop [remaining-fields remaining-hierarchy
+         matching-keywords (filter #(= value (field %)) keywords)
+         all-subfields nil]
+          (let [next-field (first remaining-fields)
+                keywords-below-with-next-field (keep next-field matching-keywords)
+                keywords-with-nil-next-field (filter #(nil? (next-field %)) matching-keywords)
+                all-subfields (if (seq keywords-below-with-next-field)
+                                (conj all-subfields next-field)
+                                all-subfields)]
+              (if (seq (rest remaining-fields))
+                (recur (rest remaining-fields) keywords-with-nil-next-field all-subfields)
+                all-subfields))))
+
 (defn- parse-hierarchical-keywords
   "Returns keywords in a hierarchical fashion based on the provided keyword hierarchy and keywords."
   [keyword-hierarchy keywords]
@@ -115,19 +152,15 @@
 
           ;; Find distinct values
           unique-values (distinct (keep field keywords))
-          values-to-uuids (into {} (keep (fn [k-word] (when (and (or (nil? next-field)
-                                                                     (nil? (next-field k-word)))
-                                                                 (field k-word))
-                                                        [(field k-word) (:uuid k-word)]))
+          values-to-uuids (into {} (keep (fn [k-word]
+                                           (when (is-leaf? (rest keyword-hierarchy) k-word)
+                                             [(field k-word) (:uuid k-word)]))
                                          keywords))]
-      ; (println "Unique values" (pr-str unique-values))
-      ; (println "Values-to-uuids" (pr-str values-to-uuids))
       (for [value unique-values
             :let [subfields (parse-hierarchical-keywords
                               (rest keyword-hierarchy)
                               (filter #(= value (field %)) keywords))
                   uuid (get values-to-uuids value)
-                  ; _ (println "UUID for " value "is " uuid)
                   value-map (util/remove-nil-keys
                               {:value value
                                :uuid uuid})]]
