@@ -43,7 +43,10 @@
                                                     }]}]}]}]}
 
   (def keyword-hierarchy
-    [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
+    {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
+     :providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+     :platforms [:category :series-entity :short-name :long-name]
+     :instruments [:category :class :type :subtype :short-name :long-name]})
 
   (def keywords
     [{:uuid "0dd83b2a-e83f-4a0c-a1ff-2fbdbbcce62d",
@@ -81,31 +84,59 @@
     {:category all-topics})
 
 
-  {:category (parse-hierarchical-keywords keyword-hierarchy keywords)}
+  {:category (parse-hierarchical-keywords (:science-keywords keyword-hierarchy) keywords)}
+  {:level-0 (parse-hierarchical-keywords (:providers keyword-hierarchy) keywords)}
+  {:category (parse-hierarchical-keywords (:platforms keyword-hierarchy) keywords)}
+  {:category (parse-hierarchical-keywords (:instruments keyword-hierarchy) keywords)}
 
   (def keywords
    (vals (kms/get-keywords-for-keyword-scheme
            {:system (cmr.indexer.system/create-system)} :science-keywords)))
+
+  (def keywords
+   (vals (kms/get-keywords-for-keyword-scheme
+           {:system (cmr.indexer.system/create-system)} :providers)))
+
+  (def keywords
+   (vals (kms/get-keywords-for-keyword-scheme
+           {:system (cmr.indexer.system/create-system)} :platforms)))
+
+  (def keywords
+   (vals (kms/get-keywords-for-keyword-scheme
+           {:system (cmr.indexer.system/create-system)} :instruments)))
+
   )
 
 (defn- parse-hierarchical-keywords
   "Returns keywords in a hierarchical fashion based on the provided keyword hierarchy and keywords."
   [keyword-hierarchy keywords]
   (when-let [field (first keyword-hierarchy)]
-    (let [next-field (second keyword-hierarchy)]
-      (let [values-for-field (keep (fn [k-word] (when (and (nil? (next-field k-word))
-                                                           (field k-word))
-                                                  {:value (field k-word)
-                                                   :uuid  (:uuid k-word)})) keywords)]
-        (for [value values-for-field
-              :let [subfields (parse-hierarchical-keywords
-                                (rest keyword-hierarchy)
-                                (filter #(= (:value value) (field %)) keywords))]]
-          (if (seq subfields)
-            (assoc value
-                   :subfields [(name next-field)]
-                   next-field subfields)
-            value))))))
+    (let [next-field (second keyword-hierarchy)
+
+          ;; Find distinct values
+          unique-values (distinct (keep field keywords))
+          values-to-uuids (into {} (keep (fn [k-word] (when (and (or (nil? next-field)
+                                                                     (nil? (next-field k-word)))
+                                                                 (field k-word))
+                                                        [(field k-word) (:uuid k-word)]))
+                                         keywords))]
+      ; (println "Unique values" (pr-str unique-values))
+      ; (println "Values-to-uuids" (pr-str values-to-uuids))
+      (for [value unique-values
+            :let [subfields (parse-hierarchical-keywords
+                              (rest keyword-hierarchy)
+                              (filter #(= value (field %)) keywords))
+                  uuid (get values-to-uuids value)
+                  ; _ (println "UUID for " value "is " uuid)
+                  value-map (util/remove-nil-keys
+                              {:value value
+                               :uuid uuid})]]
+
+        (if (seq subfields)
+          (assoc value-map
+                 :subfields [(name next-field)]
+                 next-field subfields)
+          value-map)))))
 
 (def keyword-api-routes
   (context "/keywords" []
