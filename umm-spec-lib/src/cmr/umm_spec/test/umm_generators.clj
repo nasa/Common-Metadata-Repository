@@ -59,9 +59,7 @@
                 ;; Generate a hash map containing the properties
                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
                ;; Construct a record from the hash map
-               ; (when (seq (util/remove-nil-keys prop-map))
-                 (constructor-fn prop-map))))
-; )
+               (constructor-fn prop-map))))
 
 (defn- assert-field-not-present-with-one-of
   [schema-type k]
