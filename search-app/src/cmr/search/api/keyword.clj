@@ -19,15 +19,6 @@
                            (name keyword-scheme)
                            (pr-str (map name (keys kms/keyword-scheme->field-names)))))))
 
-; (defn- parse-hierarchical-keywords
-;   "Returns keywords in a hierarchical fashion for the given keyword scheme and keywords."
-;   [keyword-scheme keyword-hierarchy keywords]
-;   (when-let [subfield (first keyword-hierarchy)]
-;     (let [all-values-for-subfield (map subfield keywords)]
-;       (for [value all-values-for-subfield]
-;         (parse-hierarchical-keywords keyword-scheme (rest keyword-hierarchy) keywords)))))
-
-
 ;; Sample output
 
 (comment
@@ -90,8 +81,32 @@
     {:category all-topics})
 
 
-  (parse-hierarchical-keywords :science-keywords keyword-hierarchy keywords)
- )
+  {:category (parse-hierarchical-keywords keyword-hierarchy keywords nil nil)}
+
+  (def keywords
+   (vals (kms/get-keywords-for-keyword-scheme
+           {:system (cmr.indexer.system/create-system)} :science-keywords)))
+  )
+
+(defn- parse-hierarchical-keywords
+  "Returns keywords in a hierarchical fashion for the given keyword scheme and keywords."
+  [keyword-hierarchy keywords prev-field prev-value]
+  (when-let [field (first keyword-hierarchy)]
+    (let [next-field (second keyword-hierarchy)]
+      (let [values-for-field (keep (fn [k-word] (when (and (nil? (next-field k-word))
+                                                           (field k-word)
+                                                           (or (nil? prev-field)
+                                                               (= prev-value (prev-field k-word))))
+                                                  {:value (field k-word)
+                                                   :uuid  (:uuid k-word)})) keywords)]
+        (for [value values-for-field
+              :let [subfields (parse-hierarchical-keywords
+                                (rest keyword-hierarchy) keywords field (:value value))]]
+          (if (seq subfields)
+            (assoc value
+                   :subfields [(name next-field)]
+                   next-field subfields)
+            value))))))
 
 (def keyword-api-routes
   (context "/keywords" []
