@@ -36,8 +36,9 @@
     (let [acls (acl-helper/get-acls-applicable-to-token context)
           applicable-field (-> concepts first :concept-type concept-type->applicable-field)
           applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
-      (remove nil? (pmap (fn [concept]
-                           (when (acls-match-concept? context applicable-acls concept)
-                             concept))
-                         concepts)))))
+      (doall (remove nil? (pmap (fn [concept]
+                                  (when (acls-match-concept? context applicable-acls concept)
+                                    concept))
+                                concepts))))))
+
 

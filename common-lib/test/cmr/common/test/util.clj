@@ -436,3 +436,30 @@
     (testing "original key is not used"
       (is (= 3 (get my-map :a))))))
 
+(deftest extract-between-strings-test
+  (let [test-str "abcdefghjklmnopqrstuvwxyz"]
+    (are [expected start end include-start-and-end?]
+         (= expected (util/extract-between-strings test-str start end include-start-and-end?))
+         test-str "a" "z"  true
+         test-str "ab" "xyz" true
+         "abcdef" "ab" "f" true
+         "abcdef" "ab" "cdef" true
+         "tuvwxyz" "tu" "wxyz" true
+         "fghjklmno" "fgh" "lmno" true
+
+         "bcdefghjklmnopqrstuvwxy" "a" "z"  false
+         "cdefghjklmnopqrstuvw" "ab" "xyz" false
+         "cde" "ab" "f" false
+         ;; When there's no data between start and end nil is returned
+         nil "ab" "cdef" false
+         "v" "tu" "wxyz" false
+         "jk" "fgh" "lmno" false
+
+         ;; not found cases
+         nil "z" "a" true
+         nil "z" "z" true
+         nil "a" "a" true
+         nil "g" "f" true
+         nil "acd" "z" true
+         nil "abc" "zyx" true)))
+

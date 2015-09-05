@@ -285,7 +285,6 @@
         m-without-renamed (apply dissoc m (keys kmap))]
     (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
 
-
 (defn binary-search
   "Does a binary search between minv and maxv searching for an acceptable value. middle-fn should
   be a function taking two values and finding the midpoint. matches-fn should be a function taking a
@@ -441,4 +440,18 @@
   [m k]
   (or (get m k) (lazy-get m k)))
 
-
+(defn extract-between-strings
+  "Extracts a substring from s that begins with start and ends with end."
+  ([^String s ^String start ^String end]
+   (extract-between-strings s start end true))
+  ([^String s ^String start ^String end include-start-and-end?]
+   (let [start-index (.indexOf s start)]
+     (when (not= start-index -1)
+       (let [end-index (.indexOf s end (+ start-index (count start)))]
+         (when (not= end-index -1)
+           (if include-start-and-end?
+             (.substring s start-index (+ end-index (count end)))
+             (let [substr (.substring s (+ start-index (count start)) end-index)]
+               ;; Return nil if there's no data between the two
+               (when (not= 0 (count substr))
+                 substr)))))))))
