@@ -414,3 +414,31 @@
                         (map (fn [x]
                                (apply f x args))
                              xs)))))
+
+(defn- key->delay-name
+  "Returns the key that the delay is stored in for a lazy value"
+  [k]
+  {:pre [(keyword? k)]}
+  (keyword (str "cmr.common.util/" (name k) "-delay")))
+
+(defmacro lazy-assoc
+  "Associates a value in a map in a way that the expression isn't evaluated until the value is
+  retrieved from the map. The value must be retrieved using lazy-get. A different key is built
+  using the one specified so that only lazy-get can be used to retrieve the value. It also allows
+  a map to contain either the original value with the same key and a lazily determined value."
+  [m k value-expression]
+  (let [delay-name (key->delay-name k)]
+    `(assoc ~m ~delay-name (delay ~value-expression))))
+
+(defn lazy-get
+  "Realizes and retrieves a value stored via lazy-assoc."
+  [m k]
+  (some-> m (get (key->delay-name k)) deref))
+
+(defn get-real-or-lazy
+  "Retrieves the value directly from the map with the key k or if not set looks for a lazily
+  associated value."
+  [m k]
+  (or (get m k) (lazy-get m k)))
+
+

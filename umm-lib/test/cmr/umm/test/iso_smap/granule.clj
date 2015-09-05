@@ -96,45 +96,53 @@
 (def sample-granule-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_granule.xml"))))
 
+(def expected-temporal
+  (umm-g/map->GranuleTemporal
+    {:range-date-time
+     (umm-c/map->RangeDateTime
+       {:beginning-date-time (p/parse-datetime "2015-05-30T16:01:00.000Z")
+        :ending-date-time (p/parse-datetime "2015-05-30T16:01:06.003Z")})}))
+
+(def expected-granule
+  (umm-g/map->UmmGranule
+    {:granule-ur "SC:SPL1AA.001:12345"
+     :data-provider-timestamps (umm-g/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
+                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
+     :collection-ref (umm-g/map->CollectionRef
+                       {:entry-title "SMAP Collection Dataset ID"
+                        :short-name "SPL1AA"
+                        :version-id "002"})
+     :data-granule (umm-g/map->DataGranule
+                     {:producer-gran-id "SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5"
+                      :production-date-time (p/parse-datetime "2012-12-25T10:36:10.000Z")})
+     :access-value 32.0
+     :temporal expected-temporal
+     :spatial-coverage
+     (umm-g/map->SpatialCoverage
+       {:geometries
+        [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
+         (set-geodetic (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)]))]})
+     :related-urls [(umm-c/map->RelatedURL
+                      {:type "GET DATA"
+                       :url "http://example.com/test1.hdf"
+                       :mime-type "application/x-hdf"})
+                    (umm-c/map->RelatedURL
+                      {:type "VIEW RELATED INFORMATION"
+                       :mime-type "/text/xml"
+                       :url "http://example.com/test2.xml"})
+                    (umm-c/map->RelatedURL
+                      {:type "GET RELATED VISUALIZATION"
+                       :url "http://example.com/test3.jpg"
+                       :mime-type "image/jpeg"})]}))
+
 (deftest parse-granule-test
-  (let [expected (umm-g/map->UmmGranule
-                   {:granule-ur "SC:SPL1AA.001:12345"
-                    :data-provider-timestamps (umm-g/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
-                                                 :update-time (p/parse-datetime "2013-04-05T17:15:00Z")})
-                    :collection-ref (umm-g/map->CollectionRef
-                                      {:entry-title "SMAP Collection Dataset ID"
-                                       :short-name "SPL1AA"
-                                       :version-id "002"})
-                    :data-granule (umm-g/map->DataGranule
-                                    {:producer-gran-id "SMAP_L1C_S0_HIRES_00016_A_20150530T160100_R03001_001.h5"
-                                     :production-date-time (p/parse-datetime "2012-12-25T10:36:10.000Z")})
-                    :access-value 32.0
-                    :temporal
-                    (umm-g/map->GranuleTemporal
-                      {:range-date-time
-                       (umm-c/map->RangeDateTime
-                         {:beginning-date-time (p/parse-datetime "2015-05-30T16:01:00.000Z")
-                          :ending-date-time (p/parse-datetime "2015-05-30T16:01:06.003Z")})})
-                    :spatial-coverage
-                    (umm-g/map->SpatialCoverage
-                      {:geometries
-                       [(mbr/mbr 0.4701165 0.322525 0.4704968 0.3221629)
-                        (set-geodetic (poly/polygon [(spatial/ords->ring 0 0, 0 4, 5 6, 5 2, 0 0)]))]})
-                    :related-urls [(umm-c/map->RelatedURL
-                                     {:type "GET DATA"
-                                      :url "http://example.com/test1.hdf"
-                                      :mime-type "application/x-hdf"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "VIEW RELATED INFORMATION"
-                                      :mime-type "/text/xml"
-                                      :url "http://example.com/test2.xml"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "GET RELATED VISUALIZATION"
-                                      :url "http://example.com/test3.jpg"
-                                      :mime-type "image/jpeg"})]})
-        actual (g/parse-granule sample-granule-xml)]
-    (is (= expected actual))))
+  (testing "parse granule"
+    (is (= expected-granule (g/parse-granule sample-granule-xml))))
+  (testing "parse temporal"
+    (is (= expected-temporal (g/parse-temporal sample-granule-xml))))
+  (testing "parse access value"
+    (is (= 32.0 (g/parse-access-value sample-granule-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

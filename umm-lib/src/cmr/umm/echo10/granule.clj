@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.collection :as umm-c]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.granule.temporal :as gt]
@@ -124,6 +125,16 @@
   "Parses ECHO10 XML into a UMM Granule record."
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
+
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  (gt/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (cx/double-at-path (x/parse-str xml) [:RestrictionFlag]))
 
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmGranule

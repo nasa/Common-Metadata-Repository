@@ -5,7 +5,9 @@
   concepts that is returned. This contains the functions to get the right data out of elastic and
   format the results so that the ACL filtering can be applied."
   (:require [cmr.common.date-time-parser :as dtp]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cmr.common.util :as u]
+            [cmr.umm.core :as ummc]))
 
 (def collection-elastic-fields
   "These are the fields that must be retrieved from Elasticsearch to enforce ACLs"
@@ -43,12 +45,15 @@
           [end-date] :end-date} :fields} elastic-result
         start-date (parse-elastic-datetime start-date)
         end-date (parse-elastic-datetime end-date)]
-    {:concept-type concept-type
-     :provider-id provider-id
-     :access-value access-value
-     :entry-title entry-title
-     :temporal {:range-date-times (when start-date [{:beginning-date-time start-date
-                                                     :ending-date-time end-date}])}}))
+
+    (-> {:concept-type concept-type
+         :provider-id provider-id
+         :entry-title entry-title}
+        (u/lazy-assoc :access-value access-value)
+        (u/lazy-assoc :temporal (let [start-date (parse-elastic-datetime start-date)
+                                      end-date (parse-elastic-datetime end-date)]
+                                  {:range-date-times (when start-date [{:beginning-date-time start-date
+                                                                        :ending-date-time end-date}])})))))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]
@@ -56,12 +61,39 @@
           [access-value] :access-value
           [collection-concept-id] :collection-concept-id
           [start-date] :start-date
-          [end-date] :end-date} :fields} elastic-result
-        start-date (parse-elastic-datetime start-date)
-        end-date (parse-elastic-datetime end-date)]
-    {:concept-type concept-type
-     :provider-id provider-id
-     :collection-concept-id collection-concept-id
-     :access-value access-value
-     :temporal (when start-date {:range-date-time {:beginning-date-time start-date
-                                                   :ending-date-time end-date}})}))
+          [end-date] :end-date} :fields} elastic-result]
+    (-> {:concept-type concept-type
+         :provider-id provider-id
+         :collection-concept-id collection-concept-id}
+        (u/lazy-assoc :access-value access-value)
+        (u/lazy-assoc
+          :temporal
+          (let [start-date (parse-elastic-datetime start-date)
+                end-date (parse-elastic-datetime end-date)]
+            (when start-date {:range-date-time {:beginning-date-time start-date
+                                                :ending-date-time end-date}}))))))
+
+(defmulti add-acl-enforcement-fields-to-concept
+  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
+  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
+  (fn [concept]
+    (:concept-type concept)))
+
+(defmethod add-acl-enforcement-fields-to-concept :collection
+  [concept]
+  (-> concept
+      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
+      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
+      (assoc :entry-title (get-in concept [:extra-fields :entry-title]))))
+
+(defmethod add-acl-enforcement-fields-to-concept :granule
+  [concept]
+  (-> concept
+      (u/lazy-assoc :access-value (ummc/parse-concept-access-value concept))
+      (u/lazy-assoc :temporal (ummc/parse-concept-temporal concept))
+      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
+
+(defn add-acl-enforcement-fields
+  "Adds the fields necessary to enforce ACLs to the concepts."
+  [concepts]
+  (mapv add-acl-enforcement-fields-to-concept concepts))

@@ -415,3 +415,24 @@
       "Empty matching map finds everything"
       {}
       maps)))
+
+(deftest lazy-assoc-and-get-test
+  (let [call-count (atom 0)
+        my-map (-> {}
+                   (util/lazy-assoc :a (swap! call-count inc))
+                   (assoc :a 3))]
+    (testing "value is not evaluated when it is assoc'd"
+      (is (= 0 @call-count)))
+
+    (testing "lazy get value"
+      (is (= 1 (util/lazy-get my-map :a))))
+
+    (testing "lazy get value is the same multiple times"
+      (is (= 1 (util/lazy-get my-map :a))))
+
+    (testing "value is only evaluated once"
+      (is (= 1 @call-count)))
+
+    (testing "original key is not used"
+      (is (= 3 (get my-map :a))))))
+

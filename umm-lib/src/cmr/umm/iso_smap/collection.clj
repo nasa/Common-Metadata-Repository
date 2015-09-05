@@ -114,6 +114,11 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  (t/xml-elem->Temporal (x/parse-str xml)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators

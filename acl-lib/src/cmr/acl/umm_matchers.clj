@@ -5,7 +5,8 @@
             [cmr.common.services.errors :as errors]
             [clj-time.core :as t]
             [cmr.umm.start-end-date :as sed]
-            [cmr.common.time-keeper :as tk]))
+            [cmr.common.time-keeper :as tk]
+            [cmr.common.util :as u]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal})
@@ -22,7 +23,7 @@
     (when (and (not min-value) (not max-value) (not include-undefined))
       (errors/internal-error!
         "Encountered restriction flag filter where min and max were not set and include-undefined was false"))
-    (if-let [^double access-value (:access-value umm)]
+    (if-let [^double access-value (u/get-real-or-lazy umm :access-value)]
       ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
         (and (or (nil? min-value)
@@ -69,7 +70,7 @@
          (or (nil? access-value)
              (matches-access-value-filter? coll access-value))
          (or (nil? temporal)
-             (matches-temporal-filter? :collection (:temporal coll) temporal)))))
+             (matches-temporal-filter? :collection (u/get-real-or-lazy coll :temporal) temporal)))))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."

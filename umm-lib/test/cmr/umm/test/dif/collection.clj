@@ -412,138 +412,144 @@
     <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
   </DIF>")
 
+(def expected-temporal
+  (umm-c/map->Temporal
+    {:range-date-times
+     [(umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-date "1996-02-24")
+         :ending-date-time (p/parse-date "1997-03-24")})
+      (umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
+         :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+     :single-date-times []
+     :periodic-date-times []}))
+
+(def expected-collection
+  (umm-c/map->UmmCollection
+    {:entry-id "geodata_1848"
+     :entry-title "Global Land Cover 2000 (GLC 2000)"
+     :summary "Summary of collection."
+     :purpose "A grand purpose"
+     :quality "High Quality Metadata"
+     :use-constraints "Public"
+     :product (umm-c/map->Product
+                {:short-name "geodata_1848"
+                 :long-name "Global Land Cover 2000 (GLC 2000)"
+                 :version-id "006"
+                 :processing-level-id "2"
+                 :collection-data-type "NEAR_REAL_TIME"})
+     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-date "2013-02-21")
+                                  :update-time (p/parse-date "2013-10-22")})
+     :publication-references [(umm-c/map->PublicationReference
+                                {:author "author"
+                                 :publication-date "2015"
+                                 :title "title"
+                                 :series "1"
+                                 :edition "2"
+                                 :volume "3"
+                                 :issue "4"
+                                 :report-number "5"
+                                 :publication-place "Frederick, MD"
+                                 :publisher "publisher"
+                                 :pages "678"
+                                 :isbn "978-0-394-80001-1"
+                                 :related-url "http://example.com"
+                                 :doi "http://dx.doi.org/12.3456/ABC012XYZ"
+                                 :other-reference-details "blah"})]
+     ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
+     :platforms [(umm-c/map->Platform
+                   {:short-name "SPOT-1"
+                    :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
+                    :type "Not Specified"})
+                 (umm-c/map->Platform
+                   {:short-name "SPOT-4"
+                    :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
+                    :type "Not Specified"})]
+     :temporal expected-temporal
+     :science-keywords
+     [(umm-c/map->ScienceKeyword
+        {:category "EARTH SCIENCE"
+         :topic "LAND SURFACE"
+         :term "LAND USE/LAND COVER"
+         :variable-level-1 "LAND COVER"})
+      (umm-c/map->ScienceKeyword
+        {:category "EARTH SCIENCE"
+         :topic "ATMOSPHERE"
+         :term "PRECIPITATION"
+         :variable-level-1 "PRECIPITATION AMOUNT"
+         :variable-level-2 "PRECIPITATION Level 2"
+         :variable-level-3 "PRECIPITATION Level 3"
+         :detailed-variable "PRECIPITATION Details"})]
+     :product-specific-attributes
+     [(umm-c/map->ProductSpecificAttribute
+        {:name "String add attrib"
+         :description "something string"
+         :data-type :string
+         :parameter-range-begin "alpha"
+         :parameter-range-end "bravo"
+         :value "alpha1"
+         :parsed-parameter-range-begin "alpha"
+         :parsed-parameter-range-end "bravo"
+         :parsed-value "alpha1"})
+      (umm-c/map->ProductSpecificAttribute
+        {:name "Float add attrib"
+         :description "something float"
+         :data-type :float
+         :parameter-range-begin "0.1"
+         :parameter-range-end "100.43"
+         :value "12.3"
+         :parsed-parameter-range-begin 0.1
+         :parsed-parameter-range-end 100.43
+         :parsed-value 12.3})]
+     :spatial-coverage
+     (umm-c/map->SpatialCoverage
+       {:granule-spatial-representation :geodetic
+        :spatial-representation :cartesian
+        :geometries [(m/mbr -180 -60.5033 180 -90)]})
+     :collection-associations [(umm-c/map->CollectionAssociation
+                                 {:short-name "CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI"
+                                  :version-id "dummy"})
+                               (umm-c/map->CollectionAssociation
+                                 {:short-name "CNDP-ESP_2"
+                                  :version-id "dummy"})]
+     :projects
+     [(umm-c/map->Project
+        {:short-name "ESI"
+         :long-name "Environmental Sustainability Index"})
+      (umm-c/map->Project
+        {:short-name "UNEP/GRID"
+         :long-name "UNEP/Global Resources Information Database"})]
+     :related-urls
+     [(umm-c/map->RelatedURL
+        {:type "GET DATA"
+         :url "http://geodata.grid.unep.ch/"})
+      (umm-c/map->RelatedURL
+        {:type "GET DATA"
+         :sub-type "ON-LINE ARCHIVE"
+         :url "ftp://airsl2.gesdisc.eosdis.nasa.gov/ftp/data/s4pa/Aqua_AIRS_Level2/AIRH2CCF.006/"
+         :description "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."
+         :title "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."})]
+     :organizations
+     [(umm-c/map->Organization
+        {:type :distribution-center
+         :org-name "EU/JRC/IES"})
+      (umm-c/map->Organization
+        {:type :distribution-center
+         :org-name "UNEP/DEWA/GRID-EUROPE"})]
+     :personnel [(umm-c/map->Personnel
+                   {:first-name "ANDREA"
+                    :last-name "DE BONO"
+                    :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]
+                    :contacts [(umm-c/map->Contact
+                                 {:type :email
+                                  :value "geo@unepgrid.ch"})]})]}))
+
 (deftest parse-collection-test
-  (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "geodata_1848"
-                    :entry-title "Global Land Cover 2000 (GLC 2000)"
-                    :summary "Summary of collection."
-                    :purpose "A grand purpose"
-                    :quality "High Quality Metadata"
-                    :use-constraints "Public"
-                    :product (umm-c/map->Product
-                               {:short-name "geodata_1848"
-                                :long-name "Global Land Cover 2000 (GLC 2000)"
-                                :version-id "006"
-                                :processing-level-id "2"
-                                :collection-data-type "NEAR_REAL_TIME"})
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-date "2013-02-21")
-                                                 :update-time (p/parse-date "2013-10-22")})
-                    :publication-references [(umm-c/map->PublicationReference
-                                               {:author "author"
-                                                :publication-date "2015"
-                                                :title "title"
-                                                :series "1"
-                                                :edition "2"
-                                                :volume "3"
-                                                :issue "4"
-                                                :report-number "5"
-                                                :publication-place "Frederick, MD"
-                                                :publisher "publisher"
-                                                :pages "678"
-                                                :isbn "978-0-394-80001-1"
-                                                :related-url "http://example.com"
-                                                :doi "http://dx.doi.org/12.3456/ABC012XYZ"
-                                                :other-reference-details "blah"})]
-                    ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
-                    :platforms [(umm-c/map->Platform
-                                  {:short-name "SPOT-1"
-                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
-                                   :type "Not Specified"})
-                                (umm-c/map->Platform
-                                  {:short-name "SPOT-4"
-                                   :long-name "Systeme Probatoire Pour l'Observation de la Terre-4"
-                                   :type "Not Specified"})]
-                    :temporal
-                    (umm-c/map->Temporal
-                      {:range-date-times
-                       [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-date "1996-02-24")
-                           :ending-date-time (p/parse-date "1997-03-24")})
-                        (umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-                           :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
-                       :single-date-times []
-                       :periodic-date-times []})
-                    :science-keywords
-                    [(umm-c/map->ScienceKeyword
-                       {:category "EARTH SCIENCE"
-                        :topic "LAND SURFACE"
-                        :term "LAND USE/LAND COVER"
-                        :variable-level-1 "LAND COVER"})
-                     (umm-c/map->ScienceKeyword
-                       {:category "EARTH SCIENCE"
-                        :topic "ATMOSPHERE"
-                        :term "PRECIPITATION"
-                        :variable-level-1 "PRECIPITATION AMOUNT"
-                        :variable-level-2 "PRECIPITATION Level 2"
-                        :variable-level-3 "PRECIPITATION Level 3"
-                        :detailed-variable "PRECIPITATION Details"})]
-                    :product-specific-attributes
-                    [(umm-c/map->ProductSpecificAttribute
-                       {:name "String add attrib"
-                        :description "something string"
-                        :data-type :string
-                        :parameter-range-begin "alpha"
-                        :parameter-range-end "bravo"
-                        :value "alpha1"
-                        :parsed-parameter-range-begin "alpha"
-                        :parsed-parameter-range-end "bravo"
-                        :parsed-value "alpha1"})
-                     (umm-c/map->ProductSpecificAttribute
-                       {:name "Float add attrib"
-                        :description "something float"
-                        :data-type :float
-                        :parameter-range-begin "0.1"
-                        :parameter-range-end "100.43"
-                        :value "12.3"
-                        :parsed-parameter-range-begin 0.1
-                        :parsed-parameter-range-end 100.43
-                        :parsed-value 12.3})]
-                    :spatial-coverage
-                    (umm-c/map->SpatialCoverage
-                      {:granule-spatial-representation :geodetic
-                       :spatial-representation :cartesian
-                       :geometries [(m/mbr -180 -60.5033 180 -90)]})
-                    :collection-associations [(umm-c/map->CollectionAssociation
-                                                {:short-name "CNDP-ESP_IPY_POL2006-11139-C02-01CGL_ESASSI"
-                                                 :version-id "dummy"})
-                                              (umm-c/map->CollectionAssociation
-                                                {:short-name "CNDP-ESP_2"
-                                                 :version-id "dummy"})]
-                    :projects
-                    [(umm-c/map->Project
-                       {:short-name "ESI"
-                        :long-name "Environmental Sustainability Index"})
-                     (umm-c/map->Project
-                       {:short-name "UNEP/GRID"
-                        :long-name "UNEP/Global Resources Information Database"})]
-                    :related-urls
-                    [(umm-c/map->RelatedURL
-                       {:type "GET DATA"
-                        :url "http://geodata.grid.unep.ch/"})
-                     (umm-c/map->RelatedURL
-                       {:type "GET DATA"
-                        :sub-type "ON-LINE ARCHIVE"
-                        :url "ftp://airsl2.gesdisc.eosdis.nasa.gov/ftp/data/s4pa/Aqua_AIRS_Level2/AIRH2CCF.006/"
-                        :description "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."
-                        :title "Access the AIRS/Aqua FINAL AIRS Level 2 Cloud Clear Radiance Product (With HSB) data  by FTP."})]
-                    :organizations
-                    [(umm-c/map->Organization
-                       {:type :distribution-center
-                        :org-name "EU/JRC/IES"})
-                     (umm-c/map->Organization
-                       {:type :distribution-center
-                        :org-name "UNEP/DEWA/GRID-EUROPE"})]
-                    :personnel [(umm-c/map->Personnel
-                                  {:first-name "ANDREA"
-                                   :last-name "DE BONO"
-                                   :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]
-                                   :contacts [(umm-c/map->Contact
-                                                {:type :email
-                                                 :value "geo@unepgrid.ch"})]})]})
-        actual (c/parse-collection all-fields-collection-xml)]
-    (is (= expected actual))))
+  (testing "parse collection"
+    (is (= expected-collection (c/parse-collection all-fields-collection-xml))))
+  (testing "parse temporal"
+    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

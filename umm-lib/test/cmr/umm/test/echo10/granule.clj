@@ -49,6 +49,7 @@
     <Collection>
       <DataSetId>R1_SCANSAR_FRAME</DataSetId>
     </Collection>
+    <RestrictionFlag>5.3</RestrictionFlag>
     <DataGranule>
       <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
       <DayNightFlag>NIGHT</DayNightFlag>
@@ -178,105 +179,114 @@
     </AssociatedBrowseImageUrls>
   </Granule>")
 
+(def expected-temporal
+  (umm-g/map->GranuleTemporal
+    {:range-date-time
+     (umm-c/map->RangeDateTime
+       {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
+        :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
+     :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")}))
+
+(def expected-granule
+  (umm-g/map->UmmGranule
+    {:granule-ur "GranuleUR100"
+     :data-provider-timestamps (umm-g/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
+                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
+                                  :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})
+     :collection-ref (umm-g/map->CollectionRef
+                       {:entry-title "R1_SCANSAR_FRAME"})
+     :access-value 5.3
+     :data-granule (umm-g/map->DataGranule
+                     {:producer-gran-id "0000000.0000001.hdf"
+                      :day-night "NIGHT"})
+     :project-refs ["Short Name-240" "Short Name-241"]
+     :cloud-cover 0.8
+     :temporal expected-temporal
+     :platform-refs
+     [(umm-g/map->PlatformRef
+        {:short-name "RADARSAT-1"
+         :instrument-refs
+         [(umm-g/map->InstrumentRef
+            {:short-name "SAR"
+             :characteristic-refs [(umm-g/map->CharacteristicRef
+                                     {:name "Characteristic #1"
+                                      :value "Characteristic I"})
+                                   (umm-g/map->CharacteristicRef
+                                     {:name "Characteristic #2"
+                                      :value "Characteristic II"})]
+             :sensor-refs [(umm-g/map->SensorRef
+                             {:short-name "SNA"
+                              :characteristic-refs [(umm-g/map->CharacteristicRef
+                                                      {:name "Characteristic #3"
+                                                       :value "Characteristic III"})
+                                                    (umm-g/map->CharacteristicRef
+                                                      {:name "Characteristic #4"
+                                                       :value "Characteristic IV"})]})
+                           (umm-g/map->SensorRef {:short-name "SNB"})]
+             :operation-modes ["Antarctic" "Arctic"]})
+          (umm-g/map->InstrumentRef {:short-name "MAR"})]})
+      (umm-g/map->PlatformRef
+        {:short-name "RADARSAT-2"
+         :instrument-refs nil})]
+     :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
+                                          {:orbital-model-name "OrbitalModelName"
+                                           :orbit-number 0
+                                           :start-orbit-number 0.0
+                                           :stop-orbit-number 0.0
+                                           :equator-crossing-longitude 0.0
+                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
+                                        (umm-g/map->OrbitCalculatedSpatialDomain
+                                          {:orbital-model-name "OrbitalModelName"
+                                           :orbit-number 0
+                                           :start-orbit-number 0.0
+                                           :stop-orbit-number 0.0
+                                           :equator-crossing-longitude 0.0
+                                           :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
+     :two-d-coordinate-system (umm-g/map->TwoDCoordinateSystem
+                                {:name "name0"
+                                 :start-coordinate-1 1.0
+                                 :end-coordinate-1 2.0
+                                 :start-coordinate-2 3.0
+                                 :end-coordinate-2 4.0})
+     :related-urls [(umm-c/map->RelatedURL
+                      {:type "GET DATA"
+                       :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+                    (umm-c/map->RelatedURL
+                      {:type "GET DATA"
+                       :title "(DATA ACCESS)"
+                       :url "http://camex.nsstc.nasa.gov/camex3/"})
+                    (umm-c/map->RelatedURL
+                      {:type "VIEW RELATED INFORMATION"
+                       :sub-type "USER'S GUIDE"
+                       :mime-type "Text/html"
+                       :title "(Guide)"
+                       :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
+                    (umm-c/map->RelatedURL
+                      {:type "GET RELATED VISUALIZATION"
+                       :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
+                       :description "Some description."
+                       :title "Some description. (Browse)"})
+                    (umm-c/map->RelatedURL
+                      {:type "GET RELATED VISUALIZATION"
+                       :url "http://nasa.gov/1"
+                       :description "A file 1"
+                       :title "A file 1"
+                       :size 101})
+                    (umm-c/map->RelatedURL
+                      {:type "GET RELATED VISUALIZATION"
+                       :url "http://nasa.gov/2"
+                       :description "A file 2"
+                       :title "A file 2"
+                       :size 102})]}))
+
 (deftest parse-granule-test
-  (let [expected (umm-g/map->UmmGranule
-                   {:granule-ur "GranuleUR100"
-                    :data-provider-timestamps (umm-g/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
-                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
-                                                 :delete-time (p/parse-datetime "2000-12-31T19:00:00-05:00")})
-                    :collection-ref (umm-g/map->CollectionRef
-                                      {:entry-title "R1_SCANSAR_FRAME"})
-                    :data-granule (umm-g/map->DataGranule
-                                    {:producer-gran-id "0000000.0000001.hdf"
-                                     :day-night "NIGHT"})
-                    :project-refs ["Short Name-240" "Short Name-241"]
-                    :cloud-cover 0.8
-                    :temporal
-                    (umm-g/map->GranuleTemporal
-                      {:range-date-time
-                       (umm-c/map->RangeDateTime
-                         {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
-                          :ending-date-time (p/parse-datetime "1997-03-24T22:20:41-05:00")})
-                       :single-date-time (p/parse-datetime "2010-01-05T05:30:30.550-05:00")})
-                    :platform-refs
-                    [(umm-g/map->PlatformRef
-                       {:short-name "RADARSAT-1"
-                        :instrument-refs
-                        [(umm-g/map->InstrumentRef
-                           {:short-name "SAR"
-                            :characteristic-refs [(umm-g/map->CharacteristicRef
-                                                    {:name "Characteristic #1"
-                                                     :value "Characteristic I"})
-                                                  (umm-g/map->CharacteristicRef
-                                                    {:name "Characteristic #2"
-                                                     :value "Characteristic II"})]
-                            :sensor-refs [(umm-g/map->SensorRef
-                                            {:short-name "SNA"
-                                             :characteristic-refs [(umm-g/map->CharacteristicRef
-                                                                     {:name "Characteristic #3"
-                                                                      :value "Characteristic III"})
-                                                                   (umm-g/map->CharacteristicRef
-                                                                     {:name "Characteristic #4"
-                                                                      :value "Characteristic IV"})]})
-                                          (umm-g/map->SensorRef {:short-name "SNB"})]
-                            :operation-modes ["Antarctic" "Arctic"]})
-                         (umm-g/map->InstrumentRef {:short-name "MAR"})]})
-                     (umm-g/map->PlatformRef
-                       {:short-name "RADARSAT-2"
-                        :instrument-refs nil})]
-                    :orbit-calculated-spatial-domains [(umm-g/map->OrbitCalculatedSpatialDomain
-                                                         {:orbital-model-name "OrbitalModelName"
-                                                          :orbit-number 0
-                                                          :start-orbit-number 0.0
-                                                          :stop-orbit-number 0.0
-                                                          :equator-crossing-longitude 0.0
-                                                          :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})
-                                                       (umm-g/map->OrbitCalculatedSpatialDomain
-                                                         {:orbital-model-name "OrbitalModelName"
-                                                          :orbit-number 0
-                                                          :start-orbit-number 0.0
-                                                          :stop-orbit-number 0.0
-                                                          :equator-crossing-longitude 0.0
-                                                          :equator-crossing-date-time (p/parse-datetime "2010-01-05T05:30:30Z")})]
-                    :two-d-coordinate-system (umm-g/map->TwoDCoordinateSystem
-                                               {:name "name0"
-                                                :start-coordinate-1 1.0
-                                                :end-coordinate-1 2.0
-                                                :start-coordinate-2 3.0
-                                                :end-coordinate-2 4.0})
-                    :related-urls [(umm-c/map->RelatedURL
-                                     {:type "GET DATA"
-                                      :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "GET DATA"
-                                      :title "(DATA ACCESS)"
-                                      :url "http://camex.nsstc.nasa.gov/camex3/"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "VIEW RELATED INFORMATION"
-                                      :sub-type "USER'S GUIDE"
-                                      :mime-type "Text/html"
-                                      :title "(Guide)"
-                                      :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "GET RELATED VISUALIZATION"
-                                      :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
-                                      :description "Some description."
-                                      :title "Some description. (Browse)"})
-                                   (umm-c/map->RelatedURL
-                                     {:type "GET RELATED VISUALIZATION"
-                                      :url "http://nasa.gov/1"
-                                      :description "A file 1"
-                                      :title "A file 1"
-                                      :size 101})
-                                   (umm-c/map->RelatedURL
-                                     {:type "GET RELATED VISUALIZATION"
-                                      :url "http://nasa.gov/2"
-                                      :description "A file 2"
-                                      :title "A file 2"
-                                      :size 102})]})
-        actual (g/parse-granule all-fields-granule-xml)]
-    (is (= expected actual))))
+  (testing "parse granule"
+    (is (= expected-granule (g/parse-granule all-fields-granule-xml))))
+  (testing "parse temporal"
+    (is (= expected-temporal (g/parse-temporal all-fields-granule-xml))))
+  (testing "parse access value"
+    (is (= 5.3 (g/parse-access-value all-fields-granule-xml)))))
 
 
 (def valid-granule-xml-w-datasetid
