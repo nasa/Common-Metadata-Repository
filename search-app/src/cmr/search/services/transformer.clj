@@ -107,17 +107,15 @@
          values)
 
        ;; Convert concepts to results with acl enforcment
-       (let [[t3 acls] (u/time-execution (acl-helper/get-acls-applicable-to-token context))
-             [t4 concepts] (u/time-execution (acl-rhh/add-acl-enforcement-fields concepts))
-             [t5 concepts] (u/time-execution (acl-service/filter-concepts context concepts acls))
-             [t6 values] (u/time-execution
+       (let [[t3 concepts] (u/time-execution (acl-rhh/add-acl-enforcement-fields concepts))
+             [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
+             [t5 values] (u/time-execution
                            (doall (pmap #(concept->value-map context % target-format) concepts)))]
          (debug "get-latest-concepts time:" t1
                 "tombstone-filter time:" t2
-                "get-acls-applicable-to-token time:" t3
-                "add-acl-enforcement-fields time:" t4
-                "acl-filter-concepts time:" t5
-                "concept->value-map time:" t6)
+                "add-acl-enforcement-fields time:" t3
+                "acl-filter-concepts time:" t4
+                "concept->value-map time:" t5)
          values)))))
 
 (deftracefn get-formatted-concept
@@ -136,14 +134,12 @@
                  "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
                  revision-id
                  concept-id)]))
-        [t2 acls] (u/time-execution (acl-helper/get-acls-applicable-to-token context))
-        [t3 concept] (u/time-execution (acl-rhh/add-acl-enforcement-fields-to-concept concept))
-        [t4 [concept]] (u/time-execution (acl-service/filter-concepts context [concept] acls))
+        [t2 concept] (u/time-execution (acl-rhh/add-acl-enforcement-fields-to-concept concept))
+        [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
         ;; format concept
-        [t5 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
+        [t4 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
     (debug "get-concept time:" t1
-           "get-acls-applicable-to-token time:" t2
-           "add-acl-enforcement-fields time:" t3
-           "acl-filter-concepts time:" t4
-           "concept->value-map time:" t5)
+           "add-acl-enforcement-fields time:" t2
+           "acl-filter-concepts time:" t3
+           "concept->value-map time:" t4)
     value))
