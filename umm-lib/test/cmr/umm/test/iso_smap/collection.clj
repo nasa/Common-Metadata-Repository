@@ -168,92 +168,97 @@
 (def sample-collection-xml
   (slurp (io/file (io/resource "data/iso_smap/sample_smap_iso_collection.xml"))))
 
+(def expected-temporal
+  (umm-c/map->Temporal
+    {:range-date-times
+     [(umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-datetime "2014-10-31T00:00:00.000Z")
+         :ending-date-time (p/parse-datetime "2018-01-31T00:00:00.000Z")})]
+     :single-date-times []
+     :periodic-date-times []}))
+
+(def expected-collection
+  (umm-c/map->UmmCollection
+    {:entry-id "SPL1AA_002"
+     :entry-title "SMAP Collection Dataset ID"
+     :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
+     :purpose "This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures."
+     :metadata-language "eng"
+     :product (umm-c/map->Product
+                {:short-name "SPL1AA"
+                 :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
+                 :version-id "002"
+                 :version-description "The initial version of the Level 1A Radar executable."})
+     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
+                                  :update-time (p/parse-datetime "2013-04-05T17:15:00Z")
+                                  :revision-date-time (p/parse-date "2013-01-02")})
+     :temporal expected-temporal
+     :science-keywords [(umm-c/map->ScienceKeyword
+                          {:category "EARTH SCIENCE"
+                           :topic "SPECTRAL/ENGINEERING"
+                           :term "MICROWAVE"
+                           :variable-level-1 "BRIGHTNESS TEMPERATURE"})
+                        (umm-c/map->ScienceKeyword
+                          {:category "EARTH SCIENCE"
+                           :topic "ATMOSPHERE"
+                           :term "CLOUDS"
+                           :variable-level-1 "TROPOSPHERIC/LOW LEVEL CLOUDS (OBSERVED/ANALYZED)"
+                           :variable-level-2 "FOG"
+                           :variable-level-3 "ICE FOG"})
+                        (umm-c/map->ScienceKeyword
+                          {:category "EARTH SCIENCE SERVICES"
+                           :topic "BIOSPHERE"
+                           :term "VEGETATION"
+                           :variable-level-1 "PLANT CHARACTERISTICS"
+                           :variable-level-2 "VEGETATION WATER CONTENT"})]
+     :platforms [(umm-c/map->Platform
+                   {:short-name "SMAP"
+                    :long-name "Soil Moisture Active and Passive Observatory"
+                    :type "Spacecraft"
+                    :instruments [(umm-c/map->Instrument
+                                    {:short-name "SMAP L-BAND RADAR"
+                                     :long-name "SMAP L-Band Radar"})
+                                  (umm-c/map->Instrument
+                                    {:short-name "SMAP L-BAND RADIOMETER"
+                                     :long-name "SMAP L-Band Radiometer"})]})]
+     :spatial-coverage (umm-c/map->SpatialCoverage
+                         {:granule-spatial-representation :geodetic
+                          :spatial-representation :geodetic
+                          :geometries [(mbr/mbr -180.0 87.0 180.0 -87.0)]})
+     :associated-difs ["A_DIF_ID"]
+     :organizations
+     [(umm-c/map->Organization
+        {:type :processing-center
+         :org-name "Jet Propulsion Laboratory"})
+      (umm-c/map->Organization
+        {:type :archive-center
+         :org-name "Alaska Satellite Facility"})]
+     :personnel [(umm-c/map->Personnel
+                   {:first-name nil
+                    :middle-name nil
+                    :last-name "National Aeronautics and Space Administration (NASA)"
+                    :roles ["resourceProvider"]
+                    :contacts nil})
+                 (umm-c/map->Personnel
+                   {:first-name nil
+                    :middle-name nil
+                    :last-name "Jet Propulsion Laboratory"
+                    :roles ["originator"]
+                    :contacts nil})
+                 (umm-c/map->Personnel
+                   {:first-name nil
+                    :middle-name nil
+                    :last-name "Alaska Satellite Facility"
+                    :roles ["distributor"]
+                    :contacts nil})]
+     :collection-progress :in-work}))
+
 (deftest parse-collection-test
-  (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "SPL1AA_002"
-                    :entry-title "SMAP Collection Dataset ID"
-                    :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
-                    :purpose "This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures."
-                    :metadata-language "eng"
-                    :product (umm-c/map->Product
-                               {:short-name "SPL1AA"
-                                :long-name "SMAP Level 1A Parsed Radar Instrument Telemetry"
-                                :version-id "002"
-                                :version-description "The initial version of the Level 1A Radar executable."})
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
-                                                 :update-time (p/parse-datetime "2013-04-05T17:15:00Z")
-                                                 :revision-date-time (p/parse-date "2013-01-02")})
-                    :temporal
-                    (umm-c/map->Temporal
-                      {:range-date-times
-                       [(umm-c/map->RangeDateTime
-                          {:beginning-date-time (p/parse-datetime "2014-10-31T00:00:00.000Z")
-                           :ending-date-time (p/parse-datetime "2018-01-31T00:00:00.000Z")})]
-                       :single-date-times
-                       []
-                       :periodic-date-times []})
-                    :science-keywords [(umm-c/map->ScienceKeyword
-                                         {:category "EARTH SCIENCE"
-                                          :topic "SPECTRAL/ENGINEERING"
-                                          :term "MICROWAVE"
-                                          :variable-level-1 "BRIGHTNESS TEMPERATURE"})
-                                       (umm-c/map->ScienceKeyword
-                                         {:category "EARTH SCIENCE"
-                                          :topic "ATMOSPHERE"
-                                          :term "CLOUDS"
-                                          :variable-level-1 "TROPOSPHERIC/LOW LEVEL CLOUDS (OBSERVED/ANALYZED)"
-                                          :variable-level-2 "FOG"
-                                          :variable-level-3 "ICE FOG"})
-                                       (umm-c/map->ScienceKeyword
-                                         {:category "EARTH SCIENCE SERVICES"
-                                          :topic "BIOSPHERE"
-                                          :term "VEGETATION"
-                                          :variable-level-1 "PLANT CHARACTERISTICS"
-                                          :variable-level-2 "VEGETATION WATER CONTENT"})]
-                    :platforms [(umm-c/map->Platform
-                                  {:short-name "SMAP"
-                                   :long-name "Soil Moisture Active and Passive Observatory"
-                                   :type "Spacecraft"
-                                   :instruments [(umm-c/map->Instrument
-                                                   {:short-name "SMAP L-BAND RADAR"
-                                                    :long-name "SMAP L-Band Radar"})
-                                                 (umm-c/map->Instrument
-                                                   {:short-name "SMAP L-BAND RADIOMETER"
-                                                    :long-name "SMAP L-Band Radiometer"})]})]
-                    :spatial-coverage (umm-c/map->SpatialCoverage
-                                        {:granule-spatial-representation :geodetic
-                                         :spatial-representation :geodetic
-                                         :geometries [(mbr/mbr -180.0 87.0 180.0 -87.0)]})
-                    :associated-difs ["A_DIF_ID"]
-                    :organizations
-                    [(umm-c/map->Organization
-                       {:type :processing-center
-                        :org-name "Jet Propulsion Laboratory"})
-                     (umm-c/map->Organization
-                       {:type :archive-center
-                        :org-name "Alaska Satellite Facility"})]
-                    :personnel [(umm-c/map->Personnel
-                                  {:first-name nil
-                                   :middle-name nil
-                                   :last-name "National Aeronautics and Space Administration (NASA)"
-                                   :roles ["resourceProvider"]
-                                   :contacts nil})
-                                (umm-c/map->Personnel
-                                  {:first-name nil
-                                   :middle-name nil
-                                   :last-name "Jet Propulsion Laboratory"
-                                   :roles ["originator"]
-                                   :contacts nil})
-                                (umm-c/map->Personnel
-                                  {:first-name nil
-                                   :middle-name nil
-                                   :last-name "Alaska Satellite Facility"
-                                   :roles ["distributor"]
-                                   :contacts nil})]
-                    :collection-progress :in-work})
-        actual (c/parse-collection sample-collection-xml)]
-    (is (= expected actual))))
+  (testing "parse collection"
+    (is (= expected-collection (c/parse-collection sample-collection-xml))))
+  (testing "parse temporal"
+    (is (= expected-temporal (c/parse-temporal sample-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

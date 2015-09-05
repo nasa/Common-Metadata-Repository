@@ -5,6 +5,7 @@
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.common.concepts :as c]
+            [cmr.common.util :as u]
             [cmr.common.date-time-parser :as date-time-parser]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
@@ -222,14 +223,12 @@
   "Returns true if the granule identifier (a field in catalog item identities in ACLs) is nil or it
   matches the concept."
   [gran-identifier concept]
-  (let [{:keys [access-value temporal]} gran-identifier
-        umm-temporal (:temporal concept)]
-
+  (let [{:keys [access-value temporal]} gran-identifier]
     (and (if access-value
            (umm-matchers/matches-access-value-filter? concept access-value)
            true)
          (if temporal
-           (when umm-temporal
+           (when-let [umm-temporal (u/lazy-get concept :temporal)]
              (umm-matchers/matches-temporal-filter? :granule umm-temporal temporal))
            true))))
 
@@ -260,7 +259,5 @@
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
   (some #(acl-match-concept? context % concept) acls))
-
-
 
 

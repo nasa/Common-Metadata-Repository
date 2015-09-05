@@ -207,9 +207,9 @@
    :temporal-field (s/eq :acquisition)})
 
 (def access-value-filter-schema
-  {:include-undefined s/Bool
-   (s/optional-key :max-value) Double
-   (s/optional-key :min-value) Double})
+  {(s/optional-key :include-undefined) s/Bool
+   (s/optional-key :max-value) Number
+   (s/optional-key :min-value) Number})
 
 (def collection-identifier-schema
   {(s/optional-key :entry-titles) [s/Str]
