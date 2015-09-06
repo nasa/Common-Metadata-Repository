@@ -205,19 +205,22 @@
                                                                 field value)
                   uuid (get values-to-uuids value)
                   value-map (util/remove-nil-keys
-                              {:value value
-                               :uuid uuid})
+                              {:uuid uuid
+                               :value value})
                   subfield-maps (util/remove-nil-keys
                                   (into {}
+                                        (reverse
                                         (for [subfield-name all-subfield-names
                                               :let [subfields
                                                     (parse-hierarchical-keywords
                                                       (get-hierarchy-from-field keyword-hierarchy subfield-name)
                                                       (filter #(= value (field %)) keywords))]]
-                                          [subfield-name (seq subfields)])))]]
+                                          [subfield-name (seq subfields)]))))]]
         ; (reduce #(assoc value-map (:subfield-name %) (:subfields %))
         (util/remove-nil-keys
-          (merge value-map subfield-maps {:subfields (seq (map name (keys subfield-maps)))}))))))
+          (merge subfield-maps
+                 {:subfields (seq (map name (keys subfield-maps)))}
+                 value-map))))))
 
         ; (if (seq subfields)
         ;   (assoc value-map
