@@ -25,10 +25,11 @@
   (not (some? (seq (keep #(% k-word) remaining-hierarchy)))))
 
 (defn- get-subfields-for-keyword
-  "Figure out which subfield is directly below the current keyword. It is possible the next field
-  in the hierarchy is nil, but further down the chain there is a non-nil field."
-  [remaining-hierarchy keywords field value]
-  (loop [remaining-fields remaining-hierarchy
+  "Figure out the set of all subfields which are directly below the current field for the provided
+  keywords. It is possible the next field in the hierarchy is nil for a keyword, but further down
+  the chain there is a non-nil field."
+  [keyword-hierarchy keywords field value]
+  (loop [remaining-fields keyword-hierarchy
          matching-keywords (filter #(= value (field %)) keywords)
          all-subfields nil]
     (let [next-field (first remaining-fields)
@@ -58,25 +59,24 @@
                                            (when (is-leaf? (rest keyword-hierarchy) k-word)
                                              [(field k-word) (:uuid k-word)]))
                                          keywords))]
-      (for [value unique-values
-            :let [uuid (get values-to-uuids value)
-                  all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy) keywords
-                                                                field value)
-                  subfield-maps (util/remove-nil-keys
-                                  (into {}
-                                        (reverse
-                                          (for [subfield-name all-subfield-names
-                                                :let [subfields
-                                                      (parse-hierarchical-keywords
-                                                        (get-hierarchy-from-field keyword-hierarchy
-                                                                                  subfield-name)
-                                                        (filter #(= value (field %)) keywords))]]
-                                            [subfield-name (seq subfields)]))))]]
-        (util/remove-nil-keys
-          (merge subfield-maps
-                 {:subfields (seq (map name (keys subfield-maps)))
-                  :uuid uuid
-                  :value value}))))))
+      {field
+       (for [value unique-values
+             :let [uuid (get values-to-uuids value)
+                   all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy) keywords
+                                                                 field value)
+                   subfield-maps (util/remove-nil-keys
+                                   (into {}
+                                         (reverse
+                                           (for [subfield-name all-subfield-names]
+                                             (parse-hierarchical-keywords
+                                               (get-hierarchy-from-field keyword-hierarchy
+                                                                         subfield-name)
+                                               (filter #(= value (field %)) keywords))))))]]
+         (util/remove-nil-keys
+           (merge subfield-maps
+                  {:subfields (seq (map name (keys subfield-maps)))
+                   :uuid uuid
+                   :value value})))})))
 
 (def keyword-api-routes
   (context "/keywords" []
@@ -124,7 +124,7 @@
 
   {:a (parse-hierarchical-keywords [:a :b :c :d] test1)}
 
-  (= {:a (parse-hierarchical-keywords [:a :b :c :d] test1)}
+  (= (parse-hierarchical-keywords [:a :b :c :d] test1)
      {:a [{:value "A1"
            :subfields ["b" "d"]
            :b [{:value "B1"
