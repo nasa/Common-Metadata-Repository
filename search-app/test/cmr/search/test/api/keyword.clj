@@ -10,12 +10,8 @@
     (= expected-hierarchy
        (#'cmr.search.api.keyword/parse-hierarchical-keywords keyword-hierarchy keywords))
 
-    ;; TODO - Figure out if I want to handle this case
-    ; "One key"
-    ; [:a :b :c :d] [{:b "B"}] {:b [{:value "B"}]}
-
-    ; "No matching keywords"
-    ; [:a :b] nil {}
+    "No matching keywords"
+    [:a :b] nil {}
 
     "Two keys"
     [:a :b] [{:a "A" :b "B"}] {:a [{:value "A"
@@ -60,8 +56,12 @@
           :b [{:value "B1"}]
           :c [{:value "C1"}]}]}
 
-    ; "UUID test"
+    "Keyword not returned if missing the root of the hierarchy"
+    [:a :b :c :d] [{:b "B"}] {}
 
+    ;; "Basic UUID test"
+    ;; "UUID Test - science keyword style (everything is a leaf)"
 
 
     ))
+
