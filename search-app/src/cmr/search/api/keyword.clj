@@ -8,16 +8,35 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
-            [cmr.search.services.query-execution.facets-results-feature :as frf]))
+            [cmr.search.services.query-execution.facets-results-feature :as frf]
+            [clojure.string :as str]))
+
+(def gcmd-keyword-scheme-mapping
+  "Maps the keyword scheme name used by the CMR to the keyword scheme name used by GCMD."
+  {:archive-centers :providers
+   :providers :providers
+   :science-keywords :science-keywords
+   :platforms :platforms
+   :instruments :instruments})
+
+(def cmr-keyword-scheme-mapping
+  {:archive-centers :archive-centers
+   :providers :archive-centers
+   :science-keywords :science-keywords
+   :platforms :platforms
+   :instruments :instruments})
 
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
   [keyword-scheme]
-  (when-not (some? (keyword-scheme kms/keyword-scheme->field-names))
-    (errors/throw-service-error
-      :bad-request (format "The keyword scheme [%s] is not supported. Valid schemes are: %s"
-                           (name keyword-scheme)
-                           (pr-str (map name (keys kms/keyword-scheme->field-names)))))))
+  (let [valid-keywords (keys gcmd-keyword-scheme-mapping)]
+    (when-not (contains? (set valid-keywords) keyword-scheme)
+      (errors/throw-service-error
+        :bad-request (format "The keyword scheme [%s] is not supported. Valid schemes are: %s, and %s."
+                             (name keyword-scheme)
+                             (str/join
+                               ", " (map #(csk/->snake_case (name %)) (rest valid-keywords)))
+                             (-> valid-keywords first name csk/->snake_case))))))
 
 (defn- is-leaf?
   "Determines if we are at the leaf point within the hierarchy for the provided keyword."
@@ -25,7 +44,7 @@
   (not (some? (seq (keep #(% k-word) remaining-hierarchy)))))
 
 (defn- get-leaf-values-to-uuids
-  "Returns a map of values for the given field to the UUID for that value. If the provied subfield
+  "Returns a map of values for the given field to the UUID for that value. If the provided subfield
   is not at the leaf level for a keyword, the value will not be included in the map."
   [keyword-hierarchy field keywords]
   (into {} (keep (fn [k-word]
@@ -67,7 +86,7 @@
   [keyword-hierarchy subfield-name keywords]
   {:pre (contains? keyword-hierarchy subfield-name)}
   (loop [filtered-keywords keywords
-         keyword-hierarchy (rest keyword-hierarchy)]
+         keyword-hierarchy keyword-hierarchy]
     (let [current-field (first keyword-hierarchy)]
       (if (= current-field subfield-name)
         filtered-keywords
@@ -91,13 +110,10 @@
                                                 (reverse
                                                   (for [subfield-name all-subfield-names]
                                                     (parse-hierarchical-keywords
-                                                      (get-hierarchy-from-field keyword-hierarchy
-                                                                                subfield-name)
-
-                                                      ;; Figure out which fields were skipped and
-                                                      ;; filter to only include the nils
+                                                      (get-hierarchy-from-field
+                                                        keyword-hierarchy subfield-name)
                                                       (filter-keywords-with-non-nil-values
-                                                        keyword-hierarchy
+                                                        (rest keyword-hierarchy)
                                                         subfield-name
                                                         (filter #(= value (field %)) keywords)))))))]]
                 (util/remove-nil-keys
@@ -109,14 +125,18 @@
 (def keyword-api-routes
   (context "/keywords" []
     ;; Return a list of keywords for the given scheme
-    (GET "/:keyword-scheme" {{:keys [keyword-scheme] :as params} :params
+    (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
                              request-context :request-context}
-      (let [keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
-        (validate-keyword-scheme keyword-scheme)
-        (let [keywords (vals (keyword-scheme (kf/get-gcmd-keywords-map request-context)))]
+      (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
+        (validate-keyword-scheme orig-keyword-scheme)
+        (let [cmr-keyword-scheme (orig-keyword-scheme cmr-keyword-scheme-mapping)
+              gcmd-keyword-scheme (orig-keyword-scheme gcmd-keyword-scheme-mapping)
+              keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map request-context)))
+              hierarchical-keywords (parse-hierarchical-keywords
+                                      (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
           {:staus 200
            :headers {"Content-Type" (mt/format->mime-type :json)}
-           :body (json/generate-string keywords)})))))
+           :body (json/generate-string hierarchical-keywords)})))))
 
 (comment
 

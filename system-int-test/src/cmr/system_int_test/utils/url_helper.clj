@@ -270,6 +270,11 @@
   []
   (format "http://localhost:%s/provider_holdings" (transmit-config/search-port)))
 
+(defn search-keywords-url
+  "Returns the URL for retrieving controlled keywords."
+  [keyword-scheme]
+  (format "http://localhost:%s/keywords/%s" (transmit-config/search-port) (name keyword-scheme)))
+
 (defn retrieve-concept-url
   ([type concept-id] (retrieve-concept-url type concept-id nil))
   ([type concept-id revision-id]
