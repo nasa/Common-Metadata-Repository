@@ -6,7 +6,8 @@
             [cmr.common.cache :as cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.search.models.query :as q]
-            [cmr.search.services.query-execution :as qe]))
+            [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
 
 (def initial-cache-state
   "The initial cache state."
@@ -23,12 +24,16 @@
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
-  (let [query (q/query {:concept-type :collection
+  (let [result-processor (fn [_ _ elastic-item]
+                           (assoc (acl-rhh/parse-elastic-item :collection elastic-item)
+                                  :concept-id (:_id elastic-item)))
+        query (q/query {:concept-type :collection
                         :condition q/match-all
                         :skip-acls? true
                         :page-size :unlimited
                         :result-format :query-specified
-                        :fields [:entry-title :access-value :provider-id]})]
+                        :fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                        :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
 
 (defn- fetch-collections-map

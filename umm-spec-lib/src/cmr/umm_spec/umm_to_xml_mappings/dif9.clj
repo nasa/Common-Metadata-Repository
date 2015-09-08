@@ -77,6 +77,12 @@
                [:Value {:type "ParameterValueAccuracy"} (xpath "ParameterValueAccuracy")]
                [:Value {:type "ValueAccuracyExplanation"} (xpath "ValueAccuracyExplanation")]
                [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])
-    generate-collection-data-type]])
+    generate-collection-data-type
+    [:Metadata
+     [:Name "ProcessingLevelId"]
+     [:Value (xpath "/ProcessingLevel/Id")]]
+    [:Metadata
+     [:Name "ProcessingLevelDescription"]
+     [:Value (xpath "/ProcessingLevel/ProcessingLevelDescription")]]]])
 
 

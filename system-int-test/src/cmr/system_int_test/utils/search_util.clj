@@ -31,6 +31,14 @@
             [cmr.system-int-test.data2.aql-additional-attribute]
             [cmr.system-int-test.data2.facets :as f]))
 
+(defn csv-response->granule-urs
+  "Parses the csv response and returns the first column which is the granule ur."
+  [csv-response]
+  (->> (str/split (:body csv-response) #"\n")
+       (drop 1)
+       (map #(str/split % #","))
+       (map first)))
+
 (defn csv->tuples
   "Convert a comma-separated-value string into a set of tuples to be use with find-refs."
   [csv]

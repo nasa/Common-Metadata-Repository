@@ -179,8 +179,19 @@
           [:gmd:EX_TemporalExtent
            [:gmd:extent
             [:gml:TimeInstant {:gml:id gen-id}
-             [:gml:timePosition (xpath ".")]]]]])]]]]
-
+             [:gml:timePosition (xpath ".")]]]]])]]
+     [:gmd:processingLevel
+      [:gmd:MD_Identifier
+       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
+       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
+   [:gmd:contentInfo
+    [:gmd:MD_ImageDescription
+     [:gmd:attributeDescription ""]
+     [:gmd:contentType ""]
+     [:gmd:processingLevelCode
+      [:gmd:MD_Identifier
+       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
+       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
    [:gmd:dataQualityInfo
     [:gmd:DQ_DataQuality
      [:gmd:scope
@@ -237,7 +248,6 @@
               [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
                "Echo Additional Attributes"]]
              (make-characteristics-mapping "instrumentInformation")
-
              ;; The Sensors mapping is very similar to the Instruments mapping above.
 
              (for-each "Sensors"

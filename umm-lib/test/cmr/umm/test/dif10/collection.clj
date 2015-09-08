@@ -380,105 +380,112 @@
     <Product_Flag>Not provided</Product_Flag>
    </DIF>")
 
+(def expected-temporal
+  (umm-c/map->Temporal
+    {:range-date-times
+     [(umm-c/map->RangeDateTime
+        {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
+         :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+     :single-date-times []
+     :periodic-date-times []}))
+
+(def expected-collection
+  (umm-c/map->UmmCollection
+    {:entry-id "minimal_dif_dataset"
+     :entry-title "A minimal dif dataset"
+     :summary "summary of the dataset"
+     :purpose "A grand purpose"
+     :product (umm-c/map->Product
+                {:short-name "minimal_dif_dataset"
+                 :long-name "A minimal dif dataset"
+                 :version-id "001"
+                 :collection-data-type "SCIENCE_QUALITY"})
+     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
+                                  :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
+     :publication-references [(umm-c/map->PublicationReference
+                                {:author "author"
+                                 :publication-date "2015"
+                                 :title "title"
+                                 :series "1"
+                                 :edition "2"
+                                 :volume "3"
+                                 :issue "4"
+                                 :report-number "5"
+                                 :publication-place "Frederick, MD"
+                                 :publisher "publisher"
+                                 :pages "678"
+                                 :isbn "978-0-394-80001-1"
+                                 :related-url "http://example.com"
+                                 :other-reference-details "blah"})]
+     :platforms [(umm-c/map->Platform
+                   {:short-name "Short Name"
+                    :long-name "Long Name"
+                    :type "In Situ Land-based Platforms"
+                    :instruments [(umm-c/map->Instrument
+                                    {:short-name "Short Name"})]})]
+     :projects [(umm-c/map->Project
+                  {:short-name "short name"})]
+     :temporal expected-temporal
+     :science-keywords [(umm-c/map->ScienceKeyword
+                          {:category "EARTH SCIENCE"
+                           :topic "CRYOSPHERE"
+                           :term "SEA ICE"})]
+     :related-urls [(umm-c/map->RelatedURL
+                      {:url "http://www.foo.com"})]
+     :organizations [(umm-c/map->Organization
+                       {:type :archive-center
+                        :org-name "EU/JRC/IES"})]
+     :spatial-coverage (umm-c/map->SpatialCoverage
+                         {:granule-spatial-representation :geodetic
+                          :spatial-representation :cartesian,
+                          :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
+     :personnel [(umm-c/map->Personnel
+                   {:first-name "first name"
+                    :last-name "last name"
+                    :middle-name "middle name"
+                    :roles ["TECHNICAL CONTACT"]
+                    :contacts [(umm-c/map->Contact
+                                 {:type :email
+                                  :value "dssweb@ucar.edu"})]})]
+     :product-specific-attributes [(umm-c/map->ProductSpecificAttribute
+                                     {:name "String add attrib"
+                                      :description "something string"
+                                      :data-type :string
+                                      :parameter-range-begin "alpha"
+                                      :parameter-range-end "bravo"
+                                      :value "alpha1"
+                                      :parsed-parameter-range-begin "alpha"
+                                      :parsed-parameter-range-end "bravo"
+                                      :parsed-value "alpha1"})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:name "Float add attrib"
+                                      :description "something float"
+                                      :data-type :float
+                                      :parameter-range-begin "0.1"
+                                      :parameter-range-end "100.43"
+                                      :value "12.3"
+                                      :parsed-parameter-range-begin 0.1
+                                      :parsed-parameter-range-end 100.43
+                                      :parsed-value 12.3})]
+     :collection-associations [(umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-237"
+                                  :version-id "1"})
+                               (umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-238"
+                                  :version-id "1"})
+                               (umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-239"
+                                  :version-id "1"})]
+     :collection-progress :in-work
+     :quality "Good quality"
+     :use-constraints "No Constraints"}))
+
 (deftest parse-collection-test
-  (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "minimal_dif_dataset"
-                    :entry-title "A minimal dif dataset"
-                    :summary "summary of the dataset"
-                    :purpose "A grand purpose"
-                    :product (umm-c/map->Product
-                               {:short-name "minimal_dif_dataset"
-                                :long-name "A minimal dif dataset"
-                                :version-id "001"
-                                :collection-data-type "SCIENCE_QUALITY"})
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-datetime "2000-03-24T22:20:41-05:00")
-                                                 :update-time (p/parse-datetime "2000-03-24T22:20:41-05:00")})
-                    :publication-references [(umm-c/map->PublicationReference
-                                               {:author "author"
-                                                :publication-date "2015"
-                                                :title "title"
-                                                :series "1"
-                                                :edition "2"
-                                                :volume "3"
-                                                :issue "4"
-                                                :report-number "5"
-                                                :publication-place "Frederick, MD"
-                                                :publisher "publisher"
-                                                :pages "678"
-                                                :isbn "978-0-394-80001-1"
-                                                :related-url "http://example.com"
-                                                :other-reference-details "blah"})]
-                    :platforms [(umm-c/map->Platform
-                                  {:short-name "Short Name"
-                                   :long-name "Long Name"
-                                   :type "In Situ Land-based Platforms"
-                                   :instruments [(umm-c/map->Instrument
-                                                  {:short-name "Short Name"})]})]
-                    :projects [(umm-c/map->Project
-                                 {:short-name "short name"})]
-                    :temporal (umm-c/map->Temporal
-                                {:range-date-times
-                                 [(umm-c/map->RangeDateTime
-                                    {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-                                     :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
-                                 :single-date-times []
-                                 :periodic-date-times []})
-                    :science-keywords [(umm-c/map->ScienceKeyword
-                                         {:category "EARTH SCIENCE"
-                                          :topic "CRYOSPHERE"
-                                          :term "SEA ICE"})]
-                    :related-urls [(umm-c/map->RelatedURL
-                                     {:url "http://www.foo.com"})]
-                    :organizations [(umm-c/map->Organization
-                                      {:type :archive-center
-                                       :org-name "EU/JRC/IES"})]
-                    :spatial-coverage (umm-c/map->SpatialCoverage
-                                        {:granule-spatial-representation :geodetic
-                                         :spatial-representation :cartesian,
-                                         :geometries [(m/mbr -180.0 90.0 180.0 -90.0)]})
-                    :personnel [(umm-c/map->Personnel
-                                 {:first-name "first name"
-                                  :last-name "last name"
-                                  :middle-name "middle name"
-                                  :roles ["TECHNICAL CONTACT"]
-                                  :contacts [(umm-c/map->Contact
-                                               {:type :email
-                                                :value "dssweb@ucar.edu"})]})]
-                    :product-specific-attributes [(umm-c/map->ProductSpecificAttribute
-                                                    {:name "String add attrib"
-                                                     :description "something string"
-                                                     :data-type :string
-                                                     :parameter-range-begin "alpha"
-                                                     :parameter-range-end "bravo"
-                                                     :value "alpha1"
-                                                     :parsed-parameter-range-begin "alpha"
-                                                     :parsed-parameter-range-end "bravo"
-                                                     :parsed-value "alpha1"})
-                                                  (umm-c/map->ProductSpecificAttribute
-                                                    {:name "Float add attrib"
-                                                     :description "something float"
-                                                     :data-type :float
-                                                     :parameter-range-begin "0.1"
-                                                     :parameter-range-end "100.43"
-                                                     :value "12.3"
-                                                     :parsed-parameter-range-begin 0.1
-                                                     :parsed-parameter-range-end 100.43
-                                                     :parsed-value 12.3})]
-                    :collection-associations [(umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-237"
-                                                 :version-id "1"})
-                                              (umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-238"
-                                                 :version-id "1"})
-                                              (umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-239"
-                                                 :version-id "1"})]
-                    :collection-progress :in-work
-                    :quality "Good quality"
-                    :use-constraints "No Constraints"})
-        actual (c/parse-collection dif10-collection-xml)]
-    (is (= expected actual))))
+  (testing "parse collection"
+    (is (= expected-collection (c/parse-collection dif10-collection-xml))))
+  (testing "parse collection temporal"
+    (is (= expected-temporal (c/parse-temporal dif10-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

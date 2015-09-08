@@ -13,96 +13,102 @@
             [cmr.umm.iso-mends.granule :as iso-mends-g]
             [cmr.umm.iso-smap.core :as iso-smap]
             [cmr.umm.iso-smap.collection :as iso-smap-c]
-            [cmr.umm.iso-smap.granule :as iso-smap-g]))
+            [cmr.umm.iso-smap.granule :as iso-smap-g]
+            [cmr.umm.collection]
+            [cmr.umm.granule])
+  (:import cmr.umm.collection.UmmCollection
+           cmr.umm.granule.UmmGranule))
 
-(defmulti validate-concept-xml
+(defmulti item->concept-type
+  "Returns the concept type of the item"
+  (fn [item]
+    (type item)))
+
+(defmethod item->concept-type UmmCollection
+  [item]
+  :collection)
+
+(defmethod item->concept-type UmmGranule
+  [item]
+  :granule)
+
+(defn validate-concept-xml
   "Validates the concept metadata against its xml schema."
-  (fn [concept]
-    [(keyword (:concept-type concept)) (:format concept)]))
-
-(defmethod validate-concept-xml [:collection mt/echo10]
   [concept]
-  (echo10-c/validate-xml (:metadata concept)))
+  (let [{:keys [concept-type format metadata]} concept]
+    (case concept-type
+      :collection (condp = format
+                    mt/echo10 (echo10-c/validate-xml metadata)
+                    mt/dif (dif-c/validate-xml metadata)
+                    mt/dif10 (dif10-c/validate-xml metadata)
+                    mt/iso (iso-mends-c/validate-xml metadata)
+                    mt/iso-smap (iso-smap-c/validate-xml metadata))
 
-(defmethod validate-concept-xml [:granule mt/echo10]
-  [concept]
-  (echo10-g/validate-xml (:metadata concept)))
+      :granule (condp = format
+                 mt/echo10 (echo10-g/validate-xml metadata)
+                 mt/iso-smap (iso-smap-g/validate-xml metadata)))))
 
-(defmethod validate-concept-xml [:collection mt/dif]
-  [concept]
-  (dif-c/validate-xml (:metadata concept)))
-
-(defmethod validate-concept-xml [:collection mt/dif10]
-  [concept]
-  (dif10-c/validate-xml (:metadata concept)))
-
-(defmethod validate-concept-xml [:collection mt/iso]
-  [concept]
-  (iso-mends-c/validate-xml (:metadata concept)))
-
-(defmethod validate-concept-xml [:collection mt/iso-smap]
-  [concept]
-  (iso-smap-c/validate-xml (:metadata concept)))
-
-(defmethod validate-concept-xml [:granule mt/iso-smap]
-  [concept]
-  (iso-smap-g/validate-xml (:metadata concept)))
-
-(defmulti parse-concept
+(defn parse-concept
   "Convert a metadata db concept map into a umm record by parsing its metadata."
-  (fn [concept]
-    [(keyword (:concept-type concept)) (:format concept)]))
-
-(defmethod parse-concept [:collection mt/echo10]
   [concept]
-  (echo10-c/parse-collection (:metadata concept)))
+  (let [{:keys [concept-type format metadata]} concept]
+    (condp = (keyword concept-type)
+      :collection (condp = format
+                    mt/echo10 (echo10-c/parse-collection metadata)
+                    mt/dif (dif-c/parse-collection metadata)
+                    mt/dif10 (dif10-c/parse-collection metadata)
+                    mt/iso (iso-mends-c/parse-collection metadata)
+                    mt/iso-smap (iso-smap-c/parse-collection metadata))
 
-(defmethod parse-concept [:granule mt/echo10]
+      :granule (condp = format
+                 mt/echo10 (echo10-g/parse-granule metadata)
+                 mt/iso-smap (iso-smap-g/parse-granule metadata)))))
+
+(defn parse-concept-temporal
+  "Convert a metadata db concept map into the umm temporal record by parsing its metadata."
   [concept]
-  (echo10-g/parse-granule (:metadata concept)))
+  (let [{:keys [concept-type format metadata]} concept]
+    (condp = (keyword concept-type)
+      :collection (condp = format
+                    mt/echo10 (echo10-c/parse-temporal metadata)
+                    mt/dif (dif-c/parse-temporal metadata)
+                    mt/dif10 (dif10-c/parse-temporal metadata)
+                    mt/iso (iso-mends-c/parse-temporal metadata)
+                    mt/iso-smap (iso-smap-c/parse-temporal metadata))
 
-(defmethod parse-concept [:collection mt/dif]
+      :granule (condp = format
+                 mt/echo10 (echo10-g/parse-temporal metadata)
+                 mt/iso-smap (iso-smap-g/parse-temporal metadata)))))
+
+(defn parse-concept-access-value
+  "Convert a metadata db concept map into the access value by parsing its metadata."
   [concept]
-  (dif-c/parse-collection (:metadata concept)))
+  (let [{:keys [concept-type format metadata]} concept]
+    (condp = (keyword concept-type)
+      :collection (condp = format
+                    mt/echo10 (echo10-c/parse-access-value metadata)
+                    mt/dif nil
+                    mt/dif10 nil
+                    mt/iso (iso-mends-c/parse-access-value metadata)
+                    mt/iso-smap nil)
 
-(defmethod parse-concept [:collection mt/dif10]
-  [concept]
-  (dif10-c/parse-collection (:metadata concept)))
+      :granule (condp = format
+                 mt/echo10 (echo10-g/parse-access-value metadata)
+                 mt/iso-smap (iso-smap-g/parse-access-value metadata)))))
 
-(defmethod parse-concept [:collection mt/iso]
-  [concept]
-  (iso-mends-c/parse-collection (:metadata concept)))
-
-(defmethod parse-concept [:collection mt/iso-smap]
-  [concept]
-  (iso-smap-c/parse-collection (:metadata concept)))
-
-(defmethod parse-concept [:granule mt/iso-smap]
-  [concept]
-  (iso-smap-g/parse-granule (:metadata concept)))
-
-(defmulti umm->xml
+(defn umm->xml
   "Convert a umm record into xml of a given format."
-  (fn [umm format]
-    format))
+  [umm metadata-format]
+  (condp = metadata-format
+    :echo10 (echo10/umm->echo10-xml umm)
+    :dif (dif/umm->dif-xml umm)
+    :dif10 (dif10/umm->dif10-xml umm)
+    :iso19115 (iso-mends/umm->iso-mends-xml umm)
+    :iso-smap (iso-smap/umm->iso-smap-xml umm)))
 
-(defmethod umm->xml :echo10
-  [umm format]
-  (echo10/umm->echo10-xml umm))
 
-(defmethod umm->xml :dif
-  [umm format]
-  (dif/umm->dif-xml umm))
 
-(defmethod umm->xml :dif10
-  [umm format]
-  (dif10/umm->dif10-xml umm))
 
-(defmethod umm->xml :iso19115
-  [umm format]
-  (iso-mends/umm->iso-mends-xml umm))
 
-(defmethod umm->xml :iso-smap
-  [umm format]
-  (iso-smap/umm->iso-smap-xml umm))
+
 

@@ -5,11 +5,14 @@
             [cmr.search.services.acl-service :as acl-service]
             [cmr.search.services.acls.acl-helper :as acl-helper]
             [cmr.common.concepts :as c]
+            [cmr.common.util :as u]
+            [cmr.common.date-time-parser :as date-time-parser]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
-            [cmr.acl.collection-matchers :as coll-matchers]
+            [cmr.acl.umm-matchers :as umm-matchers]
             [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.services.errors :as errors]
+            [cmr.common.time-keeper :as tk]
             [clojure.set :as set]))
 
 (defmulti filter-applicable-granule-acls
@@ -45,7 +48,7 @@
                        (some (coll-ids-by-prov provider-id) acl-coll-ids)))))
           acls))
 
-(defn access-value->query-condition
+(defn- access-value->query-condition
   "Converts an access value filter from an ACL into a query condition."
   [access-value-filter]
   (when-let [{:keys [include-undefined min-value max-value]} access-value-filter]
@@ -57,6 +60,27 @@
       (if (and value-cond include-undefined-cond)
         (gc/or-conds [value-cond include-undefined-cond])
         (or value-cond include-undefined-cond)))))
+
+(defn- temporal->query-condition
+  "Converts a temporal filter from an ACL into a query condition"
+  [temporal-filter]
+  (when-not (= :acquisition (:temporal-field temporal-filter))
+    (errors/internal-error!
+      (str "Found acl with unsupported temporal field " (:temporal-field temporal-filter))))
+
+  (let [{:keys [start-date end-date mask]} temporal-filter]
+    (case mask
+      ;; The granule just needs to intersect with the date range.
+      :intersect (q/map->TemporalCondition {:start-date start-date
+                                             :end-date end-date
+                                             :exclusive? false})
+      ;; Disjoint is intersects negated.
+      :disjoint (q/->NegatedCondition (temporal->query-condition
+                                        (assoc temporal-filter :mask :intersect)))
+      ;; The granules temporal must start and end within the temporal range
+      :contains (gc/and-conds [(q/date-range-condition :start-date start-date end-date false)
+                               (q/->ExistCondition :end-date)
+                               (q/date-range-condition :end-date start-date end-date false)]))))
 
 (defmulti provider->collection-condition
   "Converts a provider id from an ACL into a collection query condition that will find all collections
@@ -121,26 +145,30 @@
   passed in are limited to the provider of the collection identifier."
   [context query-coll-ids provider-id collection-identifier]
   (let [colls-in-prov-cond (provider->collection-condition query-coll-ids provider-id)]
-    (if-let [{:keys [entry-titles access-value]} collection-identifier]
+    (if-let [{:keys [entry-titles access-value temporal]} collection-identifier]
       (let [entry-titles-cond (provider+entry-titles->collection-condition
                                 context query-coll-ids provider-id entry-titles)
             access-value-cond (some-> (access-value->query-condition access-value)
-                                      q/->CollectionQueryCondition)]
-        (if (and entry-titles-cond access-value-cond)
-          (gc/and-conds [entry-titles-cond access-value-cond])
-          (or entry-titles-cond
-              ;; If there's no entry title condition the access value condition must be scoped
-              ;; by provider
-              (gc/and-conds [colls-in-prov-cond access-value-cond]))))
+                                      q/->CollectionQueryCondition)
+            temporal-cond (some-> temporal temporal->query-condition q/->CollectionQueryCondition)]
+
+        ;; If there's no entry title condition the other conditions must be scoped by provider
+        (gc/and-conds (remove nil? [(or entry-titles-cond colls-in-prov-cond)
+                                    access-value-cond
+                                    temporal-cond])))
       ;; No other collection info provided so every collection in provider is possible
       colls-in-prov-cond)))
 
 (defn granule-identifier->query-cond
-  "Converts an acl granule identifier into a query condition."
+  "Converts an acl granule identifier into a query condition. Returns nil if no granule identifier
+  is present."
   [granule-identifier]
-  (some-> granule-identifier
-          :access-value
-          access-value->query-condition))
+  (when-let [{:keys [access-value temporal]} granule-identifier]
+    (let [access-value-cond (some-> access-value access-value->query-condition)
+          temporal-cond (some-> temporal temporal->query-condition)]
+      (if (and access-value-cond temporal-cond)
+        (gc/and-conds access-value-cond temporal-cond)
+        (or access-value-cond temporal-cond)))))
 
 (defn acl->query-condition
   "Converts an acl into the equivalent query condition. Ths can return nil if the doesn't grant anything.
@@ -188,61 +216,48 @@
       context
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
 
-
-(comment
-
-  (def query (cmr.common.dev.capture-reveal/reveal query))
-  (def context (cmr.common.dev.capture-reveal/reveal context))
-
-  (acl-service/add-acl-conditions-to-query context query)
-
-)
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; acls match concept functions
 
 (defn granule-identifier-matches-concept?
-  "Returns true if the granule identifier is nil or it matches the concept."
-  [gran-id concept]
-  (if-let [{:keys [min-value max-value include-undefined]} (:access-value gran-id)]
-    (let [access-value (:access-value concept)]
-      (or (and (nil? access-value) include-undefined)
-          (and access-value
-               (or (and (and min-value max-value)
-                        (>= access-value min-value)
-                        (<= access-value max-value))
-                   (and min-value (nil? max-value) (>= access-value min-value))
-                   (and max-value (nil? min-value) (<= access-value max-value))))))
-    true))
+  "Returns true if the granule identifier (a field in catalog item identities in ACLs) is nil or it
+  matches the concept."
+  [gran-identifier concept]
+  (let [{:keys [access-value temporal]} gran-identifier]
+    (and (if access-value
+           (umm-matchers/matches-access-value-filter? concept access-value)
+           true)
+         (if temporal
+           (when-let [umm-temporal (u/lazy-get concept :temporal)]
+             (umm-matchers/matches-temporal-filter? :granule umm-temporal temporal))
+           true))))
 
 (defn collection-identifier-matches-concept?
-  "Returns true if the collection identifier is nil or it matches the concept."
-  [context coll-id concept]
-  (if coll-id
+  "Returns true if the collection identifier (a field in catalog item identities in ACLs) is nil or
+  it matches the concept."
+  [context coll-identifier concept]
+  (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
           collection (coll-cache/get-collection context collection-concept-id)]
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
                   collection-concept-id)))
-      (coll-matchers/coll-matches-collection-identifier? collection coll-id))
+      (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))
     true))
 
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
   (let [{provider-id :provider-id
-         gran-id :granule-identifier
-         coll-id :collection-identifier} (:catalog-item-identity acl)]
+         gran-identifier :granule-identifier
+         coll-identifier :collection-identifier} (:catalog-item-identity acl)]
     (and (= provider-id (:provider-id concept))
-         (granule-identifier-matches-concept? gran-id concept)
-         (collection-identifier-matches-concept? context coll-id concept))))
+         (granule-identifier-matches-concept? gran-identifier concept)
+         (collection-identifier-matches-concept? context coll-identifier concept))))
 
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
   (some #(acl-match-concept? context % concept) acls))
-
-
 
 

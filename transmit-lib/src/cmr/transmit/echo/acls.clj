@@ -4,9 +4,11 @@
             [cmr.transmit.echo.conversion :as c]
             [cmr.transmit.echo.providers :as echo-providers]
             [cmr.common.services.errors :as errors]
+            [cmr.common.log :refer [debug warn error]]
             [cmr.common.util :as util :refer [defn-timed]]
             [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [schema.core :as s]))
 
 (defn- lookup-provider-id
   "Fetches the provider id associated with a specific provider guid. If the provider does not exist
@@ -52,6 +54,19 @@
   [acl-type]
   (csk/->SCREAMING_SNAKE_CASE_STRING acl-type))
 
+(defn- validate-and-filter-acls
+  "Validates all the acls and filters out the ones that are not supported by the CMR."
+  [acls]
+  (reduce (fn [safe-acls acl]
+            (if-let [errors (s/check c/acl-schema acl)]
+              (do
+                (error (format "Ignoring ACL that is not supported by the CMR. Errors: %s ACL: %s"
+                               (pr-str errors) (pr-str acl)))
+                safe-acls)
+              (conj safe-acls acl)))
+          []
+          acls))
+
 (defn-timed get-acls-by-types
   "Fetches ACLs from ECHO by object identity type."
   ([context types]
@@ -69,7 +84,13 @@
                                        :reference false}
                                       (when provider-id {:provider_id provider-id}))})]
      (case status
-       200 (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
-                       c/echo-acl->cmr-acl)
-                 acls)
+       200 (let [acls (mapv (comp (partial convert-provider-guid-to-id-in-acl provider-guid-id-map)
+                                  c/echo-acl->cmr-acl)
+                            acls)]
+             (validate-and-filter-acls acls)
+             acls)
        (r/unexpected-status-error! status body)))))
+
+
+
+

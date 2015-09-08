@@ -40,14 +40,6 @@
                         attribs)]
      (d/ingest prov (dg/granule coll attribs)))))
 
-(defn csv-response->granule-urs
-  "Parses the csv response and returns the first column which is the granule ur."
-  [csv-response]
-  (->> (str/split (:body csv-response) #"\n")
-       (drop 1)
-       (map #(str/split % #","))
-       (map first)))
-
 (comment
   (do
     (dev-sys-util/reset)
@@ -276,7 +268,7 @@
       (testing "all items"
         (let [expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
-                 (csv-response->granule-urs
+                 (search/csv-response->granule-urs
                    (search/find-concepts-csv :granule {:token guest-token
                                                     :page-size 100}))))))
 
@@ -284,7 +276,7 @@
         (let [concept-ids (map :concept-id all-grans)
               expected-granule-urs (map :granule-ur guest-permitted-granules)]
           (is (= expected-granule-urs
-                 (csv-response->granule-urs
+                 (search/csv-response->granule-urs
                    (search/find-concepts-csv :granule {:token guest-token
                                                     :page-size 100
                                                     :concept-id concept-ids})))))))

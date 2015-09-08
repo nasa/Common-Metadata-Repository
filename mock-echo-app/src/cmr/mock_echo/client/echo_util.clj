@@ -53,13 +53,19 @@
   ([entry-titles]
    (coll-id entry-titles nil))
   ([entry-titles access-value-filter]
+   (coll-id entry-titles access-value-filter nil))
+  ([entry-titles access-value-filter temporal]
    {:entry-titles entry-titles
-    :access-value access-value-filter}))
+    :access-value access-value-filter
+    :temporal temporal}))
 
 (defn gran-id
   "Creates an ACL granule identifier"
-  [access-value-filter]
-  {:access-value access-value-filter})
+  ([access-value-filter]
+   (gran-id access-value-filter nil))
+  ([access-value-filter temporal]
+   {:access-value access-value-filter
+    :temporal temporal}))
 
 (defn catalog-item-id
   "Creates a catalog item identity"
@@ -94,14 +100,9 @@
 
 (defn grant
   "Creates an ACL in mock echo with the id, access control entries, identities"
-  ([context aces catalog-item-identity object-identity-type acl-type]
-   (grant context aces catalog-item-identity object-identity-type acl-type nil))
-  ([context aces catalog-item-identity object-identity-type acl-type provider-guid]
-   (let [acl {:aces aces
-              :catalog-item-identity catalog-item-identity
-              object-identity-type (util/remove-nil-keys {:provider-guid provider-guid
-                                                          :target acl-type})}]
-     (echo-client/create-acl context acl))))
+  [context aces object-identity-type object-identity]
+  (echo-client/create-acl context {:aces aces
+                                   object-identity-type object-identity}))
 
 (defn ungrant
   "Removes the acl"
@@ -128,7 +129,7 @@
   "Creates an ACL in mock echo granting guests and registered users access to catalog items
   identified by the catalog-item-identity"
   [context catalog-item-identity]
-  (grant context [guest-ace registered-user-ace] catalog-item-identity :system-object-identity nil))
+  (grant context [guest-ace registered-user-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-all-ingest
   "Creates an ACL in mock echo granting guests and registered users access to ingest for the given
@@ -139,28 +140,27 @@
            :user-type :guest}
           {:permissions [:update :delete]
            :user-type :registered}]
-         nil
          :provider-object-identity
-         ingest-management-acl
-         provider-guid))
+         {:target ingest-management-acl
+          :provider-guid provider-guid}))
 
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
   [context catalog-item-identity]
-  (grant context [guest-ace] catalog-item-identity :system-object-identity nil))
+  (grant context [guest-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-registered-users
   "Creates an ACL in mock echo granting all registered users access to catalog items identified by
   the catalog-item-identity"
   [context catalog-item-identity]
-  (grant context [registered-user-ace] catalog-item-identity :system-object-identity nil))
+  (grant context [registered-user-ace] :catalog-item-identity catalog-item-identity))
 
 (defn grant-group
   "Creates an ACL in mock echo granting users in the group access to catalog items identified by
   the catalog-item-identity"
   [context group-guid catalog-item-identity]
-  (grant context [(group-ace group-guid [:read])] catalog-item-identity :system-object-identity nil))
+  (grant context [(group-ace group-guid [:read])] :catalog-item-identity catalog-item-identity))
 
 (defn grant-group-admin
   "Creates an ACL in mock echo granting users in the group the given permissions for system ingest
@@ -168,9 +168,8 @@
   [context group-guid & permission-types]
   (grant context [(group-ace group-guid (or (seq permission-types)
                                             [:read :update]))]
-         nil
          :system-object-identity
-         ingest-management-acl))
+         {:target ingest-management-acl}))
 
 (defn grant-group-provider-admin
   "Creates an ACL in mock echo granting users in the group the given permissions to ingest for the
@@ -178,9 +177,8 @@
   [context group-guid provider-guid & permission-types]
   (grant context [(group-ace group-guid (or (seq permission-types)
                                             [:update :delete]))]
-         nil
          :provider-object-identity
-         ingest-management-acl
-         provider-guid))
+         {:target ingest-management-acl
+          :provider-guid provider-guid}))
 
 

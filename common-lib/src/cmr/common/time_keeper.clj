@@ -32,13 +32,12 @@
 (defn freeze-resume-time-fixture
   "This is a clojure.test fixture that will freeze time then clear any time override at the end
   of the test."
-  []
-  (fn [f]
-    (try
-      (freeze-time!)
-      (f)
-      (finally
-        (clear-current-time!)))))
+  [f]
+  (try
+    (freeze-time!)
+    (f)
+    (finally
+      (clear-current-time!))))
 
 (defn now
   "Returns the current time"

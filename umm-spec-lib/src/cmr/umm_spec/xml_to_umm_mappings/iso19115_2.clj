@@ -120,6 +120,16 @@
              :TemporalKeywords temporal-keywords-xpath
              :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
              :TemporalExtents temporal-mappings
+             :ProcessingLevel (object
+                                {:Id
+                                 (char-string-xpath
+                                   md-data-id-base-xpath
+                                   "/gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+
+                                 :ProcessingLevelDescription
+                                 (char-string-xpath
+                                   md-data-id-base-xpath
+                                   "/gmd:processingLevel/gmd:MD_Identifier/gmd:description")})
              :Platforms (for-each platforms-xpath
                           (object {:ShortName (xpath platform-short-name-xpath)
                                    :LongName (xpath platform-long-name-xpath)

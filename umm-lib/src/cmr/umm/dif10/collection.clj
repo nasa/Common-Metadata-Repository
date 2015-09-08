@@ -77,6 +77,11 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  (t/xml-elem->Temporal (x/parse-str xml)))
+
 (def dif10-header-attributes
   "The set of attributes that go on the dif root element"
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -87,7 +92,7 @@
   UmmCollection
   (umm->dif10-xml
     ([collection]
-     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [version-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords
                    platforms product-specific-attributes projects related-urls spatial-coverage

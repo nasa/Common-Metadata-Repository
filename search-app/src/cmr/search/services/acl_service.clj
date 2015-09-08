@@ -22,20 +22,23 @@
   of concept metadata as returned by the metadata db. The following fields are required for each
   concept depending on type.
   Granules:
-   * :concept-type
-   * :provider-id
-   * :access-value
-   * :collection-concept-id
+  * :concept-type
+  * :provider-id
+  * :access-value
+  * :collection-concept-id
   Collections:
-   * :concept-type
-   * :provider-id
-   * :access-value
-   * :entry-title"
+  * :concept-type
+  * :provider-id
+  * :access-value
+  * :entry-title"
   [context concepts]
   (when (seq concepts)
     (let [acls (acl-helper/get-acls-applicable-to-token context)
           applicable-field (-> concepts first :concept-type concept-type->applicable-field)
-          applicable-acls (filter (comp applicable-field :catalog-item-identity) acls)]
-      (filter (partial acls-match-concept? context applicable-acls) concepts))))
+          applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+      (doall (remove nil? (pmap (fn [concept]
+                                  (when (acls-match-concept? context applicable-acls concept)
+                                    concept))
+                                concepts))))))
 
 

@@ -12,7 +12,8 @@
             [cmr.search.results-handlers.atom-results-handler :as atom]
             [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
             [cmr.common.util :as util]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [cmr.common.joda-time]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
   [concept-type query]

@@ -81,13 +81,18 @@
         {:insert-time insert-time
          :update-time update-time}))))
 
+(defn- get-id-elems
+  "Extracts the id elements"
+  [xml-struct]
+  (cx/elements-at-path
+    xml-struct
+    [:composedOf :DS_DataSet :has :MI_Metadata
+     :identificationInfo :MD_DataIdentification]))
+
 (defn- xml-elem->Granule
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
-  (let [id-elems (cx/elements-at-path
-                   xml-struct
-                   [:composedOf :DS_DataSet :has :MI_Metadata
-                    :identificationInfo :MD_DataIdentification])]
+  (let [id-elems (get-id-elems xml-struct)]
     (g/map->UmmGranule
       {:granule-ur (xml-elem->granule-ur id-elems)
        :data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
@@ -103,16 +108,15 @@
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
 
-(defn xml->access-value
-  "Parse and return the access-value for the given SMAP ISO granule xml.
-  This function is used by cmr-search-app to retrieve the access-value from xml directly"
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
   [xml]
-  (let [xml-struct (x/parse-str xml)
-        id-elems (cx/elements-at-path
-                   xml-struct
-                   [:composedOf :DS_DataSet :has :MI_Metadata
-                    :identificationInfo :MD_DataIdentification])]
-    (xml-elem->access-value id-elems)))
+  (gt/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (xml-elem->access-value (get-id-elems (x/parse-str xml))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators

@@ -320,6 +320,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-provider
+  "Creates a provider along with ACLs to create and access the providers data.
+  Provider map should contain fields with details for an individual provider like what would be
+  taken on the ingest api.
+
+  Options:
+  * grant-all-search? - Indicates whether all search acls should be granted for a provider. Default true
+  * grant-all-ingest? - Indicates whether all ingest acls should be granted for a provider. Default true"
   ([provider-map]
    (create-provider provider-map {}))
   ([provider-map options]
@@ -340,11 +347,10 @@
        (echo-util/grant (s/context)
                         [echo-util/guest-ace
                          echo-util/registered-user-ace]
+                        :catalog-item-identity
                         (assoc (echo-util/catalog-item-id provider-guid)
                                :collection-applicable true
-                               :granule-applicable true)
-                        :system-object-identity
-                        nil))
+                               :granule-applicable true)))
      (when grant-all-ingest?
        (echo-util/grant-all-ingest (s/context) provider-guid)))))
 

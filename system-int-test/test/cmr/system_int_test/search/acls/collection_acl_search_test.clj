@@ -56,7 +56,6 @@
                  (e/coll-catalog-item-id "provguid4"
                                          (e/coll-id ["coll11-entry-title" "coll12-entry-title"])))
 
-
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
         coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))

@@ -12,9 +12,7 @@
             [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.system-int-test.system :as s]
-            [clojure.string :as str])
-  (:import cmr.umm.collection.UmmCollection
-           cmr.umm.granule.UmmGranule))
+            [clojure.string :as str]))
 
 (defn- item->native-id
   "Returns the native id of an item"
@@ -22,26 +20,13 @@
   (let [{:keys [granule-ur entry-title native-id]} item]
     (or granule-ur entry-title native-id)))
 
-(defmulti item->concept-type
-  "Returns the path to ingest the item"
-  (fn [item]
-    (type item)))
-
-(defmethod item->concept-type UmmCollection
-  [item]
-  :collection)
-
-(defmethod item->concept-type UmmGranule
-  [item]
-  :granule)
-
 (defn item->concept
   "Converts an UMM item or a tombstone to a concept map. Default provider-id to PROV1 if not present."
   ([item]
    (item->concept item :echo10))
   ([item format-key]
    (let [format (mime-types/format->mime-type format-key)]
-     (merge {:concept-type (item->concept-type item)
+     (merge {:concept-type (umm/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
              :metadata (when-not (:deleted item) (umm/umm->xml item format-key))

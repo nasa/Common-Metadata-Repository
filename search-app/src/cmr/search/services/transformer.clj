@@ -3,12 +3,15 @@
   (:require [cmr.system-trace.core :refer [deftracefn]]
             [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
+            [cmr.umm.start-end-date :as sed]
             [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as errors]
             [clojure.java.io :as io]
             [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.services.acls.acl-helper :as acl-helper]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.xml.xslt :as xslt]
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
@@ -80,66 +83,6 @@
            "concept->value-map time:" t2)
     values))
 
-(defn- get-iso-access-value
-  "Returns the iso-mends access value by parsing MENDS ISO xml"
-  [concept]
-  (when-let [[_ restriction-flag-str]
-             (re-matches #"(?s).*<gco:CharacterString>Restriction Flag:(.+?)</gco:CharacterString>.*"
-                         (:metadata concept))]
-    (when-not (re-find #".*<.*" restriction-flag-str)
-      (Double. ^String restriction-flag-str))))
-
-(defmulti extract-access-value
-  "Extracts access value (aka. restriction flag) from the concept."
-  (fn [concept]
-    (:format concept)))
-
-(defmethod extract-access-value mt/echo10
-  [concept]
-  (let [^String metadata (:metadata concept)]
-    ;; This contains check is a performance enhancement. This saves a lot of time versus the regular
-    ;; expression below when the metadata is a large string.
-    (when (.contains metadata "<RestrictionFlag>")
-      (when-let [[_ restriction-flag-str] (re-matches #"(?s).*<RestrictionFlag>(.+)</RestrictionFlag>.*"
-                                                      metadata)]
-        (Double. ^String restriction-flag-str)))))
-
-(defmethod extract-access-value mt/dif
-  [concept]
-  ;; DIF doesn't support restriction flag yet.
-  nil)
-
-(defmethod extract-access-value mt/dif10
-  [concept]
-  ;; Add support for Access Constraints, See CMR-1574
-  nil)
-
-(defmethod extract-access-value mt/iso
-  [concept]
-  (get-iso-access-value concept))
-
-(defmethod extract-access-value mt/iso-smap
-  [concept]
-  (when (= :granule (:concept-type concept))
-    (smap-g/xml->access-value (:metadata concept))))
-
-(defmulti add-acl-enforcement-fields
-  "Adds the fields necessary to enforce ACLs to the concept"
-  (fn [concept]
-    (:concept-type concept)))
-
-(defmethod add-acl-enforcement-fields :collection
-  [concept]
-  (assoc concept
-         :access-value (extract-access-value concept)
-         :entry-title (get-in concept [:extra-fields :entry-title])))
-
-(defmethod add-acl-enforcement-fields :granule
-  [concept]
-  (assoc concept
-         :access-value (extract-access-value concept)
-         :collection-concept-id (get-in concept [:extra-fields :parent-collection-id])))
-
 (deftracefn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found."
@@ -147,47 +90,56 @@
    (get-latest-formatted-concepts context concept-ids target-format false))
   ([context concept-ids target-format skip-acls?]
    (info "Getting latest version of" (count concept-ids) "concept(s) in" target-format "format")
+
    (let [mdb-context (context->metadata-db-context context)
          [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
-         [t2 concepts] (u/time-execution (if skip-acls?
-                                           concepts
-                                           (doall (acl-service/filter-concepts
-                                                    context
-                                                    (pmap add-acl-enforcement-fields concepts)))))
          ;; Filtering deleted concepts
-         [t3 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))
-         [t4 values] (u/time-execution
-                       (doall (pmap #(concept->value-map context % target-format) concepts)))]
-     (debug "get-latest-concepts time:" t1
-            "acl-filter-concepts time:" t2
-            "tombstone-filter time:" t3
-            "concept->value-map time:" t4)
-     values)))
+         [t2 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))]
+
+     (if skip-acls?
+       ;; Convert concepts to results without acl enforcment
+       (let [[t3 values] (u/time-execution
+                           (doall (pmap #(concept->value-map context % target-format) concepts)))]
+         (debug "get-latest-concepts time:" t1
+                "tombstone-filter time:" t2
+                "concept->value-map time:" t3)
+         values)
+
+       ;; Convert concepts to results with acl enforcment
+       (let [[t3 concepts] (u/time-execution (acl-rhh/add-acl-enforcement-fields concepts))
+             [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
+             [t5 values] (u/time-execution
+                           (doall (pmap #(concept->value-map context % target-format) concepts)))]
+         (debug "get-latest-concepts time:" t1
+                "tombstone-filter time:" t2
+                "add-acl-enforcement-fields time:" t3
+                "acl-filter-concepts time:" t4
+                "concept->value-map time:" t5)
+         values)))))
 
 (deftracefn get-formatted-concept
   "Get a specific revision of a concept with the given concept-id in a given format.
   Applies ACLs to the concept found."
   [context concept-id revision-id target-format]
-   (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
-   (let [mdb-context (context->metadata-db-context context)
-         [t1 concept] (u/time-execution
-                         (metadata-db/get-concept mdb-context concept-id revision-id))
-         [t2 concepts] (u/time-execution (doall (acl-service/filter-concepts
-                                                    context
-                                                    [(add-acl-enforcement-fields concept)])))
-         concept (first concepts)
-         ;; Throw a service error for deleted concepts
-         _ (when (:deleted concept)
-             (errors/throw-service-errors
-               :bad-request
-               [(format
-                  "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
-                  revision-id
-                  concept-id)]))
-         ;; format concept
-         [t4 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
-     (debug "get-concept time:" t1
-            "acl-filter-concepts time:" t2
-            "concept->value-map time:" t4)
-     value))
+  (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
+  (let [mdb-context (context->metadata-db-context context)
+        [t1 concept] (u/time-execution
+                       (metadata-db/get-concept mdb-context concept-id revision-id))
+        ;; Throw a service error for deleted concepts
+        _ (when (:deleted concept)
+            (errors/throw-service-errors
+              :bad-request
+              [(format
+                 "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
+                 revision-id
+                 concept-id)]))
+        [t2 concept] (u/time-execution (acl-rhh/add-acl-enforcement-fields-to-concept concept))
+        [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
+        ;; format concept
+        [t4 value] (u/time-execution (when concept (concept->value-map context concept target-format)))]
+    (debug "get-concept time:" t1
+           "add-acl-enforcement-fields time:" t2
+           "acl-filter-concepts time:" t3
+           "concept->value-map time:" t4)
+    value))
