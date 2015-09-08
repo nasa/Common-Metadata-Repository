@@ -212,16 +212,13 @@
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
   [related-urls src-granule-ur]
   (let [fname (second (str/split src-granule-ur #":"))
-        re (Pattern/compile (format "(.*/data/s4pa/.*)(%s)$" fname))]
+        re (Pattern/compile (format ".*/opendap/.*%s.nc$" fname))]
     (seq (for [related-url related-urls]
            ;; Online Access URLs have type of "GET DATA"
            (if (= (:type related-url) "GET DATA")
-             (if-let [matches (re-matches re (:url related-url))]
+             (if-let [match (re-matches re (:url related-url))]
                (assoc related-url
-                      :url (str
-                             (str/replace (second matches) "/data/s4pa/" "/opendap/HDF-EOS5")
-                             (nth matches 2)
-                             ".nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
+                      :url (str match "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
                related-url)
              related-url)))))
 
