@@ -1,10 +1,25 @@
 (ns cmr.search.api.keyword
-  "Defines the HTTP URL routes for the keyword endpoint in the search application."
+  "Defines the HTTP URL routes for the keyword endpoint in the search application.
+
+  The keyword endpoint is used to retrieve the keywords for each of the controlled vocabulary
+  fields. The controlled vocabulary is cached within CMR, but the actual source is the GCMD KMS
+  system. Users of this endpoint are interested in knowing what the CMR considers as the current
+  controlled vocabulary, since it is the cached CMR values that will eventually be enforced on CMR
+  ingest.
+
+  The keywords are returned in a hierarchical format. The response format is such that the caller
+  does not need to know the hierarchy, but it can be inferred from the results. Keywords are not
+  guaranteed to have values for every value in the hierarchy for that field, so the response will
+  return the next non-nil subfield value. It is possible for the keywords to have multiple
+  potential subfields below it. When this occurs the subfields property will indicate each of the
+  fields and will have a list of each of the fields below it.
+
+  See the unit tests in cmr.search.test.api.keyword for detailed examples of the responses."
+
   (:require [compojure.core :refer :all]
             [cheshire.core :as json]
             [camel-snake-kebab.core :as csk]
             [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.transmit.kms :as kms]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
@@ -35,11 +50,12 @@
                                (vals cmr-to-gcmd-keyword-scheme-aliases))]
     (when-not (contains? (set valid-keywords) keyword-scheme)
       (errors/throw-service-error
-        :bad-request (format "The keyword scheme [%s] is not supported. Valid schemes are: %s, and %s."
-                             (name keyword-scheme)
-                             (str/join
-                               ", " (map #(csk/->snake_case (name %)) (rest valid-keywords)))
-                             (-> valid-keywords first name csk/->snake_case))))))
+        :bad-request
+        (format "The keyword scheme [%s] is not supported. Valid schemes are: %s, and %s."
+                (name keyword-scheme)
+                (str/join
+                  ", " (map #(csk/->snake_case (name %)) (rest valid-keywords)))
+                (-> valid-keywords first name csk/->snake_case))))))
 
 (defn- is-leaf?
   "Determines if we are at the leaf point within the hierarchy for the provided keyword."
@@ -118,7 +134,8 @@
                                                       (filter-keywords-with-non-nil-values
                                                         (rest keyword-hierarchy)
                                                         subfield-name
-                                                        (filter #(= value (field %)) keywords)))))))]]
+                                                        (filter #(= value (field %))
+                                                                keywords)))))))]]
                 (util/remove-nil-keys
                   (merge subfield-maps
                          {:subfields (seq (map name (keys subfield-maps)))
