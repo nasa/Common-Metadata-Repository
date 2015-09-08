@@ -58,6 +58,21 @@
   (let [field-index (.indexOf keyword-hierarchy field)]
     (filter #(<= field-index (.indexOf keyword-hierarchy %)) keyword-hierarchy)))
 
+(defn- filter-keywords-with-non-nil-values
+  "Filters keywords such that any keywords which have values for any subfields between the start
+  of the keyword hierarchy and the provided subfield-name.
+
+  For example (filter-keywords [:a :b :c :d] :d keywords) would filter out any keywords which have
+  a non-nil value for :b or :c."
+  [keyword-hierarchy subfield-name keywords]
+  {:pre (contains? keyword-hierarchy subfield-name)}
+  (loop [filtered-keywords keywords
+         keyword-hierarchy (rest keyword-hierarchy)]
+    (let [current-field (first keyword-hierarchy)]
+      (if (= current-field subfield-name)
+        filtered-keywords
+        (recur (filter #(nil? (current-field %)) keywords)
+               (rest keyword-hierarchy))))))
 
 (defn- parse-hierarchical-keywords
   "Returns keywords in a hierarchical fashion based on the provided keyword hierarchy and keywords."
@@ -78,7 +93,13 @@
                                                     (parse-hierarchical-keywords
                                                       (get-hierarchy-from-field keyword-hierarchy
                                                                                 subfield-name)
-                                                      (filter #(= value (field %)) keywords))))))]]
+
+                                                      ;; Figure out which fields were skipped and
+                                                      ;; filter to only include the nils
+                                                      (filter-keywords-with-non-nil-values
+                                                        keyword-hierarchy
+                                                        subfield-name
+                                                        (filter #(= value (field %)) keywords)))))))]]
                 (util/remove-nil-keys
                   (merge subfield-maps
                          {:subfields (seq (map name (keys subfield-maps)))
@@ -97,57 +118,13 @@
            :headers {"Content-Type" (mt/format->mime-type :json)}
            :body (json/generate-string keywords)})))))
 
-;; TODO Move into tests. Add unit tests for is-leaf? and get-subfields-for-keyword. Integration
-;; test to test parse-hierarchical-keywords
 (comment
-
-  (do
-    (def test1
-      [{:a "A1" :b "B1" :c "C1"}
-       {:a "A2" :c "C2"}
-       {:a "A1" :d "D1"}])
-
-    (def test2
-      [{:a "A1" :b "B1"}])
-
-    (def test3
-      [{:a "A1" :c "C1"}]) )
-
-  (get-subfields-for-keyword [:b :c :d] test1 :a "A")
-  {:a (parse-hierarchical-keywords [:a :b :c :d] test1)}
-
-  {:a [{:value "A1"
-        :subfields ["b" "d"]
-        :b [{:value "B1"
-             :subfields ["c"]
-             :c [{:value "C1"}]}]
-        :d [{:value "D1"}]}
-       {:value "A2"
-        :subfields ["c"]
-        :c [{:value "C2"}]}]}
-
-  (get-subfields-for-keyword [:b :c :d] test1 :a "A1")
-  (get-subfields-for-keyword [:b :c :d] test1 :a "A2")
-
-  {:a (parse-hierarchical-keywords [:a :b :c :d] test1)}
-
-  (= (parse-hierarchical-keywords [:a :b :c :d] test1)
-     {:a [{:value "A1"
-           :subfields ["b" "d"]
-           :b [{:value "B1"
-                :subfields ["c"]
-                :c [{:value "C1"}]}]
-           :d [{:value "D1"}]}
-          {:value "A2"
-           :subfields ["c"]
-           :c [{:value "C2"}]}]})
 
   (def keywords
     (vals (kms/get-keywords-for-keyword-scheme
             {:system (cmr.indexer.system/create-system)} :science-keywords)))
 
-  {:category (parse-hierarchical-keywords (:science-keywords frf/nested-fields-mappings) keywords)}
-
+  (parse-hierarchical-keywords (:science-keywords frf/nested-fields-mappings) keywords)
 
   )
 
