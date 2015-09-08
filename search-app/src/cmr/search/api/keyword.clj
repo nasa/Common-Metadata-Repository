@@ -9,27 +9,30 @@
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.set :as set]))
 
-(def gcmd-keyword-scheme-mapping
-  "Maps the keyword scheme name used by the CMR to the keyword scheme name used by GCMD."
-  {:archive-centers :providers
-   :providers :providers
-   :science-keywords :science-keywords
-   :platforms :platforms
-   :instruments :instruments})
+(def cmr-to-gcmd-keyword-scheme-aliases
+  "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
+  {:archive-centers :providers})
 
-(def cmr-keyword-scheme-mapping
-  {:archive-centers :archive-centers
-   :providers :archive-centers
-   :science-keywords :science-keywords
-   :platforms :platforms
-   :instruments :instruments})
+(defn- translate-keyword-scheme-to-gcmd
+  "Translates a keyword scheme into a known keyword scheme for GCMD."
+  [keyword-scheme]
+  (or (keyword-scheme cmr-to-gcmd-keyword-scheme-aliases)
+      keyword-scheme))
+
+(defn- translate-keyword-scheme-to-cmr
+  "Translates a keyword scheme into a known keyword scheme for CMR."
+  [keyword-scheme]
+  (or (keyword-scheme (set/map-invert cmr-to-gcmd-keyword-scheme-aliases))
+      keyword-scheme))
 
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
   [keyword-scheme]
-  (let [valid-keywords (keys gcmd-keyword-scheme-mapping)]
+  (let [valid-keywords (concat (keys frf/nested-fields-mappings)
+                               (vals cmr-to-gcmd-keyword-scheme-aliases))]
     (when-not (contains? (set valid-keywords) keyword-scheme)
       (errors/throw-service-error
         :bad-request (format "The keyword scheme [%s] is not supported. Valid schemes are: %s, and %s."
@@ -129,23 +132,13 @@
                              request-context :request-context}
       (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
         (validate-keyword-scheme orig-keyword-scheme)
-        (let [cmr-keyword-scheme (orig-keyword-scheme cmr-keyword-scheme-mapping)
-              gcmd-keyword-scheme (orig-keyword-scheme gcmd-keyword-scheme-mapping)
+        (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
+              gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
               keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map request-context)))
               hierarchical-keywords (parse-hierarchical-keywords
                                       (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
           {:staus 200
            :headers {"Content-Type" (mt/format->mime-type :json)}
            :body (json/generate-string hierarchical-keywords)})))))
-
-(comment
-
-  (def keywords
-    (vals (kms/get-keywords-for-keyword-scheme
-            {:system (cmr.indexer.system/create-system)} :science-keywords)))
-
-  (parse-hierarchical-keywords (:science-keywords frf/nested-fields-mappings) keywords)
-
-  )
 
 
