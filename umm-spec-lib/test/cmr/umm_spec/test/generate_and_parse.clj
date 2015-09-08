@@ -63,3 +63,13 @@
             metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap :iso19115])]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip umm-record metadata-format)))))
+
+
+(comment
+
+
+  (is (= (expected-conversion/convert user/failing-value :echo10)
+         (xml-round-trip user/failing-value :echo10)))
+
+
+  )

@@ -82,6 +82,11 @@
                                                      :DurationValue (xpath "Duration_Value")
                                                      :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
                                                      :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))
+       :Distributions (for-each "/DIF/:Distribution"
+                            (object {:DistributionMedia (xpath "Distribution_Media")
+                                     :DistributionSize (xpath "Distribution_Size")
+                                     :DistributionFormat (xpath "Distribution_Format")
+                                     :Fees (xpath "Fees")}))
        :ProcessingLevel (object
                           {:Id (xpath "/DIF/Product_Level_Id")})
        :AdditionalAttributes

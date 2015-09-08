@@ -28,6 +28,8 @@
    [:CollectionState (xpath "/CollectionProgress")]
    [:RestrictionFlag (xpath "/AccessConstraints/Value")]
    [:RestrictionComment (xpath "/AccessConstraints/Description")]
+   [:Price (xpath "/Distributions[1]/Fees")]
+   [:DataFormat (xpath "/Distributions[1]/DistributionFormat")]
    [:TemporalKeywords
     (for-each "/TemporalKeywords"
               [:Keyword (xpath ".")])]

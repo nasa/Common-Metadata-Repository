@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
+  (:require [cmr.common.xml :as cx]
+            [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -42,6 +43,16 @@
            :Sensors (for-each "Sensors/Sensor"
                       sensor-mapping)}))
 
+(defn- distributions-mapping
+  "Returns UMM Distributions mapping from ECHO 10 element context."
+  [xpath-context]
+  (let [coll (-> xpath-context :context first :content first)
+        data-format (cx/string-at-path coll [:DataFormat])
+        price (cx/double-at-path coll [:Price])]
+    (when (or data-format price)
+      [{:DistributionFormat data-format
+        :Fees price}])))
+
 (def echo10-xml-to-umm-c
   (apt/add-parsing-types
     js/umm-c-schema
@@ -56,6 +67,7 @@
        :AccessConstraints (object
                             {:Description (xpath "/Collection/RestrictionComment")
                              :Value (xpath "/Collection/RestrictionFlag")})
+       :Distributions distributions-mapping
        :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"
