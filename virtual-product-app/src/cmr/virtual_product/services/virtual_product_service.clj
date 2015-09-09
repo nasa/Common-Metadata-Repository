@@ -293,23 +293,25 @@
 (defn translate-granule-entries
   "Translate virtual granules in the granule-entries into the corresponding source entries. See routes.clj for the JSON schema of granule-entries."
   [context granule-entries]
-  (let [annotated-entries (annotate-entries granule-entries)
-        ;; Group entries by the combination of provider-id and entry-title of source collection for
-        ;; each entry. If the entry is not a virtual entry, source collection is the same as the
-        ;; collection to which the granule belongs. Entries whose granule-ur is nil are considered
-        ;; collection entries and are ignored
-        entries-by-src-collection (group-by get-provider-id-src-entry-title
-                                            (filter :granule-ur annotated-entries))
-        ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
-        ;; corresponding to a group in entries-by-src-collection
-        gran-ur-src-entry-map (into {} (mapcat (partial map-granule-ur-src-entry context)
-                                               entries-by-src-collection))]
-    (map (fn [annotated-entry]
-           (let [[provider-id granule-ur] (get-prov-id-gran-ur annotated-entry)]
-             (if granule-ur
-               (get gran-ur-src-entry-map [provider-id granule-ur])
-               annotated-entry)))
-         annotated-entries)))
+  (if (config/virtual-products-enabled)
+    (let [annotated-entries (annotate-entries granule-entries)
+          ;; Group entries by the combination of provider-id and entry-title of source collection for
+          ;; each entry. If the entry is not a virtual entry, source collection is the same as the
+          ;; collection to which the granule belongs. Entries whose granule-ur is nil are considered
+          ;; collection entries and are ignored
+          entries-by-src-collection (group-by get-provider-id-src-entry-title
+                                              (filter :granule-ur annotated-entries))
+          ;; Create a map of granule-ur to the corresponding source entry in batches, each batch
+          ;; corresponding to a group in entries-by-src-collection
+          gran-ur-src-entry-map (into {} (mapcat (partial map-granule-ur-src-entry context)
+                                                 entries-by-src-collection))]
+      (map (fn [annotated-entry]
+             (let [[provider-id granule-ur] (get-prov-id-gran-ur annotated-entry)]
+               (if granule-ur
+                 (get gran-ur-src-entry-map [provider-id granule-ur])
+                 annotated-entry)))
+           annotated-entries))
+    granule-entries))
 
 
 
