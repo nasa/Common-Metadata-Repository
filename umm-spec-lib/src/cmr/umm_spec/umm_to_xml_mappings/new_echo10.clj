@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.new-echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.simple-xpath :refer [select value-at]]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]))
 
 (defn characteristic-mapping
   [data]
@@ -18,41 +17,41 @@
   [c]
   (xml
    [:Collection
-    [:ShortName (value-at c "/EntryId")]
-    [:VersionId (value-at c "/Version")]
+    [:ShortName (:EntryId c)]
+    [:VersionId (:Version c)]
     [:InsertTime "1999-12-31T19:00:00-05:00"]
     [:LastUpdate "1999-12-31T19:00:00-05:00"]
     [:LongName "dummy-long-name"]
-    [:DataSetId (value-at c "/EntryTitle")]
-    [:Description (value-at c "/Abstract")]
-    [:CollectionDataType (value-at c "/CollectionDataType")]
+    [:DataSetId (:EntryTitle c)]
+    [:Description (:Abstract c)]
+    [:CollectionDataType (:CollectionDataType c)]
     [:Orderable "true"]
     [:Visible "true"]
-    [:SuggestedUsage (value-at c "/Purpose")]
-    [:ProcessingLevelId (value-at c "/ProcessingLevel/Id")]
-    [:ProcessingLevelDescription (value-at c "/ProcessingLevel/ProcessingLevelDescription")]
-    [:CollectionState (value-at c "/CollectionProgress")]
-    [:RestrictionFlag (value-at c "/AccessConstraints/Value")]
-    [:RestrictionComment (value-at c "/AccessConstraints/Description")]
+    [:SuggestedUsage (:Purpose c)]
+    [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
+    [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+    [:CollectionState (:CollectionProgress c)]
+    [:RestrictionFlag (-> c :AccessConstraints :Value)]
+    [:RestrictionComment (-> c :AccessConstraints :Description)]
     [:TemporalKeywords
-     (for [kw (select c "/TemporalKeywords")]
+     (for [kw (:TemporalKeywords c)]
        [:Keyword kw])]
     ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
     ;; address questions about temporal mappings.
-    (when-let [temporal (value-at c "/TemporalExtents")]
+    (when-let [temporal (first (:TemporalExtents c))]
       [:Temporal
        (elements-from temporal
                       :TemporalRangeType
                       :PrecisionOfSeconds
                       :EndsAtPresentFlag)
 
-       (for [r (select temporal "RangeDateTimes")]
+       (for [r (:RangeDateTimes temporal)]
          [:RangeDateTime (elements-from r :BeginningDateTime :EndingDateTime)])
        
-       (for [date (select temporal "SingleDateTimes")]
+       (for [date (:SingleDateTimes temporal)]
          [:SingleDateTime (str date)])
 
-       (for [pdt (select temporal "PeriodicDateTimes")]
+       (for [pdt (:PeriodicDateTimes temporal)]
          [:PeriodicDateTime
           (elements-from pdt
                          :Name
@@ -64,17 +63,17 @@
                          :PeriodCycleDurationValue)])])
 
     [:Platforms
-     (for [plat (select c "/Platforms")]
+     (for [plat (:Platforms c)]
        [:Platform
         (elements-from plat
                        :ShortName
                        :LongName
                        :Type)
         [:Characteristics
-         (for [cc (select plat "Characteristics")]
+         (for [cc (:Characteristics plat)]
            (characteristic-mapping cc))]
         [:Instruments
-         (for [inst (select plat "Instruments")]
+         (for [inst (:Instruments plat)]
            [:Instrument
             (elements-from inst
                            :ShortName
@@ -82,22 +81,22 @@
                            :Technique
                            :NumberOfSensors)
             [:Characteristics
-             (for [cc (select inst "Characteristics")]
+             (for [cc (:Characteristics inst)]
                (characteristic-mapping cc))]
             [:Sensors
-             (for [ss (select inst "Sensors")]
+             (for [ss (:Sensors inst)]
                [:Sensor
                 (elements-from ss
                                :ShortName
                                :LongName
                                :Technique)
                 [:Characteristics
-                 (map characteristic-mapping (select ss "Characteristics"))]])]
+                 (map characteristic-mapping (:Characteristics ss))]])]
             [:OperationModes
-             (for [mode (select inst "OperationalModes")]
+             (for [mode (:OperationalModes inst)]
                [:OperationMode mode])]])]])]
     [:AdditionalAttributes
-     (for [aa (select c "/AdditionalAttributes")]
+     (for [aa (:AdditionalAttributes c)]
        [:AdditionalAttribute
         (elements-from aa
                        :Name :Description :DataType :ParameterRangeBegin
