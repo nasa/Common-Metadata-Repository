@@ -503,3 +503,13 @@
     (string? context-or-node) context-or-node
     (xpath-context? context-or-node) (apply str (map text (:context context-or-node)))
     (:content context-or-node) (str/join (map text (:content context-or-node)))))
+
+(defn select
+  "Returns all elements matching the XPath expression."
+  [context xpath]
+  (:context (evaluate context xpath)))
+
+(defn value-at
+  "Returns the value of the first element matched by the XPath expression."
+  [context xpath]
+  (first (select context xpath)))
