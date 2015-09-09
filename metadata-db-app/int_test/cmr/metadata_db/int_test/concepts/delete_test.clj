@@ -25,8 +25,10 @@
           {:keys [status revision-id]} (util/delete-concept (:concept-id coll1))
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
-      (is (= status 201))
-      (is (= revision-id 4))
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id}))
 
       (is (= (dissoc (assoc saved-coll1
                             :deleted true
@@ -59,8 +61,10 @@
                                                            :user-id "user101"})
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
-      (is (= 201 status))
-      (is (= 4 revision-id))
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id}))
 
       ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
       ;; and deleted = true.
@@ -88,8 +92,10 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 4)]
-      (is (= status 201))
-      (is (= revision-id 4)))))
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id})))))
 
 (deftest delete-granule-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -98,10 +104,14 @@
           gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
           {:keys [status revision-id]} (util/delete-concept (:concept-id gran1))
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
-      (is (= status 201))
-      (is (= revision-id 4))
-      (is (= true (:deleted stored-gran1)))
-      (is (= "" (:metadata stored-gran1)))
+      (is (= {:status 201
+              :revision-id 4
+              :deleted true
+              :metadata ""}
+             {:status status
+              :revision-id revision-id
+              :deleted (:deleted stored-gran1)
+              :metadata (:metadata stored-gran1)}))
 
       ;; Other data left in database
       (is (util/verify-concept-was-saved gran2)))))
@@ -114,10 +124,14 @@
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id gran1)
                                                            :deleted true})
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
-      (is (= status 201))
-      (is (= revision-id 4))
-      (is (= true (:deleted stored-gran1)))
-      (is (= "" (:metadata stored-gran1)))
+      (is (= {:status 201
+              :revision-id 4
+              :deleted true
+              :metadata ""}
+             {:status status
+              :revision-id revision-id
+              :deleted (:deleted stored-gran1)
+              :metadata (:metadata stored-gran1)}))
 
       ;; Other data left in database
       (is (util/verify-concept-was-saved gran2)))))
@@ -127,18 +141,24 @@
     (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
           gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
           {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 4)]
-      (is (= status 201))
-      (is (= revision-id 4)))))
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id})))))
 
 (deftest delete-tag-using-delete-end-point-test
   (let [tag1 (util/create-and-save-tag 1 3)
         tag2 (util/create-and-save-tag 2)
         {:keys [status revision-id]} (util/delete-concept (:concept-id tag1))
         stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
-    (is (= 201 status))
-    (is (= 4 revision-id))
-    (is (= true (:deleted stored-tag1)))
-    (is (= "" (:metadata stored-tag1)))
+    (is (= {:status 201
+            :revision-id 4
+            :deleted true
+            :metadata ""}
+           {:status status
+            :revision-id revision-id
+            :deleted (:deleted stored-tag1)
+            :metadata (:metadata stored-tag1)}))
 
     ;; Other data left in database
     (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
@@ -149,10 +169,14 @@
         {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id tag1)
                                                          :deleted true})
         stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
-    (is (= status 201))
-    (is (= revision-id 4))
-    (is (= true (:deleted stored-tag1)))
-    (is (= "" (:metadata stored-tag1)))
+    (is (= {:status 201
+            :revision-id 4
+            :deleted true
+            :metadata ""}
+           {:status status
+            :revision-id revision-id
+            :deleted (:deleted stored-tag1)
+            :metadata (:metadata stored-tag1)}))
 
     ;; Other data left in database
     (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
@@ -160,15 +184,19 @@
 (deftest delete-tag-with-valid-revision-test
   (let [tag1 (util/create-and-save-tag 1 3)
         {:keys [status revision-id]} (util/delete-concept (:concept-id tag1) 4)]
-    (is (= status 201))
-    (is (= revision-id 4))))
+    (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id}))))
 
 (deftest delete-concept-with-skipped-revisions-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
           {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 100)]
-      (is (= status 201))
-      (is (= revision-id 100)))))
+      (is (= {:status 201
+              :revision-id 100}
+             {:status status
+              :revision-id revision-id})))))
 
 (deftest delete-deleted-concept-with-new-revision-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]

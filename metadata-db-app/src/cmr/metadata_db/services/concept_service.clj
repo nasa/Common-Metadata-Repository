@@ -54,7 +54,7 @@
         {provider-id :provider-id} provider]
     (when (and (= concept-type :tag)
                (not (:system-level? provider)))
-      (errors/throw-service-errors :invalid-data [(msg/no-tags-permission provider-id)]))))
+      (errors/throw-service-errors :invalid-data [(msg/tags-only-system-level provider-id)]))))
 
 (defn- validate-providers-exist
   "Validates that all of the providers in the list exist."

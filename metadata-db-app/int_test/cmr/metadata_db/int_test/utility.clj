@@ -45,25 +45,16 @@
 ;;; concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- process-attributes
-  "Get the extra fields and main attributes from the attribute map"
-  [attributes]
-  [(:extra-fields attributes) (dissoc attributes :extra-fields)])
-
 (defn- concept
   "Create a concept map for any concept type"
-  [provider-id concept-type uniq-num specific-concept-map attributes]
-  (let [[extra-fields main-attributes] (process-attributes attributes)
-        concept (merge {:concept-type concept-type
-                        :native-id (str "native-id " uniq-num)
-                        :provider-id provider-id
-                        :metadata (str "data here " uniq-num)
-                        :deleted false}
-                       specific-concept-map
-                       main-attributes)]
-    (if extra-fields
-      (update-in concept [:extra-fields] merge extra-fields)
-      concept)))
+  [provider-id concept-type uniq-num attributes]
+  (merge {:native-id (str "native-id " uniq-num)
+          :metadata (str "data here " uniq-num)
+          :deleted false}
+         attributes
+         ;; concept-type and provider-id args take precedence over attributes
+         {:provider-id provider-id
+          :concept-type concept-type}))
 
 (defn collection-concept
   "Creates a collection concept"
@@ -72,25 +63,33 @@
   ([provider-id uniq-num attributes]
    (let [short-name (str "short" uniq-num)
          version-id (str "V" uniq-num)
-         specific-concept-map {:user-id (str "user" uniq-num)
-                               :format "application/echo10+xml"
-                               :extra-fields {:short-name short-name
-                                              :version-id version-id
-                                              :entry-id (str short-name "_" version-id)
-                                              :entry-title (str "dataset" uniq-num)
-                                              :delete-time nil}}]
-     (concept provider-id :collection uniq-num specific-concept-map attributes))))
+         ;; ensure that the required extra-fields are available but allow them to be
+         ;; overridden in attributes
+         extra-fields (merge {:short-name short-name
+                              :version-id version-id
+                              :entry-id (str short-name "_" version-id)
+                              :entry-title (str "dataset" uniq-num)
+                              :delete-time nil}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/echo10+xml"
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     (concept provider-id :collection uniq-num attributes))))
 
 (defn granule-concept
   "Creates a granule concept"
   ([provider-id parent-collection-id uniq-num]
    (granule-concept provider-id parent-collection-id uniq-num {}))
   ([provider-id parent-collection-id uniq-num attributes]
-   (let [specific-concept-map {:format "application/echo10+xml"
-                               :extra-fields {:parent-collection-id parent-collection-id
-                                              :delete-time nil
-                                              :granule-ur (str "granule-ur " uniq-num)}}]
-     (concept provider-id :granule uniq-num specific-concept-map attributes))))
+   (let [extra-fields (merge {:parent-collection-id parent-collection-id
+                              :delete-time nil
+                              :granule-ur (str "granule-ur " uniq-num)}
+                             (:extra-fields attributes))
+         attributes (merge {:format "application/echo10+xml"
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     (concept provider-id :granule uniq-num attributes))))
 
 (defn tag-concept
   "Creates a tag concept"
@@ -99,10 +98,13 @@
   ([uniq-num attributes]
    (let [namespace (str "namespace" uniq-num)
          value (str "value" uniq-num)
-         specific-concept-map {:user-id (str "user" uniq-num)
-                               :format "application/edn"}]
+         native-id (str namespace (char 29) value)
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/edn"
+                            :native-id native-id}
+                           attributes)]
      ;; no provider-id should be specified for tags
-     (dissoc (concept nil :tag uniq-num specific-concept-map attributes) :provider-id))))
+     (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"

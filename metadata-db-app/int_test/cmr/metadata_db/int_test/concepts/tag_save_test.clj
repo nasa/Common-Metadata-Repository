@@ -15,7 +15,6 @@
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Reset - no need for providers yet (we use "CMR" internally).
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
 ;; tests
@@ -33,7 +32,8 @@
           "failure when using non system-level provider"
           (assoc (util/tag-concept 2) :provider-id "REG_PROV")
           422
-          ["Provider [REG_PROV] does not have permission to create tags."])))
+          [(str "Tag could not be associated with provider [REG_PROV]. Tags are system level"
+                " entities.")])))
 
 (deftest save-tag-with-concept-id
   (testing "with concept-id"
@@ -52,19 +52,31 @@
           (is (util/verify-concept-was-saved
                 (assoc tag :revision-id revision-id :provider-id "CMR")))))
 
-
       ;; error cases
       (are2 [test-tag exp-status exp-errors]
-            (let [{are-status :status are-errors :errors} (util/save-concept test-tag)]
-              (is (= exp-status are-status))
-              (is (= (set exp-errors) (set are-errors))))
+            (let [{:keys [status errors]} (util/save-concept test-tag)]
+              (is (= exp-status status))
+              (is (= (set exp-errors) (set errors))))
 
             "conflicting native-id"
-            (assoc tag :native-id "foo") 409 ["A concept with concept-id [T10-CMR] and native-id [native-id 1] already exists for concept-type [:tag] provider-id [CMR]. The given concept-id [T10-CMR] and native-id [foo] would conflict with that one."]
+            (assoc tag :native-id "foo")
+            409
+            [(str "A concept with concept-id [T10-CMR] and native-id [namespace1" (char 29)
+                  "value1] already exists for concept-type [:tag] provider-id [CMR]. The given "
+                  "concept-id [T10-CMR] and native-id [foo] would conflict with that one.")]
+
 
             "conflicting concept-id"
-            (assoc tag :concept-id "T11-CMR") 409 ["A concept with concept-id [T10-CMR] and native-id [native-id 1] already exists for concept-type [:tag] provider-id [CMR]. The given concept-id [T11-CMR] and native-id [native-id 1] would conflict with that one."]
+            (assoc tag :concept-id "T11-CMR")
+            409
+            [(str "A concept with concept-id [T10-CMR] and native-id [namespace1" (char 29)
+                  "value1] already exists for concept-type [:tag] provider-id [CMR]. The given "
+                  "concept-id [T11-CMR] and native-id [namespace1" (char 29) "value1] "
+                  "would conflict with that one.")]
 
             "incorrect concept-id prefix"
-            (assoc (util/tag-concept 2) :concept-id "G10-CMR") 422 ["Concept-id [G10-CMR] for concept does not match provider-id [CMR] or concept-type [:tag]."]))))
+            (assoc (util/tag-concept 2) :concept-id "G10-CMR")
+            422
+            [(str "Concept-id [G10-CMR] for concept does not match provider-id [CMR] or "
+                  "concept-type [:tag].")]))))
 

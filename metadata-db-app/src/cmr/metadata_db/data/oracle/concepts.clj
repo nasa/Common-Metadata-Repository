@@ -392,7 +392,7 @@
                                    START WITH %d
                                    INCREMENT BY 1
                                    CACHE 20" INITIAL_CONCEPT_NUM))
-    (j/db-do-commands this "DELETE FROM CMR_tags"))
+    (j/db-do-commands this "DELETE FROM cmr_tags"))
 
   (get-expired-concepts
     [this provider concept-type]

@@ -7,10 +7,6 @@
             [cmr.common.date-time-parser :as p]
             [cmr.common.util :as util]))
 
-;;TODO add validation of concept types with provider type
-;; system level providers support :tag
-;; normal providers support :collection and :granule
-
 (defn concept-type-missing-validation
   [concept]
   (when-not (:concept-type concept)
@@ -76,8 +72,14 @@
   (when-let [concept-id (:concept-id concept)]
     (cc/concept-id-validation concept-id)))
 
-(defn tag-concept-id-match-fields-validation
-  "Validate that the concept-id is a match for the values in the concept fields"
+(defn tag-concept-id-matches-tag-fields-validation
+  "Validate that the concept-id has the correct form and that values represented in the tag's
+  concept-id match the values in the tag's concept map. In particular, that the concept-type
+  in the map matches the concept-type parsed from the concpet-id.
+
+  This is a subset of the fields validation done for other concept types. Other types require
+  the provider-id to match as well. This check is not done here as the provider-id for tags is
+  not yet set at the point at which this validation is called."
   [concept]
   (when-let [concept-id (:concept-id concept)]
     (when-not (cc/concept-id-validation concept-id)
@@ -113,8 +115,9 @@
           provider-id-missing-validation)))
 
 (def tag-concept-validation
-  "Creates a function tht validates a tag concept and returns a listg of errors"
-  (util/compose-validations (conj base-concept-validations tag-concept-id-match-fields-validation)))
+  "Creates a function that validates a tag concept and returns a list of errors"
+  (util/compose-validations (conj base-concept-validations
+                                  tag-concept-id-matches-tag-fields-validation)))
 
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."

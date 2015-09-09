@@ -139,5 +139,6 @@
 (defn invalid-provider-id [provider-id]
   (format "%%s [%s] is invalid" provider-id))
 
-(defn no-tags-permission [provider-id]
-  (format "Provider [%s] does not have permission to create tags." provider-id))
+(defn tags-only-system-level [provider-id]
+  (format "Tag could not be associated with provider [%s]. Tags are system level entities."
+          provider-id))

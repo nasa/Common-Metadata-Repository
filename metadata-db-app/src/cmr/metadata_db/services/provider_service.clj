@@ -61,10 +61,7 @@
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
-  ;; TODO - Move this into a separate validation function
-  (when (or (= pv/small-provider-id provider-id)
-            (= (:provider-id pv/cmr-provider) provider-id))
-    (cmsg/data-error :bad-request msg/reserved-provider-cannot-be-deleted provider-id))
+  (pv/validate-provider-id-deletion provider-id)
   (let [db (mdb-util/context->db context)
         provider (get-provider-by-id context provider-id true)
         result (providers/delete-provider db provider)]

@@ -2,6 +2,7 @@
   "Contains functions to validate provider."
   (:require [cmr.common.validations.core :as v]
             [cmr.common.services.errors :as errors]
+            [cmr.common.services.messages :as cmsg]
             [clojure.string :as s]
             [cmr.metadata-db.services.messages :as msg]))
 
@@ -44,12 +45,22 @@
   (when (and provider-id (not (re-matches #"^[A-Z][A-Z0-9_]*" provider-id)))
     {field-path [(msg/invalid-provider-id provider-id)]}))
 
+(defn- reserved-provider-id?
+  "Boolean indicating whether or not the given provider-id is reserved to the system"
+  [provider-id]
+  (boolean (or (= small-provider-id provider-id) (= (:provider-id cmr-provider) provider-id))))
+
 (defn- provider-id-reserved-validation
   "Validates the provider id isn't SMALL_PROV or CMR which are reserved."
   [field-path provider-id]
-  (when (or (= small-provider-id provider-id)
-            (= (:provider-id cmr-provider) provider-id))
+  (when (reserved-provider-id? provider-id)
     {field-path [(msg/provider-id-reserved provider-id)]}))
+
+(defn validate-provider-id-deletion
+  "Validates that the provider is is not a reserved id"
+  [provider-id]
+  (when (reserved-provider-id? provider-id)
+    (cmsg/data-error :bad-request msg/reserved-provider-cannot-be-deleted provider-id)))
 
 (defn- must-be-boolean
   "Validates the value given is of Boolean type."

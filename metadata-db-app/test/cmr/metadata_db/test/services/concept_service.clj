@@ -97,7 +97,7 @@
     (is (= nil (cs/validate-system-level-provider-for-tags tag cmr-provider)))
     (tu/assert-exception-thrown-with-errors
       :invalid-data
-      ["Provider [PROV1] does not have permission to create tags."]
+      ["Tag could not be associated with provider [PROV1]. Tags are system level entities."]
       (cs/validate-system-level-provider-for-tags tag prov1))))
 
 ;;; Verify that the try-to-save logic is correct.
