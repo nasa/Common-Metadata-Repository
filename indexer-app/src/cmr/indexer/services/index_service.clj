@@ -63,7 +63,7 @@
     true
     false))
 
-(def ALL_REVISION_REINDEX_BATCH_SIZE 2000)
+(def REINDEX_BATCH_SIZE 2000)
 
 (deftracefn reindex-provider-collections
   "Reindexes all the collections in the providers given.
@@ -84,8 +84,11 @@
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))
        (info "Reindexing latest collections for provider" provider-id)
-       (let [latest-collections (meta-db/find-collections context {:provider-id provider-id :latest true})]
-         (bulk-index context [latest-collections] false)))
+       (let [latest-collection-batches (meta-db/find-collections-in-batches
+                                         context
+                                         REINDEX_BATCH_SIZE
+                                         {:provider-id provider-id :latest true})]
+         (bulk-index context latest-collection-batches false)))
 
      (when (or (nil? all-revisions-index?) all-revisions-index?)
        ;; Note that this will not unindex revisions that were removed directly from the database.
@@ -93,7 +96,7 @@
        (info "Reindexing all collection revisions for provider" provider-id)
        (let [all-revisions-batches (meta-db/find-collections-in-batches
                                      context
-                                     ALL_REVISION_REINDEX_BATCH_SIZE
+                                     REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
          (bulk-index context all-revisions-batches true))))))
 
