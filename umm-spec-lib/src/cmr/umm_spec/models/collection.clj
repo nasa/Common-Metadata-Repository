@@ -238,15 +238,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
-;; Describes a list of resolutions.
-(defrecord ResolutionsType
-  [
-   ;; This element describes the minimum distance possible between two adjacent values, expressed in
-   ;; distance units of measure for collection.
-   Resolutions
-  ])
-(record-pretty-printer/enable-record-pretty-printing ResolutionsType)
-
 ;; This element contains the level identifier as described here:
 ;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
 (defrecord ProcessingLevelType
@@ -293,8 +284,9 @@
    ;; The means used to encode measurements.
    EncodingMethod
 
-   ;; Describes a list of resolutions.
-   Resolution
+   ;; This element describes the minimum distance possible between two adjacent values, expressed in
+   ;; distance units of measure for collection.
+   Resolutions
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalSystemDefinitionType)
 
