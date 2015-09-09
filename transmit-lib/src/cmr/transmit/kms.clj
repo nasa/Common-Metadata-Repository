@@ -27,6 +27,13 @@
    :instruments :short-name
    :science-keywords :uuid})
 
+(def keyword-scheme->gcmd-resource-name
+  "Maps each keyword scheme to the GCMD resource name"
+  {:providers "providers/providers.csv"
+   :platforms "platforms/platforms.csv"
+   :instruments "instruments/instruments.csv"
+   :science-keywords "sciencekeywords/sciencekeywords.csv"})
+
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
   {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
@@ -119,11 +126,8 @@
   keyword scheme."
   [context keyword-scheme]
   (let [conn (config/context->app-connection context :kms)
-        url (format "%s/%s/%s.csv"
-                    (conn/root-url conn)
-                    ;; Needed to change :science-keywords to sciencekeywords
-                    (str/replace (name keyword-scheme) #"\-" "")
-                    (str/replace (name keyword-scheme) #"\-" ""))
+        gcmd-resource-name (keyword-scheme keyword-scheme->gcmd-resource-name)
+        url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
         params (merge
                  (config/conn-params conn)
                  {:throw-exceptions true})
