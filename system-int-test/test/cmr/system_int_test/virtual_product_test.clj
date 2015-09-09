@@ -17,9 +17,11 @@
             [cmr.umm.echo10.granule :as g]
             [cmr.umm.collection :as umm-c]
             [cmr.umm.granule :as umm-g]
+            [cmr.common.config :as c]
             [clj-time.core :as t]))
 
-(use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"}
+(use-fixtures :each (ingest/reset-fixture (into {"PROV_guid" "PROV"
+                                                 "LP_ALIAS_guid" "LP_ALIAS"}
                                                 (for [p vp/virtual-product-providers]
                                                   [(str p "_guid") p]))))
 
@@ -336,6 +338,39 @@
             errors (:errors (json/parse-string (:body response) true))]
         (and (= 400 (:status response))
              (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))
+
+(defmacro with-env-vars
+  "Overrides the environment variables the config values will see within the block. Accepts a map
+  of environment variables to values."
+  [env-var-values & body]
+  `(with-redefs [c/env-var-value ~env-var-values]
+     ~@body))
+
+(deftest virtual-product-provider-alias-test
+  (try (dev-sys-util/eval-in-dev-sys
+         `(cmr.virtual-product.config/set-virtual-product-provider-aliases! {"LPDAAC_ECS"  ["LP_ALIAS"]
+                                                                             "GSFCS4PA" []}))
+    (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+          [ast-coll] (vp/ingest-source-collections
+                       [(assoc
+                          (dc/collection
+                            {:entry-title ast-entry-title
+                             :short-name "AST_L1A"})
+                          :provider-id "LP_ALIAS")])
+          vp-colls (vp/ingest-virtual-collections [ast-coll])
+          granule-ur "SC:AST_L1A.003:2006227710"
+          ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
+                                                 (dg/granule ast-coll {:granule-ur granule-ur}))
+          expected-virtual-granule-urs (vp/source-granule->virtual-granule-urs
+                                         (assoc ast-l1a-gran :provider-id "LPDAAC_ECS"))
+          all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-virtual-granule-urs)]
+      (index/wait-until-indexed)
+      (vp/assert-matching-granule-urs
+        all-expected-granule-urs
+        (search/find-refs :granule {:page-size 50})))
+    (finally (dev-sys-util/eval-in-dev-sys
+               `(cmr.virtual-product.config/set-virtual-product-provider-aliases! {"LPDAAC_ECS"  []
+                                                                                   "GSFCS4PA" []})))))
 
 (deftest virtual-product-non-cmr-only-provider-test
   (let [_ (ingest/update-ingest-provider {:provider-id "LPDAAC_ECS"

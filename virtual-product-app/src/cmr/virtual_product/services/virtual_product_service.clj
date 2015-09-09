@@ -43,10 +43,12 @@
 (defn- annotate-event
   "Adds extra information to the event to help with processing"
   [{:keys [concept-id] :as event}]
-  (let [{:keys [provider-id concept-type]} (concepts/parse-concept-id concept-id)]
+  (let [{concept-type :concept-type
+         provider-alias :provider-id} (concepts/parse-concept-id concept-id)]
     (-> event
         (update-in [:action] keyword)
-        (assoc :provider-id provider-id :concept-type concept-type))))
+        (assoc :provider-id (config/provider-alias->provider-id provider-alias)
+               :concept-type concept-type))))
 
 (defn- virtual-granule-event?
   "Returns true if the granule identified by concept-type, provider-id and entry-title is virtual"
