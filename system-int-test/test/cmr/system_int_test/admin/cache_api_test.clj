@@ -81,7 +81,8 @@
                                          "index-names"
                                          "token-imp"
                                          "token-sid"
-                                         "xsl-transformer-templates"])
+                                         "xsl-transformer-templates"
+                                         "kms"])
       (s/only-with-real-database
         (testing "list caches for bootstrap"
           (let [response (list-caches-for-app (url/bootstrap-read-caches-url) admin-read-token)]
