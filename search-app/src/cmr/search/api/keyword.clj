@@ -104,7 +104,7 @@
 (defn- get-hierarchy-from-field
   "Returns all of the fields in the hierarchy starting from the provided field and including all
   fields after."
-  [keyword-hierarchy field]
+  [^clojure.lang.ISeq keyword-hierarchy field]
   (let [field-index (.indexOf keyword-hierarchy field)]
     (filter #(<= field-index (.indexOf keyword-hierarchy %)) keyword-hierarchy)))
 
