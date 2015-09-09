@@ -746,7 +746,7 @@
         "Instruments": {
           "type": "array",
           "items": {
-            "$ref": "umm-cmn-json-schema.json#/definitions/InstrumentType"
+            "$ref": "#/definitions/InstrumentType"
           },
           "minItems": 1
         }
