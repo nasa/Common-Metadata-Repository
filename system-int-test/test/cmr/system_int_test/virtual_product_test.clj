@@ -339,13 +339,6 @@
         (and (= 400 (:status response))
              (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))
 
-(defmacro with-env-vars
-  "Overrides the environment variables the config values will see within the block. Accepts a map
-  of environment variables to values."
-  [env-var-values & body]
-  `(with-redefs [c/env-var-value ~env-var-values]
-     ~@body))
-
 (deftest virtual-product-provider-alias-test
   (try (dev-sys-util/eval-in-dev-sys
          `(cmr.virtual-product.config/set-virtual-product-provider-aliases! {"LPDAAC_ECS"  ["LP_ALIAS"]
