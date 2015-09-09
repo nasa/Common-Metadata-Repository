@@ -132,7 +132,7 @@
         (when-let [field (first keyword-hierarchy)]
           (when-let [unique-values (seq (distinct (keep field keywords)))]
             (let [values-to-uuids (get-leaf-values-to-uuids keyword-hierarchy field keywords)]
-              {field
+              {(csk/->snake_case field)
                (for [value unique-values
                      :let [uuid (get values-to-uuids value)
                            all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy)
@@ -150,10 +150,12 @@
                                                          (filter #(= value (field %))
                                                                  keywords)))))))]]
                  (util/remove-nil-keys
-                   (merge subfield-maps
-                          {:subfields (seq (map name (keys subfield-maps)))
-                           :uuid uuid
-                           :value value})))})))))
+                   (util/map-keys->snake_case
+                     (merge subfield-maps
+                            {:subfields (seq (map #(name (csk/->snake_case %))
+                                                  (keys subfield-maps)))
+                             :uuid uuid
+                             :value value}))))})))))
 
 (defn- get-hierarchical-keywords
   "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the

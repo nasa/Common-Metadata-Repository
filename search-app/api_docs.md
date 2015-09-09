@@ -1809,18 +1809,18 @@ __Example Response__
         "subfields" : [ "subtype" ],
         "subtype" : [ {
           "value" : "Lidar/Laser Altimeters",
-          "subfields" : [ "short-name" ],
-          "short-name" : [ {
+          "subfields" : [ "short_name" ],
+          "short_name" : [ {
             "value" : "ATM",
-            "subfields" : [ "long-name" ],
-            "long-name" : [ {
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
               "value" : "Airborne Topographic Mapper",
               "uuid" : "c2428a35-a87c-4ec7-aefd-13ff410b3271"
             } ]
           }, {
             "value" : "LVIS",
-            "subfields" : [ "long-name" ],
-            "long-name" : [ {
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
               "value" : "Land, Vegetation, and Ice Sensor",
               "uuid" : "aa338429-35e6-4ee2-821f-0eac81802689"
             } ]
@@ -1835,11 +1835,11 @@ __Example Response__
         "subfields" : [ "subtype" ],
         "subtype" : [ {
           "value" : "Imaging Spectrometers/Radiometers",
-          "subfields" : [ "short-name" ],
-          "short-name" : [ {
+          "subfields" : [ "short_name" ],
+          "short_name" : [ {
             "value" : "SMAP L-BAND RADIOMETER",
-            "subfields" : [ "long-name" ],
-            "long-name" : [ {
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
               "value" : "SMAP L-Band Radiometer",
               "uuid" : "fee5e9e1-10f1-4f14-94bc-c287f8e2c209"
             } ]
@@ -1852,11 +1852,11 @@ __Example Response__
     "subfields" : [ "class" ],
     "class" : [ {
       "value" : "Chemical Meters/Analyzers",
-      "subfields" : [ "short-name" ],
-      "short-name" : [ {
+      "subfields" : [ "short_name" ],
+      "short_name" : [ {
         "value" : "ADS",
-        "subfields" : [ "long-name" ],
-        "long-name" : [ {
+        "subfields" : [ "long_name" ],
+        "long_name" : [ {
           "value" : "Automated DNA Sequencer",
           "uuid" : "554a3c73-3b48-43ea-bf5b-8b98bc2b11bc"
         } ]
