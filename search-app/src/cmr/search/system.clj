@@ -86,6 +86,9 @@
                       coll-cache/cache-key (coll-cache/create-cache)
                       transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
+                      ;; Note that search does not have a job to refresh the KMS cache. The indexer
+                      ;; already refreshes the cache. Since we use a consistent cache, the search
+                      ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)}
              :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf

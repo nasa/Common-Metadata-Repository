@@ -9,12 +9,21 @@
 
   The keywords are returned in a hierarchical format. The response format is such that the caller
   does not need to know the hierarchy, but it can be inferred from the results. Keywords are not
-  guaranteed to have values for every value in the hierarchy for that field, so the response will
-  return the next non-nil subfield value. It is possible for the keywords to have multiple
-  potential subfields below it. When this occurs the subfields property will indicate each of the
-  fields and will have a list of each of the fields below it.
+  guaranteed to have values for every subfield in the hierarchy, so the response will indicate
+  the next subfield below the current field in the hierarchy which has a value. It is possible for
+  the keywords to have multiple potential subfields below it for different keywords with the same
+  value for the current field in the hierarchy. When this occurs the subfields property will
+  include each of the subfields.
 
-  See the unit tests in cmr.search.test.api.keyword for detailed examples of the responses."
+  See the unit tests in cmr.search.test.api.keyword for detailed examples of the responses.
+
+  Commonly used parameters in this namespace are:
+  keyword-scheme     The type of keyword. For example :platforms or :instruments.
+  keyword-hierarchy  An ordered array of subfields for the given keyword scheme. For example,
+  [:category :series-entity :short-name :long-name] for the :platforms keyword scheme.
+  keyword-map        A single GCMD keyword with each of its subfields as a key in a map. If the
+                     keyword does not have a value for a subfield, that key will not be present in
+                     the map."
 
   (:require [compojure.core :refer :all]
             [cheshire.core :as json]
@@ -58,18 +67,21 @@
                 (-> valid-keywords first name csk/->snake_case))))))
 
 (defn- is-leaf?
-  "Determines if we are at the leaf point within the hierarchy for the provided keyword."
-  [remaining-hierarchy k-word]
-  (not (some? (seq (keep #(% k-word) remaining-hierarchy)))))
+  "Determines if we are at the leaf point within the hierarchy for the provided keyword. The
+  remaining-hierarchy parameter contains the fields that the caller is checking for a non-nil
+  value. A non-nil value indicates we are not yet at the last field in the hierarchy, and therefore
+  we are not at the leaf point."
+  [remaining-hierarchy keyword-map]
+  (empty? (filter #(% keyword-map) remaining-hierarchy)))
 
 (defn- get-leaf-values-to-uuids
-  "Returns a map of values for the given field to the UUID for that value. If the provided subfield
-  is not at the leaf level for a keyword, the value will not be included in the map."
+  "Returns a map of values for the given field to the UUID for that value. The value will only be
+  included in the map if the provided subfield is at the leaf level for a keyword."
   [keyword-hierarchy field keywords]
-  (into {} (keep (fn [k-word]
-                   (when (is-leaf? (rest keyword-hierarchy) k-word)
-                     [(field k-word) (:uuid k-word)]))
-                 keywords)))
+  (into {}
+        (for [keyword-map keywords
+              :when (is-leaf? (rest keyword-hierarchy) keyword-map)]
+          [(field keyword-map) (:uuid keyword-map)])))
 
 (defn- get-subfields-for-keyword
   "Figure out the set of all subfields which are directly below the current field for the provided
@@ -97,8 +109,8 @@
     (filter #(<= field-index (.indexOf keyword-hierarchy %)) keyword-hierarchy)))
 
 (defn- filter-keywords-with-non-nil-values
-  "Filters keywords such that any keywords which have values for any subfields between the start
-  of the keyword hierarchy and the provided subfield-name.
+  "Removes any keywords which have non-nil values for any subfields between the start of the keyword
+  hierarchy and the provided subfield-name.
 
   For example (filter-keywords [:a :b :c :d] :d keywords) would filter out any keywords which have
   a non-nil value for :b or :c."
@@ -113,49 +125,56 @@
                (rest keyword-hierarchy))))))
 
 (defn- parse-hierarchical-keywords
-  "Returns keywords in a hierarchical fashion based on the provided keyword hierarchy and keywords."
+  "Returns keywords in a hierarchical map based on the provided keyword hierarchy and a list of
+  keyword maps."
   [keyword-hierarchy keywords]
-  (when-let [field (first keyword-hierarchy)]
-    (let [unique-values (distinct (keep field keywords))
-          values-to-uuids (get-leaf-values-to-uuids keyword-hierarchy field keywords)]
-      (util/remove-nil-keys
-        {field
-         (seq (for [value unique-values
-                    :let [uuid (get values-to-uuids value)
-                          all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy)
-                                                                        keywords field value)
-                          subfield-maps (util/remove-nil-keys
-                                          (into {}
-                                                (reverse
-                                                  (for [subfield-name all-subfield-names]
-                                                    (parse-hierarchical-keywords
-                                                      (get-hierarchy-from-field
-                                                        keyword-hierarchy subfield-name)
-                                                      (filter-keywords-with-non-nil-values
-                                                        (rest keyword-hierarchy)
-                                                        subfield-name
-                                                        (filter #(= value (field %))
-                                                                keywords)))))))]]
-                (util/remove-nil-keys
-                  (merge subfield-maps
-                         {:subfields (seq (map name (keys subfield-maps)))
-                          :uuid uuid
-                          :value value}))))}))))
+  (into {}
+        (when-let [field (first keyword-hierarchy)]
+          (when-let [unique-values (seq (distinct (keep field keywords)))]
+            (let [values-to-uuids (get-leaf-values-to-uuids keyword-hierarchy field keywords)]
+              {field
+               (for [value unique-values
+                     :let [uuid (get values-to-uuids value)
+                           all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy)
+                                                                         keywords field value)
+                           subfield-maps (util/remove-nil-keys
+                                           (into {}
+                                                 (reverse
+                                                   (for [subfield-name all-subfield-names]
+                                                     (parse-hierarchical-keywords
+                                                       (get-hierarchy-from-field
+                                                         keyword-hierarchy subfield-name)
+                                                       (filter-keywords-with-non-nil-values
+                                                         (rest keyword-hierarchy)
+                                                         subfield-name
+                                                         (filter #(= value (field %))
+                                                                 keywords)))))))]]
+                 (util/remove-nil-keys
+                   (merge subfield-maps
+                          {:subfields (seq (map name (keys subfield-maps)))
+                           :uuid uuid
+                           :value value})))})))))
+
+(defn- get-hierarchical-keywords
+  "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the
+  keyword scheme is invalid."
+  [context keyword-scheme]
+  (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
+        (validate-keyword-scheme orig-keyword-scheme)
+        (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
+              gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
+              keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
+              hierarchical-keywords (parse-hierarchical-keywords
+                                      (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
+          {:staus 200
+           :headers {"Content-Type" (mt/format->mime-type :json)}
+           :body (json/generate-string hierarchical-keywords)})))
 
 (def keyword-api-routes
   (context "/keywords" []
     ;; Return a list of keywords for the given scheme
     (GET "/:keyword-scheme" {{:keys [keyword-scheme]} :params
                              request-context :request-context}
-      (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
-        (validate-keyword-scheme orig-keyword-scheme)
-        (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
-              gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
-              keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map request-context)))
-              hierarchical-keywords (parse-hierarchical-keywords
-                                      (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
-          {:staus 200
-           :headers {"Content-Type" (mt/format->mime-type :json)}
-           :body (json/generate-string hierarchical-keywords)})))))
+      (get-hierarchical-keywords request-context keyword-scheme))))
 
 
