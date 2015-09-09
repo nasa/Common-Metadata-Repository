@@ -225,7 +225,7 @@
                         :provider-id "LPDAAC_ECS")])
         vp-colls (vp/ingest-virtual-collections [ast-coll])
         ast-gran (vp/ingest-source-granule "LPDAAC_ECS"
-                           (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
+                                           (dg/granule ast-coll {:granule-ur "SC:AST_L1A.003:2006227720"}))
         prov-ast-coll (d/ingest "PROV"
                                 (dc/collection
                                   {:entry-title ast-entry-title}))
@@ -340,11 +340,11 @@
     (testing "If virtual products is disabled, there should be no translation"
       (try (dev-sys-util/eval-in-dev-sys
              `(cmr.virtual-product.config/set-virtual-products-enabled! false))
-        (let [request-json [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
-                            non-virtual-granule3 non-virtual-granule4 virtual-granule2 virtual-granule3]
+        (let [granule-entries [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
+                               non-virtual-granule3 non-virtual-granule4 virtual-granule2 virtual-granule3]
               response (vp/translate-granule-entries
-                         (json/generate-string request-json))]
-          (= request-json (json/parse-string (:body response) true)))
+                         (json/generate-string granule-entries))]
+          (= granule-entries (json/parse-string (:body response) true)))
         (finally (dev-sys-util/eval-in-dev-sys
                    `(cmr.virtual-product.config/set-virtual-products-enabled! true)))))))
 
