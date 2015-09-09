@@ -294,7 +294,7 @@
                  [source-granule non-virtual-granule1 virtual-granule1 non-virtual-granule2
                   non-virtual-granule3 non-virtual-granule4 virtual-granule2 virtual-granule3
                   non-virtual-granule3 non-virtual-granule3 virtual-granule4 source-granule
-                  non-virtual-granule1 virtual-granule1 ]
+                  non-virtual-granule1 virtual-granule1]
                  [source-granule non-virtual-granule1 source-granule non-virtual-granule2
                   non-virtual-granule3 non-virtual-granule4 source-granule source-granule
                   non-virtual-granule3 non-virtual-granule3 source-granule source-granule

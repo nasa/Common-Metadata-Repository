@@ -26,6 +26,19 @@
   {:default 5
    :type Long})
 
+(defconfig virtual-product-provider-aliases
+  "For each provider-id for which a virtual product is configured, define a set of provider-ids
+  which have the same virtual product configuration as the original."
+  {:default {"LPDAAC_ECS"  ["LPDAAC_ECS"]
+             "GSFCS4PA" ["GSFCS4PA"]}
+   :type :edn})
+
+(def provider-alias-to-provider-id-map
+  (into {} (mapcat
+             (fn [[provider-id aliases]]
+               (for [alias aliases]
+                 [alias provider-id])) (virtual-product-provider-aliases))))
+
 (defn rabbit-mq-config
   "Returns the rabbit mq configuration for the virtual-product application."
   []
@@ -135,7 +148,7 @@
 (defmulti generate-granule-ur
   "Generates a new granule ur for the virtual collection"
   (fn [provider-id source-short-name virtual-short-name granule-ur]
-    [provider-id source-short-name]))
+    [(get provider-alias-to-provider-id-map provider-id) source-short-name]))
 
 ;; AST_L1A granule urs look like this "SC:AST_L1A.003:2006227720". We generate them by using the
 ;; short name of the virtual collection instead of the source.
@@ -158,7 +171,7 @@
   "Compute source granule ur from the virtual granule ur. This function should be the inverse
   of generate-granule-ur."
   (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
-    [provider-id source-short-name]))
+    [(get provider-alias-to-provider-id-map provider-id) source-short-name]))
 
 (defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
@@ -198,7 +211,7 @@
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
   (fn [provider-id source-short-name source-umm virtual-umm]
-    [provider-id source-short-name]))
+    [(get provider-alias-to-provider-id-map provider-id) source-short-name]))
 
 ;; Default is to not do any update
 (defmethod update-virtual-granule-umm :default
