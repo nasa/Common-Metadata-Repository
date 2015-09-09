@@ -58,6 +58,13 @@
                                                        :cmr-only false
                                                        :small false})]
       (is (= [400 ["Provider Id [SMALL_PROV] is reserved"]]
+             [status errors]))))
+  (testing "save CMR provider is not allowed"
+    (let [{:keys [status errors]} (util/save-provider {:provider-id "CMR"
+                                                       :short-name "CMR"
+                                                       :cmr-only true
+                                                       :small false})]
+      (is (= [400 ["Provider Id [CMR] is reserved"]]
              [status errors])))))
 
 (deftest update-provider-test

@@ -7,7 +7,7 @@
             [clojure.string :as str]
             [cmr.metadata-db.services.util :as util]
             [cmr.metadata-db.services.concept-service :as cs]
-            [cmr.metadata-db.services.provider-service :as ps]
+            [cmr.metadata-db.services.provider-validation :as pv]
             [cmr.metadata-db.data.concepts :as c]
             [cmr.metadata-db.data.memory-db :as memory]
             [cmr.metadata-db.services.messages :as messages]
@@ -85,6 +85,20 @@
           :conflict
           [(messages/invalid-revision-id concept-id 2 1)]
           (#'cs/validate-concept-revision-id db {:provider-id "PROV1"} concept previous-concept))))))
+
+(deftest validate-system-level-provider-for-tags-test
+  (let [tag {:concept-type :tag
+             :short-name "TAG1"}
+        cmr-provider pv/cmr-provider
+        prov1 {:provider-id "PROV1"
+   :short-name "PROV1"
+   :cmr-only true
+   :small false}]
+    (is (= nil (cs/validate-system-level-provider-for-tags tag cmr-provider)))
+    (tu/assert-exception-thrown-with-errors
+      :invalid-data
+      ["Tag could not be associated with provider [PROV1]. Tags are system level entities."]
+      (cs/validate-system-level-provider-for-tags tag prov1))))
 
 ;;; Verify that the try-to-save logic is correct.
 (deftest try-to-save-test
