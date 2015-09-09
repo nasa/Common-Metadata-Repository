@@ -118,8 +118,7 @@
   "Returns the expected distributions for comparing with the distributions in the UMM-C record"
   [distributions]
   (->> distributions
-       (map convert-empty-record-to-nil)
-       (remove nil?)
+       (keep convert-empty-record-to-nil)
        seq))
 
 (defn- echo10-expected-distributions
@@ -129,7 +128,7 @@
   (some-> distributions
           first
           convert-empty-record-to-nil
-          (dissoc :DistributionSize :DistributionMedia)
+          (assoc :DistributionSize nil :DistributionMedia nil)
           vector))
 
 ;; ECHO 10
