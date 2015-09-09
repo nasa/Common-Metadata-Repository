@@ -61,6 +61,7 @@
                                 (object
                                   {:DistributionFormat (xpath "DataFormat")
                                    :Fees (xpath "Price")}))
+       :SpatialKeywords (select "/Collection/SpatialKeywords/Keyword")
        :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"
