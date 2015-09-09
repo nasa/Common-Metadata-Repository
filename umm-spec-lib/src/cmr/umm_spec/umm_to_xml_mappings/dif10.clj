@@ -157,6 +157,12 @@
      [:Role "DATA CENTER CONTACT"]
      [:Contact_Person
       [:Last_Name "Not provided"]]]]
+   (for-each "/Distributions"
+             [:Distribution
+              [:Distribution_Media (xpath "DistributionMedia")]
+              [:Distribution_Size (xpath "DistributionSize")]
+              [:Distribution_Format (xpath "DistributionFormat")]
+              [:Fees (xpath "Fees")]])
    [:Summary
     [:Abstract (xpath "/Abstract")]
     [:Purpose (xpath "/Purpose")]]

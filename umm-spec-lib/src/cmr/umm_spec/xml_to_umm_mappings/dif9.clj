@@ -30,6 +30,11 @@
                                   (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                                      (object {:BeginningDateTime (xpath "Start_Date")
                                                                               :EndingDateTime    (xpath "Stop_Date")}))}))
+       :Distributions (for-each "/DIF/:Distribution"
+                            (object {:DistributionMedia (xpath "Distribution_Media")
+                                     :DistributionSize (xpath "Distribution_Size")
+                                     :DistributionFormat (xpath "Distribution_Format")
+                                     :Fees (xpath "Fees")}))
        :ProcessingLevel (object
                           {:Id
                            (xpath "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
