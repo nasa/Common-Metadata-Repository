@@ -4,8 +4,6 @@
             [cmr.search.api.keyword :as k]
             [cmr.common.util :as util]))
 
-
-
 (deftest parse-hierarchical-keywords
   (util/are2
     [keyword-hierarchy keywords expected-hierarchy]
