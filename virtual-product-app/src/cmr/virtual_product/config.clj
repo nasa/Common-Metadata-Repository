@@ -37,7 +37,8 @@
   "Get the provider-id given the alias. If the alias is provider-id itself, provider-id is returned. nil is returned if it is not an alias for any provider-id"
   [alias]
   (let [provider-aliases (virtual-product-provider-aliases)]
-    (if (get provider-aliases alias)
+    ;; Check if alias is one of the provider ids defined in provider aliases configuration
+    (if (contains? provider-aliases alias)
       alias
       (some (fn [[provider-id aliases]]
               (when (contains? aliases alias) provider-id)) provider-aliases))))
