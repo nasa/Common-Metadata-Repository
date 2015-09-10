@@ -30,7 +30,8 @@
   "Returns virtual collections from a source collection"
   [source-collection]
   (for [virtual-coll-attribs (-> vp-config/source-to-virtual-product-config
-                                 (get [(:provider-id source-collection) (:entry-title source-collection)])
+                                 (get [(vp-config/provider-alias->provider-id (:provider-id source-collection))
+                                       (:entry-title source-collection)])
                                  :virtual-collections)]
     (assoc (dc/collection (merge (dissoc source-collection
                                          :revision-id :native-id :concept-id :entry-id :product)
@@ -44,8 +45,9 @@
 (defn source-granule->virtual-granule-urs
   "Returns the set of granule URs for the given source granule."
   [granule]
-  (let [{:keys [provider-id granule-ur]
+  (let [{provider-alias :provider-id granule-ur :granule-ur
          {:keys [entry-title]} :collection-ref} granule
+        provider-id (vp-config/provider-alias->provider-id provider-alias)
         vp-config (get vp-config/source-to-virtual-product-config [provider-id entry-title])]
     (for [virtual-coll (:virtual-collections vp-config)]
       (vp-config/generate-granule-ur
@@ -63,7 +65,8 @@
 (defmulti add-collection-attributes
   "A method to add custom attributes to collection concepts depending on the source collection"
   (fn [collection]
-    [(:provider-id collection) (get-in collection [:product :short-name])]))
+    [(vp-config/provider-alias->provider-id (:provider-id collection))
+     (get-in collection [:product :short-name])]))
 
 (defmethod add-collection-attributes :default
   [collection]
@@ -122,7 +125,10 @@
 
 (defn ingest-source-granule
   [provider-id concept & options]
-  (d/ingest provider-id (add-granule-attributes provider-id concept) (apply hash-map options)))
+  (d/ingest provider-id
+            (add-granule-attributes
+                          (vp-config/provider-alias->provider-id provider-id) concept)
+            (apply hash-map options)))
 
 
 (defn ingest-ast-coll
