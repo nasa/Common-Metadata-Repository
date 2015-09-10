@@ -6,7 +6,7 @@
 
             ;; XML -> UMM
             [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
+            [cmr.umm-spec.xml-to-umm-mappings.new-echo10 :as echo10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
@@ -61,7 +61,7 @@
 
 (defmethod parse-metadata [:collection :echo10]
   [_ _ metadata]
-  (xp/parse-xml echo10-to-umm/echo10-xml-to-umm-c metadata))
+  (echo10-to-umm/parse-echo10-xml metadata))
 
 (defmethod parse-metadata [:collection :dif]
   [_ _ metadata]
