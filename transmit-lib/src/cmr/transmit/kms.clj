@@ -20,11 +20,27 @@
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
+(def keyword-scheme->leaf-field-name
+  "Maps each keyword scheme to the subfield which identifies the keyword as a leaf node."
+  {:providers :short-name
+   :platforms :short-name
+   :instruments :short-name
+   :science-keywords :uuid})
+
+(def keyword-scheme->gcmd-resource-name
+  "Maps each keyword scheme to the GCMD resource name"
+  {:providers "providers/providers.csv"
+   :platforms "platforms/platforms.csv"
+   :instruments "instruments/instruments.csv"
+   :science-keywords "sciencekeywords/sciencekeywords.csv"})
+
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."
   {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
    :platforms [:category :series-entity :short-name :long-name :uuid]
-   :instruments [:category :class :type :subtype :short-name :long-name :uuid]})
+   :instruments [:category :class :type :subtype :short-name :long-name :uuid]
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
+                      :detailed-variable :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -34,15 +50,15 @@
                       :long-name :data-center-url :uuid]}))
 
 (defn- find-invalid-entries
-  "Checks the entries for any duplicate short names. Short names should be unique otherwise we
-  do not know how to correctly map from short name to the full hierarchy.
+  "Checks the entries for any duplicate leaf field values. The leaf field should be unique
+  otherwise we do not know how to correctly map from the provided leaf value to the full hierarchy.
 
   Takes a list of the keywords represented as a map with each subfield name being a key.
   Returns a sequence of invalid entries."
-  [keyword-entries]
+  [keyword-entries leaf-field-name]
   (->> keyword-entries
-       (group-by :short-name)
-       ;; Keep all the ones that have duplicate short names
+       (group-by leaf-field-name)
+       ;; Keep all the ones that have duplicate leaf field names
        (util/remove-map-keys #(= (count %) 1))
        ;; Get all the entries with duplicates as a single sequence
        vals
@@ -84,35 +100,36 @@
         ;; Line 2 contains the subfield names
         kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
         _ (validate-subfield-names keyword-scheme kms-subfield-names)
+        leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
         keyword-entries (->> all-lines
                              (drop NUM_HEADER_LINES)
                              ;; Create a map for each row using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                              (map remove-blank-keys)
                              ;; We only want keyword entries with a short-name (leaf entries)
-                             (filter :short-name))
-        invalid-entries (find-invalid-entries keyword-entries)]
+                             (filter leaf-field-name))
+        invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
     (doseq [entry invalid-entries]
       (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
                     (:short-name entry) entry)))
 
-    ;; Create a map with the short-names as keys to the full hierarchy for that short-name
+    ;; Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
+    ;; for that entry. GCMD ensures that no two leaf fields can be the same when compared in a case
+    ;; insensitive manner.
     (into {}
           (for [entry keyword-entries
-                :let [{:keys [short-name]} entry]]
-            [short-name entry]))))
+                :let [leaf-field (leaf-field-name entry)]]
+            [(str/lower-case leaf-field) entry]))))
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
   keyword scheme."
   [context keyword-scheme]
   (let [conn (config/context->app-connection context :kms)
-        url (format "%s/%s/%s.csv"
-                    (conn/root-url conn)
-                    (name keyword-scheme)
-                    (name keyword-scheme))
+        gcmd-resource-name (keyword-scheme keyword-scheme->gcmd-resource-name)
+        url (format "%s/%s" (conn/root-url conn) gcmd-resource-name)
         params (merge
                  (config/conn-params conn)
                  {:throw-exceptions true})
@@ -148,4 +165,5 @@
   (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :providers))
   (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :instruments))
   (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :platforms))
+  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :science-keywords))
   )

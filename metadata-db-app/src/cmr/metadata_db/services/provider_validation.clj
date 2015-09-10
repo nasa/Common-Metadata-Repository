@@ -81,7 +81,5 @@
 (defn validate-provider
   "Validates the provider. Throws an exception with validation errors if the provider is invalid."
   [provider]
-  (let [errors (v/validate provider-validations provider)]
-    (when (seq errors)
-      (errors/throw-service-errors :bad-request (v/create-error-messages errors)))))
+  (v/validate! provider-validations provider))
 

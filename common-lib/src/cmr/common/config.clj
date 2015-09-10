@@ -4,6 +4,7 @@
   (:require [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
+            [clojure.edn :as edn]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
 (defonce ^{:private true
@@ -101,9 +102,12 @@
               ;; Within a namespace print it out in config key order
               (for [[config-key {:keys [default doc-string parser] config-type :type}] (sort-by first sub-map)
                     :let [env-name (config-name->env-name config-key)
-                          current (config-value* config-key default parser)]]
+                          current (config-value* config-key default parser)
+                          type-name (if (class? config-type)
+                                      (.getSimpleName ^Class config-type)
+                                      (str config-type))]]
                 (str "\n" env-name "\n" doc-string
-                     "\nType: " (.getSimpleName ^Class config-type)
+                     "\nType: " type-name
                      "\nDefault: " (pr-str default)
                      "\nCurrent: " (pr-str current))))))))))
 
@@ -132,7 +136,8 @@
   {String identity
    Long #(Long. %)
    Double #(Double. %)
-   Boolean parse-boolean})
+   Boolean parse-boolean
+   :edn edn/read-string})
 
 (defmacro defconfig
   "Defines a configuration parameter that will be taken from environment variable of the form
@@ -166,7 +171,9 @@
 
   (let [{default :default config-type :type parser :parser} options
         config-type (if config-type
-                      (resolve config-type)
+                      (if (= :edn config-type)
+                        config-type
+                        (resolve config-type))
                       String)]
     (when-not doc-string
       (throw (Exception. "defconfig :doc-string is required")))
@@ -190,6 +197,7 @@
          ;; Check that the type of the default value matches the type specified
          ;; This has to be done here to allow for the default value to be the result of calling a function
          (when (and (nil? ~parser)
+                    (not= :edn ~config-type)
                     (not= (type default-value#) ~config-type))
            (throw
              (Exception.

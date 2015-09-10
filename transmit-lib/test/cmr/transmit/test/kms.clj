@@ -31,7 +31,7 @@
 
 (deftest validate-entries-test
   (testing "No duplicates"
-    (is (nil? (seq (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries)))))
+    (is (nil? (seq (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries :short-name)))))
 
   (testing "With duplicates"
     (let [expected [{:short-name "First Entry",
@@ -41,16 +41,17 @@
                     {:short-name "First Entry",
                      :field-1 "dupe-field-1",
                      :uuid "123-abd"}]
-          actual (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries-with-duplicates)]
+          actual (#'cmr.transmit.kms/find-invalid-entries sample-kms-entries-with-duplicates
+                                                          :short-name)]
       (is (= expected actual)))))
 
 (deftest parse-entries-from-csv-test
   (testing "Successful parsing"
-    (let [expected {"First Entry" {:short-name "First Entry"
+    (let [expected {"first entry" {:short-name "First Entry"
                                    :series-entity "field2"
                                    :category "field1 value, (with commas)"
                                    :uuid "abc-123"}
-                    "Last Entry" {:short-name "Last Entry"
+                    "last entry" {:short-name "Last Entry"
                                   :long-name "This is the Last Entry"
                                   :series-entity "field2 v2"
                                   :category "field1 value 2"

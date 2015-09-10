@@ -5,7 +5,7 @@
 (defn missing-concept-id [concept-type provider-id native-id]
   (format
     "Concept with concept-type [%s] provider-id [%s] native-id [%s] does not exist."
-    concept-type
+    (name concept-type)
     provider-id
     native-id))
 

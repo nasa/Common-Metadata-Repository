@@ -8,9 +8,9 @@
   use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
 
   The KMS keywords are all cached under a single :kms key. The structure looks like the following:
-  {:kms {:platforms [\"SN-1\" {:category \"C\" :series-entity \"S\"
+  {:kms {:platforms [\"sn-1\" {:category \"C\" :series-entity \"S\"
                                :short-name \"SN-1\" :long-name \"LN\"}
-                     \"SN-2\" {...}
+                     \"sn-2\" {...}
                     ]}
          :providers [...]}"
   (:require [cmr.common.services.errors :as errors]
@@ -24,6 +24,7 @@
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [clojure.set :as set]
+            [clojure.string :as str]
             [cheshire.core :as json]))
 
 (def FIELD_NOT_PRESENT
@@ -72,7 +73,7 @@
   nil will be returned."
   [gcmd-keywords-map keyword-scheme short-name]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (get-in gcmd-keywords-map [keyword-scheme short-name]))
+  (get-in gcmd-keywords-map [keyword-scheme (str/lower-case short-name)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
@@ -90,6 +91,5 @@
   {:job-type RefreshKmsCacheJob
    :job-key job-key
    :interval 7200})
-
 
 
