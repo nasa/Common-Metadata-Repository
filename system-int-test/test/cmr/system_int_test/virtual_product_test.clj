@@ -339,10 +339,20 @@
         (and (= 400 (:status response))
              (= ["/1 object has missing required properties ([\"concept-id\"])"] errors))))))
 
+(defmacro with-provider-aliases
+  "Wraps body while using aliases for the provider aliases."
+  [aliases body]
+  `(let [orig-aliases# (cmr.virtual-product.config/virtual-product-provider-aliases)]
+    (dev-sys-util/eval-in-dev-sys
+      (cmr.virtual-product.config/set-virtual-product-provider-aliases! ~aliases))
+    (try
+      ~body
+      (finally
+        (dev-sys-util/eval-in-dev-sys
+          (cmr.virtual-product.config/set-virtual-product-provider-aliases! orig-aliases#))))))
+
 (deftest virtual-product-provider-alias-test
-  (try (dev-sys-util/eval-in-dev-sys
-         `(cmr.virtual-product.config/set-virtual-product-provider-aliases! {"LPDAAC_ECS"  ["LP_ALIAS"]
-                                                                             "GSFCS4PA" []}))
+  (with-provider-aliases {"LPDAAC_ECS"  #{"LP_ALIAS"}}
     (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
           [ast-coll] (vp/ingest-source-collections
                        [(assoc
@@ -360,10 +370,7 @@
       (index/wait-until-indexed)
       (vp/assert-matching-granule-urs
         all-expected-granule-urs
-        (search/find-refs :granule {:page-size 50})))
-    (finally (dev-sys-util/eval-in-dev-sys
-               `(cmr.virtual-product.config/set-virtual-product-provider-aliases! {"LPDAAC_ECS"  []
-                                                                                   "GSFCS4PA" []})))))
+        (search/find-refs :granule {:page-size 50})))))
 
 (deftest virtual-product-non-cmr-only-provider-test
   (let [_ (ingest/update-ingest-provider {:provider-id "LPDAAC_ECS"

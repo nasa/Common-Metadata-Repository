@@ -29,8 +29,8 @@
 (defconfig virtual-product-provider-aliases
   "For each provider-id for which a virtual product is configured, define a set of provider-ids
   which have the same virtual product configuration as the original."
-  {:default {"LPDAAC_ECS"  []
-             "GSFCS4PA" []}
+  {:default {"LPDAAC_ECS"  #{}
+             "GSFCS4PA" #{}}
    :type :edn})
 
 (defn provider-alias->provider-id
@@ -40,7 +40,7 @@
     (if (get provider-aliases alias)
       alias
       (some (fn [[provider-id aliases]]
-              (when (get (set aliases) alias) provider-id)) provider-aliases))))
+              (when (contains? aliases alias) provider-id)) provider-aliases))))
 
 (defn rabbit-mq-config
   "Returns the rabbit mq configuration for the virtual-product application."
