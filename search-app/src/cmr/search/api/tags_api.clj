@@ -10,19 +10,13 @@
 ;; TODO document the API in api_docs.md
 
 (defn create-tag
-  "TODO"
+  "Processes a create tag request."
   [context params headers body]
   ;; TODO validate that content type is json
   ;; TODO validate that accept header is JSON (maybe)
 
-
-  ;; TODO get user id from the token in params or headers
-  ;; TODO parse the body
   ;; TODO validate body against a JSON schema
 
-  ;; TODO at service level validate that only certain fields are passed in.
-
-  ;; TODO create the tag
   (let [tag (json/parse-string (slurp body) true)
         response (tagging-service/create-tag context tag)]
     {:status 200
