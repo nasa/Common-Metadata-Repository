@@ -55,6 +55,8 @@
     :CollectionProgress (value-of doc "/Collection/CollectionState")
     :AccessConstraints {:Description (value-of doc "/Collection/RestrictionComment")
                         :Value (value-of doc "/Collection/RestrictionFlag")}
+    :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
+                     :Fees (value-of doc "/Collection/Price")}]
     :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
     :SpatialKeywords (values-at doc "/Collection/SpatialKeywords/Keyword")
     :TemporalExtents (parse-temporal doc)

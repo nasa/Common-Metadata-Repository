@@ -33,6 +33,11 @@
     [:CollectionState (:CollectionProgress c)]
     [:RestrictionFlag (-> c :AccessConstraints :Value)]
     [:RestrictionComment (-> c :AccessConstraints :Description)]
+    [:Price (-> c :Distributions first :Fees)]
+    [:DataFormat (-> c :Distributions first :DistributionFormat)]
+    [:SpatialKeywords
+     (for [kw (:SpatialKeywords c)]
+       [:Keyword kw])]
     [:TemporalKeywords
      (for [kw (:TemporalKeywords c)]
        [:Keyword kw])]

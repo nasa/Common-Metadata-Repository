@@ -199,7 +199,9 @@
        "boolean" (= "true" x)
        ;; Return nil instead of empty vectors.
        "array"   (when (seq x)
-                   (mapv #(coerce schema (:items definition) %) x))
+                   (let [coerced (remove nil? (map #(coerce schema (:items definition) %) x))]
+                     (when (seq coerced)
+                       (vec coerced))))
        "object"  (let [ctor (record-ctor schema type-name)
                        kvs (for [[k v] x]
                              (when v
