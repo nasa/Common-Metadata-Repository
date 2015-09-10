@@ -414,3 +414,9 @@
                         (map (fn [x]
                                (apply f x args))
                              xs)))))
+
+(defn map-by
+  "Like group-by but assumes that all the keys returned by f will be unique per item."
+  [f items]
+  (into {} (for [item items] [(f item) item])))
+

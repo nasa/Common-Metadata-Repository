@@ -8,10 +8,7 @@
   (util/are2
     [keyword-hierarchy keywords expected-hierarchy]
     (= expected-hierarchy
-       (->> keywords
-            (map #(#'cmr.search.api.keyword/keyword->hierarchy % keyword-hierarchy))
-            (reduce #'cmr.search.api.keyword/merge-hierarchical-maps {})
-            (#'cmr.search.api.keyword/collapse-hierarchical-map)))
+       (#'cmr.search.api.keyword/flat-keywords->hierarchical-keywords keywords keyword-hierarchy))
 
     "No matching keywords"
     [:a :b] nil {}

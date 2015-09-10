@@ -81,11 +81,6 @@
         {current-subfield-snake-case #{{:value current-value
                                         :uuid (:uuid keyword-map)}}}))))
 
-(defn- map-by
-  "Like group-by but assumes that all the keys returned by f will be unique per item."
-  [f items]
-  (into {} (for [item items] [(f item) item])))
-
 (defn- merge-hierarchical-maps
   "Takes two hierarchical maps and merges them together."
   [hm1 hm2]
@@ -95,8 +90,8 @@
                        ;; Find the values in common by using map-by and then merge those maps.
                        ;; The merge-with here recursively calls into the same function
                        (->> (merge-with merge-hierarchical-maps
-                                        (map-by :value existing-values)
-                                        (map-by :value new-values))
+                                        (util/map-by :value existing-values)
+                                        (util/map-by :value new-values))
                             vals
                             set))
                      (dissoc hm1 :value :uuid)
@@ -121,7 +116,7 @@
   [hm]
   (let [collapsed-map (reduce
                         (fn [new-hm [k values]]
-                          (let [values-by-value (map-by :value values)]
+                          (let [values-by-value (util/map-by :value values)]
                             ;; Determine if one of the values was nil
                             (if-let [nil-value-map (get values-by-value nil)]
                               (merge new-hm
@@ -149,9 +144,18 @@
 
 (defn- collapse-hierarchical-map
   "Takes a hierarchical map and collapses it so that any subfields with nil values are removed
-  from the map. Also adds a subfields key to indicate the subfields directly below a given field."
+  from the map. Also adds a subfields key to indicate the subfields directly below a given field.
+  The subfields key is not included at the topmost level."
   [hm]
   (dissoc (collapse-hierarchical-map* hm) :subfields))
+
+(defn- flat-keywords->hierarchical-keywords
+  "Converts flat keywords into hierarchical keywords."
+  [flat-keywords keyword-hierarchy]
+  (->> flat-keywords
+       (map #(keyword->hierarchy % keyword-hierarchy))
+       (reduce merge-hierarchical-maps {})
+       collapse-hierarchical-map))
 
 (defn- get-hierarchical-keywords
   "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the
@@ -163,10 +167,7 @@
           gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
           keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
           keyword-hierarchy (cmr-keyword-scheme frf/nested-fields-mappings)
-          hierarchical-keywords (->> keywords
-                                     (map #(keyword->hierarchy % keyword-hierarchy))
-                                     (reduce merge-hierarchical-maps {})
-                                     collapse-hierarchical-map)]
+          hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
       {:staus 200
        :headers {"Content-Type" (mt/format->mime-type :json)}
        :body (json/generate-string hierarchical-keywords)})))
