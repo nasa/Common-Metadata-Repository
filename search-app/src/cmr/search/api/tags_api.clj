@@ -33,12 +33,11 @@
                                   :maxLength 4000}}
        :required [:namespace :value]})))
 
-
 (defn create-tag
   "Processes a create tag request."
   [context params headers body]
-  ;; TODO validate that content type is json
-  ;; TODO validate that accept header is JSON (maybe)
+  ;; Use extract-header-mime-type to validate that it's JSON
+  (mt/extract-header-mime-type #{mt/json} headers "content-type" true)
 
   (let [body (slurp body)]
     (when-let [errors (seq (js/validate-json tag-schema body))]
