@@ -143,6 +143,8 @@
    [:Data_Set_Progress (xpath "/CollectionProgress")]
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]
+   (for-each "/SpatialKeywords"
+             [:Location (xpath ".")])
    [:Project
     [:Short_Name "dummy project short name"]]
    [:Quality (xpath "/Quality")]
@@ -157,6 +159,12 @@
      [:Role "DATA CENTER CONTACT"]
      [:Contact_Person
       [:Last_Name "Not provided"]]]]
+   (for-each "/Distributions"
+             [:Distribution
+              [:Distribution_Media (xpath "DistributionMedia")]
+              [:Distribution_Size (xpath "DistributionSize")]
+              [:Distribution_Format (xpath "DistributionFormat")]
+              [:Fees (xpath "Fees")]])
    [:Summary
     [:Abstract (xpath "/Abstract")]
     [:Purpose (xpath "/Purpose")]]

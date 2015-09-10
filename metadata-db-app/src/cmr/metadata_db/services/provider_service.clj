@@ -23,7 +23,7 @@
     (providers/save-provider db provider)))
 
 (deftracefn get-providers
-  "Get the list of providers."
+  "Get the list of providers. The special provider 'cmr' is not included in the returned list."
   [context]
   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)]
@@ -35,7 +35,9 @@
   ([context provider-id]
    (get-provider-by-id context provider-id false))
   ([context provider-id throw-error?]
-   (or (providers/get-provider (mdb-util/context->db context) provider-id)
+   (or (when (= (:provider-id pv/cmr-provider) provider-id)
+         pv/cmr-provider)
+       (providers/get-provider (mdb-util/context->db context) provider-id)
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
 
@@ -59,8 +61,7 @@
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
-  (when (= pv/small-provider-id provider-id)
-    (cmsg/data-error :bad-request msg/small-provider-cannot-be-deleted))
+  (pv/validate-provider-id-deletion provider-id)
   (let [db (mdb-util/context->db context)
         provider (get-provider-by-id context provider-id true)
         result (providers/delete-provider db provider)]

@@ -19,6 +19,7 @@
        :TemporalKeywords (for-each "/DIF/Data_Resolution"
                                    (xpath "Temporal_Resolution"))
        :CollectionProgress (xpath "/DIF/Data_Set_Progress")
+       :SpatialKeywords (select "/DIF/Location")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})
@@ -30,6 +31,11 @@
                                   (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
                                                                      (object {:BeginningDateTime (xpath "Start_Date")
                                                                               :EndingDateTime    (xpath "Stop_Date")}))}))
+       :Distributions (for-each "/DIF/:Distribution"
+                            (object {:DistributionMedia (xpath "Distribution_Media")
+                                     :DistributionSize (xpath "Distribution_Size")
+                                     :DistributionFormat (xpath "Distribution_Format")
+                                     :Fees (xpath "Fees")}))
        :ProcessingLevel (object
                           {:Id
                            (xpath "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")

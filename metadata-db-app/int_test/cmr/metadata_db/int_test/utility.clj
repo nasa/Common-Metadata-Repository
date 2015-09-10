@@ -45,46 +45,66 @@
 ;;; concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- concept
+  "Create a concept map for any concept type"
+  [provider-id concept-type uniq-num attributes]
+  (merge {:native-id (str "native-id " uniq-num)
+          :metadata (str "data here " uniq-num)
+          :deleted false}
+         attributes
+         ;; concept-type and provider-id args take precedence over attributes
+         {:provider-id provider-id
+          :concept-type concept-type}))
+
 (defn collection-concept
   "Creates a collection concept"
   ([provider-id uniq-num]
    (collection-concept provider-id uniq-num {}))
   ([provider-id uniq-num attributes]
-   (let [extra-fields (:extra-fields attributes)
-         main-attributes (dissoc attributes :extra-fields)
-         short-name (str "short" uniq-num)
+   (let [short-name (str "short" uniq-num)
          version-id (str "V" uniq-num)
-         collection {:concept-type :collection
-                     :native-id (str "native-id " uniq-num)
-                     :provider-id provider-id
-                     :user-id (str "user" uniq-num)
-                     :metadata (str "xml here " uniq-num)
-                     :format "application/echo10+xml"
-                     :deleted false
-                     :extra-fields {:short-name short-name
-                                    :version-id version-id
-                                    :entry-id (str short-name "_" version-id)
-                                    :entry-title (str "dataset" uniq-num)
-                                    :delete-time nil}}]
-     (update-in (merge collection main-attributes) [:extra-fields] merge extra-fields))))
+         ;; ensure that the required extra-fields are available but allow them to be
+         ;; overridden in attributes
+         extra-fields (merge {:short-name short-name
+                              :version-id version-id
+                              :entry-id (str short-name "_" version-id)
+                              :entry-title (str "dataset" uniq-num)
+                              :delete-time nil}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/echo10+xml"
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     (concept provider-id :collection uniq-num attributes))))
 
 (defn granule-concept
   "Creates a granule concept"
   ([provider-id parent-collection-id uniq-num]
    (granule-concept provider-id parent-collection-id uniq-num {}))
   ([provider-id parent-collection-id uniq-num attributes]
-   (let [extra-fields (:extra-fields attributes)
-         main-attributes (dissoc attributes :extra-fields)
-         granule {:concept-type :granule
-                  :native-id (str "native-id " uniq-num)
-                  :provider-id provider-id
-                  :metadata (str "xml here " uniq-num)
-                  :format "application/echo10+xml"
-                  :deleted false
-                  :extra-fields {:parent-collection-id parent-collection-id
-                                 :delete-time nil
-                                 :granule-ur (str "granule-ur " uniq-num)}}]
-     (update-in (merge granule main-attributes) [:extra-fields] merge extra-fields))))
+   (let [extra-fields (merge {:parent-collection-id parent-collection-id
+                              :delete-time nil
+                              :granule-ur (str "granule-ur " uniq-num)}
+                             (:extra-fields attributes))
+         attributes (merge {:format "application/echo10+xml"
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     (concept provider-id :granule uniq-num attributes))))
+
+(defn tag-concept
+  "Creates a tag concept"
+  ([uniq-num]
+   (tag-concept uniq-num {}))
+  ([uniq-num attributes]
+   (let [namespace (str "namespace" uniq-num)
+         value (str "value" uniq-num)
+         native-id (str namespace (char 29) value)
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/edn"
+                            :native-id native-id}
+                           attributes)]
+     ;; no provider-id should be specified for tags
+     (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -288,7 +308,7 @@
   save-result)
 
 (defn create-and-save-collection
-  "Creates, saves, and returns a concept with its data from metadata-db. "
+  "Creates, saves, and returns a collection concept with its data from metadata-db. "
   ([provider-id uniq-num]
    (create-and-save-collection provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
@@ -301,13 +321,26 @@
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-granule
-  "Creates, saves, and returns a concept with its data from metadata-db"
+  "Creates, saves, and returns a granule concept with its data from metadata-db"
   ([provider-id parent-collection-id uniq-num]
    (create-and-save-granule provider-id parent-collection-id uniq-num 1))
   ([provider-id parent-collection-id uniq-num num-revisions]
    (create-and-save-granule provider-id parent-collection-id uniq-num num-revisions {}))
   ([provider-id parent-collection-id uniq-num num-revisions attributes]
    (let [concept (granule-concept provider-id parent-collection-id uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-tag
+  "Creates, saves, and returns a tag concept with its data from metadata-db"
+  ([uniq-num]
+   (create-and-save-tag uniq-num 1))
+  ([uniq-num num-revisions]
+   (create-and-save-tag uniq-num num-revisions {}))
+  ([uniq-num num-revisions attributes]
+   (let [concept (tag-concept uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

@@ -37,6 +37,7 @@
        :DataLanguage (xpath "/DIF/Dataset_Language")
        :TemporalKeywords (select "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
        :CollectionProgress (xpath "/DIF/Data_Set_Progress")
+       :SpatialKeywords (select "/DIF/Location")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})
@@ -82,6 +83,11 @@
                                                      :DurationValue (xpath "Duration_Value")
                                                      :PeriodCycleDurationUnit (xpath "Period_Cycle_Duration_Unit")
                                                      :PeriodCycleDurationValue (xpath "Period_Cycle_Duration_Value")}))}))
+       :Distributions (for-each "/DIF/:Distribution"
+                            (object {:DistributionMedia (xpath "Distribution_Media")
+                                     :DistributionSize (xpath "Distribution_Size")
+                                     :DistributionFormat (xpath "Distribution_Format")
+                                     :Fees (xpath "Fees")}))
        :ProcessingLevel (object
                           {:Id (xpath "/DIF/Product_Level_Id")})
        :AdditionalAttributes

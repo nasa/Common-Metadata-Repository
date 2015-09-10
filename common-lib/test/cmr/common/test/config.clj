@@ -42,6 +42,11 @@
   {:default {}
    :parser edn/read-string})
 
+(defconfig test-edn
+  "This is a test bool configuration parameter defaulting to false"
+  {:default {}
+   :type :edn})
+
 (defconfig test-default-fn-call
   "This is a test config that calls functions for setting the default and the type."
   {:default (+ 1 2)
@@ -116,6 +121,20 @@
         (with-env-vars
           {"CMR_TEST_CUSTOM_PARSER" "[1 2 3]"}
           (is (= [1 2 3] (test-custom-parser)))))))
+
+  (testing "EDN configs"
+    (testing "default value"
+      (is (= {} (test-edn))))
+
+    (testing "Overriding the value"
+      (set-test-edn! {:a 1})
+      (is (= {:a 1} (test-edn)))
+      (testing "env variable value"
+        (with-env-vars
+          {"CMR_TEST_EDN" "{\"key1\" [\"value1\",\"value2\"]
+                            \"key2\" [\"value3\"]}"}
+          (is (= {"key1" ["value1" "value2"]
+                  "key2" ["value3"]}  (test-edn)))))))
 
   (testing "default using a function call"
     (is (= 3 (test-default-fn-call)))))

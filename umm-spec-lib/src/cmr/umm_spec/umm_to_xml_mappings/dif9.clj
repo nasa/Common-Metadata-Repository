@@ -43,6 +43,8 @@
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
    [:Data_Set_Progress (xpath "/CollectionProgress")]
+   (for-each "/SpatialKeywords"
+             [:Location (xpath ".")])
    (for-each "/TemporalKeywords"
              [:Data_Resolution
               [:Temporal_Resolution (xpath ".")]])
@@ -57,6 +59,12 @@
     [:Personnel
      [:Role "DummyRole"]
      [:Last_Name "dummy last name"]]]
+   (for-each "/Distributions"
+             [:Distribution
+              [:Distribution_Media (xpath "DistributionMedia")]
+              [:Distribution_Size (xpath "DistributionSize")]
+              [:Distribution_Format (xpath "DistributionFormat")]
+              [:Fees (xpath "Fees")]])
    [:Summary
     [:Abstract (xpath "/Abstract")]
     [:Purpose (xpath "/Purpose")]]

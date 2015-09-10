@@ -31,6 +31,11 @@
   (when-let [value (extract-xpath-context-value xpath-context)]
     (Long/parseLong ^String value)))
 
+(defmethod parse-primitive-value "number"
+  [parse-type xpath-context]
+  (when-let [value (extract-xpath-context-value xpath-context)]
+    (Double/parseDouble ^String value)))
+
 (defmethod parse-primitive-value "boolean"
   [parse-type xpath-context]
   (when-let [value (extract-xpath-context-value xpath-context)]

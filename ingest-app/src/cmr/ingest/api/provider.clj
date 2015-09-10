@@ -1,5 +1,5 @@
 (ns cmr.ingest.api.provider
-  "Defines the HTTP URL routes for the application."
+  "Defines the HTTP URL routes for the provider endpoint in the ingest application."
   (:require [clojure.walk :as walk]
             [compojure.core :refer :all]
             [cmr.common.mime-types :as mt]
