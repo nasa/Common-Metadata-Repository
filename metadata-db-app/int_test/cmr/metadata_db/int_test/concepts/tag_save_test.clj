@@ -32,8 +32,7 @@
           "failure when using non system-level provider"
           (assoc (util/tag-concept 2) :provider-id "REG_PROV")
           422
-          [(str "Tag could not be associated with provider [REG_PROV]. Tags are system level"
-                " entities.")])))
+          ["Tag could not be associated with provider [REG_PROV]. Tags are system level entities."])))
 
 (deftest save-tag-with-concept-id
   (testing "with concept-id"
@@ -44,6 +43,10 @@
       (is (= revision-id 1))
       (is (= true (util/verify-concept-was-saved
                     (assoc tag :revision-id revision-id :provider-id "CMR"))))
+
+      (testing "Get Tag Concept Id"
+        (is (= {:status 200 :concept-id concept-id :errors nil}
+               (util/get-concept-id :tag "CMR" (:native-id tag)))))
 
       (testing "new revision"
         (let [{:keys [status revision-id]} (util/save-concept (assoc tag :revision-id 2))]

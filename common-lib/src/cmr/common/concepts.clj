@@ -6,7 +6,7 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule})
+  #{:collection :granule :tag})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"

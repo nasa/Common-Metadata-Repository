@@ -5,7 +5,8 @@
   A validation is a function. It takes 2 arguments a field path vector and a value. It returns either
   nil or a map of field paths to a list of errors. Maps and lists will automatically be converted
   into record-validation or seq-of-validations."
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cmr.common.services.errors :as errors]))
 
 (comment
 
@@ -119,6 +120,14 @@
   [validation value]
   (let [validation (auto-validation-convert validation)]
     (validation [] value)))
+
+(defn validate!
+  "Validates the given value with the validation. If there are any errors they are thrown as a service
+  error"
+  [validation value]
+  (let [errors (validate validation value)]
+    (when (seq errors)
+      (errors/throw-service-errors :bad-request (create-error-messages errors)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
