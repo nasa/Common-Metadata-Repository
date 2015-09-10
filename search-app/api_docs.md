@@ -1784,6 +1784,87 @@ Find all the tiles which a line intersects.
 
 The output of these requests is a list of tuples containing tile coordinates, e.g: [[16,8],[16,9],[17,8],[17,9]], in the json format. The first value in each tuple is the horizontal grid coordinate(h), i.e. along east-west and the second value is the vertical grid coordinate(v), i.e. along north-south.
 
+### Retrieve Controlled Keywords
+
+The keyword endpoint is used to retrieve the full list of keywords for each of the controlled vocabulary fields. The controlled vocabulary is cached within CMR, but the actual source is the GCMD Keyword Management System (KMS). Users of this endpoint are interested in knowing what the CMR considers as the current controlled vocabulary, since it is the cached CMR values that will eventually be enforced on CMR ingest.
+
+The keywords are returned in a hierarchical JSON format. The response format is such that the caller does not need to know the hierarchy, but it can be inferred from the results. Keywords are not guaranteed to have values for every subfield in the hierarchy, so the response will indicate the next subfield below the current field in the hierarchy which has a value. It is possible for the keywords to have multiple potential subfields below it for different keywords with the same value for the current field in the hierarchy. When this occurs the subfields property will include each of the subfields.
+
+Supported keywords include 'archive_centers', 'platforms', 'instruments', and 'science_keywords'. The endpoint also supports 'providers' which is an alias to 'archive_centers'.
+
+    curl -i "%CMR-ENDPOINT%/keywords/instruments?pretty=true"
+
+__Example Response__
+
+```
+{
+  "category" : [ {
+    "value" : "Earth Remote Sensing Instruments",
+    "subfields" : [ "class" ],
+    "class" : [ {
+      "value" : "Active Remote Sensing",
+      "subfields" : [ "type" ],
+      "type" : [ {
+        "value" : "Altimeters",
+        "subfields" : [ "subtype" ],
+        "subtype" : [ {
+          "value" : "Lidar/Laser Altimeters",
+          "subfields" : [ "short_name" ],
+          "short_name" : [ {
+            "value" : "ATM",
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
+              "value" : "Airborne Topographic Mapper",
+              "uuid" : "c2428a35-a87c-4ec7-aefd-13ff410b3271"
+            } ]
+          }, {
+            "value" : "LVIS",
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
+              "value" : "Land, Vegetation, and Ice Sensor",
+              "uuid" : "aa338429-35e6-4ee2-821f-0eac81802689"
+            } ]
+          } ]
+        } ]
+      } ]
+    }, {
+      "value" : "Passive Remote Sensing",
+      "subfields" : [ "type" ],
+      "type" : [ {
+        "value" : "Spectrometers/Radiometers",
+        "subfields" : [ "subtype" ],
+        "subtype" : [ {
+          "value" : "Imaging Spectrometers/Radiometers",
+          "subfields" : [ "short_name" ],
+          "short_name" : [ {
+            "value" : "SMAP L-BAND RADIOMETER",
+            "subfields" : [ "long_name" ],
+            "long_name" : [ {
+              "value" : "SMAP L-Band Radiometer",
+              "uuid" : "fee5e9e1-10f1-4f14-94bc-c287f8e2c209"
+            } ]
+          } ]
+        } ]
+      } ]
+    } ]
+  }, {
+    "value" : "In Situ/Laboratory Instruments",
+    "subfields" : [ "class" ],
+    "class" : [ {
+      "value" : "Chemical Meters/Analyzers",
+      "subfields" : [ "short_name" ],
+      "short_name" : [ {
+        "value" : "ADS",
+        "subfields" : [ "long_name" ],
+        "long_name" : [ {
+          "value" : "Automated DNA Sequencer",
+          "uuid" : "554a3c73-3b48-43ea-bf5b-8b98bc2b11bc"
+        } ]
+      } ]
+    } ]
+  } ]
+}
+```
 
 ### Administrative Tasks
 
