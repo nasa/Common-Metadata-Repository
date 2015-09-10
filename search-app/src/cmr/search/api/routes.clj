@@ -306,10 +306,6 @@
       ;; Add routes for tagging
       tags-api/tag-api-routes
 
-      (GET "/figs" []
-        {:status 200
-         :body "hi"})
-
       ;; Add routes for API documentation
       (api-docs/docs-routes
         (get-in system [:search-public-conf :protocol])

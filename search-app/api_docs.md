@@ -1878,7 +1878,7 @@ Tags have the following fields:
 * Description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
 * Originator ID (REQUIRED): the Earthdata Login ID of the person who created the tag.
 
-Both the tag namespace and value cannot contain the
+Both the tag namespace and value cannot contain the Group Separator character. This is the ASCII decimal character 29 and in Unicode U+001D.
 
 #### Creating a Tag
 

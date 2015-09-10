@@ -33,6 +33,7 @@
      :native-id (tag->native-id tag)
      :metadata (pr-str (assoc tag :originator-id user-id))
      :user-id user-id
+     ;; TODO this won't be true if a tag is deleted and the previous revision was a tombstone
      ;; The first version of a tag should always be revision id 1. We always specify a revision id
      ;; when saving tags to help avoid conflicts
      :revision-id 1
