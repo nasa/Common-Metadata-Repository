@@ -56,6 +56,7 @@
     :AccessConstraints {:Description (value-of doc "/Collection/RestrictionComment")
                         :Value (value-of doc "/Collection/RestrictionFlag")}
     :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
+    :SpatialKeywords (values-at doc "/Collection/SpatialKeywords/Keyword")
     :TemporalExtents (parse-temporal doc)
     :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
                  (assoc (fields-from plat :ShortName :LongName :Type)
