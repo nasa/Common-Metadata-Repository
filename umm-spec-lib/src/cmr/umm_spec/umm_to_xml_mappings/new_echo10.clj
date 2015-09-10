@@ -12,6 +12,70 @@
                   :Unit
                   :Value)])
 
+(defn echo10-platforms
+  [c]
+  [:Platforms
+   (for [plat (:Platforms c)]
+     [:Platform
+      (elements-from plat
+                     :ShortName
+                     :LongName
+                     :Type)
+      [:Characteristics
+       (for [cc (:Characteristics plat)]
+         (characteristic-mapping cc))]
+      [:Instruments
+       (for [inst (:Instruments plat)]
+         [:Instrument
+          (elements-from inst
+                         :ShortName
+                         :LongName
+                         :Technique
+                         :NumberOfSensors)
+          [:Characteristics
+           (for [cc (:Characteristics inst)]
+             (characteristic-mapping cc))]
+          [:Sensors
+           (for [ss (:Sensors inst)]
+             [:Sensor
+              (elements-from ss
+                             :ShortName
+                             :LongName
+                             :Technique)
+              [:Characteristics
+               (map characteristic-mapping (:Characteristics ss))]])]
+          [:OperationModes
+           (for [mode (:OperationalModes inst)]
+             [:OperationMode mode])]])]])])
+
+(defn echo10-temporal
+  [c]
+  ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
+  ;; address questions about temporal mappings.
+  (when-let [temporal (first (:TemporalExtents c))]
+    [:Temporal
+     (elements-from temporal
+                    :TemporalRangeType
+                    :PrecisionOfSeconds
+                    :EndsAtPresentFlag)
+
+     (for [r (:RangeDateTimes temporal)]
+       [:RangeDateTime (elements-from r :BeginningDateTime :EndingDateTime)])
+
+     (for [date (:SingleDateTimes temporal)]
+       [:SingleDateTime (str date)])
+
+     (for [pdt (:PeriodicDateTimes temporal)]
+       [:PeriodicDateTime
+        (elements-from pdt
+                       :Name
+                       :StartDate
+                       :EndDate
+                       :DurationUnit
+                       :DurationValue
+                       :PeriodCycleDurationUnit
+                       :PeriodCycleDurationValue)])]))
+
 (defn echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
@@ -41,65 +105,8 @@
     [:TemporalKeywords
      (for [kw (:TemporalKeywords c)]
        [:Keyword kw])]
-    ;; We're assuming there is only one TemporalExtent for now. Issue CMR-1933 has been opened to
-    ;; address questions about temporal mappings.
-    (when-let [temporal (first (:TemporalExtents c))]
-      [:Temporal
-       (elements-from temporal
-                      :TemporalRangeType
-                      :PrecisionOfSeconds
-                      :EndsAtPresentFlag)
-
-       (for [r (:RangeDateTimes temporal)]
-         [:RangeDateTime (elements-from r :BeginningDateTime :EndingDateTime)])
-       
-       (for [date (:SingleDateTimes temporal)]
-         [:SingleDateTime (str date)])
-
-       (for [pdt (:PeriodicDateTimes temporal)]
-         [:PeriodicDateTime
-          (elements-from pdt
-                         :Name
-                         :StartDate
-                         :EndDate
-                         :DurationUnit
-                         :DurationValue
-                         :PeriodCycleDurationUnit
-                         :PeriodCycleDurationValue)])])
-
-    [:Platforms
-     (for [plat (:Platforms c)]
-       [:Platform
-        (elements-from plat
-                       :ShortName
-                       :LongName
-                       :Type)
-        [:Characteristics
-         (for [cc (:Characteristics plat)]
-           (characteristic-mapping cc))]
-        [:Instruments
-         (for [inst (:Instruments plat)]
-           [:Instrument
-            (elements-from inst
-                           :ShortName
-                           :LongName
-                           :Technique
-                           :NumberOfSensors)
-            [:Characteristics
-             (for [cc (:Characteristics inst)]
-               (characteristic-mapping cc))]
-            [:Sensors
-             (for [ss (:Sensors inst)]
-               [:Sensor
-                (elements-from ss
-                               :ShortName
-                               :LongName
-                               :Technique)
-                [:Characteristics
-                 (map characteristic-mapping (:Characteristics ss))]])]
-            [:OperationModes
-             (for [mode (:OperationalModes inst)]
-               [:OperationMode mode])]])]])]
+    (echo10-temporal c)
+    (echo10-platforms c)
     [:AdditionalAttributes
      (for [aa (:AdditionalAttributes c)]
        [:AdditionalAttribute

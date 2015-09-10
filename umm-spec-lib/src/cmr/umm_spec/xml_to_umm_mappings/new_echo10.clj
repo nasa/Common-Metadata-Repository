@@ -47,19 +47,19 @@
   [doc]
   (js/coerce
    {:EntryTitle (value-of doc "/Collection/DataSetId")
-    :EntryId (value-of doc "/Collection/ShortName")
-    :Version (value-of doc "/Collection/VersionId")
-    :Abstract (value-of doc "/Collection/Description")
+    :EntryId    (value-of doc "/Collection/ShortName")
+    :Version    (value-of doc "/Collection/VersionId")
+    :Abstract   (value-of doc "/Collection/Description")
     :CollectionDataType (value-of doc "/Collection/CollectionDataType")
-    :Purpose (value-of doc "/Collection/SuggestedUsage")
+    :Purpose    (value-of doc "/Collection/SuggestedUsage")
     :CollectionProgress (value-of doc "/Collection/CollectionState")
     :AccessConstraints {:Description (value-of doc "/Collection/RestrictionComment")
                         :Value (value-of doc "/Collection/RestrictionFlag")}
     :Distributions [{:DistributionFormat (value-of doc "/Collection/DataFormat")
                      :Fees (value-of doc "/Collection/Price")}]
     :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
-    :SpatialKeywords (values-at doc "/Collection/SpatialKeywords/Keyword")
-    :TemporalExtents (parse-temporal doc)
+    :SpatialKeywords  (values-at doc "/Collection/SpatialKeywords/Keyword")
+    :TemporalExtents  (parse-temporal doc)
     :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
                  (assoc (fields-from plat :ShortName :LongName :Type)
                         :Characteristics (parse-characteristics plat)

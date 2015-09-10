@@ -193,17 +193,23 @@
                        (:root schema))
          [schema definition] (resolve-$refs [schema definition])]
      (condp = (:type definition)
+
        "string"  (condp = (:format definition)
                    "date-time" (dtp/parse-datetime x)
                    (str x))
+
        "number"  (Double. x)
+
        "integer" (Long. x)
+
        "boolean" (= "true" x)
+
        ;; Return nil instead of empty vectors.
        "array"   (when (seq x)
                    (let [coerced (remove nil? (map #(coerce schema (:items definition) %) x))]
                      (when (seq coerced)
                        (vec coerced))))
+
        "object"  (let [ctor (record-ctor schema type-name)
                        kvs (for [[k v] x]
                              (when v
@@ -213,10 +219,14 @@
                    ;; Return nil instead of empty maps/records here.
                    (when-not (empty? m)
                      (ctor m)))
+
+       ;; Otherwise...
        (throw (IllegalArgumentException. (str "Don't know how to coerce " definition " (" x ")")))))))
 
 (comment
   (coerce {:EntryTitle "This is a test"
-           :TemporalExtents [{:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]}] :Distributions [{:Fees "123.4"}]})
+           :TemporalExtents (list
+                             {:EndsAtPresentFlag "true"
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]})
+           :Distributions [{:Fees "123.4"}]})
   )
