@@ -37,6 +37,7 @@
        :DataLanguage (xpath "/DIF/Dataset_Language")
        :TemporalKeywords (select "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
        :CollectionProgress (xpath "/DIF/Data_Set_Progress")
+       :SpatialKeywords (select "/DIF/Location")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})

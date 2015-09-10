@@ -4,6 +4,7 @@
   (:require [clojure.string :as str]
             [camel-snake-kebab.core :as csk]
             [clojure.set :as set]
+            [clojure.edn :as edn]
             [cmr.common.log :as log :refer (debug info warn error)]))
 
 (defonce ^{:private true
@@ -132,7 +133,8 @@
   {String identity
    Long #(Long. %)
    Double #(Double. %)
-   Boolean parse-boolean})
+   Boolean parse-boolean
+   :edn edn/read-string})
 
 (defmacro defconfig
   "Defines a configuration parameter that will be taken from environment variable of the form
@@ -166,7 +168,9 @@
 
   (let [{default :default config-type :type parser :parser} options
         config-type (if config-type
-                      (resolve config-type)
+                      (if (= :edn config-type)
+                        config-type
+                        (resolve config-type))
                       String)]
     (when-not doc-string
       (throw (Exception. "defconfig :doc-string is required")))
@@ -190,6 +194,7 @@
          ;; Check that the type of the default value matches the type specified
          ;; This has to be done here to allow for the default value to be the result of calling a function
          (when (and (nil? ~parser)
+                    (not= :edn ~config-type)
                     (not= (type default-value#) ~config-type))
            (throw
              (Exception.

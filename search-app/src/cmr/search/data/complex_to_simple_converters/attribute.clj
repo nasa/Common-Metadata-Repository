@@ -15,7 +15,7 @@
 (defn type->field-name
   "Converts the attribute type into the field name that will hold the value"
   [type]
-  (str (name type) "-value"))
+  (str "attributes." (name type) "-value"))
 
 (defmethod value-condition->value-filter :default
   [{:keys [type value]}]
@@ -56,16 +56,16 @@
     (:type condition)))
 
 (defmethod range-condition->range-filter :string
-  [{:keys [min-value max-value]}]
-  (qm/string-range-condition :string-value min-value max-value))
+  [{:keys [type min-value max-value]}]
+  (qm/string-range-condition (type->field-name type) min-value max-value))
 
 (defmethod range-condition->range-filter :float
-  [{:keys [min-value max-value exclusive?]}]
-  (qm/numeric-range-condition :float-value min-value max-value exclusive?))
+  [{:keys [type min-value max-value exclusive?]}]
+  (qm/numeric-range-condition (type->field-name type) min-value max-value exclusive?))
 
 (defmethod range-condition->range-filter :int
-  [{:keys [min-value max-value exclusive?]}]
-  (qm/numeric-range-condition :int-value min-value max-value exclusive?))
+  [{:keys [type min-value max-value exclusive?]}]
+  (qm/numeric-range-condition (type->field-name type) min-value max-value exclusive?))
 
 (defn date-range-condition->range-filter
   "Helper for converting date range attribute conditions into filters"
@@ -89,7 +89,7 @@
   (c2s/reduce-query-condition
     [condition context]
     (let [{:keys [name pattern?]} condition
-          name-cond (qm/string-condition :name name true pattern?)]
+          name-cond (qm/string-condition :attributes.name name true pattern?)]
       (qm/nested-condition :attributes name-cond))))
 
 (extend-protocol c2s/ComplexQueryToSimple
@@ -98,7 +98,7 @@
     [condition context]
     (let [value-filter (value-condition->value-filter condition)
           attrib-name (:name condition)
-          name-cond (qm/string-condition :name attrib-name true false)
+          name-cond (qm/string-condition :attributes.name attrib-name true false)
           and-cond (gc/and-conds [name-cond value-filter])]
       (qm/nested-condition :attributes and-cond)))
 
@@ -107,6 +107,6 @@
     [condition context]
     (let [range-filter (range-condition->range-filter condition)
           attrib-name (:name condition)
-          name-cond (qm/string-condition :name attrib-name true false)
+          name-cond (qm/string-condition :attributes.name attrib-name true false)
           and-cond (gc/and-conds [name-cond range-filter])]
       (qm/nested-condition :attributes and-cond))))

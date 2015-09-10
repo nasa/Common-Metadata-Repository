@@ -28,6 +28,7 @@
             [cmr.search.services.health-service :as hs]
             [cmr.search.api.tags-api :as tags-api]
             [cmr.acl.core :as acl]
+            [cmr.search.api.keyword :as keyword-api]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
 
@@ -362,6 +363,9 @@
         (cache/reset-caches request-context)
         {:status 204})
 
+      ;; Add routes for retrieving GCMD keywords
+      keyword-api/keyword-api-routes
+
       ;; add routes for accessing caches
       common-routes/cache-api-routes
 
@@ -415,7 +419,8 @@
 (defn default-error-format-fn
   "Determine the format that errors should be returned in based on the request URI."
   [{:keys [uri]} _e]
-  (if (re-find #"caches" uri)
+  (if (or (re-find #"/caches" uri)
+          (re-find #"/keywords" uri))
     mt/json
     mt/xml))
 

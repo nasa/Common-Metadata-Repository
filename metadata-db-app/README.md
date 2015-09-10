@@ -40,6 +40,23 @@
       }
     }
 
+#### Tag
+
+  {
+    "native-id": "org.nasa.something\quality"
+    "user-id": "jnorton"
+    "format": "applcation/edn"
+    "metadata: {
+      "tag-namespace": "org.nasa.something"
+      "category": "cat1"
+      "value": "quality"
+      "description": "A good tag"
+      "originator-id": "jnorton"
+    }
+  }
+
+_Note the absense of provider-id for tags. Tags are system level entities and are always assigned the sytem level provider, CMR._
+
 ### Sample Tombstone (deleted concept) JSON
 
   	{
@@ -151,6 +168,10 @@ returns: revision-id.  revision-id begins at 1.
 throws error if revision-id is less than or equal to the current highest saved revision-id (if any).
 
     curl -v -XPOST -H "Content-Type: application/json" -d '{"concept-type": "collection", "native-id": "native-id", "concept-id": "C1-PROV1", "provider-id": "PROV1", "metadata": "<Collection><ShortName>MINIMAL</ShortName></Collection>", "format": "application/echo10+xml", "extra-fields": {"short-name": "MINIMAL", "version-id": "V01", "entry-id": "MINIMAL_V01", "entry-title": "native-id"}}' http://localhost:3001/concepts/
+
+#### Note Regarding Tags
+
+No provider should be specified when creating tag concepts - the system level CMR provider is used for all tags. As such, tag concept-ids always take the form of T\<number\>-CMR, where \<number\> is a positive integer.
 
 Tombstones can be created using the same end-point used for saving concepts by specifying "deleted" as true in the body of the POST:
 

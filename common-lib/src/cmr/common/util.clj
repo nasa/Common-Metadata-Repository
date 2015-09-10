@@ -455,3 +455,9 @@
                ;; Return nil if there's no data between the two
                (when (not= 0 (count substr))
                  substr)))))))))
+
+(defn map-by
+  "Like group-by but assumes that all the keys returned by f will be unique per item."
+  [f items]
+  (into {} (for [item items] [(f item) item])))
+
