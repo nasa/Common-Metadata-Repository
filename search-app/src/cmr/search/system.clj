@@ -93,7 +93,8 @@
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
-    (transmit-config/system-with-connections sys [:index-set :echo-rest])))
+    ;; TODO add hiera config for metadata db to search
+    (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

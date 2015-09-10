@@ -21,6 +21,7 @@
   Parses the json in the body if the content type is JSON. The \"raw\" response body is considered
   useful in cases where the exact status code is required such as in testing."
   [{:keys [status body headers]}]
+  (cmr.common.dev.capture-reveal/capture-all)
   (let [content-type (mt/mime-type->format
                        (mt/content-type-mime-type headers)
                        ;; don't return a default

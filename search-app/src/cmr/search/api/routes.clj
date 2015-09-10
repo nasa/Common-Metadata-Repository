@@ -26,6 +26,7 @@
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
+            [cmr.search.api.tags-api :as tags-api]
             [cmr.acl.core :as acl]
             [cmr.common-app.api.routes :as common-routes]
             [cmr.common-app.api-docs :as api-docs]
@@ -300,6 +301,14 @@
 (defn- build-routes [system]
   (routes
     (context (get-in system [:search-public-conf :relative-root-url]) []
+
+      ;; Add routes for tagging
+      tags-api/tag-api-routes
+
+      (GET "/figs" []
+        {:status 200
+         :body "hi"})
+
       ;; Add routes for API documentation
       (api-docs/docs-routes
         (get-in system [:search-public-conf :protocol])

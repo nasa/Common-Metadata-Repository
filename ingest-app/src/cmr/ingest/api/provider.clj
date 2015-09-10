@@ -1,7 +1,6 @@
 (ns cmr.ingest.api.provider
   "Defines the HTTP URL routes for the application."
-  (:require [clojure.walk :as walk]
-            [compojure.core :refer :all]
+  (:require [compojure.core :refer :all]
             [cmr.common.mime-types :as mt]
             [cmr.acl.core :as acl]
             [cheshire.core :as json]
