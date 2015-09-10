@@ -31,6 +31,8 @@
      :native-id (tag->native-id tag)
      :metadata (pr-str (assoc tag :originator-id user-id))
      :user-id user-id
+     ;; The first version of a tag should always be revision id 1. We always specify a revision id
+     ;; when saving tags to help avoid conflicts
      :revision-id 1
      :format mt/edn}))
 
@@ -43,15 +45,19 @@
   ;; TODO put those validations right here (maybe)
   ;; Use validation framework to do it.
 
-  ;; TODO does this namespace and value combination already exist in metadata db?
+  (when-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
+    ;; TODO check if the concept is deleted. We should allow this if it's a tombstone.
+    (errors/throw-service-error
+      :conflict (msg/tag-already-exists tag concept-id)))
+
 
   (mdb/save-concept context (tag->concept context tag)))
 
 
 (comment
   (def context {:system (get-in user/system [:apps :search])})
-  (def tag {:namespace "ns"
-            :value "foo"})
+  (def tag {:namespace "org.nasa.something"
+            :value "value1"})
 
 
   (mdb/save-concept context (tag->concept tag))
