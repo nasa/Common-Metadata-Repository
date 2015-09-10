@@ -15,9 +15,7 @@
   "Creates a tag."
   [token tag]
   (let [{:keys [status body]} (tt/create-tag (s/context) tag {:is-raw? true :token token})]
-    (assoc body :status status)))
-
-(comment
-  (create-tag {:namespace "foo" :value "v"})
-
-  )
+    (if (map? body)
+      (assoc body :status status)
+      {:status status
+       :body body})))

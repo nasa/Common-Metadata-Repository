@@ -4,6 +4,8 @@
             [cmr.common.mime-types :as mt]
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
+            [cmr.common.validations.core :as v]
+            [clojure.string :as str]
             [cmr.search.services.tagging-service-messages :as msg]))
 
 (def ^:private native-id-separator-character
@@ -36,31 +38,29 @@
      :revision-id 1
      :format mt/edn}))
 
-(defn create-tag
-  "TODO
-  Returns concept id and revision id of saved tag"
-  [context tag]
-  ;; TODO what validations do we do on a tag at this level?
-  ;; - no group seperator in namespace or value
-  ;; TODO put those validations right here (maybe)
-  ;; Use validation framework to do it.
+(defn should-not-contain-native-id-separator-character
+  "Validates the value does not contain the native id separator character."
+  [field-path ^String value]
+  (when (.contains value (str native-id-separator-character))
+    {field-path [msg/field-may-not-contain-separator]}))
 
+(def tag-validations
+  "Service level validations for tags."
+  {:namespace should-not-contain-native-id-separator-character
+   :value should-not-contain-native-id-separator-character})
+
+(defn create-tag
+  "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
+  the saved tag."
+  [context tag]
+  (v/validate! tag-validations tag)
+
+  ;; Validate that the tag doesn't yet exist
   (when-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
     ;; TODO check if the concept is deleted. We should allow this if it's a tombstone.
     (errors/throw-service-error
       :conflict (msg/tag-already-exists tag concept-id)))
 
-
   (mdb/save-concept context (tag->concept context tag)))
 
 
-(comment
-  (def context {:system (get-in user/system [:apps :search])})
-  (def tag {:namespace "org.nasa.something"
-            :value "value1"})
-
-
-  (mdb/save-concept context (tag->concept tag))
-
-
-  )

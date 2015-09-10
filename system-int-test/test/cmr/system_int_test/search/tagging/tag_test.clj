@@ -28,7 +28,6 @@
 
   (let [valid-user-token (e/login (s/context) "user1")
         valid-tag (tags/make-tag 1)]
-    (cmr.common.dev.capture-reveal/capture-all)
     (testing "Missing field validations"
       (are [field]
            (= {:status 400
@@ -61,25 +60,16 @@
            :description 4000
            :category 1030))
 
-    ;; TODO implement this
-    #_(testing "Invalid namespace and value characters"
-      (are [field]
+    (testing "Invalid namespace and value characters"
+      (are [field field-name]
            (= {:status 400
-               :errors [(str (name field) " may not contain the Group Separator character. "
+               :errors [(str field-name " may not contain the Group Separator character. "
                                           "ASCII decimal value: 29 Unicode: U+001D")]}
               (tags/create-tag
                 valid-user-token
                 (assoc valid-tag field (str "abc" (char 29) "abc"))))
-           :namespace :value))
-
-
-    )
-
-  (testing "Invalid JSON when creating a tag is rejected"
-    ;; TODO
-    )
-
-  )
+           :namespace "Namespace"
+           :value "Value"))))
 
 
 (deftest create-tag-test

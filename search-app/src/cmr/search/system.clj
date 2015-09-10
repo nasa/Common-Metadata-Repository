@@ -98,7 +98,6 @@
                           [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                            hgrf/refresh-has-granules-map-job
                            coll-cache/refresh-collections-cache-for-granule-acls-job])}]
-    ;; TODO add hiera config for metadata db to search
     (transmit-config/system-with-connections sys [:index-set :echo-rest :metadata-db :kms :cubby])))
 
 (defn start

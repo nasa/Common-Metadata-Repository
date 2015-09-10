@@ -8,3 +8,7 @@
   [tag concept-id]
   (format "A tag with namespace [%s] and value [%s] already exists with concept id %s."
           (:namespace tag) (:value tag) concept-id))
+
+(def field-may-not-contain-separator
+  "Validation format message so %s is included for the field"
+  "%s may not contain the Group Separator character. ASCII decimal value: 29 Unicode: U+001D")

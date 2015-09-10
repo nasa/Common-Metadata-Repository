@@ -8,8 +8,6 @@
             [cmr.search.services.tagging-service :as tagging-service]
             [cmr.common.services.errors :as errors]))
 
-;; TODO document the API in api_docs.md
-
 ;; TODO add another schema for what's required or allowed when updating a tag
 
 (def tag-schema
