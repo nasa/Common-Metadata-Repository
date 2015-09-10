@@ -145,59 +145,96 @@
   (def node-type
     (s/OR branch-node-type leaf-node-type))
 
-(def expected-result
+  (def expected-result
+    {:a [{:value "A1"
+          :subfields ["c"]
+          :c [{:value "C1"
+               :uuid "a1c1"
+               :subfields ["d"]
+               :d [{:value "D1"
+                    :uuid "a1c1d1"}]}]}
+         {:value "A2"
+          :uuid "a2"
+          :subfields ["d"]
+          :d [{:value "D1"
+               :uuid "a2d1"}]}
+         {:value "A3"
+          :subfields ["b" "c" "d"]
+          :b [{:value "B1"
+               :subfields ["c"]
+               :c [{:value "C1"
+                    :subfields ["d"]
+                    :d [{:value "D1"
+                         :uuid "a3b1c1d1"}]}]}]
+          :c [{:value "C2"
+               :uuid "a3c2"}]
+          :d [{:value "D2"
+               :uuid "a3d2"}]}]})
+
+  {:a "A1" :c "C1" :uuid "a1c1"}
+
   {:a [{:value "A1"
-        :subfields ["c"]
-        :c [{:value "C1"
-             :uuid "a1c1"
-             :subfields ["d"]
-             :d [{:value "D1"
-                  :uuid "a1c1d1"}]}]}
-       {:value "A2"
-        :uuid "a2"
-        :subfields ["d"]
-        :d [{:value "D1"
-             :uuid "a2d1"}]}
-       {:value "A3"
-        :subfields ["b" "c" "d"]
-        :b [{:value "B1"
+        :subfields ["b"]
+        :b [{:value nil
              :subfields ["c"]
              :c [{:value "C1"
-                  :subfields ["d"]
-                  :d [{:value "D1"
-                       :uuid "a3b1c1d1"}]}]}]
-        :c [{:value "C2"
-             :uuid "a3c2"}]
-        :d [{:value "D2"
-             :uuid "a3d2"}]}]})
+                  :uuid "a1c1"}]}]}]}
 
-{:a "A1" :c "C1" :uuid "a1c1"}
+  (def example-keywords
+    [{:a "A1" :c "C1" :uuid "a1c1"}
+     {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
+     {:a "A2" :uuid "a2"}
+     {:a "A2" :d "D1" :uuid "a2d1"}
+     {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
 
-{:a [{:value "A1"
-      :subfields ["b"]
-      :b [{:value nil
-           :subfields ["c"]
-           :c [{:value "C1"
-                :uuid "a1c1"}]}]}]}
-
-(def example-keywords
-  [{:a "A1" :c "C1" :uuid "a1c1"}
-   {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
-   {:a "A2" :uuid "a2"}
-   {:a "A2" :d "D1" :uuid "a2d1"}
-   {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
-   {:a "A3" :c "C2" :uuid "a3c2"}
-   {:a "A3" :d "D2" :uuid "a3d2"}])
+     {:a "A3" :c "C2" :uuid "a3c2"}
+     {:a "A3" :d "D2" :uuid "a3d2"}])
 
   (def keyword-hierarchy-example [:a :b :c :d])
 
-  (create-branch-nodes :a [:b :c :d] example-keywords )
+  (def expected-merged
+    {:a [{:value "A3"
+          :b [{:value nil
+               :c [{:value nil
+                    :d [{:value "D2"
+                         :uuid "a3d2"
+                         }]}
+                   {:value "C2"
+                    :uuid "a3c2"
+                    :d [{:value nil}]
+                    }]}
+              {:value "B1"
+               :c [{:value "C1"
+                    :d [{:value "D1"
+                         :uuid "a3b1c1d1"
+                         }]}
+                   ]}]}
+         {:value "A2"
+          ; :uuid "a2"
+          :b [{:value nil
+               :c [{:value nil
+                    :d [{:value "D1"
+                         :uuid "a2d1"
+                         }
+                        {:value nil}]}]}]}
+         {:value "A1"
+          :b [{:value nil
+               :c [{:value "C1"
+                    :uuid "a1c1"
+                    :d [{:value "D1"
+                         :uuid "a1c1d1"
+                         }
+                        {:value nil}]}]}]}]})
 
-  {:b [{:value value
-        }]
-   :c [{:value ...}]}
 
-  (keyword->hierarchy (first example-keywords) [:a :b :c :d])
+  (->> example-keywords
+       (map #(keyword->hierarchy % [:a :b :c :d]))
+       (reduce merge-hierarchical-maps)
+       (= expected-merged)
+       )
+
+  (map #(keyword->hierarchy % [:a :b :c :d]) example-keywords)
+
   )
 
 ;; Three steps
@@ -215,21 +252,33 @@
 
 (defn merge-hierarchical-maps
   [hm1 hm2]
-  (into {}
-        (doseq [[subfield value-maps] hm1]
-          (println "Subfield is" subfield)
-          (println "Subfield maps" value-maps))))
+  ;; Merge the two maps without their values
+  (let [merged-map (merge-with
+                     (fn [existing-values new-values]
+                       ;; Find the values in common by using map-b and then merge those maps.
+                       ;; The merge-with here recursively calls into the same function
+                       (->> (merge-with merge-hierarchical-maps
+                                        (map-by :value existing-values)
+                                        (map-by :value new-values))
+                            vals
+                            vec))
+                     (dissoc hm1 :value :uuid)
+                     (dissoc hm2 :value :uuid))]
+    ;; Add value back in if it was there originally
+    (if (contains? hm1 :value)
+      (assoc merged-map :value (:value hm1))
+      merged-map)))
 
 (comment
 
-(def example-keywords
-  [{:a "A1" :c "C1" :uuid "a1c1"}
-   {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
-   {:a "A2" :uuid "a2"}
-   {:a "A2" :d "D1" :uuid "a2d1"}
-   {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
-   {:a "A3" :c "C2" :uuid "a3c2"}
-   {:a "A3" :d "D2" :uuid "a3d2"}])
+  (def example-keywords
+    [{:a "A1" :c "C1" :uuid "a1c1"}
+     {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
+     {:a "A2" :uuid "a2"}
+     {:a "A2" :d "D1" :uuid "a2d1"}
+     {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
+     {:a "A3" :c "C2" :uuid "a3c2"}
+     {:a "A3" :d "D2" :uuid "a3d2"}])
 
   (def hm1
     (keyword->hierarchy (first example-keywords) [:a :b :c :d]))
@@ -241,8 +290,62 @@
     (keyword->hierarchy (nth example-keywords 2) [:a :b :c :d]))
 
 
+  (def hm1
+    {:a [{:value "A1",
+          :b [{:value nil,
+               :c [{:value "C1",
+                    :d [{:value nil}]}]}]}]})
 
-  (merge-hierarchical-maps hm1 hm2)
+  (def hm2
+    {:a [{:value "A1",
+          :b [{:value nil,
+               :c [{:value "C1",
+                    :d [{:value "D1"}]}]}]}]})
+
+  (def hm1-2-combined
+    {:a [{:value "A1",
+          :b [{:value nil,
+               :c [{:value "C1",
+                    :d [{:value "D1"}
+                        {:value nil}]}]}]}]})
+
+  (def hm3
+    {:a [{:value "A2",
+          :b [{:value nil,
+               :c [{:value nil,
+                    :d [{:value nil}]}]}]}]})
+
+  ; map -> :keyword vector
+  ;vector -> maps
+
+  (defn map-by
+    "Like group-by but assumes that all the keys returned by f will be unique per item"
+    [f things]
+    (into {} (for [thing things] [(f thing) thing])))
+
+
+
+  (defn merge-hierarchical-maps
+    [hm1 hm2]
+    ;; Merge the two maps without their values
+    (let [merged-map (merge-with
+                       (fn [existing-values new-values]
+                         ;; Find the values in common by using map-b and then merge those maps.
+                         ;; The merge-with here recursively calls into the same function
+                         (->> (merge-with merge-hierarchical-maps
+                                          (map-by :value existing-values)
+                                          (map-by :value new-values))
+                              vals
+                              vec))
+                       (dissoc hm1 :value)
+                       (dissoc hm2 :value))]
+      ;; Add value back in if it was there originally
+      (if (contains? hm1 :value)
+        (assoc merged-map :value (:value hm1))
+        merged-map)))
+
+  (= hm1-2-combined (value-map-merger-cleaner hm1 hm2))
+
   )
 
 (defn create-branch-nodes
@@ -318,7 +421,6 @@
         (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
               gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
               keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
-              _ (cmr.common.dev.capture-reveal/capture keywords)
               hierarchical-keywords (parse-hierarchical-keywords
                                       (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
           {:staus 200
