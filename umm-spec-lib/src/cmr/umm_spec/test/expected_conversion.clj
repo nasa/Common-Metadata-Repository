@@ -262,6 +262,7 @@
       ;; Fields not supported by ISO-SMAP
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
+      (assoc :SpatialKeywords nil)
       (assoc :TemporalKeywords nil)
       (assoc :CollectionDataType nil)
       (assoc :AdditionalAttributes nil)
@@ -285,7 +286,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
-    :RelatedUrls :DataDates :Organizations :SpatialKeywords
+    :RelatedUrls :DataDates :Organizations
     :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation
     :AncillaryKeywords :Projects :PaleoTemporalCoverage
     :MetadataAssociations})

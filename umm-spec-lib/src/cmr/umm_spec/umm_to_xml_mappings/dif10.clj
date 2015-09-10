@@ -143,6 +143,8 @@
    [:Data_Set_Progress (xpath "/CollectionProgress")]
    [:Spatial_Coverage
     [:Granule_Spatial_Representation "GEODETIC"]]
+   (for-each "/SpatialKeywords"
+             [:Location (xpath ".")])
    [:Project
     [:Short_Name "dummy project short name"]]
    [:Quality (xpath "/Quality")]

@@ -43,6 +43,8 @@
               [:Start_Date (xpath ".")]
               [:Stop_Date (xpath ".")]])
    [:Data_Set_Progress (xpath "/CollectionProgress")]
+   (for-each "/SpatialKeywords"
+             [:Location (xpath ".")])
    (for-each "/TemporalKeywords"
              [:Data_Resolution
               [:Temporal_Resolution (xpath ".")]])
