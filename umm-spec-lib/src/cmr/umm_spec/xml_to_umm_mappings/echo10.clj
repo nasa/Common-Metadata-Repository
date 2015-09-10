@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.new-echo10
+(ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select text]]
