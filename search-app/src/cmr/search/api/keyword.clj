@@ -66,123 +66,40 @@
                   ", " (map #(csk/->snake_case (name %)) (rest valid-keywords)))
                 (-> valid-keywords first name csk/->snake_case))))))
 
-(defn- is-leaf?
-  "Determines if we are at the leaf point within the hierarchy for the provided keyword. The
-  remaining-hierarchy parameter contains the fields that the caller is checking for a non-nil
-  value. A non-nil value indicates we are not yet at the last field in the hierarchy, and therefore
-  we are not at the leaf point."
-  [remaining-hierarchy keyword-map]
-  (empty? (filter #(% keyword-map) remaining-hierarchy)))
-
-(defn- get-leaf-values-to-uuids
-  "Returns a map of values for the given field to the UUID for that value. The value will only be
-  included in the map if the provided subfield is at the leaf level for a keyword."
-  [keyword-hierarchy field keywords]
-  (into {}
-        (for [keyword-map keywords
-              :when (is-leaf? (rest keyword-hierarchy) keyword-map)]
-          [(field keyword-map) (:uuid keyword-map)])))
-
-(defn- get-subfields-for-keyword
-  "Figure out the set of all subfields which are directly below the current field for the provided
-  keywords. It is possible the next field in the hierarchy is nil for a keyword, but further down
-  the chain there is a non-nil field."
-  [keyword-hierarchy keywords field value]
-  (loop [remaining-fields keyword-hierarchy
-         matching-keywords (filter #(= value (field %)) keywords)
-         all-subfields nil]
-    (let [next-field (first remaining-fields)
-          keywords-below-with-next-field (when next-field (keep next-field matching-keywords))
-          keywords-with-nil-next-field (filter #(nil? (next-field %)) matching-keywords)
-          all-subfields (if (seq keywords-below-with-next-field)
-                          (conj all-subfields next-field)
-                          all-subfields)]
-      (if (seq (rest remaining-fields))
-        (recur (rest remaining-fields) keywords-with-nil-next-field all-subfields)
-        all-subfields))))
-
-(defn- get-hierarchy-from-field
-  "Returns all of the fields in the hierarchy starting from the provided field and including all
-  fields after."
-  [^java.util.List keyword-hierarchy field]
-  (let [field-index (.indexOf keyword-hierarchy field)]
-    (filter #(<= field-index (.indexOf keyword-hierarchy %)) keyword-hierarchy)))
-
-(defn- filter-keywords-with-non-nil-values
-  "Removes any keywords which have non-nil values for any subfields between the start of the keyword
-  hierarchy and the provided subfield-name.
-
-  For example (filter-keywords [:a :b :c :d] :d keywords) would filter out any keywords which have
-  a non-nil value for :b or :c."
-  [keyword-hierarchy subfield-name keywords]
-  {:pre (contains? keyword-hierarchy subfield-name)}
-  (loop [filtered-keywords keywords
-         keyword-hierarchy keyword-hierarchy]
-    (let [current-field (first keyword-hierarchy)]
-      (if (= current-field subfield-name)
-        filtered-keywords
-        (recur (filter #(nil? (current-field %)) keywords)
-               (rest keyword-hierarchy))))))
-
-
-(comment
-
-  (def example-keywords
-    [{:a "A1" :c "C1" :uuid "a1c1"}
-     {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
-     {:a "A2" :uuid "a2"}
-     {:a "A2" :d "D1" :uuid "a2d1"}
-     {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
-
-     {:a "A3" :c "C2" :uuid "a3c2"}
-     {:a "A3" :d "D2" :uuid "a3d2"}])
-
-
-;; Three steps
-;; Flat to hierarchical map
-;; Merge together all of the keyword maps
-;; Remove fields that should not be there
-
-  (->> example-keywords
-       (map #(keyword->hierarchy % [:a :b :c :d]))
-       (reduce merge-hierarchical-maps)
-       collapse-hierarchical-map
-       convert-to-json
-       println
-       )
-
-
-  )
-
-
-(defn keyword->hierarchy
-  "TODO comment this"
+(defn- keyword->hierarchy
+  "Takes a flat keyword map and converts it to a hierarchical map."
   [keyword-map keyword-hierarchy]
   (let [[current-subfield & remaining-subfields] keyword-hierarchy
+        current-subfield-snake-case (csk/->snake_case current-subfield)
         current-value (get keyword-map current-subfield)
+
         subfield-hierarchy (when (seq remaining-subfields)
                              (keyword->hierarchy keyword-map remaining-subfields))]
     (when (or current-value subfield-hierarchy)
       (if subfield-hierarchy
-        {current-subfield #{(merge
-                              subfield-hierarchy
-                              {:value current-value})}}
-        {current-subfield #{{:value current-value
-                             :uuid (:uuid keyword-map)}}}))))
+        {current-subfield-snake-case #{(merge
+                                         subfield-hierarchy
+                                         {:value current-value})}}
+        {current-subfield-snake-case #{{:value current-value
+                                        :uuid (:uuid keyword-map)}}}))))
 
-(defn merge-hierarchical-maps
-  "TODO comment this"
+(defn- map-by
+  "Like group-by but assumes that all the keys returned by f will be unique per item."
+  [f items]
+  (into {} (for [item items] [(f item) item])))
+
+(defn- merge-hierarchical-maps
+  "Takes two hierarchical maps and merges them together."
   [hm1 hm2]
   ;; Merge the two maps without their values
   (let [merged-map (merge-with
                      (fn [existing-values new-values]
-                       ;; Find the values in common by using map-b and then merge those maps.
+                       ;; Find the values in common by using map-by and then merge those maps.
                        ;; The merge-with here recursively calls into the same function
                        (->> (merge-with merge-hierarchical-maps
                                         (map-by :value existing-values)
                                         (map-by :value new-values))
                             vals
-                            ;; TODO consider removing calls to vec
                             set))
                      (dissoc hm1 :value :uuid)
                      (dissoc hm2 :value :uuid))]
@@ -195,101 +112,66 @@
             (assoc hm :uuid uuid)
             hm))))
 
-(defn seq-set
-  "Totally permantent Change to call seq later
-  TODO comment me and correc tspelling mistakes"
-  [s]
-  (when (seq s)
-    (set s)))
+(defn- seq-set
+  "Converts a collection to a set or returns nil if the collection is empty."
+  [coll]
+  (when (seq coll)
+    (set coll)))
 
-(defn collapse-hierarchical-map*
-  "Removes intermediate nil values in the hierarchical map"
+(defn- collapse-hierarchical-map*
+  "Removes intermediate nil values in the hierarchical map."
   [hm]
-  (let [collapsed-map (reduce (fn [new-hm [k values]]
-                                (let [values-by-value (map-by :value values)]
-                                  ;; Determine if one of the values was nil
-                                  (if-let [nil-value-map (get values-by-value nil)]
-                                    (merge new-hm
-                                           ;; If it's nil then we should collapse it and then merge in its
-                                           ;; contents into the new map. This is what actually does the
-                                           ;; collapsing
-                                           (collapse-hierarchical-map*
-                                             (dissoc nil-value-map :value))
-                                           ;; Add on the other values within the original key
-                                           {k (seq-set (map collapse-hierarchical-map*
-                                                         (vals (dissoc values-by-value nil))))})
-                                    ;; There's no nil values so collapse the inner values and associate
-                                    ;; it with the original key
-                                    (assoc new-hm k (seq-set (map collapse-hierarchical-map* values))))))
-                              {}
-                              (dissoc hm :value :uuid))
+  (let [collapsed-map (reduce
+                        (fn [new-hm [k values]]
+                          (let [values-by-value (map-by :value values)]
+                            ;; Determine if one of the values was nil
+                            (if-let [nil-value-map (get values-by-value nil)]
+                              (merge new-hm
+                                     ;; If it's nil then we should collapse it and then merge in its
+                                     ;; contents into the new map. This is what actually does the
+                                     ;; collapsing
+                                     (collapse-hierarchical-map*
+                                       (dissoc nil-value-map :value))
+                                     ;; Add on the other values within the original key
+                                     {k (seq-set (map collapse-hierarchical-map*
+                                                      (vals (dissoc values-by-value nil))))})
+                              ;; There's no nil values so collapse the inner values and associate
+                              ;; it with the original key
+                              (assoc new-hm k (seq-set (map collapse-hierarchical-map* values))))))
+                        {}
+                        (dissoc hm :value :uuid))
         ;; Remove the empty subfields so we can get the correct list of subfields
-        subfields (-> collapsed-map util/remove-nil-keys (dissoc :value :uuid :subfields) keys seq-set)]
+        subfields (-> collapsed-map
+                      util/remove-nil-keys (dissoc :value :uuid :subfields) keys seq-set)]
     (util/remove-nil-keys
       (assoc collapsed-map
-             :value (:value hm)
+             :subfields subfields
              :uuid (:uuid hm)
-             :subfields subfields))))
+             :value (:value hm)))))
 
-(defn collapse-hierarchical-map
-  "TODO comment this"
+(defn- collapse-hierarchical-map
+  "Takes a hierarchical map and collapses it so that any subfields with nil values are removed
+  from the map. Also adds a subfields key to indicate the subfields directly below a given field."
   [hm]
   (dissoc (collapse-hierarchical-map* hm) :subfields))
-
-(defn convert-to-json
-  "TODO comment this"
-  [hm]
-  (cheshire.core/generate-string (util/map-keys->snake_case hm) {:pretty true}))
-
-
-
-(defn- parse-hierarchical-keywords
-  "Returns keywords in a hierarchical map based on the provided keyword hierarchy and a list of
-  keyword maps."
-  [keyword-hierarchy keywords]
-  (into {}
-        (when-let [field (first keyword-hierarchy)]
-          (when-let [unique-values (seq (distinct (keep field keywords)))]
-            (let [values-to-uuids (get-leaf-values-to-uuids keyword-hierarchy field keywords)]
-              {(csk/->snake_case field)
-               (for [value unique-values
-                     :let [uuid (get values-to-uuids value)
-                           all-subfield-names (get-subfields-for-keyword (rest keyword-hierarchy)
-                                                                         keywords field value)
-                           subfield-maps (util/remove-nil-keys
-                                           (into {}
-                                                 (reverse
-                                                   (for [subfield-name all-subfield-names]
-                                                     (parse-hierarchical-keywords
-                                                       (get-hierarchy-from-field
-                                                         keyword-hierarchy subfield-name)
-                                                       (filter-keywords-with-non-nil-values
-                                                         (rest keyword-hierarchy)
-                                                         subfield-name
-                                                         (filter #(= value (field %))
-                                                                 keywords)))))))]]
-                 (util/remove-nil-keys
-                   (util/map-keys->snake_case
-                     (merge subfield-maps
-                            {:subfields (seq (map #(name (csk/->snake_case %))
-                                                  (keys subfield-maps)))
-                             :uuid uuid
-                             :value value}))))})))))
 
 (defn- get-hierarchical-keywords
   "Returns hierarchical keywords for the provided keyword scheme. Returns a 400 error if the
   keyword scheme is invalid."
   [context keyword-scheme]
   (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
-        (validate-keyword-scheme orig-keyword-scheme)
-        (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
-              gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
-              keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
-              hierarchical-keywords (parse-hierarchical-keywords
-                                      (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
-          {:staus 200
-           :headers {"Content-Type" (mt/format->mime-type :json)}
-           :body (json/generate-string hierarchical-keywords)})))
+    (validate-keyword-scheme orig-keyword-scheme)
+    (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
+          gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
+          keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
+          keyword-hierarchy (cmr-keyword-scheme frf/nested-fields-mappings)
+          hierarchical-keywords (->> keywords
+                                     (map #(keyword->hierarchy % keyword-hierarchy))
+                                     (reduce merge-hierarchical-maps {})
+                                     collapse-hierarchical-map)]
+      {:staus 200
+       :headers {"Content-Type" (mt/format->mime-type :json)}
+       :body (json/generate-string hierarchical-keywords)})))
 
 (def keyword-api-routes
   (context "/keywords" []
