@@ -124,6 +124,158 @@
         (recur (filter #(nil? (current-field %)) keywords)
                (rest keyword-hierarchy))))))
 
+
+(comment
+
+  (declare node-type)
+
+  (def branch-node-type
+    {:value s/Str
+     :subfields [s/Keyword]
+     (s/optional :uuid) s/Str
+     s/Keyword [node-type]})
+
+  (def leaf-node-type
+    {:value s/Str
+     :uuid s/Str})
+
+  (def root-node
+    s/Keyword [node-type])
+
+  (def node-type
+    (s/OR branch-node-type leaf-node-type))
+
+(def expected-result
+  {:a [{:value "A1"
+        :subfields ["c"]
+        :c [{:value "C1"
+             :uuid "a1c1"
+             :subfields ["d"]
+             :d [{:value "D1"
+                  :uuid "a1c1d1"}]}]}
+       {:value "A2"
+        :uuid "a2"
+        :subfields ["d"]
+        :d [{:value "D1"
+             :uuid "a2d1"}]}
+       {:value "A3"
+        :subfields ["b" "c" "d"]
+        :b [{:value "B1"
+             :subfields ["c"]
+             :c [{:value "C1"
+                  :subfields ["d"]
+                  :d [{:value "D1"
+                       :uuid "a3b1c1d1"}]}]}]
+        :c [{:value "C2"
+             :uuid "a3c2"}]
+        :d [{:value "D2"
+             :uuid "a3d2"}]}]})
+
+{:a "A1" :c "C1" :uuid "a1c1"}
+
+{:a [{:value "A1"
+      :subfields ["b"]
+      :b [{:value nil
+           :subfields ["c"]
+           :c [{:value "C1"
+                :uuid "a1c1"}]}]}]}
+
+(def example-keywords
+  [{:a "A1" :c "C1" :uuid "a1c1"}
+   {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
+   {:a "A2" :uuid "a2"}
+   {:a "A2" :d "D1" :uuid "a2d1"}
+   {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
+   {:a "A3" :c "C2" :uuid "a3c2"}
+   {:a "A3" :d "D2" :uuid "a3d2"}])
+
+  (def keyword-hierarchy-example [:a :b :c :d])
+
+  (create-branch-nodes :a [:b :c :d] example-keywords )
+
+  {:b [{:value value
+        }]
+   :c [{:value ...}]}
+
+  (keyword->hierarchy (first example-keywords) [:a :b :c :d])
+  )
+
+;; Three steps
+;; Flat to hierarchical map
+;; Merge together all of the keyword maps
+;; Remove fields that should not be there
+
+(defn keyword->hierarchy
+  [keyword-map keyword-hierarchy]
+  (let [[current-subfield & remaining-subfields] keyword-hierarchy]
+    {current-subfield [(merge
+                        (when (seq remaining-subfields)
+                          (keyword->hierarchy keyword-map remaining-subfields))
+                        {:value (current-subfield keyword-map)})]}))
+
+(defn merge-hierarchical-maps
+  [hm1 hm2]
+  (into {}
+        (doseq [[subfield value-maps] hm1]
+          (println "Subfield is" subfield)
+          (println "Subfield maps" value-maps))))
+
+(comment
+
+(def example-keywords
+  [{:a "A1" :c "C1" :uuid "a1c1"}
+   {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
+   {:a "A2" :uuid "a2"}
+   {:a "A2" :d "D1" :uuid "a2d1"}
+   {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
+   {:a "A3" :c "C2" :uuid "a3c2"}
+   {:a "A3" :d "D2" :uuid "a3d2"}])
+
+  (def hm1
+    (keyword->hierarchy (first example-keywords) [:a :b :c :d]))
+
+  (def hm2
+    (keyword->hierarchy (second example-keywords) [:a :b :c :d]))
+
+  (def hm3
+    (keyword->hierarchy (nth example-keywords 2) [:a :b :c :d]))
+
+
+
+  (merge-hierarchical-maps hm1 hm2)
+  )
+
+(defn create-branch-nodes
+  [subfield remaining-subfields keywords]
+  (let [keywords-by-subfield-value (group-by subfield keywords)]
+    (if-let [[next-subfield & remaining-subfields] (seq remaining-subfields)]
+      {subfield (for [[subfield-value subfield-keywords] keywords-by-subfield-value
+                      ;; TODO handle child-branch-nodes is empty
+                      :let [child-branch-nodes (create-branch-nodes
+                                                 next-subfield remaining-subfields subfield-keywords)]]
+                  ;; TODO value may be nil
+                  (if (seq child-branch-nodes)
+                    (merge child-branch-nodes
+                           {:value subfield-value
+                            :subfields (keys child-branch-nodes) ;; TODO
+                            ; :uuid nil ;; TODO
+                            ;; TODO subfields
+                            })
+                    {:value subfield-value
+                     ; :uuid TODO
+                     }))}
+
+      ;; TODO handle leaf node
+      {subfield [{:value "TODO leaf"
+                  :uuid "TODO UUID"}]})))
+
+(defn create-branch-nodes2
+  [subfield remaining-subfields keywords]
+  (reduce (fn [return-map keyword-map]
+            )
+          {}
+          keywords))
+
 (defn- parse-hierarchical-keywords
   "Returns keywords in a hierarchical map based on the provided keyword hierarchy and a list of
   keyword maps."
@@ -166,6 +318,7 @@
         (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
               gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
               keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
+              _ (cmr.common.dev.capture-reveal/capture keywords)
               hierarchical-keywords (parse-hierarchical-keywords
                                       (cmr-keyword-scheme frf/nested-fields-mappings) keywords)]
           {:staus 200
