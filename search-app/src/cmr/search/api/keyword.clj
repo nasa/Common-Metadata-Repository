@@ -127,59 +127,6 @@
 
 (comment
 
-  (declare node-type)
-
-  (def branch-node-type
-    {:value s/Str
-     :subfields [s/Keyword]
-     (s/optional :uuid) s/Str
-     s/Keyword [node-type]})
-
-  (def leaf-node-type
-    {:value s/Str
-     :uuid s/Str})
-
-  (def root-node
-    s/Keyword [node-type])
-
-  (def node-type
-    (s/OR branch-node-type leaf-node-type))
-
-  (def expected-result
-    {:a [{:value "A1"
-          :subfields ["c"]
-          :c [{:value "C1"
-               :uuid "a1c1"
-               :subfields ["d"]
-               :d [{:value "D1"
-                    :uuid "a1c1d1"}]}]}
-         {:value "A2"
-          :uuid "a2"
-          :subfields ["d"]
-          :d [{:value "D1"
-               :uuid "a2d1"}]}
-         {:value "A3"
-          :subfields ["b" "c" "d"]
-          :b [{:value "B1"
-               :subfields ["c"]
-               :c [{:value "C1"
-                    :subfields ["d"]
-                    :d [{:value "D1"
-                         :uuid "a3b1c1d1"}]}]}]
-          :c [{:value "C2"
-               :uuid "a3c2"}]
-          :d [{:value "D2"
-               :uuid "a3d2"}]}]})
-
-  {:a "A1" :c "C1" :uuid "a1c1"}
-
-  {:a [{:value "A1"
-        :subfields ["b"]
-        :b [{:value nil
-             :subfields ["c"]
-             :c [{:value "C1"
-                  :uuid "a1c1"}]}]}]}
-
   (def example-keywords
     [{:a "A1" :c "C1" :uuid "a1c1"}
      {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
@@ -190,67 +137,41 @@
      {:a "A3" :c "C2" :uuid "a3c2"}
      {:a "A3" :d "D2" :uuid "a3d2"}])
 
-  (def keyword-hierarchy-example [:a :b :c :d])
-
-  (def expected-merged
-    {:a [{:value "A3"
-          :b [{:value nil
-               :c [{:value nil
-                    :d [{:value "D2"
-                         :uuid "a3d2"
-                         }]}
-                   {:value "C2"
-                    :uuid "a3c2"
-                    :d [{:value nil}]
-                    }]}
-              {:value "B1"
-               :c [{:value "C1"
-                    :d [{:value "D1"
-                         :uuid "a3b1c1d1"
-                         }]}
-                   ]}]}
-         {:value "A2"
-          ; :uuid "a2"
-          :b [{:value nil
-               :c [{:value nil
-                    :d [{:value "D1"
-                         :uuid "a2d1"
-                         }
-                        {:value nil}]}]}]}
-         {:value "A1"
-          :b [{:value nil
-               :c [{:value "C1"
-                    :uuid "a1c1"
-                    :d [{:value "D1"
-                         :uuid "a1c1d1"
-                         }
-                        {:value nil}]}]}]}]})
-
-
-  (->> example-keywords
-       (map #(keyword->hierarchy % [:a :b :c :d]))
-       (reduce merge-hierarchical-maps)
-       (= expected-merged)
-       )
-
-  (map #(keyword->hierarchy % [:a :b :c :d]) example-keywords)
-
-  )
 
 ;; Three steps
 ;; Flat to hierarchical map
 ;; Merge together all of the keyword maps
 ;; Remove fields that should not be there
 
+  (->> example-keywords
+       (map #(keyword->hierarchy % [:a :b :c :d]))
+       (reduce merge-hierarchical-maps)
+       collapse-hierarchical-map
+       convert-to-json
+       println
+       )
+
+
+  )
+
+
 (defn keyword->hierarchy
+  "TODO comment this"
   [keyword-map keyword-hierarchy]
-  (let [[current-subfield & remaining-subfields] keyword-hierarchy]
-    {current-subfield [(merge
-                        (when (seq remaining-subfields)
-                          (keyword->hierarchy keyword-map remaining-subfields))
-                        {:value (current-subfield keyword-map)})]}))
+  (let [[current-subfield & remaining-subfields] keyword-hierarchy
+        current-value (get keyword-map current-subfield)
+        subfield-hierarchy (when (seq remaining-subfields)
+                             (keyword->hierarchy keyword-map remaining-subfields))]
+    (when (or current-value subfield-hierarchy)
+      (if subfield-hierarchy
+        {current-subfield #{(merge
+                              subfield-hierarchy
+                              {:value current-value})}}
+        {current-subfield #{{:value current-value
+                             :uuid (:uuid keyword-map)}}}))))
 
 (defn merge-hierarchical-maps
+  "TODO comment this"
   [hm1 hm2]
   ;; Merge the two maps without their values
   (let [merged-map (merge-with
@@ -261,123 +182,66 @@
                                         (map-by :value existing-values)
                                         (map-by :value new-values))
                             vals
-                            vec))
+                            ;; TODO consider removing calls to vec
+                            set))
                      (dissoc hm1 :value :uuid)
                      (dissoc hm2 :value :uuid))]
-    ;; Add value back in if it was there originally
-    (if (contains? hm1 :value)
-      (assoc merged-map :value (:value hm1))
-      merged-map)))
+    ;; Add value and uuid back in if it was there originally
+    (as-> merged-map hm
+          (if (contains? hm1 :value)
+            (assoc hm :value (:value hm1))
+            hm)
+          (if-let [uuid (or (:uuid hm1) (:uuid hm2))]
+            (assoc hm :uuid uuid)
+            hm))))
 
-(comment
+(defn seq-set
+  "Totally permantent Change to call seq later
+  TODO comment me and correc tspelling mistakes"
+  [s]
+  (when (seq s)
+    (set s)))
 
-  (def example-keywords
-    [{:a "A1" :c "C1" :uuid "a1c1"}
-     {:a "A1" :c "C1" :d "D1" :uuid "a1c1d1"}
-     {:a "A2" :uuid "a2"}
-     {:a "A2" :d "D1" :uuid "a2d1"}
-     {:a "A3" :b "B1" :c "C1" :d "D1" :uuid "a3b1c1d1"}
-     {:a "A3" :c "C2" :uuid "a3c2"}
-     {:a "A3" :d "D2" :uuid "a3d2"}])
+(defn collapse-hierarchical-map*
+  "Removes intermediate nil values in the hierarchical map"
+  [hm]
+  (let [collapsed-map (reduce (fn [new-hm [k values]]
+                                (let [values-by-value (map-by :value values)]
+                                  ;; Determine if one of the values was nil
+                                  (if-let [nil-value-map (get values-by-value nil)]
+                                    (merge new-hm
+                                           ;; If it's nil then we should collapse it and then merge in its
+                                           ;; contents into the new map. This is what actually does the
+                                           ;; collapsing
+                                           (collapse-hierarchical-map*
+                                             (dissoc nil-value-map :value))
+                                           ;; Add on the other values within the original key
+                                           {k (seq-set (map collapse-hierarchical-map*
+                                                         (vals (dissoc values-by-value nil))))})
+                                    ;; There's no nil values so collapse the inner values and associate
+                                    ;; it with the original key
+                                    (assoc new-hm k (seq-set (map collapse-hierarchical-map* values))))))
+                              {}
+                              (dissoc hm :value :uuid))
+        ;; Remove the empty subfields so we can get the correct list of subfields
+        subfields (-> collapsed-map util/remove-nil-keys (dissoc :value :uuid :subfields) keys seq-set)]
+    (util/remove-nil-keys
+      (assoc collapsed-map
+             :value (:value hm)
+             :uuid (:uuid hm)
+             :subfields subfields))))
 
-  (def hm1
-    (keyword->hierarchy (first example-keywords) [:a :b :c :d]))
+(defn collapse-hierarchical-map
+  "TODO comment this"
+  [hm]
+  (dissoc (collapse-hierarchical-map* hm) :subfields))
 
-  (def hm2
-    (keyword->hierarchy (second example-keywords) [:a :b :c :d]))
-
-  (def hm3
-    (keyword->hierarchy (nth example-keywords 2) [:a :b :c :d]))
-
-
-  (def hm1
-    {:a [{:value "A1",
-          :b [{:value nil,
-               :c [{:value "C1",
-                    :d [{:value nil}]}]}]}]})
-
-  (def hm2
-    {:a [{:value "A1",
-          :b [{:value nil,
-               :c [{:value "C1",
-                    :d [{:value "D1"}]}]}]}]})
-
-  (def hm1-2-combined
-    {:a [{:value "A1",
-          :b [{:value nil,
-               :c [{:value "C1",
-                    :d [{:value "D1"}
-                        {:value nil}]}]}]}]})
-
-  (def hm3
-    {:a [{:value "A2",
-          :b [{:value nil,
-               :c [{:value nil,
-                    :d [{:value nil}]}]}]}]})
-
-  ; map -> :keyword vector
-  ;vector -> maps
-
-  (defn map-by
-    "Like group-by but assumes that all the keys returned by f will be unique per item"
-    [f things]
-    (into {} (for [thing things] [(f thing) thing])))
+(defn convert-to-json
+  "TODO comment this"
+  [hm]
+  (cheshire.core/generate-string (util/map-keys->snake_case hm) {:pretty true}))
 
 
-
-  (defn merge-hierarchical-maps
-    [hm1 hm2]
-    ;; Merge the two maps without their values
-    (let [merged-map (merge-with
-                       (fn [existing-values new-values]
-                         ;; Find the values in common by using map-b and then merge those maps.
-                         ;; The merge-with here recursively calls into the same function
-                         (->> (merge-with merge-hierarchical-maps
-                                          (map-by :value existing-values)
-                                          (map-by :value new-values))
-                              vals
-                              vec))
-                       (dissoc hm1 :value)
-                       (dissoc hm2 :value))]
-      ;; Add value back in if it was there originally
-      (if (contains? hm1 :value)
-        (assoc merged-map :value (:value hm1))
-        merged-map)))
-
-  (= hm1-2-combined (value-map-merger-cleaner hm1 hm2))
-
-  )
-
-(defn create-branch-nodes
-  [subfield remaining-subfields keywords]
-  (let [keywords-by-subfield-value (group-by subfield keywords)]
-    (if-let [[next-subfield & remaining-subfields] (seq remaining-subfields)]
-      {subfield (for [[subfield-value subfield-keywords] keywords-by-subfield-value
-                      ;; TODO handle child-branch-nodes is empty
-                      :let [child-branch-nodes (create-branch-nodes
-                                                 next-subfield remaining-subfields subfield-keywords)]]
-                  ;; TODO value may be nil
-                  (if (seq child-branch-nodes)
-                    (merge child-branch-nodes
-                           {:value subfield-value
-                            :subfields (keys child-branch-nodes) ;; TODO
-                            ; :uuid nil ;; TODO
-                            ;; TODO subfields
-                            })
-                    {:value subfield-value
-                     ; :uuid TODO
-                     }))}
-
-      ;; TODO handle leaf node
-      {subfield [{:value "TODO leaf"
-                  :uuid "TODO UUID"}]})))
-
-(defn create-branch-nodes2
-  [subfield remaining-subfields keywords]
-  (reduce (fn [return-map keyword-map]
-            )
-          {}
-          keywords))
 
 (defn- parse-hierarchical-keywords
   "Returns keywords in a hierarchical map based on the provided keyword hierarchy and a list of
