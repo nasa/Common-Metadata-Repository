@@ -425,12 +425,25 @@
      :root xml-root
      :context [xml-root]}))
 
+(defn element-context
+  [element]
+  {:type :xml
+   :context [element]})
+
 (defn create-xpath-context-for-data
   "Creates an XPath context for evaluating XPaths from Clojure data"
   [data]
   {:type :data
    :root data
    :context [data]})
+
+(defn context
+  [x]
+  (cond
+    (xpath-context? x) x
+    (string? x) (create-xpath-context-for-xml x)
+    (instance? clojure.data.xml.Element x) (element-context x)
+    :else (create-xpath-context-for-data x)))
 
 (defn parse-xpath
   "Parses an XPath into a data structure that allows it to be evaluated."
@@ -486,15 +499,11 @@
   "Returns the XPath context resulting from evaluating an XPath expression against XML or Clojure
   data. The given context may be an XPath context, an XML string, or a Clojure data structure. The
   given xpath-expression may be a string or a value as returned by parse-xpath."
-  [context xpath-expression]
-  (let [context (cond
-                  (xpath-context? context) context
-                  (string? context)        (create-xpath-context-for-xml context)
-                  :else                    (create-xpath-context-for-data context))
-        xpath-expression (if (string? xpath-expression)
+  [ctx xpath-expression]
+  (let [xpath-expression (if (string? xpath-expression)
                            (parse-xpath xpath-expression)
                            xpath-expression)]
-    (evaluate-internal context xpath-expression)))
+    (evaluate-internal (context ctx) xpath-expression)))
 
 (defn text
   "Returns the text of all nodes selected in an XPath context."
@@ -502,14 +511,10 @@
   (cond
     (string? context-or-node) context-or-node
     (xpath-context? context-or-node) (apply str (map text (:context context-or-node)))
+    (seq? context-or-node) (apply str (map text context-or-node))
     (:content context-or-node) (str/join (map text (:content context-or-node)))))
 
 (defn select
   "Returns all elements matching the XPath expression."
   [context xpath]
-  (:context (evaluate context xpath)))
-
-(defn value-at
-  "Returns the value of the first element matched by the XPath expression."
-  [context xpath]
-  (first (select context xpath)))
+  (seq (:context (evaluate context xpath))))

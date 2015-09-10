@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml.gen
   "Contains functions for generating XML using a Hiccup-style syntax."
   (:require [clojure.data.xml :as x]
-            [cmr.umm-spec.simple-xpath :refer [value-at]]))
+            [cmr.umm-spec.simple-xpath :refer [select]]))
 
 (defprotocol GenerateXML
   (generate [x]))
@@ -52,11 +52,11 @@
 (defn char-string-at
   "Returns an ISO gco:CharacterString with contents taken from the given xpath."
   [context xpath]
-  (char-string (value-at context xpath)))
+  (char-string (select context xpath)))
 
 (defn element-from
   [context kw]
-  [kw {} (value-at context (name kw))])
+  [kw {} (select context (name kw))])
 
 (defn elements-from
   [context & kws]
