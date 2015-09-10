@@ -542,7 +542,7 @@
 (defn get-keywords-by-keyword-scheme
   "Calls the CMR search endpoint to retrieve the controlled keywords for the given keyword scheme."
   [keyword-scheme]
-  (get-search-failure-xml-data
+  (get-search-failure-data
     (let [response (client/get (url/search-keywords-url keyword-scheme)
                                {:connection-manager (s/conn-mgr)})
           {:keys [status body]} response]

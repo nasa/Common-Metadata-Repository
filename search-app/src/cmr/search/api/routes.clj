@@ -410,7 +410,8 @@
 (defn default-error-format-fn
   "Determine the format that errors should be returned in based on the request URI."
   [{:keys [uri]} _e]
-  (if (re-find #"caches" uri)
+  (if (or (re-find #"/caches" uri)
+          (re-find #"/keywords" uri))
     mt/json
     mt/xml))
 
