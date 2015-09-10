@@ -174,6 +174,13 @@
         find-var
         var-get)))
 
+(defn- resolve-$refs
+  "Recursively resolves $refs, as some are multi-level $refs to other types."
+  [[schema definition :as pair]]
+  (if (:$ref definition)
+    (recur (apply lookup-ref pair))
+    pair))
+
 (defn coerce
   ([x]
    (coerce umm-c-schema x))
@@ -182,24 +189,26 @@
   ([schema definition x]
    (let [type-name (or (-> definition :$ref :type-name)
                        (:root schema))
-         ;; Some definitions are several $ref's deep so we need to those down.
-         [schema definition] (if (:$ref definition)
-                               (lookup-ref schema definition)
-                               [schema definition])]
+         [schema definition] (resolve-$refs [schema definition])]
      (condp = (:type definition)
        "string"  (condp = (:format definition)
                    "date-time" (dtp/parse-datetime x)
                    (str x))
        "number"  (Double. x)
-       "integer" (Double. x)
+       "integer" (Long. x)
        "boolean" (= "true" x)
-       "array"   (mapv #(coerce schema (:items definition) %) x)
-       "object"  (let [ctor (record-ctor schema type-name)]
-                   (ctor
-                    (into {}
-                          (for [[k v] x]
-                            (let [prop-definition (get-in definition [:properties k])]
-                              [k (coerce schema prop-definition v)])))))
+       ;; Return nil instead of empty vectors.
+       "array"   (when (seq x)
+                   (mapv #(coerce schema (:items definition) %) x))
+       "object"  (let [ctor (record-ctor schema type-name)
+                       kvs (for [[k v] x]
+                             (when v
+                               (let [prop-definition (get-in definition [:properties k])]
+                                 [k (coerce schema prop-definition v)])))
+                       m (into {} kvs)]
+                   ;; Return nil instead of empty maps/records here.
+                   (when-not (empty? m)
+                     (ctor m)))
        (throw (IllegalArgumentException. (str "Don't know how to coerce " definition " (" x ")")))))))
 
 (comment
