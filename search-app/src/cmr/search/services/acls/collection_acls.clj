@@ -16,4 +16,4 @@
 
 (defmethod acl-service/acls-match-concept? :collection
   [context acls concept]
-  (some (partial umm-matchers/coll-applicable-acl? (:provider-id concept) concept) acls))
+  (some #(umm-matchers/coll-applicable-acl? (:provider-id concept) concept %) acls))

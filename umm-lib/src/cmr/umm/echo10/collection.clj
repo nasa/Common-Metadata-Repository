@@ -6,6 +6,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.common.xml :as v]
+            [cmr.common.util :as util]
             [cmr.umm.echo10.collection.temporal :as t]
             [cmr.umm.echo10.collection.personnel :as pe]
             [cmr.umm.echo10.collection.product-specific-attribute :as psa]
@@ -138,6 +139,19 @@
   "Parses ECHO10 XML into a UMM Collection record."
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
+
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  (when-let [single-element (util/extract-between-strings xml "<Temporal>" "</Temporal>")]
+    (let [smaller-xml (str "<Collection>" single-element "</Collection>")]
+      (t/xml-elem->Temporal (x/parse-str smaller-xml)))))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (when-let [value (util/extract-between-strings xml "<RestrictionFlag>" "</RestrictionFlag>" false)]
+    (Double/parseDouble value)))
 
 ;; Generating XML
 

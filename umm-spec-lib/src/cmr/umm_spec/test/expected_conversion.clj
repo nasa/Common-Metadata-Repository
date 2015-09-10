@@ -6,6 +6,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
+            [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (def example-record
@@ -34,15 +35,15 @@
                                                           :Unit "dB"
                                                           :Value "10"})]
                                      :Sensors [(cmn/map->SensorType
-                                             {:ShortName "ABC"
-                                              :LongName "Long Range Sensor"
-                                              :Characteristics [(cmn/map->CharacteristicType
-                                                                 {:Name "Signal to Noise Ratio"
-                                                                  :Description "Is that necessary?"
-                                                                  :DataType "float"
-                                                                  :Unit "dB"
-                                                                  :Value "10"})]
-                                              :Technique "Drunken Fist"})]})]})]
+                                                 {:ShortName "ABC"
+                                                  :LongName "Long Range Sensor"
+                                                  :Characteristics [(cmn/map->CharacteristicType
+                                                                      {:Name "Signal to Noise Ratio"
+                                                                       :Description "Is that necessary?"
+                                                                       :DataType "float"
+                                                                       :Unit "dB"
+                                                                       :Value "10"})]
+                                                  :Technique "Drunken Fist"})]})]})]
      :TemporalExtents [(cmn/map->TemporalExtentType
                          {:TemporalRangeType "temp range"
                           :PrecisionOfSeconds 3
@@ -52,7 +53,8 @@
                                                   :EndingDateTime (t/date-time 2001)}
                                                  {:BeginningDateTime (t/date-time 2002)
                                                   :EndingDateTime (t/date-time 2003)}])})]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"
+                                                       :ProcessingLevelDescription "Processing level description"})
      :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :Organizations [(cmn/map->ResponsibilityType
                        {:Role "CUSTODIAN"
@@ -106,6 +108,29 @@
 
 ;;; Format-Specific Translation Functions
 
+(defn- convert-empty-record-to-nil
+  [record]
+  (if (seq (util/remove-nil-keys record))
+    record
+    nil))
+
+(defn- expected-distributions
+  "Returns the expected distributions for comparing with the distributions in the UMM-C record"
+  [distributions]
+  (->> distributions
+       (keep convert-empty-record-to-nil)
+       seq))
+
+(defn- echo10-expected-distributions
+  "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
+  record. ECHO10 only has one Distribution, so here we just pick the first one."
+  [distributions]
+  (some-> distributions
+          first
+          convert-empty-record-to-nil
+          (assoc :DistributionSize nil :DistributionMedia nil)
+          vector))
+
 ;; ECHO 10
 
 (defmethod convert-internal :echo10
@@ -115,6 +140,8 @@
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
+      (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)))
@@ -132,7 +159,7 @@
                            (map single-date->range singles))]
     (when (seq all-ranges)
       [(cmn/map->TemporalExtentType
-        {:RangeDateTimes all-ranges})])))
+         {:RangeDateTimes all-ranges})])))
 
 (defn dif-access-constraints
   "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
@@ -145,9 +172,11 @@
   (-> umm-coll
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:AccessConstraints] dif-access-constraints)
+      (update-in [:Distributions] expected-distributions)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")))
 
 
@@ -157,12 +186,21 @@
   ;; Only a limited subset of platform types are supported by DIF 10.
   (assoc platform :Type (get dif10/platform-types (:Type platform))))
 
+(defn- dif10-processing-level
+  [processing-level]
+  (-> processing-level
+      (assoc :ProcessingLevelDescription nil)
+      (assoc :Id (get dif10/product-levels (:Id processing-level)))
+      convert-empty-record-to-nil))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
+      (update-in [:Distributions] expected-distributions)
       (update-in-each [:Platforms] dif10-platform)
-      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)))
+      (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
+      (update-in [:ProcessingLevel] dif10-processing-level)))
 
 ;; ISO 19115-2
 
@@ -202,6 +240,8 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
+      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
+      (assoc :Distributions nil)
       (assoc :AdditionalAttributes nil)))
 
 ;; ISO-SMAP
@@ -222,9 +262,12 @@
       ;; Fields not supported by ISO-SMAP
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
+      (assoc :SpatialKeywords nil)
       (assoc :TemporalKeywords nil)
       (assoc :CollectionDataType nil)
       (assoc :AdditionalAttributes nil)
+      (assoc :ProcessingLevel nil)
+      (assoc :Distributions nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -243,9 +286,9 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
-    :RelatedUrls :DataDates :Organizations :SpatialKeywords
-    :SpatialExtent :MetadataLineages :ScienceKeywords :Distributions :SpatialInformation
-    :AncillaryKeywords :ProcessingLevel :Projects :PaleoTemporalCoverage
+    :RelatedUrls :DataDates :Organizations
+    :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation
+    :AncillaryKeywords :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields

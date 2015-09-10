@@ -97,21 +97,25 @@
      collection-progress]))
 
 (defn- generate-descriptive-keywords
-  "Returns content generator instruction for the descriptive keywords field. We create this function
-  because we don't want to generate the parent elements when there are no TemporalKeywords."
-  [xpath-context]
-  (when-let [temporal-keywords (-> xpath-context :context first :TemporalKeywords seq)]
-    (vec (concat
-           [:gmd:MD_Keywords]
+  "Returns a function for generating the content generator instruction for the descriptive keywords.
+  We create this function because we don't want to generate the parent elements when there are no
+  keywords. The field-key parameter is the key of the field in the UMM record and keyword-type is
+  the string name that identifies the descriptive keyword in ISO19115-2 xml.
+  e.g. for TemporalKeywords, the field-key is :TemporalKeywords and the keyword-type is 'temporal'."
+  [field-key keyword-type]
+  (fn [xpath-context]
+    (when-let [temporal-keywords (-> xpath-context :context first field-key seq)]
+      (vec (concat
+             [:gmd:MD_Keywords]
 
-           (for [temporal-keyword temporal-keywords]
-             [:gmd:keyword [:gco:CharacterString temporal-keyword]])
+             (for [temporal-keyword temporal-keywords]
+               [:gmd:keyword [:gco:CharacterString temporal-keyword]])
 
-           [[:gmd:type
-             [:gmd:MD_KeywordTypeCode
-              {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-               :codeListValue "temporal"} "temporal"]]
-            [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))))
+             [[:gmd:type
+               [:gmd:MD_KeywordTypeCode
+                {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                 :codeListValue keyword-type} keyword-type]]
+              [:gmd:thesaurusName {:gco:nilReason "unknown"}]])))))
 
 (def short-name-long-name-identifier
   [:gmi:identifier
@@ -156,7 +160,8 @@
      [:gmd:abstract (char-string-from "/Abstract")]
      [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
      [:gmd:status generate-collection-progress]
-     [:gmd:descriptiveKeywords generate-descriptive-keywords]
+     [:gmd:descriptiveKeywords (generate-descriptive-keywords :SpatialKeywords "place")]
+     [:gmd:descriptiveKeywords (generate-descriptive-keywords :TemporalKeywords "temporal")]
      [:gmd:resourceConstraints
       [:gmd:MD_LegalConstraints
        [:gmd:useLimitation (char-string-from "/UseConstraints")]
@@ -179,8 +184,19 @@
           [:gmd:EX_TemporalExtent
            [:gmd:extent
             [:gml:TimeInstant {:gml:id gen-id}
-             [:gml:timePosition (xpath ".")]]]]])]]]]
-
+             [:gml:timePosition (xpath ".")]]]]])]]
+     [:gmd:processingLevel
+      [:gmd:MD_Identifier
+       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
+       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
+   [:gmd:contentInfo
+    [:gmd:MD_ImageDescription
+     [:gmd:attributeDescription ""]
+     [:gmd:contentType ""]
+     [:gmd:processingLevelCode
+      [:gmd:MD_Identifier
+       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
+       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
    [:gmd:dataQualityInfo
     [:gmd:DQ_DataQuality
      [:gmd:scope
@@ -237,7 +253,6 @@
               [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
                "Echo Additional Attributes"]]
              (make-characteristics-mapping "instrumentInformation")
-
              ;; The Sensors mapping is very similar to the Instruments mapping above.
 
              (for-each "Sensors"

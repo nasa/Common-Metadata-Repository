@@ -26,7 +26,8 @@
    :atom {:mime-type  "application/atom+xml"}
    :kml {:mime-type "application/vnd.google-earth.kml+xml"}
    :opendata {:mime-type "application/opendata+json"}
-   :native {:mime-type "application/metadata+xml"}})
+   :native {:mime-type "application/metadata+xml"}
+   :edn {:mime-type "application/edn"}})
 
 ;; Define vars for each of the mime type formats, e.g. (def json "application/json")
 (doseq [[format-kw {:keys [mime-type]}] mime-types]

@@ -285,7 +285,6 @@
         m-without-renamed (apply dissoc m (keys kmap))]
     (reduce #(merge-with merge-fn %1 %2) m-without-renamed renamed-subsets)))
 
-
 (defn binary-search
   "Does a binary search between minv and maxv searching for an acceptable value. middle-fn should
   be a function taking two values and finding the midpoint. matches-fn should be a function taking a
@@ -414,6 +413,48 @@
                         (map (fn [x]
                                (apply f x args))
                              xs)))))
+
+(defn- key->delay-name
+  "Returns the key that the delay is stored in for a lazy value"
+  [k]
+  {:pre [(keyword? k)]}
+  (keyword (str "cmr.common.util/" (name k) "-delay")))
+
+(defmacro lazy-assoc
+  "Associates a value in a map in a way that the expression isn't evaluated until the value is
+  retrieved from the map. The value must be retrieved using lazy-get. A different key is built
+  using the one specified so that only lazy-get can be used to retrieve the value. It also allows
+  a map to contain either the original value with the same key and a lazily determined value."
+  [m k value-expression]
+  (let [delay-name (key->delay-name k)]
+    `(assoc ~m ~delay-name (delay ~value-expression))))
+
+(defn lazy-get
+  "Realizes and retrieves a value stored via lazy-assoc."
+  [m k]
+  (some-> m (get (key->delay-name k)) deref))
+
+(defn get-real-or-lazy
+  "Retrieves the value directly from the map with the key k or if not set looks for a lazily
+  associated value."
+  [m k]
+  (or (get m k) (lazy-get m k)))
+
+(defn extract-between-strings
+  "Extracts a substring from s that begins with start and ends with end."
+  ([^String s ^String start ^String end]
+   (extract-between-strings s start end true))
+  ([^String s ^String start ^String end include-start-and-end?]
+   (let [start-index (.indexOf s start)]
+     (when (not= start-index -1)
+       (let [end-index (.indexOf s end (+ start-index (count start)))]
+         (when (not= end-index -1)
+           (if include-start-and-end?
+             (.substring s start-index (+ end-index (count end)))
+             (let [substr (.substring s (+ start-index (count start)) end-index)]
+               ;; Return nil if there's no data between the two
+               (when (not= 0 (count substr))
+                 substr)))))))))
 
 (defn map-by
   "Like group-by but assumes that all the keys returned by f will be unique per item."

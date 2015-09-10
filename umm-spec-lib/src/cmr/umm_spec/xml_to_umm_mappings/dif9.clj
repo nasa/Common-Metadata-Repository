@@ -2,6 +2,7 @@
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
+            [cmr.umm-spec.simple-xpath :as xp]
             [cmr.umm-spec.json-schema :as js]))
 
 (def dif9-xml-to-umm-c
@@ -18,17 +19,30 @@
        :TemporalKeywords (for-each "/DIF/Data_Resolution"
                                    (xpath "Temporal_Resolution"))
        :CollectionProgress (xpath "/DIF/Data_Set_Progress")
+       :SpatialKeywords (select "/DIF/Location")
        :Quality (xpath "/DIF/Quality")
        :AccessConstraints (object
                             {:Description (xpath "/DIF/Access_Constraints")})
        :UseConstraints (xpath "/DIF/Use_Constraints")
        :Platforms (for-each "/DIF/Source_Name"
-                    (object {:ShortName (xpath "Short_Name")
-                             :LongName (xpath "Long_Name")}))
+                            (object {:ShortName (xpath "Short_Name")
+                                     :LongName (xpath "Long_Name")}))
        :TemporalExtents (for-each "."
-                          (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
-                                                     (object {:BeginningDateTime (xpath "Start_Date")
-                                                              :EndingDateTime    (xpath "Stop_Date")}))}))
+                                  (object {:RangeDateTimes (for-each "/DIF/Temporal_Coverage"
+                                                                     (object {:BeginningDateTime (xpath "Start_Date")
+                                                                              :EndingDateTime    (xpath "Stop_Date")}))}))
+       :Distributions (for-each "/DIF/:Distribution"
+                            (object {:DistributionMedia (xpath "Distribution_Media")
+                                     :DistributionSize (xpath "Distribution_Size")
+                                     :DistributionFormat (xpath "Distribution_Format")
+                                     :Fees (xpath "Fees")}))
+       :ProcessingLevel (object
+                          {:Id
+                           (xpath "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelId']/Value")
+
+                           :ProcessingLevelDescription
+                           (xpath "/DIF/Extended_Metadata/Metadata[Name='ProcessingLevelDescription']/Value")})
+
        :AdditionalAttributes (for-each "/DIF/Extended_Metadata/Metadata[Group='AdditionalAttribute']"
                                (object {:Name (xpath "Name")
                                         :Description (xpath "Description")

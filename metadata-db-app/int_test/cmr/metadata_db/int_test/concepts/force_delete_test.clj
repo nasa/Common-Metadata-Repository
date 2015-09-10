@@ -54,6 +54,25 @@
         (is (= 404 (:status (util/force-delete-concept concept-id 2))))
         (is (= 404 (:status (util/force-delete-concept concept-id 22))))))))
 
+(deftest force-delete-tag-test
+  (let [tag (util/create-and-save-tag 1)
+        concept-id (:concept-id tag)
+        _ (dorun (repeatedly 3 #(util/save-concept (dissoc tag :revision-id))))
+        {:keys [status revision-id]} (util/force-delete-concept concept-id 2)]
+    (testing "revision-id correct"
+      (is (= status 200))
+      (is (= revision-id 2)))
+    (testing "revision is gone"
+      (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 2)))))
+    (testing "earlier revisions still available"
+      (is (util/verify-concept-was-saved (assoc tag :revision-id 1 :provider-id "CMR"))))
+    (testing "later revisions still available"
+      (is (util/verify-concept-was-saved (assoc tag :revision-id 3 :provider-id "CMR")))
+      (is (util/verify-concept-was-saved (assoc tag :revision-id 4 :provider-id "CMR"))))
+    (testing "delete non-existent revision gets 404"
+      (is (= 404 (:status (util/force-delete-concept concept-id 2))))
+      (is (= 404 (:status (util/force-delete-concept concept-id 22)))))))
+
 (deftest force-delete-non-existent-test
   (testing "id not exist"
     (is (= 404 (:status (util/force-delete-concept "C22-REG_PROV" 0))))

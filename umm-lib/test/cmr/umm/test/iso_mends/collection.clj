@@ -197,28 +197,8 @@
 (def valid-collection-xml
   (slurp (io/file (io/resource "data/iso_mends/sample_iso_collection.xml"))))
 
-(deftest parse-collection-test
-  (let [expected (umm-c/map->UmmCollection
-                   {:entry-id "MINIMAL_1"
-                    :entry-title "A minimal valid collection V 1"
-                    :summary "A minimal valid collection"
-                    :purpose "A grand purpose"
-                    :metadata-language "eng"
-                    :product (umm-c/map->Product
-                               {:short-name "MINIMAL"
-                                :long-name "A minimal valid collection"
-                                :version-id "1"
-                                :processing-level-id "1B"})
-                    :access-value 4.2
-                    :use-constraints "Restriction Comment:"
-                    :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                                {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
-                                                 :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
-                                                 :revision-date-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})
-                    :spatial-keywords ["Word-2" "Word-1" "Word-0"]
-                    :temporal-keywords ["Word-5" "Word-3" "Word-4"]
-                    :temporal
-                    (umm-c/map->Temporal
+(def expected-temporal
+  (umm-c/map->Temporal
                       {:range-date-times
                        [(umm-c/map->RangeDateTime
                           {:beginning-date-time (p/parse-datetime "1996-02-24T22:20:41-05:00")
@@ -228,110 +208,120 @@
                            :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
                        :single-date-times
                        [(p/parse-datetime "2010-01-05T05:30:30.550-05:00")]
-                       :periodic-date-times []})
-                    :spatial-coverage nil
-                    :science-keywords
-                    [(umm-c/map->ScienceKeyword
-                       {:category "EARTH SCIENCE"
-                        :topic "CRYOSPHERE"
-                        :term "SNOW/ICE"
-                        :variable-level-1 "ALBEDO"
-                        :variable-level-2 "BETA"
-                        :variable-level-3 "GAMMA"
-                        :detailed-variable "DETAILED"})
-                     (umm-c/map->ScienceKeyword
-                       {:category "EARTH SCIENCE"
-                        :topic "CRYOSPHERE"
-                        :term "SEA ICE"
-                        :variable-level-1 "REFLECTANCE"})]
-                    ; :product-specific-attributes
-                    ; [(umm-c/map->ProductSpecificAttribute
-                    ;    {:name "String add attrib"
-                    ;     :description "something string"
-                    ;     :data-type :string
-                    ;     :parameter-range-begin "alpha"
-                    ;     :parameter-range-end "bravo"
-                    ;     :value "alpha1"})
-                    ;  (umm-c/map->ProductSpecificAttribute
-                    ;    {:name "Float add attrib"
-                    ;     :description "something float"
-                    ;     :data-type :float
-                    ;     :parameter-range-begin 0.1
-                    ;     :parameter-range-end 100.43
-                    ;     :value 12.3})]
-                    :platforms
-                    [(umm-c/map->Platform
-                       {:short-name "RADARSAT-1"
-                        :long-name "RADARSAT-LONG-1"
-                        :type "Spacecraft"
-                        :instruments [(umm-c/map->Instrument
-                                        {:short-name "SAR"
-                                         :long-name "SAR long name"
-                                         :sensors [(umm-c/map->Sensor {:short-name "SNA"
-                                                                       :long-name "SNA long name"})
-                                                   (umm-c/map->Sensor {:short-name "SNB"})]})
-                                      (umm-c/map->Instrument {:short-name "MAR"})]})
-                     (umm-c/map->Platform
-                       {:short-name "RADARSAT-2"
-                        :long-name "RADARSAT-LONG-2"
-                        :type "Spacecraft-2"
-                        :instruments nil})]
-                    :collection-associations [(umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-237"
-                                                 :version-id "1"})
-                                              (umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-238"
-                                                 :version-id "1"})
-                                              (umm-c/map->CollectionAssociation
-                                                {:short-name "COLLOTHER-239"
-                                                 :version-id "1"})]
-                    :projects
-                    [(umm-c/map->Project
-                       {:short-name "ESI"
-                        :long-name "Environmental Sustainability Index"})
-                     (umm-c/map->Project
-                       {:short-name "EVI"
-                        :long-name "Environmental Vulnerability Index"})
-                     (umm-c/map->Project
-                       {:short-name "EPI"
-                        :long-name "Environmental Performance Index"})]
-                    ; :two-d-coordinate-systems
-                    ; [(umm-c/map->TwoDCoordinateSystem {:name "name0"})
-                    ;  (umm-c/map->TwoDCoordinateSystem {:name "name1"})]
-                    :related-urls
-                    [(umm-c/map->RelatedURL
-                       {:type "GET DATA"
-                        :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
-                     (umm-c/map->RelatedURL
-                       {:type "GET DATA"
-                        :url "http://camex.nsstc.nasa.gov/camex3/"})
-                     (umm-c/map->RelatedURL
-                       {:type "VIEW RELATED INFORMATION"
-                        :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
-                     (umm-c/map->RelatedURL
-                       {:type "GET RELATED VISUALIZATION"
-                        :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
-                        :description "Some description."
-                        :title "Some description."})]
-                    :associated-difs ["DIF-255" "DIF-256" "DIF-257"]
-                    :organizations
-                    [(umm-c/map->Organization
-                       {:type :processing-center
-                        :org-name "SEDAC PC"})
-                     (umm-c/map->Organization
-                       {:type :archive-center
-                        :org-name "SEDAC AC"})]
-                    :personnel [(umm-c/map->Personnel
-                                  {:last-name "SEDAC AC"
-                                   :roles ["pointOfContact"]})
-                                (umm-c/map->Personnel
-                                  {:last-name "John Smith"
-                                   :roles ["pointOfContact"]})
-                                (umm-c/map->Personnel
-                                  {:last-name "SEDAC AC"
-                                   :roles ["distributor"]})]})
-        actual (c/parse-collection all-fields-collection-xml)]
-    (is (= expected actual))))
+                       :periodic-date-times []}))
+
+(def expected-collection
+  (umm-c/map->UmmCollection
+    {:entry-id "MINIMAL_1"
+     :entry-title "A minimal valid collection V 1"
+     :summary "A minimal valid collection"
+     :purpose "A grand purpose"
+     :metadata-language "eng"
+     :product (umm-c/map->Product
+                {:short-name "MINIMAL"
+                 :long-name "A minimal valid collection"
+                 :version-id "1"
+                 :processing-level-id "1B"})
+     :access-value 4.2
+     :use-constraints "Restriction Comment:"
+     :data-provider-timestamps (umm-c/map->DataProviderTimestamps
+                                 {:insert-time (p/parse-datetime "1999-12-30T19:00:00-05:00")
+                                  :update-time (p/parse-datetime "1999-12-31T19:00:00-05:00")
+                                  :revision-date-time (p/parse-datetime "1999-12-31T19:00:00-05:00")})
+     :spatial-keywords ["Word-2" "Word-1" "Word-0"]
+     :temporal-keywords ["Word-5" "Word-3" "Word-4"]
+     :temporal expected-temporal
+     :spatial-coverage nil
+     :science-keywords
+     [(umm-c/map->ScienceKeyword
+        {:category "EARTH SCIENCE"
+         :topic "CRYOSPHERE"
+         :term "SNOW/ICE"
+         :variable-level-1 "ALBEDO"
+         :variable-level-2 "BETA"
+         :variable-level-3 "GAMMA"
+         :detailed-variable "DETAILED"})
+      (umm-c/map->ScienceKeyword
+        {:category "EARTH SCIENCE"
+         :topic "CRYOSPHERE"
+         :term "SEA ICE"
+         :variable-level-1 "REFLECTANCE"})]
+     :platforms
+     [(umm-c/map->Platform
+        {:short-name "RADARSAT-1"
+         :long-name "RADARSAT-LONG-1"
+         :type "Spacecraft"
+         :instruments [(umm-c/map->Instrument
+                         {:short-name "SAR"
+                          :long-name "SAR long name"
+                          :sensors [(umm-c/map->Sensor {:short-name "SNA"
+                                                        :long-name "SNA long name"})
+                                    (umm-c/map->Sensor {:short-name "SNB"})]})
+                       (umm-c/map->Instrument {:short-name "MAR"})]})
+      (umm-c/map->Platform
+        {:short-name "RADARSAT-2"
+         :long-name "RADARSAT-LONG-2"
+         :type "Spacecraft-2"
+         :instruments nil})]
+     :collection-associations [(umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-237"
+                                  :version-id "1"})
+                               (umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-238"
+                                  :version-id "1"})
+                               (umm-c/map->CollectionAssociation
+                                 {:short-name "COLLOTHER-239"
+                                  :version-id "1"})]
+     :projects
+     [(umm-c/map->Project
+        {:short-name "ESI"
+         :long-name "Environmental Sustainability Index"})
+      (umm-c/map->Project
+        {:short-name "EVI"
+         :long-name "Environmental Vulnerability Index"})
+      (umm-c/map->Project
+        {:short-name "EPI"
+         :long-name "Environmental Performance Index"})]
+     :related-urls
+     [(umm-c/map->RelatedURL
+        {:type "GET DATA"
+         :url "http://ghrc.nsstc.nasa.gov/hydro/details.pl?ds=dc8capac"})
+      (umm-c/map->RelatedURL
+        {:type "GET DATA"
+         :url "http://camex.nsstc.nasa.gov/camex3/"})
+      (umm-c/map->RelatedURL
+        {:type "VIEW RELATED INFORMATION"
+         :url "http://ghrc.nsstc.nasa.gov/uso/ds_docs/camex3/dc8capac/dc8capac_dataset.html"})
+      (umm-c/map->RelatedURL
+        {:type "GET RELATED VISUALIZATION"
+         :url "ftp://camex.nsstc.nasa.gov/camex3/dc8capac/browse/"
+         :description "Some description."
+         :title "Some description."})]
+     :associated-difs ["DIF-255" "DIF-256" "DIF-257"]
+     :organizations
+     [(umm-c/map->Organization
+        {:type :processing-center
+         :org-name "SEDAC PC"})
+      (umm-c/map->Organization
+        {:type :archive-center
+         :org-name "SEDAC AC"})]
+     :personnel [(umm-c/map->Personnel
+                   {:last-name "SEDAC AC"
+                    :roles ["pointOfContact"]})
+                 (umm-c/map->Personnel
+                   {:last-name "John Smith"
+                    :roles ["pointOfContact"]})
+                 (umm-c/map->Personnel
+                   {:last-name "SEDAC AC"
+                    :roles ["distributor"]})]}))
+
+(deftest parse-collection-test
+  (testing "parse collection"
+    (is (= expected-collection (c/parse-collection all-fields-collection-xml))))
+  (testing "parse temporal"
+    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml))))
+  (testing "parse access value"
+    (is (= 4.2 (c/parse-access-value all-fields-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

@@ -110,6 +110,16 @@
   [xml]
   (xml-elem->Collection (x/parse-str xml)))
 
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  (t/xml-elem->Temporal (core/id-elem (x/parse-str xml))))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (xml-elem->access-value (core/id-elem (x/parse-str xml))))
+
 (def iso-header-attributes
   "The set of attributes that go on the dif root element"
   {:xmlns:gmi "http://www.isotc211.org/2005/gmi"

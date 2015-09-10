@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
-  (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
+  (:require [cmr.common.xml :as cx]
+            [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -56,16 +57,24 @@
        :AccessConstraints (object
                             {:Description (xpath "/Collection/RestrictionComment")
                              :Value (xpath "/Collection/RestrictionFlag")})
+       :Distributions (for-each "/Collection"
+                                (object
+                                  {:DistributionFormat (xpath "DataFormat")
+                                   :Fees (xpath "Price")}))
+       :SpatialKeywords (select "/Collection/SpatialKeywords/Keyword")
        :TemporalKeywords (select "/Collection/TemporalKeywords/Keyword")
        :TemporalExtents temporal-mappings
        :Platforms (for-each "/Collection/Platforms/Platform"
-                    (object {:ShortName (xpath "ShortName")
-                             :LongName (xpath "LongName")
-                             :Type (xpath "Type")
-                             :Characteristics (for-each "Characteristics/Characteristic"
-                                                characteristic-mapping)
-                             :Instruments (for-each "Instruments/Instrument"
-                                            instrument-mapping)}))
+                            (object {:ShortName (xpath "ShortName")
+                                     :LongName (xpath "LongName")
+                                     :Type (xpath "Type")
+                                     :Characteristics (for-each "Characteristics/Characteristic"
+                                                                characteristic-mapping)
+                                     :Instruments (for-each "Instruments/Instrument"
+                                                            instrument-mapping)}))
+       :ProcessingLevel (object
+                          {:Id (xpath "/Collection/ProcessingLevelId")
+                           :ProcessingLevelDescription (xpath "/Collection/ProcessingLevelDescription")})
        :AdditionalAttributes (for-each "/Collection/AdditionalAttributes/AdditionalAttribute"
-                               (matching-object :Name :Description :DataType :ParameterRangeBegin
-                                                :ParameterRangeEnd :Value))})))
+                                       (matching-object :Name :Description :DataType :ParameterRangeBegin
+                                                        :ParameterRangeEnd :Value))})))

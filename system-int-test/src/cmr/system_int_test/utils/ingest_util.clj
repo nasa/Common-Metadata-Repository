@@ -320,6 +320,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn create-provider
+  "Creates a provider along with ACLs to create and access the providers data.
+  Provider map should contain fields with details for an individual provider like what would be
+  taken on the ingest api.
+
+  Options:
+  * grant-all-search? - Indicates whether all search acls should be granted for a provider. Default true
+  * grant-all-ingest? - Indicates whether all ingest acls should be granted for a provider. Default true"
   ([provider-map]
    (create-provider provider-map {}))
   ([provider-map options]

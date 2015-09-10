@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
             [cmr.umm.granule :as g]
+            [cmr.umm.collection :as umm-c]
             [cmr.umm.echo10.collection :as c]
             [cmr.umm.echo10.spatial :as s]
             [cmr.umm.echo10.granule.temporal :as gt]
@@ -13,6 +14,7 @@
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.echo10.granule.two-d-coordinate-system :as two-d]
             [cmr.common.xml :as v]
+            [cmr.common.util :as util]
             [cmr.umm.echo10.core])
   (:import cmr.umm.granule.UmmGranule))
 
@@ -124,6 +126,23 @@
   "Parses ECHO10 XML into a UMM Granule record."
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
+
+(defn parse-temporal
+  "Parses the XML and extracts the temporal data."
+  [xml]
+  ;; The extraction here provides a small benefit of about 100 microseconds per granule. This is
+  ;; significant when parsing out 2000 granules worth of temporal. That's equivalent ot 0.2 seconds
+  ;; The temporal parsing could likely be sped up even more if we wrote more specific extraction code.
+  ;; We could parse out the exact date strings, sort them and return the first and last.
+  (when-let [single-element (util/extract-between-strings xml "<Temporal>" "</Temporal>")]
+    (let [smaller-xml (str "<Granule>" single-element "</Granule>")]
+      (gt/xml-elem->Temporal (x/parse-str smaller-xml)))))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [^String xml]
+  (when-let [value (util/extract-between-strings xml "<RestrictionFlag>" "</RestrictionFlag>" false)]
+    (Double/parseDouble value)))
 
 (extend-protocol cmr.umm.echo10.core/UmmToEcho10Xml
   UmmGranule

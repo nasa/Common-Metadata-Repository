@@ -137,17 +137,6 @@
           "minLength": 1,
           "maxLength": 2048
         },
-        "Resolution": {
-          "description": "Describes a list of resolutions.",
-          "$ref": "#/definitions/ResolutionsType"
-        }
-      }
-    },
-    "ResolutionsType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes a list of resolutions.",
-      "properties": {
         "Resolutions": {
           "description": "This element describes the minimum distance possible between two adjacent values, expressed in distance units of measure for collection.",
           "type": "array",
