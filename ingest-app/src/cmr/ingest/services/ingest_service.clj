@@ -94,8 +94,10 @@
   [context concept granule collection-concept]
   (let [{:keys [granule-ur]
          {:keys [delete-time]} :data-provider-timestamps} granule
-        parent-collection-id (:concept-id collection-concept)]
+        parent-collection-id (:concept-id collection-concept)
+        parent-entry-title (get-in collection-concept [:extra-fields :entry-title])]
     (assoc concept :extra-fields {:parent-collection-id parent-collection-id
+                                  :parent-entry-title parent-entry-title
                                   :delete-time (when delete-time (str delete-time))
                                   :granule-ur granule-ur})))
 
@@ -142,9 +144,6 @@
   [context concept]
   (let [[coll-concept concept] (validate-granule context concept)
         {:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-    (ingest-events/publish-event
-      context
-      (ingest-events/granule-concept-update-event coll-concept concept-id revision-id))
     {:concept-id concept-id, :revision-id revision-id}))
 
 (defn-timed save-collection
@@ -152,9 +151,6 @@
   [context concept]
   (let [concept (validate-collection context concept)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
-      (ingest-events/publish-event
-        context
-        (ingest-events/collection-concept-update-event concept-id revision-id))
       {:concept-id concept-id, :revision-id revision-id})))
 
 (defn-timed delete-concept

@@ -157,6 +157,7 @@
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
+            _ (cmr.common.dev.capture-reveal/capture concept)
             umm-record (umm/parse-concept concept)]
         (index-concept context concept umm-record options)
         (log-ingest-to-index-time concept)))))

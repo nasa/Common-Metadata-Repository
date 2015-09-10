@@ -36,7 +36,8 @@
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
       "extra-fields": {
-        "parent-collection-id": "C5-PROV1"
+        "parent-collection-id": "C5-PROV1",
+        "parent-entry-title": "ET1"
       }
     }
 

@@ -45,11 +45,46 @@
 ;;; concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def granule-xml
+  "Valid ECHO10 granule for concept generation"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>false</Orderable>
+  </Granule>")
+
+(def collection-xml
+  "Valid ECHO10 collection for concept generation"
+  "<Collection>
+    <ShortName>MINIMAL</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <LongName>A minimal valid collection</LongName>
+    <DataSetId>A minimal valid collection V 1</DataSetId>
+    <Description>A minimal valid collection</Description>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
+  </Collection>")
+
+(def concept-dummy-metadata
+  "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
+  to look up the metadata for the concepts and parse it. So we need to provide valid
+  XML for each test concept we create. This maps concept-type to dummy ECHO10 XML that can be used
+  by default."
+  {:collection collection-xml
+   :granule granule-xml})
+
 (defn- concept
-  "Create a concept map for any concept type"
+  "Create a concept map for any concept type. "
   [provider-id concept-type uniq-num attributes]
   (merge {:native-id (str "native-id " uniq-num)
-          :metadata (str "data here " uniq-num)
+          :metadata (concept-type concept-dummy-metadata)
           :deleted false}
          attributes
          ;; concept-type and provider-id args take precedence over attributes
@@ -79,10 +114,11 @@
 
 (defn granule-concept
   "Creates a granule concept"
-  ([provider-id parent-collection-id uniq-num]
-   (granule-concept provider-id parent-collection-id uniq-num {}))
-  ([provider-id parent-collection-id uniq-num attributes]
+  ([provider-id parent-collection-id parent-entry-title uniq-num]
+   (granule-concept provider-id parent-collection-id parent-entry-title uniq-num {}))
+  ([provider-id parent-collection-id parent-entry-title uniq-num attributes]
    (let [extra-fields (merge {:parent-collection-id parent-collection-id
+                              :parent-entry-title parent-entry-title
                               :delete-time nil
                               :granule-ur (str "granule-ur " uniq-num)}
                              (:extra-fields attributes))
