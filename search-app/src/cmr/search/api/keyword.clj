@@ -43,14 +43,12 @@
 (defn- translate-keyword-scheme-to-gcmd
   "Translates a keyword scheme into a known keyword scheme for GCMD."
   [keyword-scheme]
-  (or (keyword-scheme cmr-to-gcmd-keyword-scheme-aliases)
-      keyword-scheme))
+  (get cmr-to-gcmd-keyword-scheme-aliases keyword-scheme keyword-scheme))
 
 (defn- translate-keyword-scheme-to-cmr
   "Translates a keyword scheme into a known keyword scheme for CMR."
   [keyword-scheme]
-  (or (keyword-scheme (set/map-invert cmr-to-gcmd-keyword-scheme-aliases))
-      keyword-scheme))
+  (get (set/map-invert cmr-to-gcmd-keyword-scheme-aliases) keyword-scheme keyword-scheme))
 
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
