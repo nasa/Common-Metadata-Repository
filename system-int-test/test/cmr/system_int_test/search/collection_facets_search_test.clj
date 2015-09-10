@@ -156,6 +156,184 @@
      :json-facets (get-in (search/find-concepts-json :collection search-options)
                           [:results :facets])}))
 
+(def expected-all-hierarchical-facets
+  "Expected value for the all-hierarchical-fields-test."
+  [{:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
+   {:field "sensor",
+    :value-counts
+    [["FROM_KMS-p0-i0-s0" 2]
+     ["FROM_KMS-p0-i1-s0" 2]
+     ["FROM_KMS-p1-i0-s0" 2]
+     ["FROM_KMS-p1-i1-s0" 2]]}
+   {:field "two_d_coordinate_system_name",
+    :value-counts [["Alpha" 2]]}
+   {:field "processing_level_id", :value-counts [["PL1" 2]]}
+   {:field "detailed_variable",
+    :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+   {:field "archive_centers",
+    :subfields ["level-0"],
+    :level-0
+    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
+      :count 2,
+      :subfields ["level-1"],
+      :level-1
+      [{:value "DOI",
+        :count 2,
+        :subfields ["level-2"],
+        :level-2
+        [{:value "USGS",
+          :count 2,
+          :subfields ["level-3"],
+          :level-3
+          [{:value "Added level 3 value",
+            :count 2,
+            :subfields ["short-name"],
+            :short-name
+            [{:value "DOI/USGS/CMG/WHSC",
+              :count 2,
+              :subfields ["long-name"],
+              :long-name
+              [{:value
+                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
+                :count 2}]}]}]}]}]}]}
+   {:field "platforms",
+    :subfields ["category"],
+    :category
+    [{:value "Earth Observation Satellites",
+      :count 2,
+      :subfields ["series-entity"],
+      :series-entity
+      [{:value "DIADEM",
+        :count 2,
+        :subfields ["short-name"],
+        :short-name
+        [{:value "diadem-1D",
+          :count 2,
+          :subfields ["long-name"],
+          :long-name [{:value "Not Provided", :count 2}]}]}
+       {:value
+        "DMSP (Defense Meteorological Satellite Program)",
+        :count 2,
+        :subfields ["short-name"],
+        :short-name
+        [{:value "DMSP 5B/F3",
+          :count 2,
+          :subfields ["long-name"],
+          :long-name
+          [{:value
+            "Defense Meteorological Satellite Program-F3",
+            :count 2}]}]}]}]}
+   {:field "instruments",
+    :subfields ["category"],
+    :category
+    [{:value "Earth Remote Sensing Instruments",
+      :count 2,
+      :subfields ["class"],
+      :class
+      [{:value "Active Remote Sensing",
+        :count 2,
+        :subfields ["type"],
+        :type
+        [{:value "Altimeters",
+          :count 2,
+          :subfields ["subtype"],
+          :subtype
+          [{:value "Lidar/Laser Altimeters",
+            :count 2,
+            :subfields ["short-name"],
+            :short-name
+            [{:value "ATM",
+              :count 2,
+              :subfields ["long-name"],
+              :long-name
+              [{:value "Airborne Topographic Mapper",
+                :count 2}]}
+             {:value "lVIs",
+              :count 2,
+              :subfields ["long-name"],
+              :long-name
+              [{:value "Land, Vegetation, and Ice Sensor",
+                :count 2}]}]}]}]}]}]}
+   {:field "science_keywords",
+    :subfields ["category"],
+    :category
+    [{:value "Hurricane",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "Popular",
+        :count 2,
+        :subfields ["term"],
+        :term
+        [{:value "Extreme",
+          :count 2,
+          :subfields ["variable-level-1"],
+          :variable-level-1
+          [{:value "Level2-1",
+            :count 2,
+            :subfields ["variable-level-2"],
+            :variable-level-2
+            [{:value "Level2-2",
+              :count 2,
+              :subfields ["variable-level-3"],
+              :variable-level-3
+              [{:value "Level2-3", :count 2}]}]}]}
+         {:value "UNIVERSAL", :count 2}]}
+       {:value "Cool",
+        :count 2,
+        :subfields ["term"],
+        :term
+        [{:value "Term4",
+          :count 2,
+          :subfields ["variable-level-1"],
+          :variable-level-1
+          [{:value "UNIVERSAL", :count 2}]}]}]}
+     {:value "Cat1",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "Topic1",
+        :count 2,
+        :subfields ["term"],
+        :term
+        [{:value "Term1",
+          :count 2,
+          :subfields ["variable-level-1"],
+          :variable-level-1
+          [{:value "Level1-1",
+            :count 2,
+            :subfields ["variable-level-2"],
+            :variable-level-2
+            [{:value "Level1-2",
+              :count 2,
+              :subfields ["variable-level-3"],
+              :variable-level-3
+              [{:value "Level1-3", :count 2}]}]}]}]}]}
+     {:value "Tornado",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "Popular",
+        :count 2,
+        :subfields ["term"],
+        :term [{:value "Extreme", :count 2}]}]}
+     {:value "UPCASE",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "Popular",
+        :count 2,
+        :subfields ["term"],
+        :term [{:value "Mild", :count 2}]}]}
+     {:value "upcase",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "Cool",
+        :count 2,
+        :subfields ["term"],
+        :term [{:value "Mild", :count 2}]}]}]}])
+
 (deftest all-hierarchical-fields-test
   (grant-permissions)
   (let [coll1 (make-coll 1 "PROV1"
@@ -172,185 +350,9 @@
                          (twod-coords "Alpha")
                          (processing-level-id "PL1")
                          {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]})
-
-        expected-facets [{:field "project", :value-counts [["PROJ2" 2] ["proj1" 2]]}
-                         {:field "sensor",
-                          :value-counts
-                          [["FROM_KMS-p0-i0-s0" 2]
-                           ["FROM_KMS-p0-i1-s0" 2]
-                           ["FROM_KMS-p1-i0-s0" 2]
-                           ["FROM_KMS-p1-i1-s0" 2]]}
-                         {:field "two_d_coordinate_system_name",
-                          :value-counts [["Alpha" 2]]}
-                         {:field "processing_level_id", :value-counts [["PL1" 2]]}
-                         {:field "detailed_variable",
-                          :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
-                         {:field "archive_centers",
-                          :subfields ["level-0"],
-                          :level-0
-                          [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
-                            :count 2,
-                            :subfields ["level-1"],
-                            :level-1
-                            [{:value "DOI",
-                              :count 2,
-                              :subfields ["level-2"],
-                              :level-2
-                              [{:value "USGS",
-                                :count 2,
-                                :subfields ["level-3"],
-                                :level-3
-                                [{:value "Added level 3 value",
-                                  :count 2,
-                                  :subfields ["short-name"],
-                                  :short-name
-                                  [{:value "DOI/USGS/CMG/WHSC",
-                                    :count 2,
-                                    :subfields ["long-name"],
-                                    :long-name
-                                    [{:value
-                                      "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
-                                      :count 2}]}]}]}]}]}]}
-                         {:field "platforms",
-                          :subfields ["category"],
-                          :category
-                          [{:value "Earth Observation Satellites",
-                            :count 2,
-                            :subfields ["series-entity"],
-                            :series-entity
-                            [{:value "DIADEM",
-                              :count 2,
-                              :subfields ["short-name"],
-                              :short-name
-                              [{:value "diadem-1D",
-                                :count 2,
-                                :subfields ["long-name"],
-                                :long-name [{:value "Not Provided", :count 2}]}]}
-                             {:value
-                              "DMSP (Defense Meteorological Satellite Program)",
-                              :count 2,
-                              :subfields ["short-name"],
-                              :short-name
-                              [{:value "DMSP 5B/F3",
-                                :count 2,
-                                :subfields ["long-name"],
-                                :long-name
-                                [{:value
-                                  "Defense Meteorological Satellite Program-F3",
-                                  :count 2}]}]}]}]}
-                         {:field "instruments",
-                          :subfields ["category"],
-                          :category
-                          [{:value "Earth Remote Sensing Instruments",
-                            :count 2,
-                            :subfields ["class"],
-                            :class
-                            [{:value "Active Remote Sensing",
-                              :count 2,
-                              :subfields ["type"],
-                              :type
-                              [{:value "Altimeters",
-                                :count 2,
-                                :subfields ["subtype"],
-                                :subtype
-                                [{:value "Lidar/Laser Altimeters",
-                                  :count 2,
-                                  :subfields ["short-name"],
-                                  :short-name
-                                  [{:value "ATM",
-                                    :count 2,
-                                    :subfields ["long-name"],
-                                    :long-name
-                                    [{:value "Airborne Topographic Mapper",
-                                      :count 2}]}
-                                   {:value "lVIs",
-                                    :count 2,
-                                    :subfields ["long-name"],
-                                    :long-name
-                                    [{:value "Land, Vegetation, and Ice Sensor",
-                                      :count 2}]}]}]}]}]}]}
-                         {:field "science_keywords",
-                          :subfields ["category"],
-                          :category
-                          [{:value "Hurricane",
-                            :count 2,
-                            :subfields ["topic"],
-                            :topic
-                            [{:value "Popular",
-                              :count 2,
-                              :subfields ["term"],
-                              :term
-                              [{:value "Extreme",
-                                :count 2,
-                                :subfields ["variable-level-1"],
-                                :variable-level-1
-                                [{:value "Level2-1",
-                                  :count 2,
-                                  :subfields ["variable-level-2"],
-                                  :variable-level-2
-                                  [{:value "Level2-2",
-                                    :count 2,
-                                    :subfields ["variable-level-3"],
-                                    :variable-level-3
-                                    [{:value "Level2-3", :count 2}]}]}]}
-                               {:value "UNIVERSAL", :count 2}]}
-                             {:value "Cool",
-                              :count 2,
-                              :subfields ["term"],
-                              :term
-                              [{:value "Term4",
-                                :count 2,
-                                :subfields ["variable-level-1"],
-                                :variable-level-1
-                                [{:value "UNIVERSAL", :count 2}]}]}]}
-                           {:value "Cat1",
-                            :count 2,
-                            :subfields ["topic"],
-                            :topic
-                            [{:value "Topic1",
-                              :count 2,
-                              :subfields ["term"],
-                              :term
-                              [{:value "Term1",
-                                :count 2,
-                                :subfields ["variable-level-1"],
-                                :variable-level-1
-                                [{:value "Level1-1",
-                                  :count 2,
-                                  :subfields ["variable-level-2"],
-                                  :variable-level-2
-                                  [{:value "Level1-2",
-                                    :count 2,
-                                    :subfields ["variable-level-3"],
-                                    :variable-level-3
-                                    [{:value "Level1-3", :count 2}]}]}]}]}]}
-                           {:value "Tornado",
-                            :count 2,
-                            :subfields ["topic"],
-                            :topic
-                            [{:value "Popular",
-                              :count 2,
-                              :subfields ["term"],
-                              :term [{:value "Extreme", :count 2}]}]}
-                           {:value "UPCASE",
-                            :count 2,
-                            :subfields ["topic"],
-                            :topic
-                            [{:value "Popular",
-                              :count 2,
-                              :subfields ["term"],
-                              :term [{:value "Mild", :count 2}]}]}
-                           {:value "upcase",
-                            :count 2,
-                            :subfields ["topic"],
-                            :topic
-                            [{:value "Cool",
-                              :count 2,
-                              :subfields ["term"],
-                              :term [{:value "Mild", :count 2}]}]}]}]
         actual-facets (get-facet-results :hierarchical)]
-    (is (= expected-facets (:xml-facets actual-facets)))
-    (is (= expected-facets (:json-facets actual-facets)))))
+    (is (= expected-all-hierarchical-facets (:xml-facets actual-facets)))
+    (is (= expected-all-hierarchical-facets (:json-facets actual-facets)))))
 
 ;; The purpose of the test is to make sure when the same topic "Popular" is used under two different
 ;; categories, the flat facets correctly say 2 collections have the "Popular topic and the
