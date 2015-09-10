@@ -26,12 +26,16 @@
   {:projects (apply dc/projects project-names)})
 
 (def platform-short-names
-  "List of platform short names that exist in the test KMS hierarchy."
-  ["DIADEM-1D" "DMSP 5B/F3" "A340-600" "SMAP"])
+  "List of platform short names that exist in the test KMS hierarchy. Note we are testing case
+  insensivity of the short name. DIADEM-1D is the actual short-name value in KMS, but we expect
+  diadem-1D to match."
+  ["diadem-1D" "DMSP 5B/F3" "A340-600" "SMAP"])
 
 (def instrument-short-names
-  "List of instrument short names that exist in the test KMS hierarchy."
-  ["ATM" "LVIS" "ADS" "SMAP L-BAND RADIOMETER"])
+  "List of instrument short names that exist in the test KMS hierarchy. Note we are testing case
+  insensivity of the short name. LVIS is the actual short-name value in KMS, but we expect
+  lVIs to match."
+  ["ATM" "lVIs" "ADS" "SMAP L-BAND RADIOMETER"])
 
 (def FROM_KMS
   "Constant indicating that the short name for the field should be a short name found in KMS."
@@ -218,7 +222,7 @@
                               :count 2,
                               :subfields ["short-name"],
                               :short-name
-                              [{:value "DIADEM-1D",
+                              [{:value "diadem-1D",
                                 :count 2,
                                 :subfields ["long-name"],
                                 :long-name [{:value "Not Provided", :count 2}]}]}
@@ -259,7 +263,7 @@
                                     :long-name
                                     [{:value "Airborne Topographic Mapper",
                                       :count 2}]}
-                                   {:value "LVIS",
+                                   {:value "lVIs",
                                     :count 2,
                                     :subfields ["long-name"],
                                     :long-name
