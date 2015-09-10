@@ -425,7 +425,8 @@
      :root xml-root
      :context [xml-root]}))
 
-(defn element-context
+(defn- element-context
+  "Returns an XPath context for a single clojure.data.xml.Element record."
   [element]
   {:type :xml
    :context [element]})
@@ -438,6 +439,7 @@
    :context [data]})
 
 (defn context
+  "Returns x as an XPath context (or itself if it is already an XPath context)."
   [x]
   (cond
     (xpath-context? x) x

@@ -182,6 +182,8 @@
     pair))
 
 (defn coerce
+  "Returns x coerced according to a JSON schema type type definition. With no other parameters, the
+  schema and type defaults to the umm-c-schema and the root UMM-C type."
   ([x]
    (coerce umm-c-schema x))
   ([schema x]
