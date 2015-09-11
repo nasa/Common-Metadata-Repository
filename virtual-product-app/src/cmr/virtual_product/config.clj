@@ -121,7 +121,7 @@
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    {:source-short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
-                           :short-name "OMUVBd_ErythermalUV"}]}})
+                           :short-name "OMUVBd_ErythemalUV"}]}})
 
 (def virtual-product-to-source-config
   "A map derived from the map source-to-virtual-product-config. This map consists of keys which are
