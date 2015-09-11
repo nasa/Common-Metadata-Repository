@@ -9,7 +9,8 @@
   [parent-field]
   "Returns all of the subfields for the provided nested field. All nested field queries also support
   'any'."
-  (conj ((kms/translate-keyword-scheme-to-gcmd parent-field) kms/keyword-scheme->field-names) :any))
+  (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd parent-field))
+        :any))
 
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.
