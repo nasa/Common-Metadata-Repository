@@ -58,6 +58,8 @@
        (tagging-service/create-tag context)
        tag-api-response))
 
+;; TODO document this on the API
+
 (defn get-tag
   "Retrieves the tag with the given concept-id."
   [context concept-id]

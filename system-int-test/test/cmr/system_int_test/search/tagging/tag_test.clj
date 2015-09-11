@@ -156,14 +156,16 @@
               :errors ["Tags cannot be modified without a valid user token."]}
              (tags/update-tag nil concept-id tag))))
     (testing "Fields that cannot be changed"
-      (are [field]
+      (are [field human-name]
            (= {:status 400
                :errors [(format (str "Tag %s cannot be modified. Attempted to change existing value"
                                      " [%s] to [updated]")
-                                (name field)
+                                human-name
                                 (get tag field))]}
               (tags/update-tag token concept-id (assoc tag field "updated")))
-           :namespace :value :originator-id))
+           :namespace "Namespace"
+           :value "Value"
+           :originator-id "Originator Id"))
     (testing "Updates applies JSON validations"
       (is (= {:status 400
               :errors ["/description string \"\" is too short (length: 0, required minimum: 1)"]}

@@ -1900,6 +1900,26 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":1}
 ```
 
+#### Updating a Tag
+
+Tags are updated by sending a PUT request with the JSON representation of a tag to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+
+```
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" http://localhost:3003/tags/T1200000000-CMR -d \
+'{
+  "namespace": "org.ceos.wgiss.cwic",
+  "category": "cwic_non_public",
+  "value": "quality",
+  "description": "This is a sample tag for indicating some data is high quality."
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":2}
+```
+
 ### Administrative Tasks
 
 These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update

@@ -44,20 +44,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
-;; TODO unit tests
-
-(defn should-not-contain-native-id-separator-character
+(defn- should-not-contain-native-id-separator-character
   "Validates the value does not contain the native id separator character."
   [field-path ^String value]
   (when (.contains value (str native-id-separator-character))
     {field-path [msg/field-may-not-contain-separator]}))
 
-(def tag-validations
+(def ^:private tag-validations
   "Service level validations for tags."
   {:namespace should-not-contain-native-id-separator-character
    :value should-not-contain-native-id-separator-character})
 
-(defn field-cannot-be-changed
+(defn- validate-create-tag
+  "Validates a tag for creation"
+  [tag]
+  (v/validate! tag-validations tag))
+
+(defn- field-cannot-be-changed
   "Validation that a field in a tag has not bee modified. Accepts optional nil-allowed? parameter
   which indicates the validation should be skipped if the new value is nil."
   ([field]
@@ -70,9 +73,10 @@
            skip-validation? (and nil-allowed? (nil? new-value))]
        (when (and (not skip-validation?)
                   (not= existing-value new-value))
-         {field-path [(msg/cannot-change-field-value field existing-value new-value)]})))))
+         {(conj field-path field)
+          [(msg/cannot-change-field-value existing-value new-value)]})))))
 
-(def update-tag-validations
+(def ^:private update-tag-validations
   "Service level validations when updating a tag."
   [tag-validations
    (field-cannot-be-changed :namespace)
@@ -80,7 +84,7 @@
    ;; Originator id cannot change but we allow it if they don't specify a value.
    (field-cannot-be-changed :originator-id true)])
 
-(defn validate-update-tag
+(defn- validate-update-tag
   "Validates a tag update."
   [existing-tag updated-tag]
   (v/validate! update-tag-validations (assoc updated-tag :existing existing-tag)))
@@ -92,7 +96,7 @@
   "Creates the tag saving it as a revision in metadata db. Returns the concept id and revision id of
   the saved tag."
   [context tag]
-  (v/validate! tag-validations tag)
+  (validate-create-tag tag)
 
   ;; Validate that the tag doesn't yet exist
   (when-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
