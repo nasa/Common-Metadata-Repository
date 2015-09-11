@@ -1,79 +1,59 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
-  (:require [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
-            [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
-            [cmr.umm-spec.simple-xpath :as xp]
-            [cmr.umm-spec.json-schema :as js]
+  (:require [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.simple-xpath :refer [select]]
+            [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.iso-smap-utils :as utils]))
 
-(def metadata-base-xpath
-  "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata")
-
 (def md-identification-base-xpath
-  (str metadata-base-xpath "/gmd:identificationInfo/gmd:MD_DataIdentification"))
+  (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
+       "/gmd:identificationInfo/gmd:MD_DataIdentification"))
 
 (def short-name-identification-xpath
   (str md-identification-base-xpath
        "[gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
        "/gmd:description/gco:CharacterString='The ECS Short Name']"))
 
-(def abstract-xpath
-  (char-string-xpath short-name-identification-xpath "/gmd:abstract"))
-
-(def purpose-xpath
-  (char-string-xpath short-name-identification-xpath "/gmd:purpose"))
-
-(def collection-progress-xpath
-  (xpath (str md-identification-base-xpath
-              "/gmd:status/gmd:MD_ProgressCode")))
-
-(def data-language-xpath
-  (xpath (str short-name-identification-xpath
-              "/gmd:language/gco:CharacterString")))
-
 (def entry-title-xpath
-  (xpath (str md-identification-base-xpath
-              "[gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString='DataSetId']"
-              "/gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetIdentifier"
-              "/gmd:MD_Identifier/gmd:code/gco:CharacterString")))
+  (str md-identification-base-xpath
+       "[gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString='DataSetId']"
+       "/gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetIdentifier"
+       "/gmd:MD_Identifier/gmd:code/gco:CharacterString"))
+
+;; Paths below are relative to the MD_DataIdentification element
 
 (def entry-id-xpath
-  (xpath (str md-identification-base-xpath
-              "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
-              "[gmd:description/gco:CharacterString='The ECS Short Name']"
-              "/gmd:code/gco:CharacterString")))
+  (str "gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+       "[gmd:description/gco:CharacterString='The ECS Short Name']"
+       "/gmd:code/gco:CharacterString"))
 
 (def version-xpath
-  (xpath (str md-identification-base-xpath
-              "/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
-              "[gmd:description/gco:CharacterString='The ECS Version ID']"
-              "/gmd:code/gco:CharacterString")))
-
+  (str "gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
+       "[gmd:description/gco:CharacterString='The ECS Version ID']"
+       "/gmd:code/gco:CharacterString"))
 
 (def temporal-extent-xpath-str
-  (str md-identification-base-xpath
-       "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+  "gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent")
 
 (def keywords-xpath-str
-  (str md-identification-base-xpath
-       "/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString"))
+  "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
-(def iso-smap-xml-to-umm-c
-  (apt/add-parsing-types
-    js/umm-c-schema
-    (object {:EntryId entry-id-xpath
-             :EntryTitle entry-title-xpath
-             :Version version-xpath
-             :Abstract abstract-xpath
-             :Purpose purpose-xpath
-             :CollectionProgress collection-progress-xpath
-             :DataLanguage data-language-xpath
-             :Platforms (fn [xpath-context]
-                          (let [smap-keywords (map xp/text (:context (xp/evaluate xpath-context keywords-xpath-str)))]
-                            (utils/parse-platforms smap-keywords)))
-             :TemporalExtents (for-each temporal-extent-xpath-str
-                                (object {:RangeDateTimes (for-each "gml:TimePeriod"
-                                                           (object {:BeginningDateTime (xpath "gml:beginPosition")
-                                                                    :EndingDateTime    (xpath "gml:endPosition")}))
-                                         :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")}))})))
-
+(defn iso-smap-xml-to-umm-c
+  [doc]
+  (let [data-id (first (select doc md-identification-base-xpath))
+        short-name-el (first (select doc short-name-identification-xpath))]
+    (js/coerce
+     {:EntryId (value-of data-id entry-id-xpath)
+      :EntryTitle (value-of doc entry-title-xpath)
+      :Version (value-of data-id version-xpath)
+      :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
+      :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
+      :CollectionProgress (value-of data-id "gmd:status/gmd:MD_ProgressCode")
+      :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
+      :Platforms (let [smap-keywords (values-at data-id keywords-xpath-str)]
+                   (utils/parse-platforms smap-keywords))
+      :TemporalExtents (for [temporal (select data-id temporal-extent-xpath-str)]
+                         {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                                            {:BeginningDateTime (value-of period "gml:beginPosition")
+                                             :EndingDateTime    (value-of period "gml:endPosition")})
+                          :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})})))
