@@ -77,7 +77,7 @@
 
 (defmethod parse-metadata [:collection :iso-smap]
   [_ _ metadata]
-  (xp/parse-xml iso-smap-to-umm/iso-smap-xml-to-umm-c metadata))
+  (iso-smap-to-umm/iso-smap-xml-to-umm-c metadata))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generate Metadata
