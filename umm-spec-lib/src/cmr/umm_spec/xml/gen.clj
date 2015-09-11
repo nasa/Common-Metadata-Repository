@@ -12,12 +12,12 @@
             (let [[attrs content] (if (map? maybe-attrs)
                                        [maybe-attrs content]
                                        [{} (cons maybe-attrs content)])
-                  content         (seq (remove nil? (generate content)))]
-              (when content
+                  content         (generate content)]
+              (when (or (seq content) (seq attrs))
                 (apply x/element tag attrs content))))
 
   clojure.lang.ISeq
-  (generate [xs] (map generate xs))
+  (generate [xs] (keep generate xs))
 
   java.lang.Number
   (generate [n] (str n))

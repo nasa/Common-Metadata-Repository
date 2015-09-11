@@ -55,19 +55,17 @@
   "Converts the SMAP keyword string into an Instrument and returns it"
   [smap-keyword]
   (let [[_ _ _ _ short-name long-name] (parse-keyword-str smap-keyword)]
-    (c/map->InstrumentType
-     {:ShortName short-name
-      :LongName long-name})))
+    {:ShortName short-name
+     :LongName long-name}))
 
 (defn platform
   "Returns the platform with the given keyword string and instruments"
   [instruments keyword-str]
   (let [[_ _ short-name long-name] (parse-keyword-str keyword-str)]
-    (c/map->PlatformType
-     {:ShortName short-name
-      :LongName long-name
-      :Type "Spacecraft"
-      :Instruments instruments})))
+    {:ShortName short-name
+     :LongName long-name
+     :Type "Spacecraft"
+     :Instruments instruments}))
 
 (defn parse-platforms
   "Returns UMM PlatformType records with associated instruments from a seq of ISO SMAP keywords."
