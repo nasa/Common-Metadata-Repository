@@ -69,7 +69,7 @@
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]
-  (xp/parse-xml dif10-to-umm/dif10-xml-to-umm-c metadata))
+  (dif10-to-umm/dif10-xml-to-umm-c metadata))
 
 (defmethod parse-metadata [:collection :iso19115]
   [_ _ metadata]
