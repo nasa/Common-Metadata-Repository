@@ -115,11 +115,13 @@
       (warn (format "Found duplicate keywords for %s short-name [%s]: %s" (name keyword-scheme)
                     (:short-name entry) entry)))
 
-    ;; Create a map with the leaf node identifier as keys to the full hierarchy for that entry
+    ;; Create a map with the leaf node identifier in all lower case as keys to the full hierarchy
+    ;; for that entry. GCMD ensures that no two leaf fields can be the same when compared in a case
+    ;; insensitive manner.
     (into {}
           (for [entry keyword-entries
                 :let [leaf-field (leaf-field-name entry)]]
-            [leaf-field entry]))))
+            [(str/lower-case leaf-field) entry]))))
 
 (defn- get-by-keyword-scheme
   "Makes a get request to the GCMD KMS. Returns the controlled vocabulary map for the given
