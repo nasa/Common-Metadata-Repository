@@ -34,27 +34,14 @@
             [cmr.common.services.errors :as errors]
             [cmr.search.services.query-execution.facets-results-feature :as frf]
             [clojure.string :as str]
-            [clojure.set :as set]))
-
-(def cmr-to-gcmd-keyword-scheme-aliases
-  "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
-  {:archive-centers :providers})
-
-(defn- translate-keyword-scheme-to-gcmd
-  "Translates a keyword scheme into a known keyword scheme for GCMD."
-  [keyword-scheme]
-  (get cmr-to-gcmd-keyword-scheme-aliases keyword-scheme keyword-scheme))
-
-(defn- translate-keyword-scheme-to-cmr
-  "Translates a keyword scheme into a known keyword scheme for CMR."
-  [keyword-scheme]
-  (get (set/map-invert cmr-to-gcmd-keyword-scheme-aliases) keyword-scheme keyword-scheme))
+            [clojure.set :as set]
+            [cmr.transmit.kms :as kms]))
 
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
   [keyword-scheme]
-  (let [valid-keywords (concat (keys frf/nested-fields-mappings)
-                               (vals cmr-to-gcmd-keyword-scheme-aliases))]
+  (let [valid-keywords (concat (keys kms/keyword-scheme->field-names)
+                               (keys kms/cmr-to-gcmd-keyword-scheme-aliases))]
     (when-not (contains? (set valid-keywords) keyword-scheme)
       (errors/throw-service-error
         :bad-request
@@ -163,8 +150,8 @@
   [context keyword-scheme]
   (let [orig-keyword-scheme (csk/->kebab-case-keyword keyword-scheme)]
     (validate-keyword-scheme orig-keyword-scheme)
-    (let [cmr-keyword-scheme (translate-keyword-scheme-to-cmr orig-keyword-scheme)
-          gcmd-keyword-scheme (translate-keyword-scheme-to-gcmd orig-keyword-scheme)
+    (let [cmr-keyword-scheme (kms/translate-keyword-scheme-to-cmr orig-keyword-scheme)
+          gcmd-keyword-scheme (kms/translate-keyword-scheme-to-gcmd orig-keyword-scheme)
           keywords (vals (gcmd-keyword-scheme (kf/get-gcmd-keywords-map context)))
           keyword-hierarchy (cmr-keyword-scheme frf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]

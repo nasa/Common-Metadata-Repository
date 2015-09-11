@@ -378,8 +378,9 @@
           [(msg/science-keyword-invalid-format-msg)]
           (reduce
             (fn [array param]
-              (if-not (some #{param} (conj (:science-keywords nf/nested-field-mappings) :any))
-                (conj array (format "parameter [%s] is not a valid science keyword search term." (name param)))
+              (if-not (some #{param} (nf/get-subfield-names :science-keywords))
+                (conj array (format "parameter [%s] is not a valid science keyword search term."
+                                    (name param)))
                 array))
             []
             (mapcat keys values))))

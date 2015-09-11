@@ -40,6 +40,17 @@
         sk7 (dc/science-keyword {:category "upcase"
                                  :topic "Cool"
                                  :term "Mild"})
+
+        ;; The next two keywords are found in GCMD KMS
+        sk8 (dc/science-keyword {:category "EARTH SCIENCE SERVICES"
+                                 :topic "DATA ANALYSIS AND VISUALIZATION"
+                                 :term "GEOGRAPHIC INFORMATION SYSTEMS"})
+        sk9 (dc/science-keyword {:category "EARTH SCIENCE"
+                                 :topic "SOLID EARTH"
+                                 :term "ROCKS/MINERALS/CRYSTALS"
+                                 :variable-level-1 "SEDIMENTARY ROCKS"
+                                 :variable-level-2 "SEDIMENTARY ROCK PHYSICAL/OPTICAL PROPERTIES"
+                                 :variable-level-3 "LUMINESCENCE"})
         coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}))
@@ -49,8 +60,8 @@
         coll7 (d/ingest "PROV2" (dc/collection {:science-keywords [sk4 sk5]}))
         coll8 (d/ingest "PROV2" (dc/collection {:science-keywords [sk6]}))
         coll9 (d/ingest "PROV2" (dc/collection {:science-keywords [sk7]}))
-
-        coll10 (d/ingest "PROV2" (dc/collection {}))]
+        coll10 (d/ingest "PROV2" (dc/collection {}))
+        coll11 (d/ingest "PROV1" (dc/collection {:science-keywords [sk8 sk9]}))]
 
     (index/wait-until-indexed)
 
@@ -221,6 +232,7 @@
            [coll2 coll3 coll5 coll6 coll7] {:or [{:science_keywords {:category "Hurricane"
                                                                      :topic "Popular"}}
                                                   {:science_keywords {:term "Extreme"}}]}
+           [coll11] {:science_keywords {:uuid "794e3c3b-791f-44de-9ff3-358d8ed74733"}}
 
            ;; case sensitivity
            [coll1] {:science_keywords {:category "cat1"}}
@@ -232,7 +244,10 @@
            [coll1] {:science_keywords {:category "C*" :pattern true}}
            [] {:science_keywords {:category "C*" :pattern false}}
            [] {:science_keywords {:category "C*"}}
-           [coll1] {:science_keywords {:category "Cat?" :pattern true}}))))
+           [coll1] {:science_keywords {:category "Cat?" :pattern true}}
+           [coll11] {:science_keywords {:uuid "3e?05ebc-*"
+                                        :pattern true
+                                        :ignore_case false}}))))
 
 (deftest search-science-keywords-error-scenarios
   (testing "search by invalid format."

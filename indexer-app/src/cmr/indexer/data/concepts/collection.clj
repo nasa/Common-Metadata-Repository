@@ -128,7 +128,8 @@
             :platforms platforms-nested
             :instruments instruments-nested
             :archive-centers archive-centers
-            :science-keywords (sk/science-keywords->elastic-doc collection)
+            :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
+                                   (:science-keywords collection))
 
             :instrument-sn instrument-short-names
             :instrument-sn.lowercase  (map str/lower-case instrument-short-names)

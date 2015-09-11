@@ -12,6 +12,7 @@
   We utilize the clojure.data.csv libary to handle parsing the CSV files. Example KMS keyword files
   can be found in dev-system/resources/kms_examples."
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             [clojure.data.csv :as csv]
             [clj-http.client :as client]
             [camel-snake-kebab.core :as csk]
@@ -48,6 +49,20 @@
   (merge keyword-scheme->field-names
          {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
                       :long-name :data-center-url :uuid]}))
+
+(def cmr-to-gcmd-keyword-scheme-aliases
+  "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
+  {:archive-centers :providers})
+
+(defn translate-keyword-scheme-to-gcmd
+  "Translates a keyword scheme into a known keyword scheme for GCMD."
+  [keyword-scheme]
+  (get cmr-to-gcmd-keyword-scheme-aliases keyword-scheme keyword-scheme))
+
+(defn translate-keyword-scheme-to-cmr
+  "Translates a keyword scheme into a known keyword scheme for CMR."
+  [keyword-scheme]
+  (get (set/map-invert cmr-to-gcmd-keyword-scheme-aliases) keyword-scheme keyword-scheme))
 
 (defn- find-invalid-entries
   "Checks the entries for any duplicate leaf field values. The leaf field should be unique
