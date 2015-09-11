@@ -108,5 +108,4 @@
 
 (defmethod generate-metadata [:collection :iso-smap]
   [_ _ umm]
-  (xg/generate-xml umm-to-iso-smap/umm-c-to-iso-smap-xml umm))
-
+  (umm-to-iso-smap/umm-c-to-iso-smap-xml umm))

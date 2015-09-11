@@ -12,8 +12,8 @@
             (let [[attrs content] (if (map? maybe-attrs)
                                        [maybe-attrs content]
                                        [{} (cons maybe-attrs content)])
-                  content         (seq (remove nil? (generate content)))]
-              (when content
+                  content         (remove nil? (generate content))]
+              (when (or (seq content) (not (empty? attrs)))
                 (apply x/element tag attrs content))))
 
   clojure.lang.ISeq
