@@ -260,6 +260,10 @@
 						"detailed_variable": {
 							"type": "string"
 						},
+						"uuid": {
+							"description": "Unique identifier for the science keyword within the GCMD Keyword Management System.",
+							"type": "string"
+						},
 						"ignore_case": {
 							"$ref": "#/definitions/IgnoreCaseOption"
 						},

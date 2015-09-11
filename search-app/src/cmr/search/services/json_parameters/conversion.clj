@@ -71,9 +71,9 @@
   condition. JSON schema does not provide a mechanism for ensuring at least one of a subset of
   properties is present."
   [condition-name value]
-  (when-not (seq (set/intersection (set (keys value))
-                                   (set (conj ((inf/plural condition-name) nf/nested-field-mappings)
-                                              :any))))
+  (when-not (seq (set/intersection
+                   (set (keys value))
+                   (set (nf/get-subfield-names (inf/plural condition-name)))))
     (errors/throw-service-error
       :bad-request (msg/invalid-nested-json-query-condition condition-name value))))
 
