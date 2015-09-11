@@ -205,10 +205,8 @@
        "boolean" (= "true" x)
 
        ;; Return nil instead of empty vectors.
-       "array"   (when (seq x)
-                   (let [coerced (remove nil? (map #(coerce schema (:items definition) %) x))]
-                     (when (seq coerced)
-                       (vec coerced))))
+       "array"   (when-let [coerced (seq (keep #(coerce schema (:items definition) %) x))]
+                   (vec coerced))
 
        "object"  (let [ctor (record-ctor schema type-name)
                        kvs (for [[k v] x]
@@ -217,7 +215,7 @@
                                  [k (coerce schema prop-definition v)])))
                        m (into {} kvs)]
                    ;; Return nil instead of empty maps/records here.
-                   (when-not (empty? m)
+                   (when (seq m)
                      (ctor m)))
 
        ;; Otherwise...

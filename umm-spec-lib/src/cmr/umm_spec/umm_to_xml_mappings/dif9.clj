@@ -27,12 +27,12 @@
        [:Source_Name
         [:Short_Name (:ShortName platform)]
         [:Long_Name (:LongName platform)]])
-     (for [temporal (-> c :TemporalExtents)
+     (for [temporal (:TemporalExtents c)
            rdt (:RangeDateTimes temporal)]
        [:Temporal_Coverage
         [:Start_Date (:BeginningDateTime rdt)]
         [:Stop_Date (:EndingDateTime rdt)]])
-     (for [temporal (-> c :TemporalExtents)
+     (for [temporal (:TemporalExtents c)
            sdt (:SingleDateTimes temporal)]
        [:Temporal_Coverage
         [:Start_Date sdt]
