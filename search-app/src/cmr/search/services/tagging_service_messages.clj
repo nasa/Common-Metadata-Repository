@@ -12,3 +12,8 @@
 (def field-may-not-contain-separator
   "Validation format message so %s is included for the field"
   "%s may not contain the Group Separator character. ASCII decimal value: 29 Unicode: U+001D")
+
+(defn cannot-change-field-value
+  [field existing-value new-value]
+  (format "Tag %s cannot be modified. Attempted to change existing value [%s] to [%s]"
+          (name field) existing-value new-value))

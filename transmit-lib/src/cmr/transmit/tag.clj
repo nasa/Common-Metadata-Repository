@@ -13,6 +13,10 @@
   [conn]
   (format "%s/tags" (conn/root-url conn)))
 
+(defn- tag-url
+  [conn tag-id]
+  (str (tags-url conn) "/" tag-id))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
@@ -31,6 +35,28 @@
      (h/request context :search
                 {:url-fn tags-url
                  :method :post
+                 :raw? is-raw?
+                 :http-options (merge {:body (json/generate-string tag)
+                                       :content-type :json
+                                       :headers headers
+                                       :accept :json}
+                                      http-options)}))))
+
+(defn update-tag
+  "Sends a request to update the tag on the Search API. Valid options are
+  * :is-raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use when updating the token. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context concept-id tag]
+   (update-tag context concept-id tag {}))
+  ([context concept-id tag {:keys [is-raw? token http-options]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :search
+                {:url-fn #(tag-url % concept-id)
+                 :method :put
                  :raw? is-raw?
                  :http-options (merge {:body (json/generate-string tag)
                                        :content-type :json
