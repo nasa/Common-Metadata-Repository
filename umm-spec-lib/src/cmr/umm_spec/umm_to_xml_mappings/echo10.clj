@@ -76,7 +76,7 @@
                        :PeriodCycleDurationUnit
                        :PeriodCycleDurationValue)])]))
 
-(defn echo10-xml
+(defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
   (xml
