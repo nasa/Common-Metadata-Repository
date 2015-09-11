@@ -61,11 +61,11 @@
 
 (defmethod parse-metadata [:collection :echo10]
   [_ _ metadata]
-  (echo10-to-umm/parse-echo10-xml metadata))
+  (echo10-to-umm/echo10-xml-to-umm-c metadata))
 
 (defmethod parse-metadata [:collection :dif]
   [_ _ metadata]
-  (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata))
+  (dif9-to-umm/dif9-xml-to-umm-c metadata))
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]
@@ -92,11 +92,11 @@
 
 (defmethod generate-metadata [:collection :echo10]
   [_ _ umm]
-  (umm-to-echo10/echo10-xml umm))
+  (umm-to-echo10/umm-c-to-echo10-xml umm))
 
 (defmethod generate-metadata [:collection :dif]
   [_ _ umm]
-  (xg/generate-xml umm-to-dif9/umm-c-to-dif9-xml umm))
+  (umm-to-dif9/umm-c-to-dif9-xml umm))
 
 (defmethod generate-metadata [:collection :dif10]
   [_ _ umm]
