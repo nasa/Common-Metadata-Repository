@@ -350,28 +350,9 @@
         (finally (dev-sys-util/eval-in-dev-sys
                    `(cmr.virtual-product.config/set-virtual-products-enabled! true)))))))
 
-(defn set-provider-aliases
-  [aliases]
-  (dev-sys-util/eval-in-dev-sys
-    `(cmr.virtual-product.config/set-virtual-product-provider-aliases! ~aliases)))
-
-(defn get-provider-aliases
-  []
-  (dev-sys-util/eval-in-dev-sys
-    `(cmr.virtual-product.config/virtual-product-provider-aliases)))
-
-(defmacro with-provider-aliases
-  "Wraps body while using aliases for the provider aliases."
-  [aliases body]
-  `(let [orig-aliases# (get-provider-aliases)]
-    (set-provider-aliases ~aliases)
-    (try
-      ~body
-      (finally
-        (set-provider-aliases orig-aliases#)))))
-
 (deftest virtual-product-provider-alias-test
-  (with-provider-aliases {"LPDAAC_ECS"  #{"LP_ALIAS"}}
+  (vp/with-provider-aliases
+    {"LPDAAC_ECS"  #{"LP_ALIAS"}}
     (let [ast-entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
           [ast-coll] (vp/ingest-source-collections
                        [(assoc
