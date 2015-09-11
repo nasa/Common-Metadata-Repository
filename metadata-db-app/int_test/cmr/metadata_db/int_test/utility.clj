@@ -133,7 +133,7 @@
 (defn get-concept-id
   "Make a GET to retrieve the id for a given concept-type, provider-id, and native-id."
   [concept-type provider-id native-id]
-  (let [response (client/get (str concept-id-url concept-type "/" provider-id "/" native-id)
+  (let [response (client/get (str concept-id-url (name concept-type) "/" provider-id "/" native-id)
                              {:accept :json
                               :throw-exceptions false
                               :connection-manager (conn-mgr)})

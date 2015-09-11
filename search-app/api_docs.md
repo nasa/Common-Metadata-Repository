@@ -1866,6 +1866,40 @@ __Example Response__
 }
 ```
 
+### Tagging
+
+Tagging allows arbitrary sets of collections to be grouped under a single namespaced value. The sets of collections can be recalled later when searching by tag fields.
+
+Tags have the following fields:
+
+* Namespace (REQUIRED): free text specifying the name of the organization (e.g., LPDAAC) or the project (e.g., org.ceos.wgiss.cwic) who created the tag. Allowing the Namespace to be a part of the Tag ensures uniqueness when different organizations or projects choose to use the same tag Value (see below). The maximum length for a namespace is 514 characters.
+* Category (OPTIONAL): free text category name for the tag. Category is a way of grouping tags with similar purposes, i.e. grouping tags by type (e.g., Category of public_data_set and Values of cwic_public, xxx_public for the tags in that category) The maximum length for a category is 1030 characters.
+* Value (REQUIRED): free text "name" of the tag. The maximum length of a value is 515 characters.
+* Description (OPTIONAL): a free text description of what this tag is and / or how it is used. The maximum length for description is 4000 characters.
+* Originator ID (REQUIRED): the Earthdata Login ID of the person who created the tag.
+
+Both the tag namespace and value cannot contain the Group Separator character. This is the ASCII decimal character 29 and in Unicode U+001D.
+
+#### Creating a Tag
+
+Tags are created by POSTing a JSON representation of a tag to `/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" http://localhost:3003/tags -d \
+'{
+  "namespace": "org.ceos.wgiss.cwic",
+  "category": "cwic_public",
+  "value": "quality",
+  "description": "This is a sample tag."
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":1}
+```
+
 ### Administrative Tasks
 
 These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update
