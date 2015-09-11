@@ -100,7 +100,7 @@
 
 (defmethod generate-metadata [:collection :dif10]
   [_ _ umm]
-  (xg/generate-xml umm-to-dif10/umm-c-to-dif10-xml umm))
+  (umm-to-dif10/umm-c-to-dif10-xml umm))
 
 (defmethod generate-metadata [:collection :iso19115]
   [_ _ umm]
