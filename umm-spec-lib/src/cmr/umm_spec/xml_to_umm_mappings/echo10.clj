@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]))
+            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.json-schema :as js]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -41,7 +42,7 @@
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
-(defn parse-echo10-xml
+(defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
@@ -67,3 +68,8 @@
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            (fields-from aa :Name :Description :DataType :ParameterRangeBegin
                                         :ParameterRangeEnd :Value))})
+
+(defn echo10-xml-to-umm-c
+  "Returns UMM-C collection record from ECHO10 collection XML document."
+  [metadata]
+  (js/coerce (parse-echo10-xml metadata)))

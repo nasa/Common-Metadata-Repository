@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]))
+            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.json-schema :as js]))
 
-(defn parse-dif9-xml
-  "Returns UMM-C collection structure from DIF9 collection XML document."
+(defn- parse-dif9-xml
+  "Returns collection map from DIF9 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :EntryId (value-of doc "/DIF/Entry_ID")
@@ -51,3 +52,7 @@
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
                             :UpdateDate (value-of aa "Value[@type='UpdateDate']")})})
 
+(defn dif9-xml-to-umm-c
+  "Returns UMM-C collection record from DIF9 collection XML document."
+  [metadata]
+  (js/coerce (parse-dif9-xml metadata)))
