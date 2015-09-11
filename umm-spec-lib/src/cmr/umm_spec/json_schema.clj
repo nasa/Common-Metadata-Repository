@@ -195,7 +195,7 @@
      (condp = (:type definition)
 
        "string"  (condp = (:format definition)
-                   "date-time" (dtp/parse-datetime x)
+                   "date-time" (when x (dtp/parse-datetime x))
                    (str x))
 
        "number"  (Double. x)
@@ -226,7 +226,7 @@
 (comment
   (coerce {:EntryTitle "This is a test"
            :TemporalExtents (list
-                             {:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]})
+                              {:EndsAtPresentFlag "true"
+                               :SingleDateTimes ["2000-01-01T00:00:00.000Z"]})
            :Distributions [{:Fees "123.4"}]})
   )

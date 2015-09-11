@@ -1,10 +1,13 @@
 (ns cmr.umm-spec.xml.parse
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.common.date-time-parser :as dtp]))
 
 (defn value-of
   [element xpath]
-  (text (select element xpath)))
+  (let [value (text (select element xpath))]
+    (when-not (str/blank? value)
+      value)))
 
 (defn values-at
   "Returns seq of contents of elements at xpath."

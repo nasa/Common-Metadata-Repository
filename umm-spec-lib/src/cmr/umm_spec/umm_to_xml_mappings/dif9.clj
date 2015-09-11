@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
-  (:require [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]))
 
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -8,89 +8,88 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
-(defn- generate-collection-data-type
-  "Returns content generator instruction for the CollectionDataType field. We create this function
-  because we don't want to generate the sibling elements when there is no CollectionDataType value."
-  [xpath-context]
-  (when-let [collection-data-type (-> xpath-context :context first :CollectionDataType)]
-    [:Metadata
-     [:Group "ECHO"]
-     [:Name "CollectionDataType"]
-     [:Value collection-data-type]]))
-
-(def umm-c-to-dif9-xml
-  [:DIF
-   dif9-xml-namespaces
-   [:Entry_ID (xpath "/EntryId")]
-   [:Entry_Title (xpath "/EntryTitle")]
-   [:Data_Set_Citation
-    [:Version (xpath "/Version")]]
-   [:Parameters
-    [:Category "dummy category"]
-    [:Topic "dummy topic"]
-    [:Term "dummy term"]]
-   [:ISO_Topic_Category "dummy iso topic category"]
-   (for-each "/Platforms"
-             [:Source_Name
-              [:Short_Name (xpath "ShortName")]
-              [:Long_Name (xpath "LongName")]])
-   (for-each "/TemporalExtents/RangeDateTimes"
-             [:Temporal_Coverage
-              [:Start_Date (xpath "BeginningDateTime")]
-              [:Stop_Date (xpath "EndingDateTime")]])
-   (for-each "/TemporalExtents/SingleDateTimes"
-             [:Temporal_Coverage
-              [:Start_Date (xpath ".")]
-              [:Stop_Date (xpath ".")]])
-   [:Data_Set_Progress (xpath "/CollectionProgress")]
-   (for-each "/SpatialKeywords"
-             [:Location (xpath ".")])
-   (for-each "/TemporalKeywords"
-             [:Data_Resolution
-              [:Temporal_Resolution (xpath ".")]])
-   [:Quality (xpath "/Quality")]
-   [:Access_Constraints (xpath "/AccessConstraints/Description")]
-   [:Use_Constraints (xpath "/UseConstraints")]
-   [:Data_Set_Language (xpath "/DataLanguage")]
-   [:Data_Center
-    [:Data_Center_Name
-     [:Short_Name "datacenter_short_name"]
-     [:Long_Name "data center long name"]]
-    [:Personnel
-     [:Role "DummyRole"]
-     [:Last_Name "dummy last name"]]]
-   (for-each "/Distributions"
-             [:Distribution
-              [:Distribution_Media (xpath "DistributionMedia")]
-              [:Distribution_Size (xpath "DistributionSize")]
-              [:Distribution_Format (xpath "DistributionFormat")]
-              [:Fees (xpath "Fees")]])
-   [:Summary
-    [:Abstract (xpath "/Abstract")]
-    [:Purpose (xpath "/Purpose")]]
-   [:Metadata_Name "CEOS IDN DIF"]
-   [:Metadata_Version "VERSION 9.9.3"]
-   [:Extended_Metadata
-    (for-each "/AdditionalAttributes"
-              [:Metadata
-               [:Group "AdditionalAttribute"]
-               [:Name (xpath "Name")]
-               [:Description (xpath "Description")]
-               [:Type (xpath "DataType")]
-               [:Value {:type "Value"} (xpath "Value")]
-               [:Value {:type "ParamRangeBegin"} (xpath "ParameterRangeBegin")]
-               [:Value {:type "ParamRangeEnd"} (xpath "ParameterRangeEnd")]
-               [:Value {:type "MeasurementResolution"} (xpath "MeasurementResolution")]
-               [:Value {:type "ParameterUnitsOfMeasure"} (xpath "ParameterUnitsOfMeasure")]
-               [:Value {:type "ParameterValueAccuracy"} (xpath "ParameterValueAccuracy")]
-               [:Value {:type "ValueAccuracyExplanation"} (xpath "ValueAccuracyExplanation")]
-               [:Value {:type "UpdateDate"} (xpath "UpdateDate")]])
-    generate-collection-data-type
-    [:Metadata
-     [:Name "ProcessingLevelId"]
-     [:Value (xpath "/ProcessingLevel/Id")]]
-    [:Metadata
-     [:Name "ProcessingLevelDescription"]
-     [:Value (xpath "/ProcessingLevel/ProcessingLevelDescription")]]]])
+(defn umm-c-to-dif9-xml
+  "Returns DIF9 XML structure from UMM collection record c."
+  [c]
+  (xml
+    [:DIF
+     dif9-xml-namespaces
+     [:Entry_ID (:EntryId c)]
+     [:Entry_Title (:EntryTitle c)]
+     [:Data_Set_Citation
+      [:Version (:Version c)]]
+     [:Parameters
+      [:Category "dummy category"]
+      [:Topic "dummy topic"]
+      [:Term "dummy term"]]
+     [:ISO_Topic_Category "dummy iso topic category"]
+     (for [platform (:Platforms c)]
+       [:Source_Name
+        [:Short_Name (:ShortName platform)]
+        [:Long_Name (:LongName platform)]])
+     (for [temporal (-> c :TemporalExtents)
+           rdt (:RangeDateTimes temporal)]
+       [:Temporal_Coverage
+        [:Start_Date (:BeginningDateTime rdt)]
+        [:Stop_Date (:EndingDateTime rdt)]])
+     (for [temporal (-> c :TemporalExtents)
+           sdt (:SingleDateTimes temporal)]
+       [:Temporal_Coverage
+        [:Start_Date sdt]
+        [:Stop_Date sdt]])
+     [:Data_Set_Progress (:CollectionProgress c)]
+     (for [spatial-keyword (:SpatialKeywords c)]
+       [:Location spatial-keyword])
+     (for [temproal-keywod (:TemporalKeywords c)]
+       [:Data_Resolution
+        [:Temporal_Resolution temproal-keywod]])
+     [:Quality (:Quality c)]
+     [:Access_Constraints (-> c :AccessConstraints :Description)]
+     [:Use_Constraints (:UseConstraints c)]
+     [:Data_Set_Language (:DataLanguage c)]
+     [:Data_Center
+      [:Data_Center_Name
+       [:Short_Name "datacenter_short_name"]
+       [:Long_Name "data center long name"]]
+      [:Personnel
+       [:Role "DummyRole"]
+       [:Last_Name "dummy last name"]]]
+     (for [distribution (:Distributions c)]
+       [:Distribution
+        [:Distribution_Media (:DistributionMedia distribution)]
+        [:Distribution_Size (:DistributionSize distribution)]
+        [:Distribution_Format (:DistributionFormat distribution)]
+        [:Fees (:Fees distribution)]])
+     [:Summary
+      [:Abstract (:Abstract c)]
+      [:Purpose (:Purpose c)]]
+     [:Metadata_Name "CEOS IDN DIF"]
+     [:Metadata_Version "VERSION 9.9.3"]
+     [:Extended_Metadata
+      (for [aa (:AdditionalAttributes c)]
+        [:Metadata
+         [:Group "AdditionalAttribute"]
+         [:Name (:Name aa)]
+         [:Description (:Description aa)]
+         [:Type (:DataType aa)]
+         [:Value {:type "Value"} (:Value aa)]
+         [:Value {:type "ParamRangeBegin"} (:ParameterRangeBegin aa)]
+         [:Value {:type "ParamRangeEnd"} (:ParameterRangeEnd aa)]
+         [:Value {:type "MeasurementResolution"} (:MeasurementResolution aa)]
+         [:Value {:type "ParameterUnitsOfMeasure"} (:ParameterUnitsOfMeasure aa)]
+         [:Value {:type "ParameterValueAccuracy"} (:ParameterValueAccuracy aa)]
+         [:Value {:type "ValueAccuracyExplanation"} (:ValueAccuracyExplanation aa)]
+         [:Value {:type "UpdateDate"} (:UpdateDate aa)]])
+      (when-let [collection-data-type (:CollectionDataType c)]
+        [:Metadata
+         [:Group "ECHO"]
+         [:Name "CollectionDataType"]
+         [:Value collection-data-type]])
+      [:Metadata
+       [:Name "ProcessingLevelId"]
+       [:Value (-> c :ProcessingLevel :Id)]]
+      [:Metadata
+       [:Name "ProcessingLevelDescription"]
+       [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]]]))
 
 
