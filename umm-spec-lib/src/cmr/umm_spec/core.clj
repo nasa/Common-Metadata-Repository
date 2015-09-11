@@ -66,7 +66,7 @@
 
 (defmethod parse-metadata [:collection :dif]
   [_ _ metadata]
-  (dif9-to-umm/dif9-xml-to-umm-c metadata))
+  (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]
@@ -74,7 +74,7 @@
 
 (defmethod parse-metadata [:collection :iso19115]
   [_ _ metadata]
-  (xp/parse-xml iso19115-2-to-umm/iso19115-2-xml-to-umm-c metadata))
+  (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :iso-smap]
   [_ _ metadata]
@@ -105,7 +105,7 @@
 
 (defmethod generate-metadata [:collection :iso19115]
   [_ _ umm]
-  (xg/generate-xml umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm))
+  (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm))
 
 (defmethod generate-metadata [:collection :iso-smap]
   [_ _ umm]
