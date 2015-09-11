@@ -2,8 +2,9 @@
   "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [cmr.umm-spec.util :as spec-util]
-            [cmr.common.validations.json-schema :as js-validations]))
+            [cmr.common.date-time-parser :as dtp]
+            [cmr.common.validations.json-schema :as js-validations]
+            [cmr.umm-spec.util :as spec-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
@@ -153,3 +154,79 @@
 
 (def umm-c-schema (load-schema "umm-c-json-schema.json"))
 
+(defn root-def
+  "Returns the root type definition of the given schema."
+  [schema]
+  (get-in schema [:definitions (:root schema)]))
+
+(def schema-ns-map
+  "A map of schema names to the namespace they should be placed in"
+  {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
+   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
+
+(defn- record-ctor
+  "Returns the map->RecordName function that can be used to construct a type defined in the JSON
+  schema"
+  [schema type-name]
+  (let [record-ns (schema-ns-map (:schema-name schema))]
+    (-> (str (name record-ns) "/map->" (name type-name))
+        symbol
+        find-var
+        var-get)))
+
+(defn- resolve-$refs
+  "Recursively resolves $refs, as some are multi-level $refs to other types."
+  [[schema definition :as pair]]
+  (if (:$ref definition)
+    (recur (apply lookup-ref pair))
+    pair))
+
+(defn coerce
+  "Returns x coerced according to a JSON schema type type definition. With no other parameters, the
+  schema and type defaults to the umm-c-schema and the root UMM-C type."
+  ([x]
+   (coerce umm-c-schema x))
+  ([schema x]
+   (coerce schema (root-def schema) x))
+  ([schema definition x]
+   (let [type-name (or (-> definition :$ref :type-name)
+                       (:root schema))
+         [schema definition] (resolve-$refs [schema definition])]
+     (condp = (:type definition)
+
+       "string"  (condp = (:format definition)
+                   "date-time" (dtp/parse-datetime x)
+                   (str x))
+
+       "number"  (Double. x)
+
+       "integer" (Long. x)
+
+       "boolean" (= "true" x)
+
+       ;; Return nil instead of empty vectors.
+       "array"   (when (seq x)
+                   (let [coerced (remove nil? (map #(coerce schema (:items definition) %) x))]
+                     (when (seq coerced)
+                       (vec coerced))))
+
+       "object"  (let [ctor (record-ctor schema type-name)
+                       kvs (for [[k v] x]
+                             (when v
+                               (let [prop-definition (get-in definition [:properties k])]
+                                 [k (coerce schema prop-definition v)])))
+                       m (into {} kvs)]
+                   ;; Return nil instead of empty maps/records here.
+                   (when-not (empty? m)
+                     (ctor m)))
+
+       ;; Otherwise...
+       (throw (IllegalArgumentException. (str "Don't know how to coerce " definition " (" x ")")))))))
+
+(comment
+  (coerce {:EntryTitle "This is a test"
+           :TemporalExtents (list
+                             {:EndsAtPresentFlag "true"
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]})
+           :Distributions [{:Fees "123.4"}]})
+  )
