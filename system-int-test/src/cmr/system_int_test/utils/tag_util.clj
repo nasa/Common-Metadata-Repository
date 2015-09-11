@@ -23,6 +23,11 @@
       {:status status
        :body body})))
 
+(defn get-tag
+  "Retrieves a tag by concept id"
+  [concept-id]
+  (tt/get-tag (s/context) concept-id {:is-raw? true}))
+
 (defn update-tag
   "Updates a tag."
   [token concept-id tag]

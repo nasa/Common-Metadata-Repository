@@ -7,6 +7,8 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.tag-util :as tags]
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.system-int-test.data2.collection :as dc]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
@@ -116,8 +118,41 @@
       (is concept-id)
       (is (= 1 revision-id)))))
 
+(deftest get-tag-test
+  (testing "Retrieve existing tag"
+    (let [tag (tags/make-tag 1)
+          token (e/login (s/context) "user1")
+          {:keys [concept-id]} (tags/create-tag token tag)]
+      (is (= {:status 200
+              :body (assoc tag :originator-id "user1")
+              :content-type :json}
+             (tags/get-tag concept-id)))))
 
-;; TODO test get API when not found
+  (testing "Retrieve unknown tag"
+    (is (= {:status 404
+            :body {:errors ["Tag could not be found with concept id [T100-CMR]"]}
+            :content-type :json}
+           (tags/get-tag "T100-CMR"))))
+  (testing "Retrieve tag with bad concept-id"
+    (is (= {:status 400
+            :body {:errors ["Concept-id [F100-CMR] is not valid."]}
+            :content-type :json}
+           (tags/get-tag "F100-CMR"))))
+  (testing "Retrieve tag with bad provider in concept id"
+    (is (= {:status 400
+            :body {:errors ["[T100-PROV1] is not a valid tag concept id."]}
+            :content-type :json}
+           (tags/get-tag "T100-PROV1"))))
+  (testing "Retrieve tag with collection concept-id"
+    (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
+      (is (= {:status 400
+              :body {:errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
+              :content-type :json}
+             (tags/get-tag coll-concept-id)))))
+  (testing "Retrieve deleted tag"
+    ;; TODO implement with deleted story
+    ))
+
 
 (deftest update-tag-test
   (let [tag (tags/make-tag 1)
@@ -155,6 +190,10 @@
       (is (= {:status 401
               :errors ["Tags cannot be modified without a valid user token."]}
              (tags/update-tag nil concept-id tag))))
+    (testing "Update tag that doesn't exist"
+      (is (= {:status 404
+              :errors ["Tag could not be found with concept id [T100-CMR]"]}
+             (tags/update-tag token "T100-CMR" tag))))
     (testing "Fields that cannot be changed"
       (are [field human-name]
            (= {:status 400

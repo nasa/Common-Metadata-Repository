@@ -42,6 +42,20 @@
                                        :accept :json}
                                       http-options)}))))
 
+(defn get-tag
+  "Sends a request to get a tag on the Search API by concept id. Valid options are
+  * :is-raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context concept-id]
+   (get-tag context concept-id {}))
+  ([context concept-id {:keys [is-raw? http-options]}]
+   (h/request context :search
+              {:url-fn #(tag-url % concept-id)
+               :method :get
+               :raw? is-raw?
+               :http-options (merge {:accept :json} http-options)})))
+
 (defn update-tag
   "Sends a request to update the tag on the Search API. Valid options are
   * :is-raw? - set to true to indicate the raw response should be returned. See

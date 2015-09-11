@@ -1091,7 +1091,7 @@ __Sample response__
             <reference>
                 <name>et1</name>
                 <id>C1200000000-PROV1</id>
-                <location>http://localhost:3003/concepts/C1200000000-PROV1/3</location>
+                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/3</location>
                 <revision-id>3</revision-id>
             </reference>
             <reference>
@@ -1103,7 +1103,7 @@ __Sample response__
             <reference>
                 <name>et1</name>
                 <id>C1200000000-PROV1</id>
-                <location>http://localhost:3003/concepts/C1200000000-PROV1/1</location>
+                <location>%CMR-ENDPOINT%/concepts/C1200000000-PROV1/1</location>
                 <revision-id>1</revision-id>
             </reference>
         </references>
@@ -1885,7 +1885,7 @@ Both the tag namespace and value cannot contain the Group Separator character. T
 Tags are created by POSTing a JSON representation of a tag to `/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" http://localhost:3003/tags -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags -d \
 '{
   "namespace": "org.ceos.wgiss.cwic",
   "category": "cwic_public",
@@ -1900,12 +1900,32 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":1}
 ```
 
+#### Retrieving a Tag
+
+A single tag can be retrieved by sending a GET request to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created.
+
+```
+curl -i %CMR-ENDPOINT%/tags/T1200000000-CMR?pretty=true
+
+HTTP/1.1 200 OK
+Content-Length: 216
+Content-Type: application/json;charset=ISO-8859-1
+
+{
+  "originator-id" : "mock-admin",
+  "namespace" : "org.ceos.wgiss.cwic",
+  "category" : "cwic_non_public",
+  "value" : "quality",
+  "description" : "This is a sample tag for indicating some data is high quality."
+}
+```
+
 #### Updating a Tag
 
 Tags are updated by sending a PUT request with the JSON representation of a tag to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" http://localhost:3003/tags/T1200000000-CMR -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
 '{
   "namespace": "org.ceos.wgiss.cwic",
   "category": "cwic_non_public",

@@ -5,6 +5,7 @@
             [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.services.errors :as errors]
             [cmr.common.validations.core :as v]
+            [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging-service-messages :as msg]
             [clojure.string :as str]
             [clojure.edn :as edn]))
@@ -107,28 +108,36 @@
   (let [user-id (context->user-id context)]
     (mdb/save-concept context (tag->new-concept (assoc tag :originator-id user-id)))))
 
+(defn- fetch-tag-concept
+  "Fetches a tag concept by concept id"
+  [context concept-id]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+    (when (or (not= :tag concept-type) (not= "CMR" provider-id))
+      (errors/throw-service-error :bad-request (msg/bad-tag-concept-id concept-id))))
+
+  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+    ;; TODO check if it's deleted. Throw service error :not-found if deleted but error message
+    ;; should be deleted
+    concept
+    (errors/throw-service-error :not-found (msg/tag-does-not-exist concept-id))))
+
 (defn get-tag
   "Retrieves a tag with the given concept id."
   [context concept-id]
-  (let [concept (mdb/get-latest-concept context concept-id)]
-    ;; TODO check if it's deleted. Throw service error :not-found if deleted but error message
-    ;; should be deleted
-    (edn/read-string (:metadata concept))))
+  (edn/read-string (:metadata (fetch-tag-concept context concept-id))))
 
 (defn update-tag
   "Updates an existing tag with the given concept id"
   [context concept-id tag]
-  (let [existing-concept (mdb/get-latest-concept context concept-id)]
-    ;; TODO error if trying to update a deleted tag (it doesn't exist)
-
-    (let [existing-tag (edn/read-string (:metadata existing-concept))]
-      (validate-update-tag existing-tag tag)
-      (mdb/save-concept
-        context
-        (-> existing-concept
-            (assoc :metadata (pr-str (assoc tag :originator-id (:originator-id existing-tag)))
-                   :user-id (context->user-id context))
-            (dissoc :revision-date)
-            (update-in [:revision-id] inc))))))
+  (let [existing-concept (fetch-tag-concept context concept-id)
+        existing-tag (edn/read-string (:metadata existing-concept))]
+    (validate-update-tag existing-tag tag)
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          (assoc :metadata (pr-str (assoc tag :originator-id (:originator-id existing-tag)))
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
 
 

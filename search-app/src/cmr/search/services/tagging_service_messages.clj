@@ -17,3 +17,11 @@
   [existing-value new-value]
   (format "Tag %%s cannot be modified. Attempted to change existing value [%s] to [%s]"
           existing-value new-value))
+
+(defn tag-does-not-exist
+  [concept-id]
+  (format "Tag could not be found with concept id [%s]" concept-id))
+
+(defn bad-tag-concept-id
+  [concept-id]
+  (format "[%s] is not a valid tag concept id." concept-id))
