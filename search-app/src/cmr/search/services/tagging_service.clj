@@ -62,7 +62,7 @@
   (v/validate! tag-validations tag))
 
 (defn- field-cannot-be-changed
-  "Validation that a field in a tag has not bee modified. Accepts optional nil-allowed? parameter
+  "Validation that a field in a tag has not been modified. Accepts optional nil-allowed? parameter
   which indicates the validation should be skipped if the new value is nil."
   ([field]
    (field-cannot-be-changed field false))

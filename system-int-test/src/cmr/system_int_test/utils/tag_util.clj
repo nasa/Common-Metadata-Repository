@@ -16,12 +16,15 @@
 
 (defn create-tag
   "Creates a tag."
-  [token tag]
-  (let [{:keys [status body]} (tt/create-tag (s/context) tag {:is-raw? true :token token})]
-    (if (map? body)
-      (assoc body :status status)
-      {:status status
-       :body body})))
+  ([token tag]
+   (create-tag token tag nil))
+  ([token tag options]
+   (let [options (merge {:is-raw? true :token token} options)
+         {:keys [status body]} (tt/create-tag (s/context) tag options)]
+     (if (map? body)
+       (assoc body :status status)
+       {:status status
+        :body body}))))
 
 (defn get-tag
   "Retrieves a tag by concept id"
@@ -30,12 +33,15 @@
 
 (defn update-tag
   "Updates a tag."
-  [token concept-id tag]
-  (let [{:keys [status body]} (tt/update-tag (s/context) concept-id tag {:is-raw? true :token token})]
-    (if (map? body)
-      (assoc body :status status)
-      {:status status
-       :body body})))
+  ([token concept-id tag]
+   (update-tag token concept-id tag nil))
+  ([token concept-id tag options]
+   (let [options (merge {:is-raw? true :token token} options)
+         {:keys [status body]} (tt/update-tag (s/context) concept-id tag options)]
+     (if (map? body)
+       (assoc body :status status)
+       {:status status
+        :body body}))))
 
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator

@@ -39,6 +39,13 @@
 
   (let [valid-user-token (e/login (s/context) "user1")
         valid-tag (tags/make-tag 1)]
+
+    (testing "Create tag with invalid content type"
+      (is (= {:status 400,
+              :errors
+              ["The mime types specified in the content-type header [application/xml] are not supported."]}
+             (tags/create-tag valid-user-token valid-tag {:http-options {:content-type :xml}}))))
+
     (testing "Missing field validations"
       (are [field]
            (= {:status 400
@@ -185,6 +192,12 @@
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
         tag (assoc tag :originator-id "user1")]
+
+    (testing "Update tag with invalid content type"
+      (is (= {:status 400,
+              :errors
+              ["The mime types specified in the content-type header [application/xml] are not supported."]}
+             (tags/update-tag token concept-id tag {:http-options {:content-type :xml}}))))
 
     (testing "Update without token"
       (is (= {:status 401

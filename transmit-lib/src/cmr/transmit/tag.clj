@@ -60,7 +60,7 @@
   "Sends a request to update the tag on the Search API. Valid options are
   * :is-raw? - set to true to indicate the raw response should be returned. See
   cmr.transmit.http-helper for more info. Default false.
-  * token - the user token to use when updating the token. If not set the token in the context will
+  * token - the user token to use when updating the tag. If not set the token in the context will
   be used.
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id tag]
