@@ -352,12 +352,13 @@
                                                   :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
-          (let [revisioned-tombstone (set-or-generate-revision-id db provider tombstone previous-revision)]
-            (try-to-save db provider revisioned-tombstone)
+          (let [revisioned-tombstone (->>(set-or-generate-revision-id db provider tombstone previous-revision)
+                                          (try-to-save db provider))]
             (ingest-events/publish-event
               context
               (config/ingest-exchange-name)
-              (ingest-events/concept-delete-event revisioned-tombstone)))))
+              (ingest-events/concept-delete-event revisioned-tombstone))
+            revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
                          msg/concept-with-concept-id-and-rev-id-does-not-exist

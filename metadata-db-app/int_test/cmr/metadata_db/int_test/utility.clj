@@ -72,13 +72,23 @@
     <Visible>true</Visible>
   </Collection>")
 
+(def tag-edn
+  "Valid EDN for tag metadata"
+  {:tag-namespace "org.nasa.something"
+   :category "category1"
+   :value "quality"
+   :description "A very good tag"
+   :originator-id "jnorton"
+   :associated-concept-ids #{}})
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
-  XML for each test concept we create. This maps concept-type to dummy ECHO10 XML that can be used
+  metadata for each test concept we create. This maps concept-type to dummy data that can be used
   by default."
   {:collection collection-xml
-   :granule granule-xml})
+   :granule granule-xml
+   :tag tag-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -358,12 +368,14 @@
 
 (defn create-and-save-granule
   "Creates, saves, and returns a granule concept with its data from metadata-db"
-  ([provider-id parent-collection-id uniq-num]
-   (create-and-save-granule provider-id parent-collection-id uniq-num 1))
-  ([provider-id parent-collection-id uniq-num num-revisions]
-   (create-and-save-granule provider-id parent-collection-id uniq-num num-revisions {}))
-  ([provider-id parent-collection-id uniq-num num-revisions attributes]
-   (let [concept (granule-concept provider-id parent-collection-id uniq-num attributes)
+  ([provider-id parent-collection-id parent-entry-title uniq-num]
+   (create-and-save-granule provider-id parent-collection-id parent-entry-title uniq-num 1))
+  ([provider-id parent-collection-id parent-entry-title uniq-num num-revisions]
+   (create-and-save-granule
+     provider-id parent-collection-id parent-entry-title uniq-num num-revisions {}))
+  ([provider-id parent-collection-id parent-entry-title uniq-num num-revisions attributes]
+   (let [concept (granule-concept
+                   provider-id parent-collection-id parent-entry-title uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

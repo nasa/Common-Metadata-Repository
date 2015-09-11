@@ -40,8 +40,12 @@
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
           _ (index/wait-until-indexed)
           [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])
-          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1-concept-id 1 1 {:native-id "foo"})
-          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2-concept-id 2 1 {:native-id "foo"})
+          [coll1-entry-title coll2-entry-title] (map #(get-in % [:extra-fields :entry-title])
+                                                     [coll1 coll2])
+          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1-concept-id coll1-entry-title
+                                               1 1 {:native-id "foo"})
+          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2-concept-id coll2-entry-title
+                                               2 1 {:native-id "foo"})
           [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
       (is (util/verify-concept-was-saved gran1))
       (is (util/verify-concept-was-saved gran2))
@@ -82,7 +86,8 @@
 
       (testing "with incorrect concept id matching another concept"
         (let [other-gran-concept-id (str "G11-" provider-id)
-              granule2 (util/granule-concept provider-id parent-collection-id 2
+              granule2 (util/granule-concept provider-id parent-collection-id
+                                             (get-in collection [:extra-fields :entry-title]) 2
                                              {:concept-id other-gran-concept-id
                                               :native-id "native2"})
               _ (is (= 201 (:status (util/save-concept granule2))))
