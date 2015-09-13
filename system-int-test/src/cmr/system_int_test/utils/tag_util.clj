@@ -62,7 +62,6 @@
   (let [concept (mdb/get-concept concept-id revision-id)]
     (is (= {:concept-type :tag
             :native-id (str (:namespace tag) (char 29) (:value tag))
-            ;; TODO Get James or change it yourself that provider id shouldn't be returned if we don't send it in
             :provider-id "CMR"
             :format mt/edn
             :metadata (pr-str tag)
