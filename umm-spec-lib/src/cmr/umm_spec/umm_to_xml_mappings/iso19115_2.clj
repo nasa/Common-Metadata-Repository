@@ -52,17 +52,14 @@
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
   [keywords keyword-type]
-  (vec (concat
-         [:gmd:MD_Keywords]
-
-         (for [keyword keywords]
-           [:gmd:keyword [:gco:CharacterString keyword]])
-
-         [[:gmd:type
-           [:gmd:MD_KeywordTypeCode
-            {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-             :codeListValue keyword-type} keyword-type]]
-          [:gmd:thesaurusName {:gco:nilReason "unknown"}]])))
+  [:gmd:MD_Keywords
+   (for [keyword keywords]
+     [:gmd:keyword [:gco:CharacterString keyword]])
+   [:gmd:type
+    [:gmd:MD_KeywordTypeCode
+     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+      :codeListValue keyword-type} keyword-type]]
+   [:gmd:thesaurusName {:gco:nilReason "unknown"}]])
 
 (defn- generate-characteristics
   "Returns the generated characteristics content generator instructions, with the type
