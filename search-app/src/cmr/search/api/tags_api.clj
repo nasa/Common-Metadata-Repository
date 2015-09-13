@@ -72,6 +72,11 @@
        (tagging-service/update-tag context concept-id)
        tag-api-response))
 
+(defn delete-tag
+  "Deletes the tag with the given concept-id."
+  [context concept-id]
+  (tag-api-response (tagging-service/delete-tag context concept-id)))
+
 (def tag-api-routes
   (context "/tags" []
 
@@ -84,6 +89,10 @@
       ;; Get a tag
       (GET "/" {:keys [request-context]}
         (get-tag request-context tag-id))
+
+      ;; Delete a tag
+      (DELETE "/" {:keys [request-context]}
+        (delete-tag request-context tag-id))
 
       ;; Update a tag
       (PUT "/" {:keys [request-context headers body]}

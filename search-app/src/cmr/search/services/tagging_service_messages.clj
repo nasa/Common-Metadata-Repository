@@ -25,3 +25,7 @@
 (defn bad-tag-concept-id
   [concept-id]
   (format "[%s] is not a valid tag concept id." concept-id))
+
+(defn tag-deleted
+  [concept-id]
+  (format "Tag with concept id [%s] was deleted." concept-id))

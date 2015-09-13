@@ -43,6 +43,18 @@
        {:status status
         :body body}))))
 
+(defn delete-tag
+  "Deletes a tag"
+  ([token concept-id]
+   (delete-tag token concept-id nil))
+  ([token concept-id options]
+   (let [options (merge {:is-raw? true :token token} options)
+         {:keys [status body]} (tt/delete-tag (s/context) concept-id options)]
+     (if (map? body)
+       (assoc body :status status)
+       {:status status
+        :body body}))))
+
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator
   id set correctly. The user-id indicates which user updated this revision."
@@ -59,3 +71,19 @@
             :concept-id concept-id
             :revision-id revision-id}
            (dissoc concept :revision-date)))))
+
+(defn assert-tag-deleted
+  "Checks that a tag tombstone was persisted correctly in metadata db."
+  [tag user-id concept-id revision-id]
+  (let [concept (mdb/get-concept concept-id revision-id)]
+    (is (= {:concept-type :tag
+            :native-id (str (:namespace tag) (char 29) (:value tag))
+            :provider-id "CMR"
+            :metadata ""
+            :format mt/edn
+            :user-id user-id
+            :deleted true
+            :concept-id concept-id
+            :revision-id revision-id}
+           (dissoc concept :revision-date)))))
+

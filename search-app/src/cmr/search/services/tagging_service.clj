@@ -98,27 +98,40 @@
   the saved tag."
   [context tag]
   (validate-create-tag tag)
-
-  ;; Validate that the tag doesn't yet exist
-  (when-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
-    ;; TODO check if the concept is deleted. We should allow this if it's a tombstone.
-    (errors/throw-service-error
-      :conflict (msg/tag-already-exists tag concept-id)))
-
   (let [user-id (context->user-id context)]
-    (mdb/save-concept context (tag->new-concept (assoc tag :originator-id user-id)))))
+    ;; Check if the tag already exists
+    (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
+
+      ;; The tag exists. Check if it's latest revision is a tombstone
+      (let [concept (mdb/get-latest-concept context concept-id false)]
+        (if (:deleted concept)
+          ;; The tag exists but was previously deleted.
+          (mdb/save-concept
+            context
+            (-> concept
+                (assoc :metadata (pr-str (assoc tag :originator-id user-id))
+                       :deleted false
+                       :user-id user-id)
+                (dissoc :revision-date)
+                (update-in [:revision-id] inc)))
+
+          ;; The tag exists and was not deleted. Reject this.
+          (errors/throw-service-error :conflict (msg/tag-already-exists tag concept-id))))
+
+      ;; The tag doesn't exist
+      (mdb/save-concept context (tag->new-concept (assoc tag :originator-id user-id))))))
 
 (defn- fetch-tag-concept
-  "Fetches a tag concept by concept id"
+  "Fetches the latest version of a tag concept by concept id"
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (or (not= :tag concept-type) (not= "CMR" provider-id))
       (errors/throw-service-error :bad-request (msg/bad-tag-concept-id concept-id))))
 
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
-    ;; TODO check if it's deleted. Throw service error :not-found if deleted but error message
-    ;; should be deleted
-    concept
+    (if (:deleted concept)
+      (errors/throw-service-error :not-found (msg/tag-deleted concept-id))
+      concept)
     (errors/throw-service-error :not-found (msg/tag-does-not-exist concept-id))))
 
 (defn get-tag
@@ -136,6 +149,20 @@
       context
       (-> existing-concept
           (assoc :metadata (pr-str (assoc tag :originator-id (:originator-id existing-tag)))
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
+
+(defn delete-tag
+  "Deletes a tag with the given concept id"
+  [context concept-id]
+  (let [existing-concept (fetch-tag-concept context concept-id)]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          ;; Remove fields not allowed when creating a tombstone.
+          (dissoc :metadata :format :provider-id :native-id)
+          (assoc :deleted true
                  :user-id (context->user-id context))
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))

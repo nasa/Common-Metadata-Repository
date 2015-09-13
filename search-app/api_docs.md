@@ -1940,6 +1940,21 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":2}
 ```
 
+#### Deleting a Tag
+
+Tags are deleted by sending a DELETE request to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+
+```
+curl -XDELETE -i  -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags/T1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":3}
+```
+
+
 ### Administrative Tasks
 
 These tasks require an admin user token with the INGEST\_MANAGEMENT\_ACL with read or update
