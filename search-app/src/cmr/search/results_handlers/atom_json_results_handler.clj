@@ -23,7 +23,11 @@
   [concept-type query]
   (elastic-search-index/concept-type+result-format->fields :granule (assoc query :result-format :atom)))
 
-(defmethod elastic-results/elastic-results->query-results :json
+(defmethod elastic-results/elastic-results->query-results [:collection :json]
+  [context query elastic-results]
+  (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
+
+(defmethod elastic-results/elastic-results->query-results [:granule :json]
   [context query elastic-results]
   (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
 
@@ -137,7 +141,7 @@
         :entry (map (partial atom-reference->json results concept-type) items)
         :facets facets})}))
 
-(defmethod qs/search-results->response :json
+(defn- search-results->response
   [context query results]
   (let [{:keys [concept-type echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))
@@ -145,8 +149,24 @@
                            context echo-compatible? include-facets? concept-type results)]
     (json/generate-string response-results)))
 
-(defmethod qs/single-result->response :json
+(defn- single-result->response
   [context query results]
   (json/generate-string (atom-reference->json results
                                               (:concept-type query)
                                               (first (:items results)))))
+
+(defmethod qs/search-results->response [:collection :json]
+  [context query results]
+  (search-results->response context query results))
+
+(defmethod qs/single-result->response [:collection :json]
+  [context query results]
+  (single-result->response  context query results))
+
+(defmethod qs/search-results->response [:granule :json]
+  [context query results]
+  (search-results->response context query results))
+
+(defmethod qs/single-result->response [:granule :json]
+  [context query results]
+  (single-result->response  context query results))

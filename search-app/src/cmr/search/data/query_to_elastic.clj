@@ -27,6 +27,8 @@
                 :sensor :sensor-sn
                 :revision-date :revision-date2}
 
+   :tag {}
+
    :granule {:provider :provider-id
              :producer-granule-id :producer-gran-id
              :updated-since :revision-date
@@ -85,6 +87,8 @@
                 :sensor :sensor-sn.lowercase
                 :score :_score
                 :revision-date :revision-date2}
+   :tag {:namespace :namespace.lowercase
+         :value :value.lowercase}
    :granule {:provider :provider-id.lowercase
              :entry-title :entry-title.lowercase
              :short-name :short-name.lowercase
@@ -102,9 +106,13 @@
   "Converts a query into the elastic parameters for sorting results"
   [query]
   (let [{:keys [concept-type sort-keys]} query
-        default-sorts (if (= concept-type :collection)
-                          [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}]
-                          [{:concept-seq-id {:order "asc"}}])
+        default-sorts (case concept-type
+                        :collection
+                        [{:concept-seq-id {:order "asc"}} {:revision-id {:order "desc"}}]
+                        :granule
+                        [{:concept-seq-id {:order "asc"}}]
+                        :tag
+                        [{:concept-id {:order "asc"}}])
         specified-sort (map (fn [{:keys [order field]}]
                               {(get-in sort-key-field->elastic-field [concept-type field] (name field))
                                {:order order}})

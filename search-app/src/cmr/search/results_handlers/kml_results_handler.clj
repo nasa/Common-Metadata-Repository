@@ -56,7 +56,7 @@
   (let [orbits-by-collection (orbit-swath-helper/get-orbits-by-collection context elastic-matches)]
     (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
 
-(defmethod elastic-results/elastic-results->query-results :kml
+(defn- elastic-results->query-results
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
@@ -65,6 +65,13 @@
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
+(defmethod elastic-results/elastic-results->query-results [:granule :kml]
+  [context query elastic-results]
+  (elastic-results->query-results context query elastic-results))
+
+(defmethod elastic-results/elastic-results->query-results [:collection :kml]
+  [context query elastic-results]
+  (elastic-results->query-results context query elastic-results))
 
 (defprotocol KmlSpatialShapeHandler
   (shape->xml-element
@@ -196,7 +203,7 @@
                         ;; which have no fill.
                         (x/element :color {} "00ffffff"))))
 
-(defmethod qs/search-results->response :kml
+(defn- search-results->response
   [context query results]
   (x/emit-str
     (x/element :kml KML_XML_NAMESPACE_ATTRIBUTES
@@ -204,6 +211,14 @@
                           kml-geodetic-style-xml-elem
                           kml-cartesian-style-xml-elem
                           (mapcat item->kml-placemarks (:items results))))))
+
+(defmethod qs/search-results->response [:collection :kml]
+  [context query results]
+  (search-results->response context query results))
+
+(defmethod qs/search-results->response [:granule :kml]
+  [context query results]
+  (search-results->response context query results))
 
 
 

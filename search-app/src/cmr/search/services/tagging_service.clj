@@ -9,6 +9,7 @@
             [cmr.search.services.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.set :as set]))
@@ -212,4 +213,20 @@
   "Disassociates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
   (update-tag-associations context concept-id json-query set/difference))
+
+(defn search-for-tags
+  [context params]
+  ;; TODO API should convert result format from mime type
+
+  (query-service/find-concepts-by-parameters context :tag params))
+
+
+(comment
+  (do
+    (def context {:system (get-in user/system [:apps :search])})
+
+    (query-service/find-concepts-by-parameters context :tag {:result-format :json}))
+
+  )
+
 

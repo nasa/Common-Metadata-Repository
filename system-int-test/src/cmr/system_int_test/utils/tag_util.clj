@@ -4,15 +4,19 @@
             [clojure.test :refer [is]]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
+            [cmr.transmit.echo.tokens :as tokens]
             [cmr.common.mime-types :as mt]))
 
 (defn make-tag
-  "Makes a valid unique tag"
-  [n]
-  {:namespace "org.nasa.something"
-   :category "QA"
-   :value (str "value" n)
-   :description "A very good tag"})
+  "Makes a valid tag"
+  ([]
+   (make-tag nil))
+  ([attributes]
+   (merge {:namespace "org.nasa.something"
+           :category "QA"
+           :value "value"
+           :description "A very good tag"}
+          attributes)))
 
 (defn- process-response
   [{:keys [status body]}]
@@ -32,7 +36,7 @@
 (defn get-tag
   "Retrieves a tag by concept id"
   [concept-id]
-  (tt/get-tag (s/context) concept-id {:is-raw? true}))
+  (process-response (tt/get-tag (s/context) concept-id {:is-raw? true})))
 
 (defn update-tag
   "Updates a tag."
@@ -41,6 +45,22 @@
   ([token concept-id tag options]
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/update-tag (s/context) concept-id tag options)))))
+
+(defn save-tag
+  "A helper function for creating or updating tags for search tests. If the tag does not have a
+  :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
+  along with :concept-id, :revision-id, :errors, and :status"
+  [token tag]
+  (let [tag-to-save (select-keys tag [:namespace :category :value :description])
+        response (if-let [concept-id (:concept-id tag)]
+                   (update-tag token concept-id tag-to-save)
+                   (create-tag token tag-to-save))
+        tag (into tag (select-keys response [:status :errors :concept-id :revision-id]))]
+
+    (if (= (:revision-id tag) 1)
+      ;; Get the originator id for the tag
+      (assoc tag :originator-id (tokens/get-user-id (s/context) token))
+      tag)))
 
 (defn delete-tag
   "Deletes a tag"
@@ -65,6 +85,11 @@
   ([token concept-id condition options]
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/disassociate-tag (s/context) concept-id {:condition condition} options)))))
+
+(defn search
+  "Searches for tags using the given parameters"
+  [params]
+  (process-response (tt/search-for-tags (s/context) params {:is-raw? true})))
 
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator

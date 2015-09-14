@@ -7,12 +7,12 @@
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."
   (fn [context query elastic-result]
-    (:result-format query)))
+    [(:concept-type query) (:result-format query)]))
 
 (defmulti elastic-results->query-results
   "Converts elastic search results to query results"
   (fn [context query elastic-results]
-    (:result-format query)))
+    [(:concept-type query) (:result-format query)]))
 
 (defmethod elastic-results->query-results :default
   [context query elastic-results]

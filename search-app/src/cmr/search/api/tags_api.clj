@@ -95,12 +95,20 @@
 
   (tag-api-response (tagging-service/disassociate-tag context concept-id body)))
 
+(defn search-for-tags
+  [context params]
+  (tag-api-response (tagging-service/search-for-tags context params)))
+
 (def tag-api-routes
   (context "/tags" []
 
     ;; Create a new tag
     (POST "/" {:keys [request-context headers body]}
       (create-tag request-context headers (slurp body)))
+
+    ;; Search for tags
+    (GET "/" {:keys [request-context params]}
+      (search-for-tags request-context params))
 
     (context "/:tag-id" [tag-id]
 
