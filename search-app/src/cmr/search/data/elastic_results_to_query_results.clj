@@ -18,6 +18,7 @@
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
-        items (map (partial elastic-result->query-result-item context query) elastic-matches)]
+        items (mapv (partial elastic-result->query-result-item context query) elastic-matches)]
     (results/map->Results {:hits hits :items items :result-format (:result-format query)})))
+
 

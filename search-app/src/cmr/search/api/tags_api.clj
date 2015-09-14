@@ -44,10 +44,12 @@
 
 (defn- tag-api-response
   "Creates a successful tag response with the given data response"
-  [data]
-  {:status 200
-   :body (json/generate-string data)
-   :headers {"Content-Type" mt/json}})
+  ([data]
+   (tag-api-response data true))
+  ([data encode?]
+   {:status 200
+    :body (if encode? (json/generate-string data) data)
+    :headers {"Content-Type" mt/json}}))
 
 (defn create-tag
   "Processes a create tag request."
@@ -97,7 +99,7 @@
 
 (defn search-for-tags
   [context params]
-  (tag-api-response (tagging-service/search-for-tags context params)))
+  (tag-api-response (tagging-service/search-for-tags context params) false))
 
 (def tag-api-routes
   (context "/tags" []

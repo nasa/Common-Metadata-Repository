@@ -218,7 +218,8 @@
   [context params]
   ;; TODO API should convert result format from mime type
 
-  (query-service/find-concepts-by-parameters context :tag params))
+  ;; Temporary association
+  (:results (query-service/find-concepts-by-parameters context :tag (assoc params :result-format :json))))
 
 
 (comment
