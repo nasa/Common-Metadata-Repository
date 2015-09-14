@@ -6,7 +6,6 @@
 
             ;; XML -> UMM
             [cmr.umm-spec.simple-xpath :as xpath]
-            [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
             [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
@@ -14,7 +13,6 @@
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
 
             ;; UMM -> XML
-            [cmr.umm-spec.umm-to-xml-mappings.xml-generator :as xg]
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as umm-to-iso19115-2]
             [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
