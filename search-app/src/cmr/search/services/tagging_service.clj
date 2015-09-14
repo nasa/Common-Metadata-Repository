@@ -108,7 +108,7 @@
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
 
-      ;; The tag exists. Check if it's latest revision is a tombstone
+      ;; The tag exists. Check if its latest revision is a tombstone
       (let [concept (mdb/get-latest-concept context concept-id false)]
         (if (:deleted concept)
           ;; The tag exists but was previously deleted.
