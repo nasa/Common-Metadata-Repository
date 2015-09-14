@@ -4,6 +4,7 @@
   can be lossy if some fields are not supported by that format"
   (:require [cmr.common.util :refer [update-in-each]]
             [cmr.umm-spec.models.collection :as umm-c]
+                        [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
             [cmr.common.util :as util]
@@ -11,70 +12,58 @@
 
 (def example-record
   "An example record with fields supported by most formats."
-  (umm-c/map->UMM-C
-    {:Platforms [(cmn/map->PlatformType
-                   {:ShortName "Platform 1"
-                    :LongName "Example Platform Long Name 1"
-                    :Type "Aircraft"
-                    :Characteristics [(cmn/map->CharacteristicType
-                                        {:Name "OrbitalPeriod"
-                                         :Description "Orbital period in decimal minutes."
-                                         :DataType "float"
-                                         :Unit "Minutes"
-                                         :Value "96.7"})]
-                    :Instruments [(cmn/map->InstrumentType
-                                    {:ShortName "An Instrument"
-                                     :LongName "The Full Name of An Instrument v123.4"
-                                     :Technique "Two cans and a string"
-                                     :NumberOfSensors 1
-                                     :OperationalModes ["on" "off"]
-                                     :Characteristics [(cmn/map->CharacteristicType
-                                                         {:Name "Signal to Noise Ratio"
-                                                          :Description "Is that necessary?"
-                                                          :DataType "float"
-                                                          :Unit "dB"
-                                                          :Value "10"})]
-                                     :Sensors [(cmn/map->SensorType
-                                                 {:ShortName "ABC"
-                                                  :LongName "Long Range Sensor"
-                                                  :Characteristics [(cmn/map->CharacteristicType
-                                                                      {:Name "Signal to Noise Ratio"
-                                                                       :Description "Is that necessary?"
-                                                                       :DataType "float"
-                                                                       :Unit "dB"
-                                                                       :Value "10"})]
-                                                  :Technique "Drunken Fist"})]})]})]
-     :TemporalExtents [(cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :RangeDateTimes (mapv cmn/map->RangeDateTimeType
-                                                [{:BeginningDateTime (t/date-time 2000)
-                                                  :EndingDateTime (t/date-time 2001)}
-                                                 {:BeginningDateTime (t/date-time 2002)
-                                                  :EndingDateTime (t/date-time 2003)}])})]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"
-                                                       :ProcessingLevelDescription "Processing level description"})
-     :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :Organizations [(cmn/map->ResponsibilityType
-                       {:Role "CUSTODIAN"
-                        :Party (cmn/map->PartyType
-                                 {:OrganizationName (cmn/map->OrganizationNameType
-                                                      {:ShortName "custodian"})})})]
-     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-     :AccessConstraints (cmn/map->AccessConstraintsType
-                          {:Description "Access constraints"
-                           :Value "0"})
-     :UseConstraints "Use constraints"
-     :EntryId "short_V1"
-     :EntryTitle "The entry title V5"
-     :Version "V5"
-     :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
-                                     :Type "CREATE"})]
-     :Abstract "A very abstract collection"
-     :DataLanguage "English"
-     :Quality "Pretty good quality"}))
+  (js/coerce
+   {:Platforms [{:ShortName "Platform 1"
+                 :LongName "Example Platform Long Name 1"
+                 :Type "Aircraft"
+                 :Characteristics [{:Name "OrbitalPeriod"
+                                    :Description "Orbital period in decimal minutes."
+                                    :DataType "float"
+                                    :Unit "Minutes"
+                                    :Value "96.7"}]
+                 :Instruments [{:ShortName "An Instrument"
+                                :LongName "The Full Name of An Instrument v123.4"
+                                :Technique "Two cans and a string"
+                                :NumberOfSensors 1
+                                :OperationalModes ["on" "off"]
+                                :Characteristics [{:Name "Signal to Noise Ratio"
+                                                   :Description "Is that necessary?"
+                                                   :DataType "float"
+                                                   :Unit "dB"
+                                                   :Value "10"}]
+                                :Sensors [{:ShortName "ABC"
+                                           :LongName "Long Range Sensor"
+                                           :Characteristics [{:Name "Signal to Noise Ratio"
+                                                              :Description "Is that necessary?"
+                                                              :DataType "float"
+                                                              :Unit "dB"
+                                                              :Value "10"}]
+                                           :Technique "Drunken Fist"}]}]}]
+    :TemporalExtents [{:TemporalRangeType "temp range"
+                       :PrecisionOfSeconds 3
+                       :EndsAtPresentFlag false
+                       :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                         :EndingDateTime (t/date-time 2001)}
+                                        {:BeginningDateTime (t/date-time 2002)
+                                         :EndingDateTime (t/date-time 2003)}]}]
+    :ProcessingLevel {:Id "3"
+                      :ProcessingLevelDescription "Processing level description"}
+    :RelatedUrls [{:URLs ["http://google.com"]}]
+    :Organizations [{:Role "CUSTODIAN"
+                     :Party {:OrganizationName {:ShortName "custodian"}}}]
+    :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
+    :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
+    :AccessConstraints {:Description "Access constraints"
+                        :Value "0"}
+    :UseConstraints "Use constraints"
+    :EntryId "short_V1"
+    :EntryTitle "The entry title V5"
+    :Version "V5"
+    :DataDates [{:Date (t/date-time 2012)
+                 :Type "CREATE"}]
+    :Abstract "A very abstract collection"
+    :DataLanguage "English"
+    :Quality "Pretty good quality"}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
