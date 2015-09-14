@@ -82,11 +82,18 @@
   (tag-api-response (tagging-service/delete-tag context concept-id)))
 
 (defn associate-tag
-  "Processes a request to update a tag."
+  "Processes a request to associate a tag."
   [context headers body concept-id]
   (validate-tag-content-type headers)
 
   (tag-api-response (tagging-service/associate-tag context concept-id body)))
+
+(defn disassociate-tag
+  "Processes a request to disassociate a tag."
+  [context headers body concept-id]
+  (validate-tag-content-type headers)
+
+  (tag-api-response (tagging-service/disassociate-tag context concept-id body)))
 
 (def tag-api-routes
   (context "/tags" []
@@ -112,6 +119,10 @@
       (context "/associations" []
         ;; Associate a tag with collections
         (POST "/" {:keys [request-context headers body]}
-          (associate-tag request-context headers (slurp body) tag-id))))))
+          (associate-tag request-context headers (slurp body) tag-id))
+
+        ;; Disassociate a tag with collections
+        (DELETE "/" {:keys [request-context headers body]}
+          (disassociate-tag request-context headers (slurp body) tag-id))))))
 
 

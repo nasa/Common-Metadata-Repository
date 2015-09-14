@@ -58,6 +58,14 @@
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/associate-tag (s/context) concept-id {:condition condition} options)))))
 
+(defn disassociate
+  "Disassociates a tag with collections found with a JSON query"
+  ([token concept-id condition]
+   (disassociate token concept-id condition nil))
+  ([token concept-id condition options]
+   (let [options (merge {:is-raw? true :token token} options)]
+     (process-response (tt/disassociate-tag (s/context) concept-id {:condition condition} options)))))
+
 (defn assert-tag-saved
   "Checks that a tag was persisted correctly in metadata db. The tag should already have originator
   id set correctly. The user-id indicates which user updated this revision."

@@ -177,9 +177,11 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-(defn associate-tag
-  "Associates a tag with collections that are the result of a JSON query"
-  [context concept-id json-query]
+(defn- update-tag-associations
+  "Modifies a tags associations. Finds collections using the query and then passes the existing
+  associated collection ids and the ones found from the query to the function. Sets the collection
+  ids as the result of the function."
+  [context concept-id json-query update-fn]
   (let [query (-> (jp/parse-json-query :collection {} json-query)
                   (assoc :page-size :unlimited
                          :result-format :query-specified
@@ -192,7 +194,7 @@
         existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))
         updated-tag (update-in existing-tag [:associated-collection-ids]
-                               #(set/union % concept-id-set))]
+                               #(update-fn % concept-id-set))]
     (mdb/save-concept
       context
       (-> existing-concept
@@ -200,3 +202,14 @@
                  :user-id (context->user-id context))
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
+
+(defn associate-tag
+  "Associates a tag with collections that are the result of a JSON query"
+  [context concept-id json-query]
+  (update-tag-associations context concept-id json-query set/union))
+
+(defn disassociate-tag
+  "Disassociates a tag with collections that are the result of a JSON query"
+  [context concept-id json-query]
+  (update-tag-associations context concept-id json-query set/difference))
+

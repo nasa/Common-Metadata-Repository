@@ -1972,6 +1972,24 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":3}
 ```
 
+#### Disassociating Collections with a Tag
+
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":4}
+```
+
 
 ### Administrative Tasks
 
