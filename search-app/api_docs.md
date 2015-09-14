@@ -1992,7 +1992,7 @@ Content-Length: 48
 
 #### Searching for Tags
 
-All tags can be retrieved by sending a GET request to `/tags/`. A single tag can retreived using the concept-id returned when it was created by sending a GET request to `/tags/<concept-id>`. The only supported response format is JSON.
+All tags can be retrieved by sending a GET request to `/tags/`. A single tag can be retreived using the concept-id returned when it was created by sending a GET request to `/tags/<concept-id>`. The only supported response format is JSON.
 
 ```
 curl -i %CMR-ENDPOINT%/tags
