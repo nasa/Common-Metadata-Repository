@@ -350,6 +350,54 @@
         (finally (dev-sys-util/eval-in-dev-sys
                    `(cmr.virtual-product.config/set-virtual-products-enabled! true)))))))
 
+
+(defn- get-virtual-entries-by-source
+  "Build virtual entries by source granule umm"
+  [src-umm]
+  (let [src-granule-ur (:granule-ur src-umm)
+        provider-id (:provider-id src-umm)
+        entry-title (get-in src-umm [:collection-ref :entry-title])]
+    (flatten
+      (for [virt-coll (:virtual-collections (get vp-config/source-to-virtual-product-config
+                                                 [provider-id entry-title]))
+            :let [virt-entry-title (:entry-title virt-coll)
+                  granule-refs (:refs (search/find-refs
+                                        :granule
+                                        {"attribute[]" (str "string,source-granule-ur," src-granule-ur)
+                                         :entry-title virt-entry-title
+                                         :page-size 1}))]]
+        (for [gran-ref granule-refs
+              :let [{virt-granule-id :id virt-granule-ur :name} gran-ref]]
+          {:entry-title virt-entry-title
+           :concept-id virt-granule-id
+           :granule-ur virt-granule-ur})))))
+
+(deftest all-virtual-granules-translate-entries-test
+   (let [source-collections (vp/ingest-source-collections)
+        ;; Ingest the virtual collections. For each virtual collection associate it with the source
+        ;; collection to use later.
+        vp-colls (reduce (fn [new-colls source-coll]
+                           (into new-colls (map #(assoc % :source-collection source-coll)
+                                                (vp/ingest-virtual-collections [source-coll]))))
+                         []
+                         source-collections)
+        src-grans (doall (for [source-coll source-collections
+                                     :let [{:keys [provider-id entry-title]} source-coll]
+                                     granule-ur (vp-config/sample-source-granule-urs
+                                                  [provider-id entry-title])]
+                                 (vp/ingest-source-granule provider-id
+                                                          (dg/granule source-coll {:granule-ur granule-ur}))))
+        _ (index/wait-until-indexed)
+        virt-gran-entries-by-src (into {} (map #(vector % (get-virtual-entries-by-source %)) src-grans))
+        all-virt-entries (mapcat second virt-gran-entries-by-src)
+        expected-src-entries (mapcat
+                               #(repeat (count (second %)) (granule->entry (first %)))
+                               virt-gran-entries-by-src)]
+
+        (let [response (vp/translate-granule-entries
+                                  (json/generate-string all-virt-entries))]
+                   (= expected-src-entries (json/parse-string (:body response) true)))))
+
 (deftest virtual-product-provider-alias-test
   (vp/with-provider-aliases
     {"LPDAAC_ECS"  #{"LP_ALIAS"}}

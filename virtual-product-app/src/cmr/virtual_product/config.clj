@@ -203,11 +203,7 @@
   (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
     [provider-id source-short-name]))
 
-(defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id source-short-name virtual-short-name virtual-granule-ur]
-  (str/replace virtual-granule-ur virtual-short-name source-short-name))
-
-(defmethod compute-source-granule-ur ["GSFCS4PA" "OMUVBd"]
+(defmethod compute-source-granule-ur :default
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
 
