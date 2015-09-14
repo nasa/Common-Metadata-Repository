@@ -36,7 +36,7 @@
 (deftest force-delete-granule-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)
-          gran (util/create-and-save-granule provider-id (:concept-id coll) 1)
+          gran (util/create-and-save-granule provider-id coll 1)
           concept-id (:concept-id gran)
           _ (dorun (repeatedly 3 #(util/save-concept (dissoc gran :revision-id))))
           {:keys [status revision-id]} (util/force-delete-concept concept-id 2)]

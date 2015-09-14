@@ -215,19 +215,10 @@
   (update-tag-associations context concept-id json-query set/difference))
 
 (defn search-for-tags
+  "Searches for tags with the given result formats. Returns the results as a string."
   [context params]
-  ;; TODO API should convert result format from mime type
+  (:results (query-service/find-concepts-by-parameters
+              context :tag (assoc params :result-format :json))))
 
-  ;; Temporary association
-  (:results (query-service/find-concepts-by-parameters context :tag (assoc params :result-format :json))))
-
-
-(comment
-  (do
-    (def context {:system (get-in user/system [:apps :search])})
-
-    (query-service/find-concepts-by-parameters context :tag {:result-format :json}))
-
-  )
 
 

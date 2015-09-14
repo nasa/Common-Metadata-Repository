@@ -1990,6 +1990,14 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":4}
 ```
 
+#### Searching for Tags
+
+TODO document this
+
+* parameters that are supported
+* response formats
+* example search response
+
 
 ### Administrative Tasks
 

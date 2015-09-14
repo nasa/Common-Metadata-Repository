@@ -10,7 +10,6 @@
   [concept-type query]
   ["concept-id" "namespace" "category" "value" "description" "originator-id.lowercase"])
 
-
 (defmethod elastic-results/elastic-result->query-result-item [:tag :json]
   [context query elastic-result]
   (let [{{[tag-namespace] :namespace

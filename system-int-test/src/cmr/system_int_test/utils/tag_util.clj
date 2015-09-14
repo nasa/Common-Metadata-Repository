@@ -124,3 +124,34 @@
             :revision-id revision-id}
            (dissoc concept :revision-date)))))
 
+(defn sort-expected-tags
+  "Sorts the tags using the expected default sort key."
+  [tags]
+  (sort-by identity
+           (fn [t1 t2]
+             (let [tns (:namespace t1)
+                   tns2 (:namespace t2)
+                   v1 (:value t1)
+                   v2 (:value t2)]
+               (cond
+                 (not= tns tns2) (compare tns tns2)
+                 :else (compare v1 v2))))
+           tags))
+
+(def tag-keys-in-expected-response
+  [:concept-id :revision-id :namespace :value :description :category :originator-id])
+
+(defn assert-tag-search
+  "Verifies the tag search results"
+  ([tags response]
+   (assert-tag-search nil tags response))
+  ([expected-hits tags response]
+   (let [expected-items (->> tags
+                             sort-expected-tags
+                             (map #(select-keys % tag-keys-in-expected-response)))
+         expected-response {:status 200
+                            :hits (or expected-hits (:hits response))
+                            :items expected-items}]
+     (is (:took response))
+     (is (= expected-response (dissoc response :took))))))
+

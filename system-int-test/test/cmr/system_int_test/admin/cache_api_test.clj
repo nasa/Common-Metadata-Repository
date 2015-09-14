@@ -224,5 +224,6 @@
            (let [response (get-cache-value url cache cache-key admin-read-token)]
              (is (= (set value) (set response))))
            (url/indexer-read-caches-url) "general" "concept-mapping-types" {:collection "collection"
-                                                                            :granule "granule"}))))
+                                                                            :granule "granule"
+                                                                            :tag "tag"}))))
 

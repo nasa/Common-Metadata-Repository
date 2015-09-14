@@ -74,12 +74,12 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  {:namespace "org.nasa.something"
-   :category "category1"
-   :value "quality"
-   :description "A very good tag"
-   :originator-id "jnorton"
-   :associated-concept-ids #{}})
+  (pr-str {:namespace "org.nasa.something"
+           :category "category1"
+           :value "quality"
+           :description "A very good tag"
+           :originator-id "jnorton"
+           :associated-concept-ids #{}}))
 
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
@@ -124,11 +124,11 @@
 
 (defn granule-concept
   "Creates a granule concept"
-  ([provider-id parent-collection-id parent-entry-title uniq-num]
-   (granule-concept provider-id parent-collection-id parent-entry-title uniq-num {}))
-  ([provider-id parent-collection-id parent-entry-title uniq-num attributes]
-   (let [extra-fields (merge {:parent-collection-id parent-collection-id
-                              :parent-entry-title parent-entry-title
+  ([provider-id parent-collection uniq-num]
+   (granule-concept provider-id parent-collection uniq-num {}))
+  ([provider-id parent-collection uniq-num attributes]
+   (let [extra-fields (merge {:parent-collection-id (:concept-id parent-collection)
+                              :parent-entry-title (get-in parent-collection [:extra-fields :entry-title])
                               :delete-time nil
                               :granule-ur (str "granule-ur " uniq-num)}
                              (:extra-fields attributes))
@@ -368,14 +368,13 @@
 
 (defn create-and-save-granule
   "Creates, saves, and returns a granule concept with its data from metadata-db"
-  ([provider-id parent-collection-id parent-entry-title uniq-num]
-   (create-and-save-granule provider-id parent-collection-id parent-entry-title uniq-num 1))
-  ([provider-id parent-collection-id parent-entry-title uniq-num num-revisions]
+  ([provider-id parent-collection uniq-num]
+   (create-and-save-granule provider-id parent-collection uniq-num 1))
+  ([provider-id parent-collection uniq-num num-revisions]
    (create-and-save-granule
-     provider-id parent-collection-id parent-entry-title uniq-num num-revisions {}))
-  ([provider-id parent-collection-id parent-entry-title uniq-num num-revisions attributes]
-   (let [concept (granule-concept
-                   provider-id parent-collection-id parent-entry-title uniq-num attributes)
+     provider-id parent-collection uniq-num num-revisions {}))
+  ([provider-id parent-collection uniq-num num-revisions attributes]
+   (let [concept (granule-concept provider-id parent-collection uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
@@ -503,7 +502,7 @@
     (try
       ;; We set this to false during a test so that messages won't be published when this is run
       ;; in dev system and cause exceptions in the indexer.
-      (mdb-config/set-publish-collection-revision-deletes! false)
+      (mdb-config/set-publish-messages! false)
       (reset-database)
       (doseq [provider providers]
         (let [{:keys [provider-id short-name cmr-only small]} provider
@@ -514,5 +513,5 @@
                           :small (if small true false)})))
       (f)
       (finally
-        (mdb-config/set-publish-collection-revision-deletes! true)))))
+        (mdb-config/set-publish-messages! true)))))
 

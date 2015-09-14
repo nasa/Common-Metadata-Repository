@@ -8,9 +8,10 @@
 (defn publish-event
   "Put an ingest event on the message queue."
   [context exchange-name msg]
-  (let [timeout-ms (config/publish-timeout-ms)
-        queue-broker (get-in context [:system :queue-broker])]
-    (queue/publish-message queue-broker exchange-name msg timeout-ms)))
+  (when (config/publish-messages)
+    (let [timeout-ms (config/publish-timeout-ms)
+          queue-broker (get-in context [:system :queue-broker])]
+      (queue/publish-message queue-broker exchange-name msg timeout-ms))))
 
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."
@@ -41,7 +42,7 @@
 (defn publish-collection-revision-delete-msg
   "Publishes a message indicating a collection revision was removed."
   [context concept-id revision-id]
-  (when (config/publish-collection-revision-deletes)
+  (when (config/publish-messages)
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])
           exchange-name (config/deleted-collection-revision-exchange-name)

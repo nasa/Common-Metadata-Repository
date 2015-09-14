@@ -6,7 +6,6 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
-            [cmr.system-int-test.utils.index-util :as index]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]))
@@ -26,7 +25,6 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 201 status))
       (is (= revision-id 1))
       (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
@@ -35,7 +33,6 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1 {:revision-date (t/date-time 2001 1 1 12 12 14)})
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 201 status))
       (is (= revision-id 1))
       (let [retrieved-concept (util/get-concept-by-id-and-revision concept-id revision-id)]
@@ -45,7 +42,6 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1 {:revision-date "foo"})
           {:keys [status errors]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 422 status))
       (is (= ["[foo] is not a valid datetime"] errors)))))
 
@@ -54,7 +50,6 @@
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1 1 {:native-id "foo"})
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2 1 {:native-id "foo"})
           [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])]
-      (index/wait-until-indexed)
       (is (util/verify-concept-was-saved coll1))
       (is (util/verify-concept-was-saved coll2))
       (is (not= coll1-concept-id coll2-concept-id)))))
@@ -63,7 +58,6 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1 {:extra-fields {:version-id nil}})
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 201 status))
       (is (= revision-id 1))
       (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
@@ -81,7 +75,6 @@
               {:keys [status revision-id]} (util/save-concept updated-concept)
               revision-date-1 (get-in (util/get-concept-by-id-and-revision concept-id revision-id)
                                       [:concept :revision-date])]
-          (index/wait-until-indexed)
           (is (= 201 status))
           (is (= revision-id new-revision-id))
           (is (t/after? revision-date-1 revision-date-0))
@@ -94,7 +87,6 @@
           concept-with-skipped-revisions (assoc concept :concept-id concept-id :revision-id 100)
           {:keys [status revision-id]} (util/save-concept concept-with-skipped-revisions)
           {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
-      (index/wait-until-indexed)
       (is (= 201 status))
       (is (= 100 revision-id (:revision-id retrieved-concept))))))
 
@@ -106,7 +98,6 @@
           _ (util/save-concept (assoc concept-with-concept-id :revision-id 100))
           {:keys [status revision-id]} (util/save-concept concept-with-concept-id)
           {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
-      (index/wait-until-indexed)
       (is (= 201 status))
       (is (= 101 revision-id (:revision-id retrieved-concept))))))
 
@@ -116,7 +107,6 @@
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 0)
           {:keys [status revision-id]} (util/save-concept concept-with-bad-revision)]
-      (index/wait-until-indexed)
       (is (= 409 status))
       (is (nil? revision-id)))))
 
@@ -124,7 +114,6 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept-with-bad-revision (util/collection-concept provider-id 1 {:revision-id 0})
           {:keys [status]} (util/save-concept concept-with-bad-revision)]
-      (index/wait-until-indexed)
       (is (= 409 status)))))
 
 (deftest save-concept-with-missing-required-parameter
@@ -142,9 +131,7 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 201 (:status (util/delete-concept concept-id))))
-      (index/wait-until-indexed)
       (let [{:keys [status revision-id]} (util/save-concept concept)]
         (is (= 201 status))
         (is (= revision-id 3))))))
@@ -153,9 +140,7 @@
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
     (let [concept (util/collection-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)]
-      (index/wait-until-indexed)
       (is (= 201 (:status (util/delete-concept concept-id))))
-      (index/wait-until-indexed)
       (let [{:keys [status revision-id]} (util/save-concept (assoc concept :revision-id 0))]
         (is (= 409 status))))))
 

@@ -51,8 +51,8 @@
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
-(defconfig publish-collection-revision-deletes
-  "This indicates whether or not collection revision deletes will be published to the exchange"
+(defconfig publish-messages
+  "This indicates whether or not messages be published to the exchange"
   {:default true :type Boolean})
 
 (defn rabbit-mq-config
