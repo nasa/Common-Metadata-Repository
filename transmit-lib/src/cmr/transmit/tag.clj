@@ -17,6 +17,10 @@
   [conn tag-id]
   (str (tags-url conn) "/" tag-id))
 
+(defn- tag-associations-url
+  [conn tag-id]
+  (str (tag-url conn tag-id) "/associations"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
@@ -37,6 +41,28 @@
                  :method :post
                  :raw? is-raw?
                  :http-options (merge {:body (json/generate-string tag)
+                                       :content-type :json
+                                       :headers headers
+                                       :accept :json}
+                                      http-options)}))))
+
+(defn associate-tag
+  "Sends a request to associate the tag with collections found with a JSON query. Valid options are
+  * :is-raw? - set to true to indicate the raw response should be returned. See
+  cmr.transmit.http-helper for more info. Default false.
+  * token - the user token to use when creating the token. If not set the token in the context will
+  be used.
+  * http-options - Other http-options to be sent to clj-http."
+  ([context concept-id query]
+   (associate-tag context concept-id query {}))
+  ([context concept-id query {:keys [is-raw? token http-options]}]
+   (let [token (or token (:token context))
+         headers (when token {config/token-header token})]
+     (h/request context :search
+                {:url-fn #(tag-associations-url % concept-id)
+                 :method :post
+                 :raw? is-raw?
+                 :http-options (merge {:body (json/generate-string query)
                                        :content-type :json
                                        :headers headers
                                        :accept :json}

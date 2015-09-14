@@ -61,7 +61,11 @@
 (defn get-tag
   "Retrieves the tag with the given concept-id."
   [context concept-id]
-  (tag-api-response (tagging-service/get-tag context concept-id)))
+  (-> (tagging-service/get-tag context concept-id)
+      ;; We don't return the associated collection ids on the fetch response.
+      ;; This could be changed if we wanted to. It's just not part of the requirements.
+      (dissoc :associated-collection-ids)
+      tag-api-response))
 
 (defn update-tag
   "Processes a request to update a tag."
@@ -76,6 +80,13 @@
   "Deletes the tag with the given concept-id."
   [context concept-id]
   (tag-api-response (tagging-service/delete-tag context concept-id)))
+
+(defn associate-tag
+  "Processes a request to update a tag."
+  [context headers body concept-id]
+  (validate-tag-content-type headers)
+
+  (tag-api-response (tagging-service/associate-tag context concept-id body)))
 
 (def tag-api-routes
   (context "/tags" []
@@ -96,6 +107,11 @@
 
       ;; Update a tag
       (PUT "/" {:keys [request-context headers body]}
-        (update-tag request-context headers (slurp body) tag-id)))))
+        (update-tag request-context headers (slurp body) tag-id))
+
+      (context "/associations" []
+        ;; Associate a tag with collections
+        (POST "/" {:keys [request-context headers body]}
+          (associate-tag request-context headers (slurp body) tag-id))))))
 
 

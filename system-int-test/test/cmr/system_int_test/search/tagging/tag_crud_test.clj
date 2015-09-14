@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.tagging.tag-test
+(ns cmr.system-int-test.search.tagging.tag-crud-test
   "This tests the CMR Search API's tagging capabilities"
   (:require [clojure.test :refer :all]
             [clojure.string :as str]

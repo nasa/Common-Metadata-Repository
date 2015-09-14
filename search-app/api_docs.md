@@ -1954,6 +1954,24 @@ Content-Length: 48
 {"concept-id":"T1200000000-CMR","revision-id":3}
 ```
 
+#### Associating Collections with a Tag
+
+Tags can be associated with collections by POSTing a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":3}
+```
+
 
 ### Administrative Tasks
 

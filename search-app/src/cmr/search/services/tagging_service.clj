@@ -7,8 +7,11 @@
             [cmr.common.validations.core :as v]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging-service-messages :as msg]
+            [cmr.search.services.json-parameters.conversion :as jp]
+            [cmr.search.services.query-execution :as qe]
             [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.set :as set]))
 
 (def ^:private native-id-separator-character
   "This is the separate character used when creating the native id for a tag. It is the ASCII
@@ -98,7 +101,10 @@
   the saved tag."
   [context tag]
   (validate-create-tag tag)
-  (let [user-id (context->user-id context)]
+  (let [user-id (context->user-id context)
+        tag (assoc tag
+                   :originator-id user-id
+                   :associated-collection-ids #{})]
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
 
@@ -109,7 +115,7 @@
           (mdb/save-concept
             context
             (-> concept
-                (assoc :metadata (pr-str (assoc tag :originator-id user-id))
+                (assoc :metadata (pr-str tag)
                        :deleted false
                        :user-id user-id)
                 (dissoc :revision-date)
@@ -119,7 +125,7 @@
           (errors/throw-service-error :conflict (msg/tag-already-exists tag concept-id))))
 
       ;; The tag doesn't exist
-      (mdb/save-concept context (tag->new-concept (assoc tag :originator-id user-id))))))
+      (mdb/save-concept context (tag->new-concept tag)))))
 
 (defn- fetch-tag-concept
   "Fetches the latest version of a tag concept by concept id"
@@ -141,17 +147,21 @@
 
 (defn update-tag
   "Updates an existing tag with the given concept id"
-  [context concept-id tag]
+  [context concept-id updated-tag]
   (let [existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))]
-    (validate-update-tag existing-tag tag)
-    (mdb/save-concept
-      context
-      (-> existing-concept
-          (assoc :metadata (pr-str (assoc tag :originator-id (:originator-id existing-tag)))
-                 :user-id (context->user-id context))
-          (dissoc :revision-date)
-          (update-in [:revision-id] inc)))))
+    (validate-update-tag existing-tag updated-tag)
+    ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
+    (let [updated-tag (assoc updated-tag
+                             :originator-id (:originator-id existing-tag)
+                             :associated-collection-ids (:associated-collection-ids existing-tag))]
+      (mdb/save-concept
+        context
+        (-> existing-concept
+            (assoc :metadata (pr-str updated-tag)
+                   :user-id (context->user-id context))
+            (dissoc :revision-date)
+            (update-in [:revision-id] inc))))))
 
 (defn delete-tag
   "Deletes a tag with the given concept id"
@@ -167,4 +177,26 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-
+(defn associate-tag
+  "Associates a tag with collections that are the result of a JSON query"
+  [context concept-id json-query]
+  (let [query (-> (jp/parse-json-query :collection {} json-query)
+                  (assoc :page-size :unlimited
+                         :result-format :query-specified
+                         :fields [:concept-id]
+                         :skip-acls? false))
+        concept-id-set (->> (qe/execute-query context query)
+                            :items
+                            (map :concept-id)
+                            set)
+        existing-concept (fetch-tag-concept context concept-id)
+        existing-tag (edn/read-string (:metadata existing-concept))
+        updated-tag (update-in existing-tag [:associated-collection-ids]
+                               #(set/union % concept-id-set))]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          (assoc :metadata (pr-str updated-tag)
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
