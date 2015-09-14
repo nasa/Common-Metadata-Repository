@@ -466,7 +466,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ProjectType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "RelatedUrls": {
       "description": "This element describes any data/service related URLs that include project home pages, services, related data archives/servers, metadata extensions, direct links to online software packages, web mapping services, links to images, or other data.",
