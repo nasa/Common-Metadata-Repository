@@ -220,5 +220,13 @@
   (:results (query-service/find-concepts-by-parameters
               context :tag (assoc params :result-format :json))))
 
+(comment
+
+  (def context {:system (get-in user/system [:apps :search])})
+
+  (search-for-tags context {})
+
+  )
+
 
 

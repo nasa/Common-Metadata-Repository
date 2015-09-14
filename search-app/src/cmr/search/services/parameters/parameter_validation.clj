@@ -234,7 +234,8 @@
               :day-night
               :downloadable
               :browsable
-              :revision-date}})
+              :revision-date}
+   :tag #{}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"

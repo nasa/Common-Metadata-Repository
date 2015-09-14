@@ -16,12 +16,17 @@
 
 
 (deftest search-for-tags-validation-test
-  ;; TODO come up with some validations
-
-  ;; TODO unsupported parameters
-  ;; - sort keys
-  )
-
+  (testing "Unrecognized parameters"
+    (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}
+           (tags/search {:foo "bar"}))))
+  (testing "Unsupported parameters"
+    (is (= {:status 400
+            :errors ["The sort key [concept_id] is not a valid field for sorting tags."]}
+           (tags/search {:sort-key "concept_id"})))
+    (is (= {:status 400, :errors ["Parameter [provider] was not recognized."]}
+           (tags/search {:provider "foo"})))
+    (is (= {:status 400, :errors ["Parameter [entry_title] was not recognized."]}
+           (tags/search {:entry_title "foo"})))))
 
 (deftest search-for-tags-test
   (let [user1-token (e/login (s/context) "user1")
@@ -47,47 +52,38 @@
         all-tags [tag1 tag2 tag3 tag4 tag5]]
     (index/wait-until-indexed)
 
-    ;; TODO test searching by:
+    ;; TODOS for later user stories
+    ;; Test searching by:
     ;; - namespace
     ;; - value
     ;; - category
     ;; - originator-id
     ;; - combinations of things
 
-    (tags/assert-tag-search 5 all-tags (tags/search {}))
+    (tags/assert-tag-search 5 all-tags (tags/search {}))))
 
+(deftest tag-paging-search-test
+  (let [token (e/login (s/context) "user1")
+        num-tags 20
+        tags (->> (range num-tags)
+                  (map #(tags/make-tag {:value (str "value" %)}))
+                  (map #(tags/save-tag token %))
+                  tags/sort-expected-tags
+                  vec)]
+    (index/wait-until-indexed)
 
+    (testing "Fetch default page size"
+      (tags/assert-tag-search num-tags (take 10 tags) (tags/search {})))
 
-    ;; TODO add a separate paging test with something like 20 tags
+    (testing "Fetch entire page"
+      (tags/assert-tag-search num-tags tags (tags/search {:page-size 20})))
 
+    (testing "Page through results"
+      (doseq [n (range 4)
+              :let [expected-page (subvec tags (* n 5) (* (inc n) 5))]]
+        (tags/assert-tag-search num-tags expected-page (tags/search {:page-size 5
+                                                                     :page-num (inc n)}))))
 
-    ))
-
-#_(deftest tag-paging-search-test
-    (let [token (e/login (s/context) "user1")
-          num-tags 20
-          tags (->> (range num-tags)
-                    (map #(tags/make-tag {:value (str "value" %)}))
-                    (map #(tags/save-tag token %))
-                    tags/sort-expected-tags
-                    vec)]
-
-      (testing "Fetch default page size"
-        (tags/assert-tag-search num-tags (take 10 tags) (tags/search {})))
-
-      (testing "Fetch entire page"
-        (tags/assert-tag-search num-tags tags (tags/search {:page-size 20})))
-
-      (testing "Page through results"
-        (doseq [n (range 4)
-                :let [expected-page (subvec tags (* n 5) (* (inc n) 5))]]
-          (tags/assert-tag-search num-tags expected-page (tags/search {:page-size 5
-                                                                       :page-num (inc n)}))))
-
-      (testing "After last page"
-        (tags/assert-tag-search num-tags [] (tags/search {:page-size 5 :page-num 5})))
-
-
-
-      ))
+    (testing "After last page"
+      (tags/assert-tag-search num-tags [] (tags/search {:page-size 5 :page-num 5})))))
 
