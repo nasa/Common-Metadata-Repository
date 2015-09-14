@@ -74,7 +74,7 @@
 
 (def tag-edn
   "Valid EDN for tag metadata"
-  {:tag-namespace "org.nasa.something"
+  {:namespace "org.nasa.something"
    :category "category1"
    :value "quality"
    :description "A very good tag"

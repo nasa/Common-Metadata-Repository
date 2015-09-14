@@ -19,11 +19,18 @@
 (def elastic-collection-index-num-shards (cfg/config-value-fn :elastic-collection-index-num-shards 5 #(Long. %)))
 (def elastic-granule-index-num-shards (cfg/config-value-fn :elastic-granule-index-num-shards 5 #(Long. %)))
 (def elastic-small-collections-index-num-shards (cfg/config-value-fn :elastic-small-collections-index-num-shards 20 #(Long. %)))
+;; The number of shards to use for the tags index
+(def elastic-tag-index-num-shards (cfg/config-value-fn :elastic-tag-index-num-shards 5 #(Long. %)))
 
 (def collection-setting {:index
                          {:number_of_shards (elastic-collection-index-num-shards),
                           :number_of_replicas 1,
                           :refresh_interval "1s"}})
+
+(def tag-setting {:index
+                  {:number_of_shards (elastic-tag-index-num-shards)
+                   :number_of_replicas 1,
+                   :refresh_interval "1s"}})
 
 
 
@@ -460,6 +467,25 @@
                    }
                   spatial-coverage-fields)}})
 
+(def tag-mapping
+  {:tag
+   {:dynamic "strict",
+    :_source {:enabled false},
+    :_all {:enabled false},
+    :_id  {:path "concept-id"},
+    :_ttl {:enabled true},
+    :properties {:concept-id (stored string-field-mapping)
+                 :namespace (stored string-field-mapping)
+                 :namespace.lowercase string-field-mapping
+                 :category (stored string-field-mapping)
+                 :category.lowercase string-field-mapping
+                 :value (stored string-field-mapping)
+                 :value.lowercase string-field-mapping
+                 :description (not-indexed (stored string-field-mapping))
+                 :originator-id.lowercase (stored string-field-mapping)
+                 ;; set of concept-ids stored as EDN gzipped and base64 encoded
+                 :associated-concept-ids (not-indexed (stored string-field-mapping)))}}})
+
 (defn index-set
   "Returns the index-set configuration"
   [context]
@@ -485,7 +511,11 @@
                                         {:name collection
                                          :settings granule-settings-for-individual-indexes})
                                       granule-indices))
-                           :mapping granule-mapping}}}))
+                           :mapping granule-mapping}
+                 :tag {:indexes
+                       [{:name "tags"
+                         :settings tag-setting}]
+                       :mapping tag-mapping}}}))
 
 (defn reset
   "Reset configured elastic indexes"
@@ -557,7 +587,8 @@
   ([context index-set-id]
    (let [fetched-index-set (index-set/get-index-set context index-set-id)]
      {:collection (name (first (keys (get-in fetched-index-set [:index-set :collection :mapping]))))
-      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))})))
+      :granule (name (first (keys (get-in fetched-index-set [:index-set :granule :mapping]))))
+      :tag (name (first (keys (get-in fetched-index-set [:index-set :tag :mapping]))))})))
 
 (defn get-concept-type-index-names
   "Fetch index names associated with concepts."
@@ -576,8 +607,10 @@
          indexes (get (get-concept-type-index-names context) concept-type)]
      (if (= :collection concept-type)
        (get indexes (if all-revisions-index? :all-collection-revisions :collections))
-       (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-         (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
+       (if (= :tag concept-type)
+         (get indexes :tags)
+         (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
+           (get indexes (keyword coll-concept-id) (get indexes :small_collections))))))))
 
 (defn get-granule-index-name-for-collection
   "Return the granule index name for the input collection concept id"
