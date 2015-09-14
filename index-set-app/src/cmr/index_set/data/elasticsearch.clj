@@ -6,26 +6,12 @@
             [clj-http.client :as client]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.util :as util]
             [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
             [cmr.elastic-utils.connect :as es]
-            [cmr.system-trace.core :refer [deftracefn]]
-            [clojure.data.codec.base64 :as b64]
-            [clojure.java.io :as io])
-  (:import java.util.zip.GZIPInputStream
-           java.io.ByteArrayInputStream))
-
-(defn- decode-field-compressed
-  "Convert a json encoded, gzipped, base 64 encoded field back to a Clojure object"
-  [value]
-  (-> value
-      .getBytes
-      b64/decode
-      ByteArrayInputStream.
-      GZIPInputStream.
-      slurp
-      (cheshire/decode true)))
+            [cmr.system-trace.core :refer [deftracefn]]))
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -33,13 +19,10 @@
   gzipped."
   [value]
   (try
-    (decode-field-compressed value)
+    (-> value util/gzip-base64->string (cheshire/decode true))
     (catch Exception e
       (warn (.getMessage e))
       (cheshire/decode value true))))
-
-(comment
-  (decode-field (cheshire/generate-string {:a (range 5)})))
 
 (defn create-index
   "Create elastic index"

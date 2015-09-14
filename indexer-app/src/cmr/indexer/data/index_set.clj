@@ -486,7 +486,7 @@
                  :description (not-indexed (stored string-field-mapping))
                  :originator-id.lowercase (stored string-field-mapping)
                  ;; set of concept-ids stored as EDN gzipped and base64 encoded
-                 :associated-concept-ids (not-indexed (stored string-field-mapping)))}}})
+                 :associated-concept-ids-gzip-b64 (not-indexed (stored string-field-mapping))}}})
 
 (defn index-set
   "Returns the index-set configuration"
@@ -607,12 +607,14 @@
   ([context concept-id revision-id all-revisions-index? concept]
    (let [concept-type (cs/concept-id->type concept-id)
          indexes (get (get-concept-type-index-names context) concept-type)]
-     (if (= :collection concept-type)
+     (case concept-type
+       :collection
        (get indexes (if all-revisions-index? :all-collection-revisions :collections))
-       (if (= :tag concept-type)
-         (get indexes :tags)
-         (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-           (get indexes (keyword coll-concept-id) (get indexes :small_collections))))))))
+       :tag
+       (get indexes :tags)
+       :granule
+       (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
+         (get indexes (keyword coll-concept-id) (get indexes :small_collections)))))))
 
 (defn get-granule-index-name-for-collection
   "Return the granule index name for the input collection concept id"

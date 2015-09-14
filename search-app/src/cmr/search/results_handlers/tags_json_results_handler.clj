@@ -5,8 +5,7 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:tag :json]
   [concept-type query]
-  ;; TODO
-  )
+  ["concept-id" "namespace" "category" "value" "description"])
 
 
 (defmethod elastic-results/elastic-results->query-results [:tag :json]

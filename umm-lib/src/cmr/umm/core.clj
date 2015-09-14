@@ -15,8 +15,7 @@
             [cmr.umm.iso-smap.collection :as iso-smap-c]
             [cmr.umm.iso-smap.granule :as iso-smap-g]
             [cmr.umm.collection]
-            [cmr.umm.granule]
-            [cmr.umm.tag :as t])
+            [cmr.umm.granule])
   (:import cmr.umm.collection.UmmCollection
            cmr.umm.granule.UmmGranule))
 
