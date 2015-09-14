@@ -2,8 +2,7 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [clojure.string :as str]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
-            [cmr.umm-spec.umm-to-xml-mappings.dsl :refer :all]
-            [cmr.umm-spec.simple-xpath :as xp]))
+            [cmr.umm-spec.xml.gen :refer :all]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -21,6 +20,11 @@
    :xmlns:swe "http://schemas.opengis.net/sweCommon/2.0/"
    :xmlns:gsr "http://www.isotc211.org/2005/gsr"})
 
+(def echo-attributes-info
+  [:eos:otherPropertyType
+   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+    "Echo Additional Attributes"]])
+
 (defn- date-mapping
   "Returns the date element mapping for the given name and date value in string format."
   [date-name value]
@@ -32,26 +36,12 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
-(defn- make-instrument-title
-  "Returns an ISO title string from a XPath context containing an instrument record."
-  [{[instrument] :context}]
-  (str (:ShortName instrument)
+(defn- generate-title
+  "Returns an ISO title string from an instrument/sensor record."
+  [record]
+  (str (:ShortName record)
        ">"
-       (:LongName instrument)))
-
-(comment
-  ;; The following two functions are unused, pending some answers on IDs in ISO XML platforms and
-  ;; instruments.
-
-  (defn- unique-id
-    "Returns a unique ID string for the first value in the XPath context."
-    [{[x] :context}]
-    (format "%x" (hash x)))
-
-  (defn- unique-id-ref-from
-    [xpath]
-    (fn [xpath-context]
-      (str "#" (unique-id (xp/evaluate xpath-context xpath))))))
+       (:LongName record)))
 
 (def attribute-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode")
@@ -59,14 +49,26 @@
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
 
-(defn- make-characteristics-mapping
-  "Returns a UMM->XML mapping for the Characteristics under the current XPath context, with the type
+(defn- generate-descriptive-keywords
+  "Returns the content generator instructions for the given descriptive keywords."
+  [keywords keyword-type]
+  [:gmd:MD_Keywords
+   (for [keyword keywords]
+     [:gmd:keyword [:gco:CharacterString keyword]])
+   [:gmd:type
+    [:gmd:MD_KeywordTypeCode
+     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+      :codeListValue keyword-type} keyword-type]]
+   [:gmd:thesaurusName {:gco:nilReason "unknown"}]])
+
+(defn- generate-characteristics
+  "Returns the generated characteristics content generator instructions, with the type
   argument used for the EOS_AdditionalAttributeTypeCode codeListValue attribute value and content."
-  [type]
+  [type characteristics]
   [:eos:otherProperty
    [:gco:Record
     [:eos:AdditionalAttributes
-     (for-each "Characteristics"
+     (for [characteristic characteristics]
        [:eos:AdditionalAttribute
         [:eos:reference
          [:eos:EOS_AdditionalAttributeDescription
@@ -75,209 +77,190 @@
                                                   :codeListValue type}
             type]]
           [:eos:name
-           (char-string-from "Name")]
+           (char-string (:Name characteristic))]
           [:eos:description
-           (char-string-from "Description")]
+           (char-string (:Description characteristic))]
           [:eos:dataType
            [:eos:EOS_AdditionalAttributeDataTypeCode {:codeList attribute-data-type-code-list
-                                                      :codeListValue (xpath "DataType")}
-            (xpath "DataType")]]
+                                                      :codeListValue (:DataType characteristic)}
+            (:DataType characteristic)]]
           [:eos:parameterUnitsOfMeasure
-           (char-string-from "Unit")]]]
+           (char-string (:Unit characteristic))]]]
         [:eos:value
-         (char-string-from "Value")]])]]])
+         (char-string (:Value characteristic))]])]]])
 
-(defn- generate-collection-progress
-  "Returns content generator instruction for the CollectionProgress field."
-  [xpath-context]
-  (when-let [collection-progress (-> xpath-context :context first :CollectionProgress)]
-    [:gmd:MD_ProgressCode
-     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
-      :codeListValue (str/lower-case collection-progress)}
-     collection-progress]))
+(defn- generate-sensors
+  "Returns content generator instructions for the given sensors."
+  [sensors]
+  (for [sensor sensors]
+    [:eos:sensor
+     [:eos:EOS_Sensor
+      [:eos:citation
+       [:gmd:CI_Citation
+        [:gmd:title
+         [:gco:CharacterString (generate-title sensor)]]
+        [:gmd:date {:gco:nilReason "unknown"}]]]
+      [:eos:identifier
+       [:gmd:MD_Identifier
+        [:gmd:code
+         (char-string (:ShortName sensor))]
+        [:gmd:description
+         (char-string (:LongName sensor))]]]
+      [:eos:type
+       (char-string (:Technique sensor))]
+      [:eos:description {:gco:nilReason "missing"}]
+      echo-attributes-info
+      (generate-characteristics "sensorInformation" (:Characteristics sensor))]]))
 
-(defn- generate-descriptive-keywords
-  "Returns a function for generating the content generator instruction for the descriptive keywords.
-  We create this function because we don't want to generate the parent elements when there are no
-  keywords. The field-key parameter is the key of the field in the UMM record and keyword-type is
-  the string name that identifies the descriptive keyword in ISO19115-2 xml.
-  e.g. for TemporalKeywords, the field-key is :TemporalKeywords and the keyword-type is 'temporal'."
-  [field-key keyword-type]
-  (fn [xpath-context]
-    (when-let [temporal-keywords (-> xpath-context :context first field-key seq)]
-      (vec (concat
-             [:gmd:MD_Keywords]
+(defn- generate-instruments
+  "Returns content generator instructions for the given instruments."
+  [instruments]
+  (for [instrument instruments]
+    [:gmi:instrument
+     [:eos:EOS_Instrument
+      [:gmi:citation
+       [:gmd:CI_Citation
+        [:gmd:title
+         [:gco:CharacterString (generate-title instrument)]]
+        [:gmd:date {:gco:nilReason "unknown"}]]]
+      [:gmi:identifier
+       [:gmd:MD_Identifier
+        [:gmd:code
+         (char-string (:ShortName instrument))]
+        [:gmd:description
+         (char-string (:LongName instrument))]]]
+      [:gmi:type
+       (char-string (:Technique instrument))]
+      [:gmi:description {:gco:nilReason "missing"}]
+      [:eos:otherPropertyType
+       [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+        "Echo Additional Attributes"]]
+      (generate-characteristics "instrumentInformation" (:Characteristics instrument))
+      (generate-sensors (:Sensors instrument))]]))
 
-             (for [temporal-keyword temporal-keywords]
-               [:gmd:keyword [:gco:CharacterString temporal-keyword]])
+(defn- generate-platforms
+  "Returns the content generator instructions for the given platforms."
+  [platforms]
+  (for [platform platforms]
+    [:gmi:platform
+     [:eos:EOS_Platform
+      [:gmi:identifier
+       [:gmd:MD_Identifier
+        [:gmd:code
+         (char-string (:ShortName platform))]
+        [:gmd:description
+         (char-string (:LongName platform))]]]
+      [:gmi:description (char-string (:Type platform))]
+      (generate-instruments (:Instruments platform))
 
-             [[:gmd:type
-               [:gmd:MD_KeywordTypeCode
-                {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
-                 :codeListValue keyword-type} keyword-type]]
-              [:gmd:thesaurusName {:gco:nilReason "unknown"}]])))))
+      ;; Characteristics
+      (when-let [characteristics (:Characteristics platform)]
+        [:eos:otherPropertyType
+         [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+          "Echo Additional Attributes"]]
+        (generate-characteristics "platformInformation" characteristics))]]))
 
-(def short-name-long-name-identifier
-  [:gmi:identifier
-   [:gmd:MD_Identifier
-    [:gmd:code
-     (char-string-from "ShortName")]
-    [:gmd:description
-     (char-string-from "LongName")]]])
-
-(def echo-attributes-info
-  [:eos:otherPropertyType
-   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
-    "Echo Additional Attributes"]])
-
-(def umm-c-to-iso19115-2-xml
-  [:gmi:MI_Metadata
-   iso19115-2-xml-namespaces
-   [:gmd:fileIdentifier (char-string-from "/EntryTitle")]
-   [:gmd:language (char-string "eng")]
-   [:gmd:characterSet
-    [:gmd:MD_CharacterSetCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
-                               :codeListValue "utf8"} "utf8"]]
-   [:gmd:hierarchyLevel
-    [:gmd:MD_ScopeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
-                        :codeListValue "series"} "series"]]
-   [:gmd:contact {:gco:nilReason "missing"}]
-   [:gmd:dateStamp
-    [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
-   [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
-   [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
-   [:gmd:identificationInfo
-    [:gmd:MD_DataIdentification
-     [:gmd:citation
-      [:gmd:CI_Citation
-       [:gmd:title (char-string-from "/EntryTitle")]
-       (date-mapping "revision" "2000-12-31T19:00:00-05:00")
-       (date-mapping "creation" "2000-12-31T19:00:00-05:00")
-       [:gmd:identifier
+(defn umm-c-to-iso19115-2-xml
+  "Returns the generated ISO19115-2 xml from UMM collection record c."
+  [c]
+  (xml
+    [:gmi:MI_Metadata
+     iso19115-2-xml-namespaces
+     [:gmd:fileIdentifier (char-string (:EntryTitle c))]
+     [:gmd:language (char-string "eng")]
+     [:gmd:characterSet
+      [:gmd:MD_CharacterSetCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+                                 :codeListValue "utf8"} "utf8"]]
+     [:gmd:hierarchyLevel
+      [:gmd:MD_ScopeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                          :codeListValue "series"} "series"]]
+     [:gmd:contact {:gco:nilReason "missing"}]
+     [:gmd:dateStamp
+      [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
+     [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
+     [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
+     [:gmd:identificationInfo
+      [:gmd:MD_DataIdentification
+       [:gmd:citation
+        [:gmd:CI_Citation
+         [:gmd:title (char-string (:EntryTitle c))]
+         (date-mapping "revision" "2000-12-31T19:00:00-05:00")
+         (date-mapping "creation" "2000-12-31T19:00:00-05:00")
+         [:gmd:identifier
+          [:gmd:MD_Identifier
+           [:gmd:code (char-string (:EntryId c))]
+           [:gmd:version (char-string (:Version c))]]]]]
+       [:gmd:abstract (char-string (:Abstract c))]
+       [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
+       [:gmd:status
+        (when-let [collection-progress (:CollectionProgress c)]
+          [:gmd:MD_ProgressCode
+           {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+            :codeListValue (str/lower-case collection-progress)}
+           collection-progress])]
+       (when-let [spatial-keywords (:SpatialKeywords c)]
+         [:gmd:descriptiveKeywords (generate-descriptive-keywords spatial-keywords "place")])
+       (when-let [temporal-keywords (:TemporalKeywords c)]
+         [:gmd:descriptiveKeywords (generate-descriptive-keywords temporal-keywords "temporal")])
+       [:gmd:resourceConstraints
+        [:gmd:MD_LegalConstraints
+         [:gmd:useLimitation (char-string (:UseConstraints c))]
+         [:gmd:useLimitation
+          [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
+         [:gmd:otherConstraints
+          [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+       [:gmd:language (char-string (:DataLanguage c))]
+       [:gmd:extent
+        [:gmd:EX_Extent
+         (for [temporal (:TemporalExtents c)
+               rdt (:RangeDateTimes temporal)]
+           [:gmd:temporalElement
+            [:gmd:EX_TemporalExtent
+             [:gmd:extent
+              [:gml:TimePeriod {:gml:id (gen-id)}
+               [:gml:beginPosition (:BeginningDateTime rdt)]
+               [:gml:endPosition (:EndingDateTime rdt)]]]]])
+         (for [temporal (:TemporalExtents c)
+               date (:SingleDateTimes temporal)]
+           [:gmd:temporalElement
+            [:gmd:EX_TemporalExtent
+             [:gmd:extent
+              [:gml:TimeInstant {:gml:id (gen-id)}
+               [:gml:timePosition date]]]]])]]
+       [:gmd:processingLevel
         [:gmd:MD_Identifier
-         [:gmd:code (char-string-from "/EntryId")]
-         [:gmd:version (char-string-from "/Version")]]]]]
-     [:gmd:abstract (char-string-from "/Abstract")]
-     [:gmd:purpose {:gco:nilReason "missing"} (char-string-from "/Purpose")]
-     [:gmd:status generate-collection-progress]
-     [:gmd:descriptiveKeywords (generate-descriptive-keywords :SpatialKeywords "place")]
-     [:gmd:descriptiveKeywords (generate-descriptive-keywords :TemporalKeywords "temporal")]
-     [:gmd:resourceConstraints
-      [:gmd:MD_LegalConstraints
-       [:gmd:useLimitation (char-string-from "/UseConstraints")]
-       [:gmd:useLimitation
-        [:gco:CharacterString (concat-parts "Restriction Comment:" (xpath "/AccessConstraints/Description"))]]
-       [:gmd:otherConstraints
-        [:gco:CharacterString (concat-parts "Restriction Flag:" (xpath "/AccessConstraints/Value"))]]]]
-     [:gmd:language (char-string-from "/DataLanguage")]
-     [:gmd:extent
-      [:gmd:EX_Extent
-       (for-each "/TemporalExtents/RangeDateTimes"
-         [:gmd:temporalElement
-          [:gmd:EX_TemporalExtent
-           [:gmd:extent
-            [:gml:TimePeriod {:gml:id gen-id}
-             [:gml:beginPosition (xpath "BeginningDateTime")]
-             [:gml:endPosition (xpath "EndingDateTime")]]]]])
-       (for-each "/TemporalExtents/SingleDateTimes"
-         [:gmd:temporalElement
-          [:gmd:EX_TemporalExtent
-           [:gmd:extent
-            [:gml:TimeInstant {:gml:id gen-id}
-             [:gml:timePosition (xpath ".")]]]]])]]
-     [:gmd:processingLevel
-      [:gmd:MD_Identifier
-       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
-       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
-   [:gmd:contentInfo
-    [:gmd:MD_ImageDescription
-     [:gmd:attributeDescription ""]
-     [:gmd:contentType ""]
-     [:gmd:processingLevelCode
-      [:gmd:MD_Identifier
-       [:gmd:code (char-string-from "/ProcessingLevel/Id")]
-       [:gmd:description (char-string-from "/ProcessingLevel/ProcessingLevelDescription")]]]]]
-   [:gmd:dataQualityInfo
-    [:gmd:DQ_DataQuality
-     [:gmd:scope
-      [:gmd:DQ_Scope
-       [:gmd:level
-        [:gmd:MD_ScopeCode
-         {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
-          :codeListValue "series"}
-         "series"]]]]
-     [:gmd:report
-      [:gmd:DQ_AccuracyOfATimeMeasurement
-       [:gmd:measureIdentification
+         [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
+         [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+     [:gmd:contentInfo
+      [:gmd:MD_ImageDescription
+       [:gmd:attributeDescription ""]
+       [:gmd:contentType ""]
+       [:gmd:processingLevelCode
         [:gmd:MD_Identifier
-         [:gmd:code
-          (char-string "PrecisionOfSeconds")]]]
-       [:gmd:result
-        [:gmd:DQ_QuantitativeResult
-         [:gmd:valueUnit ""]
-         [:gmd:value
-          [:gco:Record {:xsi:type "gco:Real_PropertyType"}
-           [:gco:Real (xpath "/TemporalExtents[1]/PrecisionOfSeconds")]]]]]]]]]
-   [:gmi:acquisitionInformation
-    [:gmi:MI_AcquisitionInformation
-     (for-each "/Platforms"
-       [:gmi:platform
-        [:eos:EOS_Platform ;; TODO {:id unique-id}
-         [:gmi:identifier
+         [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
+         [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+     [:gmd:dataQualityInfo
+      [:gmd:DQ_DataQuality
+       [:gmd:scope
+        [:gmd:DQ_Scope
+         [:gmd:level
+          [:gmd:MD_ScopeCode
+           {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+            :codeListValue "series"}
+           "series"]]]]
+       [:gmd:report
+        [:gmd:DQ_AccuracyOfATimeMeasurement
+         [:gmd:measureIdentification
           [:gmd:MD_Identifier
            [:gmd:code
-            (char-string-from "ShortName")]
-           [:gmd:description
-            (char-string-from "LongName")]]]
-         [:gmi:description (char-string-from "Type")]
-         (for-each "Instruments"
-           [:gmi:instrument
-            [:eos:EOS_Instrument ;; TODO {:id unique-id}
-             [:gmi:citation
-              [:gmd:CI_Citation
-               [:gmd:title
-                [:gco:CharacterString make-instrument-title]]
-               [:gmd:date {:gco:nilReason "unknown"}]]]
-             [:gmi:identifier
-              [:gmd:MD_Identifier
-               [:gmd:code
-                (char-string-from "ShortName")]
-               [:gmd:description
-                (char-string-from "LongName")]]]
-             [:gmi:type
-              (char-string-from "Technique")]
-             [:gmi:description {:gco:nilReason "missing"}]
-             ;; TODO this:
-             ;; [:gmi:mountedOn {:xlink:href (unique-id-ref-from "..")}]
-             [:eos:otherPropertyType
-              [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
-               "Echo Additional Attributes"]]
-             (make-characteristics-mapping "instrumentInformation")
-             ;; The Sensors mapping is very similar to the Instruments mapping above.
+            (char-string "PrecisionOfSeconds")]]]
+         [:gmd:result
+          [:gmd:DQ_QuantitativeResult
+           [:gmd:valueUnit ""]
+           [:gmd:value
+            [:gco:Record {:xsi:type "gco:Real_PropertyType"}
+             [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]]]
+     [:gmi:acquisitionInformation
+      [:gmi:MI_AcquisitionInformation
+       (generate-platforms (:Platforms c))]]]))
 
-             (for-each "Sensors"
-               [:eos:sensor
-                [:eos:EOS_Sensor
-                 [:eos:citation
-                  [:gmd:CI_Citation
-                   [:gmd:title
-                    [:gco:CharacterString make-instrument-title]]
-                   [:gmd:date {:gco:nilReason "unknown"}]]]
-                 [:eos:identifier
-                  [:gmd:MD_Identifier
-                   [:gmd:code
-                    (char-string-from "ShortName")]
-                   [:gmd:description
-                    (char-string-from "LongName")]]]
-                 [:eos:type
-                  (char-string-from "Technique")]
-                 [:eos:description {:gco:nilReason "missing"}]
-                 echo-attributes-info
-                 (make-characteristics-mapping "sensorInformation")]])]])
-
-         ;; Characteristics
-         (for-each "Characteristics[1]"
-           [:eos:otherPropertyType
-            [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
-             "Echo Additional Attributes"]])
-         (make-characteristics-mapping "platformInformation")]])]]])

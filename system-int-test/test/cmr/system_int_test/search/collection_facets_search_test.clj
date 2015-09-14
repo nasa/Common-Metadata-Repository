@@ -171,28 +171,28 @@
    {:field "detailed_variable",
     :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
    {:field "archive_centers",
-    :subfields ["level-0"],
-    :level-0
+    :subfields ["level_0"],
+    :level_0
     [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
       :count 2,
-      :subfields ["level-1"],
-      :level-1
+      :subfields ["level_1"],
+      :level_1
       [{:value "DOI",
         :count 2,
-        :subfields ["level-2"],
-        :level-2
+        :subfields ["level_2"],
+        :level_2
         [{:value "USGS",
           :count 2,
-          :subfields ["level-3"],
-          :level-3
+          :subfields ["level_3"],
+          :level_3
           [{:value "Added level 3 value",
             :count 2,
-            :subfields ["short-name"],
-            :short-name
+            :subfields ["short_name"],
+            :short_name
             [{:value "DOI/USGS/CMG/WHSC",
               :count 2,
-              :subfields ["long-name"],
-              :long-name
+              :subfields ["long_name"],
+              :long_name
               [{:value
                 "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
                 :count 2}]}]}]}]}]}]}
@@ -201,25 +201,25 @@
     :category
     [{:value "Earth Observation Satellites",
       :count 2,
-      :subfields ["series-entity"],
-      :series-entity
+      :subfields ["series_entity"],
+      :series_entity
       [{:value "DIADEM",
         :count 2,
-        :subfields ["short-name"],
-        :short-name
+        :subfields ["short_name"],
+        :short_name
         [{:value "diadem-1D",
           :count 2,
-          :subfields ["long-name"],
-          :long-name [{:value "Not Provided", :count 2}]}]}
+          :subfields ["long_name"],
+          :long_name [{:value "Not Provided", :count 2}]}]}
        {:value
         "DMSP (Defense Meteorological Satellite Program)",
         :count 2,
-        :subfields ["short-name"],
-        :short-name
+        :subfields ["short_name"],
+        :short_name
         [{:value "DMSP 5B/F3",
           :count 2,
-          :subfields ["long-name"],
-          :long-name
+          :subfields ["long_name"],
+          :long_name
           [{:value
             "Defense Meteorological Satellite Program-F3",
             :count 2}]}]}]}]}
@@ -240,18 +240,18 @@
           :subtype
           [{:value "Lidar/Laser Altimeters",
             :count 2,
-            :subfields ["short-name"],
-            :short-name
+            :subfields ["short_name"],
+            :short_name
             [{:value "ATM",
               :count 2,
-              :subfields ["long-name"],
-              :long-name
+              :subfields ["long_name"],
+              :long_name
               [{:value "Airborne Topographic Mapper",
                 :count 2}]}
              {:value "lVIs",
               :count 2,
-              :subfields ["long-name"],
-              :long-name
+              :subfields ["long_name"],
+              :long_name
               [{:value "Land, Vegetation, and Ice Sensor",
                 :count 2}]}]}]}]}]}]}
    {:field "science_keywords",
@@ -267,16 +267,16 @@
         :term
         [{:value "Extreme",
           :count 2,
-          :subfields ["variable-level-1"],
-          :variable-level-1
+          :subfields ["variable_level_1"],
+          :variable_level_1
           [{:value "Level2-1",
             :count 2,
-            :subfields ["variable-level-2"],
-            :variable-level-2
+            :subfields ["variable_level_2"],
+            :variable_level_2
             [{:value "Level2-2",
               :count 2,
-              :subfields ["variable-level-3"],
-              :variable-level-3
+              :subfields ["variable_level_3"],
+              :variable_level_3
               [{:value "Level2-3", :count 2}]}]}]}
          {:value "UNIVERSAL", :count 2}]}
        {:value "Cool",
@@ -285,8 +285,8 @@
         :term
         [{:value "Term4",
           :count 2,
-          :subfields ["variable-level-1"],
-          :variable-level-1
+          :subfields ["variable_level_1"],
+          :variable_level_1
           [{:value "UNIVERSAL", :count 2}]}]}]}
      {:value "Cat1",
       :count 2,
@@ -298,16 +298,16 @@
         :term
         [{:value "Term1",
           :count 2,
-          :subfields ["variable-level-1"],
-          :variable-level-1
+          :subfields ["variable_level_1"],
+          :variable_level_1
           [{:value "Level1-1",
             :count 2,
-            :subfields ["variable-level-2"],
-            :variable-level-2
+            :subfields ["variable_level_2"],
+            :variable_level_2
             [{:value "Level1-2",
               :count 2,
-              :subfields ["variable-level-3"],
-              :variable-level-3
+              :subfields ["variable_level_3"],
+              :variable_level_3
               [{:value "Level1-3", :count 2}]}]}]}]}]}
      {:value "Tornado",
       :count 2,
@@ -450,8 +450,8 @@
                                            :term
                                            [{:value "Term",
                                              :count 1,
-                                             :subfields ["variable-level-1"],
-                                             :variable-level-1 [{:value "V-L1", :count 1}]}]}]}]}]
+                                             :subfields ["variable_level_1"],
+                                             :variable_level_1 [{:value "V-L1", :count 1}]}]}]}]}]
         expected-flat-facets [{:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
@@ -748,32 +748,32 @@
                              :category
                              [{:count 1,
                                :value "Not Provided",
-                               :subfields ["series-entity"],
-                               :series-entity
+                               :subfields ["series_entity"],
+                               :series_entity
                                [{:count 1,
                                  :value "Not Provided",
-                                 :subfields ["short-name"],
-                                 :short-name
+                                 :subfields ["short_name"],
+                                 :short_name
                                  [{:count 1,
                                    :value "Platform-p0",
-                                   :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "Not Provided"}]}
+                                   :subfields ["long_name"],
+                                   :long_name [{:count 1, :value "Not Provided"}]}
                                   {:count 1,
                                    :value "Platform-p1",
-                                   :subfields ["long-name"],
-                                   :long-name [{:count 1, :value "Not Provided"}]}]}]}
+                                   :subfields ["long_name"],
+                                   :long_name [{:count 1, :value "Not Provided"}]}]}]}
                               {:value "Aircraft",
                                :count 1,
-                               :subfields ["series-entity"],
-                               :series-entity
+                               :subfields ["series_entity"],
+                               :series_entity
                                [{:value "Not Provided",
                                  :count 1,
-                                 :subfields ["short-name"],
-                                 :short-name
+                                 :subfields ["short_name"],
+                                 :short_name
                                  [{:value "A340-600",
                                    :count 1,
-                                   :subfields ["long-name"],
-                                   :long-name
+                                   :subfields ["long_name"],
+                                   :long_name
                                    [{:value "Airbus A340-600", :count 1}]}]}]}]}]
         actual-platforms (->> (get-facet-results :hierarchical)
                               :json-facets
@@ -806,24 +806,24 @@
                                      :subtype
                                      [{:value "Not Provided",
                                        :count 1,
-                                       :subfields ["short-name"],
-                                       :short-name
+                                       :subfields ["short_name"],
+                                       :short_name
                                        [{:value "instrument-test-p0-i0",
                                          :count 1,
-                                         :subfields ["long-name"],
-                                         :long-name [{:value "Not Provided", :count 1}]}
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
                                         {:value "instrument-test-p0-i1",
                                          :count 1,
-                                         :subfields ["long-name"],
-                                         :long-name [{:value "Not Provided", :count 1}]}
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
                                         {:value "instrument-test-p1-i0",
                                          :count 1,
-                                         :subfields ["long-name"],
-                                         :long-name [{:value "Not Provided", :count 1}]}
+                                         :subfields ["long_name"],
+                                         :long_name [{:value "Not Provided", :count 1}]}
                                         {:value "instrument-test-p1-i1",
                                          :count 1,
-                                         :subfields ["long-name"],
-                                         :long-name
+                                         :subfields ["long_name"],
+                                         :long_name
                                          [{:value "Not Provided", :count 1}]}]}]}]}]}
                                 {:value "In Situ/Laboratory Instruments",
                                  :count 1,
@@ -839,12 +839,12 @@
                                      :subtype
                                      [{:value "Not Provided",
                                        :count 1,
-                                       :subfields ["short-name"],
-                                       :short-name
+                                       :subfields ["short_name"],
+                                       :short_name
                                        [{:value "ADS",
                                          :count 1,
-                                         :subfields ["long-name"],
-                                         :long-name
+                                         :subfields ["long_name"],
+                                         :long_name
                                          [{:value "Automated DNA Sequencer",
                                            :count 1}]}]}]}]}]}]}]
         actual-instruments (->> (get-facet-results :hierarchical)
@@ -861,51 +861,51 @@
   ;; returned, but with a value of "Not Provided" for each nil field
   (make-coll 2 "PROV1" {:organizations [(dc/org :archive-center "ESA/ED")]})
   (let [expected-archive-centers [{:field "archive_centers",
-                                   :subfields ["level-0"],
-                                   :level-0
+                                   :subfields ["level_0"],
+                                   :level_0
                                    [{:value "CONSORTIA/INSTITUTIONS",
                                      :count 1,
-                                     :subfields ["level-1"],
-                                     :level-1
+                                     :subfields ["level_1"],
+                                     :level_1
                                      [{:value "Not Provided",
                                        :count 1,
-                                       :subfields ["level-2"],
-                                       :level-2
+                                       :subfields ["level_2"],
+                                       :level_2
                                        [{:value "Not Provided",
                                          :count 1,
-                                         :subfields ["level-3"],
-                                         :level-3
+                                         :subfields ["level_3"],
+                                         :level_3
                                          [{:value "Not Provided",
                                            :count 1,
-                                           :subfields ["short-name"],
-                                           :short-name
+                                           :subfields ["short_name"],
+                                           :short_name
                                            [{:value "ESA/ED",
                                              :count 1,
-                                             :subfields ["long-name"],
-                                             :long-name
+                                             :subfields ["long_name"],
+                                             :long_name
                                              [{:value
                                                "Educational Office, Ecological Society of America",
                                                :count 1}]}]}]}]}]}
                                     {:value "Not Provided",
                                      :count 1,
-                                     :subfields ["level-1"],
-                                     :level-1
+                                     :subfields ["level_1"],
+                                     :level_1
                                      [{:value "Not Provided",
                                        :count 1,
-                                       :subfields ["level-2"],
-                                       :level-2
+                                       :subfields ["level_2"],
+                                       :level_2
                                        [{:value "Not Provided",
                                          :count 1,
-                                         :subfields ["level-3"],
-                                         :level-3
+                                         :subfields ["level_3"],
+                                         :level_3
                                          [{:value "Not Provided",
                                            :count 1,
-                                           :subfields ["short-name"],
-                                           :short-name
+                                           :subfields ["short_name"],
+                                           :short_name
                                            [{:value "Larc",
                                              :count 1,
-                                             :subfields ["long-name"],
-                                             :long-name
+                                             :subfields ["long_name"],
+                                             :long_name
                                              [{:value "Not Provided", :count 1}]}]}]}]}]}]}]
         actual-archive-centers (->> (get-facet-results :hierarchical)
                                     :json-facets

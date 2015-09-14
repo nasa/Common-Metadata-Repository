@@ -52,10 +52,12 @@
       (let [message (str/replace (.getMessage e) #"\[Source[^;]+;" "")]
         (errors/throw-service-error :bad-request (str "Invalid JSON: " message))))))
 
-(defn parse-json-schema-from-string
-  "Convert a JSON string into a com.github.fge.jsonschema.main.JsonSchema object."
-  [json-string]
-  (->> json-string
+(defn parse-json-schema
+  "Convert a Clojure object to a JSON string then parses into a
+  com.github.fge.jsonschema.main.JsonSchema object."
+  [schema-def]
+  (->> (assoc schema-def :$schema "http://json-schema.org/draft-04/schema#")
+       json/generate-string
        JsonLoader/fromString
        (.getJsonSchema (JsonSchemaFactory/byDefault))))
 

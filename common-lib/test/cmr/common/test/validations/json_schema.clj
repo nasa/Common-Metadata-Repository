@@ -10,47 +10,40 @@
 
 (def sample-json-schema
   "Schema to test validation against"
-  (js/parse-json-schema-from-string
-    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
-                           "title" "The title"
-                           "description" "A description"
-                           "type" "object"
-                           "additionalProperties" false
-                           "properties" {"foo" {"oneOf" [{ "type" "string"}
-                                                         { "type" "integer"}]}
-                                         "bar" {"type" "boolean"}
-                                         "alpha" {"type" "string"}
-                                         "subfield" {"$ref" "#/definitions/omega"}}
-                           "required" ["bar"]
-                           "definitions" {"omega" {"type" "object"
-                                                   "properties" {"zeta" {"type" "integer"}}
-                                                   "required" ["zeta"]}}})))
+  (js/parse-json-schema
+    {:type :object
+     :additionalProperties false
+     :properties {:foo {:oneOf [{:type :string}
+                                {:type :integer}]}
+                  :bar {:type :boolean}
+                  :alpha {:type :string}
+                  :subfield {:$ref "#/definitions/omega"}}
+     :required [:bar]
+     :definitions {:omega {:type :object
+                           :properties {:zeta {:type :integer}}
+                           :required [:zeta]}}}))
 
 (comment
 
   ;; This is handy for trying out different capabilities of JSON schema.
 
   (js/validate-json
-    (js/parse-json-schema-from-string
-      (json/generate-string {:$schema "http://json-schema.org/draft-04/schema#"
-                             :definitions {:omega {:type "object"
-                                                   :properties {:a {"type" "integer"}
-                                                                :b {"type" "integer"}
-                                                                :c {"type" "integer"}}
-                                                   :oneOf [{:required [:a]}
-                                                           {:required [:b]}
-                                                           {:required [:c]}]}}
-                            :title "The title"
-                            :description "A description"
-                            :type "object"
-                            :additionalProperties false
-                            :properties {:omega {"$ref" "#/definitions/omega"}}
-                            :required ["omega"]}))
+    (js/parse-json-schema
+      {:definitions {:omega {:type "object"
+                             :properties {:a {:type :integer}
+                                          :b {:type :integer}
+                                          :c {:type :integer}}
+                             :oneOf [{:required [:a]}
+                                     {:required [:b]}
+                                     {:required [:c]}]}}
+       :type "object"
+       :additionalProperties false
+       :properties {:omega {"$ref" "#/definitions/omega"}}
+       :required ["omega"]})
 
     (json/generate-string {:omega {:b 2}}))
 
-)
-
+  )
 
 
 (deftest validate-json-test
@@ -59,7 +52,7 @@
          (nil? (seq (js/validate-json sample-json-schema (json/generate-string json))))
 
          {"bar" true}
-         {"bar" true "subfield" {"zeta" 123 "gamma" "ray"}}))
+         {"bar" true :subfield {"zeta" 123 "gamma" "ray"}}))
 
   (testing "Validation failures"
     (u/are2 [invalid-json errors]
@@ -71,7 +64,7 @@
             ["object has missing required properties ([\"bar\"])"]
 
             "Missing required property from subfield"
-            {"bar" true "subfield" {"gamma" "ray"}}
+            {"bar" true :subfield {"gamma" "ray"}}
             ["/subfield object has missing required properties ([\"zeta\"])"]
 
             "Wrong type for property with single type"
@@ -99,8 +92,7 @@
           InvalidSchemaException
           #"value has incorrect type \(found array, expected one of \[string\]\)"
           (js/validate-json
-            (js/parse-json-schema-from-string
-              (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
-                                     "title" "The title"
-                                     "description" ["A description" "B description"]}))
+            (js/parse-json-schema
+              {"title" "The title"
+               "description" ["A description" "B description"]})
             "{}")))))

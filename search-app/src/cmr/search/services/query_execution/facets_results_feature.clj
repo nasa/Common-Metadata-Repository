@@ -125,8 +125,9 @@
                                 {:count (get-in bucket [:coll-count :doc_count] (:doc_count bucket))
                                  :value (:key bucket)}))]
       (if (seq value-counts)
-        {:subfields [field]
-         field value-counts}
+        (let [field-snake-case (csk/->snake_case_string field)]
+          {:subfields [field-snake-case]
+           field-snake-case value-counts})
         empty-response))))
 
 (defn- hierarchical-bucket-map->facets

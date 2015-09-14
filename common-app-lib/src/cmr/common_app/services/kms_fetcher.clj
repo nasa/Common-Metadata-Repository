@@ -14,7 +14,6 @@
                     ]}
          :providers [...]}"
   (:require [cmr.common.services.errors :as errors]
-            [cmr.common.time-keeper :as tk]
             [cmr.common.jobs :refer [def-stateful-job]]
             [cmr.transmit.kms :as kms]
             [cmr.common.log :as log :refer (debug info warn error)]
@@ -23,9 +22,8 @@
             [cmr.common-app.cache.cubby-cache :as cubby-cache]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-            [clojure.set :as set]
             [clojure.string :as str]
-            [cheshire.core :as json]))
+            [cmr.common.util :as util]))
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
@@ -74,6 +72,19 @@
   [gcmd-keywords-map keyword-scheme short-name]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
   (get-in gcmd-keywords-map [keyword-scheme (str/lower-case short-name)]))
+
+(defn get-full-hierarchy-for-keyword
+  "Returns the full hierarchy for a given keyword. All of the fields within the keyword need
+  to match one of the keywords, otherwise nil is returned. We may want to update this check to
+  be case insensitive in the future."
+  [gcmd-keywords-map keyword-scheme keyword-map fields-to-compare]
+  {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
+  (let [keyword-map (util/remove-nil-keys keyword-map)
+        keyword-values (vals (keyword-scheme gcmd-keywords-map))]
+    (first (filter (fn [gcmd-keyword]
+                     (= (select-keys keyword-map fields-to-compare)
+                        (select-keys gcmd-keyword fields-to-compare)))
+                   keyword-values))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
