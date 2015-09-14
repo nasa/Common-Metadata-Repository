@@ -17,20 +17,14 @@
 
 (def granule-entries-schema
   "Schema for the JSON request to the translate-granule-entries end-point"
-  (js/parse-json-schema-from-string
-    (json/generate-string {"$schema" "http://json-schema.org/draft-04/schema#"
-                           "title" "Granule Entries"
-                           "description" (str "Input request from ECHO ordering service for "
-                                              "translating virtual granule entries to the "
-                                              "corresponding source granule entries")
-                           "type" "array"
-                           "items" {"title" "A granule entry in the order"
-                                    "type" "object"
-                                    "properties" {"concept-id" {"type" "string"}
-                                                  "entry-title" {"type" "string"}
-                                                  "granule-ur" {"anyOf" [{"type" "string"}
-                                                                         {"type" "null"}]}}
-                                    "required" ["concept-id" "entry-title" "granule-ur"]}})))
+  (js/parse-json-schema
+    {:type :array
+     :items {:type :object
+             :properties {:concept-id {:type :string}
+                          :entry-title {:type :string}
+                          :granule-ur {:anyOf [{:type :string}
+                                               {:type :null}]}}
+             :required [:concept-id :entry-title :granule-ur]}}))
 
 (defn- translate
   [context json-str]

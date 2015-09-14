@@ -5,13 +5,12 @@
             [cmr.search.services.parameters.conversion :as p]
             [cmr.transmit.kms :as kms]))
 
-(def nested-field-mappings
-  "Maps each of the nested fields to its subfields."
-  {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
-                       :detailed-variable]
-   :platforms (:platforms kms/keyword-scheme->field-names)
-   :instruments (:instruments kms/keyword-scheme->field-names)
-   :archive-centers (:providers kms/keyword-scheme->field-names)})
+(defn get-subfield-names
+  [parent-field]
+  "Returns all of the subfields for the provided nested field. All nested field queries also support
+  'any'."
+  (conj (kms/keyword-scheme->field-names (kms/translate-keyword-scheme-to-gcmd parent-field))
+        :any))
 
 (defn- nested-field->elastic-keyword
   "Returns the elastic keyword for the given nested field and subfield.
@@ -41,7 +40,7 @@
                (gc/or-conds
                  (map #(nested-field+value->string-condition parent-field % subfield-value
                                                              case-sensitive? pattern?)
-                      (parent-field nested-field-mappings)))
+                      (get-subfield-names parent-field)))
                (nested-field+value->string-condition parent-field subfield-name subfield-value
                                                      case-sensitive? pattern?)))
            (dissoc query-map :pattern :ignore-case)))))

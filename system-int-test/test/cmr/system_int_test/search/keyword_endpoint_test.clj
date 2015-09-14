@@ -55,7 +55,25 @@
                        "subfields" ["short_name"]}]}
    :science-keywords {"category"
                       [{"value" "EARTH SCIENCE",
-                        "uuid" "e9f67a66-e9fc-435c-b720-ae32a2c3d8f5"}
+                        "uuid" "e9f67a66-e9fc-435c-b720-ae32a2c3d8f5",
+                        "subfields" ["topic"],
+                        "topic"
+                        [{"value" "SOLID EARTH",
+                          "subfields" ["term"],
+                          "term"
+                          [{"value" "ROCKS/MINERALS/CRYSTALS",
+                            "subfields" ["variable_level_1"],
+                            "variable_level_1"
+                            [{"value" "SEDIMENTARY ROCKS",
+                              "subfields" ["variable_level_2"],
+                              "variable_level_2"
+                              [{"value"
+                                "SEDIMENTARY ROCK PHYSICAL/OPTICAL PROPERTIES",
+                                "subfields" ["variable_level_3"],
+                                "variable_level_3"
+                                [{"value" "LUMINESCENCE",
+                                  "uuid"
+                                  "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}
                        {"value" "EARTH SCIENCE SERVICES",
                         "uuid" "894f9116-ae3c-40b6-981d-5113de961710",
                         "subfields" ["topic"],
@@ -64,18 +82,17 @@
                           "uuid" "41adc080-c182-4753-9666-435f8b1c913f",
                           "subfields" ["term"],
                           "term"
-                          [{"value" "GEOGRAPHIC INFORMATION SYSTEMS",
+                          [{"value" "CALIBRATION/VALIDATION",
+                            "uuid" "4f938731-d686-4d89-b72b-ff60474bb1f0"}
+                           {"value" "GEOGRAPHIC INFORMATION SYSTEMS",
                             "uuid" "794e3c3b-791f-44de-9ff3-358d8ed74733",
                             "subfields" ["variable_level_1"],
                             "variable_level_1"
                             [{"value" "MOBILE GEOGRAPHIC INFORMATION SYSTEMS",
                               "uuid" "0dd83b2a-e83f-4a0c-a1ff-2fbdbbcce62d"}
                              {"value" "DESKTOP GEOGRAPHIC INFORMATION SYSTEMS",
-                              "uuid" "565cb301-44de-446c-8fe3-4b5cce428315"}
-                             {"value" "WEB-BASED GEOGRAPHIC INFORMATION SYSTEMS",
-                              "uuid" "037f42a2-cdda-4b72-b49c-bdec74d03e0a"}]}
-                           {"value" "CALIBRATION/VALIDATION",
-                            "uuid" "4f938731-d686-4d89-b72b-ff60474bb1f0"}]}]}]}
+                              "uuid"
+                              "565cb301-44de-446c-8fe3-4b5cce428315"}]}]}]}]}
    :platforms {"category"
                [{"value" "Aircraft",
                  "subfields" ["short_name"],
@@ -192,8 +209,8 @@
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
-                          "science_keywords, archive_centers, platforms, providers, and "
-                          "instruments.")]}
+                          "instruments, science_keywords, platforms, archive_centers, and "
+                          "providers.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
 
 

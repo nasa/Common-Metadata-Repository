@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [cmr.common-app.services.kms-fetcher :as kf]))
 
 (defn flatten-science-keywords
   "Convert the science keywords into a flat list composed of the category, topic, and term values."
@@ -22,11 +23,17 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
+(def kms-fields-to-match
+  "A list of the fields that need to match when looking for a science keyword in KMS."
+  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
+
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document"
-  [science-keyword]
+  [gcmd-keywords-map science-keyword]
   (let [{:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword]
+                variable-level-3 detailed-variable]} science-keyword
+        {:keys [uuid]} (kf/get-full-hierarchy-for-keyword
+                         gcmd-keywords-map :science-keywords science-keyword kms-fields-to-match)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic
@@ -40,12 +47,9 @@
      :variable-level-3 variable-level-3
      :variable-level-3.lowercase (when variable-level-3 (str/lower-case variable-level-3))
      :detailed-variable detailed-variable
-     :detailed-variable.lowercase (when detailed-variable (str/lower-case detailed-variable))}))
-
-(defn science-keywords->elastic-doc
-  "Converts the science keywords into a list of elastic documents"
-  [collection]
-  (map science-keyword->elastic-doc (:science-keywords collection)))
+     :detailed-variable.lowercase (when detailed-variable (str/lower-case detailed-variable))
+     :uuid uuid
+     :uuid.lowercase (when uuid (str/lower-case uuid))}))
 
 (defn science-keyword->facet-fields
   [science-keyword]

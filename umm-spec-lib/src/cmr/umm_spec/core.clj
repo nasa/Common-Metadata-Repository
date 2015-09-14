@@ -5,16 +5,15 @@
             [cmr.common.xml :as cx]
 
             ;; XML -> UMM
-            [cmr.umm-spec.xml-to-umm-mappings.parser :as xp]
-            [cmr.umm-spec.xml-to-umm-mappings.new-echo10 :as echo10-to-umm]
+            [cmr.umm-spec.simple-xpath :as xpath]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso19115-2-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
 
             ;; UMM -> XML
-            [cmr.umm-spec.umm-to-xml-mappings.xml-generator :as xg]
-            [cmr.umm-spec.umm-to-xml-mappings.new-echo10 :as umm-to-echo10]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as umm-to-iso19115-2]
             [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
             [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
@@ -61,23 +60,23 @@
 
 (defmethod parse-metadata [:collection :echo10]
   [_ _ metadata]
-  (echo10-to-umm/parse-echo10-xml metadata))
+  (echo10-to-umm/echo10-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :dif]
   [_ _ metadata]
-  (xp/parse-xml dif9-to-umm/dif9-xml-to-umm-c metadata))
+  (dif9-to-umm/dif9-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :dif10]
   [_ _ metadata]
-  (xp/parse-xml dif10-to-umm/dif10-xml-to-umm-c metadata))
+  (dif10-to-umm/dif10-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :iso19115]
   [_ _ metadata]
-  (xp/parse-xml iso19115-2-to-umm/iso19115-2-xml-to-umm-c metadata))
+  (iso19115-2-to-umm/iso19115-2-xml-to-umm-c (xpath/context metadata)))
 
 (defmethod parse-metadata [:collection :iso-smap]
   [_ _ metadata]
-  (xp/parse-xml iso-smap-to-umm/iso-smap-xml-to-umm-c metadata))
+  (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generate Metadata
@@ -92,21 +91,20 @@
 
 (defmethod generate-metadata [:collection :echo10]
   [_ _ umm]
-  (umm-to-echo10/echo10-xml umm))
+  (umm-to-echo10/umm-c-to-echo10-xml umm))
 
 (defmethod generate-metadata [:collection :dif]
   [_ _ umm]
-  (xg/generate-xml umm-to-dif9/umm-c-to-dif9-xml umm))
+  (umm-to-dif9/umm-c-to-dif9-xml umm))
 
 (defmethod generate-metadata [:collection :dif10]
   [_ _ umm]
-  (xg/generate-xml umm-to-dif10/umm-c-to-dif10-xml umm))
+  (umm-to-dif10/umm-c-to-dif10-xml umm))
 
 (defmethod generate-metadata [:collection :iso19115]
   [_ _ umm]
-  (xg/generate-xml umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm))
+  (umm-to-iso19115-2/umm-c-to-iso19115-2-xml umm))
 
 (defmethod generate-metadata [:collection :iso-smap]
   [_ _ umm]
-  (xg/generate-xml umm-to-iso-smap/umm-c-to-iso-smap-xml umm))
-
+  (umm-to-iso-smap/umm-c-to-iso-smap-xml umm))

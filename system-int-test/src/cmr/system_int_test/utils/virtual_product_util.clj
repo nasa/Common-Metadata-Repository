@@ -10,7 +10,8 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.umm.granule :as umm-g]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (def virtual-product-providers
   "Returns a list of the provider ids of the providers with virtual products."
@@ -25,6 +26,29 @@
          {short-name :source-short-name}] vp-config/source-to-virtual-product-config]
     (assoc (dc/collection {:entry-title entry-title :short-name short-name})
            :provider-id provider-id)))
+
+(defn set-provider-aliases
+  [aliases]
+  ;; Set in the system int test vm AND in the dev system VM
+  (cmr.virtual-product.config/set-virtual-product-provider-aliases! aliases)
+
+  (dev-sys-util/eval-in-dev-sys
+    `(cmr.virtual-product.config/set-virtual-product-provider-aliases! ~aliases)))
+
+(defn get-provider-aliases
+  []
+  (dev-sys-util/eval-in-dev-sys
+    `(cmr.virtual-product.config/virtual-product-provider-aliases)))
+
+(defmacro with-provider-aliases
+  "Wraps body while using aliases for the provider aliases."
+  [aliases body]
+  `(let [orig-aliases# (get-provider-aliases)]
+    (set-provider-aliases ~aliases)
+    (try
+      ~body
+      (finally
+        (set-provider-aliases orig-aliases#)))))
 
 (defn source-collection->virtual-collections
   "Returns virtual collections from a source collection"

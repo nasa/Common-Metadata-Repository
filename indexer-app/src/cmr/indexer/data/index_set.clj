@@ -120,7 +120,9 @@
     :variable-level-3 string-field-mapping
     :variable-level-3.lowercase string-field-mapping
     :detailed-variable string-field-mapping
-    :detailed-variable.lowercase string-field-mapping}})
+    :detailed-variable.lowercase string-field-mapping
+    :uuid string-field-mapping
+    :uuid.lowercase string-field-mapping}})
 
 (def platform-hierarchical-mapping
   "Defines hierarchical mappings for platforms."
