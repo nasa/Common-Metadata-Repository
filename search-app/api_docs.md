@@ -1992,12 +1992,43 @@ Content-Length: 48
 
 #### Searching for Tags
 
-TODO document this
+All tags can be retieved by sending a GET request to `/tags/`. A single tag can retreived using the concept-id returned when it was created by sending a GET request to `/tags/<concept-id>`. The only supported response format is JSON.
 
-* parameters that are supported
-* response formats
-* example search response
+```
+curl -i %CMR-ENDPOINT%/tags
 
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 292
+
+{
+  "items" : [ {
+    "concept-id" : "T1200000000-CMR",
+    "revision-id" : 1,
+    "namespace" : "org.ceos.wgiss.cwic",
+    "value" : "quality",
+    "category" : "cwic_public",
+    "description" : "This is a sample tag.",
+    "originator-id" : "mock-admin"
+  } ],
+  "took" : 5,
+  "hits" : 1
+}
+
+curl -i %CMR-ENDPOINT/tags/T1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 171
+
+{
+  "originator-id" : "mock-admin",
+  "namespace" : "org.ceos.wgiss.cwic",
+  "category" : "cwic_public",
+  "value" : "quality",
+  "description" : "This is a sample tag."
+}
+```
 
 ### Administrative Tasks
 
