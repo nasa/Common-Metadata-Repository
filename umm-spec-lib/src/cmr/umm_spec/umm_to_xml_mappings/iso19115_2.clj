@@ -117,7 +117,7 @@
   [instruments]
   (for [instrument instruments]
     [:gmi:instrument
-     [:eos:EOS_Instrument ;; TODO {:id unique-id}
+     [:eos:EOS_Instrument
       [:gmi:citation
        [:gmd:CI_Citation
         [:gmd:title
