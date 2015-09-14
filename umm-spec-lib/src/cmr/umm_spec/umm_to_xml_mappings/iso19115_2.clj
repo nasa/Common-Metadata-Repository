@@ -132,8 +132,6 @@
       [:gmi:type
        (char-string (:Technique instrument))]
       [:gmi:description {:gco:nilReason "missing"}]
-      ;; TODO this:
-      ;; [:gmi:mountedOn {:xlink:href (unique-id-ref-from "..")}]
       [:eos:otherPropertyType
        [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
         "Echo Additional Attributes"]]
@@ -145,7 +143,7 @@
   [platforms]
   (for [platform platforms]
     [:gmi:platform
-     [:eos:EOS_Platform ;; TODO {:id unique-id}
+     [:eos:EOS_Platform
       [:gmi:identifier
        [:gmd:MD_Identifier
         [:gmd:code
