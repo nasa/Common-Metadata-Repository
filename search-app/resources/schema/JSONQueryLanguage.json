@@ -52,6 +52,11 @@
 					"description": "UMM Short Name",
 					"$ref": "#/definitions/StringCondition"
 				},
+				"updated_since": {
+					"description": "Revisions with revision date later than provided value",
+					"format": "date-time",
+					"type": "string"
+				},
 				"version": {
 					"description": "UMM Version",
 					"$ref": "#/definitions/StringCondition"
