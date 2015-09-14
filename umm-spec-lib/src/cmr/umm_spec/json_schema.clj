@@ -187,8 +187,8 @@
   ([x]
    (coerce umm-c-schema x))
   ([schema x]
-   (coerce schema (root-def schema) x))
-  ([schema definition x]
+   (coerce schema (root-def schema) [] x))
+  ([schema definition key-path x]
    (let [type-name (or (-> definition :$ref :type-name)
                        (:root schema))
          [schema definition] (resolve-$refs [schema definition])]
@@ -205,21 +205,22 @@
        "boolean" (= "true" x)
 
        ;; Return nil instead of empty vectors.
-       "array"   (when-let [coerced (seq (keep #(coerce schema (:items definition) %) x))]
+       "array"   (when-let [coerced (seq (keep #(coerce schema (:items definition) key-path %) x))]
                    (vec coerced))
 
        "object"  (let [ctor (record-ctor schema type-name)
                        kvs (for [[k v] x]
                              (when v
-                               (let [prop-definition (get-in definition [:properties k])]
-                                 [k (coerce schema prop-definition v)])))
+                               (if-let [prop-definition (get-in definition [:properties k])]
+                                 [k (coerce schema prop-definition (conj key-path k) v)]
+                                 [k v])))
                        m (into {} kvs)]
                    ;; Return nil instead of empty maps/records here.
                    (when (seq m)
                      (ctor m)))
 
        ;; Otherwise...
-       (throw (IllegalArgumentException. (str "Don't know how to coerce " definition " (" x ")")))))))
+       (throw (IllegalArgumentException. (str "Don't know how to coerce value " (pr-str x) " at key path " (pr-str (vec key-path)) " using JSON schema type [" (pr-str definition) "]")))))))
 
 (comment
   (coerce {:EntryTitle "This is a test"
