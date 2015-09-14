@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.tagging.tag-test
+(ns cmr.system-int-test.search.tagging.tag-crud-test
   "This tests the CMR Search API's tagging capabilities"
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
@@ -110,7 +110,18 @@
         (let [response (tags/create-tag token (assoc tag :value "different"))]
           (is (= 200 (:status response)))
           (is (not= concept-id (:concept-id response)))
-          (is (= 1 (:revision-id response))))))
+          (is (= 1 (:revision-id response)))))
+
+
+      (testing "Creation of previously deleted tag"
+        (tags/delete-tag token concept-id)
+        (let [new-tag (assoc tag :category "new cat" :description "new description")
+              token2 (e/login (s/context) "user2")
+              response (tags/create-tag token2 new-tag)]
+          (is (= {:status 200 :concept-id concept-id :revision-id 3}
+                 response))
+          ;; A tag that was deleted but recreated gets a new originator id.
+          (tags/assert-tag-saved (assoc new-tag :originator-id "user2") "user2" concept-id 3))))
 
     (testing "Create tag with fields at maximum length"
       (let [tag (into {} (for [[field max-length] field-maxes]
@@ -126,39 +137,42 @@
       (is (= 1 revision-id)))))
 
 (deftest get-tag-test
-  (testing "Retrieve existing tag"
-    (let [tag (tags/make-tag 1)
-          token (e/login (s/context) "user1")
-          {:keys [concept-id]} (tags/create-tag token tag)]
+  (let [tag (tags/make-tag 1)
+        token (e/login (s/context) "user1")
+        {:keys [concept-id]} (tags/create-tag token tag)]
+    (testing "Retrieve existing tag"
       (is (= {:status 200
               :body (assoc tag :originator-id "user1")
               :content-type :json}
-             (tags/get-tag concept-id)))))
+             (tags/get-tag concept-id))))
 
-  (testing "Retrieve unknown tag"
-    (is (= {:status 404
-            :body {:errors ["Tag could not be found with concept id [T100-CMR]"]}
-            :content-type :json}
-           (tags/get-tag "T100-CMR"))))
-  (testing "Retrieve tag with bad concept-id"
-    (is (= {:status 400
-            :body {:errors ["Concept-id [F100-CMR] is not valid."]}
-            :content-type :json}
-           (tags/get-tag "F100-CMR"))))
-  (testing "Retrieve tag with bad provider in concept id"
-    (is (= {:status 400
-            :body {:errors ["[T100-PROV1] is not a valid tag concept id."]}
-            :content-type :json}
-           (tags/get-tag "T100-PROV1"))))
-  (testing "Retrieve tag with collection concept-id"
-    (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
-      (is (= {:status 400
-              :body {:errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
+    (testing "Retrieve unknown tag"
+      (is (= {:status 404
+              :body {:errors ["Tag could not be found with concept id [T100-CMR]"]}
               :content-type :json}
-             (tags/get-tag coll-concept-id)))))
-  (testing "Retrieve deleted tag"
-    ;; TODO implement with deleted story
-    ))
+             (tags/get-tag "T100-CMR"))))
+    (testing "Retrieve tag with bad concept-id"
+      (is (= {:status 400
+              :body {:errors ["Concept-id [F100-CMR] is not valid."]}
+              :content-type :json}
+             (tags/get-tag "F100-CMR"))))
+    (testing "Retrieve tag with bad provider in concept id"
+      (is (= {:status 400
+              :body {:errors ["[T100-PROV1] is not a valid tag concept id."]}
+              :content-type :json}
+             (tags/get-tag "T100-PROV1"))))
+    (testing "Retrieve tag with collection concept-id"
+      (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
+        (is (= {:status 400
+                :body {:errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
+                :content-type :json}
+               (tags/get-tag coll-concept-id)))))
+    (testing "Retrieve deleted tag"
+      (tags/delete-tag token concept-id)
+      (is (= {:status 404
+              :content-type :json
+              :body {:errors [(format "Tag with concept id [%s] was deleted." concept-id)]}}
+             (tags/get-tag concept-id))))))
 
 
 (deftest update-tag-test
@@ -203,10 +217,7 @@
       (is (= {:status 401
               :errors ["Tags cannot be modified without a valid user token."]}
              (tags/update-tag nil concept-id tag))))
-    (testing "Update tag that doesn't exist"
-      (is (= {:status 404
-              :errors ["Tag could not be found with concept id [T100-CMR]"]}
-             (tags/update-tag token "T100-CMR" tag))))
+
     (testing "Fields that cannot be changed"
       (are [field human-name]
            (= {:status 400
@@ -218,15 +229,47 @@
            :namespace "Namespace"
            :value "Value"
            :originator-id "Originator Id"))
+
     (testing "Updates applies JSON validations"
       (is (= {:status 400
               :errors ["/description string \"\" is too short (length: 0, required minimum: 1)"]}
-             (tags/update-tag token concept-id (assoc tag :description "")))))))
+             (tags/update-tag token concept-id (assoc tag :description "")))))
 
-;; Later TODOs
-;; TODO test that creation of a tag that already exists by namespace and value but was deleted works
-;; - it should get the same concept id
+    (testing "Update tag that doesn't exist"
+      (is (= {:status 404
+              :errors ["Tag could not be found with concept id [T100-CMR]"]}
+             (tags/update-tag token "T100-CMR" tag))))
 
+    (testing "Update deleted tag"
+      (tags/delete-tag token concept-id)
+      (is (= {:status 404
+              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
+             (tags/update-tag token concept-id tag))))))
+
+(deftest delete-tag-test
+  (let [tag (tags/make-tag 1)
+        token (e/login (s/context) "user1")
+        {:keys [concept-id revision-id]} (tags/create-tag token tag)]
+
+    (testing "Delete without token"
+      (is (= {:status 401
+              :errors ["Tags cannot be modified without a valid user token."]}
+             (tags/delete-tag nil concept-id))))
+
+    (testing "Delete success"
+      (is (= {:status 200 :concept-id concept-id :revision-id 2}
+             (tags/delete-tag token concept-id)))
+      (tags/assert-tag-deleted tag "user1" concept-id 2))
+
+    (testing "Delete tag that was already deleted"
+      (is (= {:status 404
+              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
+             (tags/delete-tag token concept-id))))
+
+    (testing "Delete tag that doesn't exist"
+      (is (= {:status 404
+              :errors ["Tag could not be found with concept id [T100-CMR]"]}
+             (tags/delete-tag token "T100-CMR"))))))
 
 
 

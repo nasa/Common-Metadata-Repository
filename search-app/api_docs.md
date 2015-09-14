@@ -1885,7 +1885,7 @@ Both the tag namespace and value cannot contain the Group Separator character. T
 Tags are created by POSTing a JSON representation of a tag to `/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
 '{
   "namespace": "org.ceos.wgiss.cwic",
   "category": "cwic_public",
@@ -1925,7 +1925,7 @@ Content-Type: application/json;charset=ISO-8859-1
 Tags are updated by sending a PUT request with the JSON representation of a tag to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
 '{
   "namespace": "org.ceos.wgiss.cwic",
   "category": "cwic_non_public",
@@ -1939,6 +1939,57 @@ Content-Length: 48
 
 {"concept-id":"T1200000000-CMR","revision-id":2}
 ```
+
+#### Deleting a Tag
+
+Tags are deleted by sending a DELETE request to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+
+```
+curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":3}
+```
+
+#### Associating Collections with a Tag
+
+Tags can be associated with collections by POSTing a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+
+
+```
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":3}
+```
+
+#### Disassociating Collections with a Tag
+
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+
+
+```
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+'{
+  "condition": {"provider": "PROV1"}
+ }'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+Content-Length: 48
+
+{"concept-id":"T1200000000-CMR","revision-id":4}
+```
+
 
 ### Administrative Tasks
 

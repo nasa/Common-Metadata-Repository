@@ -7,8 +7,11 @@
             [cmr.common.validations.core :as v]
             [cmr.common.concepts :as concepts]
             [cmr.search.services.tagging-service-messages :as msg]
+            [cmr.search.services.json-parameters.conversion :as jp]
+            [cmr.search.services.query-execution :as qe]
             [clojure.string :as str]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.set :as set]))
 
 (def ^:private native-id-separator-character
   "This is the separate character used when creating the native id for a tag. It is the ASCII
@@ -98,27 +101,43 @@
   the saved tag."
   [context tag]
   (validate-create-tag tag)
+  (let [user-id (context->user-id context)
+        tag (assoc tag
+                   :originator-id user-id
+                   :associated-collection-ids #{})]
+    ;; Check if the tag already exists
+    (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
 
-  ;; Validate that the tag doesn't yet exist
-  (when-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
-    ;; TODO check if the concept is deleted. We should allow this if it's a tombstone.
-    (errors/throw-service-error
-      :conflict (msg/tag-already-exists tag concept-id)))
+      ;; The tag exists. Check if its latest revision is a tombstone
+      (let [concept (mdb/get-latest-concept context concept-id false)]
+        (if (:deleted concept)
+          ;; The tag exists but was previously deleted.
+          (mdb/save-concept
+            context
+            (-> concept
+                (assoc :metadata (pr-str tag)
+                       :deleted false
+                       :user-id user-id)
+                (dissoc :revision-date)
+                (update-in [:revision-id] inc)))
 
-  (let [user-id (context->user-id context)]
-    (mdb/save-concept context (tag->new-concept (assoc tag :originator-id user-id)))))
+          ;; The tag exists and was not deleted. Reject this.
+          (errors/throw-service-error :conflict (msg/tag-already-exists tag concept-id))))
+
+      ;; The tag doesn't exist
+      (mdb/save-concept context (tag->new-concept tag)))))
 
 (defn- fetch-tag-concept
-  "Fetches a tag concept by concept id"
+  "Fetches the latest version of a tag concept by concept id"
   [context concept-id]
   (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (when (or (not= :tag concept-type) (not= "CMR" provider-id))
       (errors/throw-service-error :bad-request (msg/bad-tag-concept-id concept-id))))
 
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
-    ;; TODO check if it's deleted. Throw service error :not-found if deleted but error message
-    ;; should be deleted
-    concept
+    (if (:deleted concept)
+      (errors/throw-service-error :not-found (msg/tag-deleted concept-id))
+      concept)
     (errors/throw-service-error :not-found (msg/tag-does-not-exist concept-id))))
 
 (defn get-tag
@@ -128,16 +147,69 @@
 
 (defn update-tag
   "Updates an existing tag with the given concept id"
-  [context concept-id tag]
+  [context concept-id updated-tag]
   (let [existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))]
-    (validate-update-tag existing-tag tag)
+    (validate-update-tag existing-tag updated-tag)
+    ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
+    (let [updated-tag (assoc updated-tag
+                             :originator-id (:originator-id existing-tag)
+                             :associated-collection-ids (:associated-collection-ids existing-tag))]
+      (mdb/save-concept
+        context
+        (-> existing-concept
+            (assoc :metadata (pr-str updated-tag)
+                   :user-id (context->user-id context))
+            (dissoc :revision-date)
+            (update-in [:revision-id] inc))))))
+
+(defn delete-tag
+  "Deletes a tag with the given concept id"
+  [context concept-id]
+  (let [existing-concept (fetch-tag-concept context concept-id)]
     (mdb/save-concept
       context
       (-> existing-concept
-          (assoc :metadata (pr-str (assoc tag :originator-id (:originator-id existing-tag)))
+          ;; Remove fields not allowed when creating a tombstone.
+          (dissoc :metadata :format :provider-id :native-id)
+          (assoc :deleted true
                  :user-id (context->user-id context))
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
+(defn- update-tag-associations
+  "Modifies a tags associations. Finds collections using the query and then passes the existing
+  associated collection ids and the ones found from the query to the function. Sets the collection
+  ids as the result of the function."
+  [context concept-id json-query update-fn]
+  (let [query (-> (jp/parse-json-query :collection {} json-query)
+                  (assoc :page-size :unlimited
+                         :result-format :query-specified
+                         :fields [:concept-id]
+                         :skip-acls? false))
+        concept-id-set (->> (qe/execute-query context query)
+                            :items
+                            (map :concept-id)
+                            set)
+        existing-concept (fetch-tag-concept context concept-id)
+        existing-tag (edn/read-string (:metadata existing-concept))
+        updated-tag (update-in existing-tag [:associated-collection-ids]
+                               #(update-fn % concept-id-set))]
+    (mdb/save-concept
+      context
+      (-> existing-concept
+          (assoc :metadata (pr-str updated-tag)
+                 :user-id (context->user-id context))
+          (dissoc :revision-date)
+          (update-in [:revision-id] inc)))))
+
+(defn associate-tag
+  "Associates a tag with collections that are the result of a JSON query"
+  [context concept-id json-query]
+  (update-tag-associations context concept-id json-query set/union))
+
+(defn disassociate-tag
+  "Disassociates a tag with collections that are the result of a JSON query"
+  [context concept-id json-query]
+  (update-tag-associations context concept-id json-query set/difference))
 
