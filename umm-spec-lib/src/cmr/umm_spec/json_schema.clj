@@ -195,7 +195,9 @@
      (condp = (:type definition)
 
        "string"  (condp = (:format definition)
-                   "date-time" (when x (dtp/parse-datetime x))
+                   "date-time" (if (instance? org.joda.time.DateTime x)
+                                 x
+                                 (dtp/parse-datetime x))
                    (str x))
 
        "number"  (Double. x)
@@ -213,7 +215,7 @@
                              (when v
                                (if-let [prop-definition (get-in definition [:properties k])]
                                  [k (coerce schema prop-definition (conj key-path k) v)]
-                                 [k v])))
+                                 (throw (Exception. "oops!")))))
                        m (into {} kvs)]
                    ;; Return nil instead of empty maps/records here.
                    (when (seq m)
