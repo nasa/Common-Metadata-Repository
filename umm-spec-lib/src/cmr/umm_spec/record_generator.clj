@@ -3,7 +3,9 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.umm-spec.models.collection]
+            [cmr.umm-spec.models.common]))
 
 ;; Improvements
 ;; - generate records with fields in the same order as they are defined in the file.

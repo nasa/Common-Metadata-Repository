@@ -1,13 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
-  (:require clojure.string
-            [cmr.umm-spec.xml-to-umm-mappings.dsl :refer :all]
-            [cmr.umm-spec.xml-to-umm-mappings.add-parse-type :as apt]
+  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+            [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.json-schema :as js]))
-
-;;; Path Utils
-
-(def char-string "gco:CharacterString")
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -18,125 +13,148 @@
 (def identifier-base-xpath
   (str citation-base-xpath "/gmd:identifier/gmd:MD_Identifier"))
 
-;;; Mapping
+(def constraints-xpath
+  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
 (def temporal-xpath
-  (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+  "Temoral xpath relative to md-data-id-base-xpath"
+  (str "gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
 (def precision-xpath (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report"
                           "/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result"
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
-(defn- descriptive-keywords-mappings
-  "Returns the descriptive keywords mappings for the given type"
-  [keyword-type]
-  (select (str md-data-id-base-xpath
-               "/gmd:descriptiveKeywords/gmd:MD_Keywords"
-               (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
-               "/gmd:keyword/gco:CharacterString")))
-
-(def temporal-mappings
-  (for-each temporal-xpath
-            (object {:PrecisionOfSeconds (xpath precision-xpath)
-                     :RangeDateTimes (for-each "gml:TimePeriod"
-                                               (object {:BeginningDateTime (xpath "gml:beginPosition")
-                                                        :EndingDateTime    (xpath "gml:endPosition")}))
-                     :SingleDateTimes (select "gml:TimeInstant/gml:timePosition")})))
-
 (def platforms-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
        "/eos:EOS_Platform"))
 
-(def platform-long-name-xpath
+(def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
 
-(def platform-short-name-xpath
+(def short-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
 
-(def platform-characteristics-xpath
+(def characteristics-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
 
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
-(def constraints-xpath
-  (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
+(defn- char-string-value
+  "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
+  [element parent-xpath]
+  (value-of element (str parent-xpath "/gco:CharacterString")))
 
-(def collection-progress-xpath
-  (xpath (str md-data-id-base-xpath
-              "/gmd:status/gmd:MD_ProgressCode")))
+(defn- descriptive-keywords
+  "Returns the descriptive keywords values for the given parent element and keyword type"
+  [md-data-id-el keyword-type]
+  (values-at md-data-id-el (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
+                                (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
+                                "/gmd:keyword/gco:CharacterString")))
 
-(def platform-characteristics-mapping
-  (for-each platform-characteristics-xpath
-    (object
-     {:Name        (xpath pc-attr-base-path "eos:name" char-string)
-      :Description (xpath pc-attr-base-path "eos:description" char-string)
-      :DataType    (xpath pc-attr-base-path "eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode")
-      :Unit        (xpath pc-attr-base-path "eos:parameterUnitsOfMeasure" char-string)
-      :Value       (xpath "eos:value" char-string)})))
+(defn- regex-value
+  "Utitlity function to return the value of the element that matches the given xpath and regex."
+  [element xpath regex]
+  (when-let [elements (select element xpath)]
+    (first (for [match-el elements
+                 :let [match (re-matches regex (text match-el))]
+                 :when match]
+             ;; A string response implies there is no group in the regular expression and the
+             ;; entire matching string is returned and if there is a group in the regular
+             ;; expression, the first group of the matching string is returned.
+             (if (string? match) match (second match))))))
 
-(def instrument-sensors-mapping
-  (for-each "eos:sensor/eos:EOS_Sensor"
-    (object
-     {:ShortName (xpath "eos:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
-      :LongName (xpath "eos:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
-      :Technique (xpath "eos:type/gco:CharacterString")
-      :Characteristics platform-characteristics-mapping})))
+(defn- parse-characteristics
+  "Returns the parsed platform characteristics from the platform element."
+  [element]
+  (for [chars (select element characteristics-xpath)]
+    {:Name        (char-string-value chars (str pc-attr-base-path "/eos:name"))
+     :Description (char-string-value chars (str pc-attr-base-path "/eos:description"))
+     :DataType    (value-of chars (str pc-attr-base-path "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
+     :Unit        (char-string-value chars (str pc-attr-base-path "/eos:parameterUnitsOfMeasure"))
+     :Value       (char-string-value chars (str "eos:value"))}))
 
-(def platform-instruments-mapping
-  (for-each "gmi:instrument/eos:EOS_Instrument"
-    (object
-     {:ShortName (xpath platform-short-name-xpath)
-      :LongName (xpath platform-long-name-xpath)
-      :Technique (xpath "gmi:type/gco:CharacterString")
-      :Characteristics platform-characteristics-mapping
-      :Sensors instrument-sensors-mapping})))
+(defn- parse-instrument-sensors
+  "Returns the parsed instrument sensors from the instrument element."
+  [instrument]
+  (for [sensor (select instrument "eos:sensor/eos:EOS_Sensor")]
+    {:ShortName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:code")
+     :LongName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:description")
+     :Technique (char-string-value sensor "eos:type")
+     :Characteristics (parse-characteristics sensor)}))
 
-(def iso19115-2-xml-to-umm-c
-  (apt/add-parsing-types
-    js/umm-c-schema
-    (object {:EntryId (char-string-xpath identifier-base-xpath "/gmd:code")
-             :EntryTitle (char-string-xpath citation-base-xpath "/gmd:title")
-             :Version (char-string-xpath identifier-base-xpath "/gmd:version")
-             :Abstract (char-string-xpath md-data-id-base-xpath "/gmd:abstract")
-             :Purpose (char-string-xpath md-data-id-base-xpath "/gmd:purpose")
-             :CollectionProgress collection-progress-xpath
-             ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
-             ;; in the JSON schema instead of a single object. CMR-1989.
-             :AccessConstraints (object
-                                  {:Description
-                                   (xpath-with-regex (str constraints-xpath
-                                                          "/gmd:useLimitation/gco:CharacterString")
-                                                     #"Restriction Comment:(.+)")
+(defn- parse-platform-instruments
+  "Returns the parsed platform instruments from the platform element."
+  [platform]
+  (for [instrument (select platform "gmi:instrument/eos:EOS_Instrument")]
+    {:ShortName (value-of instrument short-name-xpath)
+     :LongName (value-of instrument long-name-xpath)
+     :Technique (char-string-value instrument "gmi:type")
+     :Characteristics (parse-characteristics instrument)
+     :Sensors (parse-instrument-sensors instrument)}))
 
-                                   :Value
-                                   (xpath-with-regex (str constraints-xpath
-                                                          "/gmd:otherConstraints/gco:CharacterString")
-                                                     #"Restriction Flag:(.+)")})
-             ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
-             ;; in the JSON schema instead of a single string. CMR-1989.
-             :UseConstraints
-             (xpath-with-regex (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
-                               #"^(?!Restriction Comment:).+")
-             :SpatialKeywords (descriptive-keywords-mappings "place")
-             :TemporalKeywords (descriptive-keywords-mappings "temporal")
-             :DataLanguage (char-string-xpath md-data-id-base-xpath "/gmd:language")
-             :TemporalExtents temporal-mappings
-             :ProcessingLevel (object
-                                {:Id
-                                 (char-string-xpath
-                                   md-data-id-base-xpath
-                                   "/gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+(defn- parse-platforms
+  "Returns the platforms parsed from the given xml document."
+  [doc]
+  (for [platform (select doc platforms-xpath)]
+    {:ShortName (value-of platform short-name-xpath)
+     :LongName (value-of platform long-name-xpath)
+     :Type (char-string-value platform "gmi:description")
+     :Characteristics (parse-characteristics platform)
+     :Instruments (parse-platform-instruments platform)}))
 
-                                 :ProcessingLevelDescription
-                                 (char-string-xpath
-                                   md-data-id-base-xpath
-                                   "/gmd:processingLevel/gmd:MD_Identifier/gmd:description")})
-             :Platforms (for-each platforms-xpath
-                          (object {:ShortName (xpath platform-short-name-xpath)
-                                   :LongName (xpath platform-long-name-xpath)
-                                   :Type (xpath "gmi:description/gco:CharacterString")
-                                   :Characteristics platform-characteristics-mapping
-                                   :Instruments platform-instruments-mapping}))})))
+(defn- parse-iso19115-xml
+  "Returns UMM-C collection structure from ISO19115-2 collection XML document."
+  [doc]
+  (let [md-data-id-el (first (select doc md-data-id-base-xpath))
+        citation-el (first (select doc citation-base-xpath))
+        id-el (first (select doc identifier-base-xpath))]
+    {:EntryId (char-string-value id-el "gmd:code")
+     :EntryTitle (char-string-value citation-el "gmd:title")
+     :Version (char-string-value id-el "gmd:version")
+     :Abstract (char-string-value md-data-id-el "gmd:abstract")
+     :Purpose (char-string-value md-data-id-el "gmd:purpose")
+     :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
+     ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
+     ;; in the JSON schema instead of a single object. CMR-1989.
+     :AccessConstraints {:Description
+                         (regex-value doc (str constraints-xpath
+                                               "/gmd:useLimitation/gco:CharacterString")
+                                      #"Restriction Comment:(.+)")
+
+                         :Value
+                         (regex-value doc (str constraints-xpath
+                                               "/gmd:otherConstraints/gco:CharacterString")
+                                      #"Restriction Flag:(.+)")}
+     ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
+     ;; in the JSON schema instead of a single string. CMR-1989.
+     :UseConstraints
+     (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
+                  #"^(?!Restriction Comment:).+")
+     :SpatialKeywords (descriptive-keywords md-data-id-el "place")
+     :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
+     :DataLanguage (char-string-value md-data-id-el "gmd:language")
+     :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
+                        {:PrecisionOfSeconds (value-of doc precision-xpath)
+                         :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                                           {:BeginningDateTime (value-of period "gml:beginPosition")
+                                            :EndingDateTime    (value-of period "gml:endPosition")})
+                         :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
+     :ProcessingLevel {:Id
+                       (char-string-value
+                         md-data-id-el
+                         "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+
+                       :ProcessingLevelDescription
+                       (char-string-value
+                         md-data-id-el
+                         "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+     :Platforms (parse-platforms doc)}))
+
+(defn iso19115-2-xml-to-umm-c
+  "Returns UMM-C collection record from ISO19115-2 collection XML document."
+  [metadata]
+  (js/coerce (parse-iso19115-xml metadata)))
+
 
