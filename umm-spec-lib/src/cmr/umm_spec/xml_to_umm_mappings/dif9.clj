@@ -4,6 +4,15 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.json-schema :as js]))
 
+(defn- parse-mbrs
+  "Returns a seq of bounding rectangle maps in the given DIF XML doc."
+  [doc]
+  (for [el (select doc "/DIF/Spatial_Coverage")]
+    {:NorthBoundingCoordinate (value-of el "Northernmost_Latitude")
+     :SouthBoundingCoordinate (value-of el "Southernmost_Latitude")
+     :WestBoundingCoordinate (value-of el "Westernmost_Longitude")
+     :EastBoundingCoordinate (value-of el "Easternmost_Longitude")}))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc]
@@ -27,6 +36,7 @@
                       [{:RangeDateTimes (for [temporal temporals]
                                           {:BeginningDateTime (value-of temporal "Start_Date")
                                            :EndingDateTime    (value-of temporal "Stop_Date")})}])
+   :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
    :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                     {:DistributionMedia (value-of distribution "Distribution_Media")
                      :DistributionSize (value-of distribution "Distribution_Size")

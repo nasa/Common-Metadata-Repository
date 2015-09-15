@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
 (defn characteristic-mapping
   [data]
@@ -99,6 +100,7 @@
     [:RestrictionComment (-> c :AccessConstraints :Description)]
     [:Price (-> c :Distributions first :Fees)]
     [:DataFormat (-> c :Distributions first :DistributionFormat)]
+    (spatial/spatial-element c)
     [:SpatialKeywords
      (for [kw (:SpatialKeywords c)]
        [:Keyword kw])]

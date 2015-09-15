@@ -52,7 +52,10 @@
     :Organizations [{:Role "CUSTODIAN"
                      :Party {:OrganizationName {:ShortName "custodian"}}}]
     :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
-    :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
+    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
+                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
+                                              :Geometry {:CoordinateSystem "Geodetic"
+                                                         :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
     :AccessConstraints {:Description "Access constraints"
                         :Value "0"}
     :UseConstraints "Use constraints"
@@ -156,10 +159,40 @@
   (when access-constraints
     (assoc access-constraints :Value nil)))
 
+(defn- prune-empty-maps
+  [x]
+  (cond
+    (map? x) (let [pruned (reduce (fn [m [k v]]
+                                    (assoc m k (prune-empty-maps v)))
+                                  x
+                                  x)]
+               (if (seq (keep val pruned))
+                 pruned
+                 nil))
+    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
+                  (vec pruned))
+    (seq? x)    (seq (keep prune-empty-maps x))
+    :else x))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] dif9-temporal)
+      (update-in [:SpatialExtent] assoc
+                 :SpatialCoverageType nil
+                 :OrbitParameters nil
+                 :GranuleSpatialRepresentation nil
+                 :VerticalSpatialDomains nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc
+                 :ZoneIdentifier nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] assoc
+                 :CoordinateSystem nil
+                 :Points nil
+                 :Lines nil
+                 :GPolygons nil)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
+                      :CenterPoint nil)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] expected-distributions)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
@@ -276,7 +309,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations
-    :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation
+    :MetadataLineages :ScienceKeywords :SpatialInformation
     :AncillaryKeywords :Projects :PaleoTemporalCoverage
     :MetadataAssociations})
 

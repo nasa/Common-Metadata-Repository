@@ -2,6 +2,7 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn parse-temporal
@@ -58,6 +59,7 @@
                     :Fees (value-of doc "/Collection/Price")}]
    :TemporalKeywords (values-at doc "/Collection/TemporalKeywords/Keyword")
    :SpatialKeywords  (values-at doc "/Collection/SpatialKeywords/Keyword")
+   :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (parse-temporal doc)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
                 (assoc (fields-from plat :ShortName :LongName :Type)
