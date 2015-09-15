@@ -14,8 +14,19 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-;; TODO test with various formats that will go through the different query execution paths
-;; What should those do in that case?
+(deftest search-for-collections-with-tag-params-validation-test
+  (testing "Unsupported options"
+    (are [field]
+         (= {:status 400
+             :errors [(format "Option [and] is not supported for param [%s]" (name field))]}
+            (search/find-refs :collection {field "foo" (format "options[%s][and]" (name field)) true}))
+         :tag_namespace :tag_category :tag_value :tag_originator_id)
+
+    (testing "Originator id does not support ignore case because it is always case insensitive"
+      (is (= {:status 400
+              :errors ["Option [ignore_case] is not supported for param [tag_originator_id]"]}
+             (search/find-refs :collection {:tag-originator-id "foo"
+                                            "options[tag-originator-id][ignore-case]" true}))))))
 
 (deftest search-for-collections-by-tag-params-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1 c5-p1
@@ -77,7 +88,6 @@
             "Combination with multiple values"
             [tag1-colls tag3-colls] {:tag-namespace ["namespace1" "namespace2" "foo"] :tag-value "value1"}
 
-
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Namespace Param
 
@@ -132,22 +142,7 @@
             "By Originator Id - Pattern"
             [tag2-colls tag4-colls] {:tag-originator-id "*2" "options[tag-originator-id][pattern]" true}))
 
-
-
-    ))
-
-
-;; TODO test that if a collection is updated it remains associated with the tag
-
-;; Collection deleted and then reingested is still associated with a tag
-;; - test this by search for collections by that tag
-
-
-;; Other TODOs (maybe in other namespaces)
-
-;; Deleting a tag dissociates the collections
-;; - test this by searching for collection by that tag
-
-;; Updating a tag maintains associations
-;; - test this by search for collections by that tag
+    (testing "Combination of tag parameters and other collection conditions"
+      (is (d/refs-match? [c1-p1 c2-p1] (search/find-refs :collection {:tag-namespace "namespace1"
+                                                                      :provider "PROV1"}))))))
 

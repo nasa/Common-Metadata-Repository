@@ -199,3 +199,58 @@
               :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
              (tags/disassociate token concept-id valid-query))))))
 
+;; This tests association retention when collections and tags are updated or deleted.
+(deftest association-retention-test
+  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (let [coll (d/ingest "PROV1" (dc/collection))
+        token (e/login (s/context) "user1")
+        _ (index/wait-until-indexed)
+        tag (tags/save-tag token (tags/make-tag {:value "tag1"}) [coll])
+        assert-tag-associated (fn [collection]
+                                (is (d/refs-match? [collection]
+                                                   (search/find-refs :collection {:tag-value "tag1"}))))
+        assert-tag-not-associated (fn []
+                                    (is (d/refs-match?
+                                          []
+                                          (search/find-refs :collection {:tag-value "tag1"}))))]
+    (index/wait-until-indexed)
+
+    (testing "Tag initially associated with collection"
+      (assert-tag-associated coll))
+
+    (testing "Tag still associated with collection after updating collection"
+      (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status updated-coll)))
+        (index/wait-until-indexed)
+        (assert-tag-associated updated-coll)))
+
+    (testing "Tag still associated with collection after deleting and recreating the collection"
+      (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
+      (let [recreated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status recreated-coll)))
+        (index/wait-until-indexed)
+        (assert-tag-associated recreated-coll)))
+
+    (let [latest-coll (assoc coll :revision-id 4)]
+
+      (testing "Tag still associated with collection after updating tag"
+        (let [updated-tag (tags/save-tag token tag)]
+          (is (= {:status 200 :revision-id 3} (select-keys updated-tag [:status :revision-id])))
+          (index/wait-until-indexed)
+          (assert-tag-associated latest-coll)))
+
+      (testing "Tag not associated with collection after deleting and recreating the tag"
+        (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 4}
+               (tags/delete-tag token (:concept-id tag))))
+        (index/wait-until-indexed)
+
+        (testing "Not associated after tag deleted"
+          (assert-tag-not-associated)))
+
+      (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 5}
+             (tags/create-tag token (tags/make-tag {:value "tag1"}))))
+      (index/wait-until-indexed)
+      (testing "Not associated after being recreated."
+        (assert-tag-not-associated)))))
+
+
