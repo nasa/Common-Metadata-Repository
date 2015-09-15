@@ -46,21 +46,6 @@
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/update-tag (s/context) concept-id tag options)))))
 
-(defn save-tag
-  "A helper function for creating or updating tags for search tests. If the tag does not have a
-  :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
-  along with :concept-id, :revision-id, :errors, and :status"
-  [token tag]
-  (let [tag-to-save (select-keys tag [:namespace :category :value :description])
-        response (if-let [concept-id (:concept-id tag)]
-                   (update-tag token concept-id tag-to-save)
-                   (create-tag token tag-to-save))
-        tag (into tag (select-keys response [:status :errors :concept-id :revision-id]))]
-
-    (if (= (:revision-id tag) 1)
-      ;; Get the originator id for the tag
-      (assoc tag :originator-id (tokens/get-user-id (s/context) token))
-      tag)))
 
 (defn delete-tag
   "Deletes a tag"
@@ -86,6 +71,29 @@
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/disassociate-tag (s/context) concept-id {:condition condition} options)))))
 
+(defn save-tag
+  "A helper function for creating or updating tags for search tests. If the tag does not have a
+  :concept-id it saves it. If the tag has a :concept-id it updates the tag. Returns the saved tag
+  along with :concept-id, :revision-id, :errors, and :status"
+  ([token tag]
+   (let [tag-to-save (select-keys tag [:namespace :category :value :description])
+         response (if-let [concept-id (:concept-id tag)]
+                    (update-tag token concept-id tag-to-save)
+                    (create-tag token tag-to-save))
+         tag (into tag (select-keys response [:status :errors :concept-id :revision-id]))]
+
+     (if (= (:revision-id tag) 1)
+       ;; Get the originator id for the tag
+       (assoc tag :originator-id (tokens/get-user-id (s/context) token))
+       tag)))
+  ([token tag associated-collections]
+   (let [saved-tag (save-tag token tag)
+         ;; Associate the tag with the collections using a query by concept id
+         condition {:or (map #(hash-map :concept_id (:concept-id %)) associated-collections)}
+         response (associate token (:concept-id saved-tag) condition)]
+     (assert (= 200 (:status response)) (pr-str condition))
+     (assoc saved-tag :revision-id (:revision-id response)))))
+
 (defn search
   "Searches for tags using the given parameters"
   [params]
@@ -97,7 +105,7 @@
   [tag user-id concept-id revision-id]
   (let [concept (mdb/get-concept concept-id revision-id)
         ;; make sure a tag has associated collection ids for comparison in metadata db
-        tag (update-in tag [:associated-collection-ids] #(or % #{}))]
+        tag (update-in tag [:associated-concept-ids] #(or % #{}))]
     (is (= {:concept-type :tag
             :native-id (str (:namespace tag) (char 29) (:value tag))
             :provider-id "CMR"

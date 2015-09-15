@@ -14,7 +14,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {}))
 
-
 (deftest search-for-tags-validation-test
   (testing "Unrecognized parameters"
     (is (= {:status 400, :errors ["Parameter [foo] was not recognized."]}

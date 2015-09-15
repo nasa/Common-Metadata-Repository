@@ -6,7 +6,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.validations.core :as v]
             [cmr.common.concepts :as concepts]
-            [cmr.search.services.tagging-service-messages :as msg]
+            [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.search.services.query-execution :as qe]
             [cmr.search.services.query-service :as query-service]
@@ -105,7 +105,7 @@
   (let [user-id (context->user-id context)
         tag (assoc tag
                    :originator-id user-id
-                   :associated-collection-ids #{})]
+                   :associated-concept-ids #{})]
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
 
@@ -155,7 +155,7 @@
     ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
     (let [updated-tag (assoc updated-tag
                              :originator-id (:originator-id existing-tag)
-                             :associated-collection-ids (:associated-collection-ids existing-tag))]
+                             :associated-concept-ids (:associated-concept-ids existing-tag))]
       (mdb/save-concept
         context
         (-> existing-concept
@@ -194,7 +194,7 @@
                             set)
         existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))
-        updated-tag (update-in existing-tag [:associated-collection-ids]
+        updated-tag (update-in existing-tag [:associated-concept-ids]
                                #(update-fn % concept-id-set))]
     (mdb/save-concept
       context

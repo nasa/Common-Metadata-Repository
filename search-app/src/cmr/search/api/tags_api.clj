@@ -64,9 +64,9 @@
   "Retrieves the tag with the given concept-id."
   [context concept-id]
   (-> (tagging-service/get-tag context concept-id)
-      ;; We don't return the associated collection ids on the fetch response.
+      ;; We don't return the associated concept ids on the fetch response.
       ;; This could be changed if we wanted to. It's just not part of the requirements.
-      (dissoc :associated-collection-ids)
+      (dissoc :associated-concept-ids)
       tag-api-response))
 
 (defn update-tag

@@ -23,6 +23,8 @@
     values))
 
 
+;; TODO support merging tag query conditions
+
 (def mergeable-types
   "The set of types of conditions that can be merged together. Limited to string like conditions
   because these are the most likely ones to be created from ACLs."

@@ -182,11 +182,17 @@
    :revision-date and-option
    :highlights highlights-option
 
-   ;; tag parameters
+   ;; Tag parameters
    :namespace string-param-options
    :value string-param-options
    :category string-param-options
-   :originator-id pattern-option})
+   :originator-id pattern-option
+
+   ;; Tag parameters for use querying other concepts.
+   :tag-namespace string-param-options
+   :tag-value string-param-options
+   :tag-category string-param-options
+   :tag-originator-id pattern-option})
 
 (defn parameter-options-validation
   [concept-type params]

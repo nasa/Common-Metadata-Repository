@@ -1,4 +1,4 @@
-(ns cmr.search.services.tagging-service-messages
+(ns cmr.search.services.tagging.tagging-service-messages
   "This contains error response messages for the tagging service")
 
 (def token-required-for-tag-modification
