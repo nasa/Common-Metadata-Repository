@@ -78,7 +78,7 @@
   (for-all [umm-record umm-gen/umm-c-generator]
     (let [metadata-xml (core/generate-metadata :collection :iso19115 umm-record)
           projects (:Projects (core/parse-metadata :collection :iso19115 metadata-xml))
-          expected-projects-keywords (seq (map #'iso-umm-to-xml/project->project-description projects))]
+          expected-projects-keywords (seq (map #'iso-umm-to-xml/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
 

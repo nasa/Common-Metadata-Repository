@@ -36,23 +36,16 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
-(defn- generate-title
-  "Returns an ISO title string from an instrument/sensor record."
-  [record]
-  (str (:ShortName record)
-       ">"
-       (:LongName record)))
-
 (def attribute-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode")
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
 
-(defn- project->project-description
-  "Returns the description of the given project"
-  [proj]
-  (let [{short-name :ShortName long-name :LongName} proj]
+(defn- generate-title
+  "Returns an ISO title string from the ShortName and LongName fields of the given record."
+  [record]
+  (let [{short-name :ShortName long-name :LongName} record]
     (if (seq long-name) (str short-name " > " long-name) short-name)))
 
 (defn- generate-descriptive-keywords
@@ -70,7 +63,7 @@
 (defn- generate-projects-keywords
   "Returns the content generator instructions for descriptive keywords of the given projects."
   [projects]
-  (let [project-keywords (map project->project-description projects)]
+  (let [project-keywords (map generate-title projects)]
     (generate-descriptive-keywords project-keywords "project")))
 
 (defn- generate-characteristics
@@ -179,7 +172,7 @@
       [:gmi:operation
        [:gmi:MI_Operation
         [:gmi:description
-         (char-string (project->project-description proj))]
+         (char-string (generate-title proj))]
         [:gmi:identifier
          [:gmd:MD_Identifier
           [:gmd:code
