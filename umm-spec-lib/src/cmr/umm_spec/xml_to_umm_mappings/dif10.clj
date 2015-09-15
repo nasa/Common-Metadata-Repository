@@ -15,10 +15,9 @@
   (for [characteristic (select el "Characteristics")]
     (fields-from characteristic :Name :Description :DataType :Unit :Value)))
 
-(defn dif10-xml-to-umm-c
-  "Returns UMM-C record from DIF10 collection XML document."
+(defn parse-dif10-xml
+  "Returns collection map from DIF10 collection XML document."
   [doc]
-  (js/coerce
    {:EntryTitle (value-of doc "/DIF/Entry_Title")
     :EntryId (value-of doc "/DIF/Entry_ID")
     :Version (not-not-provided (value-of doc "/DIF/Version"))
@@ -29,6 +28,12 @@
     :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
     :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
     :SpatialKeywords (values-at doc "/DIF/Location")
+    :Projects (for [proj (select doc "/DIF/Project")]
+                {:ShortName (value-of proj "Short_Name")
+                 :LongName (value-of proj "Long_Name")
+                 :Campaigns (values-at proj "Campaign")
+                 :StartDate (value-of proj "Start_Date")
+                 :EndDate (value-of proj "End_Date")})
     :Quality (value-of doc "/DIF/Quality")
     :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")}
     :UseConstraints (value-of doc "/DIF/Use_Constraints")
@@ -75,4 +80,9 @@
     (for [aa (select doc "/DIF/AdditionalAttributes")]
       (fields-from aa :Name :Description :DataType :ParameterRangeBegin :ParameterRangeEnd
                    :Value :MeasurementResolution :ParameterUnitsOfMeasure
-                   :ParameterValueAccuracy :ValueAccuracyExplanation))}))
+                   :ParameterValueAccuracy :ValueAccuracyExplanation))})
+
+(defn dif10-xml-to-umm-c
+  "Returns UMM-C collection record from DIF10 collection XML document."
+  [metadata]
+  (js/coerce (parse-dif10-xml metadata)))

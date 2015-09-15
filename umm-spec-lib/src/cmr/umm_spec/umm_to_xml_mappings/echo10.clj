@@ -112,4 +112,11 @@
        [:AdditionalAttribute
         (elements-from aa
                        :Name :Description :DataType :ParameterRangeBegin
-                       :ParameterRangeEnd :Value)])]]))
+                       :ParameterRangeEnd :Value)])]
+    (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
+      [:Campaigns
+       [:Campaign
+        [:ShortName ShortName]
+        [:LongName LongName]
+        [:StartDate StartDate]
+        [:EndDate EndDate]]])]))
