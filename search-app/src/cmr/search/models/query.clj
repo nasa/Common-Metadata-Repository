@@ -533,5 +533,6 @@
   MatchNoneCondition
   AttributeNameCondition
   AttributeValueCondition
-  AttributeRangeCondition)
+  AttributeRangeCondition
+  RelatedItemQueryCondition)
 
