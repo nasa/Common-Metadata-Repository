@@ -180,7 +180,13 @@
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
    :revision-date and-option
-   :highlights highlights-option})
+   :highlights highlights-option
+
+   ;; tag parameters
+   :namespace string-param-options
+   :value string-param-options
+   :category string-param-options
+   :originator-id pattern-option})
 
 (defn parameter-options-validation
   [concept-type params]

@@ -71,7 +71,11 @@
              :point :point
              :line :line
              :browsable :boolean
-             :two-d-coordinate-system :two-d-coordinate-system}})
+             :two-d-coordinate-system :two-d-coordinate-system}
+   :tag {:namespace :string
+         :value :string
+         :category :string
+         :originator-id :string}})
 
 (def always-case-sensitive-fields
   "A set of parameters that will always be case sensitive"
