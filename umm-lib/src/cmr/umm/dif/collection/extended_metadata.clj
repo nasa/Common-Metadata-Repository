@@ -4,22 +4,22 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection.product-specific-attribute :as psa]))
 
-(def PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
+(def product_level_id_external_meta_name
   "ProductLevelId")
 
-(def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
+(def collection_data_type_external_meta_name
   "CollectionDataType")
 
-(def SPATIAL_COVERAGE_EXTERNAL_META_NAME
+(def spatial_coverage_external_meta_name
   "GranuleSpatialRepresentation")
 
-(def ADDITIONAL_ATTRIBUTE_EXTERNAL_META_NAME
+(def additional_attribute_external_meta_name
   "AdditionalAttribute")
 
 (def non-additional-attributes
   "Set of extended metadata names which do not map to additional attributes"
-  #{PRODUCT_LEVEL_ID_EXTERNAL_META_NAME COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
-    SPATIAL_COVERAGE_EXTERNAL_META_NAME})
+  #{product_level_id_external_meta_name collection_data_type_external_meta_name
+    spatial_coverage_external_meta_name})
 
 (defn- string-value-with-attr
   "Returns the string value of the first element with the given attribute"
@@ -43,7 +43,7 @@
      :value value}))
 
 (defn- xml-elem->potential-additional-attributes
-  "Returns everyting from the Extended_Metadata within the collection XML as UMM additional
+  "Returns everything from the Extended_Metadata within the collection XML as UMM additional
   attributes."
   [collection-element]
   (map xml-elem->additional-attribute

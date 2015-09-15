@@ -12,7 +12,7 @@
 (defn- extract-granule-spatial-representation
   [xml-struct]
   ;; DIF: Extended_Metadata.Name=GranuleSpatialRepresention
-  (when-let [value (em/extended-metadata-value xml-struct em/SPATIAL_COVERAGE_EXTERNAL_META_NAME)]
+  (when-let [value (em/extended-metadata-value xml-struct em/spatial_coverage_external_meta_name)]
     (csk/->kebab-case-keyword value)))
 
 (defn- spatial-coverage-elem->br
@@ -40,7 +40,7 @@
   representation."
   [spatial-coverage]
   (when spatial-coverage
-    (let [extended-metadata {:name em/SPATIAL_COVERAGE_EXTERNAL_META_NAME
+    (let [extended-metadata {:name em/spatial_coverage_external_meta_name
                              :value (csk/->SCREAMING_SNAKE_CASE_STRING
                                       (:granule-spatial-representation spatial-coverage))}]
       (em/generate-metadata-elements [extended-metadata]))))

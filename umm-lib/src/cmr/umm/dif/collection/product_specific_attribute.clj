@@ -17,7 +17,7 @@
                       ;; attempt to determine the type of the data.
                       data-type (if data-type
                                   (psa/parse-data-type data-type)
-                                  (first (filter #(not (nil? (psa/safe-parse-value % value)))
+                                  (first (filter #(some? (psa/safe-parse-value % value))
                                                  all-data-types)))]
                   (c/map->ProductSpecificAttribute
                     (util/remove-nil-keys

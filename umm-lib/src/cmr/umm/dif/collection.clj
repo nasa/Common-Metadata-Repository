@@ -30,9 +30,9 @@
         long-name (util/trunc long-name 1024)
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         processing-level-id (em/extended-metadata-value
-                              collection-content em/PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
+                              collection-content em/product_level_id_external_meta_name)
         collection-data-type (em/extended-metadata-value
-                               collection-content em/COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]
+                               collection-content em/collection_data_type_external_meta_name)]
     (c/map->Product {:short-name short-name
                      :long-name long-name
                      :version-id version-id
@@ -191,11 +191,11 @@
                                  (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
                                  (when processing-level-id
                                    (em/generate-metadata-elements
-                                     [{:name em/PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
+                                     [{:name em/product_level_id_external_meta_name
                                        :value processing-level-id}]))
                                  (when collection-data-type
                                    (em/generate-metadata-elements
-                                     [{:name em/COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
+                                     [{:name em/collection_data_type_external_meta_name
                                        :value collection-data-type}]))))))))))
 
 (defn validate-xml
