@@ -9,6 +9,7 @@
             [clojure.string :as str]
             [clojure.set :as set]
             [clj-time.core :as time]
+            [clj-time.format :as f]
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.search.models.results :as r]
@@ -145,9 +146,11 @@
   ;; entry whereas UMM-C allows multiple periodic-date-time entries. This will have to wait until
   ;; a decision is made about how to resolve multiple periodic-date-time entries.
   [start-date end-date]
-  (not-empty (if (and start-date end-date)
-               (str start-date "/" end-date)
-               start-date)))
+  (when start-date
+    (let [end-date (if end-date
+                     end-date
+                     (f/unparse (f/formatters :date-time-no-ms) (clj-time.core/today-at 0 0)))]
+      (str start-date "/" end-date))))
 
 (defn spatial
   "Get the spatial field from the spatial elements of the collection."
