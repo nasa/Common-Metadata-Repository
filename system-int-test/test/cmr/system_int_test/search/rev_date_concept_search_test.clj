@@ -151,7 +151,7 @@
                  [status errors]))))
 
       (testing "JSON query"
-        (testing "Search collections with updated_since"
+        (testing "search collections with updated_since"
           (are [items search]
                (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
@@ -160,16 +160,21 @@
                [coll5] {:updated_since "2015-01-01T10:00:00Z"}
                [] {:updated_since "2015-01-01T10:00:01Z"}))
 
-        (testing "search with range is invalid"
-          (are [search exp-errors]
+        (testing "invalid update_time"
+          (u/are2 [search exp-errors]
                (let [{:keys [status errors]}
                      (search/find-refs-with-json-query :collection {} search)]
                  (is (= [400 exp-errors]
                         [status errors])))
+               "ranges are invalid"
                {:updated_since {:start_date "2000-01-01T10:00:00Z"
                                 :end_date "2002-01-01T10:00:00Z"}}
                [(str "/condition/updated_since instance type (object) does not match any "
-                     "allowed primitive type (allowed: [\"string\"])")]))))))
+                     "allowed primitive type (allowed: [\"string\"])")]
+               "invalid date string"
+               {:updated_since "foo"}
+               [(str "/condition/updated_since string \"foo\" is invalid against requested date"
+                     " format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]")]))))))
 
 (deftest search-granules-by-revision-date
   (s/only-with-in-memory-database

@@ -164,7 +164,7 @@
 (defmethod parse-json-condition :updated-since
   [_ value]
   (qm/map->DateRangeCondition
-    {:field :revision-date2
+    {:field :updated-since
      :start-date (parser/parse-datetime value)
      :end-date nil}))
 
