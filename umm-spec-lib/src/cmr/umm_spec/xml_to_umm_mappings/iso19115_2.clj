@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -29,6 +30,10 @@
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
        "/eos:EOS_Platform"))
 
+(def projects-xpath
+  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:operation"
+       "/gmi:MI_Operation"))
+
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
 
@@ -49,9 +54,10 @@
 (defn- descriptive-keywords
   "Returns the descriptive keywords values for the given parent element and keyword type"
   [md-data-id-el keyword-type]
-  (values-at md-data-id-el (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
-                                (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
-                                "/gmd:keyword/gco:CharacterString")))
+  (values-at md-data-id-el
+             (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
+                  (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
+                  "/gmd:keyword/gco:CharacterString")))
 
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."
@@ -104,6 +110,18 @@
      :Characteristics (parse-characteristics platform)
      :Instruments (parse-platform-instruments platform)}))
 
+(defn- parse-projects
+  "Returns the projects parsed from the given xml document."
+  [doc]
+  (for [proj (select doc projects-xpath)]
+    (let [short-name (value-of proj short-name-xpath)
+          description (char-string-value proj "gmi:description")
+          ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
+          long-name (when-not (= short-name description)
+                      (str/replace description (str short-name " > ") ""))]
+      {:ShortName short-name
+       :LongName long-name})))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -150,7 +168,8 @@
                        (char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Platforms (parse-platforms doc)}))
+     :Platforms (parse-platforms doc)
+     :Projects (parse-projects doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

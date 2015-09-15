@@ -15,6 +15,9 @@
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Data_Set_Language")
    :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
+   :Projects (for [proj (select doc "/DIF/Project")]
+                {:ShortName (value-of proj "Short_Name")
+                 :LongName (value-of proj "Long_Name")})
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location")
    :Quality (value-of doc "/DIF/Quality")
