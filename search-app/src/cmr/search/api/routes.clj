@@ -44,6 +44,7 @@
             [cmr.search.results-handlers.timeline-results-handler]
             [cmr.search.results-handlers.opendata-results-handler]
             [cmr.search.results-handlers.umm-json-results-handler]
+            [cmr.search.results-handlers.tags-json-results-handler]
 
             ;; ACL support. Required here to avoid circular dependencies
             [cmr.search.services.acls.collection-acls]
