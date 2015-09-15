@@ -13,7 +13,8 @@
 (defn gen-data-type
   "Generates the string data type for XML from the keyword data type."
   [data-type]
-  (csk/->SCREAMING_SNAKE_CASE_STRING (name data-type)))
+  (when data-type
+    (csk/->SCREAMING_SNAKE_CASE_STRING (name data-type))))
 
 (defmulti parse-value
   "Parses a value based on the data type given"
@@ -96,7 +97,7 @@
 
 (defmethod gen-value :default
   [data-type value]
-  (when (not (nil? value))
+  (when-not (nil? value)
     (str value)))
 
 (defmethod gen-value :time

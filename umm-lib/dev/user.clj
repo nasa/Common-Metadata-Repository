@@ -1,5 +1,6 @@
 (ns user
-  (:require [clojure.pprint :refer (pprint pp)]
+  (:require [cmr.common.dev.capture-reveal]
+            [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]

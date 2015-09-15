@@ -378,6 +378,60 @@
     </Additional_Attributes>
     <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
     <Product_Flag>Not provided</Product_Flag>
+    <Extended_Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.uuid</Name>
+        <Value>743933e5-1404-4502-915f-83cde56af440</Value>
+      </Metadata>
+      <Metadata>
+        <Group>gov.nasa.gsfc.gcmd</Group>
+        <Name>metadata.extraction_date</Name>
+        <Value>2013-09-30 09:45:15</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>String attribute</Name>
+        <Description>something string</Description>
+        <Value>alpha</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Float attribute</Name>
+        <Description>something float</Description>
+        <Value>12.3</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Int attribute</Name>
+        <Description>something int</Description>
+        <Value>42</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Date attribute</Name>
+        <Description>something date</Description>
+        <Value>2015-09-14</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Datetime attribute</Name>
+        <Description>something datetime</Description>
+        <Value>2015-09-14T13:01:00Z</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Time attribute</Name>
+        <Description>something time</Description>
+        <Value>13:01:00Z</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Bool attribute</Name>
+        <Description>something bool</Description>
+        <Value>false</Value>
+      </Metadata>
+    </Extended_Metadata>
    </DIF>")
 
 (def expected-temporal
@@ -467,7 +521,69 @@
                                       :value "12.3"
                                       :parsed-parameter-range-begin 0.1
                                       :parsed-parameter-range-end 100.43
-                                      :parsed-value 12.3})]
+                                      :parsed-value 12.3})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "gov.nasa.gsfc.gcmd"
+                                      :name "metadata.uuid"
+                                      :data-type :string
+                                      :value "743933e5-1404-4502-915f-83cde56af440"
+                                      :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "gov.nasa.gsfc.gcmd"
+                                      :name "metadata.extraction_date"
+                                      :data-type :string
+                                      :value "2013-09-30 09:45:15"
+                                      :parsed-value "2013-09-30 09:45:15"})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "String attribute"
+                                      :description "something string"
+                                      :data-type :string
+                                      :value "alpha"
+                                      :parsed-value "alpha"})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Float attribute"
+                                      :description "something float"
+                                      :data-type :float
+                                      :value "12.3"
+                                      :parsed-value 12.3})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Int attribute"
+                                      :description "something int"
+                                      :data-type :int
+                                      :value "42"
+                                      :parsed-value 42})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Date attribute"
+                                      :description "something date"
+                                      :data-type :date
+                                      :value "2015-09-14"
+                                      :parsed-value (p/parse-date "2015-09-14")})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Datetime attribute"
+                                      :description "something datetime"
+                                      :data-type :datetime
+                                      :value "2015-09-14T13:01:00Z"
+                                      :parsed-value (p/parse-datetime "2015-09-14T13:01:00Z")})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Time attribute"
+                                      :description "something time"
+                                      :data-type :time
+                                      :value "13:01:00Z"
+                                      :parsed-value (p/parse-time "13:01:00Z")})
+                                   (umm-c/map->ProductSpecificAttribute
+                                     {:group "custom.group"
+                                      :name "Bool attribute"
+                                      :description "something bool"
+                                      :data-type :boolean
+                                      :value "false"
+                                      :parsed-value false})]
+
      :collection-associations [(umm-c/map->CollectionAssociation
                                  {:short-name "COLLOTHER-237"
                                   :version-id "1"})
@@ -498,3 +614,4 @@
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Platform}' is expected.")]
            (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))
+
