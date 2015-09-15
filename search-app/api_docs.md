@@ -1882,7 +1882,7 @@ Both the tag namespace and value cannot contain the Group Separator character. T
 
 #### Creating a Tag
 
-Tags are created by POSTing a JSON representation of a tag to `/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
+Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
@@ -1902,7 +1902,7 @@ Content-Length: 48
 
 #### Retrieving a Tag
 
-A single tag can be retrieved by sending a GET request to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created.
+A single tag can be retrieved by sending a GET request to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created.
 
 ```
 curl -i %CMR-ENDPOINT%/tags/T1200000000-CMR?pretty=true
@@ -1922,7 +1922,7 @@ Content-Type: application/json;charset=ISO-8859-1
 
 #### Updating a Tag
 
-Tags are updated by sending a PUT request with the JSON representation of a tag to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
+Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. The same rules apply when updating a tag as when creating it but in addition namespace, value, and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR -d \
@@ -1942,7 +1942,7 @@ Content-Length: 48
 
 #### Deleting a Tag
 
-Tags are deleted by sending a DELETE request to `/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
+Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<concept-id>` where `concept-id` is the concept id of the tag returned when it was created. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
 ```
 curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR
@@ -1956,7 +1956,7 @@ Content-Length: 48
 
 #### Associating Collections with a Tag
 
-Tags can be associated with collections by POSTing a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
@@ -1974,7 +1974,7 @@ Content-Length: 48
 
 #### Disassociating Collections with a Tag
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
@@ -1992,10 +1992,35 @@ Content-Length: 48
 
 #### Searching for Tags
 
-All tags can be retrieved by sending a GET request to `/tags/`. A single tag can be retreived using the concept-id returned when it was created by sending a GET request to `/tags/<concept-id>`. The only supported response format is JSON.
+Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
+
+##### Tag Search Parameters
+
+The following parameters are supported when searching for tags.
+
+* page_size
+* page_num
+* pretty
+
+##### Tag Search Response
+
+The response is always returned in JSON and includes the following parts.
+
+* hits - How many total tags were found.
+* took - How long the search took in milliseconds
+* items - a list of the current page of tags with the following fields
+  * concept-id
+  * revision-id
+  * namespace
+  * value
+  * category
+  * description
+  * originator-id - The id of the user that created the tag.
+
+##### Tag Search Example
 
 ```
-curl -i %CMR-ENDPOINT%/tags
+curl -i %CMR-ENDPOINT%/tags?pretty=true
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -2013,20 +2038,6 @@ Content-Length: 292
   } ],
   "took" : 5,
   "hits" : 1
-}
-
-curl -i %CMR-ENDPOINT/tags/T1200000000-CMR
-
-HTTP/1.1 200 OK
-Content-Type: application/json;charset=ISO-8859-1
-Content-Length: 171
-
-{
-  "originator-id" : "mock-admin",
-  "namespace" : "org.ceos.wgiss.cwic",
-  "category" : "cwic_public",
-  "value" : "quality",
-  "description" : "This is a sample tag."
 }
 ```
 
