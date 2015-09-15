@@ -372,6 +372,10 @@
            :concept-id virt-granule-id
            :granule-ur virt-granule-ur})))))
 
+
+;; This test tests the tranlsation end-point using all the sample granule-urs defined for virtual
+;; granules in the config file. All the virtual granule entries should be translated to corresponding
+;; source entries by the end-point.
 (deftest all-virtual-granules-translate-entries-test
    (let [source-collections (vp/ingest-source-collections)
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
