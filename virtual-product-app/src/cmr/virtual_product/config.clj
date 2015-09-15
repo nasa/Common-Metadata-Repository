@@ -87,7 +87,7 @@
 (def source-to-virtual-product-config
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
-   {:source-short-name "AST_L1A"
+   {:short-name "AST_L1A"
     :virtual-collections [{:entry-title "ASTER On-Demand L2 Surface Emissivity"
                            :short-name "AST_05"
                            :matcher tir-mode?}
@@ -119,9 +119,29 @@
                            :short-name "AST14DMO"
                            :matcher (match-all vnir1-mode? vnir2-mode? day-granule?)}]}
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
-   {:source-short-name "OMUVBd"
+   {:short-name "OMUVBd"
     :virtual-collections [{:entry-title "OMI/Aura Surface UVB UV Index, Erythemal Dose, and Erythemal Dose Rate Daily L3 Global 1.0x1.0 deg Grid V003"
-                           :short-name "OMUVBd_ErythermalUV"}]}})
+                           :short-name "OMUVBd_ErythemalUV"}]}
+   ["GSFCS4PA" "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"]
+   {:short-name "OMTO3d"
+    :virtual-collections [{:entry-title "OMI/Aura TOMS-Like Column Amount Ozone and UV Aerosol Index Daily L3 Global 1.0x1.0 deg V003"
+                           :short-name "OMTO3d_O3_AI"}]}
+   ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
+   {:short-name "AIRX3STD"
+    :virtual-collections [{:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Water Vapor Mass Mixing Ratio V006"
+                           :short-name "AIRX3STD_006_H2O_MMR_Surf"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Outgoing Longwave Radiation V006"
+                           :short-name "AIRX3STD_006_OLR"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Air Temperature V006"
+                           :short-name "AIRX3STD_006_SurfAirTemp"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Surface Skin Temperature V006"
+                           :short-name "AIRX3STD_006_SurfSkinTemp"}
+                          {:entry-title "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) Total Carbon Monoxide V006"
+                           :short-name "AIRX3STD_006_TotCO"}]}
+   ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
+   {:short-name "AIRX3STM"
+    :virtual-collections [{:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006"
+                           :short-name "AIRX3STM_006_ClrOLR"}]}})
 
 (def virtual-product-to-source-config
   "A map derived from the map source-to-virtual-product-config. This map consists of keys which are
@@ -129,13 +149,13 @@
   of short name, source entry title and source short name for each of the keys"
   (into {}
         (for [[[provider-id source-entry-title] vp-config] source-to-virtual-product-config
-              :let [{:keys [source-short-name virtual-collections]} vp-config]
+              :let [{:keys [short-name virtual-collections]} vp-config]
               virtual-collection virtual-collections]
           [[provider-id (:entry-title virtual-collection)]
            {:short-name (:short-name virtual-collection)
             :matcher (:matcher virtual-collection)
             :source-entry-title source-entry-title
-            :source-short-name source-short-name}])))
+            :source-short-name short-name}])))
 
 (def sample-source-granule-urs
   "This contains a map of source collection provider id and entry title tuples to sample granule
@@ -147,20 +167,26 @@
    ["GSFCS4PA" "OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"]
    ["OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
     "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1012_v003-2014m0117t110510.he5"
-    "OMUVBd.003:OMI-Aura_L3-OMUVBd_2005m0305_v003-2014m0117t163602.he5"]})
+    "OMUVBd.003:OMI-Aura_L3-OMUVBd_2005m0305_v003-2014m0117t163602.he5"]
+   ["GSFCS4PA" "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"]
+   ["OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
+    "OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1002_v003-2012m0405t174153.he5"
+    "OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1003_v003-2012m0405t174154.he5"]
+   ["GSFCS4PA" "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
+    "AIRX3STD.006:AIRS.2002.09.01.L3.RetStd001.v6.0.9.0.G13208004820.hdf"
+    "AIRX3STD.006:AIRS.2002.09.02.L3.RetStd001.v6.0.9.0.G13208011303.hdf"]
+   ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
+   ["AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
+    "AIRX3STM.006:AIRS.2002.10.01.L3.RetStd031.v6.0.9.0.G13211133235.hdf"
+    "AIRX3STM.006:AIRS.2002.11.01.L3.RetStd030.v6.0.9.0.G13209234123.hdf"]})
 
 (defmulti generate-granule-ur
   "Generates a new granule ur for the virtual collection"
   (fn [provider-id source-short-name virtual-short-name granule-ur]
     [provider-id source-short-name]))
 
-;; AST_L1A granule urs look like this "SC:AST_L1A.003:2006227720". We generate them by using the
-;; short name of the virtual collection instead of the source.
-(defmethod generate-granule-ur ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id source-short-name virtual-short-name granule-ur]
-  (str/replace granule-ur source-short-name virtual-short-name))
-
-(defmethod generate-granule-ur ["GSFCS4PA" "OMUVBd"]
+(defmethod generate-granule-ur :default
   [provider-id source-short-name virtual-short-name granule-ur]
   (str/replace-first granule-ur source-short-name virtual-short-name))
 
@@ -177,11 +203,7 @@
   (fn [provider-id source-short-name virtual-short-name virtual-granule-ur]
     [provider-id source-short-name]))
 
-(defmethod compute-source-granule-ur ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id source-short-name virtual-short-name virtual-granule-ur]
-  (str/replace virtual-granule-ur virtual-short-name source-short-name))
-
-(defmethod compute-source-granule-ur ["GSFCS4PA" "OMUVBd"]
+(defmethod compute-source-granule-ur :default
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
 
@@ -222,30 +244,75 @@
   [provider-id source-short-name source-umm virtual-umm]
   virtual-umm)
 
-(defn- update-online-access-url
+(defn- subset-opendap-url
   "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc
   will be translated to
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
-  [related-urls src-granule-ur]
-  (let [fname (second (str/split src-granule-ur #":"))
-        re (Pattern/compile (format ".*/opendap/.*%s.nc$" fname))]
+  [related-urls src-granule-ur opendap-subset]
+  (let [re (Pattern/compile ".*/opendap/.*")]
     (seq (for [related-url related-urls]
            ;; Online Access URLs have type of "GET DATA"
            (if (= (:type related-url) "GET DATA")
              (if-let [match (re-matches re (:url related-url))]
                (assoc related-url
-                      :url (str match "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
+                      :url (str match "?" opendap-subset))
                related-url)
              related-url)))))
 
+(defn- remove-granule-size
+  "Remove the size of the data granule if it is present"
+  [virtual-umm]
+  (if (get-in virtual-umm [:data-granule :size])
+    (assoc-in virtual-umm [:data-granule :size] nil)
+    virtual-umm))
+
+(defn- subset-opendap-data-access-url
+  "Generate the OpenDAP data access url for the virtual granule based on the OpenDAP link for the
+  source dataset. Remove the size of the data from data granule as it is no longer valid since it
+  represents the size of the original granule, not the subset."
+  [source-umm virtual-umm opendap-subset]
+  (-> virtual-umm
+      (update-in [:related-urls] subset-opendap-url (:granule-ur source-umm) opendap-subset)
+      remove-granule-size))
+
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
   [provider-id source-short-name source-umm virtual-umm]
-  (update-in virtual-umm [:related-urls] update-online-access-url (:granule-ur source-umm)))
+  (subset-opendap-data-access-url source-umm virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
+
+(defmethod update-virtual-granule-umm ["GSFCS4PA" "OMTO3d"]
+  [provider-id source-short-name source-umm virtual-umm]
+  (subset-opendap-data-access-url source-umm virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
+
+(def airx3std-opendap-subsets
+  "A map of short names of the virtual products based on AIRXSTD dataset to the string representing
+  the corresponding OpenDAP url subset used in the generation of the online access urls for the
+  virtual granule metadata being created"
+  {"AIRX3STD_006_H2O_MMR_Surf" "H2O_MMR_A,H2OPrsLvls_A,Latitude,Longitude"
+   "AIRX3STD_006_OLR" "OLR_A,OLR_D,Latitude,Longitude"
+   "AIRX3STD_006_SurfAirTemp" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude"
+   "AIRX3STD_006_SurfSkinTemp" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude"
+   "AIRX3STD_006_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"})
+
+(defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
+  [provider-id source-short-name source-umm virtual-umm]
+  (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])
+        virtual-short-name (:short-name (get virtual-product-to-source-config
+                                             [provider-id virtual-entry-title]))]
+    (subset-opendap-data-access-url source-umm virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
+
+(defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
+  [provider-id source-short-name source-umm virtual-umm]
+  (subset-opendap-data-access-url source-umm virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
 
 (defn generate-virtual-granule-umm
   "Generate the virtual granule umm based on source granule umm"
-  [provider-id source-short-name source-umm virtual-coll virtual-granule-ur]
-  (let [virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)]
+  [provider-id source-short-name source-umm virtual-coll]
+  (let [virtual-granule-ur (generate-granule-ur
+                             provider-id
+                             source-short-name
+                             (:short-name virtual-coll)
+                             (:granule-ur source-umm))
+        virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)]
     (update-virtual-granule-umm provider-id source-short-name
                                 source-umm virtual-umm)))

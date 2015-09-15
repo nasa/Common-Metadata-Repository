@@ -23,7 +23,7 @@
   "Returns a sequence of UMM collection records that are sources of virtual products."
   []
   (for [[[provider-id entry-title]
-         {short-name :source-short-name}] vp-config/source-to-virtual-product-config]
+         {:keys [short-name]}] vp-config/source-to-virtual-product-config]
     (assoc (dc/collection {:entry-title entry-title :short-name short-name})
            :provider-id provider-id)))
 
@@ -75,7 +75,7 @@
         vp-config (get vp-config/source-to-virtual-product-config [provider-id entry-title])]
     (for [virtual-coll (:virtual-collections vp-config)]
       (vp-config/generate-granule-ur
-        provider-id (:source-short-name vp-config) (:short-name virtual-coll) granule-ur))))
+        provider-id (:short-name vp-config) (:short-name virtual-coll) granule-ur))))
 
 (defn translate-granule-entries
   "Translate the virtual granule entries to the corresponding source entries in the input json"
