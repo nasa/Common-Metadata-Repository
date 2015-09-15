@@ -1,36 +1,36 @@
 (ns cmr.umm.dif.collection.product-specific-attribute
   (:require [cmr.umm.collection :as c]
             [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.umm.dif.collection.extended-metadata :as em]))
+            [cmr.umm.dif.collection.extended-metadata :as em]
+            [cmr.common.util :as util]))
 
-(def ADDITIONAL_ATTRIBUTE_EXTERNAL_META_NAME
-  "AdditionalAttribute")
+(def all-data-types
+  "List of all potential data types."
+  [:datetime :date :time :int :float :boolean :string])
 
 (defn xml-elem->ProductSpecificAttributes
   [xml-struct]
-  ;; DIF: Extended_Metadata.Group=AdditionalAttribute
-  (when-let [ems (em/xml-elem->extended-metadatas xml-struct true)]
-    (let [attribs (filter #(= ADDITIONAL_ATTRIBUTE_EXTERNAL_META_NAME (:group %)) ems)]
-      ;; There is no way to validate the AdditionalAttributes through DIF schema.
-      ;; For now, we just assume that the type always exist for DIF PSA.
-      (seq (map (fn [attr]
-                  (let [{:keys [name data-type description value]} attr
-                        {:keys [begin end value]} value
-                        data-type (psa/parse-data-type data-type)]
-                    (c/map->ProductSpecificAttribute
+  (when-let [ems (em/xml-elem->additional-attributes xml-struct)]
+    (seq (map (fn [attr]
+                (let [{:keys [name data-type description value group]} attr
+                      ;; Data-type is optional in DIF9 and in practice not used. We make a best
+                      ;; attempt to determine the type of the data.
+                      data-type (if data-type
+                                  (psa/parse-data-type data-type)
+                                  (first (filter #(not (nil? (psa/safe-parse-value % value)))
+                                                 all-data-types)))]
+                  (c/map->ProductSpecificAttribute
+                    (util/remove-nil-keys
                       {:name name
+                       :group group
                        :data-type data-type
                        :description description
-                       :parameter-range-begin begin
-                       :parameter-range-end end
                        :value value
-                       :parsed-parameter-range-begin (psa/safe-parse-value data-type begin)
-                       :parsed-parameter-range-end (psa/safe-parse-value data-type end)
-                       :parsed-value (psa/safe-parse-value data-type value)})))
-                attribs)))))
+                       :parsed-value (psa/safe-parse-value data-type value)}))))
+              ems))))
 
 (defn generate-product-specific-attributes
   [psas]
   (when (seq psas)
-    (em/generate-extended-metadatas psas true)))
+    (em/generate-extended-metadata psas)))
 
