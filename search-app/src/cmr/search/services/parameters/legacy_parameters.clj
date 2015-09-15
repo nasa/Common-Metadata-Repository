@@ -152,7 +152,7 @@
   [concept-type params]
   (reduce-kv (fn [memo k v]
                ;; look for parameters in the map form
-               (if (map? v)
+               (if (and (map? v) (not= :options k))
                  (let [{:keys [value min-value max-value min max]} v]
                    (cond
                      (or min-value max-value)

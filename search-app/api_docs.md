@@ -1998,9 +1998,24 @@ Tags can be searched for by sending a request to `%CMR-ENDPOINT%/tags`.
 
 The following parameters are supported when searching for tags.
 
+##### Standard Parameters:
+
 * page_size
 * page_num
 * pretty
+
+##### Tag Matching Parameters
+
+These parameters will match fields within a tag. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `namespace[]=ns1&namespace[]=ns2`.
+
+* namespace
+  * options: ignore_case, pattern
+* value
+  * options: ignore_case, pattern
+* category
+  * options: ignore_case, pattern
+* originator_id
+  * options: pattern
 
 ##### Tag Search Response
 
@@ -2020,7 +2035,7 @@ The response is always returned in JSON and includes the following parts.
 ##### Tag Search Example
 
 ```
-curl -i %CMR-ENDPOINT%/tags?pretty=true
+curl -g -i "%CMR-ENDPOINT%/tags?pretty=true&namespace=org\\.ceos\\.*&options[namespace][pattern]=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
