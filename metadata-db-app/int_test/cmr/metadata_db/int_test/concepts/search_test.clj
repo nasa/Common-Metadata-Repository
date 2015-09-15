@@ -26,8 +26,8 @@
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
           coll2 (util/create-and-save-collection provider-id 2 3)
           coll3 (util/create-and-save-collection provider-id 3 3)
-          gran1 (util/create-and-save-granule provider-id (:concept-id coll1) 1 2)
-          gran2 (util/create-and-save-granule provider-id (:concept-id coll2) 2 2)]
+          gran1 (util/create-and-save-granule provider-id coll1 1 2)
+          gran2 (util/create-and-save-granule provider-id coll2 2 2)]
       (are [item-revision-tuples]
            (let [tuples (map #(update-in % [0] :concept-id) item-revision-tuples)
                  {:keys [status concepts]} (util/get-concepts tuples)
@@ -71,16 +71,16 @@
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 3)
         coll2 (util/create-and-save-collection "REG_PROV" 2 1)
         coll3 (util/create-and-save-collection "SMAL_PROV1" 3 3)
-        gran1 (util/create-and-save-granule "REG_PROV" (:concept-id coll1) 1 2)
-        gran2 (util/create-and-save-granule "REG_PROV" (:concept-id coll2) 2 1)]
+        gran1 (util/create-and-save-granule "REG_PROV" coll1 1 2)
+        gran2 (util/create-and-save-granule "REG_PROV" coll2 2 1)]
     (are [item-revision-tuples]
          (let [ids (map #(:concept-id (first %)) item-revision-tuples)
                {:keys [status concepts]} (util/get-latest-concepts ids)
                expected-concepts (map (fn [[item revision]]
                                         (assoc item :revision-id revision))
                                       item-revision-tuples)]
-           (and (= 200 status)
-                (= expected-concepts (concepts-for-comparison concepts))))
+           (and (is (= 200 status))
+                (is (= expected-concepts (concepts-for-comparison concepts)))))
          ; one collection
          [[coll1 3]]
          ;; two collections
@@ -276,13 +276,13 @@
 (deftest find-granules
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1 1)
         gran1 (util/create-and-save-granule "REG_PROV"
-                                            (:concept-id coll1)
+                                            coll1
                                             1
                                             3
                                             {:native-id "G1-NAT"
                                              :extra-fields {:granule-ur "G1-UR"}})
         gran2 (util/create-and-save-granule "REG_PROV"
-                                            (:concept-id coll1)
+                                            coll1
                                             2
                                             2
                                             {:native-id "G2-NAT"

@@ -25,6 +25,7 @@
             [cmr.message-queue.config :as qcfg]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.lifecycle :as lifecycle]
+            [clojure.edn :as edn]
             [clj-time.core :as t]
             [clj-time.format :as f]))
 
@@ -100,34 +101,6 @@
                                      {:provider-id provider-id})]
          (bulk-index context all-revisions-batches true))))))
 
-(defn index-concept
-  "Index the given concept with the parsed umm record."
-  [context concept umm-record options]
-  (let [{:keys [all-revisions-index?]} options
-        {:keys [concept-id revision-id concept-type]} concept
-        concept-type (cs/concept-id->type concept-id)]
-    (when (indexing-applicable? concept-type all-revisions-index?)
-      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
-                    concept-id revision-id all-revisions-index?))
-      (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
-            delete-time (get-in umm-record [:data-provider-timestamps :delete-time])]
-        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
-          (let [concept-index (idx-set/get-concept-index-name context concept-id revision-id
-                                                              all-revisions-index? concept)
-                es-doc (es/concept->elastic-doc context concept umm-record)
-                elastic-options (-> options
-                                    (select-keys [:all-revisions-index? :ignore-conflict?])
-                                    (assoc :ttl (when delete-time
-                                                  (t/in-millis (t/interval (tk/now) delete-time)))))]
-            (es/save-document-in-elastic
-              context
-              concept-index
-              (concept-mapping-types concept-type)
-              es-doc
-              concept-id
-              revision-id
-              elastic-options)))))))
-
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
   [{:keys [concept-id revision-date]}]
@@ -145,6 +118,48 @@
               concept-id
               revision-date)))))
 
+(defmulti parse-concept
+  "Parse the metadata from a concept map into a UMM model or map containing data needed for
+  indexing."
+  (fn [concept]
+   (:concept-type concept)))
+
+(defmethod parse-concept :tag
+  [concept]
+  (edn/read-string (:metadata concept)))
+
+(defmethod parse-concept :default
+  [concept]
+  (umm/parse-concept concept))
+
+(defn index-concept
+  "Index the given concept with the parsed umm record."
+  [context concept parsed-concept options]
+  (let [{:keys [all-revisions-index?]} options
+        {:keys [concept-id revision-id concept-type]} concept
+        concept-type (cs/concept-id->type concept-id)]
+    (when (indexing-applicable? concept-type all-revisions-index?)
+      (info (format "Indexing concept %s, revision-id %s, all-revisions-index? %s"
+                    concept-id revision-id all-revisions-index?))
+      (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
+            delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
+        (when (or (nil? delete-time) (> (compare delete-time (tk/now)) 0))
+          (let [concept-index (idx-set/get-concept-index-name context concept-id revision-id
+                                                              all-revisions-index? concept)
+                es-doc (es/concept->elastic-doc context concept parsed-concept)
+                elastic-options (-> options
+                                    (select-keys [:all-revisions-index? :ignore-conflict?])
+                                    (assoc :ttl (when delete-time
+                                                  (t/in-millis (t/interval (tk/now) delete-time)))))]
+            (es/save-document-in-elastic
+              context
+              concept-index
+              (concept-mapping-types concept-type)
+              es-doc
+              concept-id
+              revision-id
+              elastic-options)))))))
+
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
@@ -157,8 +172,8 @@
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
-            umm-record (umm/parse-concept concept)]
-        (index-concept context concept umm-record options)
+            parsed-concept (parse-concept concept)]
+        (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 
 (deftracefn delete-concept

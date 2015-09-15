@@ -97,7 +97,7 @@
   {:fn (personnel->contact-name personnel)
    :hasEmail (str "mailto:" (personnel->contact-email personnel))})
 
-(defmethod elastic-results/elastic-result->query-result-item :opendata
+(defmethod elastic-results/elastic-result->query-result-item [:collection :opendata]
   [_ _ elastic-result]
   (let [{concept-id :_id
          {[short-name] :short-name
@@ -230,7 +230,7 @@
     {:conformsTo OPENDATA_SCHEMA
      :dataset (map (partial result->opendata context concept-type) items)}))
 
-(defmethod qs/search-results->response :opendata
+(defmethod qs/search-results->response [:collection :opendata]
   [context query results]
   (let [{:keys [concept-type result-features]} query
         response-results (results->opendata

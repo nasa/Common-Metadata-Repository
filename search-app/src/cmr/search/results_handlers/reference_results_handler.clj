@@ -32,7 +32,7 @@
   {:collection :entry-title
    :granule :granule-ur})
 
-(defmethod elastic-results/elastic-result->query-result-item :xml
+(defn- elastic-result->query-result-item
   [context query elastic-result]
   (let [name-key (concept-type->name-key (:concept-type query))
         {revision-id :_version
@@ -44,6 +44,11 @@
      :location (format "%s%s/%s" (url/reference-root context) concept-id revision-id)
      :name name-value
      :score (r/normalize-score score)}))
+
+(doseq [concept-type [:collection :granule]]
+  (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
+    [context query elastic-result]
+    (elastic-result->query-result-item context query elastic-result)))
 
 (defmethod gcrf/query-results->concept-ids :xml
   [results]
@@ -111,8 +116,13 @@
     (x/->Element :references {"type" "array"}
                  (map (partial reference->xml-element true results) (:items results)))))
 
-(defmethod qs/search-results->response :xml
+(defn- search-results->response
   [context query results]
   (let [{:keys [echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
+
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :xml]
+    [context query results]
+    (search-results->response context query results)))

@@ -22,7 +22,7 @@
    "deleted"
    "metadata-format"])
 
-(defmethod elastic-results/elastic-result->query-result-item :umm-json
+(defmethod elastic-results/elastic-result->query-result-item [:collection :umm-json]
   [context query elastic-result]
   (let [{[concept-id] :concept-id
          [native-id] :native-id
@@ -52,7 +52,7 @@
            :short-name short-name
            :version-id version-id}}))
 
-(defmethod qs/search-results->response :umm-json
+(defmethod qs/search-results->response [:collection :umm-json]
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
 

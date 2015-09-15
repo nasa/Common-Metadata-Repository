@@ -6,6 +6,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]))
@@ -23,9 +24,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-granule-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-    (let [collection (util/collection-concept provider-id 1)
-          parent-collection-id (:concept-id (util/save-concept collection))
-          granule (util/granule-concept provider-id parent-collection-id 1)
+    (let [parent-collection (util/create-and-save-collection provider-id 1)
+          granule (util/granule-concept provider-id parent-collection 1)
           {:keys [status revision-id concept-id] :as resp} (util/save-concept granule)]
       (is (= 201 status) (pr-str resp))
       (is (= revision-id 1))
@@ -35,9 +35,8 @@
   (testing "Save granules with the same native-id for two small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
-          [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])
-          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1-concept-id 1 1 {:native-id "foo"})
-          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2-concept-id 2 1 {:native-id "foo"})
+          gran1 (util/create-and-save-granule "SMAL_PROV1" coll1 1 1 {:native-id "foo"})
+          gran2 (util/create-and-save-granule "SMAL_PROV2" coll2 2 1 {:native-id "foo"})
           [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
       (is (util/verify-concept-was-saved gran1))
       (is (util/verify-concept-was-saved gran2))
@@ -45,11 +44,9 @@
 
 (deftest save-granule-with-concept-id
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-    (let [collection (util/collection-concept provider-id 1)
-          parent-collection-id (:concept-id (util/save-concept collection))
+    (let [parent-collection (util/create-and-save-collection provider-id 1)
           gran-concept-id (str "G10-" provider-id)
-          granule (util/granule-concept
-                    provider-id parent-collection-id 1 {:concept-id gran-concept-id})
+          granule (util/granule-concept provider-id parent-collection 1 {:concept-id gran-concept-id})
           {:keys [status revision-id concept-id]} (util/save-concept granule)]
       (is (= 201 status))
       (is (= revision-id 1))
@@ -76,7 +73,7 @@
 
       (testing "with incorrect concept id matching another concept"
         (let [other-gran-concept-id (str "G11-" provider-id)
-              granule2 (util/granule-concept provider-id parent-collection-id 2
+              granule2 (util/granule-concept provider-id parent-collection 2
                                              {:concept-id other-gran-concept-id
                                               :native-id "native2"})
               _ (is (= 201 (:status (util/save-concept granule2))))
@@ -102,15 +99,14 @@
     (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
       ;; Turn on enforcement of duplicate granule UR constraint
       (cc/set-enforce-granule-ur-constraint! true)
-      (let [collection (util/collection-concept provider-id 1)
-            parent-collection-id (:concept-id (util/save-concept collection))
+      (let [parent-collection (util/create-and-save-collection provider-id 1)
             existing-gran-concept-id (str "G1-" provider-id)
-            existing-granule (util/granule-concept provider-id parent-collection-id 1
+            existing-granule (util/granule-concept provider-id parent-collection 1
                                                    {:concept-id existing-gran-concept-id
                                                     :revision-id 1
                                                     :extra-fields {:granule-ur "GR-UR1"}})
             test-gran-concept-id (str "G2-" provider-id)
-            test-granule (util/granule-concept provider-id parent-collection-id 2
+            test-granule (util/granule-concept provider-id parent-collection 2
                                                {:concept-id test-gran-concept-id
                                                 :revision-id 1
                                                 :extra-fields {:granule-ur "GR-UR1"}})
@@ -142,11 +138,11 @@
   (testing "duplicate granule urs within multiple small providers is OK"
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1)
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2)
-          gran1 (util/granule-concept "SMAL_PROV1" (:concept-id coll1) 1
+          gran1 (util/granule-concept "SMAL_PROV1" coll1 1
                                       {:concept-id "G1-SMAL_PROV1"
                                        :revision-id 1
                                        :extra-fields {:granule-ur "GR-UR1"}})
-          gran2 (util/granule-concept "SMAL_PROV2" (:concept-id coll2) 2
+          gran2 (util/granule-concept "SMAL_PROV2" coll2 2
                                       {:concept-id "G2-SMAL_PROV2"
                                        :revision-id 1
                                        :extra-fields {:granule-ur "GR-UR1"}})

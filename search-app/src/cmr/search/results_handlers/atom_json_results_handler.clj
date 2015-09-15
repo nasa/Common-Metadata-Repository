@@ -15,17 +15,14 @@
             [camel-snake-kebab.core :as csk]
             [cmr.common.joda-time]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
-  [concept-type query]
-  (elastic-search-index/concept-type+result-format->fields :collection (assoc query :result-format :atom)))
+(doseq [concept-type [:collection :granule]]
+  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :json]
+    [concept-type query]
+    (elastic-search-index/concept-type+result-format->fields concept-type (assoc query :result-format :atom)))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :json]
-  [concept-type query]
-  (elastic-search-index/concept-type+result-format->fields :granule (assoc query :result-format :atom)))
-
-(defmethod elastic-results/elastic-results->query-results :json
-  [context query elastic-results]
-  (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
+  (defmethod elastic-results/elastic-results->query-results [concept-type :json]
+    [context query elastic-results]
+    (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results)))
 
 (defmethod gcrf/query-results->concept-ids :json
   [results]
@@ -137,7 +134,7 @@
         :entry (map (partial atom-reference->json results concept-type) items)
         :facets facets})}))
 
-(defmethod qs/search-results->response :json
+(defn- search-results->response
   [context query results]
   (let [{:keys [concept-type echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))
@@ -145,8 +142,17 @@
                            context echo-compatible? include-facets? concept-type results)]
     (json/generate-string response-results)))
 
-(defmethod qs/single-result->response :json
+(defn- single-result->response
   [context query results]
   (json/generate-string (atom-reference->json results
                                               (:concept-type query)
                                               (first (:items results)))))
+
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :json]
+    [context query results]
+    (search-results->response context query results))
+
+  (defmethod qs/single-result->response [concept-type :json]
+    [context query results]
+    (single-result->response  context query results)))

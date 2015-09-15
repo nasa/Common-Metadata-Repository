@@ -45,11 +45,56 @@
 ;;; concepts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def granule-xml
+  "Valid ECHO10 granule for concept generation"
+  "<Granule>
+    <GranuleUR>Q2011143115400.L1A_SCI</GranuleUR>
+    <InsertTime>2011-08-26T11:10:44.490Z</InsertTime>
+    <LastUpdate>2011-08-26T16:17:55.232Z</LastUpdate>
+    <Collection>
+      <EntryId>AQUARIUS_L1A_SSS</EntryId>
+    </Collection>
+    <RestrictionFlag>0.0</RestrictionFlag>
+    <Orderable>false</Orderable>
+  </Granule>")
+
+(def collection-xml
+  "Valid ECHO10 collection for concept generation"
+  "<Collection>
+    <ShortName>MINIMAL</ShortName>
+    <VersionId>1</VersionId>
+    <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+    <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+    <LongName>A minimal valid collection</LongName>
+    <DataSetId>A minimal valid collection V 1</DataSetId>
+    <Description>A minimal valid collection</Description>
+    <Orderable>true</Orderable>
+    <Visible>true</Visible>
+  </Collection>")
+
+(def tag-edn
+  "Valid EDN for tag metadata"
+  (pr-str {:namespace "org.nasa.something"
+           :category "category1"
+           :value "quality"
+           :description "A very good tag"
+           :originator-id "jnorton"
+           :associated-concept-ids #{}}))
+
+(def concept-dummy-metadata
+  "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
+  to look up the metadata for the concepts and parse it. So we need to provide valid
+  metadata for each test concept we create. This maps concept-type to dummy data that can be used
+  by default."
+  {:collection collection-xml
+   :granule granule-xml
+   :tag tag-edn})
+
 (defn- concept
-  "Create a concept map for any concept type"
+  "Create a concept map for any concept type. "
   [provider-id concept-type uniq-num attributes]
   (merge {:native-id (str "native-id " uniq-num)
-          :metadata (str "data here " uniq-num)
+          :metadata (concept-type concept-dummy-metadata)
           :deleted false}
          attributes
          ;; concept-type and provider-id args take precedence over attributes
@@ -79,10 +124,11 @@
 
 (defn granule-concept
   "Creates a granule concept"
-  ([provider-id parent-collection-id uniq-num]
-   (granule-concept provider-id parent-collection-id uniq-num {}))
-  ([provider-id parent-collection-id uniq-num attributes]
-   (let [extra-fields (merge {:parent-collection-id parent-collection-id
+  ([provider-id parent-collection uniq-num]
+   (granule-concept provider-id parent-collection uniq-num {}))
+  ([provider-id parent-collection uniq-num attributes]
+   (let [extra-fields (merge {:parent-collection-id (:concept-id parent-collection)
+                              :parent-entry-title (get-in parent-collection [:extra-fields :entry-title])
                               :delete-time nil
                               :granule-ur (str "granule-ur " uniq-num)}
                              (:extra-fields attributes))
@@ -322,12 +368,13 @@
 
 (defn create-and-save-granule
   "Creates, saves, and returns a granule concept with its data from metadata-db"
-  ([provider-id parent-collection-id uniq-num]
-   (create-and-save-granule provider-id parent-collection-id uniq-num 1))
-  ([provider-id parent-collection-id uniq-num num-revisions]
-   (create-and-save-granule provider-id parent-collection-id uniq-num num-revisions {}))
-  ([provider-id parent-collection-id uniq-num num-revisions attributes]
-   (let [concept (granule-concept provider-id parent-collection-id uniq-num attributes)
+  ([provider-id parent-collection uniq-num]
+   (create-and-save-granule provider-id parent-collection uniq-num 1))
+  ([provider-id parent-collection uniq-num num-revisions]
+   (create-and-save-granule
+     provider-id parent-collection uniq-num num-revisions {}))
+  ([provider-id parent-collection uniq-num num-revisions attributes]
+   (let [concept (granule-concept provider-id parent-collection uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
@@ -455,7 +502,7 @@
     (try
       ;; We set this to false during a test so that messages won't be published when this is run
       ;; in dev system and cause exceptions in the indexer.
-      (mdb-config/set-publish-collection-revision-deletes! false)
+      (mdb-config/set-publish-messages! false)
       (reset-database)
       (doseq [provider providers]
         (let [{:keys [provider-id short-name cmr-only small]} provider
@@ -466,5 +513,5 @@
                           :small (if small true false)})))
       (f)
       (finally
-        (mdb-config/set-publish-collection-revision-deletes! true)))))
+        (mdb-config/set-publish-messages! true)))))
 

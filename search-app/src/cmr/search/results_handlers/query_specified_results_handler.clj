@@ -27,7 +27,12 @@
   [query]
   (get-in query [:result-features :query-specified :result-processor] elastic-result-item-processor))
 
-(defmethod elastic-results/elastic-result->query-result-item :query-specified
+(defn- elastic-result->query-result-item
   [context query elastic-result]
   (let [processor (get-elastic-result-item-processor query)]
     (processor context query elastic-result)))
+
+(doseq [concept-type [:collection :granule :tag]]
+  (defmethod elastic-results/elastic-result->query-result-item [concept-type :query-specified]
+    [context query elastic-result]
+    (elastic-result->query-result-item context query elastic-result)))

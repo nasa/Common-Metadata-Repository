@@ -347,6 +347,8 @@
 (def default-sort-keys
   {:granule [{:field :provider-id :order :asc}
              {:field :start-date :order :asc}]
+   :tag [{:field :namespace :order :asc}
+         {:field :value :order :asc}]
    :collection [{:field :entry-title :order :asc}
                 {:field :provider-id :order :asc}]})
 
@@ -358,6 +360,13 @@
              :result-format :xml
              :echo-compatible? false
              :all-revisions? false}
+   :tag {:condition (->MatchAllCondition)
+         :page-size default-page-size
+         :page-num default-page-num
+         :sort-keys (default-sort-keys :tag)
+         :result-format :json
+         :echo-compatible? false
+         :all-revisions? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num

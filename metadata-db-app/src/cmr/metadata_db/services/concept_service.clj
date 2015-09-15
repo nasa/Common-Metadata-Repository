@@ -12,6 +12,7 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.data.providers :as provider-db]
             [cmr.metadata-db.config :as config]
+            [cmr.metadata-db.data.ingest-events :as ingest-events]
 
             ;; Required to get code loaded
             [cmr.metadata-db.data.oracle.concepts]
@@ -351,8 +352,13 @@
                                                   :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
-          (let [revisioned-tombstone (set-or-generate-revision-id db provider tombstone previous-revision)]
-            (try-to-save db provider revisioned-tombstone))))
+          (let [revisioned-tombstone (->>(set-or-generate-revision-id db provider tombstone previous-revision)
+                                          (try-to-save db provider))]
+            (ingest-events/publish-event
+              context
+              (config/ingest-exchange-name)
+              (ingest-events/concept-delete-event revisioned-tombstone))
+            revisioned-tombstone)))
       (if revision-id
         (cmsg/data-error :not-found
                          msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -378,21 +384,13 @@
     (validate-concept-revision-id db provider concept)
     (let [concept (->> concept
                        (set-or-generate-revision-id db provider)
-                       (set-deleted-flag false))]
-      (try-to-save db provider concept))))
-
-(defn- publish-collection-revision-delete-msg
-  "Publishes a message indicating a collection revision was removed."
-  [context concept-id revision-id]
-  (when (config/publish-collection-revision-deletes)
-    (let [timeout-ms (config/publish-timeout-ms)
-          queue-broker (get-in context [:system :queue-broker])
-          exchange-name (config/deleted-collection-revision-exchange-name)
-          ;; Note it's important that the format of this message match the ingest event format.
-          msg {:action :concept-revision-delete
-               :concept-id concept-id
-               :revision-id revision-id}]
-      (queue/publish-message queue-broker exchange-name msg timeout-ms))))
+                       (set-deleted-flag false)
+                       (try-to-save db provider))]
+      (ingest-events/publish-event
+        context
+        (config/ingest-exchange-name)
+        (ingest-events/concept-update-event concept))
+      concept)))
 
 (deftracefn force-delete
   "Remove a revision of a concept from the database completely."
@@ -404,7 +402,7 @@
     (if concept
       (do
         (when (= :collection concept-type)
-          (publish-collection-revision-delete-msg context concept-id revision-id))
+          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id))
         (c/force-delete db concept-type provider concept-id revision-id))
       (cmsg/data-error :not-found
                        msg/concept-with-concept-id-and-rev-id-does-not-exist
@@ -512,7 +510,7 @@
             "old concept revisions for provider" (:provider-id provider))
       (when (= :collection concept-type)
         (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
-          (publish-collection-revision-delete-msg context concept-id revision-id)))
+          (ingest-events/publish-collection-revision-delete-msg context concept-id revision-id)))
       (c/force-delete-concepts db provider concept-type concept-id-revision-id-tuples))))
 
 (defn delete-old-revisions

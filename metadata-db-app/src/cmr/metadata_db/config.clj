@@ -42,20 +42,25 @@
   {:default nil
    :parser cfg/maybe-long})
 
+(defconfig ingest-exchange-name
+  "The ingest exchange to which concept update/save messages are published."
+  {:default "cmr_ingest.exchange"})
+
 (defconfig deleted-collection-revision-exchange-name
   "An exchange that will have messages passed to it whenever a collection revision is removed
   from metadata db."
   {:default "cmr_deleted_collection_revision.exchange"})
 
-(defconfig publish-collection-revision-deletes
-  "This indicates whether or not collection revision deletes will be published to the exchange"
+(defconfig publish-messages
+  "This indicates whether or not messages be published to the exchange"
   {:default true :type Boolean})
 
 (defn rabbit-mq-config
   "Returns the rabbit mq configuration for the metadata db application."
   []
   (assoc (rmq-conf/default-config)
-         :exchanges [(deleted-collection-revision-exchange-name)]))
+         :exchanges [(deleted-collection-revision-exchange-name)
+                     (ingest-exchange-name)]))
 
 (defconfig publish-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the

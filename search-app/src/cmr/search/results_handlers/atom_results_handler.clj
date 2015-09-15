@@ -223,7 +223,7 @@
   (let [orbits-by-collection (orbit-swath-helper/get-orbits-by-collection context elastic-matches)]
     (pmap (partial granule-elastic-result->query-result-item orbits-by-collection) elastic-matches)))
 
-(defmethod elastic-results/elastic-results->query-results :atom
+(defn- elastic-results->query-results
   [context query elastic-results]
   (let [hits (get-in elastic-results [:hits :total])
         elastic-matches (get-in elastic-results [:hits :hits])
@@ -231,6 +231,14 @@
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
+
+(defmethod elastic-results/elastic-results->query-results [:collection :atom]
+  [context query elastic-results]
+  (elastic-results->query-results context query elastic-results))
+
+(defmethod elastic-results/elastic-results->query-results [:granule :atom]
+  [context query elastic-results]
+  (elastic-results->query-results context query elastic-results))
 
 (defmethod gcrf/query-results->concept-ids :atom
   [results]
@@ -432,7 +440,7 @@
         collection-links-map (atom-links/find-collection-atom-links context collection-concept-ids)]
     (map (partial append-links collection-links-map) refs)))
 
-(defmethod qs/search-results->response :atom
+(defn- search-results->response
   [context query results]
   (let [{:keys [hits took items facets]} results
         {:keys [concept-type result-format]} query
@@ -454,7 +462,16 @@
                  (map (partial atom-reference->xml-element results concept-type) items)
                  (frf/facets->xml-element "echo" facets)))))
 
-(defmethod qs/single-result->response :atom
+(defn- single-result->response
   [context query results]
   {:pre [(<= (count (:items results)) 1)]}
   (qs/search-results->response context query results))
+
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :atom]
+    [context query results]
+    (search-results->response context query results))
+
+  (defmethod qs/single-result->response [concept-type :atom]
+    [context query results]
+    (single-result->response context query results)))

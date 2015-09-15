@@ -9,6 +9,7 @@
             [cmr.search.services.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.set :as set]))
@@ -212,4 +213,20 @@
   "Disassociates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
   (update-tag-associations context concept-id json-query set/difference))
+
+(defn search-for-tags
+  "Searches for tags with the given result formats. Returns the results as a string."
+  [context params]
+  (:results (query-service/find-concepts-by-parameters
+              context :tag (assoc params :result-format :json))))
+
+(comment
+
+  (def context {:system (get-in user/system [:apps :search])})
+
+  (search-for-tags context {})
+
+  )
+
+
 

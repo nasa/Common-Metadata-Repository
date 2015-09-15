@@ -34,7 +34,7 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-colls (concat all-prov1-colls all-prov2-colls)
-        tag (tags/make-tag 1)
+        tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
@@ -73,7 +73,7 @@
             (tags/assert-tag-saved expected-saved-tag "user1" concept-id 5)))))))
 
 (deftest associate-tag-failure-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
@@ -128,7 +128,7 @@
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
         all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
-        tag (tags/make-tag 1)
+        tag (tags/make-tag)
         token (e/login (s/context) "user1")
         prov3-token (e/login (s/context) "prov3-user" ["groupguid1"])
         {:keys [concept-id]} (tags/create-tag token tag)
@@ -165,7 +165,7 @@
         (tags/assert-tag-saved expected-saved-tag "user1" concept-id 5)))))
 
 (deftest disassociate-tag-failure-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id

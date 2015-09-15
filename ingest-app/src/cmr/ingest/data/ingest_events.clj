@@ -19,30 +19,6 @@
   {:action :provider-collection-reindexing
    :provider-id provider-id})
 
-(defn collection-concept-update-event
-  "Creates an event representing a collection concept being updated or created."
-  [concept-id revision-id]
-  {:action :concept-update
-   :concept-id concept-id
-   :revision-id revision-id})
-
-(defn granule-concept-update-event
-  "Creates an event representing a granule concept being updated or created."
-  [coll-concept concept-id revision-id]
-  {:action :concept-update
-   ;; The entry title is used in the virtual product processing to avoid having to fetch the full
-   ;; metadata to determine if this is a granule that requires processing.
-   :entry-title (get-in coll-concept [:extra-fields :entry-title])
-   :concept-id concept-id
-   :revision-id revision-id})
-
-(defn concept-delete-event
-  "Creates an event representing a concept being deleted."
-  [concept-id revision-id]
-  {:action :concept-delete
-   :concept-id concept-id
-   :revision-id revision-id})
-
 (defn provider-create-event
   "Creates an event representing a provider being created."
   [provider-id]
