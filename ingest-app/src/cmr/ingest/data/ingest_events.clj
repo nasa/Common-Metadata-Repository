@@ -19,13 +19,6 @@
   {:action :provider-collection-reindexing
    :provider-id provider-id})
 
-(defn concept-delete-event
-  "Creates an event representing a concept being deleted."
-  [concept-id revision-id]
-  {:action :concept-delete
-   :concept-id concept-id
-   :revision-id revision-id})
-
 (defn provider-create-event
   "Creates an event representing a provider being created."
   [provider-id]

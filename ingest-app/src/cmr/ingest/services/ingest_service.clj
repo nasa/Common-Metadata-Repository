@@ -162,7 +162,6 @@
                     (dissoc :provider-id :native-id)
                     (assoc :concept-id concept-id :deleted true))
         {:keys [revision-id]} (mdb/save-concept context concept)]
-    (ingest-events/publish-event context (ingest-events/concept-delete-event concept-id revision-id))
     {:concept-id concept-id, :revision-id revision-id}))
 
 (deftracefn reset
