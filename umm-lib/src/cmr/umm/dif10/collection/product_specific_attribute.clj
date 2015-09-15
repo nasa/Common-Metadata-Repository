@@ -3,7 +3,8 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.umm.generator-util :as gu]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.umm.dif.collection.product-specific-attribute :as d9-psa]))
 
 (defn xml-elem->ProductSpecificAttribute
   [psa-elem]
@@ -25,10 +26,15 @@
        :parsed-value (psa/safe-parse-value data-type value)})))
 
 (defn xml-elem->ProductSpecificAttributes
+  "Extracts Additional_Attributes and Extended_Metadata from DIF10 XML and includes both
+  concatenated together as UMM AdditionalAttributes"
   [collection-element]
-  (seq (map xml-elem->ProductSpecificAttribute
-            (cx/elements-at-path collection-element
-                                 [:Additional_Attributes]))))
+  (let [additional_attributes (mapv xml-elem->ProductSpecificAttribute
+                                   (cx/elements-at-path collection-element
+                                                        [:Additional_Attributes]))
+        extended_metadata (d9-psa/xml-elem->ProductSpecificAttributes collection-element)]
+
+    (seq (into additional_attributes extended_metadata))))
 
 (defn generate-product-specific-attributes
   [psas]
