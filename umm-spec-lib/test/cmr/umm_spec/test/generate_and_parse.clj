@@ -73,7 +73,9 @@
   (let [md-data-id-el (first (select (context metadata-xml) iso-xml-to-umm/md-data-id-base-xpath))]
     (seq (#'iso-xml-to-umm/descriptive-keywords md-data-id-el "project"))))
 
-;; Tests the generated ISO19115 xml has the projects keywords populated correctly
+;; Info in UMM Projects field is duplicated in ISO191152 xml in two different places.
+;; We parse UMM Projects from the gmi:MI_Operation, not from gmd:descriptiveKeywords.
+;; This test is to verify that we populate UMM Projects in gmd:descriptiveKeywords correctly as well.
 (defspec iso19115-projects-keywords 100
   (for-all [umm-record umm-gen/umm-c-generator]
     (let [metadata-xml (core/generate-metadata :collection :iso19115 umm-record)
