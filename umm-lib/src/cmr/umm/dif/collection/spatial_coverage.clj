@@ -43,7 +43,7 @@
     (let [extended-metadata {:name em/SPATIAL_COVERAGE_EXTERNAL_META_NAME
                              :value (csk/->SCREAMING_SNAKE_CASE_STRING
                                       (:granule-spatial-representation spatial-coverage))}]
-      (em/generate-extended-metadata [extended-metadata]))))
+      (em/generate-metadata-elements [extended-metadata]))))
 
 (defn generate-spatial-coverage
   "Generates the Spatial_Coverage elements"

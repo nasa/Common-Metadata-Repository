@@ -179,16 +179,24 @@
                       (x/element :DIF_Creation_Date {} (str insert-time)))
                     (when update-time
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
-                    (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
-                    (psa/generate-product-specific-attributes product-specific-attributes)
-                    (when processing-level-id
-                      (em/generate-extended-metadata
-                        [{:name em/PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
-                          :value processing-level-id}]))
-                    (when collection-data-type
-                      (em/generate-extended-metadata
-                        [{:name em/COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
-                          :value collection-data-type}]))))))))
+
+                    ;; There should be a single extended metadata element encompassing
+                    ;; spatial-coverage, processing-level-id, collection-data-type, and additional
+                    ;; attributes
+                    (when (or spatial-coverage processing-level-id collection-data-type
+                              product-specific-attributes)
+                      (x/element :Extended_Metadata {}
+                                 (psa/generate-product-specific-attributes
+                                   product-specific-attributes)
+                                 (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
+                                 (when processing-level-id
+                                   (em/generate-metadata-elements
+                                     [{:name em/PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
+                                       :value processing-level-id}]))
+                                 (when collection-data-type
+                                   (em/generate-metadata-elements
+                                     [{:name em/COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
+                                       :value collection-data-type}]))))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

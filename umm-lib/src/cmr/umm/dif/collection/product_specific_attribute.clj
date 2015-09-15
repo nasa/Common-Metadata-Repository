@@ -32,5 +32,5 @@
 (defn generate-product-specific-attributes
   [psas]
   (when (seq psas)
-    (em/generate-extended-metadata psas)))
+    (em/generate-metadata-elements psas)))
 

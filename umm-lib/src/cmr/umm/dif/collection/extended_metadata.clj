@@ -66,9 +66,9 @@
     (when-let [elem (seq (filter #(= extended-metadata-name (:name %)) ems))]
       (:value (first elem)))))
 
-(defn- generate-metadata-elements
-  "Generate a Metadata element within an Extended_Metadata element based on the passed in additional
-  attributes."
+(defn generate-metadata-elements
+  "Generate a Metadata element based on the passed in metadata maps. The keys in the map are the
+  same as the ones used in UMM additional attributes."
   [additional-attributes]
   (for [aa additional-attributes]
     (let [{:keys [group name description data-type value parameter-range-begin
@@ -81,15 +81,8 @@
                  (x/element :Name {} name)
                  (when description (x/element :Description {} description))
                  (x/element :Type {} (psa/gen-data-type data-type))
-                 ;; We need to make sure we generate the Value element correctly if the value is 0
-                 ;; or false
+                 ;; false is a valid value
                  (when-not (nil? value)
                    (x/element :Value {} value))))))
 
-(defn generate-extended-metadata
-  "Generate the Extended_Metadata from UMM additional attributes."
-  [additional-attributes]
-  (when (seq additional-attributes)
-    (x/element :Extended_Metadata {}
-               (generate-metadata-elements additional-attributes))))
 
