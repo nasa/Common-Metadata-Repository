@@ -639,9 +639,6 @@
         (apply-type-validations params validations))
       [params []])))
 
-;; TODO add parameter validations for tags
-;; Split this by concept type
-
 (def parameter-validations
   "A list of the functions that can validate parameters. They all accept parameters as an argument
   and return a list of errors."

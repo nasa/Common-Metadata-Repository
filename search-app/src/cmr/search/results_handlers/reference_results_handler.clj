@@ -45,13 +45,10 @@
      :name name-value
      :score (r/normalize-score score)}))
 
-(defmethod elastic-results/elastic-result->query-result-item [:granule :xml]
-  [context query elastic-result]
-  (elastic-result->query-result-item context query elastic-result))
-
-(defmethod elastic-results/elastic-result->query-result-item [:collection :xml]
-  [context query elastic-result]
-  (elastic-result->query-result-item context query elastic-result))
+(doseq [concept-type [:collection :granule]]
+  (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
+    [context query elastic-result]
+    (elastic-result->query-result-item context query elastic-result)))
 
 (defmethod gcrf/query-results->concept-ids :xml
   [results]
@@ -125,10 +122,7 @@
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
-(defmethod qs/search-results->response [:collection :xml]
-  [context query results]
-  (search-results->response context query results))
-
-(defmethod qs/search-results->response [:granule :xml]
-  [context query results]
-  (search-results->response context query results))
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :xml]
+    [context query results]
+    (search-results->response context query results)))

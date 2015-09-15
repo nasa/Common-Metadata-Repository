@@ -465,7 +465,5 @@
 
 (defspec gzip-base64-encode 100
   (for-all [s gen/string]
-    ;; Verifies map-n is equivalent to partition
-    (= s
-       (-> s util/string->gzip-base64 util/gzip-base64->string))))
+    (= s (-> s util/string->gzip-base64 util/gzip-base64->string))))
 

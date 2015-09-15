@@ -467,18 +467,11 @@
   {:pre [(<= (count (:items results)) 1)]}
   (qs/search-results->response context query results))
 
-(defmethod qs/search-results->response [:collection :atom]
-  [context query results]
-  (search-results->response context query results))
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :atom]
+    [context query results]
+    (search-results->response context query results))
 
-(defmethod qs/single-result->response [:collection :atom]
-  [context query results]
-  (single-result->response context query results))
-
-(defmethod qs/search-results->response [:granule :atom]
-  [context query results]
-  (search-results->response context query results))
-
-(defmethod qs/single-result->response [:granule :atom]
-  [context query results]
-  (single-result->response context query results))
+  (defmethod qs/single-result->response [concept-type :atom]
+    [context query results]
+    (single-result->response context query results)))

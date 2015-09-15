@@ -15,21 +15,14 @@
             [camel-snake-kebab.core :as csk]
             [cmr.common.joda-time]))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:collection :json]
-  [concept-type query]
-  (elastic-search-index/concept-type+result-format->fields :collection (assoc query :result-format :atom)))
+(doseq [concept-type [:collection :granule]]
+  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :json]
+    [concept-type query]
+    (elastic-search-index/concept-type+result-format->fields concept-type (assoc query :result-format :atom)))
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:granule :json]
-  [concept-type query]
-  (elastic-search-index/concept-type+result-format->fields :granule (assoc query :result-format :atom)))
-
-(defmethod elastic-results/elastic-results->query-results [:collection :json]
-  [context query elastic-results]
-  (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
-
-(defmethod elastic-results/elastic-results->query-results [:granule :json]
-  [context query elastic-results]
-  (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results))
+  (defmethod elastic-results/elastic-results->query-results [concept-type :json]
+    [context query elastic-results]
+    (elastic-results/elastic-results->query-results context (assoc query :result-format :atom) elastic-results)))
 
 (defmethod gcrf/query-results->concept-ids :json
   [results]
@@ -155,18 +148,11 @@
                                               (:concept-type query)
                                               (first (:items results)))))
 
-(defmethod qs/search-results->response [:collection :json]
-  [context query results]
-  (search-results->response context query results))
+(doseq [concept-type [:collection :granule]]
+  (defmethod qs/search-results->response [concept-type :json]
+    [context query results]
+    (search-results->response context query results))
 
-(defmethod qs/single-result->response [:collection :json]
-  [context query results]
-  (single-result->response  context query results))
-
-(defmethod qs/search-results->response [:granule :json]
-  [context query results]
-  (search-results->response context query results))
-
-(defmethod qs/single-result->response [:granule :json]
-  [context query results]
-  (single-result->response  context query results))
+  (defmethod qs/single-result->response [concept-type :json]
+    [context query results]
+    (single-result->response  context query results)))

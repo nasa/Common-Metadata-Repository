@@ -65,13 +65,11 @@
                 (map collection-elastic-result->query-result-item elastic-matches))]
     (r/map->Results {:hits hits :items items :result-format (:result-format query)})))
 
-(defmethod elastic-results/elastic-results->query-results [:granule :kml]
-  [context query elastic-results]
-  (elastic-results->query-results context query elastic-results))
+(doseq [concept-type [:granule :collection]]
+  (defmethod elastic-results/elastic-results->query-results [concept-type :kml]
+    [context query elastic-results]
+    (elastic-results->query-results context query elastic-results)))
 
-(defmethod elastic-results/elastic-results->query-results [:collection :kml]
-  [context query elastic-results]
-  (elastic-results->query-results context query elastic-results))
 
 (defprotocol KmlSpatialShapeHandler
   (shape->xml-element
