@@ -198,9 +198,9 @@
                    "date-time" (when x (dtp/parse-datetime x))
                    (str x))
 
-       "number"  (Double. x)
+       "number"  (when (seq x) (Double. x))
 
-       "integer" (Long. x)
+       "integer" (when (seq x) (Long. x))
 
        "boolean" (= "true" x)
 
