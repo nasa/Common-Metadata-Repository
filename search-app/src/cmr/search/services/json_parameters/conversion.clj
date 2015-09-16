@@ -45,6 +45,7 @@
    :keyword :keyword
    :bounding-box :bounding-box
    :temporal :temporal
+   :updated-since :updated-since
    :or :or
    :and :and
    :not :not
@@ -159,6 +160,13 @@
                          (mbr/mbr west north east south)))]
     (sv/validate bounding-box)
     (qm/->SpatialCondition bounding-box)))
+
+(defmethod parse-json-condition :updated-since
+  [_ value]
+  (qm/map->DateRangeCondition
+    {:field :updated-since
+     :start-date (parser/parse-datetime value)
+     :end-date nil}))
 
 (defmethod parse-json-condition :temporal
   [_ value]

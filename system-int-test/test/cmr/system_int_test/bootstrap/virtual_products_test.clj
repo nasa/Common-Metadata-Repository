@@ -116,14 +116,14 @@
       (testing "Only source granules exist (virtual products system is disabled)"
         (vp/assert-matching-granule-urs
           (map :granule-ur source-granules)
-          (search/find-refs :granule {:page-size 50})))
+          (search/find-refs :granule {:page-size 1000})))
 
       (bootstrap-and-index)
 
       (testing "Find all granules"
         (vp/assert-matching-granule-urs
           all-expected-granule-urs
-          (search/find-refs :granule {:page-size 50})))
+          (search/find-refs :granule {:page-size 1000})))
 
       (testing "Find all granules in virtual collections"
         (doseq [vp-coll vp-colls

@@ -26,8 +26,11 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [pjstadig/humane-test-output "0.7.0"]
                         [criterium "0.4.3"]]
 
-         :source-paths ["src" "dev" "test"]}})
+         :source-paths ["src" "dev" "test"]
+         :injections [(require 'pjstadig.humane-test-output)
+                      (pjstadig.humane-test-output/activate!)]}})
 
 

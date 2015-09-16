@@ -69,7 +69,12 @@
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
                            (fields-from aa :Name :Description :DataType :ParameterRangeBegin
-                                        :ParameterRangeEnd :Value))})
+                                        :ParameterRangeEnd :Value))
+   :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
+               {:ShortName (value-of proj "ShortName")
+                :LongName (value-of proj "LongName")
+                :StartDate (value-of proj "StartDate")
+                :EndDate (value-of proj "EndDate")})})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."

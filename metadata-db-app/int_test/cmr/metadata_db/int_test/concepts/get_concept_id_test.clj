@@ -28,7 +28,7 @@
         (is (= (util/get-concept-id :collection provider-id (:native-id coll))
                (util/get-concept-id :collection provider-id (:native-id coll)))))
       (testing "granule"
-        (let [gran (util/create-and-save-granule provider-id (:concept-id coll) 1)]
+        (let [gran (util/create-and-save-granule provider-id coll 1)]
           (is (= {:status 200
                   :concept-id (:concept-id gran)
                   :errors nil}
@@ -37,7 +37,7 @@
 (deftest fail-to-get-concept-id-for-non-existing-concept
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll (util/create-and-save-collection provider-id 1)
-          gran (util/create-and-save-granule provider-id (:concept-id coll) 1)]
+          gran (util/create-and-save-granule provider-id coll 1)]
       (testing "native-id does not exist"
         (are [concept-type native-id]
              (= {:status 404

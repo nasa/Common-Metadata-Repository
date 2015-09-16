@@ -21,7 +21,8 @@
    :provider-id "PROV1"
    :concept-type :granule
    :extra-fields {:parent-collection-id "C1-PROV1"
-                  :granule-ur "GR-UR"}})
+                  :granule-ur "GR-UR"
+                  :parent-entry-title "entry"}})
 
 (def valid-tag
   {:concept-id "T1-CMR"

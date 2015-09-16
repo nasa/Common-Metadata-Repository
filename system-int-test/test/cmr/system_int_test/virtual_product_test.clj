@@ -137,7 +137,7 @@
     (testing "Find all granules"
       (vp/assert-matching-granule-urs
         all-expected-granule-urs
-        (search/find-refs :granule {:page-size 50})))
+        (search/find-refs :granule {:page-size 1000})))
 
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls
@@ -149,7 +149,7 @@
                (vp-config/sample-source-granule-urs
                  [provider-id (:entry-title source-collection)]))
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
-                                      :page-size 50}))))))
+                                      :page-size 1000}))))))
 
 (defn- assert-virtual-gran-revision-id
   "Assert that the revision ids of the granules of the collections vp-colls match expected-revision-id"
@@ -350,6 +350,58 @@
         (finally (dev-sys-util/eval-in-dev-sys
                    `(cmr.virtual-product.config/set-virtual-products-enabled! true)))))))
 
+
+(defn- get-virtual-entries-by-source
+  "Build virtual entries by source granule umm"
+  [src-umm]
+  (let [src-granule-ur (:granule-ur src-umm)
+        provider-id (:provider-id src-umm)
+        entry-title (get-in src-umm [:collection-ref :entry-title])]
+    (flatten
+      (for [virt-coll (:virtual-collections (get vp-config/source-to-virtual-product-config
+                                                 [provider-id entry-title]))
+            :let [virt-entry-title (:entry-title virt-coll)
+                  granule-refs (:refs (search/find-refs
+                                        :granule
+                                        {"attribute[]" (str "string,source-granule-ur," src-granule-ur)
+                                         :entry-title virt-entry-title
+                                         :page-size 1}))]]
+        (for [gran-ref granule-refs
+              :let [{virt-granule-id :id virt-granule-ur :name} gran-ref]]
+          {:entry-title virt-entry-title
+           :concept-id virt-granule-id
+           :granule-ur virt-granule-ur})))))
+
+
+;; This test tests the tranlsation end-point using all the sample granule-urs defined for virtual
+;; granules in the config file. All the virtual granule entries should be translated to corresponding
+;; source entries by the end-point.
+(deftest all-virtual-granules-translate-entries-test
+   (let [source-collections (vp/ingest-source-collections)
+        ;; Ingest the virtual collections. For each virtual collection associate it with the source
+        ;; collection to use later.
+        vp-colls (reduce (fn [new-colls source-coll]
+                           (into new-colls (map #(assoc % :source-collection source-coll)
+                                                (vp/ingest-virtual-collections [source-coll]))))
+                         []
+                         source-collections)
+        src-grans (doall (for [source-coll source-collections
+                                     :let [{:keys [provider-id entry-title]} source-coll]
+                                     granule-ur (vp-config/sample-source-granule-urs
+                                                  [provider-id entry-title])]
+                                 (vp/ingest-source-granule provider-id
+                                                          (dg/granule source-coll {:granule-ur granule-ur}))))
+        _ (index/wait-until-indexed)
+        virt-gran-entries-by-src (into {} (map #(vector % (get-virtual-entries-by-source %)) src-grans))
+        all-virt-entries (mapcat second virt-gran-entries-by-src)
+        expected-src-entries (mapcat
+                               #(repeat (count (second %)) (granule->entry (first %)))
+                               virt-gran-entries-by-src)]
+
+        (let [response (vp/translate-granule-entries
+                                  (json/generate-string all-virt-entries))]
+                   (= expected-src-entries (json/parse-string (:body response) true)))))
+
 (deftest virtual-product-provider-alias-test
   (vp/with-provider-aliases
     {"LPDAAC_ECS"  #{"LP_ALIAS"}}
@@ -418,16 +470,19 @@
         [ur-prefix ur-suffix] (str/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
         opendap-file-path (str opendap-dir-path granule-ur ".nc")]
-
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule "GSFCS4PA"
                                       (dg/granule
                                         omi-coll {:granule-ur src-granule-ur
-                                                  :related-urls source-related-urls}))
+                                                  :related-urls source-related-urls
+                                                  :data-granule {:day-night "UNSPECIFIED"
+                                                                 :production-date-time "2013-07-27T07:43:14.000Z"
+                                                                 :size 40}}))
                      _ (index/wait-until-indexed)
                      virt-gran-umm (first (get-virtual-granule-umms src-granule-ur))
                      expected-related-urls (map #(umm-c/map->RelatedURL %) expected-related-url-maps)]
-                 (is (= (set expected-related-urls) (set (:related-urls virt-gran-umm)))))
+                 (is (= (set expected-related-urls) (set (:related-urls virt-gran-umm))))
+                 (is (nil? (get-in virt-gran-umm [:data-granule :size]))))
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
@@ -444,11 +499,6 @@
                  :type "VIEW RELATED INFORMATION"
                  :title "(USER SUPPORT)"}]
 
-               "Related urls with only one access url which does not match the pattern"
-               granule-ur
-               [{:url (str opendap-dir-path "random.he5.nc") :type "GET DATA"}]
-               [{:url (str opendap-dir-path "random.he5.nc") :type "GET DATA"}]
-
                "Multiple related urls"
                granule-ur
                [{:url opendap-file-path :type "GET DATA"}
@@ -457,12 +507,7 @@
                  :type "GET DATA"}
                 {:url "http://www.foo.com"
                  :type "VIEW RELATED INFORMATION"
-                 :title "(USER SUPPORT)"}]
-
-               "Unexpected format for the granule UR should not result in translation"
-               "OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he" ;; no ":"
-               [{:url opendap-file-path :type "GET DATA"}]
-               [{:url opendap-file-path :type "GET DATA"}])))
+                 :title "(USER SUPPORT)"}])))
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))

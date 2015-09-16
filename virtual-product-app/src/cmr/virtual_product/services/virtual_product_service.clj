@@ -109,16 +109,13 @@
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
         vp-config (config/source-to-virtual-product-config [provider-id entry-title])
-        source-short-name (:source-short-name vp-config)]
+        source-short-name (:short-name vp-config)]
     (doseq [virtual-coll (:virtual-collections vp-config)
             :when (source-granule-matches-virtual-product?
                     provider-id (:entry-title virtual-coll) orig-umm)]
-      (let [new-granule-ur (config/generate-granule-ur provider-id
-                                                       source-short-name
-                                                       (:short-name virtual-coll)
-                                                       (:granule-ur orig-umm))
-            new-umm (config/generate-virtual-granule-umm provider-id source-short-name
-                                                         orig-umm virtual-coll new-granule-ur)
+      (let [new-umm (config/generate-virtual-granule-umm provider-id source-short-name
+                                                         orig-umm virtual-coll)
+            new-granule-ur (:granule-ur new-umm)
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
             new-concept (-> orig-concept
@@ -210,7 +207,7 @@
   (let [vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
     (doseq [virtual-coll (:virtual-collections vp-config)]
       (let [new-granule-ur (config/generate-granule-ur provider-id
-                                                       (:source-short-name vp-config)
+                                                       (:short-name vp-config)
                                                        (:short-name virtual-coll)
                                                        granule-ur)
             resp (ingest/delete-concept context {:provider-id provider-id
@@ -240,6 +237,10 @@
   [entry]
   [(:provider-id (meta entry)) (:granule-ur entry)])
 
+;; We can find source granule from virtual granule-ur by a query on the virtual granules, all of which
+;; have the additional attribute source-granule-ur which holds the source granule ur. But we avoid
+;; the query by computing the inverse of generate-granule-ur function in config (which is used to generate
+;; virtual granule ur from source-granule-ur)
 (defn- compute-source-granule-urs
   "Compute source granule-urs from virtual granule-urs"
   [provider-id src-entry-title gran-entries]

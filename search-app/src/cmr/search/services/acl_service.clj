@@ -7,6 +7,10 @@
   (fn [context query]
     (:concept-type query)))
 
+(defmethod add-acl-conditions-to-query :default
+  [_ query]
+  query)
+
 (defmulti acls-match-concept?
   "Returns true if any of the acls match the concept."
   (fn [context acls concept]

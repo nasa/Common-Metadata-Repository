@@ -44,10 +44,12 @@
 
 (defn- tag-api-response
   "Creates a successful tag response with the given data response"
-  [data]
-  {:status 200
-   :body (json/generate-string data)
-   :headers {"Content-Type" mt/json}})
+  ([data]
+   (tag-api-response data true))
+  ([data encode?]
+   {:status 200
+    :body (if encode? (json/generate-string data) data)
+    :headers {"Content-Type" mt/json}}))
 
 (defn create-tag
   "Processes a create tag request."
@@ -62,9 +64,9 @@
   "Retrieves the tag with the given concept-id."
   [context concept-id]
   (-> (tagging-service/get-tag context concept-id)
-      ;; We don't return the associated collection ids on the fetch response.
+      ;; We don't return the associated concept ids on the fetch response.
       ;; This could be changed if we wanted to. It's just not part of the requirements.
-      (dissoc :associated-collection-ids)
+      (dissoc :associated-concept-ids)
       tag-api-response))
 
 (defn update-tag
@@ -81,19 +83,23 @@
   [context concept-id]
   (tag-api-response (tagging-service/delete-tag context concept-id)))
 
-(defn associate-tag
+(defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body concept-id]
   (validate-tag-content-type headers)
 
-  (tag-api-response (tagging-service/associate-tag context concept-id body)))
+  (tag-api-response (tagging-service/associate-tag-by-query context concept-id body)))
 
-(defn disassociate-tag
+(defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
   [context headers body concept-id]
   (validate-tag-content-type headers)
 
-  (tag-api-response (tagging-service/disassociate-tag context concept-id body)))
+  (tag-api-response (tagging-service/disassociate-tag-by-query context concept-id body)))
+
+(defn search-for-tags
+  [context params]
+  (tag-api-response (tagging-service/search-for-tags context params) false))
 
 (def tag-api-routes
   (context "/tags" []
@@ -101,6 +107,10 @@
     ;; Create a new tag
     (POST "/" {:keys [request-context headers body]}
       (create-tag request-context headers (slurp body)))
+
+    ;; Search for tags
+    (GET "/" {:keys [request-context params]}
+      (search-for-tags request-context params))
 
     (context "/:tag-id" [tag-id]
 
@@ -117,12 +127,13 @@
         (update-tag request-context headers (slurp body) tag-id))
 
       (context "/associations" []
-        ;; Associate a tag with collections
-        (POST "/" {:keys [request-context headers body]}
-          (associate-tag request-context headers (slurp body) tag-id))
+        (context "/by_query" []
+          ;; Associate a tag with collections
+          (POST "/" {:keys [request-context headers body]}
+            (associate-tag-by-query request-context headers (slurp body) tag-id))
 
-        ;; Disassociate a tag with collections
-        (DELETE "/" {:keys [request-context headers body]}
-          (disassociate-tag request-context headers (slurp body) tag-id))))))
+          ;; Disassociate a tag with collections
+          (DELETE "/" {:keys [request-context headers body]}
+            (disassociate-tag-by-query request-context headers (slurp body) tag-id)))))))
 
 

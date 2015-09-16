@@ -18,7 +18,7 @@
   ["concept-id"
    "atom-links"])
 
-(defmethod elastic-results/elastic-result->query-result-item :atom-links
+(defmethod elastic-results/elastic-result->query-result-item [:collection :atom-links]
   [context query elastic-result]
   (let [{concept-id :_id
          {atom-links :atom-links} :fields} elastic-result

@@ -30,7 +30,8 @@
                                                    :C4-collections "3_c4_collections"}
                                      :granule {:g5_prov5 "3_g5_prov5"
                                                :G4-Prov3 "3_g4_prov3"
-                                               :G2-PROV1 "3_g2_prov1"}}}]
+                                               :G2-PROV1 "3_g2_prov1"}
+                                     :tag {}}}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))
 
 

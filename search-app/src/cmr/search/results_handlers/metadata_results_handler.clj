@@ -143,13 +143,14 @@
     (apply str (concat headers result-strings facets-strs footers))))
 
 
-(doseq [format (distinct (flatten (vals result-formats)))]
+(doseq [concept-type [:collection :granule]
+        metadata-format (distinct (flatten (vals result-formats)))]
   ;; define transformations from elastic results to query results for each format
-  (defmethod elastic-results/elastic-results->query-results format
+  (defmethod elastic-results/elastic-results->query-results [concept-type metadata-format]
     [context query elastic-results]
     (elastic-results->query-metadata-results context query elastic-results))
 
   ;; define tranformations from search results to response for each format
-  (defmethod qs/search-results->response format
+  (defmethod qs/search-results->response [concept-type metadata-format]
     [context query results]
     (search-results->metadata-response context query results)))

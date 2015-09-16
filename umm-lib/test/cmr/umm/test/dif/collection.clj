@@ -126,6 +126,16 @@
         (dissoc :associated-difs)
         ;; DIF does not have metadata-language
         (dissoc :metadata-language)
+        ;; DIF9 does not support ranges for additional attributes
+        (update-in [:product-specific-attributes]
+                   (fn [psas]
+                     (seq (map (fn [psa]
+                            (assoc psa
+                                    :parameter-range-begin nil
+                                    :parameter-range-end nil
+                                    :parsed-parameter-range-begin nil
+                                    :parsed-parameter-range-end nil))
+                          psas))))
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
@@ -140,7 +150,7 @@
     (let [xml (dif/umm->dif-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-dif collection)]
-      (= parsed expected-parsed))))
+      (= expected-parsed parsed))))
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -350,24 +360,46 @@
         <Value>GEODETIC</Value>
       </Metadata>
       <Metadata>
-        <Group>AdditionalAttribute</Group>
-        <Name>String add attrib</Name>
+        <Group>custom.group</Group>
+        <Name>String attribute</Name>
         <Description>something string</Description>
-        <Type>STRING</Type>
-        <Value type=\"ParamRangeBegin\">alpha</Value>
-        <Value type=\"ParamRangeEnd\">bravo</Value>
-        <Value type=\"Value\">alpha1</Value>
+        <Value>alpha</Value>
       </Metadata>
       <Metadata>
-        <Group>AdditionalAttribute</Group>
-        <Name>Float add attrib</Name>
+        <Group>custom.group</Group>
+        <Name>Float attribute</Name>
         <Description>something float</Description>
-        <Type>FLOAT</Type>
-        <Value type=\"MeasurementResolution\">1</Value>
-        <Value type=\"ParamRangeBegin\">0.1</Value>
-        <Value type=\"ParamRangeEnd\">100.43</Value>
-        <Value type=\"ParamUtilsOfMeasure\">Percent</Value>
-        <Value type=\"Value\">12.3</Value>
+        <Value>12.3</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Int attribute</Name>
+        <Description>something int</Description>
+        <Value>42</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Date attribute</Name>
+        <Description>something date</Description>
+        <Value>2015-09-14</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Datetime attribute</Name>
+        <Description>something datetime</Description>
+        <Value>2015-09-14T13:01:00Z</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Time attribute</Name>
+        <Description>something time</Description>
+        <Value>13:01:00Z</Value>
+      </Metadata>
+      <Metadata>
+        <Group>custom.group</Group>
+        <Name>Bool attribute</Name>
+        <Description>something bool</Description>
+        <Value>false</Value>
       </Metadata>
     </Extended_Metadata>
   </DIF>")
@@ -483,25 +515,66 @@
          :detailed-variable "PRECIPITATION Details"})]
      :product-specific-attributes
      [(umm-c/map->ProductSpecificAttribute
-        {:name "String add attrib"
+        {:group "gov.nasa.gsfc.gcmd"
+         :name "metadata.uuid"
+         :data-type :string
+         :value "743933e5-1404-4502-915f-83cde56af440"
+         :parsed-value "743933e5-1404-4502-915f-83cde56af440"})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "gov.nasa.gsfc.gcmd"
+         :name "metadata.extraction_date"
+         :data-type :string
+         :value "2013-09-30 09:45:15"
+         :parsed-value "2013-09-30 09:45:15"})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "String attribute"
          :description "something string"
          :data-type :string
-         :parameter-range-begin "alpha"
-         :parameter-range-end "bravo"
-         :value "alpha1"
-         :parsed-parameter-range-begin "alpha"
-         :parsed-parameter-range-end "bravo"
-         :parsed-value "alpha1"})
+         :value "alpha"
+         :parsed-value "alpha"})
       (umm-c/map->ProductSpecificAttribute
-        {:name "Float add attrib"
+        {:group "custom.group"
+         :name "Float attribute"
          :description "something float"
          :data-type :float
-         :parameter-range-begin "0.1"
-         :parameter-range-end "100.43"
          :value "12.3"
-         :parsed-parameter-range-begin 0.1
-         :parsed-parameter-range-end 100.43
-         :parsed-value 12.3})]
+         :parsed-value 12.3})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "Int attribute"
+         :description "something int"
+         :data-type :int
+         :value "42"
+         :parsed-value 42})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "Date attribute"
+         :description "something date"
+         :data-type :date
+         :value "2015-09-14"
+         :parsed-value (p/parse-date "2015-09-14")})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "Datetime attribute"
+         :description "something datetime"
+         :data-type :datetime
+         :value "2015-09-14T13:01:00Z"
+         :parsed-value (p/parse-datetime "2015-09-14T13:01:00Z")})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "Time attribute"
+         :description "something time"
+         :data-type :time
+         :value "13:01:00Z"
+         :parsed-value (p/parse-time "13:01:00Z")})
+      (umm-c/map->ProductSpecificAttribute
+        {:group "custom.group"
+         :name "Bool attribute"
+         :description "something bool"
+         :data-type :boolean
+         :value "false"
+         :parsed-value false})]
      :spatial-coverage
      (umm-c/map->SpatialCoverage
        {:granule-spatial-representation :geodetic
@@ -560,3 +633,4 @@
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_ID, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
+

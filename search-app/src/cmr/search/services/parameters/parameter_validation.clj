@@ -180,7 +180,19 @@
    :attribute exclude-plus-or-option
    :temporal exclude-plus-and-or-option
    :revision-date and-option
-   :highlights highlights-option})
+   :highlights highlights-option
+
+   ;; Tag parameters
+   :namespace string-param-options
+   :value string-param-options
+   :category string-param-options
+   :originator-id pattern-option
+
+   ;; Tag parameters for use querying other concepts.
+   :tag-namespace string-param-options
+   :tag-value string-param-options
+   :tag-category string-param-options
+   :tag-originator-id pattern-option})
 
 (defn parameter-options-validation
   [concept-type params]
@@ -234,7 +246,8 @@
               :day-night
               :downloadable
               :browsable
-              :revision-date}})
+              :revision-date}
+   :tag #{}})
 
 (defn sort-key-validation
   "Validates the sort-key parameter if present"

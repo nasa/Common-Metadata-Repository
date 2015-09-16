@@ -148,8 +148,33 @@
         (let [value ["2000-01-01T10:00:00Z" "2009-01-01T10:00:00Z"]
               {:keys [status errors]} (search/find-refs :collection {"updated_since" value})]
           (is (= [400 ["Search not allowed with multiple updated_since values"]]
-                 [status errors])))))))
+                 [status errors]))))
 
+      (testing "JSON query"
+        (testing "search collections with updated_since"
+          (are [items search]
+               (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+               [coll1 coll2 coll3 coll4-2 coll5] {:updated_since "2000-01-01T10:00:00Z"}
+               [coll2 coll3 coll4-2 coll5] {:updated_since "2000-02-01T00:00:00Z"}
+               [coll5] {:updated_since "2015-01-01T10:00:00Z"}
+               [] {:updated_since "2015-01-01T10:00:01Z"}))
+
+        (testing "invalid update_time"
+          (u/are2 [search exp-errors]
+               (let [{:keys [status errors]}
+                     (search/find-refs-with-json-query :collection {} search)]
+                 (is (= [400 exp-errors]
+                        [status errors])))
+               "ranges are invalid"
+               {:updated_since {:start_date "2000-01-01T10:00:00Z"
+                                :end_date "2002-01-01T10:00:00Z"}}
+               [(str "/condition/updated_since instance type (object) does not match any "
+                     "allowed primitive type (allowed: [\"string\"])")]
+               "invalid date string"
+               {:updated_since "foo"}
+               [(str "/condition/updated_since string \"foo\" is invalid against requested date"
+                     " format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]")]))))))
 
 (deftest search-granules-by-revision-date
   (s/only-with-in-memory-database
@@ -243,5 +268,5 @@
       (testing "search granules with multiple updated_since values is invalid"
         (let [value ["2000-01-01T10:00:00Z" "2009-01-01T10:00:00Z"]
               {:keys [status errors]} (search/find-refs :granule {"updated_since" value})]
-                  (is (= [400 ["Search not allowed with multiple updated_since values"]]
-                        [status errors])))))))
+          (is (= [400 ["Search not allowed with multiple updated_since values"]]
+                 [status errors])))))))

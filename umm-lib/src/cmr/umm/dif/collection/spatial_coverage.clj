@@ -1,5 +1,6 @@
 (ns cmr.umm.dif.collection.spatial-coverage
-  "Provide functions to parse and generate DIF spatial-coverage info, it is mapped to an Extended_Metadata element."
+  "Provide functions to parse and generate DIF spatial-coverage info, it is mapped to an
+  Extended_Metadata element."
   (:require [cmr.umm.collection :as c]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.spatial.mbr :as m]
@@ -8,13 +9,10 @@
             [camel-snake-kebab.core :as csk])
   (:import cmr.spatial.mbr.Mbr))
 
-(def SPATIAL_COVERAGE_EXTERNAL_META_NAME
-  "GranuleSpatialRepresentation")
-
 (defn- extract-granule-spatial-representation
   [xml-struct]
   ;; DIF: Extended_Metadata.Name=GranuleSpatialRepresention
-  (when-let [value (em/extended-metadatas-value xml-struct SPATIAL_COVERAGE_EXTERNAL_META_NAME)]
+  (when-let [value (em/extended-metadata-value xml-struct em/spatial_coverage_external_meta_name)]
     (csk/->kebab-case-keyword value)))
 
 (defn- spatial-coverage-elem->br
@@ -38,12 +36,14 @@
          :geometries (seq (map spatial-coverage-elem->br spatial-coverage-elems))}))))
 
 (defn generate-spatial-coverage-extended-metadata
-  "Generates the extended metadata for spatial coverage which contains the granule spatial representation."
+  "Generates the extended metadata for spatial coverage which contains the granule spatial
+  representation."
   [spatial-coverage]
   (when spatial-coverage
-    (let [extended-metadata {:name SPATIAL_COVERAGE_EXTERNAL_META_NAME
-                             :value (csk/->SCREAMING_SNAKE_CASE_STRING (:granule-spatial-representation spatial-coverage))}]
-      (em/generate-extended-metadatas [extended-metadata] false))))
+    (let [extended-metadata {:name em/spatial_coverage_external_meta_name
+                             :value (csk/->SCREAMING_SNAKE_CASE_STRING
+                                      (:granule-spatial-representation spatial-coverage))}]
+      (em/generate-metadata-elements [extended-metadata]))))
 
 (defn generate-spatial-coverage
   "Generates the Spatial_Coverage elements"

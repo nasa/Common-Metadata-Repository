@@ -17,6 +17,7 @@
             ;; These must be required here to make multimethod implementations available.
             [cmr.indexer.data.concepts.collection]
             [cmr.indexer.data.concepts.granule]
+            [cmr.indexer.data.concepts.tag]
 
             [cmr.indexer.services.index-service :as index-svc]
             [cmr.system-trace.http :as http-trace]

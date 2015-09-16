@@ -212,7 +212,7 @@
                      (map (partial advance-interval-end-date interval-granularity))
                      (map (partial constrain-interval-to-user-range start-date end-date)))}))
 
-(defmethod elastic-results/elastic-results->query-results :timeline
+(defmethod elastic-results/elastic-results->query-results [:granule :timeline]
   [context query elastic-results]
   (let [{:keys [start-date end-date interval]} query
         items (map (partial collection-bucket->intervals (:interval query) start-date end-date)
@@ -255,7 +255,7 @@
   [query coll-result]
   (update-in coll-result [:intervals] (partial map (partial interval->response-tuple query))))
 
-(defmethod qs/search-results->response :timeline
+(defmethod qs/search-results->response [:granule :timeline]
   [context query results]
   (let [{:keys [items]} results
         response (map (partial collection-result->response-result query) items)]

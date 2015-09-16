@@ -36,18 +36,17 @@
      [:gmd:CI_DateTypeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
                             :codeListValue date-name} date-name]]]])
 
-(defn- generate-title
-  "Returns an ISO title string from an instrument/sensor record."
-  [record]
-  (str (:ShortName record)
-       ">"
-       (:LongName record)))
-
 (def attribute-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode")
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
+
+(defn- generate-title
+  "Returns an ISO title string from the ShortName and LongName fields of the given record."
+  [record]
+  (let [{short-name :ShortName long-name :LongName} record]
+    (if (seq long-name) (str short-name " > " long-name) short-name)))
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
@@ -60,6 +59,12 @@
      {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
       :codeListValue keyword-type} keyword-type]]
    [:gmd:thesaurusName {:gco:nilReason "unknown"}]])
+
+(defn- generate-projects-keywords
+  "Returns the content generator instructions for descriptive keywords of the given projects."
+  [projects]
+  (let [project-keywords (map generate-title projects)]
+    (generate-descriptive-keywords project-keywords "project")))
 
 (defn- generate-characteristics
   "Returns the generated characteristics content generator instructions, with the type
@@ -160,6 +165,21 @@
           "Echo Additional Attributes"]]
         (generate-characteristics "platformInformation" characteristics))]]))
 
+(defn- generate-projects
+  [projects]
+  (for [proj projects]
+    (let [{short-name :ShortName} proj]
+      [:gmi:operation
+       [:gmi:MI_Operation
+        [:gmi:description
+         (char-string (generate-title proj))]
+        [:gmi:identifier
+         [:gmd:MD_Identifier
+          [:gmd:code
+           (char-string short-name)]]]
+        [:gmi:status ""]
+        [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -198,6 +218,8 @@
            {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
             :codeListValue (str/lower-case collection-progress)}
            collection-progress])]
+       (when-let [projects (:Projects c)]
+         [:gmd:descriptiveKeywords (generate-projects-keywords projects)])
        (when-let [spatial-keywords (:SpatialKeywords c)]
          [:gmd:descriptiveKeywords (generate-descriptive-keywords spatial-keywords "place")])
        (when-let [temporal-keywords (:TemporalKeywords c)]
@@ -262,5 +284,6 @@
              [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]]]
      [:gmi:acquisitionInformation
       [:gmi:MI_AcquisitionInformation
+       (generate-projects (:Projects c))
        (generate-platforms (:Platforms c))]]]))
 

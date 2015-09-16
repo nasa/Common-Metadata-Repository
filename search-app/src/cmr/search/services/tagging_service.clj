@@ -6,9 +6,10 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.validations.core :as v]
             [cmr.common.concepts :as concepts]
-            [cmr.search.services.tagging-service-messages :as msg]
+            [cmr.search.services.tagging.tagging-service-messages :as msg]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cmr.search.services.query-execution :as qe]
+            [cmr.search.services.query-service :as query-service]
             [clojure.string :as str]
             [clojure.edn :as edn]
             [clojure.set :as set]))
@@ -104,7 +105,7 @@
   (let [user-id (context->user-id context)
         tag (assoc tag
                    :originator-id user-id
-                   :associated-collection-ids #{})]
+                   :associated-concept-ids #{})]
     ;; Check if the tag already exists
     (if-let [concept-id (mdb/get-concept-id context :tag "CMR" (tag->native-id tag) false)]
 
@@ -154,7 +155,7 @@
     ;; The updated tag won't change the originator of the existing tag or the associated collection ids.
     (let [updated-tag (assoc updated-tag
                              :originator-id (:originator-id existing-tag)
-                             :associated-collection-ids (:associated-collection-ids existing-tag))]
+                             :associated-concept-ids (:associated-concept-ids existing-tag))]
       (mdb/save-concept
         context
         (-> existing-concept
@@ -177,7 +178,7 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-(defn- update-tag-associations
+(defn- update-tag-associations-with-query
   "Modifies a tags associations. Finds collections using the query and then passes the existing
   associated collection ids and the ones found from the query to the function. Sets the collection
   ids as the result of the function."
@@ -193,7 +194,7 @@
                             set)
         existing-concept (fetch-tag-concept context concept-id)
         existing-tag (edn/read-string (:metadata existing-concept))
-        updated-tag (update-in existing-tag [:associated-collection-ids]
+        updated-tag (update-in existing-tag [:associated-concept-ids]
                                #(update-fn % concept-id-set))]
     (mdb/save-concept
       context
@@ -203,13 +204,29 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-(defn associate-tag
+(defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations context concept-id json-query set/union))
+  (update-tag-associations-with-query context concept-id json-query set/union))
 
-(defn disassociate-tag
+(defn disassociate-tag-by-query
   "Disassociates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations context concept-id json-query set/difference))
+  (update-tag-associations-with-query context concept-id json-query set/difference))
+
+(defn search-for-tags
+  "Searches for tags with the given result formats. Returns the results as a string."
+  [context params]
+  (:results (query-service/find-concepts-by-parameters
+              context :tag (assoc params :result-format :json))))
+
+(comment
+
+  (def context {:system (get-in user/system [:apps :search])})
+
+  (search-for-tags context {})
+
+  )
+
+
 

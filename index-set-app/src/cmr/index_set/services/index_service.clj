@@ -14,12 +14,11 @@
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.system-trace.core :refer [deftracefn]]
-            [clojure.data.codec.base64 :as b64])
+            [cmr.system-trace.core :refer [deftracefn]])
   (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
-(def concept-types [:collection :granule])
+(def concept-types [:collection :granule :tag])
 
 (defn context->es-store
   [context]
@@ -149,9 +148,7 @@
                                              (:concepts (prune-index-set (:index-set index-set))))
         encoded-index-set-w-es-index-names (-> index-set-w-es-index-names
                                                json/generate-string
-                                               util/string->gzip-bytes
-                                               b64/encode
-                                               (String. (java.nio.charset.Charset/forName "UTF-8")))
+                                               util/string->gzip-base64)
         es-doc {:index-set-id (get-in index-set [:index-set :id])
                 :index-set-name (get-in index-set [:index-set :name])
                 :index-set-request encoded-index-set-w-es-index-names}

@@ -45,7 +45,7 @@
    [:Temporal_Range_Type (:TemporalRangeType extent)]
    [:Precision_Of_Seconds (:PrecisionOfSeconds extent)]
    [:Ends_At_Present_Flag (:EndsAtPresentFlag extent)]
-   
+
    (for [rdt (:RangeDateTimes extent)]
              [:Range_DateTime
               [:Beginning_Date_Time (:BeginningDateTime rdt)]
@@ -131,8 +131,13 @@
      [:Granule_Spatial_Representation "GEODETIC"]]
     (for [skw (:SpatialKeywords c)]
       [:Location skw])
-    [:Project
-     [:Short_Name "dummy project short name"]]
+    (for [{:keys [ShortName LongName Campaigns StartDate EndDate]} (:Projects c)]
+       [:Project
+        [:Short_Name ShortName]
+        [:Campaign (first Campaigns)]
+        [:Long_Name LongName]
+        [:Start_Date StartDate]
+        [:End_Date EndDate]])
     [:Quality (:Quality c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     [:Use_Constraints (:UseConstraints c)]

@@ -22,12 +22,6 @@
             [cmr.umm.dif.collection.personnel :as personnel])
   (:import cmr.umm.collection.UmmCollection))
 
-(def PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
-  "ProductLevelId")
-
-(def COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
-  "CollectionDataType")
-
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
@@ -35,8 +29,10 @@
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
-        processing-level-id (em/extended-metadatas-value collection-content PRODUCT_LEVEL_ID_EXTERNAL_META_NAME)
-        collection-data-type (em/extended-metadatas-value collection-content COLLECTION_DATA_TYPE_EXTERNAL_META_NAME)]
+        processing-level-id (em/extended-metadata-value
+                              collection-content em/product_level_id_external_meta_name)
+        collection-data-type (em/extended-metadata-value
+                               collection-content em/collection_data_type_external_meta_name)]
     (c/map->Product {:short-name short-name
                      :long-name long-name
                      :version-id version-id
@@ -183,14 +179,24 @@
                       (x/element :DIF_Creation_Date {} (str insert-time)))
                     (when update-time
                       (x/element :Last_DIF_Revision_Date {} (str update-time)))
-                    (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
-                    (psa/generate-product-specific-attributes product-specific-attributes)
-                    (when processing-level-id
-                      (em/generate-extended-metadatas [{:name PRODUCT_LEVEL_ID_EXTERNAL_META_NAME
-                                                        :value processing-level-id}] false))
-                    (when collection-data-type
-                      (em/generate-extended-metadatas [{:name COLLECTION_DATA_TYPE_EXTERNAL_META_NAME
-                                                        :value collection-data-type}] false))))))))
+
+                    ;; There should be a single extended metadata element encompassing
+                    ;; spatial-coverage, processing-level-id, collection-data-type, and additional
+                    ;; attributes
+                    (when (or spatial-coverage processing-level-id collection-data-type
+                              product-specific-attributes)
+                      (x/element :Extended_Metadata {}
+                                 (psa/generate-product-specific-attributes
+                                   product-specific-attributes)
+                                 (sc/generate-spatial-coverage-extended-metadata spatial-coverage)
+                                 (when processing-level-id
+                                   (em/generate-metadata-elements
+                                     [{:name em/product_level_id_external_meta_name
+                                       :value processing-level-id}]))
+                                 (when collection-data-type
+                                   (em/generate-metadata-elements
+                                     [{:name em/collection_data_type_external_meta_name
+                                       :value collection-data-type}]))))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

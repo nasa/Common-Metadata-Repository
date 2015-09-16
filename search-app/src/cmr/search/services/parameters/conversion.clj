@@ -7,6 +7,7 @@
             [cmr.search.models.group-query-conditions :as gc]
             [cmr.common.util :as u]
             [cmr.search.services.parameters.legacy-parameters :as lp]
+            [cmr.search.services.tagging.tag-related-item-condition :as tag-related]
             [cmr.common.concepts :as cc]
             [cmr.common.date-time-parser :as parser]))
 
@@ -41,7 +42,13 @@
                 :bounding-box :bounding-box
                 :point :point
                 :keyword :keyword
-                :line :line}
+                :line :line
+
+                ;; Tag parameters
+                :tag-namespace :tag-query
+                :tag-value :tag-query
+                :tag-category :tag-query
+                :tag-originator-id :tag-query}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
              :collection-concept-id :string
@@ -71,7 +78,11 @@
              :point :point
              :line :line
              :browsable :boolean
-             :two-d-coordinate-system :two-d-coordinate-system}})
+             :two-d-coordinate-system :two-d-coordinate-system}
+   :tag {:namespace :string
+         :value :string
+         :category :string
+         :originator-id :string}})
 
 (def always-case-sensitive-fields
   "A set of parameters that will always be case sensitive"
@@ -130,6 +141,14 @@
 (defmethod parameter->condition :keyword
   [_ _ value _]
   (qm/text-condition :keyword (str/lower-case value)))
+
+(defmethod parameter->condition :tag-query
+  [concept-type param value options]
+  (let [rename-tag-param #(keyword (str/replace (name %) "tag-" ""))
+        tag-param-name (rename-tag-param param)
+        options (u/map-keys rename-tag-param options)]
+    (tag-related/tag-related-item-query-condition
+      (parameter->condition :tag tag-param-name value options))))
 
 ;; Special case handler for concept-id. Concept id can refer to a granule or collection.
 ;; If it's a granule query with a collection concept id then we convert the parameter to :collection-concept-id

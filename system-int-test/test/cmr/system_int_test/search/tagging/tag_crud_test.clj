@@ -30,15 +30,15 @@
   (testing "Create without token"
     (is (= {:status 401
             :errors ["Tags cannot be modified without a valid user token."]}
-           (tags/create-tag nil (tags/make-tag 1)))))
+           (tags/create-tag nil (tags/make-tag)))))
 
   (testing "Create with unknown token"
     (is (= {:status 401
             :errors ["Token ABC does not exist"]}
-           (tags/create-tag "ABC" (tags/make-tag 1)))))
+           (tags/create-tag "ABC" (tags/make-tag)))))
 
   (let [valid-user-token (e/login (s/context) "user1")
-        valid-tag (tags/make-tag 1)]
+        valid-tag (tags/make-tag)]
 
     (testing "Create tag with invalid content type"
       (is (= {:status 400,
@@ -86,7 +86,7 @@
 
 (deftest create-tag-test
   (testing "Successful creation"
-    (let [tag (tags/make-tag 1)
+    (let [tag (tags/make-tag)
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 200 status))
@@ -129,7 +129,7 @@
         (is (= 200 (:status (tags/create-tag (e/login (s/context) "user1") tag)))))))
 
   (testing "Creation without required fields is allowed"
-    (let [tag (dissoc (tags/make-tag 2) :category :description)
+    (let [tag (dissoc (tags/make-tag {:value "value2"}) :category :description)
           token (e/login (s/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
       (is (= 200 status))
@@ -137,46 +137,38 @@
       (is (= 1 revision-id)))))
 
 (deftest get-tag-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id]} (tags/create-tag token tag)]
     (testing "Retrieve existing tag"
-      (is (= {:status 200
-              :body (assoc tag :originator-id "user1")
-              :content-type :json}
+      (is (= (assoc tag :originator-id "user1" :status 200)
              (tags/get-tag concept-id))))
 
     (testing "Retrieve unknown tag"
       (is (= {:status 404
-              :body {:errors ["Tag could not be found with concept id [T100-CMR]"]}
-              :content-type :json}
+              :errors ["Tag could not be found with concept id [T100-CMR]"]}
              (tags/get-tag "T100-CMR"))))
     (testing "Retrieve tag with bad concept-id"
       (is (= {:status 400
-              :body {:errors ["Concept-id [F100-CMR] is not valid."]}
-              :content-type :json}
+              :errors ["Concept-id [F100-CMR] is not valid."]}
              (tags/get-tag "F100-CMR"))))
     (testing "Retrieve tag with bad provider in concept id"
       (is (= {:status 400
-              :body {:errors ["[T100-PROV1] is not a valid tag concept id."]}
-              :content-type :json}
+              :errors ["[T100-PROV1] is not a valid tag concept id."]}
              (tags/get-tag "T100-PROV1"))))
     (testing "Retrieve tag with collection concept-id"
       (let [{coll-concept-id :concept-id} (d/ingest "PROV1" (dc/collection))]
         (is (= {:status 400
-                :body {:errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
-                :content-type :json}
+                :errors [(format "[%s] is not a valid tag concept id." coll-concept-id)]}
                (tags/get-tag coll-concept-id)))))
     (testing "Retrieve deleted tag"
       (tags/delete-tag token concept-id)
       (is (= {:status 404
-              :content-type :json
-              :body {:errors [(format "Tag with concept id [%s] was deleted." concept-id)]}}
+              :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
              (tags/get-tag concept-id))))))
 
-
 (deftest update-tag-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 
@@ -201,7 +193,7 @@
         (tags/assert-tag-saved (assoc updated-tag :originator-id "user1") "user2" concept-id 3)))))
 
 (deftest update-tag-failure-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
@@ -247,7 +239,7 @@
              (tags/update-tag token concept-id tag))))))
 
 (deftest delete-tag-test
-  (let [tag (tags/make-tag 1)
+  (let [tag (tags/make-tag)
         token (e/login (s/context) "user1")
         {:keys [concept-id revision-id]} (tags/create-tag token tag)]
 

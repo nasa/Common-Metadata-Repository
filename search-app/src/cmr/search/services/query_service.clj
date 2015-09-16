@@ -87,21 +87,20 @@
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
-  (let [errors (v/validate query)]
-    (when-not (empty? errors)
-      (errors/throw-service-errors :bad-request errors))
+  (if-let [errors (seq (v/validate query))]
+    (errors/throw-service-errors :bad-request errors)
     query))
 
 (defmulti search-results->response
   "Converts query search results into a string response."
   (fn [context query results]
-    (:result-format query)))
+    [(:concept-type query) (:result-format query)]))
 
 (defmulti single-result->response
   "Returns a string representation of a single concept in the format
   specified in the query."
   (fn [context query results]
-    (:result-format query)))
+    [(:concept-type query) (:result-format query)]))
 
 (defn- sanitize-sort-key
   "Sanitizes a single sort key preserving the direction character."

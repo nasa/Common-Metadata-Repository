@@ -25,7 +25,7 @@
                     "size"]]
     (distinct (concat csv-fields acl-rhh/granule-elastic-fields))))
 
-(defmethod elastic-results/elastic-result->query-result-item :csv
+(defmethod elastic-results/elastic-result->query-result-item [:granule :csv]
   [context query elastic-result]
   (let [{[granule-ur] :granule-ur
          [producer-gran-id] :producer-gran-id
@@ -49,7 +49,7 @@
                   (str/join "," browse-urls) (str cloud-cover) day-night (str size)]}
            (acl-rhh/parse-elastic-item :granule elastic-result))))
 
-(defmethod qs/search-results->response :csv
+(defmethod qs/search-results->response [:granule :csv]
   [context query results]
   (let [{:keys [hits took items]} results
         rows (cons CSV_HEADER

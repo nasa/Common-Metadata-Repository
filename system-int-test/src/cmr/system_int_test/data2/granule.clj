@@ -119,7 +119,7 @@
    (granule collection {}))
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
-         {:keys [format-key entry-title entry-id] {:keys [short-name version-id]} :product} collection
+         {:keys [entry-title entry-id] {:keys [short-name version-id]} :product} collection
          coll-ref (g/map->CollectionRef {:entry-title entry-title
                                          :entry-id entry-id
                                          :short-name short-name

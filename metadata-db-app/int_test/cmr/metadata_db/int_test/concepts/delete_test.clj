@@ -4,6 +4,7 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.common.util :as u]
@@ -19,10 +20,10 @@
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
-          gran1 (util/create-and-save-granule provider-id (:concept-id coll1) 1 2)
+          gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
-          gran3 (util/create-and-save-granule provider-id (:concept-id coll2) 1)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id coll1))
+          gran3 (util/create-and-save-granule provider-id coll2 1)
+          {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id coll1))
           deleted-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) revision-id))
           saved-coll1 (:concept (util/get-concept-by-id-and-revision (:concept-id coll1) (dec revision-id)))]
       (is (= {:status 201
@@ -53,9 +54,9 @@
 (deftest delete-collection-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
-          gran1 (util/create-and-save-granule provider-id (:concept-id coll1) 1 2)
+          gran1 (util/create-and-save-granule provider-id coll1 1 2)
           coll2 (util/create-and-save-collection provider-id 2)
-          gran3 (util/create-and-save-granule provider-id (:concept-id coll2) 1)
+          gran3 (util/create-and-save-granule provider-id coll2 1)
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id coll1)
                                                            :deleted true
                                                            :user-id "user101"})
@@ -99,9 +100,9 @@
 
 (deftest delete-granule-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
-          gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
-          gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
+    (let [parent-coll (util/create-and-save-collection provider-id 1)
+          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
+          gran2 (util/create-and-save-granule provider-id parent-coll 2)
           {:keys [status revision-id]} (util/delete-concept (:concept-id gran1))
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
       (is (= {:status 201
@@ -118,9 +119,9 @@
 
 (deftest delete-granule-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
-          gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
-          gran2 (util/create-and-save-granule provider-id parent-coll-id 2)
+    (let [parent-coll (util/create-and-save-collection provider-id 1)
+          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
+          gran2 (util/create-and-save-granule provider-id parent-coll 2)
           {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id gran1)
                                                            :deleted true})
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
@@ -138,8 +139,8 @@
 
 (deftest delete-granule-with-valid-revision-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll-id (:concept-id (util/create-and-save-collection provider-id 1))
-          gran1 (util/create-and-save-granule provider-id parent-coll-id 1 3)
+    (let [parent-coll (util/create-and-save-collection provider-id 1)
+          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
           {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 4)]
       (is (= {:status 201
               :revision-id 4}

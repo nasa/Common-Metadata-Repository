@@ -14,6 +14,7 @@
             [cmr.common.test.test-util :as tu])
   (import clojure.lang.ExceptionInfo))
 
+(use-fixtures :once tu/silence-logging-fixture)
 
 (def example-concept
   {:concept-id "C1000000000-PROV1"

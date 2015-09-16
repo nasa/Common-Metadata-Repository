@@ -5,7 +5,6 @@
             [clojure.string :as str]
             [clojure.java.io :as io]
             [clojure.walk :as walk]
-            [clojure.data.codec.base64 :as b64]
             [cheshire.core :as cheshire]
             [clojurewerkz.elastisch.rest :as esr]
             [cmr.elastic-utils.config :as es-config]

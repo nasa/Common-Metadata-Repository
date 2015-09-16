@@ -311,6 +311,21 @@
    condition
    ])
 
+(defrecord RelatedItemQueryCondition
+  [
+   ;; The concept type being found by the inner condition
+   concept-type
+   ;; The condition that will be used to search
+   condition
+
+   ;; The fields to retrieve from the search
+   result-fields
+
+   ;; A function that will take the results found in result-field and creates a new condition to
+   ;; replace the instance of the related item query condition
+   results-to-condition-fn
+   ])
+
 (defrecord MatchAllCondition
   [])
 
@@ -347,6 +362,8 @@
 (def default-sort-keys
   {:granule [{:field :provider-id :order :asc}
              {:field :start-date :order :asc}]
+   :tag [{:field :namespace :order :asc}
+         {:field :value :order :asc}]
    :collection [{:field :entry-title :order :asc}
                 {:field :provider-id :order :asc}]})
 
@@ -358,6 +375,13 @@
              :result-format :xml
              :echo-compatible? false
              :all-revisions? false}
+   :tag {:condition (->MatchAllCondition)
+         :page-size default-page-size
+         :page-num default-page-num
+         :sort-keys (default-sort-keys :tag)
+         :result-format :json
+         :echo-compatible? false
+         :all-revisions? false}
    :collection {:condition (->MatchAllCondition)
                 :page-size default-page-size
                 :page-num default-page-num
@@ -509,5 +533,6 @@
   MatchNoneCondition
   AttributeNameCondition
   AttributeValueCondition
-  AttributeRangeCondition)
+  AttributeRangeCondition
+  RelatedItemQueryCondition)
 

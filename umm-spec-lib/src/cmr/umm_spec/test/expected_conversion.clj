@@ -66,6 +66,7 @@
                  :Type "CREATE"}]
     :Abstract "A very abstract collection"
     :DataLanguage "English"
+    :Projects [{:ShortName "project short_name"}]
     :Quality "Pretty good quality"}))
 
 (defn- prune-empty-maps
@@ -152,7 +153,8 @@
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
-                      :ValueAccuracyExplanation nil :UpdateDate nil)))
+                      :ValueAccuracyExplanation nil :UpdateDate nil)
+      (update-in-each [:Projects] assoc :Campaigns nil)))
 
 ;; DIF 9
 
@@ -200,7 +202,8 @@
       ;; unable to be implemented as specified.
       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
-      (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")))
+      (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
+      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)))
 
 
 ;; DIF 10
@@ -216,6 +219,11 @@
       (assoc :Id (get dif10/product-levels (:Id processing-level)))
       convert-empty-record-to-nil))
 
+(defn dif10-project
+  [proj]
+  ;; DIF 10 only has at most one campaign in Project Campaigns
+  (update-in proj [:Campaigns] #(when (first %) [(first %)])))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -224,7 +232,8 @@
       (update-in [:Distributions] expected-distributions)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
-      (update-in [:ProcessingLevel] dif10-processing-level)))
+      (update-in [:ProcessingLevel] dif10-processing-level)
+      (update-in-each [:Projects] dif10-project)))
 
 ;; ISO 19115-2
 
@@ -267,7 +276,8 @@
       (assoc :CollectionDataType nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (assoc :Distributions nil)
-      (assoc :AdditionalAttributes nil)))
+      (assoc :AdditionalAttributes nil)
+      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)))
 
 ;; ISO-SMAP
 
@@ -293,6 +303,7 @@
       (assoc :AdditionalAttributes nil)
       (assoc :ProcessingLevel nil)
       (assoc :Distributions nil)
+      (assoc :Projects nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -313,7 +324,7 @@
     :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
     :RelatedUrls :DataDates :Organizations
     :MetadataLineages :ScienceKeywords :SpatialInformation
-    :AncillaryKeywords :Projects :PaleoTemporalCoverage
+    :AncillaryKeywords :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields

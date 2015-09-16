@@ -30,7 +30,7 @@
 (def concept-type->required-extra-fields
   "A map of concept type to the required extra fields"
   {:collection #{:short-name :version-id :entry-id :entry-title}
-   :granule #{:parent-collection-id :granule-ur}})
+   :granule #{:parent-collection-id :parent-entry-title :granule-ur}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."

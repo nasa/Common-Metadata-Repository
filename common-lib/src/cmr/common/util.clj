@@ -7,11 +7,13 @@
             [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.template :as template]
-            [clojure.test :as test])
+            [clojure.test :as test]
+            [clojure.data.codec.base64 :as b64])
   (:import java.text.DecimalFormat
            java.util.zip.GZIPInputStream
            java.util.zip.GZIPOutputStream
            java.io.ByteArrayOutputStream
+           java.io.ByteArrayInputStream
            java.sql.Blob))
 
 (defmacro are2
@@ -365,6 +367,22 @@
     (io/copy input gzip)
     (.finish gzip)
     (.toByteArray output)))
+
+(defn string->gzip-base64
+  "Converts a string to another string that is the base64 encoded bytes obtained by gzip
+  compressing the bytes of the original string."
+  [input]
+  (-> input string->gzip-bytes b64/encode (String. (java.nio.charset.Charset/forName "UTF-8"))))
+
+(defn gzip-base64->string
+  "Converts a base64 encoded gzipped string back to the original string."
+  [input]
+  (-> input
+      .getBytes
+      b64/decode
+      ByteArrayInputStream.
+      GZIPInputStream.
+      slurp))
 
 (defn map->path-values
   "Takes a map and returns a map of a sequence of paths through the map to values contained in that

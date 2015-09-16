@@ -49,6 +49,10 @@
      (for [temproal-keywod (:TemporalKeywords c)]
        [:Data_Resolution
         [:Temporal_Resolution temproal-keywod]])
+     (for [{:keys [ShortName LongName]} (:Projects c)]
+       [:Project
+        [:Short_Name ShortName]
+        [:Long_Name LongName]])
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]

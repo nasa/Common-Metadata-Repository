@@ -86,11 +86,12 @@
   [context concept-type query]
   (let [{:keys [all-revisions?]} query
         type-name (name concept-type)
-        index-name (if (= :collection concept-type)
-                     (if all-revisions?
-                       "1_all_collection_revisions"
-                       "1_collections")
-                     (get-granule-indexes context query))]
+        index-name (case concept-type
+                     :collection (if all-revisions?
+                                   "1_all_collection_revisions"
+                                   "1_collections")
+                     :granule (get-granule-indexes context query)
+                     :tag "1_tags")]
     {:index-name index-name
      :type-name type-name}))
 
