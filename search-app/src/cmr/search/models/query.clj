@@ -311,6 +311,21 @@
    condition
    ])
 
+(defrecord RelatedItemQueryCondition
+  [
+   ;; The concept type being found by the inner condition
+   concept-type
+   ;; The condition that will be used to search
+   condition
+
+   ;; The fields to retrieve from the search
+   result-fields
+
+   ;; A function that will take the results found in result-field and creates a new condition to
+   ;; replace the instance of the related item query condition
+   results-to-condition-fn
+   ])
+
 (defrecord MatchAllCondition
   [])
 
@@ -518,5 +533,6 @@
   MatchNoneCondition
   AttributeNameCondition
   AttributeValueCondition
-  AttributeRangeCondition)
+  AttributeRangeCondition
+  RelatedItemQueryCondition)
 

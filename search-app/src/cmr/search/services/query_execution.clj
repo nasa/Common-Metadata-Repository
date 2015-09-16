@@ -8,14 +8,15 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.search.services.query-walkers.collection-query-resolver :as r]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
-            [cmr.search.services.acl-service :as acl-service])
+            [cmr.search.services.acl-service :as acl-service]
+            [cmr.search.services.query-walkers.related-item-resolver :as related-item-resolver])
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
 (def non-transformer-supported-formats
   "Formats that the transformer does not support because they're implemented in search. Assumed
   that the transformer will support any format not listed here."
-  #{:csv :json :xml :atom :atom-links :opendata :umm-json})
+  #{:csv :json :xml :atom :atom-links :opendata :umm-json :query-specified})
 
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
@@ -145,15 +146,33 @@
                                    (partial acl-service/filter-concepts context)))]
     (post-process-query-result-features context query elastic-results query-results)))
 
+(defmulti concept-type-specific-query-processing
+  "Performs processing on the context and the query specific to the concept type being searched"
+  (fn [context query]
+    (:concept-type query)))
+
+(defmethod concept-type-specific-query-processing :granule
+  [context query]
+  (let [processed-query (r/resolve-collection-queries context query)
+        collection-ids (ce/extract-collection-concept-ids processed-query)]
+    [(assoc context
+            :query-collection-ids collection-ids
+            :query-concept-type (:concept-type query))
+     processed-query]))
+
+(defmethod concept-type-specific-query-processing :collection
+  [context query]
+  [context (related-item-resolver/resolve-related-item-conditions query context)])
+
+(defmethod concept-type-specific-query-processing :default
+  [context query]
+  [context query])
 
 (defmethod execute-query :elastic
   [context query]
   (let [pre-processed-query (pre-process-query-result-features context query)
-        processed-query (r/resolve-collection-queries context pre-processed-query)
-        collection-ids (ce/extract-collection-concept-ids processed-query)
-        context (assoc context
-                       :query-collection-ids collection-ids
-                       :query-concept-type (:concept-type query))
+        [context processed-query] (concept-type-specific-query-processing
+                                    context pre-processed-query)
         elastic-results (->> processed-query
                              (#(if (:skip-acls? %)
                                  %

@@ -1023,6 +1023,23 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
     curl "%CMR-ENDPOINT%/collections?short_name=dem_100m&version=1&version=2"
 
+#### Find collections by tag parameters
+
+Collections can be found by searching for associated tags. The following tag parameters are supported.
+
+* tag_namespace
+  * options: ignore_case, pattern
+* tag_value
+  * options: ignore_case, pattern
+* tag_category
+  * options: ignore_case, pattern
+* tag_originator_id
+  * options: pattern
+
+Find collections matching tag namespace and value.
+
+    curl "%CMR-ENDPOINT%/collections?tag_namespace=org.ceos.wgiss.cwic&tag_value=quality"
+
 #### Find collections by Spatial
 
 ##### Polygon

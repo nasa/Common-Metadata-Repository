@@ -43,7 +43,7 @@
       (let [response (tags/associate token concept-id {:provider "PROV1"})
             expected-saved-tag (assoc tag
                                       :originator-id "user1"
-                                      :associated-collection-ids (set all-prov1-colls))]
+                                      :associated-concept-ids (set all-prov1-colls))]
         (is (= {:status 200 :concept-id concept-id :revision-id 2}
                response))
         (tags/assert-tag-saved expected-saved-tag "user1" concept-id 2)
@@ -66,7 +66,7 @@
           ;; Associates all the version 2 collections which is c2-p1 (already in) and c2-p2 (new)
           (let [response (tags/associate token concept-id {:version "v2"})
                 expected-saved-tag (assoc expected-saved-tag
-                                          :associated-collection-ids
+                                          :associated-concept-ids
                                           (set (cons c2-p2 all-prov1-colls)))]
             (is (= {:status 200 :concept-id concept-id :revision-id 5}
                    response))
@@ -134,7 +134,7 @@
         {:keys [concept-id]} (tags/create-tag token tag)
         expected-saved-tag (assoc tag
                                   :originator-id "user1"
-                                  :associated-collection-ids (set all-colls))]
+                                  :associated-concept-ids (set all-colls))]
     (index/wait-until-indexed)
     ;; Associate the tag with every collection
     (tags/associate prov3-token concept-id {:or [{:provider "PROV1"}
@@ -158,7 +158,7 @@
     (testing "Successfully disassociate tag with collections"
       (let [response (tags/disassociate token concept-id {:provider "PROV1"})
             expected-saved-tag (assoc expected-saved-tag
-                                      :associated-collection-ids (set (concat all-prov2-colls
+                                      :associated-concept-ids (set (concat all-prov2-colls
                                                                               all-prov3-colls)))]
         (is (= {:status 200 :concept-id concept-id :revision-id 5}
                response))
@@ -199,14 +199,58 @@
               :errors [(format "Tag with concept id [%s] was deleted." concept-id)]}
              (tags/disassociate token concept-id valid-query))))))
 
+;; This tests association retention when collections and tags are updated or deleted.
+(deftest association-retention-test
+  (e/grant-all (s/context) (e/coll-catalog-item-id "provguid1"))
+  (let [coll (d/ingest "PROV1" (dc/collection))
+        token (e/login (s/context) "user1")
+        _ (index/wait-until-indexed)
+        tag (tags/save-tag token (tags/make-tag {:value "tag1"}) [coll])
+        assert-tag-associated (fn [collection]
+                                (is (d/refs-match? [collection]
+                                                   (search/find-refs :collection {:tag-value "tag1"}))))
+        assert-tag-not-associated (fn []
+                                    (is (d/refs-match?
+                                          []
+                                          (search/find-refs :collection {:tag-value "tag1"}))))]
+    (index/wait-until-indexed)
 
-;; Later TODOs
+    (testing "Tag initially associated with collection"
+      (assert-tag-associated coll))
 
-;; Deleting a tag dissociates the collections
-;; - test this by searching for collection by that tag
+    (testing "Tag still associated with collection after updating collection"
+      (let [updated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status updated-coll)))
+        (index/wait-until-indexed)
+        (assert-tag-associated updated-coll)))
 
-;; Updating a tag maintains associations
-;; - test this by search for collections by that tag
+    (testing "Tag still associated with collection after deleting and recreating the collection"
+      (is (= 200 (:status (ingest/delete-concept (d/item->concept coll)))))
+      (let [recreated-coll (d/ingest "PROV1" (dissoc coll :revision-id))]
+        (is (= 200 (:status recreated-coll)))
+        (index/wait-until-indexed)
+        (assert-tag-associated recreated-coll)))
 
-;; Collection deleted and then reingested is still associated with a tag
-;; - test this by search for collections by that tag
+    (let [latest-coll (assoc coll :revision-id 4)]
+
+      (testing "Tag still associated with collection after updating tag"
+        (let [updated-tag (tags/save-tag token tag)]
+          (is (= {:status 200 :revision-id 3} (select-keys updated-tag [:status :revision-id])))
+          (index/wait-until-indexed)
+          (assert-tag-associated latest-coll)))
+
+      (testing "Tag not associated with collection after deleting and recreating the tag"
+        (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 4}
+               (tags/delete-tag token (:concept-id tag))))
+        (index/wait-until-indexed)
+
+        (testing "Not associated after tag deleted"
+          (assert-tag-not-associated)))
+
+      (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 5}
+             (tags/create-tag token (tags/make-tag {:value "tag1"}))))
+      (index/wait-until-indexed)
+      (testing "Not associated after being recreated."
+        (assert-tag-not-associated)))))
+
+

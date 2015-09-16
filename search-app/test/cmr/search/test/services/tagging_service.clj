@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.search.services.tagging-service :as ts]
             [cmr.common.validations.core :as v]
-            [cmr.search.services.tagging-service-messages :as msg]))
+            [cmr.search.services.tagging.tagging-service-messages :as msg]))
 
 (def create-tag-validations (var-get #'ts/tag-validations))
 (def update-tag-validations (var-get #'ts/update-tag-validations))
