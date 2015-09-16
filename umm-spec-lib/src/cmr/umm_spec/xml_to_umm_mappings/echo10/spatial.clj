@@ -6,8 +6,9 @@
 
 (defn- parse-point
   [el]
-  {:Longitude (value-of el "PointLongitude")
-   :Latitude  (value-of el "PointLatitude")})
+  (when el
+    {:Longitude (Double. (value-of el "PointLongitude"))
+     :Latitude  (Double. (value-of el "PointLatitude"))}))
 
 (defn- parse-center-point-of
   [el]
