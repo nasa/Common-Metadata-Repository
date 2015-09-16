@@ -1973,11 +1973,11 @@ Content-Length: 48
 
 #### Associating Collections with a Tag
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -1991,11 +1991,11 @@ Content-Length: 48
 
 #### Disassociating Collections with a Tag
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
