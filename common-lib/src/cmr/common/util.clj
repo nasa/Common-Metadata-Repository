@@ -482,11 +482,8 @@
 (defn truncate-nils
   "Truncates the nil elements from the end of the given sequence, returns the truncated sequence.
   e.g (truncate-nils [1 2 nil 3 nil nil]) => '(1 2 nil 3)"
-  [a]
-  (if (last a)
-    a
-    (when (> (count a) 0)
-      (truncate-nils (drop-last a)))))
+  [coll]
+  (reverse (drop-while nil? (reverse coll))))
 
 (defn map-longest
   "Similar to map function, but applies the function to the longest of the sequences,
@@ -494,7 +491,7 @@
   See http://stackoverflow.com/questions/18940629/using-map-with-different-sized-collections-in-clojure"
   [f default & colls]
   (lazy-seq
-   (when (some seq colls)
-     (cons
-      (apply f (map #(if (seq %) (first %) default) colls))
-      (apply map-longest f default (map rest colls))))))
+    (when (some seq colls)
+      (cons
+        (apply f (map #(if (seq %) (first %) default) colls))
+        (apply map-longest f default (map rest colls))))))

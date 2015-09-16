@@ -196,8 +196,7 @@
         [:gmd:distributor
          [:gmd:MD_Distributor
           [:gmd:distributorContact {:gco:nilReason "missing"}]
-          (for [fee fees
-                :let [fee (nil-to-empty-string fee)]]
+          (for [fee (map nil-to-empty-string fees)]
             [:gmd:distributionOrderProcess
              [:gmd:MD_StandardOrderProcess
               [:gmd:fees
@@ -211,8 +210,7 @@
               [:gmd:version {:gco:nilReason "unknown"}]
               [:specification
                (char-string (nil-to-empty-string media))]]])
-          (for [size sizes
-                :let [size (nil-to-empty-string size)]]
+          (for [size (map nil-to-empty-string sizes)]
             [:gmd:distributorTransferOptions
              [:gmd:MD_DigitalTransferOptions
               [:gmd:transferSize
