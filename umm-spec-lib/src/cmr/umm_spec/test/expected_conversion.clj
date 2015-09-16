@@ -7,6 +7,7 @@
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
             [cmr.common.util :as util]
+            [clj-time.format :as f]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (def example-record
@@ -75,7 +76,30 @@
      :Abstract "A very abstract collection"
      :DataLanguage "English"
      :Projects [(cmn/map->ProjectType {:ShortName "project short_name"})]
-     :Quality "Pretty good quality"}))
+     :Quality "Pretty good quality"
+     :PublicationReferences [(cmn/map->PublicationReferenceType
+                               {:PublicationDate (t/date-time 2015)
+                                :OtherReferenceDetails "Other reference details"
+                                :Series "series"
+                                :Title "title"
+                                :DOI (cmn/map->DoiType {:DOI "doi:xyz"
+                                                        :Authority "DOI"})
+                                :Pages "100"
+                                :Edition "edition"
+                                :ReportNumber "25"
+                                :Volume "volume"
+                                :Publisher "publisher"
+                                :RelatedUrl (cmn/map->RelatedUrlType
+                                              {:URLs ["www.foo.com" "www.shoo.com"]})
+                                :ISBN "ISBN"
+                                :Author "author"
+                                :Issue "issue"
+                                :PublicationPlace "publication place"})
+                             (cmn/map->PublicationReferenceType
+                               {:DOI (cmn/map->DoiType{:DOI "identifier"
+                                                       :Authority "authority"})})
+                             (cmn/map->PublicationReferenceType
+                               {:Title "some title"})]}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -141,6 +165,7 @@
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
+      (assoc :PublicationReferences nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
@@ -169,6 +194,23 @@
   (when access-constraints
     (assoc access-constraints :Value nil)))
 
+(defn dif-publication-reference
+  "Returns the expected value of a parsed DIF 9 publication reference"
+  [pub-ref]
+  (-> pub-ref
+      (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+      (update-in [:RelatedUrl]
+                 (fn [related-url]
+                   (when related-url (assoc related-url
+                                            :URLs (seq (remove nil? [(first (:URLs related-url))]))
+                                            :Description nil
+                                            :ContentType nil
+                                            :Protocol nil
+                                            :Title nil
+                                            :MimeType nil
+                                            :Caption nil
+                                            :FileSize nil))))))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
@@ -180,7 +222,8 @@
       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
-      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)))
+      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
+      (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 
 ;; DIF 10
@@ -209,7 +252,8 @@
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
-      (update-in-each [:Projects] dif10-project)))
+      (update-in-each [:Projects] dif10-project)
+      (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 ;; ISO 19115-2
 
@@ -239,6 +283,19 @@
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso))
 
+(defn iso-19115-2-publication-reference
+  "Returns the expected value of a parsed ISO-19115-2 publication references"
+  [pub-refs]
+  (seq (for [pub-ref pub-refs
+             :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
+         (-> pub-ref
+             (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
+             (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
+             (update-in [:PublicationDate] (fn [date-time]
+                                             (->> date-time
+                                                  (f/unparse (f/formatters :date))
+                                                  (f/parse (f/formatters :date)))))))))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
@@ -252,7 +309,8 @@
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (assoc :Distributions nil)
       (assoc :AdditionalAttributes nil)
-      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)))
+      (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
+      (update-in [:PublicationReferences] iso-19115-2-publication-reference)))
 
 ;; ISO-SMAP
 
@@ -279,6 +337,7 @@
       (assoc :ProcessingLevel nil)
       (assoc :Distributions nil)
       (assoc :Projects nil)
+      (assoc :PublicationReferences nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -296,7 +355,7 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
-    :MetadataLanguage :DirectoryNames :Personnel :PublicationReferences
+    :MetadataLanguage :DirectoryNames :Personnel
     :RelatedUrls :DataDates :Organizations
     :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation
     :AncillaryKeywords :PaleoTemporalCoverage :MetadataAssociations})

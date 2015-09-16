@@ -231,6 +231,55 @@
           [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
          [:gmd:otherConstraints
           [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+       (for [pub-ref (:PublicationReferences c)
+             ;; Title and PublicationDate are required fields in ISO
+             :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
+         [:gmd:aggregationInfo
+          [:gmd:MD_AggregateInformation
+           [:gmd:aggregateDataSetName
+            [:gmd:CI_Citation
+             [:gmd:title (char-string (:Title pub-ref))]
+             (when (:PublicationDate pub-ref)
+               [:gmd:date
+                [:gmd:CI_Date
+                 [:gmd:date
+                  [:gco:Date (second (re-matches #"(\d\d\d\d-\d\d-\d\d)T.*" (str (:PublicationDate pub-ref))))]]
+                 [:gmd:dateType
+                  [:gmd:CI_DateTypeCode
+                   {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+                    :codeListValue "publication"} "publication"]]]])
+             [:gmd:edition (char-string (:Edition pub-ref))]
+             (when (:DOI pub-ref)
+               [:gmd:identifier
+                [:gmd:MD_Identifier
+                 [:gmd:code (char-string (get-in pub-ref [:DOI :DOI]))]
+                 [:gmd:description (char-string "DOI")]]])
+             [:gmd:citedResponsibleParty
+              [:gmd:CI_ResponsibleParty
+               [:gmd:organisationName (char-string (:Author pub-ref))]
+               [:gmd:role
+                [:gmd:CI_RoleCode
+                 {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                  :codeListValue "author"} "author"]]]]
+             [:gmd:citedResponsibleParty
+              [:gmd:CI_ResponsibleParty
+               [:gmd:organisationName (char-string (:Publisher pub-ref))]
+               [:gmd:role
+                [:gmd:CI_RoleCode
+                 {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                  :codeListValue "publisher"} "publication"]]]]
+             [:gmd:series
+              [:gmd:CI_Series
+               [:gmd:name (char-string (:Series pub-ref))]
+               [:gmd:issueIdentification (char-string (:Issue pub-ref))]
+               [:gmd:page (char-string (:Pages pub-ref))]]]
+             [:gmd:otherCitationDetails (char-string (:OtherReferenceDetails pub-ref))]
+             [:gmd:ISBN (char-string (:ISBN pub-ref))]]]
+             [:gmd:associationType
+              [:gmd:DS_AssociationTypeCode
+               {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                :codeListValue "Input Collection"} "Input Collection"]]
+           ]])
        [:gmd:language (char-string (:DataLanguage c))]
        [:gmd:extent
         [:gmd:EX_Extent
