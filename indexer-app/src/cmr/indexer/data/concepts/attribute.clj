@@ -82,15 +82,15 @@
 (defn psa->elastic-doc
   "Converts a PSA into the portion going in an elastic document"
   [psa]
-  (let [{:keys [name data-type parsed-value]} psa
-        field-name (type->field-name data-type)]
+  (let [{:keys [name group data-type parsed-value]} psa
+        field-name (type->field-name data-type)
+        psa-map {:name name :group group}]
     (if (some #{data-type} [:string :boolean :time-string :date-string :datetime-string])
-      [{:name name
-        field-name (value->elastic-value data-type parsed-value)}
-       {:name name
-        (str field-name ".lowercase") (str/lower-case (value->elastic-value data-type parsed-value))}]
-      {:name name
-       field-name (value->elastic-value data-type parsed-value)})))
+      [(assoc psa-map field-name (value->elastic-value data-type parsed-value))
+       (assoc psa-map
+              (str field-name ".lowercase")
+              (str/lower-case (value->elastic-value data-type parsed-value)))]
+      (assoc psa-map field-name (value->elastic-value data-type parsed-value)))))
 
 (defn psas->elastic-docs
   "Converts the psa into a list of elastic documents"

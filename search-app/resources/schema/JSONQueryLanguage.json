@@ -318,6 +318,64 @@
 							"type": "boolean"
 						}
 					}
+				},
+				"attribute": {
+					"description": "Specifies a search against additional attributes.",
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"name": {
+							"description": "The name of the additional attribute.",
+							"type": "string"
+						},
+						"group": {
+							"description": "The group associated with the additional attribute.",
+							"type": "string"
+						},
+						"type": {
+							"description": "The data type of the attribute being searched against. Support types are string, time, date, datetime, boolean, time-string, date-string, datetime-string, int, and float.",
+							"enum": ["string", "time", "date", "datetime", "boolean", "time-string", "date-string", "datetime-string", "int", "float"]
+						},
+						"value": {
+							"description": "Search for an exact value match for an additional attribute.",
+							"oneOf": [{
+								"type": "string"
+							}, {
+								"type": "integer"
+							}, {
+								"type": "number"
+							}, {
+								"type": "null"
+							}]						},
+						"min_value": {
+							"description": "Search for values for an additional attribute which are greater than the provided value.",
+							"oneOf": [{
+								"type": "string"
+							}, {
+								"type": "integer"
+							}, {
+								"type": "number"
+							}, {
+								"type": "null"
+							}]
+						},
+						"max_value": {
+							"description": "Search for values for an additional attribute which are less than the provided value.",
+							"oneOf": [{
+								"type": "string"
+							}, {
+								"type": "integer"
+							}, {
+								"type": "number"
+							}, {
+								"type": "null"
+							}]						},
+						"exclude_boundary": {
+							"description": "If set to true, the search will not include the boundary values for min and max values. Defaults to false.",
+							"type": "boolean"
+						}
+					},
+					"required": ["name"]
 				}
 			}
 		},

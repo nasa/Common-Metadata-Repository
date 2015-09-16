@@ -46,10 +46,11 @@
    :bounding-box :bounding-box
    :temporal :temporal
    :updated-since :updated-since
+   :science-keywords :nested-condition
+   :attribute :attribute
    :or :or
    :and :and
-   :not :not
-   :science-keywords :nested-condition})
+   :not :not})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
@@ -179,6 +180,43 @@
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
+
+(defmethod parse-json-condition :attribute
+  [_ value]
+  ;; (validate-attribute-condition value) - either update JSON schema or validate it here
+  (let [{:keys [name group type value min-value max-value exclude-boundary pattern]} value]
+    (cond
+      ;; Range search
+      (or (some? min-value) (some? max-value))
+      (qm/map->AttributeRangeCondition {:type (keyword type)
+                                        :name name
+                                        :group group
+                                        :min-value min-value
+                                        :max-value max-value
+                                        :exclusive? exclude-boundary})
+
+      ;; Exact value search
+      (some? value)
+      (qm/map->AttributeValueCondition {:type (keyword type)
+                                        :name name
+                                        :group group
+                                        :value value})
+
+      ;; Attribute name search
+      (some? name)
+      (qm/map->AttributeValueCondition {:name name
+                                        :group group
+                                        :pattern? pattern})
+
+      ;; Attribute group search
+      (some? group)
+      (qm/map->AttributeValueCondition {:group group
+                                        :pattern? pattern})
+
+      ;; Validation should have caught any other case
+      :else
+      (errors/internal-error!
+        (format "Unhandled additional attribute condition %s" value)))))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

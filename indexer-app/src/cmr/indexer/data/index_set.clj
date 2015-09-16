@@ -92,6 +92,8 @@
    :_all {:enabled false}
    :properties
    {:name string-field-mapping
+    :group string-field-mapping
+    :group.lowercase string-field-mapping
     :string-value string-field-mapping
     :string-value.lowercase string-field-mapping
     :float-value double-field-mapping

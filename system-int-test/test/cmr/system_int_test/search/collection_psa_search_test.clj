@@ -193,7 +193,26 @@
            [coll1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
            [coll1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
            [coll1 coll2] [{:type :range :name "bravo" :value ["bc" nil]}]
-           [coll1 coll2] [{:type :range :name "bravo" :value [nil "bg"]}]))))
+           [coll1 coll2] [{:type :range :name "bravo" :value [nil "bg"]}]))
+
+    (testing "search collections by additionalAttributes using JSON Query Language"
+      (are [items search]
+           (let [condition {:attribute search}]
+             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+
+           [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ac"}
+           [coll1] {:type "string" :name "alpha" :min_value "ab" :max_value "ac"}
+           [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"}
+           [coll1 coll2] {:type "string" :name "bravo" :min_value "bc" :max_value nil}
+           [coll1 coll2] {:type "string" :name "bravo" :min_value "bc"}
+           [coll1 coll2] {:type "string" :name "bravo" :min_value nil :max_value "bg"}
+           [coll1 coll2] {:type "string" :name "bravo" :max_value "bg"}
+
+           ;; Test exclude boundary
+           ;; Test searching by group
+           ))
+
+    ))
 
 (deftest float-psas-search-test
   (let [psa1 (dc/psa "alpha" :float 10)

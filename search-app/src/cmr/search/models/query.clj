@@ -321,9 +321,16 @@
   "A list of valid additional attribute search types"
   [:float :int :string :date :time :datetime])
 
+(defrecord AttributeGroupCondition
+  [
+   group
+   pattern?
+   ])
+
 (defrecord AttributeNameCondition
   [
    name
+   group
    pattern?
    ])
 
@@ -331,6 +338,7 @@
   [
    type
    name
+   group
    value
    pattern?
    ])
@@ -339,6 +347,7 @@
   [
    type
    name
+   group
    min-value
    max-value
    exclusive? ;; if true, exclude the boundary values
