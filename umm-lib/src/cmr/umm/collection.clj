@@ -66,6 +66,7 @@
 (defrecord ProductSpecificAttribute
   [
    name
+   group
    description
    data-type
    parameter-range-begin

@@ -15,12 +15,13 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
+;; These are for boolean, datetime_string, time_string, and date_string attribute types which are
+;; all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
-  (let [psa1 (dc/psa "bool" :boolean true)
-        psa2 (dc/psa "dts" :datetime-string "2012-01-01T01:02:03Z")
-        psa3 (dc/psa "ts" :time-string "01:02:03Z")
-        psa4 (dc/psa "ds" :date-string "2012-01-01")
+  (let [psa1 (dc/psa {:name "bool" :data-type :boolean :value true})
+        psa2 (dc/psa {:name "dts" :data-type :datetime-string :value "2012-01-01T01:02:03Z"})
+        psa3 (dc/psa {:name "ts" :data-type :time-string :value "01:02:03Z"})
+        psa4 (dc/psa {:name "ds" :data-type :date-string :value "2012-01-01"})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
         coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
@@ -34,10 +35,10 @@
          "string,ds,2012-01-01" [coll3])))
 
 (deftest string-psas-search-test
-  (let [psa1 (dc/psa "alpha" :string "ab")
-        psa2 (dc/psa "bravo" :string "bf")
-        psa3 (dc/psa "charlie" :string "foo")
-        psa4 (dc/psa "case" :string "up")
+  (let [psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
+        psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
+        psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
+        psa4 (dc/psa {:name "case" :data-type :string :value "up"})
 
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
@@ -215,9 +216,9 @@
     ))
 
 (deftest float-psas-search-test
-  (let [psa1 (dc/psa "alpha" :float 10)
-        psa2 (dc/psa "bravo" :float -12)
-        psa3 (dc/psa "charlie" :float 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :float :value 10})
+        psa2 (dc/psa {:name "bravo" :data-type :float :value -12})
+        psa3 (dc/psa {:name "charlie" :data-type :float :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -297,9 +298,9 @@
            [coll2] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
 
 (deftest int-psas-search-test
-  (let [psa1 (dc/psa "alpha" :int 10)
-        psa2 (dc/psa "bravo" :int -12)
-        psa3 (dc/psa "charlie" :int 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :int :value 10})
+        psa2 (dc/psa {:name "bravo" :data-type :int :value -12})
+        psa3 (dc/psa {:name "charlie" :data-type :int :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -378,9 +379,9 @@
            [coll2] [{:type :intRange :name "charlie" :value [44 46]}]))))
 
 (deftest datetime-psas-search-test
-  (let [psa1 (dc/psa "alpha" :datetime (d/make-datetime 10 false))
-        psa2 (dc/psa "bravo" :datetime (d/make-datetime 14 false))
-        psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :datetime :value (d/make-datetime 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :datetime :value (d/make-datetime 14 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :datetime :value (d/make-datetime 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -473,9 +474,9 @@
            [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest time-psas-search-test
-  (let [psa1 (dc/psa "alpha" :time (d/make-time 10 false))
-        psa2 (dc/psa "bravo" :time (d/make-time 23 false))
-        psa3 (dc/psa "charlie" :time (d/make-time 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :time :value (d/make-time 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :time :value (d/make-time 23 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :time :value (d/make-time 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -568,9 +569,9 @@
            [coll2] [{:type :timeRange :name "charlie" :value [44 45]}]))))
 
 (deftest date-psas-search-test
-  (let [psa1 (dc/psa "alpha" :date (d/make-date 10 false))
-        psa2 (dc/psa "bravo" :date (d/make-date 23 false))
-        psa3 (dc/psa "charlie" :date (d/make-date 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :date :value (d/make-date 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :date :value (d/make-date 23 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :date :value (d/make-date 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
 
