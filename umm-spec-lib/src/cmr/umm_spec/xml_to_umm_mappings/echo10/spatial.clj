@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+            [cmr.umm-spec.spatial-util :as spu]
             [cmr.umm-spec.xml.parse :refer :all]))
 
 (defn- parse-point
@@ -20,9 +21,9 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (map parse-point (select el "Boundary/Point"))}
+   :Boundary {:Points (spu/umm-point-order (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "ExclusiveZone/Boundary")]
-                                 {:Points (map parse-point (select boundary "Point"))})}})
+                                 {:Points (spu/umm-point-order (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]

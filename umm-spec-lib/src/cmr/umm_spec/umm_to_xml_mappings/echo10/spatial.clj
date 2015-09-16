@@ -1,5 +1,11 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.spatial-util :as spu]
+            [cmr.umm-spec.xml.gen :refer :all]))
+
+(defn- echo-point-order
+  "Returns a sequence of points in ECHO order (open and clockwise)."
+  [points]
+  (spu/open (spu/clockwise points)))
 
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType
@@ -35,11 +41,11 @@
    [:CenterPoint
     (point-contents (:CenterPoint poly))]
    [:Boundary
-    (map point-element (-> poly :Boundary :Points))]
+    (map point-element (echo-point-order (-> poly :Boundary :Points)))]
    [:ExclusiveZone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (:Points b))])]])
+       (map point-element  (echo-point-order (:Points b)))])]])
 
 (defn- line-element
   "Returns ECHO Line element from given UMM LineType record."
