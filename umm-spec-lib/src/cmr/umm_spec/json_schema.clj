@@ -212,8 +212,9 @@
 
        "object"  (let [ctor (record-ctor schema type-name)
                        kvs (for [[k v] (filter val x)]
-                             (let [prop-definition (get-in definition [:properties k])]
-                               (when-let [v (coerce schema prop-definition (conj key-path k) v)]
+                             (let [prop-definition (get-in definition [:properties k])
+                                   v (coerce schema prop-definition (conj key-path k) v)]
+                               (when (some? v)
                                  [k v])))
                        m (into {} kvs)]
                    ;; Return nil instead of empty maps/records here.
