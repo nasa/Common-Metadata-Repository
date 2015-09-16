@@ -55,21 +55,21 @@
    (let [options (merge {:is-raw? true :token token} options)]
      (process-response (tt/delete-tag (s/context) concept-id options)))))
 
-(defn associate
+(defn associate-by-query
   "Associates a tag with collections found with a JSON query"
   ([token concept-id condition]
-   (associate token concept-id condition nil))
+   (associate-by-query token concept-id condition nil))
   ([token concept-id condition options]
    (let [options (merge {:is-raw? true :token token} options)]
-     (process-response (tt/associate-tag (s/context) concept-id {:condition condition} options)))))
+     (process-response (tt/associate-tag-by-query (s/context) concept-id {:condition condition} options)))))
 
-(defn disassociate
+(defn disassociate-by-query
   "Disassociates a tag with collections found with a JSON query"
   ([token concept-id condition]
-   (disassociate token concept-id condition nil))
+   (disassociate-by-query token concept-id condition nil))
   ([token concept-id condition options]
    (let [options (merge {:is-raw? true :token token} options)]
-     (process-response (tt/disassociate-tag (s/context) concept-id {:condition condition} options)))))
+     (process-response (tt/disassociate-tag-by-query (s/context) concept-id {:condition condition} options)))))
 
 (defn save-tag
   "A helper function for creating or updating tags for search tests. If the tag does not have a
@@ -90,7 +90,8 @@
    (let [saved-tag (save-tag token tag)
          ;; Associate the tag with the collections using a query by concept id
          condition {:or (map #(hash-map :concept_id (:concept-id %)) associated-collections)}
-         response (associate token (:concept-id saved-tag) condition)]
+         ;; TODO change this to use the POST /associations endpoint
+         response (associate-by-query token (:concept-id saved-tag) condition)]
      (assert (= 200 (:status response)) (pr-str condition))
      (assoc saved-tag :revision-id (:revision-id response)))))
 

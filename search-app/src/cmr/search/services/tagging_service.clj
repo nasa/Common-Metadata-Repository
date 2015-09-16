@@ -178,7 +178,7 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-(defn- update-tag-associations
+(defn- update-tag-associations-with-query
   "Modifies a tags associations. Finds collections using the query and then passes the existing
   associated collection ids and the ones found from the query to the function. Sets the collection
   ids as the result of the function."
@@ -204,15 +204,15 @@
           (dissoc :revision-date)
           (update-in [:revision-id] inc)))))
 
-(defn associate-tag
+(defn associate-tag-by-query
   "Associates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations context concept-id json-query set/union))
+  (update-tag-associations-with-query context concept-id json-query set/union))
 
-(defn disassociate-tag
+(defn disassociate-tag-by-query
   "Disassociates a tag with collections that are the result of a JSON query"
   [context concept-id json-query]
-  (update-tag-associations context concept-id json-query set/difference))
+  (update-tag-associations-with-query context concept-id json-query set/difference))
 
 (defn search-for-tags
   "Searches for tags with the given result formats. Returns the results as a string."
