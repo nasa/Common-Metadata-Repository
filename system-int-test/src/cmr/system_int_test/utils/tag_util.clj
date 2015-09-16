@@ -90,7 +90,6 @@
    (let [saved-tag (save-tag token tag)
          ;; Associate the tag with the collections using a query by concept id
          condition {:or (map #(hash-map :concept_id (:concept-id %)) associated-collections)}
-         ;; TODO change this to use the POST /associations endpoint
          response (associate-by-query token (:concept-id saved-tag) condition)]
      (assert (= 200 (:status response)) (pr-str condition))
      (assoc saved-tag :revision-id (:revision-id response)))))
