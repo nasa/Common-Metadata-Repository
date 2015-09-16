@@ -4,7 +4,7 @@
   can be lossy if some fields are not supported by that format"
   (:require [cmr.common.util :refer [update-in-each]]
             [cmr.umm-spec.models.collection :as umm-c]
-                        [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.common :as cmn]
             [clj-time.core :as t]
             [cmr.common.util :as util]
