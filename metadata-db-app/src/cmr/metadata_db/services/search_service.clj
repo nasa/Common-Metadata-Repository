@@ -5,13 +5,6 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.metadata-db.services.messages :as msg]
             [clojure.set :as set]
-
-            ;; Required to get code loaded
-            [cmr.metadata-db.data.oracle.concepts]
-            [cmr.metadata-db.data.oracle.concepts.collection]
-            [cmr.metadata-db.data.oracle.concepts.granule]
-            [cmr.metadata-db.data.oracle.providers]
-
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.util :as util]
             [cmr.system-trace.core :refer [deftracefn]]))
