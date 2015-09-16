@@ -54,7 +54,7 @@
     :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
     :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                     :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
-                                              :Geometry {:CoordinateSystem "Geodetic"
+                                              :Geometry {:CoordinateSystem "GEODETIC"
                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
     :AccessConstraints {:Description "Access constraints"
                         :Value "0"}
@@ -67,6 +67,21 @@
     :Abstract "A very abstract collection"
     :DataLanguage "English"
     :Quality "Pretty good quality"}))
+
+(defn- prune-empty-maps
+  [x]
+  (cond
+    (map? x) (let [pruned (reduce (fn [m [k v]]
+                                    (assoc m k (prune-empty-maps v)))
+                                  x
+                                  x)]
+               (if (seq (keep val pruned))
+                 pruned
+                 nil))
+    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
+                  (vec pruned))
+    (seq? x)    (seq (keep prune-empty-maps x))
+    :else x))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -134,6 +149,7 @@
       (assoc :UseConstraints nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)))
@@ -158,21 +174,6 @@
   [access-constraints]
   (when access-constraints
     (assoc access-constraints :Value nil)))
-
-(defn- prune-empty-maps
-  [x]
-  (cond
-    (map? x) (let [pruned (reduce (fn [m [k v]]
-                                    (assoc m k (prune-empty-maps v)))
-                                  x
-                                  x)]
-               (if (seq (keep val pruned))
-                 pruned
-                 nil))
-    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
-                  (vec pruned))
-    (seq? x)    (seq (keep prune-empty-maps x))
-    :else x))
 
 (defmethod convert-internal :dif
   [umm-coll _]
@@ -218,6 +219,7 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (assoc :SpatialExtent nil)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] expected-distributions)
       (update-in-each [:Platforms] dif10-platform)
@@ -255,6 +257,7 @@
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
+      (assoc :SpatialExtent nil)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc

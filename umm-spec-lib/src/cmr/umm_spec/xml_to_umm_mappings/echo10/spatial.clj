@@ -20,7 +20,9 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (map parse-point (select el "Boundary/Point"))}})
+   :Boundary {:Points (map parse-point (select el "Boundary/Point"))}
+   :ExclusiveZone {:Boundaries (for [boundary (select el "ExclusiveZone/Boundary")]
+                                 {:Points (map parse-point (select boundary "Point"))})}})
 
 (defn- parse-bounding-rect
   [el]
@@ -46,4 +48,10 @@
                                      {:ZoneIdentifier (value-of horiz "ZoneIdentifier")
                                       :Geometry       (parse-geometry (first (select horiz "Geometry")))})
      :VerticalSpatialDomains       (for [vert (select spatial "VerticalSpatialDomain")]
-                                     (fields-from vert :Type :Value))}))
+                                     (fields-from vert :Type :Value))
+     :OrbitParameters              (fields-from (first (select spatial "OrbitParameters"))
+                                                :SwathWidth
+                                                :Period
+                                                :InclinationAngle
+                                                :NumberOfOrbits
+                                                :StartCircularLatitude)}))

@@ -35,7 +35,11 @@
    [:CenterPoint
     (point-contents (:CenterPoint poly))]
    [:Boundary
-    (map point-element (-> poly :Boundary :Points))]])
+    (map point-element (-> poly :Boundary :Points))]
+   [:ExclusiveZone
+    (for [b (-> poly :ExclusiveZone :Boundaries)]
+      [:Boundary
+       (map point-element (:Points b))])]])
 
 (defn- line-element
   "Returns ECHO Line element from given UMM LineType record."
@@ -63,8 +67,8 @@
      (for [vert (:VerticalSpatialDomains sp)]
        [:VerticalSpatialDomain
         (elements-from vert :Type :Value)])
-     [:OrbitParamters
-      (elements-from (:OrbitParamters sp)
+     [:OrbitParameters
+      (elements-from (:OrbitParameters sp)
                      :SwathWidth :Period :InclinationAngle
                      :NumberOfOrbits :StartCircularLatitude)]
      (elements-from sp :GranuleSpatialRepresentation)]))

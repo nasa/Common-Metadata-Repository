@@ -100,7 +100,6 @@
     [:RestrictionComment (-> c :AccessConstraints :Description)]
     [:Price (-> c :Distributions first :Fees)]
     [:DataFormat (-> c :Distributions first :DistributionFormat)]
-    (spatial/spatial-element c)
     [:SpatialKeywords
      (for [kw (:SpatialKeywords c)]
        [:Keyword kw])]
@@ -114,4 +113,5 @@
        [:AdditionalAttribute
         (elements-from aa
                        :Name :Description :DataType :ParameterRangeBegin
-                       :ParameterRangeEnd :Value)])]]))
+                       :ParameterRangeEnd :Value)])]
+    (spatial/spatial-element c)]))
