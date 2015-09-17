@@ -5,7 +5,7 @@
 (defn- echo-point-order
   "Returns a sequence of points in ECHO order (open and clockwise)."
   [points]
-  (spu/open (spu/clockwise points)))
+  (reverse (spu/open points)))
 
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType

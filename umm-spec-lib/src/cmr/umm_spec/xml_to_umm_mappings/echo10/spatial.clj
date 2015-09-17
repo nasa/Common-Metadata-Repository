@@ -4,6 +4,10 @@
             [cmr.umm-spec.spatial-util :as spu]
             [cmr.umm-spec.xml.parse :refer :all]))
 
+(defn umm-point-order
+  [points]
+  (spu/closed (reverse points)))
+
 (defn- parse-point
   [el]
   (when el
@@ -22,9 +26,9 @@
 (defn- parse-polygon
   [el]
   {:CenterPoint (parse-center-point-of el)
-   :Boundary {:Points (spu/umm-point-order (map parse-point (select el "Boundary/Point")))}
+   :Boundary {:Points (umm-point-order (map parse-point (select el "Boundary/Point")))}
    :ExclusiveZone {:Boundaries (for [boundary (select el "ExclusiveZone/Boundary")]
-                                 {:Points (spu/umm-point-order (map parse-point (select boundary "Point")))})}})
+                                 {:Points (umm-point-order (map parse-point (select boundary "Point")))})}})
 
 (defn- parse-bounding-rect
   [el]

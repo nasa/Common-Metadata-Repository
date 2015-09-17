@@ -1,23 +1,35 @@
 (ns cmr.umm-spec.spatial-util)
 
+(defn point
+  "Returns a point map with the given longitude and latitude."
+  [lon lat]
+  {:Longitude lon :Latitude lat})
+
+(defn closed?
+  "Returns true if first and last points in sequence represent the same coordinates."
+  [points]
+  (= (first points) (last points)))
+
 (defn closed
   "Returns points such that the first point is equal to the last point."
   [points]
-  (if (= (first points) (last points))
-    points
-    (conj (vec points) (first points)))) 
+  (conj (vec points) (first points))) 
 
 (defn open
   "Returns points such that the first point is not equal to the last point."
   [points]
-  (if (not= (first points) (last points))
-    points
-    (vec (butlast points))))
+  (vec (butlast points)))
 
 (defn edges
   "Returns pairs of vertices in seq of points."
   [points]
   (partition 2 1 (closed points)))
+
+(defn- distance
+  [p1 p2]
+  (let [{^double x1 :Longitude ^double y1 :Latitude} p1
+       {^double x2 :Longitude ^double y2 :Latitude} p2]
+    (* (- x2 x1) (+ y2 y1))))
 
 (defn clockwise?
   "Determines if the point sequence is in clockwise order.
@@ -25,9 +37,7 @@
   http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order"
   [points]
   (let [^double sum (->> (edges points)
-                         (map (fn [[{^double x1 :Longitude ^double y1 :Latitude}
-                                    {^double x2 :Longitude ^double y2 :Latitude}]]
-                                (* (- x2 x1) (+ y2 y1))))
+                         (map (fn [[p1 p2]] (distance p1 p2)))
                          (apply +))]
     (>= sum 0.0)))
 

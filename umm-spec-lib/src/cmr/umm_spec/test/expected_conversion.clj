@@ -6,6 +6,7 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.common :as cmn]
+            [cmr.umm-spec.spatial-util :as spu]
             [clj-time.core :as t]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
@@ -141,6 +142,15 @@
 
 ;; ECHO 10
 
+(defn fix-echo10-polygon
+  "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
+  fudging here."
+  [gpolygon]
+  (let [fix-points (comp spu/closed spu/open)]
+    (-> gpolygon
+        (update-in [:Boundary :Points] fix-points)
+        (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
+
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
@@ -150,6 +160,7 @@
       (assoc :UseConstraints nil)
       (update-in [:ProcessingLevel] convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
@@ -343,8 +354,9 @@
   ([umm-coll metadata-format]
    (if (= metadata-format :umm-json)
      umm-coll
-     (dissoc-not-implemented-fields
-       (convert-internal umm-coll metadata-format))))
+     (-> umm-coll
+         (convert-internal metadata-format)
+         dissoc-not-implemented-fields)))
   ([umm-coll src dest]
    (-> umm-coll
        (convert src)
