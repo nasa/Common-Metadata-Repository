@@ -92,6 +92,9 @@
                             {:Title "some title"}]}))
 
 (defn- prune-empty-maps
+  "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
+  prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
+  non-nil results of calling prune-empty-maps on each value in x."
   [x]
   (cond
     (map? x) (let [pruned (reduce (fn [m [k v]]
