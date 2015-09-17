@@ -1,12 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.echo10.spatial
   "Defines mappings from ECHO10 XML spatial elements into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.spatial-util :as spu]
             [cmr.umm-spec.xml.parse :refer :all]))
 
 (defn umm-point-order
   [points]
-  (spu/closed (reverse points)))
+  (let [ccw (vec (reverse points))]
+    (conj ccw (first ccw))))
 
 (defn- parse-point
   [el]

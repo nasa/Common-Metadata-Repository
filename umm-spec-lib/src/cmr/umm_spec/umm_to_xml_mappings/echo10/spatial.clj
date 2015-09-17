@@ -1,11 +1,10 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
-  (:require [cmr.umm-spec.spatial-util :as spu]
-            [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]))
 
-(defn- echo-point-order
+(defn echo-point-order
   "Returns a sequence of points in ECHO order (open and clockwise)."
   [points]
-  (reverse (spu/open points)))
+  (reverse (butlast points)))
 
 (defn- point-contents
   "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType

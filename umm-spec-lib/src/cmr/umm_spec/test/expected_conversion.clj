@@ -6,10 +6,11 @@
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.common :as cmn]
-            [cmr.umm-spec.spatial-util :as spu]
             [clj-time.core :as t]
             [cmr.common.util :as util]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
 
 (def example-record
   "An example record with fields supported by most formats."
@@ -146,7 +147,10 @@
   "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
   fudging here."
   [gpolygon]
-  (let [fix-points (comp spu/closed spu/open)]
+  (let [fix-points (fn [points]
+                     (-> points
+                         echo10-spatial-gen/echo-point-order
+                         echo10-spatial-parse/umm-point-order))]
     (-> gpolygon
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
