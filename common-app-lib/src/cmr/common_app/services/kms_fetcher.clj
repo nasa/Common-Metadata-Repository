@@ -25,6 +25,15 @@
             [clojure.string :as str]
             [cmr.common.util :as util]))
 
+(def nested-fields-mappings
+  "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
+  the bottom."
+  {:archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+   :platforms [:category :series-entity :short-name :long-name]
+   :instruments [:category :class :type :subtype :short-name :long-name]
+   :projects [:short-name :long-name]
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]})
+
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
   "Not Provided")
@@ -75,8 +84,7 @@
 
 (defn get-full-hierarchy-for-keyword
   "Returns the full hierarchy for a given keyword. All of the fields within the keyword need
-  to match one of the keywords, otherwise nil is returned. We may want to update this check to
-  be case insensitive in the future."
+  to match one of the keywords, otherwise nil is returned."
   [gcmd-keywords-map keyword-scheme keyword-map fields-to-compare]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
   (let [prepare-for-compare (fn [m]

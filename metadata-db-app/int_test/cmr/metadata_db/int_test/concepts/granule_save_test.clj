@@ -29,7 +29,7 @@
           {:keys [status revision-id concept-id] :as resp} (util/save-concept granule)]
       (is (= 201 status) (pr-str resp))
       (is (= revision-id 1))
-      (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))))))
+      (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-granule-with-same-native-id-test
   (testing "Save granules with the same native-id for two small providers is OK"
@@ -38,8 +38,8 @@
           gran1 (util/create-and-save-granule "SMAL_PROV1" coll1 1 1 {:native-id "foo"})
           gran2 (util/create-and-save-granule "SMAL_PROV2" coll2 2 1 {:native-id "foo"})
           [gran1-concept-id gran2-concept-id] (map :concept-id [gran1 gran2])]
-      (is (util/verify-concept-was-saved gran1))
-      (is (util/verify-concept-was-saved gran2))
+      (util/verify-concept-was-saved gran1)
+      (util/verify-concept-was-saved gran2)
       (is (not= gran1-concept-id gran2-concept-id)))))
 
 (deftest save-granule-with-concept-id
@@ -50,7 +50,7 @@
           {:keys [status revision-id concept-id]} (util/save-concept granule)]
       (is (= 201 status))
       (is (= revision-id 1))
-      (is (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))
+      (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))
 
       (testing "with incorrect native id"
         (let [response (util/save-concept (assoc granule :native-id "foo"))]
@@ -86,13 +86,10 @@
                  (select-keys response [:status :errors]))))))))
 
 (deftest save-granule-with-nil-required-field
-  (testing "nil parent-collection-id"
-    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-      (let [granule (util/granule-concept provider-id nil 1)
-            {:keys [status revision-id concept-id]} (util/save-concept granule)]
-        (is (= 422 status))
-        (is (not (util/verify-concept-was-saved
-                   (assoc granule :revision-id revision-id :concept-id concept-id))))))))
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+    (let [granule (util/granule-concept provider-id nil 1)
+          {:keys [status revision-id concept-id]} (util/save-concept granule)]
+      (is (= 422 status)))))
 
 (deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
@@ -123,7 +120,7 @@
         ;; the db only contains the original granule.
         (let [found-concepts (util/find-concepts :granule
                                                  {:granule-ur "GR-UR1" :provider-id provider-id})]
-          (is (= [existing-granule]
+          (is (= [(update-in existing-granule [:extra-fields] dissoc :parent-entry-title)]
                  (map #(dissoc % :revision-date) (:concepts found-concepts)))))
         (testing "duplicate granule URs are allowed when the constraint is configured as off"
           (try
@@ -149,6 +146,6 @@
           _ (util/save-concept gran1)
           {:keys [status]} (util/save-concept gran2)]
       (is (= 201 status))
-      (is (util/verify-concept-was-saved gran1))
-      (is (util/verify-concept-was-saved gran2)))))
+      (util/verify-concept-was-saved gran1)
+      (util/verify-concept-was-saved gran2))))
 

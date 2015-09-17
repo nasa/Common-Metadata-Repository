@@ -86,7 +86,6 @@
 
 (defn validate-collection-umm
   [context collection validate-keywords?]
-  (cmr.common.dev.capture-reveal/capture-all)
   (if-errors-throw (umm-validation/validate-collection
                      collection
                      (when validate-keywords?

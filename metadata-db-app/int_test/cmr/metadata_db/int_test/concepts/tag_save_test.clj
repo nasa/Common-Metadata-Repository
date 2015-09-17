@@ -41,8 +41,8 @@
           {:keys [status revision-id concept-id]} (util/save-concept tag)]
       (is (= 201 status))
       (is (= revision-id 1))
-      (is (= true (util/verify-concept-was-saved
-                    (assoc tag :revision-id revision-id :provider-id "CMR"))))
+      (util/verify-concept-was-saved
+        (assoc tag :revision-id revision-id :provider-id "CMR"))
 
       (testing "Get Tag Concept Id"
         (is (= {:status 200 :concept-id concept-id :errors nil}
@@ -52,8 +52,8 @@
         (let [{:keys [status revision-id]} (util/save-concept (assoc tag :revision-id 2))]
           (is (= 201 status))
           (is (= revision-id 2))
-          (is (util/verify-concept-was-saved
-                (assoc tag :revision-id revision-id :provider-id "CMR")))))
+          (util/verify-concept-was-saved
+            (assoc tag :revision-id revision-id :provider-id "CMR"))))
 
       ;; error cases
       (are2 [test-tag exp-status exp-errors]

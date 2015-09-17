@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-execution.facets-results-feature
   "This enables returning facets with collection search results"
   (:require [cmr.search.services.query-execution :as query-execution]
+            [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.search.models.results :as r]
             [camel-snake-kebab.core :as csk]
             [clojure.data.xml :as x]))
@@ -26,16 +27,6 @@
   "Order in which hierarchical facets are returned in the facet response."
   [:archive-centers :platforms :instruments :science-keywords])
 
-(def nested-fields-mappings
-  "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
-  the bottom."
-  {:archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
-   :platforms [:category :series-entity :short-name :long-name]
-   :instruments [:category :class :type :subtype :short-name :long-name]
-   :projects [:short-name :long-name]
-   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2
-                      :variable-level-3]})
-
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
   [field field-hierarchy]
@@ -49,7 +40,7 @@
   "Returns the nested aggregation query for the given hierarchical field."
   [field]
   {:nested {:path field}
-   :aggs (hierarchical-aggregation-builder field (field nested-fields-mappings))})
+   :aggs (hierarchical-aggregation-builder field (field kms-fetcher/nested-fields-mappings))})
 
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
@@ -133,7 +124,7 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map]
-  (parse-hierarchical-bucket (field nested-fields-mappings) bucket-map))
+  (parse-hierarchical-bucket (field kms-fetcher/nested-fields-mappings) bucket-map))
 
 (defn- create-hierarchical-facets
   "Create the facets response with hierarchical facets. Takes an elastic aggregations result and

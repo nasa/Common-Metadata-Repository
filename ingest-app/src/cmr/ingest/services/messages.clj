@@ -55,6 +55,7 @@
     (case (count human-id-values)
       1 (first human-id-values)
       2 (str/join " and " human-id-values)
+      ;; else
       (str (str/join ", " (drop-last human-id-values)) ", and " (last human-id-values)))))
 
 (defn science-keyword-not-matches-kms-keywords
