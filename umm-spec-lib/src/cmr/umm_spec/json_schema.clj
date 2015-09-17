@@ -228,7 +228,12 @@
                      (ctor m)))
 
        ;; Otherwise...
-       (throw (IllegalArgumentException. (str "Don't know how to coerce value " (pr-str x) " at key path " (pr-str (vec key-path)) " using JSON schema type [" (pr-str definition) "]")))))))
+       (throw (IllegalArgumentException. (str "Don't know how to coerce value "
+                                              (pr-str x)
+                                              " at key path "
+                                              (pr-str (vec key-path))
+                                              " using JSON schema type ["
+                                              (pr-str definition) "]")))))))
 
 (comment
   (coerce {:EntryTitle "This is a test"
