@@ -11,11 +11,11 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}))
 
 (deftest search-by-keywords
-  (let [psa1 (dc/psa "alpha" :string "ab")
-        psa2 (dc/psa "bravo" :string "bf")
-        psa3 (dc/psa "charlie" :string "foo")
-        psa4 (dc/psa "case" :string "up")
-        psa5 (assoc (dc/psa "novalue" :string) :description "description")
+  (let [psa1 (dc/psa {:name "alpha" :data-type :string :value "ab"})
+        psa2 (dc/psa {:name "bravo" :data-type :string :value "bf"})
+        psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
+        psa4 (dc/psa {:name "case" :data-type :string :value "up"})
+        psa5 (dc/psa {:name "novalue" :data-type :string :description "description"})
         p1 (dc/platform
              {:short-name "platform_SnB"
               :long-name "platform_Ln B"

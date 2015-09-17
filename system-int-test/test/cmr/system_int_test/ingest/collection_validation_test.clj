@@ -105,8 +105,8 @@
   (testing "Product specific attribute validation"
     (assert-invalid
       {:product-specific-attributes
-       [(dc/psa "bool" :boolean true)
-        (dc/psa "bool" :boolean true)]}
+       [(dc/psa {:name "bool" :data-type :boolean :value true})
+        (dc/psa {:name "bool" :data-type :boolean :value true})]}
       ["ProductSpecificAttributes"]
       ["Product Specific Attributes must be unique. This contains duplicates named [bool]."]))
   (testing "Nested Path Validation"

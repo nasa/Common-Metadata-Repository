@@ -73,8 +73,8 @@
                                                   :granule-ur "Granule2"}))))))
 
 (deftest search-with-post-legacy-style-range
-  (let [psa1 (dc/psa "alpha" :string)
-        psa2 (dc/psa "bravo" :string)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :string})
+        psa2 (dc/psa {:name "bravo" :data-type :string})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))
