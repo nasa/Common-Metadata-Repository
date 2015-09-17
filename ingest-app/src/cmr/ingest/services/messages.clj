@@ -30,3 +30,8 @@
   [platform]
   (format "Platform short name [%s] and long name [%s] were not a valid keyword combination."
           (:short-name platform) (:long-name platform)))
+
+(defn instrument-not-matches-kms-keywords
+  [instrument]
+  (format "Instrument short name [%s] and long name [%s] were not a valid keyword combination."
+          (:short-name instrument) (:long-name instrument)))

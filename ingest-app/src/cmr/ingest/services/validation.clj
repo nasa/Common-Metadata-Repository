@@ -62,10 +62,14 @@
   "Creates validations that check various collection fields to see if they match KMS keywords."
   [context]
   (let [gcmd-keywords-map (kms-fetcher/get-gcmd-keywords-map context)]
-    {:platforms (match-kms-keywords-validation
-                  gcmd-keywords-map
-                  kms-fetcher/get-full-hierarchy-for-platform
-                  msg/platform-not-matches-kms-keywords)
+    {:platforms [(match-kms-keywords-validation
+                   gcmd-keywords-map
+                   kms-fetcher/get-full-hierarchy-for-platform
+                   msg/platform-not-matches-kms-keywords)
+                 (v/every {:instruments (match-kms-keywords-validation
+                                          gcmd-keywords-map
+                                          kms-fetcher/get-full-hierarchy-for-instrument
+                                          msg/instrument-not-matches-kms-keywords)})]
 
      }))
 

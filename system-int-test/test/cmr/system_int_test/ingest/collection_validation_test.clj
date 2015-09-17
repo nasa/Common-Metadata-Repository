@@ -6,6 +6,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.umm.spatial :as umm-s]
+            [cmr.common.util :refer [are2]]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
@@ -118,37 +119,72 @@
              response))))
 
   (testing "Platform keyword validation"
-    (testing "Invalid short name"
-      (assert-invalid-keywords
-        {:platforms [(dc/platform {:short-name "foo"
-                                   :long-name "Airbus A340-600"})]}
-        ["Platforms" 0]
-        ["Platform short name [foo] and long name [Airbus A340-600] were not a valid keyword combination."]))
+    (are2 [short-name long-name]
+          (assert-invalid-keywords
+            {:platforms [(dc/platform {:short-name short-name :long-name long-name})]}
+            ["Platforms" 0]
+            [(format (str "Platform short name [%s] and long name [%s]"
+                          " were not a valid keyword combination.")
+                     short-name long-name)])
 
-    (testing "Invalid long name"
-      (assert-invalid-keywords
-        {:platforms [(dc/platform {:short-name "DMSP 5B/F3"
-                                   :long-name "foo"})]}
-        ["Platforms" 0]
-        ["Platform short name [DMSP 5B/F3] and long name [foo] were not a valid keyword combination."]))
+          "Invalid short name"
+          "foo" "Airbus A340-600"
 
-    (testing "Invalid combination"
-      (assert-invalid-keywords
-        {:platforms [(dc/platform {:short-name "DMSP 5B/F3"
-                                   :long-name "Airbus A340-600"})]}
-        ["Platforms" 0]
-        ["Platform short name [DMSP 5B/F3] and long name [Airbus A340-600] were not a valid keyword combination."]))
+          "Invalid long name"
+          "DMSP 5B/F3" "foo"
 
-    (testing "Valid match"
-      (assert-valid-keywords
-        {:platforms [(dc/platform {:short-name "A340-600"
-                                   :long-name "Airbus A340-600"})]}))
-    (testing "Valid match - case insensitive"
-      (assert-valid-keywords
-        {:platforms [(dc/platform {:short-name "a340-600"
-                                   :long-name "aiRBus a340-600"})]}))
+          "Invalid combination"
+          "DMSP 5B/F3" "Airbus A340-600")
 
-    ))
+    (are2 [short-name long-name]
+          (assert-valid-keywords
+            {:platforms [(dc/platform {:short-name short-name :long-name long-name})]})
+          "Exact match"
+          "A340-600" "Airbus A340-600"
+
+          "Case Insensitive"
+          "a340-600" "aiRBus A340-600"))
+
+  (testing "Instrument keyword validation"
+    (are2 [short-name long-name]
+          (assert-invalid-keywords
+            {:platforms
+             [(dc/platform
+                {:short-name "A340-600"
+                 :long-name "Airbus A340-600"
+                 :instruments [(dc/instrument {:short-name short-name
+                                               :long-name long-name})]})]}
+            ["Platforms" 0 "Instruments" 0]
+            [(format (str "Instrument short name [%s] and long name [%s]"
+                          " were not a valid keyword combination.")
+                     short-name long-name)])
+          "Invalid short name"
+          "foo" "Airborne Topographic Mapper"
+
+          "Invalid long name"
+          "ATM" "foo"
+
+          "Invalid combination"
+          "ATM" "Land, Vegetation, and Ice Sensor")
+
+    (are2 [short-name long-name]
+          (assert-valid-keywords
+            {:platforms
+             [(dc/platform
+                {:short-name "A340-600"
+                 :long-name "Airbus A340-600"
+                 :instruments [(dc/instrument {:short-name short-name
+                                               :long-name long-name})]})]})
+          "Exact match"
+          "ATM" "Airborne Topographic Mapper"
+
+          "Case Insensitive"
+          "Atm" "aIRBORNE Topographic Mapper"))
+
+
+
+
+  )
 
 
 ;; This tests that UMM type validations are applied during collection ingest.

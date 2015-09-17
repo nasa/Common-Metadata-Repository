@@ -70,7 +70,7 @@
 (comment
   (def context {:system (get-in user/system [:apps :indexer])})
 
-  (:platforms (get-gcmd-keywords-map context))
+  (:instruments (get-gcmd-keywords-map context))
   )
 
 (defn get-full-hierarchy-for-short-name
@@ -105,6 +105,10 @@
 (defn get-full-hierarchy-for-platform
   [gcmd-keywords-map platform]
   (get-full-hierarchy-for-keyword gcmd-keywords-map :platforms platform [:short-name :long-name]))
+
+(defn get-full-hierarchy-for-instrument
+  [gcmd-keywords-map instrument]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :instruments instrument [:short-name :long-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
