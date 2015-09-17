@@ -55,15 +55,18 @@
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
-  [keywords keyword-type]
-  [:gmd:MD_Keywords
-   (for [keyword keywords]
-     [:gmd:keyword [:gco:CharacterString keyword]])
-   [:gmd:type
-    [:gmd:MD_KeywordTypeCode
-     {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
-      :codeListValue keyword-type} keyword-type]]
-   [:gmd:thesaurusName {:gco:nilReason "unknown"}]])
+  ([keywords]
+   (generate-descriptive-keywords keywords nil))
+  ([keywords keyword-type]
+   [:gmd:MD_Keywords
+    (for [keyword keywords]
+      [:gmd:keyword [:gco:CharacterString keyword]])
+    (when keyword-type
+      [:gmd:type
+       [:gmd:MD_KeywordTypeCode
+        {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
+         :codeListValue keyword-type} keyword-type]])
+    [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))
 
 (defn- generate-projects-keywords
   "Returns the content generator instructions for descriptive keywords of the given projects."
@@ -316,6 +319,8 @@
          [:gmd:descriptiveKeywords (generate-descriptive-keywords spatial-keywords "place")])
        (when-let [temporal-keywords (:TemporalKeywords c)]
          [:gmd:descriptiveKeywords (generate-descriptive-keywords temporal-keywords "temporal")])
+       (when-let [ancillary-keywords (:AncillaryKeywords c)]
+         [:gmd:descriptiveKeywords (generate-descriptive-keywords ancillary-keywords)])
        [:gmd:resourceConstraints
         [:gmd:MD_LegalConstraints
          [:gmd:useLimitation (char-string (:UseConstraints c))]

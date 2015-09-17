@@ -97,6 +97,8 @@
       [:Category "dummy category"]
       [:Topic "dummy topic"]
       [:Term "dummy term"]]
+     (for [ak (:AncillaryKeywords c)]
+       [:Ancillary_Keyword ak])
 
      (for [platform (:Platforms c)]
        [:Platform

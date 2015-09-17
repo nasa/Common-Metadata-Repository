@@ -100,7 +100,10 @@
                                {:DOI (cmn/map->DoiType{:DOI "identifier"
                                                        :Authority "authority"})})
                              (cmn/map->PublicationReferenceType
-                               {:Title "some title"})]}))
+                               {:Title "some title"})]
+
+     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -154,6 +157,7 @@
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
@@ -344,6 +348,7 @@
       (assoc :Distributions nil)
       (assoc :Projects nil)
       (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -361,10 +366,9 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
-    :MetadataLanguage :DirectoryNames :Personnel
-    :RelatedUrls :DataDates :Organizations
-    :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation
-    :AncillaryKeywords :PaleoTemporalCoverage :MetadataAssociations})
+    :MetadataLanguage :DirectoryNames :Personnel :RelatedUrls :DataDates :Organizations
+    :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
+    :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
