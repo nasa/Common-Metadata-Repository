@@ -2,14 +2,29 @@
   "Tests the Ingest lifecycle of a granules and collections. Verifies that at each point the correct
   data is indexed and searchable."
   (:require [clojure.test :refer :all]
+            [clj-time.format :as f]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.system-int-test.data2.core :as d]))
+            [cmr.system-int-test.data2.core :as d]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+
+(defn- unparse-date-time
+  "Parse a date-time into a string that can be used in a parameter query"
+  [date-time]
+  (f/unparse (f/formatters :date-time-no-ms) date-time))
+
+(defn- date-time-range->range-param
+  "Convert a date-time range to a string suitable for a range parameter query"
+  [date-time-range]
+  (let [{begin-date-time :BeginningDateTime end-date-time :endingDateTime} date-time-range
+        [begin-str end-str] (map unparse-date-time [begin-date-time end-date-time])]
+    (format "%s,%s", begin-str end-str)))
 
 (defn assert-granules-found
   ([granules]
@@ -85,6 +100,105 @@
   [coll gran attribs]
   (ingest-gran coll (merge gran attribs)))
 
+;; Test that the MMT round trip for ingesting works and ingested collections can be found
+;; Test Outline
+;; - Convert example UMM-JSON record to ISO-19115 using translate API
+;; - Ingest ISO-19115
+;; - Search for a collection using various fields and verify it is found
+(deftest mmt-ingest-round-trip
+    (testing "translate umm-json to iso-19115 then ingest and search"
+      (let [example-record expected-conversion/example-record
+            umm-json (umm-spec/generate-metadata :collection :umm-json example-record)
+            metadata (:body (ingest/translate-metadata :collection :umm-json umm-json :iso19115))
+            coll (d/ingest-concept-with-metadata "PROV1" :collection :iso19115 metadata)]
+        (index/wait-until-indexed)
+        ;; parameter queries
+         (are [items params]
+           (d/refs-match? items (search/find-refs :collection params))
+
+           ;; entry-title
+           [coll] {:entry_title (:EntryTitle example-record)}
+           [] {:entry_title "foo"}
+
+           ;; entry-id
+           [coll] {:entry_id (:EntryId example-record)}
+           [] {:entry_id "foo"}
+
+           ;; native-id
+           [coll] {:native_id "native-id"}
+           [] {:native_id "foo"}
+
+           ;; short-name
+           [coll] {:short_name "short_V1"}
+           [] {:short_name "foo"}
+
+           ;; version - TODO failing test
+           ; [coll] {:version (:Version example-record)}
+           [] {:version "foo"}
+
+           ;; updated-since
+           [coll] {:updated_since "2000-01-01T10:00:00Z"}
+           [] {:updated_since "3000-01-01T10:00:00Z"}
+
+           ;; revision-date
+           [coll] {:revision_date "2000-01-01T10:00:00Z,3000-01-01T10:00:00Z"}
+           [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
+
+           ;; processing level
+           [coll] {:processing_level (get-in example-record [:ProcessingLevel :Id])}
+           [] {:processing_level "foo"}
+
+           ;; collection data type - TODO add test for this when collection data type is added
+           ;; to UMM-JSON
+
+           ;; temporal
+           [coll] {:temporal (date-time-range->range-param
+                               (-> example-record :TemporalExtents first :RangeDateTimes first))}
+           [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
+
+           ;; concept-id
+           [coll] {:concept_id "C1200000000-PROV1"}
+           [] {:concept-id "C1200000001-PROV1"}
+
+           ;; platform
+           [coll] {:platform (-> example-record :Platforms first :ShortName)}
+           [] {:platform "foo"}
+
+           ;; instrument - TODO failing test
+           ;;[coll] {:instrument (-> example-record :Platforms first :Instruments first :ShortName)}
+
+           ;; sensor - TODO failing test
+           ; [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
+           ;                     first :ShortName)}
+
+           ;; project
+           [coll] {:project (-> example-record :Projects first :ShortName)}
+           [] {:project "foo"}
+
+           ;; archive-center - TODO add test for this when archive center is added to UMM-JSON
+
+           ;; spatial-keyword - TODO add test for this when spatial keyword is added to UMM-JSON
+
+           ;; two-d-coordinate-system-name - TODO add test for this when
+           ;; two-d-coordinate-system-name is added to UMM-JSON
+
+           ;; science-keywords - TODO failing test
+           ; [coll] {:science-keywords {:0 {:category "cat"
+           ;                                         :topic "top"
+           ;                                         :term "ter"}}}
+
+           ;; downloadable
+           [coll] {:downloadable false}
+           [] {:downloadable true}
+
+           ;; browsable
+           [coll] {:browsable false}
+           [] {:browsable true}
+
+           ;; bounding box - TODO - uncomment when spatial is implemented for UMM-JSON
+           ; [coll] {:bounding_box "-180,-90,180,90"}
+
+           ))))
 
 ;; Tests that over the lifecycle of a collection and granule the right data will be found.
 ;; Test Outline
