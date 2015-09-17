@@ -44,6 +44,10 @@
 (def characteristics-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
 
+(def publication-xpath
+  "Publication xpath relative to md-data-id-base-xpath"
+  "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
+
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
@@ -205,7 +209,26 @@
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (parse-distributions doc)
      :Platforms (parse-platforms doc)
-     :Projects (parse-projects doc)}))
+     :Projects (parse-projects doc)
+
+     :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
+                                  :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
+                                        select-party (fn [name xpath]
+                                                        (char-string-value publication
+                                                                (str (format role-xpath name) xpath)))]]
+                              {:Author (select-party "author" "/gmd:organisationName")
+                               :PublicationDate (str (date-at publication
+                                                        (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                                             "gmd:date/gco:Date")))
+                               :Title (char-string-value publication "gmd:title")
+                               :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
+                               :Edition (char-string-value publication "gmd:edition")
+                               :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
+                               :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
+                               :Publisher (select-party "publisher" "/gmd:organisationName")
+                               :ISBN (char-string-value publication "gmd:ISBN")
+                               :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
