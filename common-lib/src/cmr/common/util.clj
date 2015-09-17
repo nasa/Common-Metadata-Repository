@@ -479,3 +479,19 @@
   [f items]
   (into {} (for [item items] [(f item) item])))
 
+(defn truncate-nils
+  "Truncates the nil elements from the end of the given sequence, returns the truncated sequence.
+  e.g (truncate-nils [1 2 nil 3 nil nil]) => '(1 2 nil 3)"
+  [coll]
+  (reverse (drop-while nil? (reverse coll))))
+
+(defn map-longest
+  "Similar to map function, but applies the function to the longest of the sequences,
+  use the given default to pad the shorter sequences.
+  See http://stackoverflow.com/questions/18940629/using-map-with-different-sized-collections-in-clojure"
+  [f default & colls]
+  (lazy-seq
+    (when (some seq colls)
+      (cons
+        (apply f (map #(if (seq %) (first %) default) colls))
+        (apply map-longest f default (map rest colls))))))

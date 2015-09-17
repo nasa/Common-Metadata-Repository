@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.json-schema :as js]))
@@ -43,8 +44,30 @@
 (def characteristics-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
 
+(def publication-xpath
+  "Publication xpath relative to md-data-id-base-xpath"
+  "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
+
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
+
+(def distributor-xpath
+  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
+
+(def distributor-fees-xpath
+  (str distributor-xpath
+       "/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString"))
+
+(def distributor-format-xpath
+  (str distributor-xpath "/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString"))
+
+(def distributor-media-xpath
+  (str distributor-xpath
+       "/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString"))
+
+(def distributor-size-xpath
+  (str distributor-xpath
+       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
 
 (defn- char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
@@ -122,6 +145,22 @@
       {:ShortName short-name
        :LongName long-name})))
 
+(defn- parse-distributions
+  "Returns the distributions parsed from the given xml document."
+  [doc]
+  (let [medias (values-at doc distributor-media-xpath)
+        sizes (values-at doc distributor-size-xpath)
+        formats (values-at doc distributor-format-xpath)
+        fees (values-at doc distributor-fees-xpath)]
+    (util/map-longest (fn [media size format fee]
+                        (hash-map
+                          :DistributionMedia media
+                          :DistributionSize size
+                          :DistributionFormat format
+                          :Fees fee))
+                      ""
+                      medias sizes formats fees)))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -168,8 +207,28 @@
                        (char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+     :Distributions (parse-distributions doc)
      :Platforms (parse-platforms doc)
-     :Projects (parse-projects doc)}))
+     :Projects (parse-projects doc)
+
+     :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
+                                  :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
+                                        select-party (fn [name xpath]
+                                                        (char-string-value publication
+                                                                (str (format role-xpath name) xpath)))]]
+                              {:Author (select-party "author" "/gmd:organisationName")
+                               :PublicationDate (str (date-at publication
+                                                        (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                                             "gmd:date/gco:Date")))
+                               :Title (char-string-value publication "gmd:title")
+                               :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
+                               :Edition (char-string-value publication "gmd:edition")
+                               :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
+                               :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
+                               :Publisher (select-party "publisher" "/gmd:organisationName")
+                               :ISBN (char-string-value publication "gmd:ISBN")
+                               :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
