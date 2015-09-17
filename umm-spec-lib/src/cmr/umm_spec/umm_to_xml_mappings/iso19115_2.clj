@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
-            [cmr.umm-spec.xml.gen :refer :all]))
+            [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as su]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -180,6 +182,40 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
+(defn- generate-distributions
+  [distributions]
+  (when-let [distributions (su/remove-empty-records distributions)]
+    ;; We want to generate an empty element here because ISO distribution depends on
+    ;; the order of elements to determine how the fields of a distribution are group together.
+    (let [nil-to-empty-string (fn [s] (if s s ""))
+          truncate-map (fn [key] (util/truncate-nils (map key distributions)))
+          sizes (truncate-map :DistributionSize)
+          fees (truncate-map :Fees)]
+      [:gmd:distributionInfo
+       [:gmd:MD_Distribution
+        [:gmd:distributor
+         [:gmd:MD_Distributor
+          [:gmd:distributorContact {:gco:nilReason "missing"}]
+          (for [fee (map nil-to-empty-string fees)]
+            [:gmd:distributionOrderProcess
+             [:gmd:MD_StandardOrderProcess
+              [:gmd:fees
+               (char-string fee)]]])
+          (for [distribution distributions
+                :let [{media :DistributionMedia format :DistributionFormat} distribution]]
+            [:gmd:distributorFormat
+             [:gmd:MD_Format
+              [:gmd:name
+               (char-string (nil-to-empty-string format))]
+              [:gmd:version {:gco:nilReason "unknown"}]
+              [:specification
+               (char-string (nil-to-empty-string media))]]])
+          (for [size (map nil-to-empty-string sizes)]
+            [:gmd:distributorTransferOptions
+             [:gmd:MD_DigitalTransferOptions
+              [:gmd:transferSize
+               [:gco:Real size]]]])]]]])))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -261,6 +297,7 @@
         [:gmd:MD_Identifier
          [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
          [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+     (generate-distributions (:Distributions c))
      [:gmd:dataQualityInfo
       [:gmd:DQ_DataQuality
        [:gmd:scope
