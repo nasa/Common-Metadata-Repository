@@ -200,7 +200,6 @@
 
            ))))
 
-
 ;; Tests that over the lifecycle of a collection and granule the right data will be found.
 ;; Test Outline
 ;; - Ingest collections
