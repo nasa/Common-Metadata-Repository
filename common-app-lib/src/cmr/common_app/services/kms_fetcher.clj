@@ -70,7 +70,30 @@
 (comment
   (def context {:system (get-in user/system [:apps :indexer])})
 
-  (:instruments (get-gcmd-keywords-map context))
+  (defn sk-map
+    [sk]
+    (let [sort-map (zipmap [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
+                           (range))]
+      (apply
+        sorted-map-by
+        (fn [k1 k2]
+          (compare (sort-map k1) (sort-map k2)))
+        (mapcat vec sk))))
+
+  (->> context
+       get-gcmd-keywords-map
+       :science-keywords
+       vals
+       (map #(dissoc % :uuid))
+       (map sk-map))
+
+
+  (get-full-hierarchy-for-science-keyword
+    (get-gcmd-keywords-map context)
+    {:category "EARTH SCIENCE SERVICES"
+     :topic "SOLID EARTH"
+     :term "ROCKS/MINERALS/CRYSTALS"})
+
   )
 
 (defn get-full-hierarchy-for-short-name
@@ -94,7 +117,7 @@
         keyword-values (vals (keyword-scheme gcmd-keywords-map))]
     (first (filter #(= comparison-map (prepare-for-compare %)) keyword-values))))
 
-;; TODO add more helper functions for for projects and instruments
+;; TODO add more helper functions for for projects
 
 (defn get-full-hierarchy-for-science-keyword
   [gcmd-keywords-map keyword-map]

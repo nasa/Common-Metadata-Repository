@@ -70,6 +70,10 @@
                                           gcmd-keywords-map
                                           kms-fetcher/get-full-hierarchy-for-instrument
                                           msg/instrument-not-matches-kms-keywords)})]
+     :science-keywords (match-kms-keywords-validation
+                         gcmd-keywords-map
+                         kms-fetcher/get-full-hierarchy-for-science-keyword
+                         msg/science-keyword-not-matches-kms-keywords)
 
      }))
 

@@ -115,7 +115,7 @@
       (is (= {:status 400
               :errors [{:path ["Platforms" 0]
                         :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
-                                      "were not a valid keyword combination.")]}]}
+                                      "was not a valid keyword combination.")]}]}
              response))))
 
   (testing "Platform keyword validation"
@@ -124,7 +124,7 @@
             {:platforms [(dc/platform {:short-name short-name :long-name long-name})]}
             ["Platforms" 0]
             [(format (str "Platform short name [%s] and long name [%s]"
-                          " were not a valid keyword combination.")
+                          " was not a valid keyword combination.")
                      short-name long-name)])
 
           "Invalid short name"
@@ -156,7 +156,7 @@
                                                :long-name long-name})]})]}
             ["Platforms" 0 "Instruments" 0]
             [(format (str "Instrument short name [%s] and long name [%s]"
-                          " were not a valid keyword combination.")
+                          " was not a valid keyword combination.")
                      short-name long-name)])
           "Invalid short name"
           "foo" "Airborne Topographic Mapper"
@@ -181,10 +181,81 @@
           "Case Insensitive"
           "Atm" "aIRBORNE Topographic Mapper"))
 
+  (testing "Science Keyword validation"
+    (are [attribs]
+         (let [sk (dc/science-keyword attribs)]
+           (assert-invalid-keywords
+             {:science-keywords [sk]}
+             ["ScienceKeywords" 0]
+             [(msg/science-keyword-not-matches-kms-keywords sk)]))
 
+         {:category "foo"
+          :topic "DATA ANALYSIS AND VISUALIZATION"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "foo"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
 
-  )
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "DATA ANALYSIS AND VISUALIZATION"
+          :term "foo"}
+
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "DATA ANALYSIS AND VISUALIZATION"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"
+          :variable-level-1 "foo"}
+
+         {:category "EARTH SCIENCE"
+          :topic "ATMOSPHERE"
+          :term "AEROSOLS"
+          :variable-level-1 "AEROSOL OPTICAL DEPTH/THICKNESS"
+          :variable-level-2 "foo"}
+
+         {:category "EARTH SCIENCE"
+          :topic "ATMOSPHERE"
+          :term "ATMOSPHERIC TEMPERATURE"
+          :variable-level-1 "SURFACE TEMPERATURE"
+          :variable-level-2 "MAXIMUM/MINIMUM TEMPERATURE"
+          :variable-level-3 "foo"}
+
+         ;; Invalid combination. Topic is valid but not with these other terms
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "ATMOSPHERE"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"})
+
+    (are [attribs]
+         (assert-valid-keywords {:science-keywords [(dc/science-keyword attribs)]})
+
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "DATA ANALYSIS AND VISUALIZATION"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"}
+
+         {:category "EARTH SCIENCE SERVICES"
+          :topic "DATA ANALYSIS AND VISUALIZATION"
+          :term "GEOGRAPHIC INFORMATION SYSTEMS"
+          :variable-level-1 "MOBILE GEOGRAPHIC INFORMATION SYSTEMS"}
+
+         {:category "EARTH SCIENCE"
+          :topic "ATMOSPHERE"
+          :term "AEROSOLS"
+          :variable-level-1 "AEROSOL OPTICAL DEPTH/THICKNESS"
+          :variable-level-2 "ANGSTROM EXPONENT"}
+
+         {:category "EARTH SCIENCE"
+          :topic "ATMOSPHERE"
+          :term "ATMOSPHERIC TEMPERATURE"
+          :variable-level-1 "SURFACE TEMPERATURE"
+          :variable-level-2 "MAXIMUM/MINIMUM TEMPERATURE"
+          :variable-level-3 "24 HOUR MAXIMUM TEMPERATURE"
+          :detailed-variable-level "This is ignored"}
+
+         {:category "EARTH SCiENCE"
+          :topic "ATMOsPHERE"
+          :term "ATMOSpHERIC TEMPERATURE"
+          :variable-level-1 "SuRFACE TEMPERATURE"
+          :variable-level-2 "MAXiMUM/MiNiMUM TEMPERATURE"
+          :variable-level-3 "24 HOUR MAXiMUM TEMPERATURE"})))
 
 
 ;; This tests that UMM type validations are applied during collection ingest.
