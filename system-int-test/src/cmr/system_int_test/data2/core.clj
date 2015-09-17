@@ -77,18 +77,23 @@
               :format-key format-key)
        response))))
 
-(defn ingest-concept-with-metadata-file
-  "Ingest the given concept with the metadata file. The metadata file has to be located under
-  dev-system/resources/data/... and referenced as 'data/...'"
-  [provider-id concept-type format-key metadata-file]
-  (let [metadata (slurp (io/resource metadata-file))
-        concept {:concept-type concept-type
+(defn ingest-concept-with-metadata
+  "Ingest the given concept iwth the given metadata."
+  [provider-id concept-type format-key metadata]
+  (let [concept {:concept-type concept-type
                  :provider-id provider-id
                  :native-id "native-id"
                  :metadata metadata
                  :format (mime-types/format->mime-type format-key)}
         response (ingest/ingest-concept concept)]
     (merge (umm/parse-concept concept) response)))
+
+(defn ingest-concept-with-metadata-file
+  "Ingest the given concept with the metadata file. The metadata file has to be located under
+  dev-system/resources/data/... and referenced as 'data/...'"
+  [provider-id concept-type format-key metadata-file]
+  (let [metadata (slurp (io/resource metadata-file))]
+    (ingest-concept-with-metadata provider-id concept-type format-key metadata)))
 
 (defn item->ref
   "Converts an item into the expected reference"
