@@ -181,53 +181,6 @@
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
 
-(def attribute-type->parser-fn
-  "A map of attribute types to functions that can parse a value"
-  {:datetime parser/parse-datetime
-   :time parser/parse-time
-   :date parser/parse-date})
-
-(defn parse-value
-  "Parses a value using the provided parser function."
-  [parser-fn value]
-  (if (and parser-fn (some? value))
-    (parser-fn value)
-    value))
-
-(defmethod parse-json-condition :attribute
-  [_ value]
-  ;; (validate-attribute-condition value) - either update JSON schema or validate it here
-  (let [parser-fn (attribute-type->parser-fn (keyword (:type value)))
-        parse-value-fn (partial parse-value parser-fn)
-        condition (-> value
-                      (update-in [:type] keyword)
-                      (update-in [:value] parse-value-fn)
-                      (update-in [:min-value] parse-value-fn)
-                      (update-in [:max-value] parse-value-fn)
-                      (set/rename-keys {:exclude-boundary :exclusive?
-                                        :pattern :pattern?}))]
-    (cond
-      ;; Range search
-      (or (some? (:min-value condition)) (some? (:max-value condition)))
-      (qm/map->AttributeRangeCondition condition)
-
-      ;; Exact value search
-      (some? (:value condition))
-      (qm/map->AttributeValueCondition condition)
-
-      ;; Attribute name search
-      (some? (:name condition))
-      (qm/map->AttributeNameCondition condition)
-
-      ;; Attribute group search
-      (some? (:group condition))
-      (qm/map->AttributeGroupCondition condition)
-
-      ;; Validation should have caught any other case
-      :else
-      (errors/internal-error!
-        (format "Unhandled additional attribute condition %s" value)))))
-
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."
   [concept-type params json-string]

@@ -323,6 +323,7 @@
 					"description": "Specifies a search against additional attributes.",
 					"type": "object",
 					"additionalProperties": false,
+					"minProperties": 1,
 					"properties": {
 						"name": {
 							"description": "The name of the additional attribute.",

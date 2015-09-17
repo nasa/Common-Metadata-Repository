@@ -340,7 +340,6 @@
    name
    group
    value
-   pattern?
    ])
 
 (defrecord AttributeRangeCondition

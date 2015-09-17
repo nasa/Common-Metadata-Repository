@@ -94,14 +94,16 @@
   "Attempts to parse the given field and update the condition. If there are problems parsing an
   errors attribute will be returned."
   [condition field parser type]
-  (let [handle-exception #(update-in condition [:errors]
-                                     conj (msg/invalid-value-msg type (get condition field)))]
-    (try
-      (update-in condition [field] parser)
-      (catch NumberFormatException e
-        (handle-exception))
-      (catch ExceptionInfo e
-        (handle-exception)))))
+  (if (and parser (some? (field condition)))
+    (let [handle-exception #(update-in condition [:errors]
+                                       conj (msg/invalid-value-msg type (get condition field)))]
+      (try
+        (update-in condition [field] parser)
+        (catch NumberFormatException e
+          (handle-exception))
+        (catch ExceptionInfo e
+          (handle-exception))))
+    condition))
 
 (defmethod parse-condition-values AttributeRangeCondition
   [condition exclusive?]
