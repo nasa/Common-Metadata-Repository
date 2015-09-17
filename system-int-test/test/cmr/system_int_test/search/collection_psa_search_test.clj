@@ -537,10 +537,11 @@
 
     (testing "search collections by datetime attribute using JSON Query Language"
       (are [items search]
-           (let [date-search (assoc search
-                                    :value (d/make-datetime (:value search))
-                                    :min_value (d/make-datetime (:min_value search))
-                                    :max_value (d/make-datetime (:max_value search)))
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :value (d/make-datetime (:value search))
+                                      :min_value (d/make-datetime (:min_value search))
+                                      :max_value (d/make-datetime (:max_value search))))
                  condition {:attribute date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
@@ -659,10 +660,11 @@
 
     (testing "search collections by time attribute using JSON Query Language"
       (are [items search]
-           (let [date-search (assoc search
-                                    :value (d/make-time (:value search))
-                                    :min_value (d/make-time (:min_value search))
-                                    :max_value (d/make-time (:max_value search)))
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :value (d/make-time (:value search))
+                                      :min_value (d/make-time (:min_value search))
+                                      :max_value (d/make-time (:max_value search))))
                  condition {:attribute date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
@@ -782,10 +784,11 @@
 
     (testing "search collections by date attribute using JSON Query Language"
       (are [items search]
-           (let [date-search (assoc search
-                                    :value (d/make-date (:value search))
-                                    :min_value (d/make-date (:min_value search))
-                                    :max_value (d/make-date (:max_value search)))
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :value (d/make-date (:value search))
+                                      :min_value (d/make-date (:min_value search))
+                                      :max_value (d/make-date (:max_value search))))
                  condition {:attribute date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
@@ -907,8 +910,10 @@
 
     "Invalid data type"
     {:type "bad" :value "c" :name "n"}
-    [(str "/condition/attribute/type instance value (\"bad\") not found in enum (possible values: "
-          "[\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])")]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
+     "/condition/attribute/type instance value (\"bad\") not found in enum (possible values: [\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
 
     "Invalid int"
     {:type "int" :name "B" :value "1"}
@@ -932,11 +937,17 @@
 
     "Invalid use of exclude-boundary"
     {:type "string" :name "a" :value "b" :exclude_boundary true}
-    ["Range search parameters 'min_value' or 'max_value' must be present when specifying 'exclude_boundary'."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"type\",\"value\"]"]
 
     "Invalid use of pattern"
     {:type "string" :group "g" :name "a*" :value "b" :pattern true}
-    ["When 'pattern' is present, 'type' cannot be included. It can only be used for 'name' and 'group' searches."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\",\"value\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
 
     "Invalid range max < min"
     {:type "int" :name "foo" :min_value 25 :max_value 14}
@@ -944,26 +955,47 @@
 
     "Cannot include both range and an exact value"
     {:type "int" :name "foo" :min_value 25 :value 37}
-    ["When 'value' is present, range parameters 'min_value' and 'max_value' cannot be included."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"min_value\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"min_value\",\"type\",\"value\"]"]
 
     "Name is required when doing an exact value search"
     {:type "int" :value 25 :group "abc"}
-    ["When 'type' is present, 'name' is required."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
+     "/condition/attribute object has missing required properties ([\"name\"])"
+     "/condition/attribute object has missing required properties ([\"name\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
 
     "Name is required when doing a range search"
     {:type "int" :min_value 25 :max_value 35 :group "abc"}
-    ["When 'type' is present, 'name' is required."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object has missing required properties ([\"name\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"
+     "/condition/attribute object has missing required properties ([\"name\",\"value\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\",\"type\"]"]
 
     "Type is required when doing an exact value search"
     {:value 25 :group "abc"}
-    ["When 'value', 'min_value', or 'max_value' are present, 'type' is required."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
+     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
+     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"]
 
     "Type is required when doing a range search"
     {:min_value 25 :max_value 35 :group "abc"}
-    ["When 'value', 'min_value', or 'max_value' are present, 'type' is required."]
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"
+     "/condition/attribute object has missing required properties ([\"name\",\"type\",\"value\"])"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"]
 
     "Multiple errors can be returned"
     {:type "string" :group "g" :name "a*" :value "b" :exclude_boundary true :pattern true}
-    ["Range search parameters 'min_value' or 'max_value' must be present when specifying 'exclude_boundary'."
-     "When 'pattern' is present, 'type' cannot be included. It can only be used for 'name' and 'group' searches."]))
+    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\",\"value\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"pattern\"]"
+     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"type\",\"value\"]"]))
 

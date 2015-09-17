@@ -320,67 +320,71 @@
 					}
 				},
 				"attribute": {
-					"description": "Specifies a search against additional attributes.",
-					"type": "object",
-					"additionalProperties": false,
-					"minProperties": 1,
-					"properties": {
-						"name": {
-							"description": "The name of the additional attribute.",
-							"type": "string"
+					"description": "Specifies a search against additional attributes. Searches can be for a name and group, a specific attribute value, or a range search against a specific attribute.",
+					"oneOf": [{
+						"description": "Search for additional attributes by range. One of min_value or max_value are required in addition to name and type.",
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"name": {
+								"$ref": "#/definitions/AttributeNameCondition"
+							},
+							"group": {
+								"$ref": "#/definitions/AttributeGroupCondition"
+							},
+							"type": {
+								"$ref": "#/definitions/AttributeTypeCondition"
+							},
+							"min_value": {
+								"description": "Search for values for an additional attribute which are greater than the provided value.",
+								"$ref": "#/definitions/AttributeValueCondition"
+							},
+							"max_value": {
+								"description": "Search for values for an additional attribute which are less than the provided value.",
+								"$ref": "#/definitions/AttributeValueCondition"
+							},
+							"exclude_boundary": {
+								"description": "If set to true, the search will not include the boundary values for min and max values. Defaults to false.",
+								"type": "boolean"
+							}
 						},
-						"group": {
-							"description": "The group associated with the additional attribute.",
-							"type": "string"
+						"required": ["name", "type"]
+					}, {
+						"description": "Search for additional attributes by an exact value.",
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"name": {
+								"$ref": "#/definitions/AttributeNameCondition"
+							},
+							"group": {
+								"$ref": "#/definitions/AttributeGroupCondition"
+							},
+							"type": {
+								"$ref": "#/definitions/AttributeTypeCondition"
+							},
+							"value": {
+								"description": "Search for an exact value.",
+								"$ref": "#/definitions/AttributeValueCondition"
+							}
 						},
-						"type": {
-							"description": "The data type of the attribute being searched against. Support types are string, time, date, datetime, boolean, time-string, date-string, datetime-string, int, and float.",
-							"enum": ["string", "boolean", "time", "date", "datetime", "int", "float"]
-						},
-						"value": {
-							"description": "Search for an exact value match for an additional attribute.",
-							"anyOf": [{
-								"type": "string"
-							}, {
-								"type": "integer"
-							}, {
-								"type": "number"
-							}, {
-								"type": "null"
-							}]
-						},
-						"min_value": {
-							"description": "Search for values for an additional attribute which are greater than the provided value.",
-							"anyOf": [{
-								"type": "string"
-							}, {
-								"type": "integer"
-							}, {
-								"type": "number"
-							}, {
-								"type": "null"
-							}]
-						},
-						"max_value": {
-							"description": "Search for values for an additional attribute which are less than the provided value.",
-							"anyOf": [{
-								"type": "string"
-							}, {
-								"type": "integer"
-							}, {
-								"type": "number"
-							}, {
-								"type": "null"
-							}]
-						},
-						"exclude_boundary": {
-							"description": "If set to true, the search will not include the boundary values for min and max values. Defaults to false.",
-							"type": "boolean"
-						},
-						"pattern": {
-							"$ref": "#/definitions/PatternOption"
+						"required": ["name", "type", "value"]
+					}, {
+						"description": "Search for additional attributes by name and/or group. One of name or group is required.",
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"name": {
+								"$ref": "#/definitions/AttributeNameCondition"
+							},
+							"group": {
+								"$ref": "#/definitions/AttributeGroupCondition"
+							},
+							"pattern": {
+								"$ref": "#/definitions/PatternOption"
+							}
 						}
-					}
+					}]
 				}
 			}
 		},
@@ -449,6 +453,30 @@
 					}
 				},
 				"required": ["north", "south", "east", "west"]
+			}]
+		},
+		"AttributeNameCondition": {
+			"description": "Additional attribute name.",
+			"type": "string"
+		},
+		"AttributeGroupCondition": {
+			"description": "Additional attribute group, which is generally a namespace.",
+			"type": "string"
+		},
+		"AttributeTypeCondition": {
+			"description": "The data type of the attribute being searched against.",
+			"enum": ["string", "boolean", "time", "date", "datetime", "int", "float"]
+		},
+		"AttributeValueCondition": {
+			"description": "An attribute value to search against.",
+			"anyOf": [{
+				"type": "string"
+			}, {
+				"type": "integer"
+			}, {
+				"type": "number"
+			}, {
+				"type": "null"
 			}]
 		},
 		"IgnoreCaseOption": {

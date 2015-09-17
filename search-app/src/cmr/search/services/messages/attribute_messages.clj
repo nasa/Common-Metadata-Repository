@@ -45,27 +45,6 @@
        "\"attribute[][name]=name&attribute[][type]=type&attribute[value]=value\" or current"
        "format \"type,name,value\", not both."))
 
-(def type-requires-name-msg
-  "When 'type' is present, 'name' is required.")
-
-(def type-requires-value-msg
-  (str "When 'type' is present, either 'value' or one of 'min_value' or 'max_value' must "
-       " be included."))
-
-(def value-requires-type-msg
-  (str "When 'value', 'min_value', or 'max_value' are present, 'type' is required."))
-
-(def conflicting-value-and-range-msg
-  "When 'value' is present, range parameters 'min_value' and 'max_value' cannot be included.")
-
-(def invalid-exclude-boundary-msg
-  (str "Range search parameters 'min_value' or 'max_value' must be present when specifying "
-       "'exclude_boundary'."))
-
-(def invalid-pattern-msg
-  (str "When 'pattern' is present, 'type' cannot be included. It can only be used for 'name' and "
-       "'group' searches."))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Internal error messages
 
