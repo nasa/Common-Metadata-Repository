@@ -2,108 +2,113 @@
   "This contains functions for manipulating the expected UMM record when taking a UMM record
   writing it to an XML format and parsing it back. Conversion from a UMM record into metadata
   can be lossy if some fields are not supported by that format"
-  (:require [cmr.common.util :refer [update-in-each]]
+  (:require [clj-time.core :as t]
+            [clj-time.format :as f]
+            [cmr.common.util :as util :refer [update-in-each]]
+            [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
-            [clj-time.core :as t]
-            [cmr.common.util :as util]
-            [clj-time.format :as f]
-            [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
+            [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
 
 (def example-record
   "An example record with fields supported by most formats."
-  (umm-c/map->UMM-C
-    {:Platforms [(cmn/map->PlatformType
-                   {:ShortName "Platform 1"
-                    :LongName "Example Platform Long Name 1"
-                    :Type "Aircraft"
-                    :Characteristics [(cmn/map->CharacteristicType
-                                        {:Name "OrbitalPeriod"
-                                         :Description "Orbital period in decimal minutes."
-                                         :DataType "float"
-                                         :Unit "Minutes"
-                                         :Value "96.7"})]
-                    :Instruments [(cmn/map->InstrumentType
-                                    {:ShortName "An Instrument"
-                                     :LongName "The Full Name of An Instrument v123.4"
-                                     :Technique "Two cans and a string"
-                                     :NumberOfSensors 1
-                                     :OperationalModes ["on" "off"]
-                                     :Characteristics [(cmn/map->CharacteristicType
-                                                         {:Name "Signal to Noise Ratio"
-                                                          :Description "Is that necessary?"
-                                                          :DataType "float"
-                                                          :Unit "dB"
-                                                          :Value "10"})]
-                                     :Sensors [(cmn/map->SensorType
-                                                 {:ShortName "ABC"
-                                                  :LongName "Long Range Sensor"
-                                                  :Characteristics [(cmn/map->CharacteristicType
-                                                                      {:Name "Signal to Noise Ratio"
-                                                                       :Description "Is that necessary?"
-                                                                       :DataType "float"
-                                                                       :Unit "dB"
-                                                                       :Value "10"})]
-                                                  :Technique "Drunken Fist"})]})]})]
-     :TemporalExtents [(cmn/map->TemporalExtentType
-                         {:TemporalRangeType "temp range"
-                          :PrecisionOfSeconds 3
-                          :EndsAtPresentFlag false
-                          :RangeDateTimes (mapv cmn/map->RangeDateTimeType
-                                                [{:BeginningDateTime (t/date-time 2000)
-                                                  :EndingDateTime (t/date-time 2001)}
-                                                 {:BeginningDateTime (t/date-time 2002)
-                                                  :EndingDateTime (t/date-time 2003)}])})]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"
-                                                       :ProcessingLevelDescription "Processing level description"})
-     :RelatedUrls [(cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
-     :Organizations [(cmn/map->ResponsibilityType
-                       {:Role "CUSTODIAN"
-                        :Party (cmn/map->PartyType
-                                 {:OrganizationName (cmn/map->OrganizationNameType
-                                                      {:ShortName "custodian"})})})]
-     :ScienceKeywords [(cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
-     :SpatialExtent (cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
-     :AccessConstraints (cmn/map->AccessConstraintsType
-                          {:Description "Access constraints"
-                           :Value "0"})
-     :UseConstraints "Use constraints"
-     :EntryId "short_V1"
-     :EntryTitle "The entry title V5"
-     :Version "V5"
-     :DataDates [(cmn/map->DateType {:Date (t/date-time 2012)
-                                     :Type "CREATE"})]
-     :Abstract "A very abstract collection"
-     :DataLanguage "English"
-     :Projects [(cmn/map->ProjectType {:ShortName "project short_name"})]
-     :Quality "Pretty good quality"
-     :PublicationReferences [(cmn/map->PublicationReferenceType
-                               {:PublicationDate (t/date-time 2015)
-                                :OtherReferenceDetails "Other reference details"
-                                :Series "series"
-                                :Title "title"
-                                :DOI (cmn/map->DoiType {:DOI "doi:xyz"
-                                                        :Authority "DOI"})
-                                :Pages "100"
-                                :Edition "edition"
-                                :ReportNumber "25"
-                                :Volume "volume"
-                                :Publisher "publisher"
-                                :RelatedUrl (cmn/map->RelatedUrlType
-                                              {:URLs ["www.foo.com" "www.shoo.com"]})
-                                :ISBN "ISBN"
-                                :Author "author"
-                                :Issue "issue"
-                                :PublicationPlace "publication place"})
-                             (cmn/map->PublicationReferenceType
-                               {:DOI (cmn/map->DoiType{:DOI "identifier"
-                                                       :Authority "authority"})})
-                             (cmn/map->PublicationReferenceType
-                               {:Title "some title"})]
+  (js/coerce
+   {:Platforms [{:ShortName "Platform 1"
+                 :LongName "Example Platform Long Name 1"
+                 :Type "Aircraft"
+                 :Characteristics [{:Name "OrbitalPeriod"
+                                    :Description "Orbital period in decimal minutes."
+                                    :DataType "float"
+                                    :Unit "Minutes"
+                                    :Value "96.7"}]
+                 :Instruments [{:ShortName "An Instrument"
+                                :LongName "The Full Name of An Instrument v123.4"
+                                :Technique "Two cans and a string"
+                                :NumberOfSensors 1
+                                :OperationalModes ["on" "off"]
+                                :Characteristics [{:Name "Signal to Noise Ratio"
+                                                   :Description "Is that necessary?"
+                                                   :DataType "float"
+                                                   :Unit "dB"
+                                                   :Value "10"}]
+                                :Sensors [{:ShortName "ABC"
+                                           :LongName "Long Range Sensor"
+                                           :Characteristics [{:Name "Signal to Noise Ratio"
+                                                              :Description "Is that necessary?"
+                                                              :DataType "float"
+                                                              :Unit "dB"
+                                                              :Value "10"}]
+                                           :Technique "Drunken Fist"}]}]}]
+    :TemporalExtents [{:TemporalRangeType "temp range"
+                       :PrecisionOfSeconds 3
+                       :EndsAtPresentFlag false
+                       :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                         :EndingDateTime (t/date-time 2001)}
+                                        {:BeginningDateTime (t/date-time 2002)
+                                         :EndingDateTime (t/date-time 2003)}]}]
+    :ProcessingLevel {:Id "3"
+                      :ProcessingLevelDescription "Processing level description"}
+    :RelatedUrls [{:URLs ["http://google.com"]}]
+    :Organizations [{:Role "CUSTODIAN"
+                     :Party {:OrganizationName {:ShortName "custodian"}}}]
+    :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
+    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
+                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
+                                              :Geometry {:CoordinateSystem "GEODETIC"
+                                                         :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
+    :AccessConstraints {:Description "Access constraints"
+                        :Value "0"}
+    :UseConstraints "Use constraints"
+    :EntryId "short_V1"
+    :EntryTitle "The entry title V5"
+    :Version "V5"
+    :DataDates [{:Date (t/date-time 2012)
+                 :Type "CREATE"}]
+    :Abstract "A very abstract collection"
+    :DataLanguage "English"
+    :Projects [{:ShortName "project short_name"}]
+    :Quality "Pretty good quality"
+    :PublicationReferences [{:PublicationDate (t/date-time 2015)
+                             :OtherReferenceDetails "Other reference details"
+                             :Series "series"
+                             :Title "title"
+                             :DOI {:DOI "doi:xyz"
+                                   :Authority "DOI"}
+                             :Pages "100"
+                             :Edition "edition"
+                             :ReportNumber "25"
+                             :Volume "volume"
+                             :Publisher "publisher"
+                             :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
+                             :ISBN "ISBN"
+                             :Author "author"
+                             :Issue "issue"
+                             :PublicationPlace "publication place"}
+                            {:DOI {:DOI "identifier"
+                                   :Authority "authority"}}
+                            {:Title "some title"}]
+    :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+    :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
 
-     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
-     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
+(defn- prune-empty-maps
+  "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
+  prune-empty-maps applied to all values. If x is a collection, returns the result of keeping the
+  non-nil results of calling prune-empty-maps on each value in x."
+  [x]
+  (cond
+    (map? x) (let [pruned (reduce (fn [m [k v]]
+                                    (assoc m k (prune-empty-maps v)))
+                                  x
+                                  x)]
+               (when (seq (keep val pruned))
+                 pruned))
+    (vector? x) (when-let [pruned (prune-empty-maps (seq x))]
+                  (vec pruned))
+    (seq? x)    (seq (keep prune-empty-maps x))
+    :else x))
 
 (defmulti ^:private convert-internal
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
@@ -149,6 +154,18 @@
 
 ;; ECHO 10
 
+(defn fix-echo10-polygon
+  "Because the generated points may not be in valid UMM order (closed and CCW), we need to do some
+  fudging here."
+  [gpolygon]
+  (let [fix-points (fn [points]
+                     (-> points
+                         echo10-spatial-gen/echo-point-order
+                         echo10-spatial-parse/umm-point-order))]
+    (-> gpolygon
+        (update-in [:Boundary :Points] fix-points)
+        (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
+
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
@@ -160,6 +177,8 @@
       (assoc :AncillaryKeywords nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
@@ -207,6 +226,21 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:TemporalExtents] dif9-temporal)
+      (update-in [:SpatialExtent] assoc
+                 :SpatialCoverageType nil
+                 :OrbitParameters nil
+                 :GranuleSpatialRepresentation nil
+                 :VerticalSpatialDomains nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc
+                 :ZoneIdentifier nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] assoc
+                 :CoordinateSystem nil
+                 :Points nil
+                 :Lines nil
+                 :GPolygons nil)
+      (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
+                      :CenterPoint nil)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
@@ -215,6 +249,7 @@
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
+      (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 
@@ -239,6 +274,7 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (assoc :SpatialExtent nil)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -309,6 +345,7 @@
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
+      (assoc :SpatialExtent nil)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -320,7 +357,8 @@
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] iso-19115-2-publication-reference)))
+      (update-in [:PublicationReferences] iso-19115-2-publication-reference)
+      (update-in [:AncillaryKeywords] (fn [aks] (seq (sort (set aks)))))))
 
 ;; ISO-SMAP
 
@@ -366,8 +404,9 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
-    :MetadataLanguage :DirectoryNames :Personnel :RelatedUrls :DataDates :Organizations
-    :SpatialExtent :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
+    :MetadataLanguage :DirectoryNames :Personnel
+    :RelatedUrls :DataDates :Organizations
+    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields
@@ -386,8 +425,9 @@
   ([umm-coll metadata-format]
    (if (= metadata-format :umm-json)
      umm-coll
-     (dissoc-not-implemented-fields
-       (convert-internal umm-coll metadata-format))))
+     (-> umm-coll
+         (convert-internal metadata-format)
+         dissoc-not-implemented-fields)))
   ([umm-coll src dest]
    (-> umm-coll
        (convert src)

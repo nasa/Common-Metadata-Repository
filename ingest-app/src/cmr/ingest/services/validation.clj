@@ -6,7 +6,10 @@
             [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
             [cmr.umm.validation.core :as umm-validation]
-            [cmr.ingest.services.business-rule-validation :as bv]))
+            [cmr.ingest.services.business-rule-validation :as bv]
+            [cmr.common.validations.core :as v]
+            [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+            [cmr.ingest.services.messages :as msg]))
 
 (defn- format-validation
   "Validates the format of the concept."
@@ -41,17 +44,55 @@
   [concept]
   (if-errors-throw (mapcat #(% concept) concept-validations)))
 
+(defn match-kms-keywords-validation
+  "A validation that checks that the item matches a known KMS field. Takes the following arguments:
+
+  * gcmd-keywords-map - The keywords map as returned by kms-fetcher/get-gcmd-keywords-map
+  * matches-keyword-fn - A function that will take the gcmd-keywords-map and the value and return a
+  logically true value if the value matches a keyword.
+  * msg-fn - A function taking the value and returning the error to return to the user if it doesn't
+  match."
+  [gcmd-keywords-map matches-keyword-fn msg-fn]
+  (v/every
+    (fn [field-path value]
+      (when-not (matches-keyword-fn gcmd-keywords-map value)
+        {field-path [(msg-fn value)]}))))
+
+(defn keyword-validations
+  "Creates validations that check various collection fields to see if they match KMS keywords."
+  [context]
+  (let [gcmd-keywords-map (kms-fetcher/get-gcmd-keywords-map context)]
+    {:platforms [(match-kms-keywords-validation
+                   gcmd-keywords-map
+                   kms-fetcher/get-full-hierarchy-for-platform
+                   msg/platform-not-matches-kms-keywords)
+                 (v/every {:instruments (match-kms-keywords-validation
+                                          gcmd-keywords-map
+                                          kms-fetcher/get-full-hierarchy-for-instrument
+                                          msg/instrument-not-matches-kms-keywords)})]
+     :science-keywords (match-kms-keywords-validation
+                         gcmd-keywords-map
+                         kms-fetcher/get-full-hierarchy-for-science-keyword
+                         msg/science-keyword-not-matches-kms-keywords)
+     :projects (match-kms-keywords-validation
+                 gcmd-keywords-map
+                 kms-fetcher/get-full-hierarchy-for-project
+                 msg/project-not-matches-kms-keywords)}))
+
 (defn validate-concept-xml
   "Validates the concept xml to ingest a concept. "
   [concept]
   (if-errors-throw (umm/validate-concept-xml concept)))
 
 (defn validate-collection-umm
-  [collection]
-  (if-errors-throw (umm-validation/validate-collection collection)))
+  [context collection validate-keywords?]
+  (if-errors-throw (umm-validation/validate-collection
+                     collection
+                     (when validate-keywords?
+                       [(keyword-validations context)]))))
 
 (defn validate-granule-umm
-  [collection granule]
+  [context collection granule]
   (if-errors-throw (umm-validation/validate-granule collection granule)))
 
 (defn validate-business-rules

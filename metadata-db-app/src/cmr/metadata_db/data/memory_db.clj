@@ -207,7 +207,10 @@
             concept (update-in concept [:revision-date] #(or % (f/unparse (f/formatters :date-time)
                                                                           (tk/now))))
             concept (if (= concept-type :granule)
-                      (dissoc concept :user-id)
+                      (-> concept
+                          (dissoc :user-id)
+                          ;; This is not stored in the real db.
+                          (update-in [:extra-fields] dissoc :parent-entry-title))
                       concept)]
         (if (or (nil? revision-id)
                 (concepts/get-concept this concept-type provider concept-id revision-id))

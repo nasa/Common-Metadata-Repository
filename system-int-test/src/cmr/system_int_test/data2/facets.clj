@@ -3,6 +3,7 @@
   (:require [cmr.common.xml :as cx]
             [clojure.set :as set]
             [camel-snake-kebab.core :as csk]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.search.services.query-execution.facets-results-feature :as frf]))
 
 (defn- parse-facet-xml
@@ -26,7 +27,7 @@
                  {:field field
                   :subfields [(get-in facet [:attrs :field])]})
 
-          (not ((csk/->kebab-case-keyword field) frf/nested-fields-mappings))
+          (not ((csk/->kebab-case-keyword field) kf/nested-fields-mappings))
           {:field field
            :value-counts (for [value-elem value-elems]
                            [(first (:content value-elem))

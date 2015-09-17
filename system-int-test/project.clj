@@ -10,6 +10,7 @@
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
 
                  ;; included for access to messages or setting config
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]

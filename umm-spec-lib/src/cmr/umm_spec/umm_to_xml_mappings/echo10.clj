@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
 (defn characteristic-mapping
   [data]
@@ -119,4 +120,5 @@
         [:ShortName ShortName]
         [:LongName LongName]
         [:StartDate StartDate]
-        [:EndDate EndDate]]])]))
+        [:EndDate EndDate]]])
+    (spatial/spatial-element c)]))

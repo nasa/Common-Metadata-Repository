@@ -341,12 +341,20 @@
         {:keys [revision-id errors]} body]
     {:status status :revision-id revision-id :errors errors}))
 
+(defn expected-granule-concept
+  "Modifies a granule concept for comparison with a retrieved granule concept."
+  [concept]
+  ;; :parent-entry-title is saved but not retrieved
+  (if (:extra-fields concept)
+    (update-in concept [:extra-fields] dissoc :parent-entry-title)
+    concept))
+
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (= concept (dissoc stored-concept :revision-date))))
+    (is (= (expected-granule-concept concept) (dissoc stored-concept :revision-date)))))
 
 (defn assert-no-errors
   [save-result]
@@ -378,7 +386,9 @@
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]
-     (assoc concept :concept-id concept-id :revision-id revision-id))))
+     (-> concept
+         (assoc :concept-id concept-id
+                 :revision-id revision-id)))))
 
 (defn create-and-save-tag
   "Creates, saves, and returns a tag concept with its data from metadata-db"

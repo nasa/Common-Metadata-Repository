@@ -41,20 +41,20 @@
 
 (defn- validate-and-parse-collection-concept
   "Validates a collection concept and parses it. Returns the UMM record."
-  [context collection-concept]
+  [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-xml collection-concept)
 
   (let [collection (umm/parse-concept collection-concept)]
     ;; UMM Validation
     (when (ingest-validation-enabled?)
-      (v/validate-collection-umm collection))
+      (v/validate-collection-umm context collection validate-keywords?))
     collection))
 
 (defn-timed validate-collection
   "Validate the collection. Throws a service error if any validation issues are found."
-  [context concept]
-  (let [collection (validate-and-parse-collection-concept context concept)
+  [context concept validate-keywords?]
+  (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
     (v/validate-business-rules
@@ -120,7 +120,7 @@
                                context concept granule)]
      ;; UMM Validation
      (when (ingest-validation-enabled?)
-       (v/validate-granule-umm parent-collection granule))
+       (v/validate-granule-umm context parent-collection granule))
 
      ;; Add extra fields for the granule
      (let [gran-concept (add-extra-fields-for-granule
@@ -133,7 +133,7 @@
   validation issues are found."
   [context concept parent-collection-concept]
   (let [collection (errors/handle-service-errors
-                     #(validate-and-parse-collection-concept context parent-collection-concept)
+                     #(validate-and-parse-collection-concept context parent-collection-concept false)
                      (fn [type errors ex]
                        (errors/throw-service-errors
                          type (map msg/invalid-parent-collection-for-validation errors)) ex))]
@@ -148,8 +148,8 @@
 
 (defn-timed save-collection
   "Store a concept in mdb and indexer and return concept-id and revision-id."
-  [context concept]
-  (let [concept (validate-collection context concept)]
+  [context concept validate-keywords?]
+  (let [concept (validate-collection context concept validate-keywords?)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 

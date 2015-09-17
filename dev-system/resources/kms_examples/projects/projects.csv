@@ -1,0 +1,8 @@
+"Keyword Version: 8.1","Revision: 2015-09-10 16:05:34","Timestamp: 2015-09-16 12:51:09","Terms Of Use: See http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/projects/?format=xml"
+Bucket,Short_Name,Long_Name,UUID
+"A - C","","","0c89f3f4-7ab1-43ce-89ee-795d35f0e30a"
+"A - C","AA","ARCATLAS","a30ac9a7-82b0-42b6-93db-2764bd7535ca"
+"D - F","EUCREX-94","","454a3c42-46e4-4f6b-a83c-b624fe553e0b"
+"D - F","EUDASM","European Digital Archive of Soil Maps","8497a1a8-5192-4e94-aabd-e8c349f2f79c"
+"S - U","SEDAC/GISS CROP-CLIM DBQ","SEDAC Goddard Institute for Space Studies Crop-Climate Database Query","8ff7fd0b-caa4-423d-8387-c749e2795c46"
+"S - U","SEDAC/GW","SEDAC Gateway","ba299a14-0b5b-4fbc-a1ce-87936f072210"
