@@ -91,13 +91,6 @@
     (errors/throw-service-error
       :bad-request "Temporal condition with only exclude_boundary is invalid.")))
 
-(defn- validate-tag-condition
-  "Custom validation to make sure that originator_id cannot have ignore_case options."
-  [value]
-  (when (get-in value [:originator-id :ignore-case])
-    (errors/throw-service-error
-      :bad-request "Option [ignore_case] is not supported for tag originator_id.")))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- query-condition-name->condition-type
@@ -199,7 +192,6 @@
 
 (defmethod parse-json-condition :tag
   [_ value]
-  (validate-tag-condition value)
   (let [parse-tag-condition (fn [[cond-name cond-value]]
                               (tag-related/tag-related-item-query-condition
                                 (parse-json-string-condition cond-name cond-value)))]

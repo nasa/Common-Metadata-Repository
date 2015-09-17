@@ -104,7 +104,7 @@
 				    },
 				    "originator_id": {
 				      "description": "Originator id of the tag.",
-				      "$ref": "#/definitions/StringCondition"
+				      "$ref": "#/definitions/CaseInsensitiveStringCondition"
 				    }
 				  }
 				},
@@ -367,6 +367,26 @@
 				"additionalProperties": false,
 				"required": ["value"]
 			}]
+		},
+		"CaseInsensitiveStringCondition": {
+		  "description": "String searches can take either a string or an object with a value to search for and options to apply for the search. This is similar to StringCondition, but it does not support ignore_case options.",
+		  "oneOf": [{
+		    "type": "string"
+		  }, {
+		    "description": "Used to specify the value and options to apply when searching against a particular field. 'value' is required.",
+		    "type": "object",
+		    "properties": {
+		      "value": {
+		        "description": "The value to search for the given field.",
+		        "type": "string"
+		      },
+		      "pattern": {
+		        "$ref": "#/definitions/PatternOption"
+		      }
+		    },
+		    "additionalProperties": false,
+		    "required": ["value"]
+		  }]
 		},
 		"BoundingBoxCondition": {
 			"description": "Specifies a bounding rectangle search.",

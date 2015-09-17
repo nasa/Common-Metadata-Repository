@@ -37,11 +37,14 @@
          :namespace :category :value :originator_id)
 
     (testing "Originator id does not support ignore case because it is always case insensitive"
-      (is (= {:status 400
-              :errors ["Option [ignore_case] is not supported for tag originator_id."]}
-             (search/find-refs-with-json-query :collection {}
-                                               {:tag {:originator_id {:value "foo"
-                                                                      :ignore_case true}}}))))))
+      (is
+        (= {:status 400
+            :errors ["/condition/tag/originator_id instance failed to match exactly one schema (matched 0 out of 2)"
+                     "/condition/tag/originator_id instance type (object) does not match any allowed primitive type (allowed: [\"string\"])"
+                     "/condition/tag/originator_id object instance has properties which are not allowed by the schema: [\"ignore_case\"]"]}
+           (search/find-refs-with-json-query :collection {}
+                                             {:tag {:originator_id {:value "foo"
+                                                                    :ignore_case true}}}))))))
 
 (deftest search-for-collections-by-tag-params-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1 c5-p1
