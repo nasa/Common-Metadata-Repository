@@ -71,7 +71,7 @@
                                              :DurationValue (value-of pdt "Duration_Value")
                                              :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                              :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})
-   :Distributions (for [dist (select doc "/DIF/:Distribution")]
+   :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :DistributionSize (value-of dist "Distribution_Size")
                      :DistributionFormat (value-of dist "Distribution_Format")
