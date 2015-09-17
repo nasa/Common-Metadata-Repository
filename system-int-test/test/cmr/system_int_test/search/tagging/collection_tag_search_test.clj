@@ -28,6 +28,21 @@
              (search/find-refs :collection {:tag-originator-id "foo"
                                             "options[tag-originator-id][ignore-case]" true}))))))
 
+(deftest search-for-collections-with-tag-json-query-validation-test
+  (testing "Unsupported options"
+    (are [field]
+         (= {:status 400
+             :errors ["/condition/tag object instance has properties which are not allowed by the schema: [\"and\"]"]}
+            (search/find-refs-with-json-query :collection {} {:tag {field "name" :and true}}))
+         :namespace :category :value :originator_id)
+
+    (testing "Originator id does not support ignore case because it is always case insensitive"
+      (is (= {:status 400
+              :errors ["Option [ignore_case] is not supported for tag originator_id."]}
+             (search/find-refs-with-json-query :collection {}
+                                               {:tag {:originator_id {:value "foo"
+                                                                      :ignore_case true}}}))))))
+
 (deftest search-for-collections-by-tag-params-test
   (let [[c1-p1 c2-p1 c3-p1 c4-p1 c5-p1
          c1-p2 c2-p2 c3-p2 c4-p2 c5-p2] (for [p ["PROV1" "PROV2"]
@@ -141,6 +156,86 @@
 
             "By Originator Id - Pattern"
             [tag2-colls tag4-colls] {:tag-originator-id "*2" "options[tag-originator-id][pattern]" true}))
+
+    (testing "Search collections by tags with JSON query"
+      (are2 [expected-tags-colls query]
+            (d/refs-match? (distinct (apply concat expected-tags-colls))
+                           (search/find-refs-with-json-query :collection {} query))
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Namespace query
+
+            "By Namespace - Ignore Case Default"
+            [tag1-colls tag2-colls] {:tag {:namespace "namespace1"}}
+
+            "By Namespace - ignore case explicitly"
+            [tag1-colls tag2-colls] {:tag {:namespace {:value "namespace1" :ignore_case true}}}
+
+            "By Namespace Case Sensitive - no match"
+            [] {:tag {:namespace {:value "namespace1" :ignore_case false}}}
+
+            "By Namespace Case Sensitive - matches"
+            [tag1-colls tag2-colls] {:tag {:namespace {:value "Namespace1" :ignore_case false}}}
+
+            "By Namespace Pattern"
+            [tag5-colls] {:tag {:namespace {:value "*other" :pattern true}}}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Value query
+
+            "By Value - Ignore Case Default"
+            [tag1-colls tag3-colls] {:tag {:value "value1"}}
+
+            "By Value - ignore case explicitly"
+            [tag1-colls tag3-colls] {:tag {:value {:value "value1" :ignore_case true}}}
+
+            "By Value Case Sensitive - no match"
+            [] {:tag {:value {:value "value1" :ignore_case false}}}
+
+            "By Value Case Sensitive - matches"
+            [tag1-colls tag3-colls] {:tag {:value {:value "Value1" :ignore_case false}}}
+
+            "By Value Pattern"
+            [tag5-colls] {:tag {:value {:value "*other" :pattern true}}}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Category Param
+
+            "By Category - Ignore Case Default"
+            [tag3-colls tag4-colls] {:tag {:category "category2"}}
+
+            "By Category - ignore case explicitly"
+            [tag3-colls tag4-colls] {:tag {:category {:value "category2" :ignore_case true}}}
+
+            "By Category Case Sensitive - no match"
+            [] {:tag {:category {:value "category2" :ignore_case false}}}
+
+            "By Category Case Sensitive - matches"
+            [tag3-colls tag4-colls] {:tag {:category {:value "Category2" :ignore_case false}}}
+
+            "By Category Pattern"
+            [tag1-colls] {:tag {:category {:value "*1" :pattern true}}}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Originator Id Param
+
+            "By Originator Id - Ignore Case Default" ;; Case sensitive not supported
+            [tag1-colls tag3-colls tag5-colls] {:tag {:originator_id "USER1"}}
+
+            "By Originator Id - Pattern"
+            [tag2-colls tag4-colls] {:tag {:originator_id {:value "*2" :pattern true}}}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Combinations
+
+            "Combination of namespace and value"
+            [tag1-colls] {:tag {:namespace "namespace1" :value "value1"}}
+
+            "Combination with multiple tag queries"
+            [tag1-colls tag3-colls]
+            {:or [{:tag {:namespace "namespace1" :value "value1"}}
+                  {:tag {:namespace {:value "namespace2" :ignore_case true} :value "value1"}}
+                  {:tag {:namespace "foo" :value "value1"}}]}))
 
     (testing "Combination of tag parameters and other collection conditions"
       (is (d/refs-match? [c1-p1 c2-p1] (search/find-refs :collection {:tag-namespace "namespace1"

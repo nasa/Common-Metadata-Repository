@@ -84,6 +84,30 @@
 						"required": ["value"]
 					}]
 				},
+				"tag": {
+				  "description": "Search against any of the subfields of tag",
+				  "type": "object",
+				  "additionalProperties": false,
+				  "minProperties": 1,
+				  "properties": {
+				    "namespace": {
+				      "description": "Namespace of the tag.",
+				      "$ref": "#/definitions/StringCondition"
+				    },
+				    "value": {
+				      "description": "Value of the tag.",
+				      "$ref": "#/definitions/StringCondition"
+				    },
+				    "category": {
+				      "description": "Category of the tag.",
+				      "$ref": "#/definitions/StringCondition"
+				    },
+				    "originator_id": {
+				      "description": "Originator id of the tag.",
+				      "$ref": "#/definitions/StringCondition"
+				    }
+				  }
+				},
 				"platform": {
 					"description": "Search against any of the subfields in the platform hierarchy",
 					"type": "object",
