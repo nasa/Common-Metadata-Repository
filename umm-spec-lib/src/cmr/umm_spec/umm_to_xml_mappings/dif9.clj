@@ -39,6 +39,12 @@
         [:Start_Date sdt]
         [:Stop_Date sdt]])
      [:Data_Set_Progress (:CollectionProgress c)]
+     (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
+       [:Spatial_Coverage
+        [:Southernmost_Latitude (:SouthBoundingCoordinate mbr)]
+        [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
+        [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
+        [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
      (for [spatial-keyword (:SpatialKeywords c)]
        [:Location spatial-keyword])
      (for [temproal-keywod (:TemporalKeywords c)]

@@ -17,7 +17,7 @@
                 (apply x/element tag attrs content))))
 
   clojure.lang.ISeq
-  (generate [xs] (keep generate xs))
+  (generate [xs] (seq (keep generate xs)))
 
   java.lang.Number
   (generate [n] (str n))
