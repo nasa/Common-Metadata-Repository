@@ -197,7 +197,6 @@
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
-                                        ;; TODO document on ingest API this behavior and header
                                         "Cmr-Validate-Keywords" validate-keywords
                                         "Echo-Token" token
                                         "User-Id" user-id

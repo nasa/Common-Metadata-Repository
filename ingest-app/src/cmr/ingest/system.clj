@@ -66,7 +66,6 @@
               :ingest-public-conf ingest-public-conf
               :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
      (transmit-config/system-with-connections
-       ;; TODO add kms to hiera config
        sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
 (defn start

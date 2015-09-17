@@ -118,6 +118,42 @@
                                       "was not a valid keyword combination.")]}]}
              response))))
 
+  (testing "Project keyword validation"
+    (are2 [short-name long-name]
+          (assert-invalid-keywords
+            {:projects [(assoc (dc/project short-name "") :long-name long-name)]}
+            ["Projects" 0]
+            [(format (str "Project short name [%s] and long name [%s]"
+                          " was not a valid keyword combination.")
+                     short-name long-name)])
+
+          "Invalid short name"
+          "foo" "European Digital Archive of Soil Maps"
+
+          "Invalid with nil long name"
+          "foo" nil
+
+          "Invalid long name"
+          "EUDASM" "foo"
+
+          "Long name was nil in KMS"
+          "EUCREX-94" "foo"
+
+          "Invalid combination"
+          "SEDAC/GISS CROP-CLIM DBQ" "European Digital Archive of Soil Maps")
+
+    (are2 [short-name long-name]
+          (assert-valid-keywords
+            {:projects [(assoc (dc/project short-name "") :long-name long-name)]})
+          "Exact match"
+          "EUDASM" "European Digital Archive of Soil Maps"
+
+          "Nil long name in project and in KMS"
+          "EUCREX-94" nil
+
+          "Case Insensitive"
+          "EUDaSM" "European DIgItal ArchIve of SoIl MAps"))
+
   (testing "Platform keyword validation"
     (are2 [short-name long-name]
           (assert-invalid-keywords
@@ -129,6 +165,9 @@
 
           "Invalid short name"
           "foo" "Airbus A340-600"
+
+          "Long name is nil in KMS"
+          "AIRCRAFT" "Airbus A340-600"
 
           "Invalid long name"
           "DMSP 5B/F3" "foo"
@@ -161,6 +200,9 @@
           "Invalid short name"
           "foo" "Airborne Topographic Mapper"
 
+          "Long name is nil in KMS"
+          "ACOUSTIC SOUNDERS" "foo"
+
           "Invalid long name"
           "ATM" "foo"
 
@@ -177,6 +219,9 @@
                                                :long-name long-name})]})]})
           "Exact match"
           "ATM" "Airborne Topographic Mapper"
+
+          "Nil long name in project and in KMS"
+          "ACOUSTIC SOUNDERS" nil
 
           "Case Insensitive"
           "Atm" "aIRBORNE Topographic Mapper"))

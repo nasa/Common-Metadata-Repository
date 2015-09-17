@@ -36,6 +36,11 @@
   (format "Instrument short name [%s] and long name [%s] was not a valid keyword combination."
           (:short-name instrument) (:long-name instrument)))
 
+(defn project-not-matches-kms-keywords
+  [project-map]
+  (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
+          (:short-name project-map) (:long-name project-map)))
+
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])

@@ -74,8 +74,10 @@
                          gcmd-keywords-map
                          kms-fetcher/get-full-hierarchy-for-science-keyword
                          msg/science-keyword-not-matches-kms-keywords)
-
-     }))
+     :projects (match-kms-keywords-validation
+                 gcmd-keywords-map
+                 kms-fetcher/get-full-hierarchy-for-project
+                 msg/project-not-matches-kms-keywords)}))
 
 (defn validate-concept-xml
   "Validates the concept xml to ingest a concept. "

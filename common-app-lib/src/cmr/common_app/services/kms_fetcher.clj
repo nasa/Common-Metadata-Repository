@@ -66,36 +66,6 @@
   (let [cache (cache/context->cache context kms-cache-key)]
     (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
 
-
-(comment
-  (def context {:system (get-in user/system [:apps :indexer])})
-
-  (defn sk-map
-    [sk]
-    (let [sort-map (zipmap [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
-                           (range))]
-      (apply
-        sorted-map-by
-        (fn [k1 k2]
-          (compare (sort-map k1) (sort-map k2)))
-        (mapcat vec sk))))
-
-  (->> context
-       get-gcmd-keywords-map
-       :science-keywords
-       vals
-       (map #(dissoc % :uuid))
-       (map sk-map))
-
-
-  (get-full-hierarchy-for-science-keyword
-    (get-gcmd-keywords-map context)
-    {:category "EARTH SCIENCE SERVICES"
-     :topic "SOLID EARTH"
-     :term "ROCKS/MINERALS/CRYSTALS"})
-
-  )
-
 (defn get-full-hierarchy-for-short-name
   "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
   nil will be returned."
@@ -117,8 +87,6 @@
         keyword-values (vals (keyword-scheme gcmd-keywords-map))]
     (first (filter #(= comparison-map (prepare-for-compare %)) keyword-values))))
 
-;; TODO add more helper functions for for projects
-
 (defn get-full-hierarchy-for-science-keyword
   [gcmd-keywords-map keyword-map]
   (get-full-hierarchy-for-keyword
@@ -132,6 +100,10 @@
 (defn get-full-hierarchy-for-instrument
   [gcmd-keywords-map instrument]
   (get-full-hierarchy-for-keyword gcmd-keywords-map :instruments instrument [:short-name :long-name]))
+
+(defn get-full-hierarchy-for-project
+  [gcmd-keywords-map project-map]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :projects project-map [:short-name :long-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
