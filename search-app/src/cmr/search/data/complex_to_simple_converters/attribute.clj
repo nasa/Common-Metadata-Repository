@@ -92,8 +92,8 @@
   ([attrib-name group pattern?]
    (if group
      (gc/and-conds
-       (qm/string-condition :attributes.group group true pattern?)
-       (qm/string-condition :attributes.name attrib-name true pattern?))
+       [(qm/string-condition :attributes.group group true pattern?)
+        (qm/string-condition :attributes.name attrib-name true pattern?)])
      (qm/string-condition :attributes.name attrib-name true pattern?))))
 
 (extend-protocol c2s/ComplexQueryToSimple

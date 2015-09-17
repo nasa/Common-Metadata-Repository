@@ -14,7 +14,7 @@
 
 (defn invalid-value-msg
   [type value]
-  (format "[%s] is an invalid value for type [%s]" (str value) (name type)))
+  (format "[%s] is an invalid value for type [%s]" (pr-str value) (name type)))
 
 (defn invalid-name-msg
   [n]
@@ -72,3 +72,4 @@
 (defn expected-map-or-str-parameter-msg
   [value]
   (str "Expcected attribute parameters [" value "] to be a map or string"))
+

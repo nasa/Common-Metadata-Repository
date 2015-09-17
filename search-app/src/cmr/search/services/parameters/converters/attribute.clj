@@ -101,6 +101,8 @@
         (update-in condition [field] parser)
         (catch NumberFormatException e
           (handle-exception))
+        (catch ClassCastException e
+          (handle-exception))
         (catch ExceptionInfo e
           (handle-exception))))
     condition))

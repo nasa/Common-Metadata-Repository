@@ -11,6 +11,7 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.search.services.messages.attribute-messages :as am]
+            [cmr.common.util :as util]
             [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -858,4 +859,111 @@
          {:type :range :name "alpha" :value ["y" "m"]}
          {:type :intRange :name "alpha" :value [10 6]}
          {:type :floatRange :name "alpha" :value [10.0 6.0]})))
+
+(deftest search-by-name-and-group-test
+  (let [psa1 (dc/psa {:name "foo" :group "g1" :data-type :boolean :value true})
+        psa2 (dc/psa {:name "two" :group "g2" :data-type :datetime-string
+                      :value "2012-01-01T01:02:03Z"})
+        coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1]})
+                        {:format :dif})
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa2]})
+                        {:format :dif})]
+    (index/wait-until-indexed)
+    (are [matches a-name group pattern?]
+         (d/refs-match? matches (search/find-refs-with-json-query :collection {}
+                                                             {:attribute
+                                                              (util/remove-nil-keys
+                                                                {:name a-name
+                                                                 :group group
+                                                                 :pattern pattern?})}))
+         [coll1] "foo" nil false
+         [coll1] "f?o" nil true
+         [] "f?o" nil false
+         [coll1] nil "g1" false
+         [coll1 coll2] nil "g*" true
+         [] nil "g*" false
+         [] "t*o" "*" false
+         [coll2] "t*o" "*" true)))
+
+(deftest json-query-validate-types-test
+  (are [type value]
+       (d/refs-match? [] (search/find-refs-with-json-query
+                           :collection {} {:attribute {:name "a" :type type :value value}}))
+       "string" "abc"
+       "string" 1.5
+       "int" 12
+       "float" 1.23
+       "datetime" "2012-01-11T10:00:00.000Z"
+       "date" "2012-01-11"
+       "time" "10:00:00.000Z"))
+
+(deftest json-query-validation-errors-test
+  (util/are2
+    [search errors]
+    (let [condition {:attribute search}]
+      ;; Use is since we are in a let within are2, otherwise diffs would not be printed correctly
+      (is (= {:status 400 :errors errors}
+             (search/find-refs-with-json-query :collection {} condition))))
+
+    "Invalid data type"
+    {:type "bad" :value "c" :name "n"}
+    [(str "/condition/attribute/type instance value (\"bad\") not found in enum (possible values: "
+          "[\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])")]
+
+    "Invalid int"
+    {:type "int" :name "B" :value "1"}
+    ["[\"1\"] is an invalid value for type [int]"]
+
+    "Invalid float"
+    {:type "float" :name "B" :value "1.42"}
+    ["[\"1.42\"] is an invalid value for type [float]"]
+
+    "Invalid datetime"
+    {:type "datetime" :name "B" :value "2012-01-11 10:00:00"}
+    ["[\"2012-01-11 10:00:00\"] is an invalid value for type [datetime]"]
+
+    "Invalid date"
+    {:type "date" :name "B" :value "10:00:00Z"}
+    ["[\"10:00:00Z\"] is an invalid value for type [date]"]
+
+    "Invalid time"
+    {:type "time" :name "B" :value "2012-01-11"}
+    ["[\"2012-01-11\"] is an invalid value for type [time]"]
+
+    "Invalid use of exclude-boundary"
+    {:type "string" :name "a" :value "b" :exclude_boundary true}
+    ["Range search parameters 'min_value' or 'max_value' must be present when specifying 'exclude_boundary'."]
+
+    "Invalid use of pattern"
+    {:type "string" :group "g" :name "a*" :value "b" :pattern true}
+    ["When 'pattern' is present, 'type' cannot be included. It can only be used for 'name' and 'group' searches."]
+
+    "Invalid range max < min"
+    {:type "int" :name "foo" :min_value 25 :max_value 14}
+    ["The maximum value [14] must be greater than the minimum value [25]"]
+
+    "Cannot include both range and an exact value"
+    {:type "int" :name "foo" :min_value 25 :value 37}
+    ["When 'value' is present, range parameters 'min_value' and 'max_value' cannot be included."]
+
+    "Name is required when doing an exact value search"
+    {:type "int" :value 25 :group "abc"}
+    ["When 'type' is present, 'name' is required."]
+
+    "Name is required when doing a range search"
+    {:type "int" :min_value 25 :max_value 35 :group "abc"}
+    ["When 'type' is present, 'name' is required."]
+
+    "Type is required when doing an exact value search"
+    {:value 25 :group "abc"}
+    ["When 'value', 'min_value', or 'max_value' are present, 'type' is required."]
+
+    "Type is required when doing a range search"
+    {:min_value 25 :max_value 35 :group "abc"}
+    ["When 'value', 'min_value', or 'max_value' are present, 'type' is required."]
+
+    "Multiple errors can be returned"
+    {:type "string" :group "g" :name "a*" :value "b" :exclude_boundary true :pattern true}
+    ["Range search parameters 'min_value' or 'max_value' must be present when specifying 'exclude_boundary'."
+     "When 'pattern' is present, 'type' cannot be included. It can only be used for 'name' and 'group' searches."]))
 

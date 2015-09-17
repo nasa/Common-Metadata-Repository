@@ -17,18 +17,6 @@
    :int int
    :string str})
 
-; (defn- parse-value
-;   "Parses a value using the provided parser function. Throws a bad request error if parsing fails."
-;   [parser-fn value]
-;   (if (and parser-fn (some? value))
-;     (try
-;       (parser-fn value)
-;       value
-;       (catch Exception e
-;         (throw errors/throw-service-errors :bad-request
-;                (format "Invalid format for value: [%s]"
-;                        (pr-str value)))))))
-
 (defn- type-validation
   "Validates type within the provided condition. Returns a list of errors if validation fails."
   [{:keys [type name value min-value max-value]}]
@@ -51,7 +39,6 @@
   "Validates min_value and max_value within the provided condition. Returns a list of errors if
   validation fails."
   [{:keys [value min-value max-value]}]
-  ;; TODO verify range validation works automatically with cmr.search.validators.attribute
   (when (some? value)
     (when (or (some? min-value) (some? max-value))
       [am/conflicting-value-and-range-msg])))

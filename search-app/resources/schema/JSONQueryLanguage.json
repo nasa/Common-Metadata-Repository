@@ -335,7 +335,7 @@
 						},
 						"type": {
 							"description": "The data type of the attribute being searched against. Support types are string, time, date, datetime, boolean, time-string, date-string, datetime-string, int, and float.",
-							"enum": ["string", "time", "date", "datetime", "boolean", "time-string", "date-string", "datetime-string", "int", "float"]
+							"enum": ["string", "boolean", "time", "date", "datetime", "int", "float"]
 						},
 						"value": {
 							"description": "Search for an exact value match for an additional attribute.",
