@@ -83,13 +83,6 @@
       (errors/throw-service-errors :bad-request errors))
     condition))
 
-(comment
-  (range-values-validation {:type "a" :name "b" :value "c" :min-value 1})
-  (exclude-boundary-validation {:type "a" :name "b" :min-value "c" :exclude-boundary false})
-  (pattern-validation {:name "b" :group "j" :pattern false})
-  (validate-attribute-condition {:name "b" :group "j" :value "c" :type "c" :pattern false :exclude-boundary true})
-  (remove nil? (concat [nil] [nil])))
-
 (defmethod jp/parse-json-condition :attribute
   [_ value]
   (let [condition (-> value

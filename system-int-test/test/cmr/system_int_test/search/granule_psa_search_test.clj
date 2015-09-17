@@ -27,7 +27,7 @@
 
        "string,,a" (am/invalid-name-msg "")
        "string,,a,b" (am/invalid-name-msg "")
-       "string,alpha," (am/invalid-value-msg :string "")
+       "string,alpha," (am/invalid-value-msg :string nil)
        "string,alpha" (am/invalid-num-parts-msg)
        "string,alpha,," (am/one-of-min-max-msg)
        "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
