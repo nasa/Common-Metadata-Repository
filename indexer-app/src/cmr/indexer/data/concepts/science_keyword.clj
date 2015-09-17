@@ -23,17 +23,12 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
-(def kms-fields-to-match
-  "A list of the fields that need to match when looking for a science keyword in KMS."
-  [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])
-
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document"
   [gcmd-keywords-map science-keyword]
   (let [{:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword
-        {:keys [uuid]} (kf/get-full-hierarchy-for-keyword
-                         gcmd-keywords-map :science-keywords science-keyword kms-fields-to-match)]
+        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic

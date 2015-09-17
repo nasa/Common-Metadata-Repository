@@ -41,9 +41,12 @@
 (defn validate-collection
   "Validates the umm record returning a list of error maps containing a path through the
   UMM model and a list of errors at that path. Returns an empty sequence if it is valid."
-  [collection]
-  (validation-errors->path-errors
-    (v/validate vc/collection-validations collection)))
+  ([collection]
+   (validate-collection collection nil))
+  ([collection additional-validations]
+   (validation-errors->path-errors
+     (v/validate (cons vc/collection-validations additional-validations)
+                 collection))))
 
 (defn validate-granule
   "Validates the umm record returning a list of error maps containing a path through the

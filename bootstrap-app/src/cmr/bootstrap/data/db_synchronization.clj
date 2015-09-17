@@ -225,6 +225,9 @@
            :revision-date (oracle/oracle-timestamp->str-time conn ingest_updated_at)
            :deleted false
            :extra-fields {:granule-ur granule_ur
+                          ;; This isn't necessary to be set because it is not stored. It's only used
+                          ;; when metadata db publishes messages but we don't need it to do that.
+                          :parent-entry-title "Not necessary"
                           :parent-collection-id (concepts/build-concept-id
                                                   {:concept-type :collection
                                                    :sequence-number (long dataset_record_id)

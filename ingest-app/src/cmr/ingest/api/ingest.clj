@@ -19,6 +19,8 @@
 
 (def ECHO_CLIENT_ID "ECHO")
 (def VIRTUAL_PRODUCT_CLIENT_ID "Virtual-Product-Service")
+(def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
+
 
 (defn- verify-provider-cmr-only-against-client-id
   "Verifies provider CMR-ONLY flag matches the client-id in the request.
@@ -200,20 +202,80 @@
   [concept]
   (pr-str (dissoc concept :metadata)))
 
+(defn set-default-error-format [default-response-format handler]
+  "Ring middleware to add a default format to the exception-info created during exceptions. This
+  is used to determine the default format for each route."
+  (fn [request]
+    (try
+      (handler request)
+      (catch ExceptionInfo e
+        (let [{:keys[type errors]} (ex-data e)]
+          (throw (ex-info (.getMessage e)
+                          {:type type
+                           :errors errors
+                           :default-format default-response-format})))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Collection API Functions
+
+(defn validate-collection
+  [provider-id native-id request]
+  (let [{:keys [body content-type params headers request-context]} request
+        concept (body->concept :collection provider-id native-id body content-type headers)
+        validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
+    (verify-provider-against-client-id request-context provider-id)
+    (info (format "Validating Collection %s from client %s"
+                  (concept->loggable-string concept) (:client-id request-context)))
+    (ingest/validate-collection request-context concept validate-keywords)
+    {:status 200}))
+
+(defn ingest-collection
+  [provider-id native-id request]
+  (let [{:keys [body content-type params headers request-context]} request]
+    (verify-provider-against-client-id request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (let [concept (body->concept :collection provider-id native-id body content-type headers)
+          validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
+      (info (format "Ingesting collection %s from client %s"
+                    (concept->loggable-string concept) (:client-id request-context)))
+      (generate-ingest-response headers (ingest/save-collection
+                                          request-context
+                                          (set-user-id concept request-context headers)
+                                          validate-keywords)))))
+
+(defn delete-collection
+  [provider-id native-id request]
+  (let [{:keys [request-context params headers]} request
+        concept-attribs (-> {:provider-id provider-id
+                             :native-id native-id
+                             :concept-type :collection}
+                            (set-revision-id headers)
+                            (set-user-id request-context headers))]
+    (verify-provider-against-client-id request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (info (format "Deleting collection %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Granule API Functions
+
 (defmulti validate-granule
   "Validates the granule in the request. It can handle a granule and collection sent as multipart-params
   or a normal request with the XML as the body."
-  (fn [context provider-id native-id request]
+  (fn [provider-id native-id request]
     (if (seq (:multipart-params request))
       :multipart-params
       :default)))
 
 (defmethod validate-granule :default
-  [context provider-id native-id {:keys [body content-type headers request-context] :as request}]
+  [provider-id native-id {:keys [body content-type headers request-context]}]
+  (verify-provider-against-client-id request-context provider-id)
   (let [concept (body->concept :granule provider-id native-id body content-type headers)]
     (info (format "Validating granule %s from client %s"
-                  (concept->loggable-string concept) (:client-id context)))
-    (ingest/validate-granule request-context concept)))
+                  (concept->loggable-string concept) (:client-id request-context)))
+    (ingest/validate-granule request-context concept)
+    {:status 200}))
 
 (defn- multipart-param->concept
   "Converts a multipart parameter "
@@ -234,27 +296,40 @@
         (msg/invalid-multipart-params expected-keys-set provided-keys)))))
 
 (defmethod validate-granule :multipart-params
-  [context provider-id native-id {:keys [multipart-params request-context]}]
+  [provider-id native-id {:keys [multipart-params request-context]}]
+  (verify-provider-against-client-id request-context provider-id)
   (validate-multipart-params #{"granule" "collection"} multipart-params)
 
   (let [coll-concept (multipart-param->concept
                        provider-id native-id :collection (get multipart-params "collection"))
         gran-concept (multipart-param->concept
                        provider-id native-id :granule (get multipart-params "granule"))]
-    (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)))
+    (ingest/validate-granule-with-parent-collection request-context gran-concept coll-concept)
+    {:status 200}))
 
-(defn set-default-error-format [default-response-format handler]
-  "Ring middleware to add a default format to the exception-info created during exceptions. This
-  is used to determine the default format for each route."
-  (fn [request]
-    (try
-      (handler request)
-      (catch ExceptionInfo e
-        (let [{:keys[type errors]} (ex-data e)]
-          (throw (ex-info (.getMessage e)
-                          {:type type
-                           :errors errors
-                           :default-format default-response-format})))))))
+(defn ingest-granule
+  [provider-id native-id request]
+  (let [{:keys [body content-type params headers request-context]} request]
+    (verify-provider-against-client-id request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (let [concept (body->concept :granule provider-id native-id body content-type headers)]
+      (info (format "Ingesting granule %s from client %s"
+                    (concept->loggable-string concept) (:client-id request-context)))
+      (generate-ingest-response headers (ingest/save-granule request-context concept)))))
+
+(defn delete-granule
+  [provider-id native-id request]
+  (let [{:keys [request-context params headers]} request
+        concept-attribs (set-revision-id
+                          {:provider-id provider-id
+                           :native-id native-id
+                           :concept-type :granule}
+                          headers)]
+    (verify-provider-against-client-id request-context provider-id)
+    (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
+    (info (format "Deleting granule %s from client %s"
+                  (pr-str concept-attribs) (:client-id request-context)))
+    (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))
 
 (def ingest-routes
   "Defines the routes for ingest, validate, and delete operations"
@@ -263,60 +338,22 @@
     (context "/providers/:provider-id" [provider-id]
 
       (context ["/validate/collection/:native-id" :native-id #".*$"] [native-id]
-
-        (POST "/" {:keys [body content-type params headers request-context]}
-          (let [concept (body->concept :collection provider-id native-id body content-type headers)]
-            (verify-provider-against-client-id request-context provider-id)
-            (info (format "Validating Collection %s from client %s"
-                          (concept->loggable-string concept) (:client-id request-context)))
-            (ingest/validate-collection request-context concept)
-            {:status 200})))
+        (POST "/" request
+          (validate-collection provider-id native-id request)))
       (context ["/collections/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" {:keys [body content-type headers request-context params]}
-          (verify-provider-against-client-id request-context provider-id)
-          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-          (let [concept (body->concept :collection provider-id native-id body content-type headers)]
-            (info (format "Ingesting collection %s from client %s"
-                          (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-collection
-                                                request-context
-                                                (set-user-id concept request-context headers)))))
-        (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs (-> {:provider-id provider-id
-                                     :native-id native-id
-                                     :concept-type :collection}
-                                    (set-revision-id headers)
-                                    (set-user-id request-context headers))]
-            (verify-provider-against-client-id request-context provider-id)
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-            (info (format "Deleting collection %s from client %s"
-                          (pr-str concept-attribs) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs)))))
+        (PUT "/" request
+          (ingest-collection provider-id native-id request))
+        (DELETE "/" request
+          (delete-collection provider-id native-id request)))
 
       (context ["/validate/granule/:native-id" :native-id #".*$"] [native-id]
-        (POST "/" {:keys [params headers request-context] :as request}
-          (verify-provider-against-client-id request-context provider-id)
-          (validate-granule request-context provider-id native-id request)
-          {:status 200}))
+        (POST "/" request
+          (validate-granule provider-id native-id request)))
 
       (context ["/granules/:native-id" :native-id #".*$"] [native-id]
-        (PUT "/" {:keys [body content-type headers request-context params]}
-          (verify-provider-against-client-id request-context provider-id)
-          (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-          (let [concept (body->concept :granule provider-id native-id body content-type headers)]
-            (info (format "Ingesting granule %s from client %s"
-                          (concept->loggable-string concept) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/save-granule request-context concept))))
-        (DELETE "/" {:keys [request-context params headers]}
-          (let [concept-attribs (set-revision-id
-                                  {:provider-id provider-id
-                                   :native-id native-id
-                                   :concept-type :granule}
-                                  headers)]
-            (verify-provider-against-client-id request-context provider-id)
-            (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
-            (info (format "Deleting granule %s from client %s"
-                          (pr-str concept-attribs) (:client-id request-context)))
-            (generate-ingest-response headers (ingest/delete-concept request-context concept-attribs))))))))
+        (PUT "/" request
+          (ingest-granule provider-id native-id request))
+        (DELETE "/" request
+          (delete-granule provider-id native-id request))))))
 
 
