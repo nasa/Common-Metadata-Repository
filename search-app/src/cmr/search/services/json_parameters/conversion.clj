@@ -181,14 +181,33 @@
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
 
+(def attribute-type->parser-fn
+  "A map of attribute types to functions that can parse a value"
+  {:datetime parser/parse-datetime
+   :time parser/parse-time
+   :date parser/parse-date})
+
+(defn parse-value
+  "Parses a value using the provided parser function."
+  [parser-fn value]
+  (if (and parser-fn (some? value))
+    (parser-fn value)
+    value))
+
 (defmethod parse-json-condition :attribute
   [_ value]
   ;; (validate-attribute-condition value) - either update JSON schema or validate it here
-  (let [{:keys [name group type value min-value max-value exclude-boundary pattern]} value]
+  (let [{:keys [name group type value min-value max-value exclude-boundary pattern]} value
+        type (keyword type)
+        parser-fn (attribute-type->parser-fn type)
+        value (parse-value parser-fn value)
+        min-value (parse-value parser-fn min-value)
+        max-value (parse-value parser-fn max-value)]
+
     (cond
       ;; Range search
       (or (some? min-value) (some? max-value))
-      (qm/map->AttributeRangeCondition {:type (keyword type)
+      (qm/map->AttributeRangeCondition {:type type
                                         :name name
                                         :group group
                                         :min-value min-value
@@ -197,20 +216,20 @@
 
       ;; Exact value search
       (some? value)
-      (qm/map->AttributeValueCondition {:type (keyword type)
+      (qm/map->AttributeValueCondition {:type type
                                         :name name
                                         :group group
                                         :value value})
 
       ;; Attribute name search
       (some? name)
-      (qm/map->AttributeValueCondition {:name name
-                                        :group group
-                                        :pattern? pattern})
+      (qm/map->AttributeNameCondition {:name name
+                                       :group group
+                                       :pattern? pattern})
 
       ;; Attribute group search
       (some? group)
-      (qm/map->AttributeValueCondition {:group group
+      (qm/map->AttributeGroupCondition {:group group
                                         :pattern? pattern})
 
       ;; Validation should have caught any other case

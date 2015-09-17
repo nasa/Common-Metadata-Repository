@@ -338,7 +338,7 @@
 						},
 						"value": {
 							"description": "Search for an exact value match for an additional attribute.",
-							"oneOf": [{
+							"anyOf": [{
 								"type": "string"
 							}, {
 								"type": "integer"
@@ -346,10 +346,11 @@
 								"type": "number"
 							}, {
 								"type": "null"
-							}]						},
+							}]
+						},
 						"min_value": {
 							"description": "Search for values for an additional attribute which are greater than the provided value.",
-							"oneOf": [{
+							"anyOf": [{
 								"type": "string"
 							}, {
 								"type": "integer"
@@ -361,7 +362,7 @@
 						},
 						"max_value": {
 							"description": "Search for values for an additional attribute which are less than the provided value.",
-							"oneOf": [{
+							"anyOf": [{
 								"type": "string"
 							}, {
 								"type": "integer"
@@ -369,13 +370,16 @@
 								"type": "number"
 							}, {
 								"type": "null"
-							}]						},
+							}]
+						},
 						"exclude_boundary": {
 							"description": "If set to true, the search will not include the boundary values for min and max values. Defaults to false.",
 							"type": "boolean"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
 						}
-					},
-					"required": ["name"]
+					}
 				}
 			}
 		},

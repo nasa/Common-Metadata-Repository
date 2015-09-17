@@ -56,8 +56,8 @@
     (:type condition)))
 
 (defmethod range-condition->range-filter :string
-  [{:keys [type min-value max-value]}]
-  (qm/string-range-condition (type->field-name type) min-value max-value))
+  [{:keys [type min-value max-value exclusive?]}]
+  (qm/string-range-condition (type->field-name type) min-value max-value exclusive?))
 
 (defmethod range-condition->range-filter :float
   [{:keys [type min-value max-value exclusive?]}]

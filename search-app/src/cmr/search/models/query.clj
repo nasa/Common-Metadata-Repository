@@ -417,8 +417,13 @@
 
 (defn string-range-condition
   "Create a string range condition."
-  [field start stop]
-  (map->StringRangeCondition {:field field :start-value start :end-value stop}))
+  ([field start stop]
+   (string-range-condition field start stop false))
+  ([field start stop exclusive?]
+  (map->StringRangeCondition {:field field
+                              :start-value start
+                              :end-value stop
+                              :exclusive? exclusive?})))
 
 (defn date-range-condition
   "Creates a DateRangeCondition."
