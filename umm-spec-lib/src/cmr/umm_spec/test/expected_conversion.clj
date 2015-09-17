@@ -8,6 +8,7 @@
             [clj-time.core :as t]
             [cmr.common.util :as util]
             [clj-time.format :as f]
+            [cmr.umm-spec.util :as su]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]))
 
 (def example-record
@@ -133,26 +134,13 @@
 
 ;;; Format-Specific Translation Functions
 
-(defn- convert-empty-record-to-nil
-  [record]
-  (if (seq (util/remove-nil-keys record))
-    record
-    nil))
-
-(defn- expected-distributions
-  "Returns the expected distributions for comparing with the distributions in the UMM-C record"
-  [distributions]
-  (->> distributions
-       (keep convert-empty-record-to-nil)
-       seq))
-
 (defn- echo10-expected-distributions
   "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
   record. ECHO10 only has one Distribution, so here we just pick the first one."
   [distributions]
   (some-> distributions
           first
-          convert-empty-record-to-nil
+          su/convert-empty-record-to-nil
           (assoc :DistributionSize nil :DistributionMedia nil)
           vector))
 
@@ -166,7 +154,7 @@
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
-      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
+      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
@@ -216,11 +204,11 @@
   (-> umm-coll
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:AccessConstraints] dif-access-constraints)
-      (update-in [:Distributions] expected-distributions)
+      (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
       (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
-      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
+      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)))
@@ -237,7 +225,7 @@
   (-> processing-level
       (assoc :ProcessingLevelDescription nil)
       (assoc :Id (get dif10/product-levels (:Id processing-level)))
-      convert-empty-record-to-nil))
+      su/convert-empty-record-to-nil))
 
 (defn dif10-project
   [proj]
@@ -248,7 +236,7 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:AccessConstraints] dif-access-constraints)
-      (update-in [:Distributions] expected-distributions)
+      (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
@@ -256,7 +244,6 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 ;; ISO 19115-2
-
 (defn normalize-iso-19115-precisions
   "Returns seq of temporal extents all having the same precision as the first."
   [extents]
@@ -296,6 +283,25 @@
                                                   (f/unparse (f/formatters :date))
                                                   (f/parse (f/formatters :date)))))))))
 
+(defn- distribution->expected-iso
+  "Converts an UMM distribution to expected ISO19115 distribution. All the nil values are replaced
+  with empty string as we have to keep empty elements for ordering which is needed in ISO to group
+  things together."
+  [distribution]
+  (let [nil-to-empty-string (fn [s] (if s s ""))]
+    (-> distribution
+        (update-in [:DistributionFormat] nil-to-empty-string)
+        (update-in [:DistributionMedia] nil-to-empty-string)
+        (update-in [:DistributionSize] nil-to-empty-string))))
+
+(defn- expected-iso-19115-2-distributions
+  "Returns the expected ISO19115-2 distributions for comparison."
+  [distributions]
+  (some->> distributions
+           su/remove-empty-records
+           (map distribution->expected-iso)
+           vec))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
@@ -306,8 +312,8 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
-      (update-in [:ProcessingLevel] convert-empty-record-to-nil)
-      (assoc :Distributions nil)
+      (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
+      (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)))

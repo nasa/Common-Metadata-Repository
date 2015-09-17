@@ -467,3 +467,15 @@
   (for-all [s gen/string]
     (= s (-> s util/string->gzip-base64 util/gzip-base64->string))))
 
+(deftest truncate-nils
+  (is (= '(1 2 nil 3 false)
+         (util/truncate-nils [1 2 nil 3 false nil nil nil]))))
+
+(deftest map-longest
+  (is (= '(3 6 9 12 10 6 7)
+         (util/map-longest +
+                           0
+                           [1 2 3 4]
+                           [1 2 3 4 5]
+                           [1 2 3 4 5 6 7]))))
+

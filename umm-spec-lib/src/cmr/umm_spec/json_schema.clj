@@ -198,9 +198,15 @@
                    "date-time" (when x (dtp/parse-datetime x))
                    (str x))
 
-       "number"  (Double. x)
+       "number"  (cond (number? x) x
+                       (string? x) (when-not (str/blank? x)
+                                     (Double. x))
+                       :else (throw (Exception. (str "Unexpected type for number: " (pr-str x)))))
 
-       "integer" (Long. x)
+       "integer" (cond (integer? x) x
+                       (string? x) (when-not (str/blank? x)
+                                     (Long. x))
+                       :else (throw (Exception. (str "Unexpected type for integer: " (pr-str x)))))
 
        "boolean" (= "true" x)
 

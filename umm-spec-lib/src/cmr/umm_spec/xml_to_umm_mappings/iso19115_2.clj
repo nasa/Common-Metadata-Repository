@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2
   "Defines mappings from ISO19115-2 XML to UMM records"
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.json-schema :as js]))
@@ -49,6 +50,24 @@
 
 (def pc-attr-base-path
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
+
+(def distributor-xpath
+  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
+
+(def distributor-fees-xpath
+  (str distributor-xpath
+       "/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString"))
+
+(def distributor-format-xpath
+  (str distributor-xpath "/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString"))
+
+(def distributor-media-xpath
+  (str distributor-xpath
+       "/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString"))
+
+(def distributor-size-xpath
+  (str distributor-xpath
+       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
 
 (defn- char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
@@ -126,6 +145,22 @@
       {:ShortName short-name
        :LongName long-name})))
 
+(defn- parse-distributions
+  "Returns the distributions parsed from the given xml document."
+  [doc]
+  (let [medias (values-at doc distributor-media-xpath)
+        sizes (values-at doc distributor-size-xpath)
+        formats (values-at doc distributor-format-xpath)
+        fees (values-at doc distributor-fees-xpath)]
+    (util/map-longest (fn [media size format fee]
+                        (hash-map
+                          :DistributionMedia media
+                          :DistributionSize size
+                          :DistributionFormat format
+                          :Fees fee))
+                      ""
+                      medias sizes formats fees)))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -172,6 +207,7 @@
                        (char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
+     :Distributions (parse-distributions doc)
      :Platforms (parse-platforms doc)
      :Projects (parse-projects doc)
 
