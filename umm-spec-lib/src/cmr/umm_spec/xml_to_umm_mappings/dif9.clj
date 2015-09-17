@@ -2,6 +2,8 @@
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [camel-snake-kebab.core :as csk]
+            [cmr.common.util :as util]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn- parse-mbrs
@@ -63,7 +65,30 @@
                             :ParameterUnitsOfMeasure (value-of aa "Value[@type='ParameterUnitsOfMeasure']")
                             :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
-                            :UpdateDate (value-of aa "Value[@type='UpdateDate']")})})
+                            :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
+
+  :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
+                          (into {} (map (fn [x]
+                                          (if (keyword? x)
+                                            [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                            x))
+                                        [:Author
+                                         :Publication_Date
+                                         :Title
+                                         :Series
+                                         :Edition
+                                         :Volume
+                                         :Issue
+                                         :Report_Number
+                                         :Publication_Place
+                                         :Publisher
+                                         :Pages
+                                         [:ISBN (value-of pub-ref "ISBN")]
+                                         [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                         [:RelatedUrl
+                                          {:URLs (seq
+                                                   (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                         :Other_Reference_Details])))})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."
