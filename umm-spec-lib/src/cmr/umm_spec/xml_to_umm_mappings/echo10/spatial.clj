@@ -4,6 +4,8 @@
             [cmr.umm-spec.xml.parse :refer :all]))
 
 (defn umm-point-order
+  "ECHO polygon points are \"open\" and specified in clockwise order. Returns the sequence of points
+  reversed (counterclockwise) and with the first point appended to the end (closed)."
   [points]
   (let [ccw (vec (reverse points))]
     (conj ccw (first ccw))))
