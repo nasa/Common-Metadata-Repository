@@ -30,16 +30,12 @@
 
 ;; Verify that successful validation requests do not get an xml or json response body
 (deftest successful-validation-with-accept-header-test
-  (testing "json"
-    (let [concept (dc/collection-concept {})
-          response-map (select-keys (ingest/validate-concept concept {:accept-format :xml :raw? true})
-                                   [:status :body])]
-      (is (= {:status 200 :body ""} response-map))))
-  (testing "xml"
-    (let [concept (dc/collection-concept {})
-          response-map (select-keys (ingest/validate-concept concept {:accept-format :xml :raw? true})
-                                   [:status :body])]
-      (is (= {:status 200 :body ""} response-map)))))
+  (are [accept]
+       (let [concept (dc/collection-concept {})
+             response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
+                                       [:status :body])]
+         (= {:status 200 :body ""} response-map))
+       :json :xml))
 
 ;; Verify that failed validations with no accept or content-type header return xml
 (deftest failed-validation-without-headers-returns-xml
@@ -55,33 +51,43 @@
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
-   (assert-invalid coll-attributes field-path errors :echo10))
-  ([coll-attributes field-path errors metadata-format]
+   (assert-invalid coll-attributes field-path errors nil))
+  ([coll-attributes field-path errors options]
    (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
-                            {:format metadata-format :allow-failure? true})]
+                            (merge {:allow-failure? true} options))]
      (is (= {:status 400
              :errors [{:path field-path
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
 
+(defn assert-invalid-keywords
+  [coll-attributes field-path errors]
+  (assert-invalid coll-attributes field-path errors {:validate-keywords true}))
+
 (defn assert-valid
+  ([coll-attributes]
+   (assert-valid coll-attributes nil))
+  ([coll-attributes options]
+   (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
+         provider-id (get coll-attributes :provider-id "PROV1")
+         response (d/ingest provider-id collection options)]
+     (is (= {:status 200} (select-keys response [:status :errors]))))))
+
+(defn assert-valid-keywords
   [coll-attributes]
-  (let [collection (assoc (dc/collection coll-attributes) :native-id (:native-id coll-attributes))
-        provider-id (get coll-attributes :provider-id "PROV1")
-        response (d/ingest provider-id collection)]
-    (is (= {:status 200} (select-keys response [:status :errors])))))
+  (assert-valid coll-attributes {:validate-keywords true}))
 
 (defn assert-invalid-spatial
   ([coord-sys shapes errors]
-   (assert-invalid-spatial coord-sys shapes errors :echo10))
-  ([coord-sys shapes errors metadata-format]
+   (assert-invalid-spatial coord-sys shapes errors nil))
+  ([coord-sys shapes errors options]
    (let [shapes (map (partial umm-s/set-coordinate-system coord-sys) shapes)]
      (assert-invalid {:spatial-coverage (dc/spatial {:gsr coord-sys
                                                      :sr coord-sys
                                                      :geometries shapes})}
                      ["SpatialCoverage" "Geometries" 0]
                      errors
-                     metadata-format))))
+                     options))))
 
 (defn assert-valid-spatial
   [coord-sys shapes]
@@ -97,6 +103,53 @@
     (is (= {:status 409
             :errors errors}
            (select-keys response [:status :errors])))))
+
+(deftest collection-keyword-validation-test
+  ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
+
+  (testing "Keyword validation using validation endpoint"
+    (let [concept (dc/collection-concept {:platforms [(dc/platform {:short-name "foo"
+                                                                    :long-name "Airbus A340-600"})]})
+          response (ingest/validate-concept concept {:validate-keywords true})]
+      (is (= {:status 400
+              :errors [{:path ["Platforms" 0]
+                        :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
+                                      "were not a valid keyword combination.")]}]}
+             response))))
+
+  (testing "Platform keyword validation"
+    (testing "Invalid short name"
+      (assert-invalid-keywords
+        {:platforms [(dc/platform {:short-name "foo"
+                                   :long-name "Airbus A340-600"})]}
+        ["Platforms" 0]
+        ["Platform short name [foo] and long name [Airbus A340-600] were not a valid keyword combination."]))
+
+    (testing "Invalid long name"
+      (assert-invalid-keywords
+        {:platforms [(dc/platform {:short-name "DMSP 5B/F3"
+                                   :long-name "foo"})]}
+        ["Platforms" 0]
+        ["Platform short name [DMSP 5B/F3] and long name [foo] were not a valid keyword combination."]))
+
+    (testing "Invalid combination"
+      (assert-invalid-keywords
+        {:platforms [(dc/platform {:short-name "DMSP 5B/F3"
+                                   :long-name "Airbus A340-600"})]}
+        ["Platforms" 0]
+        ["Platform short name [DMSP 5B/F3] and long name [Airbus A340-600] were not a valid keyword combination."]))
+
+    (testing "Valid match"
+      (assert-valid-keywords
+        {:platforms [(dc/platform {:short-name "A340-600"
+                                   :long-name "Airbus A340-600"})]}))
+    (testing "Valid match - case insensitive"
+      (assert-valid-keywords
+        {:platforms [(dc/platform {:short-name "a340-600"
+                                   :long-name "aiRBus a340-600"})]}))
+
+    ))
+
 
 ;; This tests that UMM type validations are applied during collection ingest.
 ;; Thorough tests of UMM validations should go in cmr.umm.test.validation.core and related

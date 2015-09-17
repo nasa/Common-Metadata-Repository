@@ -23,6 +23,7 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
+;; TODO CMR-1422 change this to use the kms fetcher helper function
 (def kms-fields-to-match
   "A list of the fields that need to match when looking for a science keyword in KMS."
   [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3])

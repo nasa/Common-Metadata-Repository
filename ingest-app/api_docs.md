@@ -56,6 +56,17 @@ The revision id header allows specifying the [revision id](#revision-id) to use 
 
 The concept id header allows specifying the [concept id](#concept-id) to use when saving a concept. This should normally not be sent by clients. The CMR should normally generate the concept id. The header Concept-Id is an alias for Cmr-Concept-Id.
 
+#### <a name="validate-keywords-header"></a> Cmr-Validate-Keywords Header
+
+If this header is set to true then ingest will validate that collection keywords match [known keywords from GCMD KMS](http://gcmd.nasa.gov/learn/keyword_list.html). The following fields are validated.
+
+* Platforms - short name and long name
+* Instruments - short name and long name
+* Projects - short name and long name
+* Science Keywords - category, topic, term, variable level 1, variable level 2, variable level 3.
+
+Note that when multiple fields are present the combination of keywords are validated to match a known combination.
+
 #### <a name="user-id"></a> User-Id Header
 
 The user id header allows specifying the user-id to use when saving or deleting a collection concept. This header is currently ignored for granule concepts. If user-id header is not specified, user id is retrieved using the token supplied during the ingest.
@@ -185,7 +196,7 @@ An example concept id is C179460405-LPDAAC_ECS. The letter identifies the concep
 
 ### <a name="validate-collection"></a> Validate Collection
 
-Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
 ```
 curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 -d \
@@ -206,7 +217,7 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %
 
 ### <a name="create-update-collection"></a> Create / Update a Collection
 
-Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The metadata that is uploaded is validated for XML well-formedness, XML schema validation, and against UMM validation rules. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header).
 
 ```
 curl -i -XPUT -H "Content-type: application/echo10+xml" -H "Echo-Token: XXXX" %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 -d \

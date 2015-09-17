@@ -66,6 +66,13 @@
   (let [cache (cache/context->cache context kms-cache-key)]
     (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))
 
+
+(comment
+  (def context {:system (get-in user/system [:apps :indexer])})
+
+  (:platforms (get-gcmd-keywords-map context))
+  )
+
 (defn get-full-hierarchy-for-short-name
   "Returns the full hierarchy for a given short name. If the provided short-name cannot be found,
   nil will be returned."
@@ -79,12 +86,25 @@
   be case insensitive in the future."
   [gcmd-keywords-map keyword-scheme keyword-map fields-to-compare]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (let [keyword-map (util/remove-nil-keys keyword-map)
+  (let [prepare-for-compare (fn [m]
+                              (->> (select-keys m fields-to-compare)
+                                   util/remove-nil-keys
+                                   (util/map-values str/lower-case)))
+        comparison-map (prepare-for-compare keyword-map)
         keyword-values (vals (keyword-scheme gcmd-keywords-map))]
-    (first (filter (fn [gcmd-keyword]
-                     (= (select-keys keyword-map fields-to-compare)
-                        (select-keys gcmd-keyword fields-to-compare)))
-                   keyword-values))))
+    (first (filter #(= comparison-map (prepare-for-compare %)) keyword-values))))
+
+;; TODO add more helper functions for for projects and instruments
+
+(defn get-full-hierarchy-for-science-keyword
+  [gcmd-keywords-map keyword-map]
+  (get-full-hierarchy-for-keyword
+    gcmd-keywords-map :science-keywords keyword-map
+    [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]))
+
+(defn get-full-hierarchy-for-platform
+  [gcmd-keywords-map platform]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :platforms platform [:short-name :long-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because

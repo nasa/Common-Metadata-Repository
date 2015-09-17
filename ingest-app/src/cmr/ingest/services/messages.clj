@@ -25,3 +25,8 @@
 (defn invalid-parent-collection-for-validation
   [collection-validation-error]
   (str "The collection given for validating the granule was invalid: " collection-validation-error))
+
+(defn platform-not-matches-kms-keywords
+  [platform]
+  (format "Platform short name [%s] and long name [%s] were not a valid keyword combination."
+          (:short-name platform) (:long-name platform)))

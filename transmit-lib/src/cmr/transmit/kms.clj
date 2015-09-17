@@ -32,8 +32,11 @@
   "Maps each keyword scheme to the GCMD resource name"
   {:providers "providers/providers.csv"
    :platforms "platforms/platforms.csv"
+   :projects "projects/projects.csv"
    :instruments "instruments/instruments.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
+
+;; TODO add projects in more places
 
 (def keyword-scheme->field-names
   "Maps each keyword scheme to its subfield names."

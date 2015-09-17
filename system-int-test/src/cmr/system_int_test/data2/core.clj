@@ -45,20 +45,22 @@
   * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
   * :client-id - The client-id to use
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
-  Setting it to true will skip this check. Set it true when testing ingest failure cases."
+  Setting it to true will skip this check. Set it true when testing ingest failure cases.
+  * :validate-keywords - true or false to indicate if the validate keywords header should be sent
+  to enable keyword validation. Defaults to false."
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
    (let [{:keys [token client-id user-id]
           format-key :format} (merge {:format :echo10
                                       :token nil
-                                      :allow-failure? false
                                       :client-id nil
                                       :user-id nil}
                                      options)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token :client-id client-id :user-id user-id})
+                    {:token token :client-id client-id :user-id user-id
+                     :validate-keywords (:validate-keywords options)})
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -78,8 +80,7 @@
        response))))
 
 (defn ingest-concept-with-metadata-file
-  "Ingest the given concept with the metadata file. The metadata file has to be located under
-  dev-system/resources/data/... and referenced as 'data/...'"
+  "Ingest the given concept with the metadata file. The metadata file has to be on the classpath."
   [provider-id concept-type format-key metadata-file]
   (let [metadata (slurp (io/resource metadata-file))
         concept {:concept-type concept-type

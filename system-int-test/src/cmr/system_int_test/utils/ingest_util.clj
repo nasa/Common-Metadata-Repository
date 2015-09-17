@@ -193,10 +193,12 @@
    (ingest-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [token client-id user-id]} options
+         {:keys [token client-id user-id validate-keywords]} options
          accept-format (:accept-format options)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
+                                        ;; TODO document on ingest API this behavior and header
+                                        "Cmr-Validate-Keywords" validate-keywords
                                         "Echo-Token" token
                                         "User-Id" user-id
                                         "Client-Id" client-id})
@@ -256,12 +258,13 @@
    (validate-concept concept {}))
   ([concept options]
    (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
-         {:keys [client-id]} options
+         {:keys [client-id validate-keywords]} options
          accept-format (get options :accept-format :xml)
          ;; added to allow testing of the raw response
          raw? (get options :raw? false)
          headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
                                         "Cmr-Revision-id" revision-id
+                                        "Cmr-Validate-Keywords" validate-keywords
                                         "Client-Id" client-id})
          response (client/request
                     {:method :post
