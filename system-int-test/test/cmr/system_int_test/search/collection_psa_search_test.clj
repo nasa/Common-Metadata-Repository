@@ -1000,13 +1000,17 @@
 
 (deftest dif-extended-metadata-test
   (let [dif9-coll (d/ingest-concept-with-metadata-file
-                    "PROV1" :collection :dif
-                    "data/dif/sample_collection_with_extended_metadata.xml")
-        ;; TODO - add DIF10 sample
-        ; dif10-coll (d/ingest-concept-with-metadata-file
-        ;        "PROV1" :collection :dif10
-        ;        "data/dif10/sample_collection_with_extended_metadata.xml")
-        ]
+                    "data/dif/sample_collection_with_extended_metadata.xml"
+                    {:provider-id "PROV1"
+                     :concept-type :collection
+                     :format-key :dif
+                     :native-id "dif9-coll"})
+        dif10-coll (d/ingest-concept-with-metadata-file
+                    "data/dif10/sample_collection.xml"
+                    {:provider-id "PROV1"
+                     :concept-type :collection
+                     :format-key :dif10
+                     :native-id "dif10-coll"})]
     (index/wait-until-indexed)
 
     (testing "search for extended metadata fields"
@@ -1016,10 +1020,10 @@
           (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
         "By group"
-        [dif9-coll] {:group "gov.nasa.gsfc.gcmd"}
+        [dif9-coll dif10-coll] {:group "gov.nasa.gsfc.gcmd"}
 
         "By group - pattern"
-        [dif9-coll] {:group "*gcmd" :pattern true}
+        [dif9-coll dif10-coll] {:group "*gcmd" :pattern true}
 
         "By name - link_notification.contact"
         [dif9-coll] {:name "link_notification.contact"}
@@ -1028,10 +1032,10 @@
         [dif9-coll] {:name "metadata.extraction_date"}
 
         "By name - metadata.keyword_version"
-        [dif9-coll] {:name "metadata.keyword_version"}
+        [dif9-coll dif10-coll] {:name "metadata.keyword_version"}
 
         "By name - pattern"
-        [dif9-coll] {:name "meta??ta*" :pattern true}
+        [dif9-coll dif10-coll] {:name "meta??ta*" :pattern true}
 
          "By value - string"
         [dif9-coll] {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}
@@ -1041,5 +1045,5 @@
         ; [dif9-coll] {:name "metadata.keyword_version" :value 8.1 :type "float"}
 
         "By range - float"
-        [dif9-coll] {:name "metadata.keyword_version" :min_value 8.0 :type "float"}))))
+        [dif9-coll dif10-coll] {:name "metadata.keyword_version" :min_value 8.0 :type "float"}))))
 

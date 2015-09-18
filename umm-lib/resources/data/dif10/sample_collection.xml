@@ -117,4 +117,20 @@
     </Additional_Attributes>
     <Collection_Data_Type>SCIENCE_QUALITY</Collection_Data_Type>
     <Product_Flag>Not provided</Product_Flag>
+    <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>dif10.link_notification.contact</Name>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>dif10.metadata.extraction_date</Name>
+      <Value>2015-08-21 14:58:46</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.keyword_version</Name>
+      <Value>8.4</Value>
+    </Metadata>
+  </Extended_Metadata>
    </DIF>
