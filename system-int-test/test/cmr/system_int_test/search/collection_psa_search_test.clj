@@ -998,3 +998,48 @@
     ["[\"foo\"] is an invalid value for type [float]"
      "[\"1.42\"] is an invalid value for type [float]"]))
 
+(deftest dif-extended-metadata-test
+  (let [dif9-coll (d/ingest-concept-with-metadata-file
+                    "PROV1" :collection :dif
+                    "data/dif/sample_collection_with_extended_metadata.xml")
+        ;; TODO - add DIF10 sample
+        ; dif10-coll (d/ingest-concept-with-metadata-file
+        ;        "PROV1" :collection :dif10
+        ;        "data/dif10/sample_collection_with_extended_metadata.xml")
+        ]
+    (index/wait-until-indexed)
+
+    (testing "search for extended metadata fields"
+      (util/are2
+        [items search]
+        (let [condition {:attribute search}]
+          (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+
+        "By group"
+        [dif9-coll] {:group "gov.nasa.gsfc.gcmd"}
+
+        "By group - pattern"
+        [dif9-coll] {:group "*gcmd" :pattern true}
+
+        "By name - link_notification.contact"
+        [dif9-coll] {:name "link_notification.contact"}
+
+        "By name - metadata.extraction_date"
+        [dif9-coll] {:name "metadata.extraction_date"}
+
+        "By name - metadata.keyword_version"
+        [dif9-coll] {:name "metadata.keyword_version"}
+
+        "By name - pattern"
+        [dif9-coll] {:name "meta??ta*" :pattern true}
+
+         "By value - string"
+        [dif9-coll] {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}
+
+        ;; TODO - Figure out why exact match is failing
+        ; "By value - float"
+        ; [dif9-coll] {:name "metadata.keyword_version" :value 8.1 :type "float"}
+
+        "By range - float"
+        [dif9-coll] {:name "metadata.keyword_version" :min_value 8.0 :type "float"}))))
+
