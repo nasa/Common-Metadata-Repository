@@ -4,6 +4,7 @@
             [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [clojure.data :as data]
             [cmr.umm-spec.json-schema :as js]))
 
 (def md-data-id-base-xpath
@@ -81,6 +82,16 @@
              (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
                   (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
                   "/gmd:keyword/gco:CharacterString")))
+
+(defn- descriptive-keywords-type-not-equal
+  "Returns the descriptive keyword values for the given parent element for all keyword types excepting
+  those given"
+  [md-data-id-el keyword-types-to-ignore]
+  (let [keyword-types-to-ignore (set keyword-types-to-ignore)]
+    (flatten
+      (for [kw (select md-data-id-el "gmd:descriptiveKeywords/gmd:MD_Keywords")
+            :when (not (keyword-types-to-ignore (value-of kw "gmd:type/gmd:MD_KeywordTypeCode")))]
+        (values-at kw "gmd:keyword/gco:CharacterString")))))
 
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."
@@ -228,7 +239,8 @@
                                :Publisher (select-party "publisher" "/gmd:organisationName")
                                :ISBN (char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
-                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})}))
+                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
+     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

@@ -89,7 +89,9 @@
                              :PublicationPlace "publication place"}
                             {:DOI {:DOI "identifier"
                                    :Authority "authority"}}
-                            {:Title "some title"}]}))
+                            {:Title "some title"}]
+    :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+    :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -172,6 +174,7 @@
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
@@ -278,6 +281,7 @@
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
+      (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 ;; ISO 19115-2
@@ -382,6 +386,7 @@
       (assoc :Distributions nil)
       (assoc :Projects nil)
       (assoc :PublicationReferences nil)
+      (assoc :AncillaryKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -401,8 +406,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
     :RelatedUrls :DataDates :Organizations
-    :MetadataLineages :ScienceKeywords :SpatialInformation
-    :AncillaryKeywords :PaleoTemporalCoverage
+    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields
