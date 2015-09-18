@@ -3,7 +3,8 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
-            [cmr.umm-spec.xml.parse :refer :all]))
+            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]))
 
 (defn- not-not-provided
   "Returns x if x is not the DIF 10 placeholder \"Not provided\"."
@@ -71,6 +72,7 @@
                                              :DurationValue (value-of pdt "Duration_Value")
                                              :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
                                              :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})
+   :SpatialExtent (spatial/parse-spatial doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :DistributionSize (value-of dist "Distribution_Size")

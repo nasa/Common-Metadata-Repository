@@ -268,10 +268,28 @@
   ;; DIF 10 only has at most one campaign in Project Campaigns
   (update-in proj [:Campaigns] #(when (first %) [(first %)])))
 
+(defn trim-dif10-geometry
+  "Returns GeometryType record with a maximium of one value in the collections under each key."
+  [geom]
+  ;; The shape key sequence here must be in the same order as in the DIF 10 XML generation.
+  (let [shape-keys [:GPolygons :BoundingRectangles :Lines :Points]
+        found-shape (first (filter #(seq (get geom %)) shape-keys))
+        other-keys (remove #{found-shape} shape-keys)
+        geom (if found-shape
+               (update-in geom [found-shape] #(take 1 %))
+               geom)]
+    (reduce (fn [m k]
+              (assoc m k nil))
+            geom
+            other-keys)))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc :ZoneIdentifier nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
+      (update-in [:SpatialExtent] assoc :VerticalSpatialDomains nil)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)

@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
             [camel-snake-kebab.core :as csk]))
 
 (def platform-types
@@ -128,8 +129,7 @@
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
 
      [:Data_Set_Progress (:CollectionProgress c)]
-     [:Spatial_Coverage
-      [:Granule_Spatial_Representation "GEODETIC"]]
+     (spatial/spatial-element c)
      (for [skw (:SpatialKeywords c)]
        [:Location skw])
      (for [{:keys [ShortName LongName Campaigns StartDate EndDate]} (:Projects c)]
