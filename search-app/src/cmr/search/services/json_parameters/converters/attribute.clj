@@ -58,13 +58,9 @@
       (some? (:value condition))
       (qm/map->AttributeValueCondition condition)
 
-      ;; Attribute name search
-      (some? (:name condition))
-      (qm/map->AttributeNameCondition condition)
-
-      ;; Attribute group search
-      (some? (:group condition))
-      (qm/map->AttributeGroupCondition condition)
+      ;; Attribute name or group search
+      (some? (or (:name condition) (:group condition)))
+      (qm/map->AttributeNameAndGroupCondition condition)
 
       ;; Validation should have caught any other case
       :else

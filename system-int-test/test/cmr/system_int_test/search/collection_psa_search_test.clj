@@ -1045,5 +1045,8 @@
         ; [dif9-coll] {:name "metadata.keyword_version" :value 8.1 :type "float"}
 
         "By range - float"
-        [dif9-coll dif10-coll] {:name "metadata.keyword_version" :min_value 8.0 :type "float"}))))
+        [dif9-coll dif10-coll] {:name "metadata.keyword_version"
+                                :min_value 8.0
+                                :max_value 8.5
+                                :type "float"}))))
 

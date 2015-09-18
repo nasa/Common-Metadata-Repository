@@ -47,26 +47,26 @@
   (testing "dates"
     (testing "datetimes"
       (are [string value]
-           (= (qm/->AttributeValueCondition :datetime "alpha" nil value)
+           (= (qm/->AttributeValueCondition :datetime "alpha" nil value nil)
               (a/parse-value string))
            "datetime,alpha,2000-01-01T01:02:03.123Z" (t/date-time 2000 1 1 1 2 3 123)
            "datetime,alpha,2000-01-01T01:02:03Z" (t/date-time 2000 1 1 1 2 3)
            "datetime,alpha,2000-01-01T01:02:03" (t/date-time 2000 1 1 1 2 3)))
     (testing "times"
       (are [string value]
-           (= (qm/->AttributeValueCondition :time "alpha" nil value)
+           (= (qm/->AttributeValueCondition :time "alpha" nil value nil)
               (a/parse-value string))
            "time,alpha,01:02:03.123Z" (t/date-time 1970 1 1 1 2 3 123)
            "time,alpha,01:02:03Z" (t/date-time 1970 1 1 1 2 3)
            "time,alpha,01:02:03" (t/date-time 1970 1 1 1 2 3)))
     (testing "dates"
-      (is (= (qm/->AttributeValueCondition :date "alpha" nil (t/date-time 2000 1 1))
+      (is (= (qm/->AttributeValueCondition :date "alpha" nil (t/date-time 2000 1 1) nil)
              (a/parse-value "date,alpha,2000-01-01")))))
 
   (testing "strings"
     (testing "single value"
       (are [string type aname value]
-           (= (qm/->AttributeValueCondition type aname nil value)
+           (= (qm/->AttributeValueCondition type aname nil value nil)
               (a/parse-value string))
 
            "string,alpha,a" :string "alpha" "a"
@@ -83,11 +83,11 @@
 
 (deftest parameter->condition-test
   (testing "name condition"
-    (let [expected-cond (qm/map->AttributeNameCondition {:name "alpha"})]
+    (let [expected-cond (qm/map->AttributeNameAndGroupCondition {:name "alpha"})]
       (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["alpha"] {})))))
   (testing "single value condition"
-    (let [expected-cond (qm/->AttributeValueCondition :string "alpha" nil "a")]
+    (let [expected-cond (qm/->AttributeValueCondition :string "alpha" nil "a" nil)]
       (is (= (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])
              (p/parameter->condition :granule :attribute ["string,alpha,a"] {})))))
   (testing "single range condition"
@@ -102,7 +102,7 @@
   (testing "multiple conditions"
     (testing "and conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
-            expected-cond (gc/and-conds [(qm/->AttributeValueCondition :string "alpha" nil "a")
+            expected-cond (gc/and-conds [(qm/->AttributeValueCondition :string "alpha" nil "a" nil)
                                          (qm/->AttributeRangeCondition :string "alpha" nil "a" "b" false)])
             expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond
@@ -112,7 +112,7 @@
             "Multiple attributes should default to AND.")))
     (testing "or conditions"
       (let [strings ["string,alpha,a" "string,alpha,a,b"]
-            expected-cond (gc/or-conds [(qm/->AttributeValueCondition :string "alpha" nil "a")
+            expected-cond (gc/or-conds [(qm/->AttributeValueCondition :string "alpha" nil "a" nil)
                                         (qm/->AttributeRangeCondition :string "alpha" nil "a" "b" false)])
             expected-cond (gc/or-conds [expected-cond (qm/->CollectionQueryCondition expected-cond)])]
         (is (= expected-cond

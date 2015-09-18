@@ -85,26 +85,22 @@
   (date-range-condition->range-filter condition))
 
 (defn- name-and-group-condition
-  "Constructs a query condition based on the provided name and group. Name must be non-nil, but
-  group can be nil."
+  "Constructs a query condition based on the provided name and group. One of group or name
+  must be non-nil."
   ([attrib-name group]
    (name-and-group-condition attrib-name group false))
   ([attrib-name group pattern?]
-   (if group
-     (gc/and-conds
-       [(qm/string-condition :attributes.group group true pattern?)
-        (qm/string-condition :attributes.name attrib-name true pattern?)])
-     (qm/string-condition :attributes.name attrib-name true pattern?))))
+
+   (let [group-cond (when group (qm/string-condition :attributes.group group true pattern?))
+         name-cond (when attrib-name
+                     (qm/string-condition :attributes.name attrib-name true pattern?))]
+     (cond
+       (and group attrib-name) (gc/and-conds [group-cond name-cond])
+       attrib-name name-cond
+       :else group-cond))))
 
 (extend-protocol c2s/ComplexQueryToSimple
-  cmr.search.models.query.AttributeGroupCondition
-  (c2s/reduce-query-condition
-    [condition context]
-    (let [{:keys [group pattern?]} condition
-          group-cond (qm/string-condition :attributes.group group true pattern?)]
-      (qm/nested-condition :attributes group-cond)))
-
-  cmr.search.models.query.AttributeNameCondition
+  cmr.search.models.query.AttributeNameAndGroupCondition
   (c2s/reduce-query-condition
     [condition context]
     (let [{:keys [name group pattern?]} condition

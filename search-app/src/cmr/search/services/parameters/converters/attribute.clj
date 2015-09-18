@@ -10,7 +10,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
-            AttributeNameCondition
+            AttributeNameAndGroupCondition
             AttributeValueCondition
             AttributeRangeCondition]
            clojure.lang.ExceptionInfo))
@@ -30,7 +30,7 @@
   [parts]
   (let [attr-name (first parts)]
     (if attr-name
-      (qm/map->AttributeNameCondition {:name attr-name})
+      (qm/map->AttributeNameAndGroupCondition {:name attr-name})
       {:errors [(msg/invalid-name-msg attr-name)]})))
 
 (defmethod parts->condition 3
@@ -139,7 +139,7 @@
   (fn [condition exclusive?]
     (type condition)))
 
-(defmethod parse-component-type AttributeNameCondition
+(defmethod parse-component-type AttributeNameAndGroupCondition
   [condition _]
   condition)
 

@@ -6,12 +6,12 @@
             [cmr.search.models.group-query-conditions :as gc]))
 
 (defn- attrib-name-condition
-  "Returns the AttributeNameCondition for the given attrib-name"
+  "Returns the AttributeNameAndGroupCondition for the given attrib-name"
   ([attrib-name]
    (attrib-name-condition attrib-name nil))
   ([attrib-name pattern?]
-   (qm/map->AttributeNameCondition {:name attrib-name
-                                    :pattern? pattern?})))
+   (qm/map->AttributeNameAndGroupCondition {:name attrib-name
+                                            :pattern? pattern?})))
 
 (defmulti attrib-name-element->condition
   "Returns the query condition of the given additional attribute name element"
