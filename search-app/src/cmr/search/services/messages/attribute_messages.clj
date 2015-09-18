@@ -45,6 +45,9 @@
        "\"attribute[][name]=name&attribute[][type]=type&attribute[value]=value\" or current"
        "format \"type,name,value\", not both."))
 
+(def missing-name-and-group
+  "One of 'group' or 'name' must be provided.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Internal error messages
 

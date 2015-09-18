@@ -17,6 +17,15 @@
    :int int
    :string str})
 
+(defn name-and-group-validation
+  "Validates that one of name or group is present in the condition. Returns the condition so that
+  the validation can be chained with other calls. Sets errors on condition if validation fails."
+  [{:keys [name group] :as condition}]
+  (if (and (nil? name) (nil? group))
+    (update-in condition [:errors]
+               conj am/missing-name-and-group)
+    condition))
+
 (defn- validate-attribute-condition
   "Custom validation to validate an additional attribute condition. Throws a bad request error if
   validation fails. Returns the condition to be chained in other calls."
@@ -24,6 +33,7 @@
   (let [type (keyword (:type condition))
         parser-fn (attribute-type->parser-fn type)
         condition (-> condition
+                      name-and-group-validation
                       (p-attr/parse-field :value parser-fn type)
                       (p-attr/parse-field :min-value parser-fn type)
                       (p-attr/parse-field :max-value parser-fn type))

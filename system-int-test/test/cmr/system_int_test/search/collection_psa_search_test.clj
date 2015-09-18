@@ -220,6 +220,9 @@
            ;; Exact value
            [coll1] {:type "string" :name "alpha" :value "ab"}
 
+           ;; Searching by type without a value
+           [coll1 coll2] {:type "string" :name "bravo"}
+
            ;; Test exclude boundary
            [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"
                     :exclude_boundary false}
@@ -992,10 +995,12 @@
      "/condition/attribute object has missing required properties ([\"name\",\"type\",\"value\"])"
      "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"]
 
+    "One of group or name is required"
+    {:pattern true}
+    ["One of 'group' or 'name' must be provided."]
+
     "Multiple errors can be returned"
-    {:type "string" :group "g" :name "a*" :value "b" :exclude_boundary true :pattern true}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\",\"value\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"pattern\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"type\",\"value\"]"]))
+    {:type "float" :name "B" :min_value "1.42" :max_value "foo"}
+    ["[\"foo\"] is an invalid value for type [float]"
+     "[\"1.42\"] is an invalid value for type [float]"]))
 
