@@ -14,7 +14,7 @@
 
 (defn invalid-value-msg
   [type value]
-  (format "[%s] is an invalid value for type [%s]" (str value) (name type)))
+  (format "[%s] is an invalid value for type [%s]" (pr-str value) (name type)))
 
 (defn invalid-name-msg
   [n]
@@ -45,8 +45,13 @@
        "\"attribute[][name]=name&attribute[][type]=type&attribute[value]=value\" or current"
        "format \"type,name,value\", not both."))
 
+(def missing-name-and-group
+  "One of 'group' or 'name' must be provided.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Internal error messages
 
 (defn expected-map-or-str-parameter-msg
   [value]
   (str "Expcected attribute parameters [" value "] to be a map or string"))
+

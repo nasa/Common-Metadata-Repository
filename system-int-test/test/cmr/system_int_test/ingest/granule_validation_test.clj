@@ -26,8 +26,8 @@
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"}))
 
   (d/ingest "PROV1" (dc/collection {:product-specific-attributes
-                                    [(dc/psa "bool" :boolean true)
-                                     (dc/psa "bool" :boolean true)]}) :echo10)
+                                    [(dc/psa {:name "bool" :data-type :boolean :value true})
+                                     (dc/psa {:name "bool" :data-type :boolean :value true})]}))
 
   )
 

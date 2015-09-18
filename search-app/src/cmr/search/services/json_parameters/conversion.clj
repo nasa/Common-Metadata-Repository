@@ -49,6 +49,9 @@
    :temporal :temporal
    :updated-since :updated-since
    :science-keywords :nested-condition
+   :additional-attribute-name :additional-attribute
+   :additional-attribute-value :additional-attribute
+   :additional-attribute-range :additional-attribute
    :tag :tag
 
    ;; query constructs

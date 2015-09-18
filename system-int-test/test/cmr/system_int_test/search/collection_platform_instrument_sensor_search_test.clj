@@ -31,9 +31,10 @@
         coll8 (d/ingest "PROV2" (dc/collection {}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
         ;; found in KMS with a category of "Earth Observation Satellites"
-        coll9 (d/ingest-concept-with-metadata-file
-                "PROV1" :collection :iso-smap
-                "data/iso_smap/sample_smap_iso_collection.xml")]
+        coll9 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :format-key :iso-smap})]
 
     (index/wait-until-indexed)
 
@@ -130,9 +131,10 @@
         coll8 (d/ingest "PROV2" (dc/collection {:platforms [p7]}))
         coll9 (d/ingest "PROV2" (dc/collection {}))
         ;; Added to test SMAP ISO platform and instrument support
-        coll10 (d/ingest-concept-with-metadata-file
-                 "PROV1" :collection :iso-smap
-                 "data/iso_smap/sample_smap_iso_collection.xml")]
+        coll10 (d/ingest-concept-with-metadata-file "data/iso_smap/sample_smap_iso_collection.xml"
+                                                    {:provider-id "PROV1"
+                                                     :concept-type :collection
+                                                     :format-key :iso-smap})]
 
     (index/wait-until-indexed)
 

@@ -98,10 +98,10 @@
 
 (defmethod add-collection-attributes ["LPDAAC_ECS" "AST_L1A"]
   [collection]
-  (let [psa1 (dc/psa "TIR_ObservationMode" :string)
-        psa2 (dc/psa "SWIR_ObservationMode" :string)
-        psa3 (dc/psa "VNIR1_ObservationMode" :string)
-        psa4 (dc/psa "VNIR2_ObservationMode" :string)]
+  (let [psa1 (dc/psa {:name "TIR_ObservationMode" :data-type :string})
+        psa2 (dc/psa {:name "SWIR_ObservationMode" :data-type :string})
+        psa3 (dc/psa {:name "VNIR1_ObservationMode" :data-type :string})
+        psa4 (dc/psa {:name "VNIR2_ObservationMode" :data-type :string})]
               (assoc collection
                      :product-specific-attributes [psa1 psa2 psa3 psa4])))
 

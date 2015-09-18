@@ -336,27 +336,61 @@
   "A list of valid additional attribute search types"
   [:float :int :string :date :time :datetime])
 
-(defrecord AttributeNameCondition
+;; Condition for searching against either an additional attribute name or group. One of name or
+;; group must be present.
+(defrecord AttributeNameAndGroupCondition
   [
+   ;; Optional - The name of the additional attribute being searched against.
    name
+
+   ;; Optional - UMM Group field. In DIF9 and DIF10 metadata this is generally a namespace string.
+   group
+
+   ;; Optional - Performs pattern search on both name and group fields. Nil defaults to false.
    pattern?
    ])
 
+;; Condition for searching against a given additional attribute for an exact value.
 (defrecord AttributeValueCondition
   [
+   ;; Required - The type of the attribute being searched against (float, datetime, string, etc)
    type
+
+   ;; Required - The name of the additional attribute being searched against.
    name
+
+   ;; Optional - UMM Group field. In DIF9 and DIF10 metadata this is generally a namespace string.
+   group
+
+   ;; Required - An exact value to search against.
    value
+
+   ;; Optional - Performs pattern search on the value field. Nil defaults to false.
    pattern?
    ])
 
+;; Condition for searching against a given additional attribute with a value within the given range.
+;; One of min-value or max-value must be present.
 (defrecord AttributeRangeCondition
   [
+   ;; Required - The type of the attribute being searched against (float, datetime, string, etc)
    type
+
+   ;; Required - The name of the additional attribute being searched against.
    name
+
+   ;; Optional - UMM Group field. In DIF9 and DIF10 metadata this is generally a namespace string.
+   group
+
+   ;; Optional - Search for values for an attribute which are greater than the min-value.
    min-value
+
+   ;; Optional - Search for values for an attribute which are less than the max-value.
    max-value
-   exclusive? ;; if true, exclude the boundary values
+
+   ;; Optional - If set to true the search is performed with < max-value and > min-value, otherwise
+   ;; <= max-value and >= min-value are used. Nil defaults to false.
+   exclusive?
    ])
 
 (def default-sort-keys
@@ -423,8 +457,13 @@
 
 (defn string-range-condition
   "Create a string range condition."
-  [field start stop]
-  (map->StringRangeCondition {:field field :start-value start :end-value stop}))
+  ([field start stop]
+   (string-range-condition field start stop false))
+  ([field start stop exclusive?]
+  (map->StringRangeCondition {:field field
+                              :start-value start
+                              :end-value stop
+                              :exclusive? exclusive?})))
 
 (defn date-range-condition
   "Creates a DateRangeCondition."
@@ -531,7 +570,7 @@
   CollectionQueryCondition
   MatchAllCondition
   MatchNoneCondition
-  AttributeNameCondition
+  AttributeNameAndGroupCondition
   AttributeValueCondition
   AttributeRangeCondition
   RelatedItemQueryCondition)

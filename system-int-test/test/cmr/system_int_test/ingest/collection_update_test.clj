@@ -13,15 +13,15 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest collection-update-additional-attributes-general-test
-  (let [a1 (dc/psa "string" :string)
-        a2 (dc/psa "boolean" :boolean)
-        a3 (dc/psa "int" :int 5)
-        a4 (dc/psa "float" :float 1.0 10.0)
-        a5 (dc/psa "datetime" :datetime)
-        a6 (dc/psa "date" :date)
-        a7 (dc/psa "time" :time)
-        a8 (dc/psa "dts" :datetime-string)
-        a9 (dc/psa "moo" :string)
+  (let [a1 (dc/psa {:name "string" :data-type :string})
+        a2 (dc/psa {:name "boolean" :data-type :boolean})
+        a3 (dc/psa {:name "int" :data-type :int :value 5})
+        a4 (dc/psa {:name "float" :data-type :float :min-value 1.0 :max-value 10.0})
+        a5 (dc/psa {:name "datetime" :data-type :datetime})
+        a6 (dc/psa {:name "date" :data-type :date})
+        a7 (dc/psa {:name "time" :data-type :time})
+        a8 (dc/psa {:name "dts" :data-type :datetime-string})
+        a9 (dc/psa {:name "moo" :data-type :string})
 
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
@@ -66,28 +66,29 @@
         [a1 a2 a3 a4 a5 a6 a7 a8 a9]
 
         "Add an additional attribute is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (dc/psa "alpha" :int)]
+        [a1 a2 a3 a4 a5 a6 a7 a8 a9 (dc/psa {:name "alpha" :data-type :int})]
 
         "Removing an additional attribute that is not referenced by any granule is OK."
         [a1 a2 a3 a4 a5 a6 a7 a8]
 
         "Changing the type of an additional attribute that is not referenced by any granule is OK."
-        [a1 a2 a3 a4 a5 a6 a7 a8 (dc/psa "moo" :int)]
+        [a1 a2 a3 a4 a5 a6 a7 a8 (dc/psa {:name "moo" :data-type :int})]
 
         "Changing the value of an additional attribute is OK."
-        [a1 a2 (dc/psa "int" :int 10) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (dc/psa {:name "int" :data-type :int :value 10}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute value to a range is OK."
-        [a1 a2 (dc/psa "int" :int 1 10) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (dc/psa {:name "int" :data-type :int :min-value 1 :max-value 10}) a4 a5 a6 a7 a8 a9]
 
         "Removing the value/range of an additional attribute is OK."
-        [a1 a2 (dc/psa "int" :int) a4 a5 a6 a7 a8 a9]
+        [a1 a2 (dc/psa {:name "int" :data-type :int}) a4 a5 a6 a7 a8 a9]
 
         "Change additional attribute range to a value is OK."
-        [a1 a2 a3 (dc/psa "float" :float 1.0) a5 a6 a7 a8 a9]
+        [a1 a2 a3 (dc/psa {:name "float" :data-type :float :value 1.0}) a5 a6 a7 a8 a9]
 
         "Extending additional attribute range is OK."
-        [a1 a2 a3 (dc/psa "float" :float 0.0 99.0) a5 a6 a7 a8 a9]))
+        [a1 a2 a3 (dc/psa {:name "float" :data-type :float :min-value 0.0 :max-value 99.0})
+         a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
       (util/are2
@@ -104,7 +105,7 @@
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."]
 
         "Multiple validation errors."
-        [(dc/psa "float" :float 5.0 10.0)]
+        [(dc/psa {:name "float" :data-type :float :min-value 5.0 :max-value 10.0})]
         ["Collection additional attribute [string] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [boolean] is referenced by existing granules, cannot be removed. Found 1 granules."
          "Collection additional attribute [int] is referenced by existing granules, cannot be removed. Found 1 granules."
@@ -115,7 +116,7 @@
          "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range. Found 1 granules."]
 
         "Changing an additional attribute type that is referenced by its granules is invalid."
-        [(dc/psa "string" :int) a2 a3 a4 a5 a6 a7 a8 a9]
+        [(dc/psa {:name "string" :data-type :int}) a2 a3 a4 a5 a6 a7 a8 a9]
         ["Collection additional attribute [string] was of DataType [STRING], cannot be changed to [INT]. Found 1 granules."]))
 
     (testing "Delete the existing collection, then re-create it with any additional attributes is OK."
@@ -128,7 +129,7 @@
         (is (= [200 nil] [status errors]))))))
 
 (deftest collection-update-additional-attributes-int-range-test
-  (let [a1 (dc/psa "int" :int 1 10)
+  (let [a1 (dc/psa {:name "int" :data-type :int :min-value 1 :max-value 10})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1]}))
@@ -144,7 +145,10 @@
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "int" :int range)]}))
+                                    :product-specific-attributes [(dc/psa {:name "int"
+                                                                           :data-type :int
+                                                                           :min-value (first range)
+                                                                           :max-value (second range)})]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -163,7 +167,10 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "int" :int range)]})
+                                    :product-specific-attributes [(dc/psa {:name "int"
+                                                                           :data-type :int
+                                                                           :min-value (first range)
+                                                                           :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
@@ -176,7 +183,7 @@
         "invalid min & max" [3 4] 2))))
 
 (deftest collection-update-additional-attributes-float-range-test
-  (let [a1 (dc/psa "float" :float -10.0 10.0)
+  (let [a1 (dc/psa {:name "float" :data-type :float :min-value -10.0 :max-value 10.0})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1]}))
@@ -192,7 +199,10 @@
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "float" :float range)]}))
+                                    :product-specific-attributes [(dc/psa {:name "float"
+                                                                           :data-type :float
+                                                                           :min-value (first range)
+                                                                           :max-value (second range)})]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -210,7 +220,10 @@
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
-                                    :product-specific-attributes [(apply dc/psa "float" :float range)]})
+                                    :product-specific-attributes [(dc/psa {:name "float"
+                                                                           :data-type :float
+                                                                           :min-value (first range)
+                                                                           :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
@@ -226,7 +239,9 @@
 
 (deftest collection-update-additional-attributes-datetime-range-test
   (let [parse-fn (partial psa/parse-value :datetime)
-        a1 (dc/psa "datetime" :datetime (parse-fn "2012-02-01T01:02:03Z") (parse-fn "2012-11-01T01:02:03Z"))
+        a1 (dc/psa {:name "datetime" :data-type :datetime
+                    :min-value (parse-fn "2012-02-01T01:02:03Z")
+                    :max-value (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1]}))
@@ -243,7 +258,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]}))
+                                    [(dc/psa {:name "datetime" :data-type :datetime
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -262,7 +279,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "datetime" :datetime (map parse-fn range))]})
+                                    [(dc/psa {:name "datetime" :data-type :datetime
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
@@ -276,7 +295,9 @@
 
 (deftest collection-update-additional-attributes-date-range-test
   (let [parse-fn (partial psa/parse-value :date)
-        a1 (dc/psa "date" :date (parse-fn "2012-02-02Z") (parse-fn "2012-11-02Z"))
+        a1 (dc/psa {:name "date" :data-type :date
+                    :min-value (parse-fn "2012-02-02Z")
+                    :max-value (parse-fn "2012-11-02Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1]}))
@@ -293,7 +314,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "date" :date (map parse-fn range))]}))
+                                    [(dc/psa {:name "date" :data-type :date
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -312,7 +335,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "date" :date (map parse-fn range))]})
+                                    [(dc/psa {:name "date" :data-type :date
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]
@@ -326,7 +351,8 @@
 
 (deftest collection-update-additional-attributes-time-range-test
   (let [parse-fn (partial psa/parse-value :time)
-        a1 (dc/psa "time" :time (parse-fn "01:02:03Z") (parse-fn "11:02:03Z"))
+        a1 (dc/psa {:name "time" :data-type :time :min-value (parse-fn "01:02:03Z")
+                    :max-value (parse-fn "11:02:03Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
                                   :product-specific-attributes [a1]}))
@@ -343,7 +369,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "time" :time (map parse-fn range))]}))
+                                    [(dc/psa {:name "time" :data-type :time
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
@@ -362,7 +390,9 @@
                                  (dc/collection
                                    {:entry-title "parent-collection"
                                     :product-specific-attributes
-                                    [(apply dc/psa "time" :time (map parse-fn range))]})
+                                    [(dc/psa {:name "time" :data-type :time
+                                              :min-value (parse-fn (first range))
+                                              :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
           (= [400 [expected-error]]

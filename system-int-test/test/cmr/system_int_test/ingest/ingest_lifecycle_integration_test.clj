@@ -110,7 +110,10 @@
       (let [example-record expected-conversion/example-record
             umm-json (umm-spec/generate-metadata :collection :umm-json example-record)
             metadata (:body (ingest/translate-metadata :collection :umm-json umm-json :iso19115))
-            coll (d/ingest-concept-with-metadata "PROV1" :collection :iso19115 metadata)]
+            coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
+                                                  :concept-type :collection
+                                                  :format-key :iso19115
+                                                  :metadata metadata})]
         (index/wait-until-indexed)
         ;; parameter queries
          (are [items params]
