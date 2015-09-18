@@ -448,7 +448,7 @@
       "description": "This class specifies the name of a place on Earth, a location within the Earth, a vertical location, or a location outside of Earth.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
       },
       "minItems": 1
     },

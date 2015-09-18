@@ -16,82 +16,82 @@
 (def example-record
   "An example record with fields supported by most formats."
   (js/coerce
-   {:Platforms [{:ShortName "Platform 1"
-                 :LongName "Example Platform Long Name 1"
-                 :Type "Aircraft"
-                 :Characteristics [{:Name "OrbitalPeriod"
-                                    :Description "Orbital period in decimal minutes."
-                                    :DataType "float"
-                                    :Unit "Minutes"
-                                    :Value "96.7"}]
-                 :Instruments [{:ShortName "An Instrument"
-                                :LongName "The Full Name of An Instrument v123.4"
-                                :Technique "Two cans and a string"
-                                :NumberOfSensors 1
-                                :OperationalModes ["on" "off"]
-                                :Characteristics [{:Name "Signal to Noise Ratio"
-                                                   :Description "Is that necessary?"
-                                                   :DataType "float"
-                                                   :Unit "dB"
-                                                   :Value "10"}]
-                                :Sensors [{:ShortName "ABC"
-                                           :LongName "Long Range Sensor"
-                                           :Characteristics [{:Name "Signal to Noise Ratio"
-                                                              :Description "Is that necessary?"
-                                                              :DataType "float"
-                                                              :Unit "dB"
-                                                              :Value "10"}]
-                                           :Technique "Drunken Fist"}]}]}]
-    :TemporalExtents [{:TemporalRangeType "temp range"
-                       :PrecisionOfSeconds 3
-                       :EndsAtPresentFlag false
-                       :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
-                                         :EndingDateTime (t/date-time 2001)}
-                                        {:BeginningDateTime (t/date-time 2002)
-                                         :EndingDateTime (t/date-time 2003)}]}]
-    :ProcessingLevel {:Id "3"
-                      :ProcessingLevelDescription "Processing level description"}
-    :RelatedUrls [{:URLs ["http://google.com"]}]
-    :Organizations [{:Role "CUSTODIAN"
-                     :Party {:OrganizationName {:ShortName "custodian"}}}]
-    :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
-    :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
-                    :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
-                                              :Geometry {:CoordinateSystem "GEODETIC"
-                                                         :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
-    :AccessConstraints {:Description "Access constraints"
-                        :Value "0"}
-    :UseConstraints "Use constraints"
-    :EntryId "short_V1"
-    :EntryTitle "The entry title V5"
-    :Version "V5"
-    :DataDates [{:Date (t/date-time 2012)
-                 :Type "CREATE"}]
-    :Abstract "A very abstract collection"
-    :DataLanguage "English"
-    :Projects [{:ShortName "project short_name"}]
-    :Quality "Pretty good quality"
-    :PublicationReferences [{:PublicationDate (t/date-time 2015)
-                             :OtherReferenceDetails "Other reference details"
-                             :Series "series"
-                             :Title "title"
-                             :DOI {:DOI "doi:xyz"
-                                   :Authority "DOI"}
-                             :Pages "100"
-                             :Edition "edition"
-                             :ReportNumber "25"
-                             :Volume "volume"
-                             :Publisher "publisher"
-                             :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
-                             :ISBN "ISBN"
-                             :Author "author"
-                             :Issue "issue"
-                             :PublicationPlace "publication place"}
-                            {:DOI {:DOI "identifier"
-                                   :Authority "authority"}}
-                            {:Title "some title"}]
-    :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
-    :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
+    {:Platforms [{:ShortName "Platform 1"
+                  :LongName "Example Platform Long Name 1"
+                  :Type "Aircraft"
+                  :Characteristics [{:Name "OrbitalPeriod"
+                                     :Description "Orbital period in decimal minutes."
+                                     :DataType "float"
+                                     :Unit "Minutes"
+                                     :Value "96.7"}]
+                  :Instruments [{:ShortName "An Instrument"
+                                 :LongName "The Full Name of An Instrument v123.4"
+                                 :Technique "Two cans and a string"
+                                 :NumberOfSensors 1
+                                 :OperationalModes ["on" "off"]
+                                 :Characteristics [{:Name "Signal to Noise Ratio"
+                                                    :Description "Is that necessary?"
+                                                    :DataType "float"
+                                                    :Unit "dB"
+                                                    :Value "10"}]
+                                 :Sensors [{:ShortName "ABC"
+                                            :LongName "Long Range Sensor"
+                                            :Characteristics [{:Name "Signal to Noise Ratio"
+                                                               :Description "Is that necessary?"
+                                                               :DataType "float"
+                                                               :Unit "dB"
+                                                               :Value "10"}]
+                                            :Technique "Drunken Fist"}]}]}]
+     :TemporalExtents [{:TemporalRangeType "temp range"
+                        :PrecisionOfSeconds 3
+                        :EndsAtPresentFlag false
+                        :RangeDateTimes [{:BeginningDateTime (t/date-time 2000)
+                                          :EndingDateTime (t/date-time 2001)}
+                                         {:BeginningDateTime (t/date-time 2002)
+                                          :EndingDateTime (t/date-time 2003)}]}]
+     :ProcessingLevel {:Id "3"
+                       :ProcessingLevelDescription "Processing level description"}
+     :RelatedUrls [{:URLs ["http://google.com"]}]
+     :Organizations [{:Role "CUSTODIAN"
+                      :Party {:OrganizationName {:ShortName "custodian"}}}]
+     :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
+     :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
+                     :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
+                                               :Geometry {:CoordinateSystem "GEODETIC"
+                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
+     :AccessConstraints {:Description "Access constraints"
+                         :Value "0"}
+     :UseConstraints "Use constraints"
+     :EntryId "short_V1"
+     :EntryTitle "The entry title V5"
+     :Version "V5"
+     :DataDates [{:Date (t/date-time 2012)
+                  :Type "CREATE"}]
+     :Abstract "A very abstract collection"
+     :DataLanguage "English"
+     :Projects [{:ShortName "project short_name"}]
+     :Quality "Pretty good quality"
+     :PublicationReferences [{:PublicationDate (t/date-time 2015)
+                              :OtherReferenceDetails "Other reference details"
+                              :Series "series"
+                              :Title "title"
+                              :DOI {:DOI "doi:xyz"
+                                    :Authority "DOI"}
+                              :Pages "100"
+                              :Edition "edition"
+                              :ReportNumber "25"
+                              :Volume "volume"
+                              :Publisher "publisher"
+                              :RelatedUrl {:URLs ["www.foo.com" "www.shoo.com"]}
+                              :ISBN "ISBN"
+                              :Author "author"
+                              :Issue "issue"
+                              :PublicationPlace "publication place"}
+                             {:DOI {:DOI "identifier"
+                                    :Authority "authority"}}
+                             {:Title "some title"}]
+     :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
+     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -332,8 +332,7 @@
   (let [nil-to-empty-string (fn [s] (if s s ""))]
     (-> distribution
         (update-in [:DistributionFormat] nil-to-empty-string)
-        (update-in [:DistributionMedia] nil-to-empty-string)
-        (update-in [:DistributionSize] nil-to-empty-string))))
+        (update-in [:DistributionMedia] nil-to-empty-string))))
 
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."

@@ -522,7 +522,9 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GPolygonType)
 
-;; The boundary representing the outer ring of the GPolygon.
+;; A boundary is set of points connected by straight lines representing a polygon on the earth. It
+;; takes a minimum of three points to make a boundary. Points must be specified in counter-clockwise
+;; order and closed (the first and last vertices are the same).
 (defrecord BoundaryType
   [
    Points
