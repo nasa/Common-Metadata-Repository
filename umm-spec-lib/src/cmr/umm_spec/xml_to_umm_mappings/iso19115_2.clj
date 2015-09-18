@@ -86,20 +86,12 @@
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
-  [md-data-id-el keyword-types]
-  ;; This could have been done using xpath like this:
-  ;; (values-at md-data-id-el
-  ;;            (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
-  ;;                 "[not(gmd:type) or "
-  ;;                 (str/join " and "
-  ;;                           (map #(format "gmd:type/gmd:MD_KeywordTypeCode/@codeListValue!='%s'" %)
-  ;;                                keyword-types)) "]" "/gmd:keyword/gco:CharacterString")))
-  ;;Simple XPATH doesn't seem to support != and not() (not sure about this one)
-  (sort (first (data/diff
-    (set (values-at md-data-id-el (str "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")))
-    (set (mapcat (partial descriptive-keywords md-data-id-el) keyword-types))))))
-
-
+  [md-data-id-el keyword-types-to-ignore]
+  (let [keyword-types-to-ignore (set keyword-types-to-ignore)]
+    (flatten
+      (for [kw (select md-data-id-el "gmd:descriptiveKeywords/gmd:MD_Keywords")
+            :when (not (keyword-types-to-ignore (value-of kw "gmd:type/gmd:MD_KeywordTypeCode")))]
+        (values-at kw "gmd:keyword/gco:CharacterString")))))
 
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."

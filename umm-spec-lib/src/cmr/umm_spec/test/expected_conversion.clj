@@ -281,6 +281,7 @@
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
+      (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 ;; ISO 19115-2
@@ -357,8 +358,7 @@
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] iso-19115-2-publication-reference)
-      (update-in [:AncillaryKeywords] (fn [aks] (seq (sort (set aks)))))))
+      (update-in [:PublicationReferences] iso-19115-2-publication-reference)))
 
 ;; ISO-SMAP
 
