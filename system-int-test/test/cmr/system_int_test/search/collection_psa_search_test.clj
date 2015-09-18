@@ -212,9 +212,7 @@
            [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ac"}
            [coll1] {:type "string" :name "alpha" :min_value "ab" :max_value "ac"}
            [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"}
-           [coll1 coll2] {:type "string" :name "bravo" :min_value "bc" :max_value nil}
            [coll1 coll2] {:type "string" :name "bravo" :min_value "bc"}
-           [coll1 coll2] {:type "string" :name "bravo" :min_value nil :max_value "bg"}
            [coll1 coll2] {:type "string" :name "bravo" :max_value "bg"}
 
            ;; Exact value
@@ -325,9 +323,7 @@
            [coll1] {:type "float" :name "alpha" :min_value 9.2 :max_value 11}
            [coll1] {:type "float" :name "alpha" :min_value 10.0 :max_value 10.6}
            [coll1] {:type "float" :name "alpha" :min_value 9.2 :max_value 10.0}
-           [coll1 coll2] {:type "float" :name "bravo" :min_value -120 :max_value nil}
            [coll1 coll2] {:type "float" :name "bravo" :min_value -120}
-           [coll1 coll2] {:type "float" :name "bravo" :min_value nil :max_value 13.6}
            [coll1 coll2] {:type "float" :name "bravo" :max_value 13.6}
            [coll2] {:type "float" :name "charlie" :min_value 44 :max_value 45.1}
 
@@ -429,9 +425,7 @@
            [coll1] {:type "int" :name "alpha" :min_value 9 :max_value 11}
            [coll1] {:type "int" :name "alpha" :min_value 10 :max_value 11}
            [coll1] {:type "int" :name "alpha" :min_value 9 :max_value 10}
-           [coll1 coll2] {:type "int" :name "bravo" :min_value -120 :max_value nil}
            [coll1 coll2] {:type "int" :name "bravo" :min_value -120}
-           [coll1 coll2] {:type "int" :name "bravo" :min_value nil :max_value 12}
            [coll1 coll2] {:type "int" :name "bravo" :max_value 12}
            [coll2] {:type "int" :name "charlie" :min_value 44 :max_value 46}
 

@@ -475,8 +475,6 @@
 				"type": "integer"
 			}, {
 				"type": "number"
-			}, {
-				"type": "null"
 			}]
 		},
 		"IgnoreCaseOption": {
