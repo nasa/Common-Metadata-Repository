@@ -42,7 +42,7 @@
       (errors/throw-service-errors :bad-request errors))
     condition))
 
-(defmethod jp/parse-json-condition :attribute
+(defmethod jp/parse-json-condition :additional-attribute
   [_ value]
   (let [condition (-> value
                       validate-attribute-condition

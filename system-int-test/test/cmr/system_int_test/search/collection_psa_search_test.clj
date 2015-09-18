@@ -205,32 +205,33 @@
 
     (testing "search collections by string attribute using JSON Query Language"
       (are [items search]
-           (let [condition {:attribute search}]
-             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
            ;; Ranges
-           [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ac"}
-           [coll1] {:type "string" :name "alpha" :min_value "ab" :max_value "ac"}
-           [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"}
-           [coll1 coll2] {:type "string" :name "bravo" :min_value "bc"}
-           [coll1 coll2] {:type "string" :name "bravo" :max_value "bg"}
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "aa" :max_value "ac"}}
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "ab" :max_value "ac"}}
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "aa" :max_value "ab"}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "string" :name "bravo" :min_value "bc"}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "string" :name "bravo" :max_value "bg"}}
 
            ;; Exact value
-           [coll1] {:type "string" :name "alpha" :value "ab"}
-
-           ;; Searching by type without a value
-           [coll1 coll2] {:type "string" :name "bravo"}
+           [coll1] {:additional_attribute_value {:type "string" :name "alpha" :value "ab"}}
 
            ;; Test exclude boundary
-           [coll1] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"
-                    :exclude_boundary false}
-           [] {:type "string" :name "alpha" :min_value "aa" :max_value "ab"
-               :exclude_boundary true}
+           [coll1] {:additional_attribute_range {:type "string" :name "alpha" :min_value "aa"
+                                                 :max_value "ab" :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "string" :name "alpha" :min_value "aa"
+                                            :max_value "ab" :exclude_boundary true}}
 
            ;; Test searching by group
-           [coll3] {:group "G3"}
-           [coll3] {:group "*3" :pattern true}
-           [coll1 coll2 coll3] {:group "G?" :pattern true}))))
+           [coll3] {:additional_attribute_name {:group "G3"}}
+           [coll3] {:additional_attribute_name {:group "*3" :pattern true}}
+           [coll1 coll2 coll3] {:additional_attribute_name {:group "G?" :pattern true}}))))
 
 (deftest float-psas-search-test
   (let [psa1 (dc/psa {:name "alpha" :data-type :float :value 10})
@@ -316,24 +317,30 @@
 
     (testing "search collections by float attribute using JSON Query Language"
       (are [items search]
-           (let [condition {:attribute search}]
-             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
            ;; Ranges
-           [coll1] {:type "float" :name "alpha" :min_value 9.2 :max_value 11}
-           [coll1] {:type "float" :name "alpha" :min_value 10.0 :max_value 10.6}
-           [coll1] {:type "float" :name "alpha" :min_value 9.2 :max_value 10.0}
-           [coll1 coll2] {:type "float" :name "bravo" :min_value -120}
-           [coll1 coll2] {:type "float" :name "bravo" :max_value 13.6}
-           [coll2] {:type "float" :name "charlie" :min_value 44 :max_value 45.1}
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 9.2 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 10.0 :max_value 10.6}}
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 9.2 :max_value 10.0}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "float" :name "bravo" :min_value -120}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "float" :name "bravo" :max_value 13.6}}
+           [coll2] {:additional_attribute_range
+                    {:type "float" :name "charlie" :min_value 44 :max_value 45.1}}
 
            ;; Exact value
-           [coll1 coll2] {:type "float" :name "bravo" :value -12}
+           [coll1 coll2] {:additional_attribute_value {:type "float" :name "bravo" :value -12}}
 
            ;; Test exclude boundary
-           [coll1 coll2] {:type "float" :name "bravo" :min_value -12 :max_value -5
-                          :exclude_boundary false}
-           [] {:type "float" :name "bravo" :min_value -12 :max_value -5 :exclude_boundary true}))))
+           [coll1 coll2] {:additional_attribute_range {:type "float" :name "bravo" :min_value -12
+                                                       :max_value -5 :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "float" :name "bravo" :min_value -12
+                                            :max_value -5 :exclude_boundary true}}))))
 
 (deftest int-psas-search-test
   (let [psa1 (dc/psa {:name "alpha" :data-type :int :value 10})
@@ -418,24 +425,30 @@
 
     (testing "search collections by int attribute using JSON Query Language"
       (are [items search]
-           (let [condition {:attribute search}]
-             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
            ;; Ranges
-           [coll1] {:type "int" :name "alpha" :min_value 9 :max_value 11}
-           [coll1] {:type "int" :name "alpha" :min_value 10 :max_value 11}
-           [coll1] {:type "int" :name "alpha" :min_value 9 :max_value 10}
-           [coll1 coll2] {:type "int" :name "bravo" :min_value -120}
-           [coll1 coll2] {:type "int" :name "bravo" :max_value 12}
-           [coll2] {:type "int" :name "charlie" :min_value 44 :max_value 46}
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 9 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 10 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 9 :max_value 10}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "int" :name "bravo" :min_value -120}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "int" :name "bravo" :max_value 12}}
+           [coll2] {:additional_attribute_range
+                    {:type "int" :name "charlie" :min_value 44 :max_value 46}}
 
            ;; Exact value
-           [coll1 coll2] {:type "int" :name "bravo" :value -12}
+           [coll1 coll2] {:additional_attribute_value {:type "int" :name "bravo" :value -12}}
 
            ;; Test exclude boundary
-           [coll1 coll2] {:type "int" :name "bravo" :min_value -12 :max_value -5
-                          :exclude_boundary false}
-           [] {:type "int" :name "bravo" :min_value -12 :max_value -5 :exclude_boundary true}))))
+           [coll1 coll2] {:additional_attribute_range {:type "int" :name "bravo" :min_value -12
+                                                       :max_value -5 :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "int" :name "bravo" :min_value -12
+                                            :max_value -5 :exclude_boundary true}}))))
 
 (deftest datetime-psas-search-test
   (let [psa1 (dc/psa {:name "alpha" :data-type :datetime :value (d/make-datetime 10 false)})
@@ -533,13 +546,18 @@
            [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))
 
     (testing "search collections by datetime attribute using JSON Query Language"
+      ;; Exact value
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "datetime" :name "bravo" :value (d/make-datetime 14)}}))
       (are [items search]
            (let [date-search (util/remove-nil-keys
                                (assoc search
-                                      :value (d/make-datetime (:value search))
                                       :min_value (d/make-datetime (:min_value search))
                                       :max_value (d/make-datetime (:max_value search))))
-                 condition {:attribute date-search}]
+                 condition {:additional_attribute_range date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
            ;; Ranges
@@ -549,9 +567,6 @@
            [coll1 coll2] {:type "datetime" :name "bravo" :min_value 10}
            [coll1 coll2] {:type "datetime" :name "bravo" :max_value 17}
            [coll2] {:type "datetime" :name "charlie" :min_value 44 :max_value 45}
-
-           ;; Exact value
-           [coll1 coll2] {:type "datetime" :name "bravo" :value 14}
 
            ;; Test exclude boundary
            [coll1 coll2] {:type "datetime" :name "bravo" :min_value 0 :max_value 14
@@ -656,13 +671,17 @@
            [coll2] [{:type :timeRange :name "charlie" :value [44 45]}]))
 
     (testing "search collections by time attribute using JSON Query Language"
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "time" :name "bravo" :value (d/make-time 23)}}))
       (are [items search]
            (let [date-search (util/remove-nil-keys
                                (assoc search
-                                      :value (d/make-time (:value search))
                                       :min_value (d/make-time (:min_value search))
                                       :max_value (d/make-time (:max_value search))))
-                 condition {:attribute date-search}]
+                 condition {:additional_attribute_range date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
            ;; Ranges
@@ -672,9 +691,6 @@
            [coll1 coll2] {:type "time" :name "bravo" :min_value 20}
            [coll1 coll2] {:type "time" :name "bravo" :max_value 24}
            [coll2] {:type "time" :name "charlie" :min_value 44 :max_value 45}
-
-           ;; Exact value
-           [coll1 coll2] {:type "time" :name "bravo" :value 23}
 
            ;; Test exclude boundary
            [coll1 coll2] {:type "time" :name "bravo" :min_value 0 :max_value 23
@@ -780,13 +796,17 @@
            [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))
 
     (testing "search collections by date attribute using JSON Query Language"
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "date" :name "bravo" :value (d/make-date 23)}}))
       (are [items search]
            (let [date-search (util/remove-nil-keys
                                (assoc search
-                                      :value (d/make-date (:value search))
                                       :min_value (d/make-date (:min_value search))
                                       :max_value (d/make-date (:max_value search))))
-                 condition {:attribute date-search}]
+                 condition {:additional_attribute_range date-search}]
              (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
 
            ;; Ranges
@@ -796,9 +816,6 @@
            [coll1 coll2] {:type "date" :name "bravo" :min_value 20}
            [coll1 coll2] {:type "date" :name "bravo" :max_value 24}
            [coll2] {:type "date" :name "charlie" :min_value 44 :max_value 45}
-
-           ;; Exact value
-           [coll1 coll2] {:type "date" :name "bravo" :value 23}
 
            ;; Test exclude boundary
            [coll1 coll2] {:type "date" :name "bravo" :min_value 0 :max_value 23
@@ -870,12 +887,11 @@
                         {:format :dif})]
     (index/wait-until-indexed)
     (are [matches a-name group pattern?]
-         (d/refs-match? matches (search/find-refs-with-json-query :collection {}
-                                                             {:attribute
-                                                              (util/remove-nil-keys
-                                                                {:name a-name
-                                                                 :group group
-                                                                 :pattern pattern?})}))
+         (d/refs-match? matches
+                        (search/find-refs-with-json-query
+                          :collection {} {:additional_attribute_name
+                                          (util/remove-nil-keys
+                                            {:name a-name :group group :pattern pattern?})}))
          [coll1] "foo" nil false
          [coll1] "f?o" nil true
          [] "f?o" nil false
@@ -888,7 +904,8 @@
 (deftest json-query-validate-types-test
   (are [type value]
        (d/refs-match? [] (search/find-refs-with-json-query
-                           :collection {} {:attribute {:name "a" :type type :value value}}))
+                           :collection {} {:additional_attribute_value
+                                           {:name "a" :type type :value value}}))
        "string" "abc"
        "string" 1.5
        "int" 12
@@ -900,101 +917,75 @@
 (deftest json-query-validation-errors-test
   (util/are2
     [search errors]
-    (let [condition {:attribute search}]
-      ;; Use is since we are in a let within are2, otherwise diffs would not be printed correctly
-      (is (= {:status 400 :errors errors}
-             (search/find-refs-with-json-query :collection {} condition))))
+    (= {:status 400 :errors errors}
+       (search/find-refs-with-json-query :collection {} search))
 
     "Invalid data type"
-    {:type "bad" :value "c" :name "n"}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
-     "/condition/attribute/type instance value (\"bad\") not found in enum (possible values: [\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
+    {:additional_attribute_value {:type "bad" :value "c" :name "n"}}
+    ["/condition/additional_attribute_value/type instance value (\"bad\") not found in enum (possible values: [\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])"]
 
     "Invalid int"
-    {:type "int" :name "B" :value "1"}
+    {:additional_attribute_value {:type "int" :name "B" :value "1"}}
     ["[\"1\"] is an invalid value for type [int]"]
 
     "Invalid float"
-    {:type "float" :name "B" :value "1.42"}
+    {:additional_attribute_value {:type "float" :name "B" :value "1.42"}}
     ["[\"1.42\"] is an invalid value for type [float]"]
 
     "Invalid datetime"
-    {:type "datetime" :name "B" :value "2012-01-11 10:00:00"}
+    {:additional_attribute_value {:type "datetime" :name "B" :value "2012-01-11 10:00:00"}}
     ["[\"2012-01-11 10:00:00\"] is an invalid value for type [datetime]"]
 
     "Invalid date"
-    {:type "date" :name "B" :value "10:00:00Z"}
+    {:additional_attribute_value {:type "date" :name "B" :value "10:00:00Z"}}
     ["[\"10:00:00Z\"] is an invalid value for type [date]"]
 
     "Invalid time"
-    {:type "time" :name "B" :value "2012-01-11"}
+    {:additional_attribute_value {:type "time" :name "B" :value "2012-01-11"}}
     ["[\"2012-01-11\"] is an invalid value for type [time]"]
 
     "Invalid use of exclude-boundary"
-    {:type "string" :name "a" :value "b" :exclude_boundary true}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"exclude_boundary\",\"type\",\"value\"]"]
+    {:additional_attribute_value {:type "string" :name "a" :value "b" :exclude_boundary true}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"exclude_boundary\"]"]
 
     "Invalid use of pattern"
-    {:type "string" :group "g" :name "a*" :value "b" :pattern true}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\",\"value\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"pattern\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
+    {:additional_attribute_value {:type "string" :group "g" :name "a*" :value "b" :pattern true}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"pattern\"]"]
 
     "Invalid range max < min"
-    {:type "int" :name "foo" :min_value 25 :max_value 14}
+    {:additional_attribute_range {:type "int" :name "foo" :min_value 25 :max_value 14}}
     ["The maximum value [14] must be greater than the minimum value [25]"]
 
-    "Cannot include both range and an exact value"
-    {:type "int" :name "foo" :min_value 25 :value 37}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"min_value\"]"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"min_value\",\"type\",\"value\"]"]
+    "Cannot include both range and an exact value - value search"
+    {:additional_attribute_value {:type "int" :name "foo" :min_value 25 :value 37}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"min_value\"]"]
+
+    "Cannot include both range and an exact value - range search"
+    {:additional_attribute_range {:type "int" :name "foo" :min_value 25 :value 37}}
+    ["/condition/additional_attribute_range object instance has properties which are not allowed by the schema: [\"value\"]"]
 
     "Name is required when doing an exact value search"
-    {:type "int" :value 25 :group "abc"}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
-     "/condition/attribute object has missing required properties ([\"name\"])"
-     "/condition/attribute object has missing required properties ([\"name\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"type\",\"value\"]"]
+    {:additional_attribute_value {:type "int" :value 25 :group "abc"}}
+    ["/condition/additional_attribute_value object has missing required properties ([\"name\"])"]
 
     "Name is required when doing a range search"
-    {:type "int" :min_value 25 :max_value 35 :group "abc"}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object has missing required properties ([\"name\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"
-     "/condition/attribute object has missing required properties ([\"name\",\"value\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\",\"type\"]"]
+    {:additional_attribute_range {:type "int" :min_value 25 :max_value 35 :group "abc"}}
+    ["/condition/additional_attribute_range object has missing required properties ([\"name\"])"]
 
     "Type is required when doing an exact value search"
-    {:value 25 :group "abc"}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"
-     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
-     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"value\"]"]
+    {:additional_attribute_value {:value 25 :name "a" :group "abc"}}
+    ["/condition/additional_attribute_value object has missing required properties ([\"type\"])"]
 
     "Type is required when doing a range search"
-    {:min_value 25 :max_value 35 :group "abc"}
-    ["/condition/attribute instance failed to match exactly one schema (matched 0 out of 3)"
-     "/condition/attribute object has missing required properties ([\"name\",\"type\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"
-     "/condition/attribute object has missing required properties ([\"name\",\"type\",\"value\"])"
-     "/condition/attribute object instance has properties which are not allowed by the schema: [\"max_value\",\"min_value\"]"]
+    {:additional_attribute_range {:min_value 25 :max_value 35 :name "c" :group "abc"}}
+    ["/condition/additional_attribute_range object has missing required properties ([\"type\"])"]
 
     "One of group or name is required"
-    {:pattern true}
+    {:additional_attribute_name {:pattern true}}
     ["One of 'group' or 'name' must be provided."]
 
     "Multiple errors can be returned"
-    {:type "float" :name "B" :min_value "1.42" :max_value "foo"}
+    {:additional_attribute_range {:type "float" :name "B" :min_value "1.42" :max_value "foo"}}
     ["[\"foo\"] is an invalid value for type [float]"
      "[\"1.42\"] is an invalid value for type [float]"]))
 
@@ -1006,47 +997,46 @@
                      :format-key :dif
                      :native-id "dif9-coll"})
         dif10-coll (d/ingest-concept-with-metadata-file
-                    "data/dif10/sample_collection.xml"
-                    {:provider-id "PROV1"
-                     :concept-type :collection
-                     :format-key :dif10
-                     :native-id "dif10-coll"})]
+                     "data/dif10/sample_collection.xml"
+                     {:provider-id "PROV1"
+                      :concept-type :collection
+                      :format-key :dif10
+                      :native-id "dif10-coll"})]
     (index/wait-until-indexed)
 
     (testing "search for extended metadata fields"
       (util/are2
         [items search]
-        (let [condition {:attribute search}]
-          (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+        (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
 
         "By group"
-        [dif9-coll dif10-coll] {:group "gov.nasa.gsfc.gcmd"}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "gov.nasa.gsfc.gcmd"}}
 
         "By group - pattern"
-        [dif9-coll dif10-coll] {:group "*gcmd" :pattern true}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "*gcmd" :pattern true}}
 
         "By name - link_notification.contact"
-        [dif9-coll] {:name "link_notification.contact"}
+        [dif9-coll] {:additional_attribute_name {:name "link_notification.contact"}}
 
         "By name - metadata.extraction_date"
-        [dif9-coll] {:name "metadata.extraction_date"}
+        [dif9-coll] {:additional_attribute_name {:name "metadata.extraction_date"}}
 
         "By name - metadata.keyword_version"
-        [dif9-coll dif10-coll] {:name "metadata.keyword_version"}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:name "metadata.keyword_version"}}
 
         "By name - pattern"
-        [dif9-coll dif10-coll] {:name "meta??ta*" :pattern true}
+        [dif9-coll dif10-coll] {:additional_attribute_name {:name "meta??ta*" :pattern true}}
 
-         "By value - string"
-        [dif9-coll] {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}
+        "By value - string"
+        [dif9-coll] {:additional_attribute_value
+                     {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}}
 
         ;; TODO - Figure out why exact match is failing
         ; "By value - float"
-        ; [dif9-coll] {:name "metadata.keyword_version" :value 8.1 :type "float"}
+        ; [dif9-coll] {:additional_attribute_name {:name "metadata.keyword_version" :value 8.1 :type "float"}}
 
         "By range - float"
-        [dif9-coll dif10-coll] {:name "metadata.keyword_version"
-                                :min_value 8.0
-                                :max_value 8.5
-                                :type "float"}))))
+        [dif9-coll dif10-coll] {:additional_attribute_range
+                                {:name "metadata.keyword_version" :min_value 8.0 :max_value 8.5
+                                 :type "float"}}))))
 
