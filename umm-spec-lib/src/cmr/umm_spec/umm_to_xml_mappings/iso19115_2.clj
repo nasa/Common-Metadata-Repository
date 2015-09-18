@@ -1,8 +1,10 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
-            [cmr.umm-spec.xml.gen :refer :all]))
+            [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as su]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -25,6 +27,12 @@
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 
+(def code-lists
+  "The uri base of the code-lists used in the generation of ISO xml"
+  {:earthdata "http://earthdata.nasa.gov/metadata/resources/Codelists.xml"
+   :ngdc "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml"
+   :iso "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml"})
+
 (defn- date-mapping
   "Returns the date element mapping for the given name and date value in string format."
   [date-name value]
@@ -33,11 +41,8 @@
     [:gmd:date
      [:gco:DateTime value]]
     [:gmd:dateType
-     [:gmd:CI_DateTypeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+     [:gmd:CI_DateTypeCode {:codeList (str (:ngdc code-lists) "#CI_DateTypeCode")
                             :codeListValue date-name} date-name]]]])
-
-(def attribute-type-code-list
-  "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeTypeCode")
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
@@ -56,7 +61,7 @@
      [:gmd:keyword [:gco:CharacterString keyword]])
    [:gmd:type
     [:gmd:MD_KeywordTypeCode
-     {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+     {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
       :codeListValue keyword-type} keyword-type]]
    [:gmd:thesaurusName {:gco:nilReason "unknown"}]])
 
@@ -78,16 +83,18 @@
         [:eos:reference
          [:eos:EOS_AdditionalAttributeDescription
           [:eos:type
-           [:eos:EOS_AdditionalAttributeTypeCode {:codeList attribute-type-code-list
-                                                  :codeListValue type}
+           [:eos:EOS_AdditionalAttributeTypeCode
+            {:codeList (str (:earthdata code-lists) "#EOS_AdditionalAttributeTypeCode")
+             :codeListValue type}
             type]]
           [:eos:name
            (char-string (:Name characteristic))]
           [:eos:description
            (char-string (:Description characteristic))]
           [:eos:dataType
-           [:eos:EOS_AdditionalAttributeDataTypeCode {:codeList attribute-data-type-code-list
-                                                      :codeListValue (:DataType characteristic)}
+           [:eos:EOS_AdditionalAttributeDataTypeCode
+            {:codeList (str (:earthdata code-lists) "#EOS_AdditionalAttributeDataTypeCode")
+             :codeListValue (:DataType characteristic)}
             (:DataType characteristic)]]
           [:eos:parameterUnitsOfMeasure
            (char-string (:Unit characteristic))]]]
@@ -180,6 +187,91 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
+(defn- generate-distributions
+  [distributions]
+  (when-let [distributions (su/remove-empty-records distributions)]
+    ;; We want to generate an empty element here because ISO distribution depends on
+    ;; the order of elements to determine how the fields of a distribution are group together.
+    (let [nil-to-empty-string (fn [s] (if s s ""))
+          truncate-map (fn [key] (util/truncate-nils (map key distributions)))
+          sizes (truncate-map :DistributionSize)
+          fees (truncate-map :Fees)]
+      [:gmd:distributionInfo
+       [:gmd:MD_Distribution
+        [:gmd:distributor
+         [:gmd:MD_Distributor
+          [:gmd:distributorContact {:gco:nilReason "missing"}]
+          (for [fee (map nil-to-empty-string fees)]
+            [:gmd:distributionOrderProcess
+             [:gmd:MD_StandardOrderProcess
+              [:gmd:fees
+               (char-string fee)]]])
+          (for [distribution distributions
+                :let [{media :DistributionMedia format :DistributionFormat} distribution]]
+            [:gmd:distributorFormat
+             [:gmd:MD_Format
+              [:gmd:name
+               (char-string (nil-to-empty-string format))]
+              [:gmd:version {:gco:nilReason "unknown"}]
+              [:specification
+               (char-string (nil-to-empty-string media))]]])
+          (for [size (map nil-to-empty-string sizes)]
+            [:gmd:distributorTransferOptions
+             [:gmd:MD_DigitalTransferOptions
+              [:gmd:transferSize
+               [:gco:Real size]]]])]]]])))
+
+(defn- generate-publication-references
+  [pub-refs]
+  (for [pub-ref pub-refs
+        ;; Title and PublicationDate are required fields in ISO
+        :when (and (:Title pub-ref) (:PublicationDate pub-ref))]
+    [:gmd:aggregationInfo
+     [:gmd:MD_AggregateInformation
+      [:gmd:aggregateDataSetName
+       [:gmd:CI_Citation
+        [:gmd:title (char-string (:Title pub-ref))]
+        (when (:PublicationDate pub-ref)
+          [:gmd:date
+           [:gmd:CI_Date
+            [:gmd:date
+             [:gco:Date (second (re-matches #"(\d\d\d\d-\d\d-\d\d)T.*" (str (:PublicationDate pub-ref))))]]
+            [:gmd:dateType
+             [:gmd:CI_DateTypeCode
+              {:codeList (str (:iso code-lists) "#CI_DateTypeCode")
+               :codeListValue "publication"} "publication"]]]])
+        [:gmd:edition (char-string (:Edition pub-ref))]
+        (when (:DOI pub-ref)
+          [:gmd:identifier
+           [:gmd:MD_Identifier
+            [:gmd:code (char-string (get-in pub-ref [:DOI :DOI]))]
+            [:gmd:description (char-string "DOI")]]])
+        [:gmd:citedResponsibleParty
+         [:gmd:CI_ResponsibleParty
+          [:gmd:organisationName (char-string (:Author pub-ref))]
+          [:gmd:role
+           [:gmd:CI_RoleCode
+            {:codeList (str (:ngdc code-lists) "#CI_RoleCode")
+             :codeListValue "author"} "author"]]]]
+        [:gmd:citedResponsibleParty
+         [:gmd:CI_ResponsibleParty
+          [:gmd:organisationName (char-string (:Publisher pub-ref))]
+          [:gmd:role
+           [:gmd:CI_RoleCode
+            {:codeList (str (:ngdc code-lists) "#CI_RoleCode")
+             :codeListValue "publisher"} "publication"]]]]
+        [:gmd:series
+         [:gmd:CI_Series
+          [:gmd:name (char-string (:Series pub-ref))]
+          [:gmd:issueIdentification (char-string (:Issue pub-ref))]
+          [:gmd:page (char-string (:Pages pub-ref))]]]
+        [:gmd:otherCitationDetails (char-string (:OtherReferenceDetails pub-ref))]
+        [:gmd:ISBN (char-string (:ISBN pub-ref))]]]
+      [:gmd:associationType
+       [:gmd:DS_AssociationTypeCode
+        {:codeList (str (:ngdc code-lists) "#DS_AssociationTypeCode")
+         :codeListValue "Input Collection"} "Input Collection"]]]]))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -189,10 +281,10 @@
      [:gmd:fileIdentifier (char-string (:EntryTitle c))]
      [:gmd:language (char-string "eng")]
      [:gmd:characterSet
-      [:gmd:MD_CharacterSetCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+      [:gmd:MD_CharacterSetCode {:codeList (str (:ngdc code-lists) "#MD_CharacterSetCode")
                                  :codeListValue "utf8"} "utf8"]]
      [:gmd:hierarchyLevel
-      [:gmd:MD_ScopeCode {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+      [:gmd:MD_ScopeCode {:codeList (str (:ngdc code-lists) "#MD_ScopeCode")
                           :codeListValue "series"} "series"]]
      [:gmd:contact {:gco:nilReason "missing"}]
      [:gmd:dateStamp
@@ -215,7 +307,7 @@
        [:gmd:status
         (when-let [collection-progress (:CollectionProgress c)]
           [:gmd:MD_ProgressCode
-           {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+           {:codeList (str (:ngdc code-lists) "#MD_ProgressCode")
             :codeListValue (str/lower-case collection-progress)}
            collection-progress])]
        (when-let [projects (:Projects c)]
@@ -231,6 +323,7 @@
           [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
          [:gmd:otherConstraints
           [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+       (generate-publication-references (:PublicationReferences c))
        [:gmd:language (char-string (:DataLanguage c))]
        [:gmd:extent
         [:gmd:EX_Extent
@@ -261,13 +354,14 @@
         [:gmd:MD_Identifier
          [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
          [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+     (generate-distributions (:Distributions c))
      [:gmd:dataQualityInfo
       [:gmd:DQ_DataQuality
        [:gmd:scope
         [:gmd:DQ_Scope
          [:gmd:level
           [:gmd:MD_ScopeCode
-           {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+           {:codeList (str (:ngdc code-lists) "#MD_ScopeCode")
             :codeListValue "series"}
            "series"]]]]
        [:gmd:report

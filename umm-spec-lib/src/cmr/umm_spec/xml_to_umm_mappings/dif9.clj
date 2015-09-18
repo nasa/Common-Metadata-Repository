@@ -2,7 +2,18 @@
   "Defines mappings from DIF9 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [camel-snake-kebab.core :as csk]
+            [cmr.common.util :as util]
             [cmr.umm-spec.json-schema :as js]))
+
+(defn- parse-mbrs
+  "Returns a seq of bounding rectangle maps in the given DIF XML doc."
+  [doc]
+  (for [el (select doc "/DIF/Spatial_Coverage")]
+    {:NorthBoundingCoordinate (value-of el "Northernmost_Latitude")
+     :SouthBoundingCoordinate (value-of el "Southernmost_Latitude")
+     :WestBoundingCoordinate (value-of el "Westernmost_Longitude")
+     :EastBoundingCoordinate (value-of el "Easternmost_Longitude")}))
 
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
@@ -30,6 +41,7 @@
                       [{:RangeDateTimes (for [temporal temporals]
                                           {:BeginningDateTime (value-of temporal "Start_Date")
                                            :EndingDateTime    (value-of temporal "Stop_Date")})}])
+   :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
    :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                     {:DistributionMedia (value-of distribution "Distribution_Media")
                      :DistributionSize (value-of distribution "Distribution_Size")
@@ -53,7 +65,30 @@
                             :ParameterUnitsOfMeasure (value-of aa "Value[@type='ParameterUnitsOfMeasure']")
                             :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
-                            :UpdateDate (value-of aa "Value[@type='UpdateDate']")})})
+                            :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
+
+  :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
+                          (into {} (map (fn [x]
+                                          (if (keyword? x)
+                                            [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                            x))
+                                        [:Author
+                                         :Publication_Date
+                                         :Title
+                                         :Series
+                                         :Edition
+                                         :Volume
+                                         :Issue
+                                         :Report_Number
+                                         :Publication_Place
+                                         :Publisher
+                                         :Pages
+                                         [:ISBN (value-of pub-ref "ISBN")]
+                                         [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                         [:RelatedUrl
+                                          {:URLs (seq
+                                                   (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                         :Other_Reference_Details])))})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

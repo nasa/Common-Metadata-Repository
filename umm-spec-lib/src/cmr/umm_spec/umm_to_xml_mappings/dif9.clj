@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [camel-snake-kebab.core :as csk]))
 
 (def dif9-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -38,6 +39,12 @@
         [:Start_Date sdt]
         [:Stop_Date sdt]])
      [:Data_Set_Progress (:CollectionProgress c)]
+     (for [mbr (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles)]
+       [:Spatial_Coverage
+        [:Southernmost_Latitude (:SouthBoundingCoordinate mbr)]
+        [:Northernmost_Latitude (:NorthBoundingCoordinate mbr)]
+        [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
+        [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
      (for [spatial-keyword (:SpatialKeywords c)]
        [:Location spatial-keyword])
      (for [temproal-keywod (:TemporalKeywords c)]
@@ -64,6 +71,26 @@
         [:Distribution_Size (:DistributionSize distribution)]
         [:Distribution_Format (:DistributionFormat distribution)]
         [:Fees (:Fees distribution)]])
+     (for [pub-ref (:PublicationReferences c)]
+       [:Reference
+        (map (fn [x] (if (keyword? x)
+                       [x ((csk/->PascalCaseKeyword x) pub-ref)]
+                       x))
+             [:Author
+              :Publication_Date
+              :Title
+              :Series
+              :Edition
+              :Volume
+              :Issue
+              :Report_Number
+              :Publication_Place
+              :Publisher
+              :Pages
+              [:ISBN (:ISBN pub-ref)]
+              [:DOI (get-in pub-ref [:DOI :DOI])]
+              [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
+              :Other_Reference_Details])])
      [:Summary
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]

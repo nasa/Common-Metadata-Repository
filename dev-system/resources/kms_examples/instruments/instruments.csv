@@ -4,3 +4,4 @@ Category,Class,Type,Subtype,Short_Name,Long_Name,UUID
 "Earth Remote Sensing Instruments","Active Remote Sensing","Altimeters","Lidar/Laser Altimeters","LVIS","Land, Vegetation, and Ice Sensor","aa338429-35e6-4ee2-821f-0eac81802689"
 "In Situ/Laboratory Instruments","Chemical Meters/Analyzers","","","ADS","Automated DNA Sequencer","554a3c73-3b48-43ea-bf5b-8b98bc2b11bc"
 "Earth Remote Sensing Instruments","Passive Remote Sensing","Spectrometers/Radiometers","Imaging Spectrometers/Radiometers","SMAP L-BAND RADIOMETER","SMAP L-Band Radiometer","fee5e9e1-10f1-4f14-94bc-c287f8e2c209"
+"Earth Remote Sensing Instruments","Active Remote Sensing","Profilers/Sounders","Acoustic Sounders","ACOUSTIC SOUNDERS","","7ef0c3e6-1012-411a-b166-482fb35bb1dd"

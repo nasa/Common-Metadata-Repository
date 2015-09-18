@@ -68,3 +68,28 @@
     (is (= ["object instance has properties which are not allowed by the schema: [\"foo\"]"]
            (js/validate-umm-json json)))))
 
+(deftest json-schema-coercion
+  (is (= (js/coerce {:EntryTitle "an entry title"
+                     :Abstract "A very abstract collection"
+                     :DataLanguage "English"
+                     :TemporalExtents [{:TemporalRangeType "temp range"
+                                        :PrecisionOfSeconds "3"
+                                        :EndsAtPresentFlag "false"
+                                        :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                          :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                                         {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                          :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})
+         (umm-c/map->UMM-C
+          {:EntryTitle "an entry title"
+           :Abstract "A very abstract collection"
+           :DataLanguage "English"
+           :TemporalExtents [(umm-cmn/map->TemporalExtentType
+                              {:TemporalRangeType "temp range"
+                               :PrecisionOfSeconds 3
+                               :EndsAtPresentFlag false
+                               :RangeDateTimes [(umm-cmn/map->RangeDateTimeType
+                                                 {:BeginningDateTime (t/date-time 2000)
+                                                  :EndingDateTime (t/date-time 2001)})
+                                                (umm-cmn/map->RangeDateTimeType
+                                                 {:BeginningDateTime (t/date-time 2002)
+                                                  :EndingDateTime (t/date-time 2003)})]})]}))))

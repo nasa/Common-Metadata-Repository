@@ -11,7 +11,8 @@
   (when (config/publish-messages)
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])]
-      (queue/publish-message queue-broker exchange-name msg timeout-ms))))
+      (when queue-broker
+        (queue/publish-message queue-broker exchange-name msg timeout-ms)))))
 
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."

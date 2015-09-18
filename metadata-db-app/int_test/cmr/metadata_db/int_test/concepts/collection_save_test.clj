@@ -27,7 +27,7 @@
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
       (is (= revision-id 1))
-      (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
+      (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-collection-with-revision-date-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -50,8 +50,8 @@
     (let [coll1 (util/create-and-save-collection "SMAL_PROV1" 1 1 {:native-id "foo"})
           coll2 (util/create-and-save-collection "SMAL_PROV2" 2 1 {:native-id "foo"})
           [coll1-concept-id coll2-concept-id] (map :concept-id [coll1 coll2])]
-      (is (util/verify-concept-was-saved coll1))
-      (is (util/verify-concept-was-saved coll2))
+      (util/verify-concept-was-saved coll1)
+      (util/verify-concept-was-saved coll2)
       (is (not= coll1-concept-id coll2-concept-id)))))
 
 (deftest save-collection-without-version-id-test
@@ -60,7 +60,7 @@
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
       (is (= revision-id 1))
-      (is (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id))))))
+      (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-concept-test-with-proper-revision-id-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -78,7 +78,7 @@
           (is (= 201 status))
           (is (= revision-id new-revision-id))
           (is (t/after? revision-date-1 revision-date-0))
-          (is (util/verify-concept-was-saved updated-concept)))))))
+          (util/verify-concept-was-saved updated-concept))))))
 
 (deftest save-concept-with-skipped-revisions-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -184,6 +184,6 @@
           _ (util/save-concept coll1)
           {:keys [status]} (util/save-concept coll2)]
       (is (= 201 status))
-      (is (util/verify-concept-was-saved coll1))
-      (is (util/verify-concept-was-saved coll2)))))
+      (util/verify-concept-was-saved coll1)
+      (util/verify-concept-was-saved coll2))))
 

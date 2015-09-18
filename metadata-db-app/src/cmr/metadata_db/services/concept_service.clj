@@ -18,6 +18,7 @@
             [cmr.metadata-db.data.oracle.concepts]
             [cmr.metadata-db.data.oracle.concepts.collection]
             [cmr.metadata-db.data.oracle.concepts.granule]
+            [cmr.metadata-db.data.oracle.concepts.tag]
             [cmr.metadata-db.data.oracle.providers]
             [cmr.metadata-db.data.oracle.search]
 
@@ -352,7 +353,7 @@
                                                   :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
-          (let [revisioned-tombstone (->>(set-or-generate-revision-id db provider tombstone previous-revision)
+          (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
                                           (try-to-save db provider))]
             (ingest-events/publish-event
               context

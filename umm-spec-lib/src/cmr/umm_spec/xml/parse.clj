@@ -27,3 +27,7 @@
 (defn dates-at
   [element xpath]
   (map #(dtp/parse-datetime (text %)) (select element xpath)))
+
+(defn date-at
+  [element xpath]
+  (dtp/parse-date (text (value-of element xpath))))

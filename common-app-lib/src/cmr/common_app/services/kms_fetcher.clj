@@ -25,6 +25,15 @@
             [clojure.string :as str]
             [cmr.common.util :as util]))
 
+(def nested-fields-mappings
+  "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
+  the bottom."
+  {:archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+   :platforms [:category :series-entity :short-name :long-name]
+   :instruments [:category :class :type :subtype :short-name :long-name]
+   :projects [:short-name :long-name]
+   :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]})
+
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."
   "Not Provided")
@@ -75,16 +84,34 @@
 
 (defn get-full-hierarchy-for-keyword
   "Returns the full hierarchy for a given keyword. All of the fields within the keyword need
-  to match one of the keywords, otherwise nil is returned. We may want to update this check to
-  be case insensitive in the future."
+  to match one of the keywords, otherwise nil is returned."
   [gcmd-keywords-map keyword-scheme keyword-map fields-to-compare]
   {:pre (some? (keyword-scheme kms/keyword-scheme->field-names))}
-  (let [keyword-map (util/remove-nil-keys keyword-map)
+  (let [prepare-for-compare (fn [m]
+                              (->> (select-keys m fields-to-compare)
+                                   util/remove-nil-keys
+                                   (util/map-values str/lower-case)))
+        comparison-map (prepare-for-compare keyword-map)
         keyword-values (vals (keyword-scheme gcmd-keywords-map))]
-    (first (filter (fn [gcmd-keyword]
-                     (= (select-keys keyword-map fields-to-compare)
-                        (select-keys gcmd-keyword fields-to-compare)))
-                   keyword-values))))
+    (first (filter #(= comparison-map (prepare-for-compare %)) keyword-values))))
+
+(defn get-full-hierarchy-for-science-keyword
+  [gcmd-keywords-map keyword-map]
+  (get-full-hierarchy-for-keyword
+    gcmd-keywords-map :science-keywords keyword-map
+    [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]))
+
+(defn get-full-hierarchy-for-platform
+  [gcmd-keywords-map platform]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :platforms platform [:short-name :long-name]))
+
+(defn get-full-hierarchy-for-instrument
+  [gcmd-keywords-map instrument]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :instruments instrument [:short-name :long-name]))
+
+(defn get-full-hierarchy-for-project
+  [gcmd-keywords-map project-map]
+  (get-full-hierarchy-for-keyword gcmd-keywords-map :projects project-map [:short-name :long-name]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because

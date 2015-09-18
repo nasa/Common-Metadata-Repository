@@ -18,6 +18,7 @@
             [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
             [cmr.common-app.cache.consistent-cache :as consistent-cache]
             [cmr.oracle.connection :as oracle]
+            [cmr.common-app.services.kms-fetcher :as kf]
             [cmr.message-queue.queue.rabbit-mq :as rmq]
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.common.config :as cfg :refer [defconfig]]
@@ -60,10 +61,12 @@
                                           (stl-cache/create-single-thread-lookup-cache
                                             (consistent-cache/create-consistent-cache))
                                           [:catalog-item :system-object :provider-object])
-                       ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)}
+                       ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
+                       kf/kms-cache-key (kf/create-kms-cache)}
               :ingest-public-conf ingest-public-conf
               :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
-     (transmit-config/system-with-connections sys [:metadata-db :indexer :echo-rest :search :cubby]))))
+     (transmit-config/system-with-connections
+       sys [:metadata-db :indexer :echo-rest :search :cubby :kms]))))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

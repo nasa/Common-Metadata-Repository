@@ -1023,6 +1023,23 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
     curl "%CMR-ENDPOINT%/collections?short_name=dem_100m&version=1&version=2"
 
+#### Find collections by tag parameters
+
+Collections can be found by searching for associated tags. The following tag parameters are supported.
+
+* tag_namespace
+  * options: ignore_case, pattern
+* tag_value
+  * options: ignore_case, pattern
+* tag_category
+  * options: ignore_case, pattern
+* tag_originator_id
+  * options: pattern
+
+Find collections matching tag namespace and value.
+
+    curl "%CMR-ENDPOINT%/collections?tag_namespace=org.ceos.wgiss.cwic&tag_value=quality"
+
 #### Find collections by Spatial
 
 ##### Polygon
@@ -1790,7 +1807,7 @@ The keyword endpoint is used to retrieve the full list of keywords for each of t
 
 The keywords are returned in a hierarchical JSON format. The response format is such that the caller does not need to know the hierarchy, but it can be inferred from the results. Keywords are not guaranteed to have values for every subfield in the hierarchy, so the response will indicate the next subfield below the current field in the hierarchy which has a value. It is possible for the keywords to have multiple potential subfields below it for different keywords with the same value for the current field in the hierarchy. When this occurs the subfields property will include each of the subfields.
 
-Supported keywords include 'archive_centers', 'platforms', 'instruments', and 'science_keywords'. The endpoint also supports 'providers' which is an alias to 'archive_centers'.
+Supported keywords include 'archive_centers', 'platforms', 'instruments', 'projects', and 'science_keywords'. The endpoint also supports 'providers' which is an alias to 'archive_centers'.
 
     curl -i "%CMR-ENDPOINT%/keywords/instruments?pretty=true"
 
@@ -1956,11 +1973,11 @@ Content-Length: 48
 
 #### Associating Collections with a Tag
 
-Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
+Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and readded it will maintain its tags.
 
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -1974,11 +1991,11 @@ Content-Length: 48
 
 #### Disassociating Collections with a Tag
 
-Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
+Tags can be disassociated with collections by sending a DELETE request with a JSON query for collections to `%CMR-ENDPOINT%/tags/<concept-id>/associations/by_query` where `concept-id` is the concept id of the tag returned when it was created. All collections found in the query will be _removed_ from the current set of associated collections.
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/T1200000000-CMR/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
