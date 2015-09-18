@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]))
 
@@ -326,6 +327,8 @@
        (generate-publication-references (:PublicationReferences c))
        [:gmd:language (char-string (:DataLanguage c))]
        [:gmd:extent
+        [:gmd:EX_Extent {:id "boundingExtent"}
+         (spatial/spatial-elements c)]
         [:gmd:EX_Extent
          (for [temporal (:TemporalExtents c)
                rdt (:RangeDateTimes temporal)]
