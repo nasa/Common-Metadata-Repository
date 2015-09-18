@@ -1,0 +1,52 @@
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd">
+  <Entry_ID>extended_metadata_example</Entry_ID>
+  <Entry_Title>DIF_DATASET_WITH_EXTENDED_METADATA</Entry_Title>
+  <Data_Set_Citation>
+    <Dataset_Title>dataset_title</Dataset_Title>
+  </Data_Set_Citation>
+  <Parameters>
+    <Category>category</Category>
+    <Topic>topic</Topic>
+    <Term>term</Term>
+  </Parameters>
+  <Source_Name>
+    <Short_Name>SPOT-1</Short_Name>
+    <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-1</Long_Name>
+  </Source_Name>
+  <Source_Name>
+    <Short_Name>SPOT-4</Short_Name>
+    <Long_Name>Systeme Probatoire Pour l'Observation de la Terre-4</Long_Name>
+  </Source_Name>
+  <Data_Center>
+    <Data_Center_Name>
+      <Short_Name>datacenter_short_name</Short_Name>
+      <Long_Name>data center long name</Long_Name>
+    </Data_Center_Name>
+    <Personnel>
+      <Role>DummyRole</Role>
+      <Last_Name>UNEP</Last_Name>
+    </Personnel>
+  </Data_Center>
+  <Summary>
+    <Abstract>summary of the dataset</Abstract>
+  </Summary>
+  <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+  <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+  <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
+  <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>link_notification.contact</Name>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.extraction_date</Name>
+      <Value>2015-05-21 15:58:46</Value>
+    </Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd</Group>
+      <Name>metadata.keyword_version</Name>
+      <Value>8.1</Value>
+    </Metadata>
+  </Extended_Metadata>
+</DIF>

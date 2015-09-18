@@ -14,11 +14,13 @@
     (seq (map (fn [attr]
                 (let [{:keys [name data-type description value group]} attr
                       ;; Data-type is optional in DIF9 and in practice not used. We make a best
-                      ;; attempt to determine the type of the data.
+                      ;; attempt to determine the type of the data. If we cannot determine from
+                      ;; the value we default to string.
                       data-type (if data-type
                                   (psa/parse-data-type data-type)
-                                  (first (filter #(some? (psa/safe-parse-value % value))
-                                                 all-data-types)))]
+                                  (or (first (filter #(some? (psa/safe-parse-value % value))
+                                                 all-data-types))
+                                      :string))]
                   (c/map->ProductSpecificAttribute
                     (util/remove-nil-keys
                       {:name name
