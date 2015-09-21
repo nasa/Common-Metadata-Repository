@@ -1093,7 +1093,8 @@
             "$ref": "#/definitions/LineType"
           }
         }
-      }
+      },
+      "required": ["CoordinateSystem"]
     },
     "PointType": {
       "type": "object",
@@ -1159,7 +1160,8 @@
           },
           "minItems": 3
         }
-      }
+      },
+      "required": ["Points"]
     },
     "ExclusiveZoneType": {
       "type": "object",
@@ -1190,7 +1192,8 @@
         "CenterPoint": {
           "$ref": "#/definitions/PointType"
         }
-      }
+      },
+      "required": ["Points"]
     },
     "VerticalSpatialDomainType": {
       "type": "object",
