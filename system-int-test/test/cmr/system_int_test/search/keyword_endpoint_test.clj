@@ -37,13 +37,24 @@
                              "uuid"
                              "180b59c3-31c1-4129-8d74-09a9557ebc79"}]}]}]}
                       {"value" "ACADEMIC",
+                       "level_1"
+                       [{"value" "OR-STATE/EOARC",
+                         "subfields" ["short_name"],
+                         "short_name"
+                         [{"value" "OR-STATE/EOARC",
+                           "subfields" ["long_name"],
+                           "long_name"
+                           [{"value"
+                             "Eastern Oregon Agriculture Research Center, Oregon State University",
+                             "uuid"
+                             "44a93a03-29c0-4800-a5a8-67d2c2c2caa7"}]}]}],
                        "short_name"
                        [{"value" "AARHUS-HYDRO",
                          "subfields" ["long_name"],
                          "long_name"
                          [{"value" "Hydrogeophysics Group, Aarhus University ",
                            "uuid" "bd197c6d-8612-42c2-a818-1975c4911e45"}]}],
-                       "subfields" ["short_name"]}
+                       "subfields" ["short_name" "level_1"]}
                       {"value" "CONSORTIA/INSTITUTIONS",
                        "short_name"
                        [{"value" "ESA/ED",
