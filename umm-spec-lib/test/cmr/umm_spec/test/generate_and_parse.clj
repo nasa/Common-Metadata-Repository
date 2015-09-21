@@ -61,7 +61,7 @@
          :iso-smap
          :iso19115)))
 
-(defspec roundtrip-generator-gen-parse 100
+(defspec roundtrip-generator-gen-parse 1000
   (for-all [umm-record umm-gen/umm-c-generator
             metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap :iso19115])]
     (is (= (expected-conversion/convert umm-record metadata-format)
