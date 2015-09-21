@@ -224,15 +224,14 @@
            [] {:science_keywords {:category "BLAH"}}
 
            [coll2] {:science_keywords {:category "Hurricane"
-                     :topic "Popular"
-                     :term "Extreme"}}
+                                       :topic "Popular"
+                                       :term "Extreme"}}
            [coll2 coll6] {:and [{:science_keywords {:category "Hurricane"
                                                     :topic "Popular"}}
                                 {:science_keywords {:term "Extreme"}}]}
            [coll2 coll3 coll5 coll6 coll7] {:or [{:science_keywords {:category "Hurricane"
                                                                      :topic "Popular"}}
-                                                  {:science_keywords {:term "Extreme"}}]}
-
+                                                 {:science_keywords {:term "Extreme"}}]}
            [coll11] {:science_keywords {:uuid "794e3c3b-791f-44de-9ff3-358d8ed74733"}}
 
            ;; case sensitivity
@@ -244,6 +243,7 @@
            ;; Case for exact match searches needs to match KMS case, not original metadata case
            [] {:science_keywords {:category "Earth Science Services" :ignore_case false}}
            [coll11] {:science_keywords {:category "Earth Science Services" :ignore_case true}}
+           [coll11] {:science_keywords {:category "EARTH SCIENCE SERVICES" :ignore_case false}}
 
            ;; pattern
            [coll1] {:science_keywords {:category "C*" :pattern true}}

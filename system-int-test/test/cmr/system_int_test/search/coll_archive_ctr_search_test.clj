@@ -107,7 +107,6 @@
            [coll8] {:archive_center {:short_name "Ucar/ncar/eoL/ceoPdm" :ignore_case true}}
            [coll8] {:archive_center {:short_name "UCAR/NCAR/EOL/CEOPDM" :ignore_case false}}
 
-           [] {:archive_center {:long_name "ceop data M?nagement*"}}
            [coll8] {:archive_center {:long_name "ceop data M?nagement*" :pattern true}}
            [] {:archive_center {:long_name "ceop data M?nagement*"}}
            [coll8] {:archive_center {:url "http://www.eol.ucar.edu/projects/ceop/dm/"}}
