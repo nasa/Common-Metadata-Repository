@@ -16,7 +16,9 @@
   (let [full-platform
         (merge default-platform-values
                (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :platforms short-name))
-        {:keys [category series-entity long-name uuid]} full-platform]
+        {:keys [category series-entity short-name long-name uuid]
+         ;; Use the short-name from KMS if present, otherwise use the metadata short-name
+         :or {short-name short-name}} full-platform]
     {:category category
      :category.lowercase (str/lower-case category)
      :series-entity series-entity
