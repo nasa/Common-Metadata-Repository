@@ -24,11 +24,14 @@
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
 (defn science-keyword->elastic-doc
-  "Converts a science keyword into the portion going in an elastic document"
+  "Converts a science keyword into the portion going in an elastic document. If there is a match
+  with the science keywords in KMS we index the fields using the case from KMS rather than the
+  case from the keywords in the metadata."
   [gcmd-keywords-map science-keyword]
-  (let [{:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword
-        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
+  (let [{:keys [detailed-variable]} science-keyword
+        kms-science-keyword (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)
+        {:keys [category topic term variable-level-1 variable-level-2
+                variable-level-3 uuid]} (or kms-science-keyword science-keyword)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic

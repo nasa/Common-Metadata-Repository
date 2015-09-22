@@ -207,7 +207,7 @@
         :count 2,
         :subfields ["short_name"],
         :short_name
-        [{:value "diadem-1D",
+        [{:value "DIADEM-1D",
           :count 2,
           :subfields ["long_name"],
           :long_name [{:value "Not Provided", :count 2}]}]}
@@ -248,7 +248,7 @@
               :long_name
               [{:value "Airborne Topographic Mapper",
                 :count 2}]}
-             {:value "lVIs",
+             {:value "LVIS",
               :count 2,
               :subfields ["long_name"],
               :long_name

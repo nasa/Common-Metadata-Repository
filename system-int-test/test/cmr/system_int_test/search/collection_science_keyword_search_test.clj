@@ -41,16 +41,16 @@
                                  :topic "Cool"
                                  :term "Mild"})
 
-        ;; The next two keywords are found in GCMD KMS
-        sk8 (dc/science-keyword {:category "EARTH SCIENCE SERVICES"
-                                 :topic "DATA ANALYSIS AND VISUALIZATION"
-                                 :term "GEOGRAPHIC INFORMATION SYSTEMS"})
-        sk9 (dc/science-keyword {:category "EARTH SCIENCE"
-                                 :topic "SOLID EARTH"
-                                 :term "ROCKS/MINERALS/CRYSTALS"
-                                 :variable-level-1 "SEDIMENTARY ROCKS"
-                                 :variable-level-2 "SEDIMENTARY ROCK PHYSICAL/OPTICAL PROPERTIES"
-                                 :variable-level-3 "LUMINESCENCE"})
+        ;; The next two keywords are found in GCMD KMS, but fields are in all CAPS in KMS
+        sk8 (dc/science-keyword {:category "Earth Science Services"
+                                 :topic "Data Analysis and Visualization"
+                                 :term "GEOGRAPHIC information SyStEmS"})
+        sk9 (dc/science-keyword {:category "earth science"
+                                 :topic "solid earth"
+                                 :term "rocks/minerals/crystals"
+                                 :variable-level-1 "sedimentary rocks"
+                                 :variable-level-2 "sedimentary rock physical/optical properties"
+                                 :variable-level-3 "luminescence"})
         coll1 (d/ingest "PROV1" (dc/collection {:science-keywords [sk1]}))
         coll2 (d/ingest "PROV1" (dc/collection {:science-keywords [sk2]}))
         coll3 (d/ingest "PROV1" (dc/collection {:science-keywords [sk3]}))
@@ -224,14 +224,14 @@
            [] {:science_keywords {:category "BLAH"}}
 
            [coll2] {:science_keywords {:category "Hurricane"
-                     :topic "Popular"
-                     :term "Extreme"}}
+                                       :topic "Popular"
+                                       :term "Extreme"}}
            [coll2 coll6] {:and [{:science_keywords {:category "Hurricane"
                                                     :topic "Popular"}}
                                 {:science_keywords {:term "Extreme"}}]}
            [coll2 coll3 coll5 coll6 coll7] {:or [{:science_keywords {:category "Hurricane"
                                                                      :topic "Popular"}}
-                                                  {:science_keywords {:term "Extreme"}}]}
+                                                 {:science_keywords {:term "Extreme"}}]}
            [coll11] {:science_keywords {:uuid "794e3c3b-791f-44de-9ff3-358d8ed74733"}}
 
            ;; case sensitivity
@@ -239,6 +239,11 @@
            [] {:science_keywords {:category "cat1" :ignore_case false}}
            [coll1] {:or [{:science_keywords {:category "Cat1"}}
                          {:science_keywords {:term "extreme" :ignore_case false}}]}
+
+           ;; Case for exact match searches needs to match KMS case, not original metadata case
+           [] {:science_keywords {:category "Earth Science Services" :ignore_case false}}
+           [coll11] {:science_keywords {:category "Earth Science Services" :ignore_case true}}
+           [coll11] {:science_keywords {:category "EARTH SCIENCE SERVICES" :ignore_case false}}
 
            ;; pattern
            [coll1] {:science_keywords {:category "C*" :pattern true}}

@@ -21,10 +21,11 @@
 
         coll7 (d/ingest "PROV2" (dc/collection {:organizations [(dc/org :archive-center "Sedac AC")
                                                                 (dc/org :processing-center "Sedac")]}))
+        ;; KMS collections, but with different case for the short-names
         coll8 (d/ingest "PROV1" (dc/collection
-                                  {:organizations [(dc/org :archive-center "UCAR/NCAR/EOL/CEOPDM")]}))
+                                  {:organizations [(dc/org :archive-center "Ucar/ncar/eoL/ceoPdm")]}))
         coll9 (d/ingest "PROV1" (dc/collection
-                                  {:organizations [(dc/org :archive-center "DOI/USGS/CMG/WHSC")]}))]
+                                  {:organizations [(dc/org :archive-center "Doi/uSGs/Cmg/wHSc")]}))]
 
     (index/wait-until-indexed)
 
@@ -96,10 +97,16 @@
                                            :ignore_case false}}
            [] {:archive_center {:level_0 "government agencies-u.s. federal agencies" :ignore_case false}}
            [coll8 coll9] {:archive_center {:level_0 "government agencies-u.s. federal agencies"
-                                                 :ignore_case true}}
+                                           :ignore_case true}}
            [coll8] {:archive_center {:level_1 "NSF"}}
            [coll9] {:archive_center {:level_2 "USGS"}}
            [coll9] {:archive_center {:level_3 "Added level 3 value"}}
+
+           ;; Short name uses KMS case rather than metadata case
+           [] {:archive_center {:short_name "Ucar/ncar/eoL/ceoPdm" :ignore_case false}}
+           [coll8] {:archive_center {:short_name "Ucar/ncar/eoL/ceoPdm" :ignore_case true}}
+           [coll8] {:archive_center {:short_name "UCAR/NCAR/EOL/CEOPDM" :ignore_case false}}
+
            [coll8] {:archive_center {:long_name "ceop data M?nagement*" :pattern true}}
            [] {:archive_center {:long_name "ceop data M?nagement*"}}
            [coll8] {:archive_center {:url "http://www.eol.ucar.edu/projects/ceop/dm/"}}

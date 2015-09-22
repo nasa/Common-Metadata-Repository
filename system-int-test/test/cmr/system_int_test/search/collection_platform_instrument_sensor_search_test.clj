@@ -19,7 +19,7 @@
 
         ;; Platforms to verify the ability to search by KMS platform subfields
         p7 (dc/platform {:short-name "DMSP 5B/F3"})
-        p8 (dc/platform {:short-name "DIADEM-1D"})
+        p8 (dc/platform {:short-name "diaDEM-1d"})
 
         coll1 (d/ingest "PROV1" (dc/collection {:platforms [p1 p7]}))
         coll2 (d/ingest "PROV1" (dc/collection {:platforms [p1 p2 p8]}))
@@ -96,7 +96,10 @@
            [coll1 coll2 coll9] {:platform {:category "EARTH OBSERVATION SATELLITES"
                                            :ignore_case true}}
            [coll1] {:platform {:series_entity "DMSP (Defense Meteorological Satellite Program)"}}
-           [coll2] {:platform {:short_name "DIADEM-1D"}}
+           ;; Short name uses KMS case rather than metadata case
+           [] {:platform {:short_name "diaDEM-1d" :ignore_case false}}
+           [coll2] {:platform {:short_name "diaDEM-1d" :ignore_case true}}
+           [coll2] {:platform {:short_name "DIADEM-1D" :ignore_case false}}
            [coll1] {:platform {:long_name "defense METEOR*cal S?tellite *" :pattern true}}
            [] {:platform {:long_name "defense METEOR*cal S?tellite *"}}
            [coll1] {:platform {:uuid "7ed12e98-95b1-406c-a58a-f4bbfa405269"}}
@@ -111,7 +114,7 @@
         i6 (dc/instrument {:short-name "instrument_x"})
 
         ;; Instruments to verify the ability to search by KMS instrument subfields
-        i7 (dc/instrument {:short-name "ATM"})
+        i7 (dc/instrument {:short-name "atm"})
         i8 (dc/instrument {:short-name "LVIS"})
 
         p1 (dc/platform {:short-name "platform_1" :instruments [i1 i7]})
@@ -191,16 +194,21 @@
            [coll1 coll2 coll3 coll6] {:instrument {:short_name "instrument_Sn *" :pattern true}}
            [coll4 coll5] {:instrument {:short_name "instrument_Sn?" :pattern true}}
 
-           ; Test searching on KMS subfields
+           ;; Test searching on KMS subfields
            [coll1 coll2 coll3 coll10] {:instrument {:category "Earth Remote Sensing Instruments"
-                                              :ignore_case false}}
+                                                    :ignore_case false}}
            [] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS" :ignore_case false}}
            [coll1 coll2 coll3 coll10] {:instrument {:category "EARTH REMOTE SENSING INSTRUMENTS"
-                                              :ignore_case true}}
+                                                    :ignore_case true}}
            [coll1 coll2 coll3] {:instrument {:class "Active Remote Sensing"}}
            [coll1 coll2 coll3] {:instrument {:type "Altimeters"}}
            [coll10] {:instrument {:subtype "Imaging Spectrometers/Radiometers"}}
-           [coll10] {:instrument {:short_name "SMAP L-BAND RADIOMETER"}}
+
+           ;; Short name uses KMS case rather than metadata case
+           [] {:instrument {:short_name "atm" :ignore_case false}}
+           [coll1 coll2] {:instrument {:short_name "atm" :ignore_case true}}
+           [coll1 coll2] {:instrument {:short_name "ATM" :ignore_case false}}
+
            [coll2 coll3] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor" :pattern true}}
            [] {:instrument {:long_name "Land, V?getation*nd Ice Se?sor"}}
            [coll1 coll2] {:instrument {:uuid "c2428a35-a87c-4ec7-aefd-13ff410b3271"}}
