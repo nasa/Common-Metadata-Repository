@@ -37,6 +37,12 @@
             [clojure.set :as set]
             [cmr.transmit.kms :as kms]))
 
+(def sorted-hierarchical-map
+  "A map that sorts the keys of the hierarchical map so it is presented in a pleasing way to Users
+  of the API. The nested hierarchical maps API can be hard to understand if the maps are ordered
+  randomly"
+  (util/key-sorted-map [:value :uuid :subfields]))
+
 (defn- validate-keyword-scheme
   "Throws a service error if the provided keyword-scheme is invalid."
   [keyword-scheme]
@@ -118,7 +124,7 @@
                               ;; There's no nil values so collapse the inner values and associate
                               ;; it with the original key
                               (assoc new-hm k (seq-set (map collapse-hierarchical-map* values))))))
-                        {}
+                        sorted-hierarchical-map
                         (dissoc hm :value :uuid))
         ;; Remove the empty subfields so we can get the correct list of subfields
         subfields (-> collapsed-map
@@ -141,7 +147,7 @@
   [flat-keywords keyword-hierarchy]
   (->> flat-keywords
        (map #(keyword->hierarchy % keyword-hierarchy))
-       (reduce merge-hierarchical-maps {})
+       (reduce merge-hierarchical-maps sorted-hierarchical-map)
        collapse-hierarchical-map))
 
 (defn- get-hierarchical-keywords
