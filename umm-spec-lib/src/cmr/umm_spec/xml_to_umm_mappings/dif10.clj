@@ -18,8 +18,8 @@
       {:ShortName (value-of proj "Short_Name")
        :LongName (value-of proj "Long_Name")
        :Campaigns (values-at proj "Campaign")
-       :StartDate (value-of proj "Start_Date")
-       :EndDate (value-of proj "End_Date")})))
+       :StartDate (date-at proj "Start_Date")
+       :EndDate (date-at proj "End_Date")})))
 
 (defn- parse-instruments
   [platform-el]

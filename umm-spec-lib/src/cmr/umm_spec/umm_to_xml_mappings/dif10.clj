@@ -2,6 +2,7 @@
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]
+            [clj-time.format :as f]
             [cmr.umm-spec.util :as u :refer [with-default]]))
 
 (def platform-types
@@ -87,7 +88,7 @@
 
 (defn- generate-projects
   "Returns the content generator instructions for generating DIF10 projects. DIF10 projects
-  is required, so we genereate a dummy one when it is nil."
+  is required, so we generate a dummy one when it is nil."
   [projects]
   (if (seq projects)
     (for [{:keys [ShortName LongName Campaigns StartDate EndDate]} projects]
@@ -95,14 +96,14 @@
        [:Short_Name ShortName]
        [:Campaign (first Campaigns)]
        [:Long_Name LongName]
-       [:Start_Date StartDate]
-       [:End_Date EndDate]])
+       [:Start_Date (when StartDate (f/unparse (f/formatters :date) StartDate))]
+       [:End_Date (when EndDate (f/unparse (f/formatters :date) EndDate))]])
     [:Project
      [:Short_Name u/not-provided]]))
 
 (defn- generate-instruments
   "Returns the content generator instructions for generating DIF10 instruments. DIF10 instruments is
-  a required field in PlatformType, so we genereate a dummy one when it is nil."
+  a required field in PlatformType, so we generate a dummy one when it is nil."
   [instruments]
   (if (seq instruments)
     (for [instrument instruments]
