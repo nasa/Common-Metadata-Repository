@@ -140,6 +140,13 @@
           []
           temporal-extents))
 
+(defn- date-time->date
+  "Returns the given datetime to a date."
+  [date-time]
+  (some->> date-time
+           (f/unparse (f/formatters :date))
+           (f/parse (f/formatters :date))))
+
 ;;; Format-Specific Translation Functions
 
 (defn- echo10-expected-distributions
@@ -268,8 +275,12 @@
 
 (defn dif10-project
   [proj]
-  ;; DIF 10 only has at most one campaign in Project Campaigns
-  (update-in proj [:Campaigns] #(when (first %) [(first %)])))
+  (-> proj
+      ;; DIF 10 only has at most one campaign in Project Campaigns
+      (update-in [:Campaigns] #(when (first %) [(first %)]))
+      ;; DIF10 StartDate and EndDate are date rather than datetime
+      (update-in [:StartDate] date-time->date)
+      (update-in [:EndDate] date-time->date)))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
@@ -319,10 +330,7 @@
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
-             (update-in [:PublicationDate] (fn [date-time]
-                                             (->> date-time
-                                                  (f/unparse (f/formatters :date))
-                                                  (f/parse (f/formatters :date)))))))))
+             (update-in [:PublicationDate] date-time->date)))))
 
 (defn- distribution->expected-iso
   "Converts an UMM distribution to expected ISO19115 distribution. All the nil values are replaced

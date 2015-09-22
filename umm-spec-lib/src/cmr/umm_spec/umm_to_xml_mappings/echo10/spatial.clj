@@ -28,23 +28,23 @@
   "Returns ECHO BoundingRectangle element from a UMM BoundingRectangleType record."
   [rect]
   [:BoundingRectangle
-   (center-point-of rect)
    (elements-from rect
                   :WestBoundingCoordinate :NorthBoundingCoordinate
-                  :EastBoundingCoordinate :SouthBoundingCoordinate)])
+                  :EastBoundingCoordinate :SouthBoundingCoordinate)
+   (center-point-of rect)])
 
 (defn- polygon-element
   "Returns ECHO GPolygon element from UMM GPolygonType record."
   [poly]
   [:GPolygon
-   [:CenterPoint
-    (point-contents (:CenterPoint poly))]
    [:Boundary
     (map point-element (echo-point-order (-> poly :Boundary :Points)))]
    [:ExclusiveZone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element  (echo-point-order (:Points b)))])]])
+       (map point-element  (echo-point-order (:Points b)))])]
+   [:CenterPoint
+    (point-contents (:CenterPoint poly))]])
 
 (defn- line-element
   "Returns ECHO Line element from given UMM LineType record."

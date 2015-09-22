@@ -2,6 +2,7 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -48,7 +49,7 @@
   [doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :EntryId    (value-of doc "/Collection/ShortName")
-   :Version    (value-of doc "/Collection/VersionId")
+   :Version    (without-default-value-of doc "/Collection/VersionId")
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")
@@ -62,9 +63,11 @@
    :SpatialExtent    (spatial/parse-spatial doc)
    :TemporalExtents  (parse-temporal doc)
    :Platforms (for [plat (select doc "/Collection/Platforms/Platform")]
-                (assoc (fields-from plat :ShortName :LongName :Type)
-                       :Characteristics (parse-characteristics plat)
-                       :Instruments (map parse-instrument (select plat "Instruments/Instrument"))))
+                {:ShortName (without-default-value-of plat "ShortName")
+                 :LongName (without-default-value-of plat "LongName")
+                 :Type (without-default-value-of plat "Type")
+                 :Characteristics (parse-characteristics plat)
+                 :Instruments (map parse-instrument (select plat "Instruments/Instrument"))})
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]

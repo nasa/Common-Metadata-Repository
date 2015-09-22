@@ -48,7 +48,8 @@
         [:Westernmost_Longitude (:WestBoundingCoordinate mbr)]
         [:Easternmost_Longitude (:EastBoundingCoordinate mbr)]])
      (for [spatial-keyword (:SpatialKeywords c)]
-       [:Location spatial-keyword])
+       [:Location
+        [:Location_Category spatial-keyword]])
      (for [temproal-keywod (:TemporalKeywords c)]
        [:Data_Resolution
         [:Temporal_Resolution temproal-keywod]])
