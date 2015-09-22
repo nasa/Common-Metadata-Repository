@@ -90,5 +90,23 @@
   (is (= (expected-conversion/convert user/failing-value :echo10)
          (xml-round-trip user/failing-value :echo10)))
 
+  ;; random XML gen
+  (def metadata-format :iso19115)
+
+  (def sample-record (first (gen/sample (gen/such-that (comp :HorizontalSpatialDomain :SpatialExtent) umm-gen/umm-c-generator) 1)))
+
+  ;; generated xml
+  (core/generate-metadata :collection metadata-format sample-record)
+
+  ;; round-trip
+  (xml-round-trip sample-record metadata-format)
+
+  ;; generated test case
+  (is (= (expected-conversion/convert sample-record metadata-format)
+         (xml-round-trip sample-record metadata-format)))
+
+  ;; for generated test failures
+  (is (= (expected-conversion/convert user/failing-value metadata-format)
+         (xml-round-trip user/failing-value metadata-format)))
 
   )

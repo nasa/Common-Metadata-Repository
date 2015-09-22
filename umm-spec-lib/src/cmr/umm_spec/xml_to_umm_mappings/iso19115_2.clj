@@ -4,7 +4,8 @@
             [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -192,6 +193,7 @@
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
+     :SpatialExtent (spatial/parse-spatial doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]

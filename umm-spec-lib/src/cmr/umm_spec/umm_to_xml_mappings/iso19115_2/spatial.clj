@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial
   "Functions for generating ISO-MENDS XML elements from UMM spatial records."
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
+  (:require [camel-snake-kebab.core :as csk]
             [cmr.spatial.derived :as d]
             [cmr.spatial.encoding.gmd :as gmd]
             [cmr.spatial.line-string :as ls]
@@ -10,7 +9,6 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as r]
             [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.collection :as c]
             [cmr.umm.spatial :as umm-s]))
 
 (defn spatial-point
@@ -20,7 +18,7 @@
 (defn spatial-lib-shapes
   "Returns new umm-spec spatial GeometryType as a sequence of CMR spatial-lib types."
   [geometry]
-  (let [coord-sys (csk/->camelCaseKeyword (:CoordinateSystem geometry))
+  (let [coord-sys (some-> geometry :CoordinateSystem csk/->camelCaseKeyword)
         make-ring (partial rr/ring coord-sys)]
     (concat
      ;; Points
@@ -42,13 +40,23 @@
                 (:EastBoundingCoordinate  rect)
                 (:SouthBoundingCoordinate rect))))))
 
-(defn spatial-elements
+(defn coordinate-system-element
+  "Returns the spatial coordinate system ISO XML element for a given UMM-C collection record."
+  [c]
+  [:gmd:referenceSystemInfo
+   [:gmd:MD_ReferenceSystem
+    [:gmd:referenceSystemIdentifier
+     [:gmd:RS_Identifier
+      [:gmd:code
+       [:gco:CharacterString
+        (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)]]]]]])
+
+(defn spatial-extent-elements
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."
   [c]
   (let [spatial (:SpatialExtent c)
         coordinate-system :cartesian
-        shapes (spatial-lib-shapes (-> spatial :HorizontalSpatialDomain :Geometry))
-        _ (println "shapes =" shapes)]
+        shapes (spatial-lib-shapes (-> spatial :HorizontalSpatialDomain :Geometry))]
     (->> shapes
          (map (partial umm-s/set-coordinate-system coordinate-system))
          (map d/calculate-derived)

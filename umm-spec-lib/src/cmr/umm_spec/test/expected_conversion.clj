@@ -356,10 +356,24 @@
            (map distribution->expected-iso)
            vec))
 
+(defn update-iso-spatial
+  [spatial-extent]
+  (-> spatial-extent
+      (assoc :OrbitParameters nil
+             :VerticalSpatialDomains nil
+             ;; TODO these are mapped into the comma-separated strings... not ready yet
+             :GranuleSpatialRepresentation nil
+             :SpatialCoverageType nil)
+      (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
+      prune-empty-maps))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent] update-iso-spatial)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -386,6 +400,7 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
+      (assoc :SpatialExtent nil)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP

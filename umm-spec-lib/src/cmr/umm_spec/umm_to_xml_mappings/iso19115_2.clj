@@ -292,6 +292,7 @@
       [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
      [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
      [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
+     (spatial/coordinate-system-element c)
      [:gmd:identificationInfo
       [:gmd:MD_DataIdentification
        [:gmd:citation
@@ -328,8 +329,7 @@
        [:gmd:language (char-string (:DataLanguage c))]
        [:gmd:extent
         [:gmd:EX_Extent {:id "boundingExtent"}
-         (spatial/spatial-elements c)]
-        [:gmd:EX_Extent
+         (spatial/spatial-extent-elements c)
          (for [temporal (:TemporalExtents c)
                rdt (:RangeDateTimes temporal)]
            [:gmd:temporalElement
