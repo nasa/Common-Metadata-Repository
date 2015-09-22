@@ -56,8 +56,8 @@
     (:type condition)))
 
 (defmethod range-condition->range-filter :string
-  [{:keys [type min-value max-value]}]
-  (qm/string-range-condition (type->field-name type) min-value max-value))
+  [{:keys [type min-value max-value exclusive?]}]
+  (qm/string-range-condition (type->field-name type) min-value max-value exclusive?))
 
 (defmethod range-condition->range-filter :float
   [{:keys [type min-value max-value exclusive?]}]
@@ -84,29 +84,44 @@
   [condition]
   (date-range-condition->range-filter condition))
 
-(extend-protocol c2s/ComplexQueryToSimple
-  cmr.search.models.query.AttributeNameCondition
-  (c2s/reduce-query-condition
-    [condition context]
-    (let [{:keys [name pattern?]} condition
-          name-cond (qm/string-condition :attributes.name name true pattern?)]
-      (qm/nested-condition :attributes name-cond))))
+(defn- name-and-group-condition
+  "Constructs a query condition based on the provided name and group. One of group or name
+  must be non-nil."
+  ([attrib-name group]
+   (name-and-group-condition attrib-name group false))
+  ([attrib-name group pattern?]
+
+   (let [group-cond (when group (qm/string-condition :attributes.group group true pattern?))
+         name-cond (when attrib-name
+                     (qm/string-condition :attributes.name attrib-name true pattern?))]
+     (cond
+       (and group attrib-name) (gc/and-conds [group-cond name-cond])
+       attrib-name name-cond
+       :else group-cond))))
 
 (extend-protocol c2s/ComplexQueryToSimple
+  cmr.search.models.query.AttributeNameAndGroupCondition
+  (c2s/reduce-query-condition
+    [condition context]
+    (let [{:keys [name group pattern?]} condition
+          name-and-group-cond (name-and-group-condition name group pattern?)]
+      (qm/nested-condition :attributes name-and-group-cond)))
+
   cmr.search.models.query.AttributeValueCondition
   (c2s/reduce-query-condition
     [condition context]
-    (let [value-filter (value-condition->value-filter condition)
-          attrib-name (:name condition)
-          name-cond (qm/string-condition :attributes.name attrib-name true false)
-          and-cond (gc/and-conds [name-cond value-filter])]
+    (let [{:keys [name group]} condition
+          value-filter (value-condition->value-filter condition)
+          name-and-group-cond (name-and-group-condition name group)
+          and-cond (gc/and-conds [name-and-group-cond value-filter])]
       (qm/nested-condition :attributes and-cond)))
 
   cmr.search.models.query.AttributeRangeCondition
   (c2s/reduce-query-condition
     [condition context]
-    (let [range-filter (range-condition->range-filter condition)
-          attrib-name (:name condition)
-          name-cond (qm/string-condition :attributes.name attrib-name true false)
-          and-cond (gc/and-conds [name-cond range-filter])]
+    (let [{:keys [name group]} condition
+          range-filter (range-condition->range-filter condition)
+          name-and-group-cond (name-and-group-condition name group)
+          and-cond (gc/and-conds [name-and-group-cond range-filter])]
       (qm/nested-condition :attributes and-cond))))
+

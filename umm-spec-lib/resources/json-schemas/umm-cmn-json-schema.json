@@ -455,9 +455,7 @@
         },
         "Value": {
           "description": "Value of the constraint",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "type": "number"
         }
       },
       "required": ["Description"]
@@ -702,9 +700,7 @@
         },
         "DistributionSize": {
           "description": "The size of the distribution package of the data or service.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 80
+          "type": "number"
         },
         "DistributionFormat": {
           "description": "The distribution format of the data.",

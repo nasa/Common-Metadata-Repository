@@ -26,6 +26,7 @@
   {:providers :short-name
    :platforms :short-name
    :instruments :short-name
+   :projects :short-name
    :science-keywords :uuid})
 
 (def keyword-scheme->gcmd-resource-name
@@ -33,6 +34,7 @@
   {:providers "providers/providers.csv"
    :platforms "platforms/platforms.csv"
    :instruments "instruments/instruments.csv"
+   :projects "projects/projects.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
 (def keyword-scheme->field-names
@@ -40,6 +42,7 @@
   {:providers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name :url :uuid]
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
+   :projects [:bucket :short-name :long-name :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]})
 

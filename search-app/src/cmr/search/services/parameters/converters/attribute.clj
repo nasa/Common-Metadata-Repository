@@ -10,7 +10,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.date-time-parser :as date-time-parser])
   (:import [cmr.search.models.query
-            AttributeNameCondition
+            AttributeNameAndGroupCondition
             AttributeValueCondition
             AttributeRangeCondition]
            clojure.lang.ExceptionInfo))
@@ -30,7 +30,7 @@
   [parts]
   (let [attr-name (first parts)]
     (if attr-name
-      (qm/map->AttributeNameCondition {:name attr-name})
+      (qm/map->AttributeNameAndGroupCondition {:name attr-name})
       {:errors [(msg/invalid-name-msg attr-name)]})))
 
 (defmethod parts->condition 3
@@ -94,14 +94,18 @@
   "Attempts to parse the given field and update the condition. If there are problems parsing an
   errors attribute will be returned."
   [condition field parser type]
-  (let [handle-exception #(update-in condition [:errors]
-                                     conj (msg/invalid-value-msg type (get condition field)))]
-    (try
-      (update-in condition [field] parser)
-      (catch NumberFormatException e
-        (handle-exception))
-      (catch ExceptionInfo e
-        (handle-exception)))))
+  (if (and parser (some? (field condition)))
+    (let [handle-exception #(update-in condition [:errors]
+                                       conj (msg/invalid-value-msg type (get condition field)))]
+      (try
+        (update-in condition [field] parser)
+        (catch NumberFormatException e
+          (handle-exception))
+        (catch ClassCastException e
+          (handle-exception))
+        (catch ExceptionInfo e
+          (handle-exception))))
+    condition))
 
 (defmethod parse-condition-values AttributeRangeCondition
   [condition exclusive?]
@@ -135,7 +139,7 @@
   (fn [condition exclusive?]
     (type condition)))
 
-(defmethod parse-component-type AttributeNameCondition
+(defmethod parse-component-type AttributeNameAndGroupCondition
   [condition _]
   condition)
 

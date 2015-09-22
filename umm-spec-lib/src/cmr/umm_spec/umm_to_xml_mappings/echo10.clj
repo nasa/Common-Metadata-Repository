@@ -81,44 +81,44 @@
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
   (xml
-   [:Collection
-    [:ShortName (:EntryId c)]
-    [:VersionId (:Version c)]
-    [:InsertTime "1999-12-31T19:00:00-05:00"]
-    [:LastUpdate "1999-12-31T19:00:00-05:00"]
-    [:LongName "dummy-long-name"]
-    [:DataSetId (:EntryTitle c)]
-    [:Description (:Abstract c)]
-    [:CollectionDataType (:CollectionDataType c)]
-    [:Orderable "true"]
-    [:Visible "true"]
-    [:SuggestedUsage (:Purpose c)]
-    [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
-    [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
-    [:CollectionState (:CollectionProgress c)]
-    [:RestrictionFlag (-> c :AccessConstraints :Value)]
-    [:RestrictionComment (-> c :AccessConstraints :Description)]
-    [:Price (-> c :Distributions first :Fees)]
-    [:DataFormat (-> c :Distributions first :DistributionFormat)]
-    [:SpatialKeywords
-     (for [kw (:SpatialKeywords c)]
-       [:Keyword kw])]
-    [:TemporalKeywords
-     (for [kw (:TemporalKeywords c)]
-       [:Keyword kw])]
-    (echo10-temporal c)
-    (echo10-platforms c)
-    [:AdditionalAttributes
-     (for [aa (:AdditionalAttributes c)]
-       [:AdditionalAttribute
-        (elements-from aa
-                       :Name :Description :DataType :ParameterRangeBegin
-                       :ParameterRangeEnd :Value)])]
-    (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
-      [:Campaigns
-       [:Campaign
-        [:ShortName ShortName]
-        [:LongName LongName]
-        [:StartDate StartDate]
-        [:EndDate EndDate]]])
-    (spatial/spatial-element c)]))
+    [:Collection
+     [:ShortName (:EntryId c)]
+     [:VersionId (:Version c)]
+     [:InsertTime "1999-12-31T19:00:00-05:00"]
+     [:LastUpdate "1999-12-31T19:00:00-05:00"]
+     [:LongName "dummy-long-name"]
+     [:DataSetId (:EntryTitle c)]
+     [:Description (:Abstract c)]
+     [:CollectionDataType (:CollectionDataType c)]
+     [:Orderable "true"]
+     [:Visible "true"]
+     [:SuggestedUsage (:Purpose c)]
+     [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
+     [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+     [:CollectionState (:CollectionProgress c)]
+     [:RestrictionFlag (-> c :AccessConstraints :Value)]
+     [:RestrictionComment (-> c :AccessConstraints :Description)]
+     [:Price (-> c :Distributions first :Fees)]
+     [:DataFormat (-> c :Distributions first :DistributionFormat)]
+     [:SpatialKeywords
+      (for [kw (:SpatialKeywords c)]
+        [:Keyword kw])]
+     [:TemporalKeywords
+      (for [kw (:TemporalKeywords c)]
+        [:Keyword kw])]
+     (echo10-temporal c)
+     (echo10-platforms c)
+     [:AdditionalAttributes
+      (for [aa (:AdditionalAttributes c)]
+        [:AdditionalAttribute
+         (elements-from aa
+                        :Name :Description :DataType :ParameterRangeBegin
+                        :ParameterRangeEnd :Value)])]
+     [:Campaigns
+      (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
+        [:Campaign
+         [:ShortName ShortName]
+         [:LongName LongName]
+         [:StartDate StartDate]
+         [:EndDate EndDate]])]
+     (spatial/spatial-element c)]))

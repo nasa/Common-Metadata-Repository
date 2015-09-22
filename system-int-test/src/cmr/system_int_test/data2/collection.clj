@@ -14,36 +14,27 @@
             ScienceKeyword
             UmmCollection]))
 
-
-(comment
-
-  (type (collection {:foo 4 :short-name "foo"}))
-  (product {:foo 4 :short-name "foo"})
-
-  (type (first (cmr.umm.collection.ProductSpecificAttribute/getBasis)))
-  (projects {:campaigns [{:short-name "xx" :long-name "lxx"} {:short-name "yy" :long-name "lyy"}]})
-  )
-
 (defn psa
-  "Creates product specific attribute"
-  ([name type]
-   (psa name type nil))
-  ([name type value]
-   (c/map->ProductSpecificAttribute
-     {:name name
-      :description "Generated"
-      :data-type type
-      :parsed-value value
-      :value (psa/gen-value type value)}))
-  ([name type minv maxv]
-   (c/map->ProductSpecificAttribute
-     {:name name
-      :description "Generated"
-      :data-type type
-      :parsed-parameter-range-begin minv
-      :parsed-parameter-range-end maxv
-      :parameter-range-begin (psa/gen-value type minv)
-      :parameter-range-end (psa/gen-value type maxv)})))
+  "Creates a product specific attribute."
+  [psa]
+  (let [{:keys [name group description data-type value min-value max-value]} psa]
+    (if (or (some? min-value) (some? max-value))
+      (c/map->ProductSpecificAttribute
+        {:name name
+         :group group
+         :description (or description "Generated")
+         :data-type data-type
+         :parsed-parameter-range-begin min-value
+         :parsed-parameter-range-end max-value
+         :parameter-range-begin (psa/gen-value data-type min-value)
+         :parameter-range-end (psa/gen-value data-type max-value)})
+      (c/map->ProductSpecificAttribute
+        {:name name
+         :group group
+         :description (or description "Generated")
+         :data-type data-type
+         :parsed-value value
+         :value (psa/gen-value data-type value)}))))
 
 (defn two-d
   "Creates two-d-coordinate-system specific attribute"

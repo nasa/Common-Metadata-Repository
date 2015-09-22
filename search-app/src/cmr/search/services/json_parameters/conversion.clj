@@ -16,6 +16,7 @@
             [cmr.search.services.parameters.parameter-validation :as pv]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.parameters.converters.nested-field :as nf]
+            [cmr.search.services.tagging.tag-related-item-condition :as tag-related]
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.validation :as sv]
             [inflections.core :as inf]))
@@ -28,7 +29,8 @@
 
 (def query-condition-name->condition-type-map
   "A mapping of query condition names to the query condition type."
-  {:entry-title :string
+  {;; collection query params
+   :entry-title :string
    :entry-id :string
    :provider :string
    :short-name :string
@@ -46,10 +48,16 @@
    :bounding-box :bounding-box
    :temporal :temporal
    :updated-since :updated-since
+   :science-keywords :nested-condition
+   :additional-attribute-name :additional-attribute
+   :additional-attribute-value :additional-attribute
+   :additional-attribute-range :additional-attribute
+   :tag :tag
+
+   ;; query constructs
    :or :or
    :and :and
-   :not :not
-   :science-keywords :nested-condition})
+   :not :not})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
@@ -101,6 +109,16 @@
    (or (contains? pc/always-case-sensitive-fields field)
        (= false (:ignore-case value-map)))))
 
+(defn- parse-json-string-condition
+  "Returns the parsed json string condition for the given name and value."
+  [condition-name value]
+  (if (map? value)
+    (qm/string-condition condition-name
+                         (:value value)
+                         (case-sensitive-field? condition-name value)
+                         (:pattern value))
+    (qm/string-condition condition-name value (case-sensitive-field? condition-name) false)))
+
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
   (fn [condition-name value]
@@ -113,12 +131,7 @@
 
 (defmethod parse-json-condition :string
   [condition-name value]
-  (if (map? value)
-    (qm/string-condition condition-name
-                         (:value value)
-                         (case-sensitive-field? condition-name value)
-                         (:pattern value))
-    (qm/string-condition condition-name value (case-sensitive-field? condition-name) false)))
+  (parse-json-string-condition condition-name value))
 
 (defmethod parse-json-condition :keyword
   [_ value]
@@ -147,10 +160,10 @@
 
 (defmethod parse-json-condition :nested-condition
   [condition-name value]
-    (validate-nested-condition condition-name value)
-    (nf/parse-nested-condition (inf/plural condition-name) value
-                               (case-sensitive-field? condition-name value)
-                               (:pattern value)))
+  (validate-nested-condition condition-name value)
+  (nf/parse-nested-condition (inf/plural condition-name) value
+                             (case-sensitive-field? condition-name value)
+                             (:pattern value)))
 
 (defmethod parse-json-condition :bounding-box
   [_ value]
@@ -179,6 +192,13 @@
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day
                                 :exclusive? exclude-boundary})))
+
+(defmethod parse-json-condition :tag
+  [_ value]
+  (let [parse-tag-condition (fn [[cond-name cond-value]]
+                              (tag-related/tag-related-item-query-condition
+                                (parse-json-string-condition cond-name cond-value)))]
+    (gc/and-conds (map parse-tag-condition value))))
 
 (defn parse-json-query
   "Converts a JSON query string and query parameters into a query model."

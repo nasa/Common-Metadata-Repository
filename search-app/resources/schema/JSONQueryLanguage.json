@@ -84,6 +84,30 @@
 						"required": ["value"]
 					}]
 				},
+				"tag": {
+					"description": "Search against any of the subfields of tag",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"namespace": {
+							"description": "Namespace of the tag.",
+							"$ref": "#/definitions/StringCondition"
+						},
+						"value": {
+							"description": "Value of the tag.",
+							"$ref": "#/definitions/StringCondition"
+						},
+						"category": {
+							"description": "Category of the tag.",
+							"$ref": "#/definitions/StringCondition"
+						},
+						"originator_id": {
+							"description": "Originator id of the tag.",
+							"$ref": "#/definitions/CaseInsensitiveStringCondition"
+						}
+					}
+				},
 				"platform": {
 					"description": "Search against any of the subfields in the platform hierarchy",
 					"type": "object",
@@ -318,6 +342,72 @@
 							"type": "boolean"
 						}
 					}
+				},
+				"additional_attribute_name": {
+					"description": "Search for additional attributes by name and/or group. One of name or group is required.",
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"name": {
+							"$ref": "#/definitions/AttributeNameCondition"
+						},
+						"group": {
+							"$ref": "#/definitions/AttributeGroupCondition"
+						},
+						"pattern": {
+							"$ref": "#/definitions/PatternOption"
+						}
+					}
+				},
+				"additional_attribute_value": {
+					"description": "Search for additional attributes by an exact value.",
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"name": {
+							"$ref": "#/definitions/AttributeNameCondition"
+						},
+						"group": {
+							"$ref": "#/definitions/AttributeGroupCondition"
+						},
+						"type": {
+							"$ref": "#/definitions/AttributeTypeCondition"
+						},
+						"value": {
+							"description": "Search for an exact value.",
+							"$ref": "#/definitions/AttributeValueCondition"
+						}
+					},
+					"required": ["name", "type", "value"]
+				},
+				"additional_attribute_range": {
+					"description": "Search for additional attributes by range. One of min_value or max_value are required in addition to name and type.",
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"name": {
+							"$ref": "#/definitions/AttributeNameCondition"
+						},
+						"group": {
+							"$ref": "#/definitions/AttributeGroupCondition"
+						},
+						"type": {
+							"$ref": "#/definitions/AttributeTypeCondition"
+						},
+						"min_value": {
+							"description": "Search for values for an additional attribute which are greater than the provided value.",
+							"$ref": "#/definitions/AttributeValueCondition"
+						},
+						"max_value": {
+							"description": "Search for values for an additional attribute which are less than the provided value.",
+							"$ref": "#/definitions/AttributeValueCondition"
+						},
+						"exclude_boundary": {
+							"description": "If set to true, the search will not include the boundary values for min and max values. Defaults to false.",
+							"type": "boolean"
+						}
+					},
+					"required": ["name", "type"]
 				}
 			}
 		},
@@ -335,6 +425,26 @@
 					},
 					"ignore_case": {
 						"$ref": "#/definitions/IgnoreCaseOption"
+					},
+					"pattern": {
+						"$ref": "#/definitions/PatternOption"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["value"]
+			}]
+		},
+		"CaseInsensitiveStringCondition": {
+			"description": "String searches can take either a string or an object with a value to search for and options to apply for the search. This is similar to StringCondition, but it does not support ignore_case options.",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"description": "Used to specify the value and options to apply when searching against a particular field. 'value' is required.",
+				"type": "object",
+				"properties": {
+					"value": {
+						"description": "The value to search for the given field.",
+						"type": "string"
 					},
 					"pattern": {
 						"$ref": "#/definitions/PatternOption"
@@ -386,6 +496,28 @@
 					}
 				},
 				"required": ["north", "south", "east", "west"]
+			}]
+		},
+		"AttributeNameCondition": {
+			"description": "Additional attribute name.",
+			"type": "string"
+		},
+		"AttributeGroupCondition": {
+			"description": "Additional attribute group, which is generally a namespace.",
+			"type": "string"
+		},
+		"AttributeTypeCondition": {
+			"description": "The data type of the attribute being searched against.",
+			"enum": ["string", "boolean", "time", "date", "datetime", "int", "float"]
+		},
+		"AttributeValueCondition": {
+			"description": "An attribute value to search against.",
+			"anyOf": [{
+				"type": "string"
+			}, {
+				"type": "integer"
+			}, {
+				"type": "number"
 			}]
 		},
 		"IgnoreCaseOption": {

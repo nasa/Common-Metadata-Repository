@@ -24,6 +24,8 @@
       [:Topic "dummy topic"]
       [:Term "dummy term"]]
      [:ISO_Topic_Category "dummy iso topic category"]
+     (for [ak (:AncillaryKeywords c)]
+       [:Keyword ak])
      (for [platform (:Platforms c)]
        [:Source_Name
         [:Short_Name (:ShortName platform)]

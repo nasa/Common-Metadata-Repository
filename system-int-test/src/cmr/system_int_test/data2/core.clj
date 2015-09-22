@@ -45,20 +45,22 @@
   * :allow-failure? - Defaults to false. If this is false an exception will be thrown when ingest fails
   * :client-id - The client-id to use
   for some reason. This is useful when you expect ingest to succeed but don't want to check the results.
-  Setting it to true will skip this check. Set it true when testing ingest failure cases."
+  Setting it to true will skip this check. Set it true when testing ingest failure cases.
+  * :validate-keywords - true or false to indicate if the validate keywords header should be sent
+  to enable keyword validation. Defaults to false."
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
    (let [{:keys [token client-id user-id]
           format-key :format} (merge {:format :echo10
                                       :token nil
-                                      :allow-failure? false
                                       :client-id nil
                                       :user-id nil}
                                      options)
          response (ingest/ingest-concept
                     (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token :client-id client-id :user-id user-id})
+                    {:token token :client-id client-id :user-id user-id
+                     :validate-keywords (:validate-keywords options)})
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -77,18 +79,26 @@
               :format-key format-key)
        response))))
 
-(defn ingest-concept-with-metadata-file
-  "Ingest the given concept with the metadata file. The metadata file has to be located under
-  dev-system/resources/data/... and referenced as 'data/...'"
-  [provider-id concept-type format-key metadata-file]
-  (let [metadata (slurp (io/resource metadata-file))
-        concept {:concept-type concept-type
+(defn ingest-concept-with-metadata
+  "Ingest the given concept with the given metadata."
+  [{:keys [provider-id concept-type format-key metadata native-id]}]
+  (let [concept {:concept-type concept-type
                  :provider-id provider-id
-                 :native-id "native-id"
+                 :native-id (or native-id "native-id")
                  :metadata metadata
                  :format (mime-types/format->mime-type format-key)}
         response (ingest/ingest-concept concept)]
     (merge (umm/parse-concept concept) response)))
+
+(defn ingest-concept-with-metadata-file
+  "Ingest the given concept with the metadata file. The metadata file has to be located on the
+  classpath. Takes a metadata-filename and an ingest parameter map.
+
+  ingest-params must contain the following keys: provider-id concept-type, and format-key. It can
+  optionally contain native-id."
+  [metadata-filename ingest-params]
+  (let [metadata (slurp (io/resource metadata-filename))]
+    (ingest-concept-with-metadata (assoc ingest-params :metadata metadata))))
 
 (defn item->ref
   "Converts an item into the expected reference"

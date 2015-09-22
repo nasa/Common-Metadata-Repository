@@ -4,8 +4,9 @@
             [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]))
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
+            [clojure.data :as data]
+            [cmr.umm-spec.json-schema :as js]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -83,6 +84,16 @@
                   (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
                   "/gmd:keyword/gco:CharacterString")))
 
+(defn- descriptive-keywords-type-not-equal
+  "Returns the descriptive keyword values for the given parent element for all keyword types excepting
+  those given"
+  [md-data-id-el keyword-types-to-ignore]
+  (let [keyword-types-to-ignore (set keyword-types-to-ignore)]
+    (flatten
+      (for [kw (select md-data-id-el "gmd:descriptiveKeywords/gmd:MD_Keywords")
+            :when (not (keyword-types-to-ignore (value-of kw "gmd:type/gmd:MD_KeywordTypeCode")))]
+        (values-at kw "gmd:keyword/gco:CharacterString")))))
+
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."
   [element xpath regex]
@@ -149,17 +160,20 @@
 (defn- parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc]
-  (let [medias (values-at doc distributor-media-xpath)
-        sizes (values-at doc distributor-size-xpath)
-        formats (values-at doc distributor-format-xpath)
-        fees (values-at doc distributor-fees-xpath)]
+  (let [nil-to-empty-string (fn [s] (if (some? s) s ""))
+        values-at-replace-nil (fn [xpath]
+                                (map nil-to-empty-string (values-at doc xpath)))
+        medias (values-at-replace-nil distributor-media-xpath)
+        sizes (values-at-replace-nil distributor-size-xpath)
+        formats (values-at-replace-nil distributor-format-xpath)
+        fees (values-at-replace-nil distributor-fees-xpath)]
     (util/map-longest (fn [media size format fee]
                         (hash-map
                           :DistributionMedia media
                           :DistributionSize size
                           :DistributionFormat format
                           :Fees fee))
-                      ""
+                      nil
                       medias sizes formats fees)))
 
 (defn- parse-iso19115-xml
@@ -230,7 +244,8 @@
                                :Publisher (select-party "publisher" "/gmd:organisationName")
                                :ISBN (char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
-                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})}))
+                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
+     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

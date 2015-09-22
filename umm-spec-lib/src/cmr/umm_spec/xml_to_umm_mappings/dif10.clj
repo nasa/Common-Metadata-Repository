@@ -106,7 +106,8 @@
                                            [:RelatedUrl
                                             {:URLs (seq
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                           :Other_Reference_Details])))})
+                                           :Other_Reference_Details])))
+   :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."

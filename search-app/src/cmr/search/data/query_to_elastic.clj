@@ -271,9 +271,9 @@
 
   cmr.search.models.query.StringRangeCondition
   (condition->elastic
-    [{:keys [field start-value end-value]} concept-type]
+    [{:keys [field start-value end-value exclusive?]} concept-type]
     (range-condition->elastic (query-field->elastic-field field concept-type)
-                              start-value end-value "index"))
+                              start-value end-value "index" true exclusive?))
 
   cmr.search.models.query.DateRangeCondition
   (condition->elastic

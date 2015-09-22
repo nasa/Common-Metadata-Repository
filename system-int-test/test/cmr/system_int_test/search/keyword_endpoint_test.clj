@@ -37,13 +37,24 @@
                              "uuid"
                              "180b59c3-31c1-4129-8d74-09a9557ebc79"}]}]}]}
                       {"value" "ACADEMIC",
+                       "level_1"
+                       [{"value" "OR-STATE/EOARC",
+                         "subfields" ["short_name"],
+                         "short_name"
+                         [{"value" "OR-STATE/EOARC",
+                           "subfields" ["long_name"],
+                           "long_name"
+                           [{"value"
+                             "Eastern Oregon Agriculture Research Center, Oregon State University",
+                             "uuid"
+                             "44a93a03-29c0-4800-a5a8-67d2c2c2caa7"}]}]}],
                        "short_name"
                        [{"value" "AARHUS-HYDRO",
                          "subfields" ["long_name"],
                          "long_name"
                          [{"value" "Hydrogeophysics Group, Aarhus University ",
                            "uuid" "bd197c6d-8612-42c2-a818-1975c4911e45"}]}],
-                       "subfields" ["short_name"]}
+                       "subfields" ["short_name" "level_1"]}
                       {"value" "CONSORTIA/INSTITUTIONS",
                        "short_name"
                        [{"value" "ESA/ED",
@@ -58,7 +69,31 @@
                         "uuid" "e9f67a66-e9fc-435c-b720-ae32a2c3d8f5",
                         "subfields" ["topic"],
                         "topic"
-                        [{"value" "SOLID EARTH",
+                        [{"value" "ATMOSPHERE",
+                          "subfields" ["term"],
+                          "term"
+                          [{"value" "AEROSOLS",
+                            "subfields" ["variable_level_1"],
+                            "variable_level_1"
+                            [{"value" "AEROSOL OPTICAL DEPTH/THICKNESS",
+                              "subfields" ["variable_level_2"],
+                              "variable_level_2"
+                              [{"value" "ANGSTROM EXPONENT",
+                                "uuid"
+                                "6e7306a1-79a5-482e-b646-74b75a1eaa48"}]}]}
+                           {"value" "ATMOSPHERIC TEMPERATURE",
+                            "subfields" ["variable_level_1"],
+                            "variable_level_1"
+                            [{"value" "SURFACE TEMPERATURE",
+                              "subfields" ["variable_level_2"],
+                              "variable_level_2"
+                              [{"value" "MAXIMUM/MINIMUM TEMPERATURE",
+                                "subfields" ["variable_level_3"],
+                                "variable_level_3"
+                                [{"value" "24 HOUR MAXIMUM TEMPERATURE",
+                                  "uuid"
+                                  "ce6a6b3a-df4f-4bd7-a931-7ee874ee9efe"}]}]}]}]}
+                         {"value" "SOLID EARTH",
                           "subfields" ["term"],
                           "term"
                           [{"value" "ROCKS/MINERALS/CRYSTALS",
@@ -91,18 +126,14 @@
                             [{"value" "MOBILE GEOGRAPHIC INFORMATION SYSTEMS",
                               "uuid" "0dd83b2a-e83f-4a0c-a1ff-2fbdbbcce62d"}
                              {"value" "DESKTOP GEOGRAPHIC INFORMATION SYSTEMS",
-                              "uuid"
-                              "565cb301-44de-446c-8fe3-4b5cce428315"}]}]}]}]}
+                              "uuid" "565cb301-44de-446c-8fe3-4b5cce428315"}]}]}
+                         {"value" "DATA MANAGEMENT/DATA HANDLING",
+                          "subfields" ["term"],
+                          "term"
+                          [{"value" "CATALOGING",
+                            "uuid" "434d40e2-4e0b-408a-9811-ff878f4f0fb0"}]}]}]}
    :platforms {"category"
-               [{"value" "Aircraft",
-                 "subfields" ["short_name"],
-                 "short_name"
-                 [{"value" "A340-600",
-                   "subfields" ["long_name"],
-                   "long_name"
-                   [{"value" "Airbus A340-600",
-                     "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}]}
-                {"value" "Earth Observation Satellites",
+               [{"value" "Earth Observation Satellites",
                  "subfields" ["series_entity"],
                  "series_entity"
                  [{"value"
@@ -114,8 +145,7 @@
                      "long_name"
                      [{"value"
                        "Defense Meteorological Satellite Program-F3",
-                       "uuid"
-                       "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}
+                       "uuid" "7ed12e98-95b1-406c-a58a-f4bbfa405269"}]}]}
                   {"value" "DIADEM",
                    "subfields" ["short_name"],
                    "short_name"
@@ -130,7 +160,17 @@
                      [{"value"
                        "Soil Moisture Active and Passive Observatory",
                        "uuid"
-                       "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}]}]}
+                       "7ee03239-24ff-433e-ab7e-8be8b9b2636b"}]}]}]}
+                {"value" "Aircraft",
+                 "short_name"
+                 [{"value" "AIRCRAFT",
+                   "uuid" "8bce0691-74e9-4363-8d1f-d453a318c62b"}
+                  {"value" "A340-600",
+                   "subfields" ["long_name"],
+                   "long_name"
+                   [{"value" "Airbus A340-600",
+                     "uuid" "bab77f95-aa34-42aa-9a12-922d1c9fae63"}]}],
+                 "subfields" ["short_name"]}]}
    :instruments {"category"
                  [{"value" "Earth Remote Sensing Instruments",
                    "subfields" ["class"],
@@ -138,7 +178,16 @@
                    [{"value" "Active Remote Sensing",
                      "subfields" ["type"],
                      "type"
-                     [{"value" "Altimeters",
+                     [{"value" "Profilers/Sounders",
+                       "subfields" ["subtype"],
+                       "subtype"
+                       [{"value" "Acoustic Sounders",
+                         "subfields" ["short_name"],
+                         "short_name"
+                         [{"value" "ACOUSTIC SOUNDERS",
+                           "uuid"
+                           "7ef0c3e6-1012-411a-b166-482fb35bb1dd"}]}]}
+                      {"value" "Altimeters",
                        "subfields" ["subtype"],
                        "subtype"
                        [{"value" "Lidar/Laser Altimeters",
@@ -182,7 +231,31 @@
                        "long_name"
                        [{"value" "Automated DNA Sequencer",
                          "uuid"
-                         "554a3c73-3b48-43ea-bf5b-8b98bc2b11bc"}]}]}]}]}})
+                         "554a3c73-3b48-43ea-bf5b-8b98bc2b11bc"}]}]}]}]}
+   :projects {"short_name"
+              [{"value" "EUDASM",
+                "subfields" ["long_name"],
+                "long_name"
+                [{"value" "European Digital Archive of Soil Maps",
+                  "uuid" "8497a1a8-5192-4e94-aabd-e8c349f2f79c"}]}
+               {"value" "EUCREX-94",
+                "uuid" "454a3c42-46e4-4f6b-a83c-b624fe553e0b"}
+               {"value" "SEDAC/GW",
+                "subfields" ["long_name"],
+                "long_name"
+                [{"value" "SEDAC Gateway",
+                  "uuid" "ba299a14-0b5b-4fbc-a1ce-87936f072210"}]}
+               {"value" "AA",
+                "subfields" ["long_name"],
+                "long_name"
+                [{"value" "ARCATLAS",
+                  "uuid" "a30ac9a7-82b0-42b6-93db-2764bd7535ca"}]}
+               {"value" "SEDAC/GISS CROP-CLIM DBQ",
+                "subfields" ["long_name"],
+                "long_name"
+                [{"value"
+                  "SEDAC Goddard Institute for Space Studies Crop-Climate Database Query",
+                  "uuid" "8ff7fd0b-caa4-423d-8387-c749e2795c46"}]}]}})
 
 (deftest get-keywords-test
   (util/are2
@@ -203,14 +276,17 @@
     :platforms (:platforms expected-hierarchy)
 
     "Testing correct keyword hierarchy returned for instruments."
-    :instruments (:instruments expected-hierarchy)))
+    :instruments (:instruments expected-hierarchy)
+
+    "Testing correct keyword hierarchy returned for projects."
+    :projects (:projects expected-hierarchy)))
 
 (deftest invalid-keywords-test
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
-                          "instruments, science_keywords, platforms, archive_centers, and "
-                          "providers.")]}
+                          "providers, instruments, science_keywords, platforms, archive_centers,"
+                          " and projects.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
 
 

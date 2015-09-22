@@ -11,19 +11,24 @@
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
             [cmr.search.services.messages.attribute-messages :as am]
+            [cmr.common.util :as util]
             [clj-http.client :as client]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
+;; These are for boolean, datetime_string, time_string, and date_string attribute types which are
+;; all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
-  (let [psa1 (dc/psa "bool" :boolean true)
-        psa2 (dc/psa "dts" :datetime-string "2012-01-01T01:02:03Z")
-        psa3 (dc/psa "ts" :time-string "01:02:03Z")
-        psa4 (dc/psa "ds" :date-string "2012-01-01")
-        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa3 psa4]}))]
+  (let [psa1 (dc/psa {:name "bool" :data-type :boolean :value true})
+        psa2 (dc/psa {:name "dts" :data-type :datetime-string :value "2012-01-01T01:02:03Z"})
+        psa3 (dc/psa {:name "ts" :data-type :time-string :value "01:02:03Z"})
+        psa4 (dc/psa {:name "ds" :data-type :date-string :value "2012-01-01"})
+        coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1 psa2 psa3]})
+                        {:format :dif})
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa2 psa3]})
+                        {:format :dif})
+        coll3 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa3 psa4]})
+                        {:format :dif})]
     (index/wait-until-indexed)
     (are [v items]
          (d/refs-match? items (search/find-refs :collection {"attribute[]" v}))
@@ -34,14 +39,17 @@
          "string,ds,2012-01-01" [coll3])))
 
 (deftest string-psas-search-test
-  (let [psa1 (dc/psa "alpha" :string "ab")
-        psa2 (dc/psa "bravo" :string "bf")
-        psa3 (dc/psa "charlie" :string "foo")
-        psa4 (dc/psa "case" :string "up")
+  (let [psa1 (dc/psa {:name "alpha" :group "G1" :data-type :string :value "ab"})
+        psa2 (dc/psa {:name "bravo" :group "G1" :data-type :string :value "bf"})
+        psa3 (dc/psa {:name "charlie" :group "G2" :data-type :string :value "foo"})
+        psa4 (dc/psa {:name "case" :group "G3" :data-type :string :value "up"})
 
-        coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))
-        coll3 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4]}))]
+        coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1 psa2]})
+                        {:format :dif})
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa2 psa3]})
+                        {:format :dif})
+        coll3 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa4]})
+                        {:format :dif})]
     (index/wait-until-indexed)
     (testing "search by value"
       (are [v items]
@@ -193,12 +201,42 @@
            [coll1] [{:type :range :name "alpha" :value ["ab" "ac"]}]
            [coll1] [{:type :range :name "alpha" :value ["aa" "ab"]}]
            [coll1 coll2] [{:type :range :name "bravo" :value ["bc" nil]}]
-           [coll1 coll2] [{:type :range :name "bravo" :value [nil "bg"]}]))))
+           [coll1 coll2] [{:type :range :name "bravo" :value [nil "bg"]}]))
+
+    (testing "search collections by string attribute using JSON Query Language"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           ;; Ranges
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "aa" :max_value "ac"}}
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "ab" :max_value "ac"}}
+           [coll1] {:additional_attribute_range
+                    {:type "string" :name "alpha" :min_value "aa" :max_value "ab"}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "string" :name "bravo" :min_value "bc"}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "string" :name "bravo" :max_value "bg"}}
+
+           ;; Exact value
+           [coll1] {:additional_attribute_value {:type "string" :name "alpha" :value "ab"}}
+
+           ;; Test exclude boundary
+           [coll1] {:additional_attribute_range {:type "string" :name "alpha" :min_value "aa"
+                                                 :max_value "ab" :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "string" :name "alpha" :min_value "aa"
+                                            :max_value "ab" :exclude_boundary true}}
+
+           ;; Test searching by group
+           [coll3] {:additional_attribute_name {:group "G3"}}
+           [coll3] {:additional_attribute_name {:group "*3" :pattern true}}
+           [coll1 coll2 coll3] {:additional_attribute_name {:group "G?" :pattern true}}))))
 
 (deftest float-psas-search-test
-  (let [psa1 (dc/psa "alpha" :float 10)
-        psa2 (dc/psa "bravo" :float -12)
-        psa3 (dc/psa "charlie" :float 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :float :value 10})
+        psa2 (dc/psa {:name "bravo" :data-type :float :value -12})
+        psa3 (dc/psa {:name "charlie" :data-type :float :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -275,12 +313,39 @@
            [coll1] [{:type :floatRange :name "alpha" :value [9.2 10.0]}]
            [coll1 coll2] [{:type :floatRange :name "bravo" :value [-120 nil]}]
            [coll1 coll2] [{:type :floatRange :name "bravo" :value [nil 13.6]}]
-           [coll2] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
+           [coll2] [{:type :floatRange :name "charlie" :value [44 45.1]}]))
+
+    (testing "search collections by float attribute using JSON Query Language"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           ;; Ranges
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 9.2 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 10.0 :max_value 10.6}}
+           [coll1] {:additional_attribute_range
+                    {:type "float" :name "alpha" :min_value 9.2 :max_value 10.0}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "float" :name "bravo" :min_value -120}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "float" :name "bravo" :max_value 13.6}}
+           [coll2] {:additional_attribute_range
+                    {:type "float" :name "charlie" :min_value 44 :max_value 45.1}}
+
+           ;; Exact value
+           [coll1 coll2] {:additional_attribute_value {:type "float" :name "bravo" :value -12}}
+
+           ;; Test exclude boundary
+           [coll1 coll2] {:additional_attribute_range {:type "float" :name "bravo" :min_value -12
+                                                       :max_value -5 :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "float" :name "bravo" :min_value -12
+                                            :max_value -5 :exclude_boundary true}}))))
 
 (deftest int-psas-search-test
-  (let [psa1 (dc/psa "alpha" :int 10)
-        psa2 (dc/psa "bravo" :int -12)
-        psa3 (dc/psa "charlie" :int 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :int :value 10})
+        psa2 (dc/psa {:name "bravo" :data-type :int :value -12})
+        psa3 (dc/psa {:name "charlie" :data-type :int :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -356,12 +421,39 @@
            [coll1] [{:type :intRange :name "alpha" :value [9 10]}]
            [coll1 coll2] [{:type :intRange :name "bravo" :value [-120 nil]}]
            [coll1 coll2] [{:type :intRange :name "bravo" :value [nil 12]}]
-           [coll2] [{:type :intRange :name "charlie" :value [44 46]}]))))
+           [coll2] [{:type :intRange :name "charlie" :value [44 46]}]))
+
+    (testing "search collections by int attribute using JSON Query Language"
+      (are [items search]
+           (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+           ;; Ranges
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 9 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 10 :max_value 11}}
+           [coll1] {:additional_attribute_range
+                    {:type "int" :name "alpha" :min_value 9 :max_value 10}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "int" :name "bravo" :min_value -120}}
+           [coll1 coll2] {:additional_attribute_range
+                          {:type "int" :name "bravo" :max_value 12}}
+           [coll2] {:additional_attribute_range
+                    {:type "int" :name "charlie" :min_value 44 :max_value 46}}
+
+           ;; Exact value
+           [coll1 coll2] {:additional_attribute_value {:type "int" :name "bravo" :value -12}}
+
+           ;; Test exclude boundary
+           [coll1 coll2] {:additional_attribute_range {:type "int" :name "bravo" :min_value -12
+                                                       :max_value -5 :exclude_boundary false}}
+           [] {:additional_attribute_range {:type "int" :name "bravo" :min_value -12
+                                            :max_value -5 :exclude_boundary true}}))))
 
 (deftest datetime-psas-search-test
-  (let [psa1 (dc/psa "alpha" :datetime (d/make-datetime 10 false))
-        psa2 (dc/psa "bravo" :datetime (d/make-datetime 14 false))
-        psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :datetime :value (d/make-datetime 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :datetime :value (d/make-datetime 14 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :datetime :value (d/make-datetime 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -451,12 +543,42 @@
            [coll1] [{:type :dateRange :name "alpha" :value [9 10]}]
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [10 nil]}]
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [nil 17]}]
-           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
+           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))
+
+    (testing "search collections by datetime attribute using JSON Query Language"
+      ;; Exact value
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "datetime" :name "bravo" :value (d/make-datetime 14)}}))
+      (are [items search]
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :min_value (d/make-datetime (:min_value search))
+                                      :max_value (d/make-datetime (:max_value search))))
+                 condition {:additional_attribute_range date-search}]
+             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+
+           ;; Ranges
+           [coll1] {:type "datetime" :name "alpha" :min_value 9 :max_value 11}
+           [coll1] {:type "datetime" :name "alpha" :min_value 10 :max_value 11}
+           [coll1] {:type "datetime" :name "alpha" :min_value 9 :max_value 10}
+           [coll1 coll2] {:type "datetime" :name "bravo" :min_value 10}
+           [coll1 coll2] {:type "datetime" :name "bravo" :max_value 17}
+           [coll2] {:type "datetime" :name "charlie" :min_value 44 :max_value 45}
+
+           ;; Test exclude boundary
+           [coll1 coll2] {:type "datetime" :name "bravo" :min_value 0 :max_value 14
+                          :exclude_boundary false}
+           [coll1 coll2] {:type "datetime" :name "bravo" :min_value 0 :max_value 15
+                          :exclude_boundary true}
+           [] {:type "datetime" :name "bravo" :min_value 0 :max_value 14 :exclude_boundary true}))))
 
 (deftest time-psas-search-test
-  (let [psa1 (dc/psa "alpha" :time (d/make-time 10 false))
-        psa2 (dc/psa "bravo" :time (d/make-time 23 false))
-        psa3 (dc/psa "charlie" :time (d/make-time 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :time :value (d/make-time 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :time :value (d/make-time 23 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :time :value (d/make-time 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
     (index/wait-until-indexed)
@@ -546,12 +668,41 @@
            [coll1] [{:type :timeRange :name "alpha" :value [9 10]}]
            [coll1 coll2] [{:type :timeRange :name "bravo" :value [20 nil]}]
            [coll1 coll2] [{:type :timeRange :name "bravo" :value [nil 24]}]
-           [coll2] [{:type :timeRange :name "charlie" :value [44 45]}]))))
+           [coll2] [{:type :timeRange :name "charlie" :value [44 45]}]))
+
+    (testing "search collections by time attribute using JSON Query Language"
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "time" :name "bravo" :value (d/make-time 23)}}))
+      (are [items search]
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :min_value (d/make-time (:min_value search))
+                                      :max_value (d/make-time (:max_value search))))
+                 condition {:additional_attribute_range date-search}]
+             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+
+           ;; Ranges
+           [coll1] {:type "time" :name "alpha" :min_value 9 :max_value 11}
+           [coll1] {:type "time" :name "alpha" :min_value 10 :max_value 11}
+           [coll1] {:type "time" :name "alpha" :min_value 9 :max_value 10}
+           [coll1 coll2] {:type "time" :name "bravo" :min_value 20}
+           [coll1 coll2] {:type "time" :name "bravo" :max_value 24}
+           [coll2] {:type "time" :name "charlie" :min_value 44 :max_value 45}
+
+           ;; Test exclude boundary
+           [coll1 coll2] {:type "time" :name "bravo" :min_value 0 :max_value 23
+                          :exclude_boundary false}
+           [coll1 coll2] {:type "time" :name "bravo" :min_value 0 :max_value 24
+                          :exclude_boundary true}
+           [] {:type "time" :name "bravo" :min_value 0 :max_value 23 :exclude_boundary true}))))
 
 (deftest date-psas-search-test
-  (let [psa1 (dc/psa "alpha" :date (d/make-date 10 false))
-        psa2 (dc/psa "bravo" :date (d/make-date 23 false))
-        psa3 (dc/psa "charlie" :date (d/make-date 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :date :value (d/make-date 10 false)})
+        psa2 (dc/psa {:name "bravo" :data-type :date :value (d/make-date 23 false)})
+        psa3 (dc/psa {:name "charlie" :data-type :date :value (d/make-date 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa2 psa3]}))]
 
@@ -642,7 +793,36 @@
            [coll1] [{:type :dateRange :name "alpha" :value [9 10]}]
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [20 nil]}]
            [coll1 coll2] [{:type :dateRange :name "bravo" :value [nil 24]}]
-           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))))
+           [coll2] [{:type :dateRange :name "charlie" :value [44 45]}]))
+
+    (testing "search collections by date attribute using JSON Query Language"
+      (d/refs-match? [coll1 coll2]
+                     (search/find-refs-with-json-query
+                       :collection {}
+                       {:additional_attribute_value
+                        {:type "date" :name "bravo" :value (d/make-date 23)}}))
+      (are [items search]
+           (let [date-search (util/remove-nil-keys
+                               (assoc search
+                                      :min_value (d/make-date (:min_value search))
+                                      :max_value (d/make-date (:max_value search))))
+                 condition {:additional_attribute_range date-search}]
+             (d/refs-match? items (search/find-refs-with-json-query :collection {} condition)))
+
+           ;; Ranges
+           [coll1] {:type "date" :name "alpha" :min_value 9 :max_value 11}
+           [coll1] {:type "date" :name "alpha" :min_value 10 :max_value 11}
+           [coll1] {:type "date" :name "alpha" :min_value 9 :max_value 10}
+           [coll1 coll2] {:type "date" :name "bravo" :min_value 20}
+           [coll1 coll2] {:type "date" :name "bravo" :max_value 24}
+           [coll2] {:type "date" :name "charlie" :min_value 44 :max_value 45}
+
+           ;; Test exclude boundary
+           [coll1 coll2] {:type "date" :name "bravo" :min_value 0 :max_value 23
+                          :exclude_boundary false}
+           [coll1 coll2] {:type "date" :name "bravo" :min_value 0 :max_value 24
+                          :exclude_boundary true}
+           [] {:type "date" :name "bravo" :min_value 0 :max_value 23 :exclude_boundary true}))))
 
 (deftest range-validation-test
   (testing "empty parameter range"
@@ -696,4 +876,167 @@
          {:type :range :name "alpha" :value ["y" "m"]}
          {:type :intRange :name "alpha" :value [10 6]}
          {:type :floatRange :name "alpha" :value [10.0 6.0]})))
+
+(deftest search-by-name-and-group-test
+  (let [psa1 (dc/psa {:name "foo" :group "g1" :data-type :boolean :value true})
+        psa2 (dc/psa {:name "two" :group "g2" :data-type :datetime-string
+                      :value "2012-01-01T01:02:03Z"})
+        coll1 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa1]})
+                        {:format :dif})
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:product-specific-attributes [psa2]})
+                        {:format :dif})]
+    (index/wait-until-indexed)
+    (are [matches a-name group pattern?]
+         (d/refs-match? matches
+                        (search/find-refs-with-json-query
+                          :collection {} {:additional_attribute_name
+                                          (util/remove-nil-keys
+                                            {:name a-name :group group :pattern pattern?})}))
+         [coll1] "foo" nil false
+         [coll1] "f?o" nil true
+         [] "f?o" nil false
+         [coll1] nil "g1" false
+         [coll1 coll2] nil "g*" true
+         [] nil "g*" false
+         [] "t*o" "*" false
+         [coll2] "t*o" "*" true)))
+
+(deftest json-query-validate-types-test
+  (are [type value]
+       (d/refs-match? [] (search/find-refs-with-json-query
+                           :collection {} {:additional_attribute_value
+                                           {:name "a" :type type :value value}}))
+       "string" "abc"
+       "string" 1.5
+       "int" 12
+       "float" 1.23
+       "datetime" "2012-01-11T10:00:00.000Z"
+       "date" "2012-01-11"
+       "time" "10:00:00.000Z"))
+
+(deftest json-query-validation-errors-test
+  (util/are2
+    [search errors]
+    (= {:status 400 :errors errors}
+       (search/find-refs-with-json-query :collection {} search))
+
+    "Invalid data type"
+    {:additional_attribute_value {:type "bad" :value "c" :name "n"}}
+    ["/condition/additional_attribute_value/type instance value (\"bad\") not found in enum (possible values: [\"string\",\"boolean\",\"time\",\"date\",\"datetime\",\"int\",\"float\"])"]
+
+    "Invalid int"
+    {:additional_attribute_value {:type "int" :name "B" :value "1"}}
+    ["[\"1\"] is an invalid value for type [int]"]
+
+    "Invalid float"
+    {:additional_attribute_value {:type "float" :name "B" :value "1.42"}}
+    ["[\"1.42\"] is an invalid value for type [float]"]
+
+    "Invalid datetime"
+    {:additional_attribute_value {:type "datetime" :name "B" :value "2012-01-11 10:00:00"}}
+    ["[\"2012-01-11 10:00:00\"] is an invalid value for type [datetime]"]
+
+    "Invalid date"
+    {:additional_attribute_value {:type "date" :name "B" :value "10:00:00Z"}}
+    ["[\"10:00:00Z\"] is an invalid value for type [date]"]
+
+    "Invalid time"
+    {:additional_attribute_value {:type "time" :name "B" :value "2012-01-11"}}
+    ["[\"2012-01-11\"] is an invalid value for type [time]"]
+
+    "Invalid use of exclude-boundary"
+    {:additional_attribute_value {:type "string" :name "a" :value "b" :exclude_boundary true}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"exclude_boundary\"]"]
+
+    "Invalid use of pattern"
+    {:additional_attribute_value {:type "string" :group "g" :name "a*" :value "b" :pattern true}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"pattern\"]"]
+
+    "Invalid range max < min"
+    {:additional_attribute_range {:type "int" :name "foo" :min_value 25 :max_value 14}}
+    ["The maximum value [14] must be greater than the minimum value [25]"]
+
+    "Cannot include both range and an exact value - value search"
+    {:additional_attribute_value {:type "int" :name "foo" :min_value 25 :value 37}}
+    ["/condition/additional_attribute_value object instance has properties which are not allowed by the schema: [\"min_value\"]"]
+
+    "Cannot include both range and an exact value - range search"
+    {:additional_attribute_range {:type "int" :name "foo" :min_value 25 :value 37}}
+    ["/condition/additional_attribute_range object instance has properties which are not allowed by the schema: [\"value\"]"]
+
+    "Name is required when doing an exact value search"
+    {:additional_attribute_value {:type "int" :value 25 :group "abc"}}
+    ["/condition/additional_attribute_value object has missing required properties ([\"name\"])"]
+
+    "Name is required when doing a range search"
+    {:additional_attribute_range {:type "int" :min_value 25 :max_value 35 :group "abc"}}
+    ["/condition/additional_attribute_range object has missing required properties ([\"name\"])"]
+
+    "Type is required when doing an exact value search"
+    {:additional_attribute_value {:value 25 :name "a" :group "abc"}}
+    ["/condition/additional_attribute_value object has missing required properties ([\"type\"])"]
+
+    "Type is required when doing a range search"
+    {:additional_attribute_range {:min_value 25 :max_value 35 :name "c" :group "abc"}}
+    ["/condition/additional_attribute_range object has missing required properties ([\"type\"])"]
+
+    "One of group or name is required"
+    {:additional_attribute_name {:pattern true}}
+    ["One of 'group' or 'name' must be provided."]
+
+    "Multiple errors can be returned"
+    {:additional_attribute_range {:type "float" :name "B" :min_value "1.42" :max_value "foo"}}
+    ["[\"foo\"] is an invalid value for type [float]"
+     "[\"1.42\"] is an invalid value for type [float]"]))
+
+(deftest dif-extended-metadata-test
+  (let [dif9-coll (d/ingest-concept-with-metadata-file
+                    "data/dif/sample_collection_with_extended_metadata.xml"
+                    {:provider-id "PROV1"
+                     :concept-type :collection
+                     :format-key :dif
+                     :native-id "dif9-coll"})
+        dif10-coll (d/ingest-concept-with-metadata-file
+                     "data/dif10/sample_collection.xml"
+                     {:provider-id "PROV1"
+                      :concept-type :collection
+                      :format-key :dif10
+                      :native-id "dif10-coll"})]
+    (index/wait-until-indexed)
+
+    (testing "search for extended metadata fields"
+      (util/are2
+        [items search]
+        (d/refs-match? items (search/find-refs-with-json-query :collection {} search))
+
+        "By group"
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "gov.nasa.gsfc.gcmd"}}
+
+        "By group - pattern"
+        [dif9-coll dif10-coll] {:additional_attribute_name {:group "*gcmd" :pattern true}}
+
+        "By name - link_notification.contact"
+        [dif9-coll] {:additional_attribute_name {:name "link_notification.contact"}}
+
+        "By name - metadata.extraction_date"
+        [dif9-coll] {:additional_attribute_name {:name "metadata.extraction_date"}}
+
+        "By name - metadata.keyword_version"
+        [dif9-coll dif10-coll] {:additional_attribute_name {:name "metadata.keyword_version"}}
+
+        "By name - pattern"
+        [dif9-coll dif10-coll] {:additional_attribute_name {:name "meta??ta*" :pattern true}}
+
+        "By value - string"
+        [dif9-coll] {:additional_attribute_value
+                     {:name "metadata.extraction_date" :type "string" :value "2015-05-21 15:58:46"}}
+
+        ;; TODO - Figure out why exact match is failing
+        ; "By value - float"
+        ; [dif9-coll] {:additional_attribute_name {:name "metadata.keyword_version" :value 8.1 :type "float"}}
+
+        "By range - float"
+        [dif9-coll dif10-coll] {:additional_attribute_range
+                                {:name "metadata.keyword_version" :min_value 8.0 :max_value 8.5
+                                 :type "float"}}))))
 

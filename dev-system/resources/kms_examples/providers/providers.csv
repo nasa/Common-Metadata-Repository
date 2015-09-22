@@ -1,6 +1,7 @@
 "Keyword Version: 8.1","Revision: 2015-07-10 17:26:04","Timestamp: 2015-08-10 06:39:14","Terms Of Use: See http://gcmd.nasa.gov/r/l/TermsOfUse","The most up to date XML representations can be found here: http://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/providers/?format=xml"
 Bucket_Level0,Bucket_Level1,Bucket_Level2,Bucket_Level3,Short_Name,Long_Name,Data_Center_URL,UUID
 "ACADEMIC","","","","AARHUS-HYDRO","Hydrogeophysics Group, Aarhus University ","","bd197c6d-8612-42c2-a818-1975c4911e45"
+"ACADEMIC","OR-STATE/EOARC","","","OR-STATE/EOARC","Eastern Oregon Agriculture Research Center, Oregon State University","http://oregonstate.edu/dept/eoarcunion/","44a93a03-29c0-4800-a5a8-67d2c2c2caa7"
 "CONSORTIA/INSTITUTIONS","","","","ESA/ED","Educational Office, Ecological Society of America","http://www.esa.org/education/","2112a825-73c6-4b75-b33c-cc6e705a39ce"
 "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES","NSF","","","UCAR/NCAR/EOL/CEOPDM","CEOP Data Management, Earth Observing Laboratory, National Center for Atmospheric Research, University Corporation for Atmospheric Research","http://www.eol.ucar.edu/projects/ceop/dm/","180b59c3-31c1-4129-8d74-09a9557ebc79"
 "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES","DOI","USGS","Added level 3 value","DOI/USGS/CMG/WHSC","Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior","http://woodshole.er.usgs.gov/","69db99c6-54d6-40b9-9f72-47eab9c34869"

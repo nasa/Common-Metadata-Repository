@@ -48,8 +48,8 @@
       (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
 
       ;; Other data left in database
-      (is (util/verify-concept-was-saved coll2))
-      (is (util/verify-concept-was-saved gran3)))))
+      (util/verify-concept-was-saved coll2)
+      (util/verify-concept-was-saved gran3))))
 
 (deftest delete-collection-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -86,8 +86,8 @@
       (is (= {:status 404} (util/get-concept-by-id-and-revision (:concept-id gran1) 2)))
 
       ;; Other data left in database
-      (is (util/verify-concept-was-saved coll2))
-      (is (util/verify-concept-was-saved gran3)))))
+      (util/verify-concept-was-saved coll2)
+      (util/verify-concept-was-saved gran3))))
 
 (deftest delete-collection-with-valid-revision-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -103,7 +103,7 @@
     (let [parent-coll (util/create-and-save-collection provider-id 1)
           gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
           gran2 (util/create-and-save-granule provider-id parent-coll 2)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id gran1))
+          {:keys [status revision-id] :as response} (util/delete-concept (:concept-id gran1))
           stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
       (is (= {:status 201
               :revision-id 4
@@ -112,10 +112,11 @@
              {:status status
               :revision-id revision-id
               :deleted (:deleted stored-gran1)
-              :metadata (:metadata stored-gran1)}))
+              :metadata (:metadata stored-gran1)})
+          (pr-str response))
 
       ;; Other data left in database
-      (is (util/verify-concept-was-saved gran2)))))
+      (util/verify-concept-was-saved gran2))))
 
 (deftest delete-granule-using-save-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -135,7 +136,7 @@
               :metadata (:metadata stored-gran1)}))
 
       ;; Other data left in database
-      (is (util/verify-concept-was-saved gran2)))))
+      (util/verify-concept-was-saved gran2))))
 
 (deftest delete-granule-with-valid-revision-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
@@ -162,7 +163,7 @@
             :metadata (:metadata stored-tag1)}))
 
     ;; Other data left in database
-    (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
+    (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR"))))
 
 (deftest delete-tag-using-save-end-point-test
   (let [tag1 (util/create-and-save-tag 1 3)
@@ -180,7 +181,7 @@
             :metadata (:metadata stored-tag1)}))
 
     ;; Other data left in database
-    (is (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR")))))
+    (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR"))))
 
 (deftest delete-tag-with-valid-revision-test
   (let [tag1 (util/create-and-save-tag 1 3)

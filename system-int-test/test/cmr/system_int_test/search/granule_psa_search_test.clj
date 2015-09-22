@@ -27,7 +27,7 @@
 
        "string,,a" (am/invalid-name-msg "")
        "string,,a,b" (am/invalid-name-msg "")
-       "string,alpha," (am/invalid-value-msg :string "")
+       "string,alpha," (am/invalid-value-msg :string nil)
        "string,alpha" (am/invalid-num-parts-msg)
        "string,alpha,," (am/one-of-min-max-msg)
        "string,alpha,b,a" (am/max-must-be-greater-than-min-msg "b" "a")
@@ -58,10 +58,10 @@
 
 ;; These are for boolean, datetime_string, time_string, and date_string attribute types which are all indexed and searchable as strings.
 (deftest indexed-as-string-psas-search-test
-  (let [psa1 (dc/psa "bool" :boolean)
-        psa2 (dc/psa "dts" :datetime-string)
-        psa3 (dc/psa "ts" :time-string)
-        psa4 (dc/psa "ds" :date-string)
+  (let [psa1 (dc/psa {:name "bool" :data-type :boolean})
+        psa2 (dc/psa {:name "dts" :data-type :datetime-string})
+        psa3 (dc/psa {:name "ts" :data-type :time-string})
+        psa4 (dc/psa {:name "ds" :data-type :date-string})
         coll (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3 psa4]}))
         gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [true])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [false])]}))
@@ -98,10 +98,10 @@
            [gran7] [{:name "ds" :type :string :value "2012-01-01"}]))))
 
 (deftest string-psas-search-test
-  (let [psa1 (dc/psa "alpha" :string)
-        psa2 (dc/psa "bravo" :string)
-        psa3 (dc/psa "charlie" :string "foo")
-        psa4 (dc/psa "case" :string)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :string})
+        psa2 (dc/psa {:name "bravo" :data-type :string})
+        psa3 (dc/psa {:name "charlie" :data-type :string :value "foo"})
+        psa4 (dc/psa {:name "case" :data-type :string})
 
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
@@ -269,9 +269,9 @@
                     {:type :range :name "bravo" :value ["bc" nil]}] {:and true}))))
 
 (deftest float-psas-search-test
-  (let [psa1 (dc/psa "alpha" :float)
-        psa2 (dc/psa "bravo" :float)
-        psa3 (dc/psa "charlie" :float 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :float})
+        psa2 (dc/psa {:name "bravo" :data-type :float})
+        psa3 (dc/psa {:name "charlie" :data-type :float :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10.5 123])
                                                                                  (dg/psa "bravo" [-12])]}))
@@ -357,9 +357,9 @@
            [gran3 gran4] [{:type :floatRange :name "charlie" :value [44 45.1]}]))))
 
 (deftest int-psas-search-test
-  (let [psa1 (dc/psa "alpha" :int)
-        psa2 (dc/psa "bravo" :int)
-        psa3 (dc/psa "charlie" :int 45)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :int})
+        psa2 (dc/psa {:name "bravo" :data-type :int})
+        psa3 (dc/psa {:name "charlie" :data-type :int :value 45})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" [10 123])
                                                                                  (dg/psa "bravo" [-12])]}))
@@ -453,9 +453,9 @@
            [gran3 gran4] [{:type :intRange :name "charlie" :value [44 46]}]))))
 
 (deftest datetime-psas-search-test
-  (let [psa1 (dc/psa "alpha" :datetime)
-        psa2 (dc/psa "bravo" :datetime)
-        psa3 (dc/psa "charlie" :datetime (d/make-datetime 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :datetime})
+        psa2 (dc/psa {:name "bravo" :data-type :datetime})
+        psa3 (dc/psa {:name "charlie" :data-type :datetime :value (d/make-datetime 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -566,9 +566,9 @@
            [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest time-psas-search-test
-  (let [psa1 (dc/psa "alpha" :time)
-        psa2 (dc/psa "bravo" :time)
-        psa3 (dc/psa "charlie" :time (d/make-time 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :time})
+        psa2 (dc/psa {:name "bravo" :data-type :time})
+        psa3 (dc/psa {:name "charlie" :data-type :time :value (d/make-time 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -679,9 +679,9 @@
            [gran3 gran4] [{:type :timeRange :name "charlie" :value [44 45]}]))))
 
 (deftest date-psas-search-test
-  (let [psa1 (dc/psa "alpha" :date)
-        psa2 (dc/psa "bravo" :date)
-        psa3 (dc/psa "charlie" :date (d/make-date 45 false))
+  (let [psa1 (dc/psa {:name "alpha" :data-type :date})
+        psa2 (dc/psa {:name "bravo" :data-type :date})
+        psa3 (dc/psa {:name "charlie" :data-type :date :value (d/make-date 45 false)})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
                                                    [(dg/psa "alpha"
@@ -792,12 +792,12 @@
            [gran3 gran4] [{:type :dateRange :name "charlie" :value [44 45]}]))))
 
 (deftest additional-attribute-search-by-name-test
-  (let [psa1 (dc/psa "alpha" :string)
-        psa2 (dc/psa "beta" :string)
-        psa3 (dc/psa "gamma" :time)
-        psa4 (dc/psa "delta" :string)
-        psa5 (dc/psa "alpha" :time)
-        psa6 (dc/psa "sigma" :string)
+  (let [psa1 (dc/psa {:name "alpha" :data-type :string})
+        psa2 (dc/psa {:name "beta" :data-type :string})
+        psa3 (dc/psa {:name "gamma" :data-type :time})
+        psa4 (dc/psa {:name "delta" :data-type :string})
+        psa5 (dc/psa {:name "alpha" :data-type :time})
+        psa6 (dc/psa {:name "sigma" :data-type :string})
         coll1 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa1 psa2 psa3]}))
         coll2 (d/ingest "PROV1" (dc/collection {:product-specific-attributes [psa4 psa5 psa6]}))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes [(dg/psa "alpha" ["atlantic"])]}))

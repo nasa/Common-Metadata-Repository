@@ -30,6 +30,7 @@
 
             ;; json converters
             [cmr.search.services.json-parameters.conversion :as jp]
+            [cmr.search.services.json-parameters.converters.attribute]
 
             ;; aql
             [cmr.search.services.aql.conversion :as a]

@@ -24,7 +24,9 @@
   (let [full-archive-center
         (merge default-archive-center-values
                (kf/get-full-hierarchy-for-short-name gcmd-keywords-map :providers short-name))
-        {:keys [level-0 level-1 level-2 level-3 long-name url uuid]} full-archive-center]
+        {:keys [level-0 level-1 level-2 level-3 short-name long-name url uuid]
+                ;; Use the short-name from KMS if present, otherwise use the metadata short-name
+                :or {short-name short-name}} full-archive-center]
     {:level-0 level-0
      :level-0.lowercase (str/lower-case level-0)
      :level-1 level-1
