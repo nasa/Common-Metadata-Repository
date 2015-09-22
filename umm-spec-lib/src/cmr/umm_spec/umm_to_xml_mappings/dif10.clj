@@ -119,6 +119,22 @@
     [:Instrument
      [:Short_Name u/not-provided]]))
 
+(defn- generate-additional-attributes
+  "Returns the content generator instructions for generating DIF10 additional attributes."
+  [additional-attributes]
+  (for [aa additional-attributes]
+    [:Additional_Attributes
+     [:Name (:Name aa)]
+     [:DataType (:DataType aa)]
+     [:Description (with-default (:Description aa))]
+     [:MeasurementResolution (:MeasurementResolution aa)]
+     [:ParameterRangeBegin (with-default (:ParameterRangeBegin aa))]
+     [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+     [:ParameterUnitsOfMeasure (:ParameterUnitsOfMeasure aa)]
+     [:ParameterValueAccuracy (:ParameterValueAccuracy aa)]
+     [:ValueAccuracyExplanation (:ValueAccuracyExplanation aa)]
+     [:Value (:Value aa)]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -215,18 +231,7 @@
       [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
       [:Data_Creation "1970-01-01T00:00:00"]
       [:Data_Last_Revision "1970-01-01T00:00:00"]]
-     (for [aa (:AdditionalAttributes c)]
-       [:Additional_Attributes
-        [:Name (:Name aa)]
-        [:DataType (:DataType aa)]
-        [:Description (with-default (:Description aa))]
-        [:MeasurementResolution (:MeasurementResolution aa)]
-        [:ParameterRangeBegin (with-default (:ParameterRangeBegin aa))]
-        [:ParameterRangeEnd (:ParameterRangeEnd aa)]
-        [:ParameterUnitsOfMeasure (:ParameterUnitsOfMeasure aa)]
-        [:ParameterValueAccuracy (:ParameterValueAccuracy aa)]
-        [:ValueAccuracyExplanation (:ValueAccuracyExplanation aa)]
-        [:Value (:Value aa)]])
+     (generate-additional-attributes (:AdditionalAttributes c))
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
      [:Collection_Data_Type (:CollectionDataType c)]
      [:Product_Flag u/not-provided]]))
