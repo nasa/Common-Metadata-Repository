@@ -91,7 +91,16 @@
                           :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
                           :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                           :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
+                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})
+   :MetadataAssociations (for [ca (select doc "/Collection/CollectionAssociations")]
+                           {
+                            ;; TODO what should I set this to
+                            :Type
+                            :Description (value-of ca "CollectionUse")
+                            :EntryId (str (value-of ca "ShortName") "_" (value-of ca "VersionId"))
+                            :Version (value-of ca "VersionId")
+                            })})
+>>>>>>> CMR-1852: Very partial implementation for handoff to James.
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."

@@ -108,7 +108,12 @@
                    {:Description "Related url 2 description"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
-                    :FileSize {:Size 10.0 :Unit "MB"}}]}))
+                    :FileSize {:Size 10.0 :Unit "MB"}}]
+     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
+                             :Description "Associated with a collection"
+                             :EntryId "AssocEntryId"
+                             :Version "V8"
+                             :ProviderId "PROV1"}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -281,6 +286,7 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -351,6 +357,7 @@
   (-> umm-coll
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -444,6 +451,7 @@
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:SpatialExtent] update-iso-spatial)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
@@ -476,6 +484,7 @@
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
@@ -508,9 +517,14 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates
     :MetadataLanguage :DirectoryNames :Personnel
+<<<<<<< HEAD
     :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
+=======
+    :RelatedUrls :DataDates :Organizations
+    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage})
+>>>>>>> CMR-1852: Very partial implementation for handoff to James.
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
