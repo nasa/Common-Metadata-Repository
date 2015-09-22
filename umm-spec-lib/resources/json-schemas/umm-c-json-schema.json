@@ -32,7 +32,8 @@
           "minLength": 1,
           "maxLength": 80
         }
-      }
+      },
+      "required": ["Id"]
     },
     "PaleoTemporalCoverageType": {
       "type": "object",
