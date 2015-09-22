@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [cmr.umm-spec.util :as u :refer [with-default]]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -84,6 +85,39 @@
    [:Technique (:Technique sensor)]
    (characteristics-for sensor)])
 
+(defn- generate-projects
+  "Returns the content generator instructions for generating DIF10 projects. DIF10 projects
+  is required, so we genereate a dummy one when it is nil."
+  [projects]
+  (if (seq projects)
+    (for [{:keys [ShortName LongName Campaigns StartDate EndDate]} projects]
+      [:Project
+       [:Short_Name ShortName]
+       [:Campaign (first Campaigns)]
+       [:Long_Name LongName]
+       [:Start_Date StartDate]
+       [:End_Date EndDate]])
+    [:Project
+     [:Short_Name u/not-provided]]))
+
+(defn- generate-instruments
+  "Returns the content generator instructions for generating DIF10 instruments. DIF10 instruments is
+  a required field in PlatformType, so we genereate a dummy one when it is nil."
+  [instruments]
+  (if (seq instruments)
+    (for [instrument instruments]
+      [:Instrument
+       [:Short_Name (:ShortName instrument)]
+       [:Long_Name (:LongName instrument)]
+       [:Technique (:Technique instrument)]
+       [:NumberOfSensors (:NumberOfSensors instrument)]
+       (characteristics-for instrument)
+       (for [opmode (:OperationalModes instrument)]
+         [:OperationalMode opmode])
+       (map sensor-mapping (:Sensors instrument))])
+    [:Instrument
+     [:Short_Name u/not-provided]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -91,7 +125,7 @@
     [:DIF
      dif10-xml-namespaces
      [:Entry_ID (:EntryId c)]
-     [:Version (or (:Version c) "Not provided")]
+     [:Version (u/with-default (:Version c))]
      [:Entry_Title (:EntryTitle c)]
      [:Science_Keywords
       [:Category "dummy category"]
@@ -102,20 +136,11 @@
 
      (for [platform (:Platforms c)]
        [:Platform
-        [:Type (get platform-types (:Type platform) "Not provided")]
+        [:Type (get platform-types (:Type platform) u/not-provided)]
         [:Short_Name (:ShortName platform)]
         [:Long_Name (:LongName platform)]
         (characteristics-for platform)
-        (for [instrument (:Instruments platform)]
-          [:Instrument
-           [:Short_Name (:ShortName instrument)]
-           [:Long_Name (:LongName instrument)]
-           [:Technique (:Technique instrument)]
-           [:NumberOfSensors (:NumberOfSensors instrument)]
-           (characteristics-for instrument)
-           (for [opmode (:OperationalModes instrument)]
-             [:OperationalMode opmode])
-           (map sensor-mapping (:Sensors instrument))])])
+        (generate-instruments (:Instruments platform))])
 
      ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
      ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
@@ -129,18 +154,13 @@
 
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
 
-     [:Data_Set_Progress (:CollectionProgress c)]
+     [:Dataset_Progress (:CollectionProgress c)]
      [:Spatial_Coverage
       [:Granule_Spatial_Representation "GEODETIC"]]
      (for [skw (:SpatialKeywords c)]
-       [:Location skw])
-     (for [{:keys [ShortName LongName Campaigns StartDate EndDate]} (:Projects c)]
-       [:Project
-        [:Short_Name ShortName]
-        [:Campaign (first Campaigns)]
-        [:Long_Name LongName]
-        [:Start_Date StartDate]
-        [:End_Date EndDate]])
+       [:Location
+        [:Location_Category skw]])
+     (generate-projects (:Projects c))
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
@@ -152,7 +172,7 @@
       [:Personnel
        [:Role "DATA CENTER CONTACT"]
        [:Contact_Person
-        [:Last_Name "Not provided"]]]]
+        [:Last_Name u/not-provided]]]]
      (for [dist (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia dist)]
@@ -195,11 +215,17 @@
       [:Data_Creation "1970-01-01T00:00:00"]
       [:Data_Last_Revision "1970-01-01T00:00:00"]]
      (for [aa (:AdditionalAttributes c)]
-       [:AdditionalAttributes
-        (elements-from aa
-                       :Name :DataType :Description :MeasurementResolution
-                       :ParameterRangeBegin :ParameterRangeEnd :ParameterUnitsOfMeasure
-                       :ParameterValueAccuracy :ValueAccuracyExplanation :Value)])
+       [:Additional_Attributes
+        [:Name (:Name aa)]
+        [:DataType (:DataType aa)]
+        [:Description (with-default (:Description aa))]
+        [:MeasurementResolution (:MeasurementResolution aa)]
+        [:ParameterRangeBegin (with-default (:ParameterRangeBegin aa))]
+        [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+        [:ParameterUnitsOfMeasure (:ParameterUnitsOfMeasure aa)]
+        [:ParameterValueAccuracy (:ParameterValueAccuracy aa)]
+        [:ValueAccuracyExplanation (:ValueAccuracyExplanation aa)]
+        [:Value (:Value aa)]])
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
      [:Collection_Data_Type (:CollectionDataType c)]
-     [:Product_Flag "Not provided"]]))
+     [:Product_Flag u/not-provided]]))
