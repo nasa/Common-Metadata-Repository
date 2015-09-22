@@ -69,8 +69,6 @@
         shapes-by-type (group-by #(.getName (class %)) shapes)
         get-shapes     (fn [k]
                          (map umm-spec-shape (get shapes-by-type k)))]
-    (println (keys shapes-by-type))
-    (println "coord sys" (value-of doc coordinate-system-xpath))
     ;; TODO Figure out if coordinate system mapping is correct.
     {:CoordinateSystem   (value-of doc coordinate-system-xpath)
      :Points             (get-shapes "cmr.spatial.point.Point")
