@@ -94,8 +94,11 @@
                           :DetailedVariable (value-of sk "DetailedVariableKeyword")})
    :MetadataAssociations (for [ca (select doc "/Collection/CollectionAssociations")]
                            {
-                            ;; TODO what should I set this to
-                            :Type
+                            ;; TODO This should be set to CollectionType value as long as it matches
+                            ;; one of the allowed enumerated type values for this field. Otherwise we
+                            ;; should set it to nil.
+                            ;; When parsing it out we should use "Not Specified" if it isn't presents
+                            :Type nil
                             :Description (value-of ca "CollectionUse")
                             :EntryId (str (value-of ca "ShortName") "_" (value-of ca "VersionId"))
                             :Version (value-of ca "VersionId")
