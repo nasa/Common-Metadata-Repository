@@ -112,8 +112,7 @@
      :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                              :Description "Associated with a collection"
                              :EntryId "AssocEntryId"
-                             :Version "V8"
-                             :ProviderId "PROV1"}]}))
+                             :Version "V8"}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
