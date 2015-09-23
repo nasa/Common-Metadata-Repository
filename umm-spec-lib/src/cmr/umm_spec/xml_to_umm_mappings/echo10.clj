@@ -116,10 +116,6 @@
                             :EntryId (str (value-of ca "ShortName") "_" (value-of ca "VersionId"))
                             :Version (value-of ca "VersionId")
                             })})
-<<<<<<< HEAD
-=======
-
->>>>>>> d8f86fb... CMR-1852: Added generation code for ECHO10 AssociatedCollections
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
   [metadata]
