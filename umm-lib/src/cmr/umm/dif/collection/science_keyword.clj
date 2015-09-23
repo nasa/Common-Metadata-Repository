@@ -32,7 +32,7 @@
 
 (defn generate-science-keywords
   [science-keywords]
-  (if-not (empty? science-keywords)
+  (if (seq science-keywords)
     (for [science-keyword science-keywords]
       (let [{:keys [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]} science-keyword]
         (x/element :Parameters {}

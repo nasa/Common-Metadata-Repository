@@ -413,7 +413,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
     :RelatedUrls :DataDates :Organizations
-    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
+    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields

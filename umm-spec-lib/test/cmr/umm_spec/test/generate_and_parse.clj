@@ -43,11 +43,12 @@
         "dif10"
         :dif10
 
-        "iso-smap"
-        :iso-smap
+        ; "iso-smap"
+        ; :iso-smap
 
-        "ISO19115-2"
-        :iso19115))
+        ; "ISO19115-2"
+        ; :iso19115
+        ))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"

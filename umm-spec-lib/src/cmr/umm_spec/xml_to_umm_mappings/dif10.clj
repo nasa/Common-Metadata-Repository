@@ -117,7 +117,15 @@
                                             {:URLs (seq
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
-   :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")})
+   :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
+   :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]
+                         {:Category (value-of sk "Category")
+                          :Topic (value-of sk "Topic")
+                          :Term (value-of sk "Term")
+                          :VariableLevel1 (value-of sk "Variable_Level_1")
+                          :VariableLevel2 (value-of sk "Variable_Level_2")
+                          :VariableLevel3 (value-of sk "Variable_Level_3")
+                          :DetailedVariable (value-of sk "DetailedVariable")})})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."

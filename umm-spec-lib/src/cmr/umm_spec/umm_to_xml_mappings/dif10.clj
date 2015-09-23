@@ -144,10 +144,15 @@
      [:Entry_ID (:EntryId c)]
      [:Version (u/with-default (:Version c))]
      [:Entry_Title (:EntryTitle c)]
-     [:Science_Keywords
-      [:Category "dummy category"]
-      [:Topic "dummy topic"]
-      [:Term "dummy term"]]
+     (for [sk (:ScienceKeywords c)]
+       [:Science_Keywords
+        [:Category (:Category sk)]
+        [:Topic (:Topic sk)]
+        [:Term (:Term sk)]
+        [:Variable_Level_1 (:VariableLevel1 sk)]
+        [:Variable_Level_2 (:VariableLevel2 sk)]
+        [:Variable_Level_3 (:VariableLevel3 sk)]
+        [:Detailed_Variable (:DetailedVariable sk)]])
      (for [ak (:AncillaryKeywords c)]
        [:Ancillary_Keyword ak])
 
