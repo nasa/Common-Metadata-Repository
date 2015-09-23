@@ -30,6 +30,14 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
+(defn- non-empty-obj-gen
+  "Returns a generator which returns nil instead of empty maps."
+  [g]
+  (gen/fmap (fn [x]
+              (when (some some? (vals x))
+                x))
+            g))
+
 (defn- object-like-schema-type->generator
   "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
   with keys properties, required, and additionalProperties. This is used to handle a normal object
@@ -47,18 +55,18 @@
         ;; Figure out which properties are required and which are optional
         required-properties (set (map keyword (:required schema-type)))
         optional-properties (vec (set/difference (set (keys properties)) required-properties))]
-
-    (chgen/for [;; Determine which properties to generate in this instance of the object
-                num-optional-fields (gen/choose 0 (count optional-properties))
-                :let [selected-properties (concat required-properties
-                                                  (subvec optional-properties
-                                                          0 num-optional-fields))
-                      ;; Create a map of property names to generators
-                      selected-prop-gens (select-keys prop-gens selected-properties)]
-                ;; Generate a hash map containing the properties
-                prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
-               ;; Construct a record from the hash map
-               (constructor-fn prop-map))))
+    (non-empty-obj-gen
+     (chgen/for [;; Determine which properties to generate in this instance of the object
+                 num-optional-fields (gen/choose 0 (count optional-properties))
+                 :let [selected-properties (concat required-properties
+                                                   (subvec optional-properties
+                                                           0 num-optional-fields))
+                       ;; Create a map of property names to generators
+                       selected-prop-gens (select-keys prop-gens selected-properties)]
+                 ;; Generate a hash map containing the properties
+                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
+       ;; Construct a record from the hash map
+       (constructor-fn prop-map)))))
 
 (defn- assert-field-not-present-with-one-of
   [schema-type k]
@@ -104,7 +112,6 @@
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf :anyOf} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (object-one-of->generator schema type-name schema-type)
-
     ;; else
     (if-let [any-of (:anyOf schema-type)]
       (->> any-of
@@ -125,7 +132,7 @@
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:items :minItems :maxItems} schema-type)
   (let [{:keys [items minItems maxItems]} (merge array-defaults schema-type)
-        item-generator (schema-type->generator schema type-name items)
+        item-generator (gen/such-that some? (schema-type->generator schema type-name items))
         ;; Limit the maximum number of items in an array to 5.
         maxItems (min maxItems 5)]
     (if (= minItems 0)

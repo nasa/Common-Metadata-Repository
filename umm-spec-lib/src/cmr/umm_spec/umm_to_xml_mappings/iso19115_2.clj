@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]))
 
@@ -294,6 +295,7 @@
       [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
      [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
      [:gmd:metadataStandardVersion (char-string "ISO 19115-2:2009(E)")]
+     (spatial/coordinate-system-element c)
      [:gmd:identificationInfo
       [:gmd:MD_DataIdentification
        [:gmd:citation
@@ -331,7 +333,8 @@
        (generate-publication-references (:PublicationReferences c))
        [:gmd:language (char-string (:DataLanguage c))]
        [:gmd:extent
-        [:gmd:EX_Extent
+        [:gmd:EX_Extent {:id "boundingExtent"}
+         (spatial/spatial-extent-elements c)
          (for [temporal (:TemporalExtents c)
                rdt (:RangeDateTimes temporal)]
            [:gmd:temporalElement

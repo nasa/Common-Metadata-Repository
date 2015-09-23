@@ -1090,7 +1090,8 @@
             "$ref": "#/definitions/LineType"
           }
         }
-      }
+      },
+      "required": ["CoordinateSystem"]
     },
     "PointType": {
       "type": "object",
@@ -1156,7 +1157,8 @@
           },
           "minItems": 3
         }
-      }
+      },
+      "required": ["Points"]
     },
     "ExclusiveZoneType": {
       "type": "object",
@@ -1187,7 +1189,8 @@
         "CenterPoint": {
           "$ref": "#/definitions/PointType"
         }
-      }
+      },
+      "required": ["Points"]
     },
     "VerticalSpatialDomainType": {
       "type": "object",
@@ -1264,7 +1267,8 @@
         "MaximumValue": {
           "type": "number"
         }
-      }
+      },
+      "required": ["MinimumValue", "MaximumValue"]
     },
     "UuidType": {
       "description": "A Level 3 UUID, see wiki link http://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29",

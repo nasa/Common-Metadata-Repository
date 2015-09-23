@@ -58,7 +58,9 @@
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
-                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
+                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
+                     :VerticalSpatialDomains [{:Type "Some kind of type"
+                                               :Value "Some kind of value"}]}
      :AccessConstraints {:Description "Access constraints"
                          :Value "0"}
      :UseConstraints "Use constraints"
@@ -256,7 +258,6 @@
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)))
 
 
@@ -282,10 +283,26 @@
       (update-in [:StartDate] date-time->date)
       (update-in [:EndDate] date-time->date)))
 
+(defn trim-dif10-geometry
+  "Returns GeometryType record with a maximium of one value in the collections under each key."
+  [geom]
+  ;; The shape key sequence here must be in the same order as in the DIF 10 XML generation.
+  (let [shape-keys [:GPolygons :BoundingRectangles :Lines :Points]
+        found-shape (first (filter #(seq (get geom %)) shape-keys))
+        other-keys (remove #{found-shape} shape-keys)
+        geom (if found-shape
+               (update-in geom [found-shape] #(take 1 %))
+               geom)]
+    (reduce (fn [m k]
+              (assoc m k nil))
+            geom
+            other-keys)))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -350,10 +367,24 @@
            (map distribution->expected-iso)
            vec))
 
+(defn update-iso-spatial
+  [spatial-extent]
+  (-> spatial-extent
+      (assoc :OrbitParameters nil
+             :VerticalSpatialDomains nil
+             ;; TODO these are mapped into the comma-separated strings... not ready yet
+             :GranuleSpatialRepresentation nil
+             :SpatialCoverageType nil)
+      (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
+      prune-empty-maps))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent] update-iso-spatial)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -380,6 +411,7 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
+      (assoc :SpatialExtent nil)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP

@@ -4,6 +4,7 @@
             [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
             [clojure.data :as data]
             [cmr.umm-spec.json-schema :as js]))
 
@@ -206,6 +207,7 @@
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
+     :SpatialExtent (spatial/parse-spatial doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
