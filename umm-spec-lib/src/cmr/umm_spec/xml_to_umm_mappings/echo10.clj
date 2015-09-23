@@ -5,7 +5,8 @@
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.util :as u]))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -44,6 +45,18 @@
          :OperationalModes (values-at inst "OperationModes/OperationMode")
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
+
+(defn- parse-collection-type
+  "Returns one of the enumerated types for CollectionType if present and matching one of the
+  enumerated types, nil if present and not matching, or Not Specified if not present."
+  [ca]
+  (let [ctype (value-of ca "CollectionType")]
+    (if ctype
+      (if (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT"} ctype)
+        ctype
+        nil)
+      u/not-provided)))
+
 
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
@@ -98,11 +111,15 @@
                             ;; one of the allowed enumerated type values for this field. Otherwise we
                             ;; should set it to nil.
                             ;; When parsing it out we should use "Not Specified" if it isn't presents
-                            :Type nil
+                            :Type (parse-collection-type ca)
                             :Description (value-of ca "CollectionUse")
                             :EntryId (str (value-of ca "ShortName") "_" (value-of ca "VersionId"))
                             :Version (value-of ca "VersionId")
                             })})
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8f86fb... CMR-1852: Added generation code for ECHO10 AssociatedCollections
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
   [metadata]

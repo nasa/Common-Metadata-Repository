@@ -516,14 +516,9 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates
     :MetadataLanguage :DirectoryNames :Personnel
-<<<<<<< HEAD
     :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
-=======
-    :RelatedUrls :DataDates :Organizations
-    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage})
->>>>>>> CMR-1852: Very partial implementation for handoff to James.
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

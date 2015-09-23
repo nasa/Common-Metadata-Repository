@@ -137,6 +137,13 @@
          [:ParameterRangeBegin (:ParameterRangeBegin aa)]
          [:ParameterRangeEnd (:ParameterRangeEnd aa)]
          [:Value (:Value aa)]])]
+     [:CollectionAssociations
+      (for [ca (:MetadataAssociations c)]
+        [:CollectionAssociation
+         [:ShortName (first (.split (:EntryId ca) "-"))]
+         [:VersionId (:Version ca)]
+         [:CollectionType (:Type ca)]
+         [:CollectionUse (:Description ca)]])]
      [:Campaigns
       (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
         [:Campaign
