@@ -31,6 +31,7 @@
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
 (defn- non-empty-obj-gen
+  "Returns a generator which returns nil instead of empty maps."
   [g]
   (gen/fmap (fn [x]
               (when (some some? (vals x))
