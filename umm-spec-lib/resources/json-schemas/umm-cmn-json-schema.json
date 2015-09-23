@@ -1090,6 +1090,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/LineType"
+          },
+          "minItems": 1
         }
       },
       "required": ["CoordinateSystem"],
