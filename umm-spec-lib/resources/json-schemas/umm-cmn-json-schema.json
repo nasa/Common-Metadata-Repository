@@ -282,6 +282,7 @@
           "description": "The URL to the resource associated with the data set.",
           "type": "array",
           "items": {
+            "format": "uri",
             "type": "string",
             "minLength": 1,
             "maxLength": 1024

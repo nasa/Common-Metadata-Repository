@@ -479,3 +479,22 @@
                            [1 2 3 4 5]
                            [1 2 3 4 5 6 7]))))
 
+(deftest key-sorted-map
+  (let [key-order [:c :d :f :a]
+        m (util/key-sorted-map key-order)]
+
+    (testing "initial state"
+      (is (= m {})))
+
+    (testing "known key order"
+      (is (= key-order (keys (into m (zipmap key-order (repeat nil)))))))
+
+    (testing "unknown keys"
+      (is (= [:x :y :z]  (keys (into m {:z nil :y nil :x nil})))))
+
+    (testing "known and unknown keys"
+      (is (= [:c :d :f :a ;; known before unknown
+              :x :y :z]
+             (keys (into m {:z nil :y nil :x nil
+                            :a nil :d nil :c nil :f nil})))))))
+

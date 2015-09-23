@@ -161,6 +161,9 @@
     (= (:format schema-type) "date-time")
     ext-gen/date-time
 
+    (= (:format schema-type) "uri")
+    ext-gen/file-url-string
+
     ;; Check to see if another format is used that we weren't expected
     (:format schema-type)
     (throw (Exception. (format "Unsupported string format [%s] in schema type %s"

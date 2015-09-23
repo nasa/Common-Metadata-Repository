@@ -495,3 +495,28 @@
       (cons
         (apply f (map #(if (seq %) (first %) default) colls))
         (apply map-longest f default (map rest colls))))))
+
+(defn key-sorted-map
+  "Creates an empty map whose keys are sorted by the order given. Keys not in the set will appear
+  after the specified keys. Keys must all be of the same type."
+  [key-order]
+  ;; Create a map of the keys to a numeric number indicating their position.
+  (let [key-order-map (zipmap key-order (range))]
+    (sorted-map-by
+      (fn [k1 k2]
+        (let [k1-order (key-order-map k1)
+              k2-order (key-order-map k2)]
+          (cond
+            ;; k1 and k2 are both in the key-order-map.
+            (and k1-order k2-order) (compare k1-order k2-order)
+
+            ;; k1 is in the map but not k2. k1 should appear earlier than k2
+            k1-order -1
+
+            ;; k2 is in the map but not k1. k1 should appear after k2
+            k2-order 1
+
+            ;; Neither is in the map so compare them directly
+            :else (compare k1 k2)))))))
+
+
