@@ -2,14 +2,13 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]))
 
 (defn- point-contents
-  "Returns the inner lon/lat elements for an ECHO Point or CenterPoint element from a UMM PointType
-  record."
+  "Returns the inner lon/lat elements for a DIF Point element from a UMM PointType record."
   [point]
   (list [:Point_Longitude (:Longitude point)]
         [:Point_Latitude  (:Latitude  point)]))
 
 (defn- point-element
-  "Returns ECHO Point element from a given UMM PointType record."
+  "Returns DIF Point element from a given UMM PointType record."
   [point]
   [:Point
    (point-contents point)])
