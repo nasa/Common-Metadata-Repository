@@ -2,7 +2,8 @@
   "This contains functions for manipulating the generator generated umm-record to a sanitized
   version to pass the xml validation for various supported metadata format. This is needed because
   the incompatibility between UMM JSON schema and schemas of the various metadata formats making the
-  generated metadata xml invalid without some kind of sanitization.")
+  generated metadata xml invalid without some kind of sanitization."
+  (:require [cmr.common.util :as util :refer [update-in-each]]))
 
 (defn- set-if-exist
   "Sets the field of the given record to the value if the field has a value, returns the record."
@@ -18,4 +19,9 @@
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to English to make it through the validation.
       (set-if-exist :DataLanguage "English")
-      (set-if-exist :CollectionProgress "COMPLETE")))
+      (set-if-exist :CollectionProgress "COMPLETE")
+      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
+      (update-in-each [:Distributions] update-in [:Fees]
+                      (fn [n]
+                        (when n (Double. (format "%9.2f" n)))))
+      ))

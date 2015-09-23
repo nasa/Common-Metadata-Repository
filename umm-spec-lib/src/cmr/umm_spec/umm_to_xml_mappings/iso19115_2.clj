@@ -196,8 +196,7 @@
   (when-let [distributions (su/remove-empty-records distributions)]
     ;; We want to generate an empty element here because ISO distribution depends on
     ;; the order of elements to determine how the fields of a distribution are group together.
-    (let [nil-to-empty-string (fn [s] (if s s ""))
-          truncate-map (fn [key] (util/truncate-nils (map key distributions)))
+    (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
           sizes (truncate-map :DistributionSize)
           fees (truncate-map :Fees)]
       [:gmd:distributionInfo
@@ -205,7 +204,7 @@
         [:gmd:distributor
          [:gmd:MD_Distributor
           [:gmd:distributorContact {:gco:nilReason "missing"}]
-          (for [fee (map nil-to-empty-string fees)]
+          (for [fee (map su/nil-to-empty-string fees)]
             [:gmd:distributionOrderProcess
              [:gmd:MD_StandardOrderProcess
               [:gmd:fees
@@ -215,11 +214,11 @@
             [:gmd:distributorFormat
              [:gmd:MD_Format
               [:gmd:name
-               (char-string (nil-to-empty-string format))]
+               (char-string (su/nil-to-empty-string format))]
               [:gmd:version {:gco:nilReason "unknown"}]
               [:specification
-               (char-string (nil-to-empty-string media))]]])
-          (for [size (map nil-to-empty-string sizes)]
+               (char-string (su/nil-to-empty-string media))]]])
+          (for [size (map su/nil-to-empty-string sizes)]
             [:gmd:distributorTransferOptions
              [:gmd:MD_DigitalTransferOptions
               [:gmd:transferSize
@@ -331,7 +330,7 @@
          [:gmd:otherConstraints
           [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
        (generate-publication-references (:PublicationReferences c))
-       [:gmd:language (char-string (:DataLanguage c))]
+       [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
        [:gmd:extent
         [:gmd:EX_Extent {:id "boundingExtent"}
          (spatial/spatial-extent-elements c)
@@ -342,7 +341,7 @@
              [:gmd:extent
               [:gml:TimePeriod {:gml:id (gen-id)}
                [:gml:beginPosition (:BeginningDateTime rdt)]
-               [:gml:endPosition (:EndingDateTime rdt)]]]]])
+               [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
          (for [temporal (:TemporalExtents c)
                date (:SingleDateTimes temporal)]
            [:gmd:temporalElement

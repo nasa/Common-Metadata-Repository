@@ -79,7 +79,7 @@
           (for [instrument (mapcat :Instruments (:Platforms c))]
             [:gmd:keyword
              (char-string (util/smap-keyword-str instrument))])]]
-        [:gmd:language (char-string (:DataLanguage c))]
+        [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
         [:gmd:extent
          [:gmd:EX_Extent
           (for [temporal (:TemporalExtents c)

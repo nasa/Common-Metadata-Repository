@@ -354,10 +354,9 @@
   with empty string as we have to keep empty elements for ordering which is needed in ISO to group
   things together."
   [distribution]
-  (let [nil-to-empty-string (fn [s] (if s s ""))]
-    (-> distribution
-        (update-in [:DistributionFormat] nil-to-empty-string)
-        (update-in [:DistributionMedia] nil-to-empty-string))))
+  (-> distribution
+      (update-in [:DistributionFormat] su/nil-to-empty-string)
+      (update-in [:DistributionMedia] su/nil-to-empty-string)))
 
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."
@@ -392,6 +391,7 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
+      (update-in [:DataLanguage] #(if (some? %) % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)

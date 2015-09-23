@@ -111,9 +111,12 @@
      [:AdditionalAttributes
       (for [aa (:AdditionalAttributes c)]
         [:AdditionalAttribute
-         (elements-from aa
-                        :Name :Description :DataType :ParameterRangeBegin
-                        :ParameterRangeEnd :Value)])]
+         [:Name (:Name aa)]
+         [:DataType (:DataType aa)]
+         [:Description (with-default (:Description aa))]
+         [:ParameterRangeBegin (:ParameterRangeBegin aa)]
+         [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+         [:Value (:Value aa)]])]
      [:Campaigns
       (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
         [:Campaign

@@ -126,7 +126,7 @@
 
 (def array-defaults
   {:minItems 0
-   :maxItems 3})
+   :maxItems 4})
 
 (defmethod schema-type->generator "array"
   [schema type-name schema-type]

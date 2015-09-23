@@ -44,3 +44,8 @@
   (let [value (p/value-of doc xpath)]
     (when-not (= value not-provided)
       value)))
+
+(defn nil-to-empty-string
+  "Returns the string itself or empty string if it is nil."
+  [s]
+  (if (some? s) s ""))
