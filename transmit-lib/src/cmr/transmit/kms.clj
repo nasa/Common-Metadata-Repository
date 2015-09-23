@@ -53,6 +53,11 @@
          {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
                       :long-name :data-center-url :uuid]}))
 
+(def keyword-scheme->required-field
+  "Maps each keyword scheme to a field that must be present for a keyword to be valid."
+  (merge keyword-scheme->leaf-field-name
+         {:science-keywords :term}))
+
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
   {:archive-centers :providers})
@@ -124,8 +129,8 @@
                              ;; Create a map for each row using the subfield-names as keys
                              (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                              (map remove-blank-keys)
-                             ;; We only want keyword entries with a short-name (leaf entries)
-                             (filter leaf-field-name))
+                             ;; Only keep entries which map to full valid keywords
+                             (filter (keyword-scheme->required-field keyword-scheme)))
         invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
 
     ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
@@ -180,8 +185,5 @@
     keywords))
 
 (comment
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :providers))
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :instruments))
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :platforms))
-  (take 3 (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :science-keywords))
-  )
+  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :providers))
+
