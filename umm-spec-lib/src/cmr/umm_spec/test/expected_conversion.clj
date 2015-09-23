@@ -301,7 +301,6 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc :ZoneIdentifier nil)
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)

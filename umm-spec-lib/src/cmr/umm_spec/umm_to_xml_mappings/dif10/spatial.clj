@@ -51,6 +51,7 @@
     [:Spatial_Coverage
      [:Spatial_Coverage_Type (:SpatialCoverageType sp)]
      [:Granule_Spatial_Representation (:GranuleSpatialRepresentation sp)]
+     [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
        [:Geometry
         [:Coordinate_System (:CoordinateSystem geom)]

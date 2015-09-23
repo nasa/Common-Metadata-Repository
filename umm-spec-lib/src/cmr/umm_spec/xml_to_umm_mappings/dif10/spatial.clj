@@ -49,7 +49,8 @@
     {:SpatialCoverageType          (value-of spatial "Spatial_Coverage_Type")
      :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
      :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
-                                     {:Geometry (parse-geometry geom)})
+                                     {:Geometry (parse-geometry geom)
+                                      :ZoneIdentifier (value-of spatial "Zone_Identifier")})
      :VerticalSpatialDomains       (for [vert-elem (select spatial "Vertical_Spatial_Info")]
                                      (fields-from vert-elem :Type :Value))
      :OrbitParameters              (let [[o] (select spatial "OrbitParameters")]
