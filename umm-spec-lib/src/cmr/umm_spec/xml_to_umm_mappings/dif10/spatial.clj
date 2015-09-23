@@ -50,6 +50,8 @@
      :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
      :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
                                      {:Geometry (parse-geometry geom)})
+     :VerticalSpatialDomains       (for [vert-elem (select spatial "Vertical_Spatial_Info")]
+                                     (fields-from vert-elem :Type :Value))
      :OrbitParameters              (let [[o] (select spatial "OrbitParameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
                                       :Period (value-of o "Period")

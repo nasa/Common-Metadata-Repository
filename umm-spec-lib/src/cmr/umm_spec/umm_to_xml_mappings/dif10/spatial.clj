@@ -63,7 +63,7 @@
           (map line-element (:Lines geom))
           (map point-element (:Points geom))))])
      (for [vert (:VerticalSpatialDomains sp)]
-       [:VerticalSpatialDomain
+       [:Vertical_Spatial_Info
         (elements-from vert :Type :Value)])
      (let [o (:OrbitParameters sp)]
        [:OrbitParameters

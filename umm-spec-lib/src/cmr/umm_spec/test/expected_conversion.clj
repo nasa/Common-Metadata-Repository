@@ -58,7 +58,9 @@
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
-                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
+                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
+                     :VerticalSpatialDomains [{:Type "Some kind of type"
+                                               :Value "Some kind of value"}]}
      :AccessConstraints {:Description "Access constraints"
                          :Value "0"}
      :UseConstraints "Use constraints"
@@ -301,7 +303,6 @@
   (-> umm-coll
       (update-in [:SpatialExtent :HorizontalSpatialDomain] assoc :ZoneIdentifier nil)
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
-      (update-in [:SpatialExtent] assoc :VerticalSpatialDomains nil)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
