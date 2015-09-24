@@ -241,8 +241,6 @@
   [distributions related-urls]
   (let [distributions (su/remove-empty-records distributions)]
     (when (or distributions related-urls)
-      ;; We want to generate an empty element here because ISO distribution depends on
-      ;; the order of elements to determine how the fields of a distribution are group together.
       (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
             sizes (truncate-map :DistributionSize)
             fees (truncate-map :Fees)]
