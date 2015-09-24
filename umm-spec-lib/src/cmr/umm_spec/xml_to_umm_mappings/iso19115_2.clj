@@ -4,8 +4,10 @@
             [cmr.common.util :as util]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
             [clojure.data :as data]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.util :as su]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -166,13 +168,10 @@
 (defn- parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc]
-  (let [nil-to-empty-string (fn [s] (if (some? s) s ""))
-        values-at-replace-nil (fn [xpath]
-                                (map nil-to-empty-string (values-at doc xpath)))
-        medias (values-at-replace-nil distributor-media-xpath)
-        sizes (values-at-replace-nil distributor-size-xpath)
-        formats (values-at-replace-nil distributor-format-xpath)
-        fees (values-at-replace-nil distributor-fees-xpath)]
+  (let [medias (values-at doc distributor-media-xpath)
+        sizes (values-at doc distributor-size-xpath)
+        formats (values-at doc distributor-format-xpath)
+        fees (values-at doc distributor-fees-xpath)]
     (util/map-longest (fn [media size format fee]
                         (hash-map
                           :DistributionMedia media
@@ -238,6 +237,7 @@
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (char-string-value md-data-id-el "gmd:language")
+     :SpatialExtent (spatial/parse-spatial doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
@@ -260,12 +260,12 @@
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
                                         select-party (fn [name xpath]
-                                                        (char-string-value publication
-                                                                (str (format role-xpath name) xpath)))]]
+                                                       (char-string-value publication
+                                                                          (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
                                :PublicationDate (str (date-at publication
-                                                        (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
-                                                             "gmd:date/gco:Date")))
+                                                              (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
+                                                                   "gmd:date/gco:Date")))
                                :Title (char-string-value publication "gmd:title")
                                :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
                                :Edition (char-string-value publication "gmd:edition")

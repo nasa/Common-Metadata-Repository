@@ -3,16 +3,22 @@
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.common.date-time-parser :as dtp]))
 
+(defn- blank-to-nil
+  "Returns the given string or nil if it is blank."
+  [s]
+  (when-not (str/blank? s)
+    s))
+
 (defn value-of
   [element xpath]
   (let [value (text (select element xpath))]
-    (when-not (str/blank? value)
-      value)))
+    (blank-to-nil value)))
 
 (defn values-at
   "Returns seq of contents of elements at xpath."
   [element xpath]
-  (map text (select element xpath)))
+  (let [values (map text (select element xpath))]
+    (map blank-to-nil values)))
 
 (defn boolean-at
   [element xpath]
@@ -30,4 +36,5 @@
 
 (defn date-at
   [element xpath]
-  (dtp/parse-date (text (value-of element xpath))))
+  (when-let [value (text (value-of element xpath))]
+    (dtp/parse-date value)))

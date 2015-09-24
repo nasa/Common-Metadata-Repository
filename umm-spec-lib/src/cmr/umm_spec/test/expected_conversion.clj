@@ -57,7 +57,9 @@
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
-                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}}
+                                                          :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
+                     :VerticalSpatialDomains [{:Type "Some kind of type"
+                                               :Value "Some kind of value"}]}
      :AccessConstraints {:Description "Access constraints"
                          :Value "0"}
      :UseConstraints "Use constraints"
@@ -153,6 +155,13 @@
           []
           temporal-extents))
 
+(defn- date-time->date
+  "Returns the given datetime to a date."
+  [date-time]
+  (some->> date-time
+           (f/unparse (f/formatters :date))
+           (f/parse (f/formatters :date))))
+
 ;;; Format-Specific Translation Functions
 
 (defn- echo10-expected-distributions
@@ -210,7 +219,11 @@
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)))
+      (update-in [:RelatedUrls] expected-echo10-related-urls)
+      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
+      (update-in-each [:Distributions] update-in [:Fees]
+                      (fn [n]
+                        (when n (Double. (format "%9.2f" n)))))))
 
 ;; DIF 9
 
@@ -282,7 +295,6 @@
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif-related-urls)))
 
@@ -302,13 +314,33 @@
 
 (defn dif10-project
   [proj]
-  ;; DIF 10 only has at most one campaign in Project Campaigns
-  (update-in proj [:Campaigns] #(when (first %) [(first %)])))
+  (-> proj
+      ;; DIF 10 only has at most one campaign in Project Campaigns
+      (update-in [:Campaigns] #(when (first %) [(first %)]))
+      ;; DIF10 StartDate and EndDate are date rather than datetime
+      (update-in [:StartDate] date-time->date)
+      (update-in [:EndDate] date-time->date)))
+
+(defn trim-dif10-geometry
+  "Returns GeometryType record with a maximium of one value in the collections under each key."
+  [geom]
+  ;; The shape key sequence here must be in the same order as in the DIF 10 XML generation.
+  (let [shape-keys [:GPolygons :BoundingRectangles :Lines :Points]
+        found-shape (first (filter #(seq (get geom %)) shape-keys))
+        other-keys (remove #{found-shape} shape-keys)
+        geom (if found-shape
+               (update-in geom [found-shape] #(take 1 %))
+               geom)]
+    (reduce (fn [m k]
+              (assoc m k nil))
+            geom
+            other-keys)))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
+      (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -354,27 +386,13 @@
          (-> pub-ref
              (assoc :ReportNumber nil :Volume nil :RelatedUrl nil :PublicationPlace nil)
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
-             (update-in [:PublicationDate] (fn [date-time]
-                                             (->> date-time
-                                                  (f/unparse (f/formatters :date))
-                                                  (f/parse (f/formatters :date)))))))))
-
-(defn- distribution->expected-iso
-  "Converts an UMM distribution to expected ISO19115 distribution. All the nil values are replaced
-  with empty string as we have to keep empty elements for ordering which is needed in ISO to group
-  things together."
-  [distribution]
-  (let [nil-to-empty-string (fn [s] (if s s ""))]
-    (-> distribution
-        (update-in [:DistributionFormat] nil-to-empty-string)
-        (update-in [:DistributionMedia] nil-to-empty-string))))
+             (update-in [:PublicationDate] date-time->date)))))
 
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."
   [distributions]
   (some->> distributions
            su/remove-empty-records
-           (map distribution->expected-iso)
            vec))
 
 (defn- expected-iso-19115-2-related-urls
@@ -391,10 +409,24 @@
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
                             content-type)))))))
 
+(defn update-iso-spatial
+  [spatial-extent]
+  (-> spatial-extent
+      (assoc :OrbitParameters nil
+             :VerticalSpatialDomains nil
+             ;; TODO these are mapped into the comma-separated strings... not ready yet
+             :GranuleSpatialRepresentation nil
+             :SpatialCoverageType nil)
+      (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
+      (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
+      prune-empty-maps))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent] update-iso-spatial)
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -402,6 +434,7 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
+      (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
@@ -422,6 +455,7 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> (convert-internal umm-coll :iso19115)
+      (assoc :SpatialExtent nil)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP

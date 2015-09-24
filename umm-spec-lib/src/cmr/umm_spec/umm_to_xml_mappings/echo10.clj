@@ -1,8 +1,9 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
-            [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]))
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
+            [cmr.umm-spec.util :refer [with-default]]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
 (defn characteristic-mapping
   [data]
@@ -19,10 +20,9 @@
   [:Platforms
    (for [plat (:Platforms c)]
      [:Platform
-      (elements-from plat
-                     :ShortName
-                     :LongName
-                     :Type)
+      [:ShortName (:ShortName plat)]
+      [:LongName (with-default (:LongName plat))]
+      [:Type (with-default (:Type plat))]
       [:Characteristics
        (for [cc (:Characteristics plat)]
          (characteristic-mapping cc))]
@@ -82,47 +82,51 @@
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
   (xml
-   [:Collection
-    [:ShortName (:EntryId c)]
-    [:VersionId (:Version c)]
-    [:InsertTime "1999-12-31T19:00:00-05:00"]
-    [:LastUpdate "1999-12-31T19:00:00-05:00"]
-    [:LongName "dummy-long-name"]
-    [:DataSetId (:EntryTitle c)]
-    [:Description (:Abstract c)]
-    [:CollectionDataType (:CollectionDataType c)]
-    [:Orderable "true"]
-    [:Visible "true"]
-    [:SuggestedUsage (:Purpose c)]
-    [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
-    [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
-    [:CollectionState (:CollectionProgress c)]
-    [:RestrictionFlag (-> c :AccessConstraints :Value)]
-    [:RestrictionComment (-> c :AccessConstraints :Description)]
-    [:Price (-> c :Distributions first :Fees)]
-    [:DataFormat (-> c :Distributions first :DistributionFormat)]
-    [:SpatialKeywords
-     (for [kw (:SpatialKeywords c)]
-       [:Keyword kw])]
-    [:TemporalKeywords
-     (for [kw (:TemporalKeywords c)]
-       [:Keyword kw])]
-    (echo10-temporal c)
-    (echo10-platforms c)
-    [:AdditionalAttributes
-     (for [aa (:AdditionalAttributes c)]
-       [:AdditionalAttribute
-        (elements-from aa
-                       :Name :Description :DataType :ParameterRangeBegin
-                       :ParameterRangeEnd :Value)])]
-    (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
-      [:Campaigns
-       [:Campaign
-        [:ShortName ShortName]
-        [:LongName LongName]
-        [:StartDate StartDate]
-        [:EndDate EndDate]]])
-    (ru/generate-access-urls (:RelatedUrls c))
-    (ru/generate-resource-urls (:RelatedUrls c))
-    (spatial/spatial-element c)
-    (ru/generate-browse-urls (:RelatedUrls c))]))
+    [:Collection
+     [:ShortName (:EntryId c)]
+     [:VersionId (with-default (:Version c))]
+     [:InsertTime "1999-12-31T19:00:00-05:00"]
+     [:LastUpdate "1999-12-31T19:00:00-05:00"]
+     [:LongName "dummy-long-name"]
+     [:DataSetId (:EntryTitle c)]
+     [:Description (:Abstract c)]
+     [:CollectionDataType (:CollectionDataType c)]
+     [:Orderable "true"]
+     [:Visible "true"]
+     [:SuggestedUsage (:Purpose c)]
+     [:ProcessingLevelId (-> c :ProcessingLevel :Id)]
+     [:ProcessingLevelDescription (-> c :ProcessingLevel :ProcessingLevelDescription)]
+     [:CollectionState (:CollectionProgress c)]
+     [:RestrictionFlag (-> c :AccessConstraints :Value)]
+     [:RestrictionComment (-> c :AccessConstraints :Description)]
+     [:Price (when-let [price (-> c :Distributions first :Fees)]
+               (format "%9.2f" price))]
+     [:DataFormat (-> c :Distributions first :DistributionFormat)]
+     [:SpatialKeywords
+      (for [kw (:SpatialKeywords c)]
+        [:Keyword kw])]
+     [:TemporalKeywords
+      (for [kw (:TemporalKeywords c)]
+        [:Keyword kw])]
+     (echo10-temporal c)
+     (echo10-platforms c)
+     [:AdditionalAttributes
+      (for [aa (:AdditionalAttributes c)]
+        [:AdditionalAttribute
+         [:Name (:Name aa)]
+         [:DataType (:DataType aa)]
+         [:Description (with-default (:Description aa))]
+         [:ParameterRangeBegin (:ParameterRangeBegin aa)]
+         [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+         [:Value (:Value aa)]])]
+     [:Campaigns
+      (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
+        [:Campaign
+         [:ShortName ShortName]
+         [:LongName LongName]
+         [:StartDate StartDate]
+         [:EndDate EndDate]])]
+     (ru/generate-access-urls (:RelatedUrls c))
+     (ru/generate-resource-urls (:RelatedUrls c))
+     (spatial/spatial-element c)
+     (ru/generate-browse-urls (:RelatedUrls c))]))

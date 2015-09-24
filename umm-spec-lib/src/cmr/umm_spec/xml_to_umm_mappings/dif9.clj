@@ -30,7 +30,7 @@
                {:ShortName (value-of proj "Short_Name")
                 :LongName (value-of proj "Long_Name")})
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
-   :SpatialKeywords (values-at doc "/DIF/Location")
+   :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
    :Quality (value-of doc "/DIF/Quality")
    :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")}
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
