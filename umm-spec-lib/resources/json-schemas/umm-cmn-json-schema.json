@@ -1030,8 +1030,7 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/VerticalSpatialDomainType"
-          },
-          "minItems": 0
+          }
         },
         "OrbitParameters": {
           "$ref": "#/definitions/OrbitParametersType"
@@ -1070,28 +1069,41 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/PointType"
-          }
+          },
+          "minItems": 1
         },
         "BoundingRectangles": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/BoundingRectangleType"
-          }
+          },
+          "minItems": 1
         },
         "GPolygons": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/GPolygonType"
-          }
+          },
+          "minItems": 1
         },
         "Lines": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/LineType"
-          }
+          },
+          "minItems": 1
         }
       },
-      "required": ["CoordinateSystem"]
+      "required": ["CoordinateSystem"],
+      "oneOf": [{
+        "required": ["Points"]
+      }, {
+        "required": ["BoundingRectangles"]
+      }, {
+        "required": ["GPolygons"]
+      }, {
+        "required": ["Lines"]
+      }]
     },
     "PointType": {
       "type": "object",
@@ -1155,7 +1167,7 @@
           "items": {
             "$ref": "#/definitions/PointType"
           },
-          "minItems": 3
+          "minItems": 4
         }
       },
       "required": ["Points"]
@@ -1380,7 +1392,7 @@
     "DataTypeEnum": {
       "description": "This entity contains the additional attribute data types.",
       "type": "string",
-      "enum": ["STRING", "FLOAT", "INT", "BOOLEAN", "DATE", "TIME", "DATETIME", "DATESTRING", "TIMESTRING", "DATETIMESTRING"]
+      "enum": ["STRING", "FLOAT", "INT", "BOOLEAN", "DATE", "TIME", "DATETIME", "DATE_STRING", "TIME_STRING", "DATETIME_STRING"]
     },
     "DollarAmountType": {
       "type": "number",

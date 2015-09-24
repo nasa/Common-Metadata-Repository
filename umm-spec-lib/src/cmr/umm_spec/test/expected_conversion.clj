@@ -191,7 +191,11 @@
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
-      (update-in-each [:Projects] assoc :Campaigns nil)))
+      (update-in-each [:Projects] assoc :Campaigns nil)
+      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
+      (update-in-each [:Distributions] update-in [:Fees]
+                      (fn [n]
+                        (when n (Double. (format "%9.2f" n)))))))
 
 ;; DIF 9
 
@@ -349,22 +353,11 @@
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
              (update-in [:PublicationDate] date-time->date)))))
 
-(defn- distribution->expected-iso
-  "Converts an UMM distribution to expected ISO19115 distribution. All the nil values are replaced
-  with empty string as we have to keep empty elements for ordering which is needed in ISO to group
-  things together."
-  [distribution]
-  (let [nil-to-empty-string (fn [s] (if s s ""))]
-    (-> distribution
-        (update-in [:DistributionFormat] nil-to-empty-string)
-        (update-in [:DistributionMedia] nil-to-empty-string))))
-
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."
   [distributions]
   (some->> distributions
            su/remove-empty-records
-           (map distribution->expected-iso)
            vec))
 
 (defn update-iso-spatial
@@ -392,6 +385,7 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
+      (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)

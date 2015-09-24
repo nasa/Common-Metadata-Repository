@@ -2,7 +2,8 @@
   "This contains functions for manipulating the generator generated umm-record to a sanitized
   version to pass the xml validation for various supported metadata format. This is needed because
   the incompatibility between UMM JSON schema and schemas of the various metadata formats making the
-  generated metadata xml invalid without some kind of sanitization.")
+  generated metadata xml invalid without some kind of sanitization."
+  (:require [cmr.common.util :as util :refer [update-in-each]]))
 
 (defn- set-if-exist
   "Sets the field of the given record to the value if the field has a value, returns the record."

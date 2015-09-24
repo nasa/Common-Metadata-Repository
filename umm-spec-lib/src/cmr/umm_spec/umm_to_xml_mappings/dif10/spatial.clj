@@ -1,6 +1,13 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
   (:require [cmr.umm-spec.xml.gen :refer :all]))
 
+;; TODO: We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
+;; See CMR-1990
+(def umm-spatial-type->dif10-spatial-type
+  {"HORIZONTAL" "Horizontal"
+   "VERTICAL" "Vertical"
+   "ORBITAL" "Orbit"})
+
 (defn- point-contents
   "Returns the inner lon/lat elements for a DIF Point element from a UMM PointType record."
   [point]
@@ -27,14 +34,14 @@
   "Returns DIF 10 Polygon element from UMM GPolygonType record."
   [poly]
   [:Polygon
-   [:Center_Point
-    (point-contents (:CenterPoint poly))]
    [:Boundary
     (map point-element (-> poly :Boundary :Points))]
    [:Exclusive_Zone
     (for [b (-> poly :ExclusiveZone :Boundaries)]
       [:Boundary
-       (map point-element (:Points b))])]])
+       (map point-element (:Points b))])]
+   [:Center_Point
+    (point-contents (:CenterPoint poly))]])
 
 (defn- line-element
   "Returns DIF 10 Line element from given UMM LineType record."
@@ -49,7 +56,7 @@
   [c]
   (let [sp (:SpatialExtent c)]
     [:Spatial_Coverage
-     [:Spatial_Coverage_Type (:SpatialCoverageType sp)]
+     [:Spatial_Coverage_Type (umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp))]
      [:Granule_Spatial_Representation (:GranuleSpatialRepresentation sp)]
      [:Zone_Identifier (-> sp :HorizontalSpatialDomain :ZoneIdentifier)]
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
@@ -57,19 +64,19 @@
         [:Coordinate_System (:CoordinateSystem geom)]
         ;; DIF 10 only supports one of each type of geometry, so we just use the first one.
         (first
-         (concat
-          ;; From most-specific to least specific. This is arbitrary.
-          (map polygon-element (:GPolygons geom))
-          (map bounding-rect-element (:BoundingRectangles geom))
-          (map line-element (:Lines geom))
-          (map point-element (:Points geom))))])
-     (for [vert (:VerticalSpatialDomains sp)]
-       [:Vertical_Spatial_Info
-        (elements-from vert :Type :Value)])
+          (concat
+            ;; From most-specific to least specific. This is arbitrary.
+            (map polygon-element (:GPolygons geom))
+            (map bounding-rect-element (:BoundingRectangles geom))
+            (map line-element (:Lines geom))
+            (map point-element (:Points geom))))])
      (let [o (:OrbitParameters sp)]
-       [:OrbitParameters
+       [:Orbit_Parameters
         [:Swath_Width (:SwathWidth o)]
         [:Period (:Period o)]
         [:Inclination_Angle (:InclinationAngle o)]
         [:Number_Of_Orbits (:NumberOfOrbits o)]
-        [:Start_Circular_Latitude (:StartCircularLatitude o)]])]))
+        [:Start_Circular_Latitude (:StartCircularLatitude o)]])
+     (for [vert (:VerticalSpatialDomains sp)]
+       [:Vertical_Spatial_Info
+        (elements-from vert :Type :Value)])]))

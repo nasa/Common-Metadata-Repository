@@ -1,7 +1,12 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.spatial
   "Defines mappings from DIF 10 XML spatial elements into UMM records"
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
-            [cmr.umm-spec.xml.parse :refer :all]))
+  (:require [clojure.set :as set]
+            [cmr.umm-spec.simple-xpath :refer [select text]]
+            [cmr.umm-spec.xml.parse :refer :all]
+            [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as utx]))
+
+(def dif10-spatial-type->umm-spatial-type
+  (set/map-invert utx/umm-spatial-type->dif10-spatial-type))
 
 (defn- parse-point
   [el]
@@ -46,14 +51,14 @@
   "Returns UMM-C spatial map from ECHO10 XML document."
   [doc]
   (let [[spatial] (select doc "/DIF/Spatial_Coverage")]
-    {:SpatialCoverageType          (value-of spatial "Spatial_Coverage_Type")
+    {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
      :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
      :HorizontalSpatialDomain      (let [[geom] (select spatial "Geometry")]
                                      {:Geometry (parse-geometry geom)
                                       :ZoneIdentifier (value-of spatial "Zone_Identifier")})
      :VerticalSpatialDomains       (for [vert-elem (select spatial "Vertical_Spatial_Info")]
                                      (fields-from vert-elem :Type :Value))
-     :OrbitParameters              (let [[o] (select spatial "OrbitParameters")]
+     :OrbitParameters              (let [[o] (select spatial "Orbit_Parameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
                                       :Period (value-of o "Period")
                                       :InclinationAngle (value-of o "Inclination_Angle")

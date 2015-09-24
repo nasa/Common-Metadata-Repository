@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.iso-smap-utils
+(ns cmr.umm-spec.iso-utils
   "Contains functions for parsing and generating the ISO SMAP descriptiveKeywords. SMAP ISO
   collection science keywords, platforms and instruments are all represented as descriptiveKeywords.
   It would be better if the type element within the descriptiveKeywords could identify the type of
@@ -94,3 +94,9 @@
   (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
           (:ShortName instrument)
           (str (:LongName instrument))))
+
+(defn generate-id
+  "Returns a 5 character random id to use as an ISO id"
+  []
+  (str "d" (java.util.UUID/randomUUID)))
+
