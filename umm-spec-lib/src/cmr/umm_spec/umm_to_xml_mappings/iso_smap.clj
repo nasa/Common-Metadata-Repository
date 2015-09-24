@@ -3,7 +3,8 @@
   (:require [clojure.string :as str]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.iso-smap-utils :as util]
-            [cmr.umm-spec.xml.gen :refer :all]))
+            [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as su :refer [with-default]]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"
@@ -66,7 +67,7 @@
 
           [:gmd:identifier
            [:gmd:MD_Identifier
-            [:gmd:code (char-string (:Version c))]
+            [:gmd:code (char-string (with-default (:Version c)))]
             [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
         [:gmd:abstract (char-string (:Abstract c))]
         [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
@@ -89,7 +90,7 @@
               [:gmd:extent
                [:gml:TimePeriod {:gml:id (gen-id)}
                 [:gml:beginPosition (:BeginningDateTime rdt)]
-                [:gml:endPosition (:EndingDateTime rdt)]]]]])
+                [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
           (for [temporal (:TemporalExtents c)
                 date (:SingleDateTimes temporal)]
             [:gmd:temporalElement

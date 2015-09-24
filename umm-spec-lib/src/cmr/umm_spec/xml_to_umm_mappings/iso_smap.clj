@@ -3,7 +3,8 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso-smap-utils :as utils]))
+            [cmr.umm-spec.iso-smap-utils :as utils]
+            [cmr.umm-spec.util :refer [without-default-value-of]]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -45,7 +46,7 @@
     (js/coerce
      {:EntryId (value-of data-id entry-id-xpath)
       :EntryTitle (value-of doc entry-title-xpath)
-      :Version (value-of data-id version-xpath)
+      :Version (without-default-value-of data-id version-xpath)
       :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
       :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
       :CollectionProgress (value-of data-id "gmd:status/gmd:MD_ProgressCode")

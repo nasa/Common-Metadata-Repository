@@ -87,7 +87,7 @@
 
 (defspec new-roundtrip-generator-gen-parse 100
   (for-all [umm-record umm-gen/umm-c-generator
-            metadata-format (gen/elements [:dif :dif10 :echo10])]
+            metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap])]
     (let [umm-record (urs/sanitized-umm-record umm-record)]
       (is (= (expected-conversion/convert umm-record metadata-format)
              (new-xml-round-trip umm-record metadata-format))))))
