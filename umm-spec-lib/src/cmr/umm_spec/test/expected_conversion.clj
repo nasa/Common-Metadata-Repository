@@ -4,6 +4,7 @@
   can be lossy if some fields are not supported by that format"
   (:require [clj-time.core :as t]
             [clj-time.format :as f]
+            [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]
@@ -416,19 +417,27 @@
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
                             content-type)))))))
+(defn- fix-iso-vertical-spatial-domain-values
+  [vsd]
+  (let [fix-val (fn [x]
+                  (when x
+                    (let [x-replaced (str/replace x #"[,=]" "")]
+                      (when-not (str/blank? x-replaced)
+                        x-replaced))))]
+    (-> vsd
+        (update-in [:Type] fix-val)
+        (update-in [:Value] fix-val))))
 
 (defn update-iso-spatial
   [spatial-extent]
   (-> spatial-extent
-      (assoc :OrbitParameters nil
-             :VerticalSpatialDomains nil
-             ;; TODO these are mapped into the comma-separated strings... not ready yet
-             :GranuleSpatialRepresentation nil
-             :SpatialCoverageType nil)
+      (assoc :OrbitParameters nil)
       (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :GPolygons] assoc :CenterPoint nil)
+      (update-in [:VerticalSpatialDomains] #(take 1 %))
+      (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
 (defmethod convert-internal :iso19115
