@@ -13,6 +13,7 @@
             [cmr.umm-spec.simple-xpath :refer [select context]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
+            [cmr.umm-spec.iso19115-util :as iu]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
@@ -105,7 +106,7 @@
   (for-all [umm-record umm-gen/umm-c-generator]
     (let [metadata-xml (core/generate-metadata :collection :iso19115 umm-record)
           projects (:Projects (core/parse-metadata :collection :iso19115 metadata-xml))
-          expected-projects-keywords (seq (map #'iso-umm-to-xml/generate-title projects))]
+          expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
 
