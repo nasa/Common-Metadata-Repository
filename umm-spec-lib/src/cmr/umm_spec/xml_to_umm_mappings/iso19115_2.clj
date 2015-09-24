@@ -70,6 +70,13 @@
   (str distributor-xpath
        "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
 
+(def distributor-online-url-xpath
+  (str distributor-xpath
+       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
+
+(def browse-graphic-xpath
+  (str md-data-id-base-xpath "/gmd:graphicOverview/gmd:MD_BrowseGraphic"))
+
 (defn- char-string-value
   "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
   [element parent-xpath]
@@ -175,6 +182,31 @@
                       nil
                       medias sizes formats fees)))
 
+(def resource-name->types
+  "Mapping of online resource name to related url type and sub-type"
+  {"DATA ACCESS" "GET DATA"
+   "Guide" "VIEW RELATED INFORMATION"
+   "Browse" "GET RELATED VISUALIZATION"})
+
+(defn- parse-online-urls
+  [doc]
+  (for [url (select doc distributor-online-url-xpath)
+        :let [name (char-string-value url "gmd:name")
+              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
+              type (if (= "download" code)
+                     "GET DATA"
+                     (when name (resource-name->types name)))]]
+    {:URLs [(value-of url "gmd:linkage/gmd:URL")]
+     :Description (char-string-value url "gmd:description")
+     :ContentType {:Type type}}))
+
+(defn- parse-browse-graphic
+  [doc]
+  (for [url (select doc browse-graphic-xpath)]
+    {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]
+     :Description (char-string-value url "gmd:fileDescription")
+     :ContentType {:Type (resource-name->types (char-string-value url "gmd:fileType"))}}))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -243,7 +275,8 @@
                                :ISBN (char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
-     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])}))
+     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])
+     :RelatedUrls (concat (parse-online-urls doc) (parse-browse-graphic doc))}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

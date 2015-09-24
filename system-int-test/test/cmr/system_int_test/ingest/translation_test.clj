@@ -10,7 +10,7 @@
 
 (def valid-formats
   [
-   :umm-json
+   ; :umm-json
    :iso-smap
    :iso19115
    :dif

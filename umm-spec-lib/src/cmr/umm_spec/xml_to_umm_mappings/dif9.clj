@@ -27,8 +27,8 @@
    :DataLanguage (value-of doc "/DIF/Data_Set_Language")
    :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
    :Projects (for [proj (select doc "/DIF/Project")]
-                {:ShortName (value-of proj "Short_Name")
-                 :LongName (value-of proj "Long_Name")})
+               {:ShortName (value-of proj "Short_Name")
+                :LongName (value-of proj "Long_Name")})
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location")
    :Quality (value-of doc "/DIF/Quality")
@@ -67,29 +67,35 @@
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
                             :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
 
-  :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
-                          (into {} (map (fn [x]
-                                          (if (keyword? x)
-                                            [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                            x))
-                                        [:Author
-                                         :Publication_Date
-                                         :Title
-                                         :Series
-                                         :Edition
-                                         :Volume
-                                         :Issue
-                                         :Report_Number
-                                         :Publication_Place
-                                         :Publisher
-                                         :Pages
-                                         [:ISBN (value-of pub-ref "ISBN")]
-                                         [:DOI {:DOI (value-of pub-ref "DOI")}]
-                                         [:RelatedUrl
-                                          {:URLs (seq
-                                                   (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                         :Other_Reference_Details])))
-  :AncillaryKeywords (values-at doc  "/DIF/Keyword")})
+   :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
+                            (into {} (map (fn [x]
+                                            (if (keyword? x)
+                                              [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                              x))
+                                          [:Author
+                                           :Publication_Date
+                                           :Title
+                                           :Series
+                                           :Edition
+                                           :Volume
+                                           :Issue
+                                           :Report_Number
+                                           :Publication_Place
+                                           :Publisher
+                                           :Pages
+                                           [:ISBN (value-of pub-ref "ISBN")]
+                                           [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                           [:RelatedUrl
+                                            {:URLs (seq
+                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                           :Other_Reference_Details])))
+   :AncillaryKeywords (values-at doc  "/DIF/Keyword")
+   :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
+                      :let [description (value-of related-url "Description")]]
+                  {:URLs (values-at related-url "URL")
+                   :Description description
+                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
+                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn parse-temporal
@@ -74,7 +75,8 @@
                {:ShortName (value-of proj "ShortName")
                 :LongName (value-of proj "LongName")
                 :StartDate (value-of proj "StartDate")
-                :EndDate (value-of proj "EndDate")})})
+                :EndDate (value-of proj "EndDate")})
+   :RelatedUrls (ru/parse-related-urls doc)})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
