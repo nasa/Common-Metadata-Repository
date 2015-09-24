@@ -57,8 +57,13 @@
 (defn- science-keyword->iso-keyword-string
   "Returns an ISO science keyword string from the given science keyword."
   [science-keyword]
-  (let [{:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword]
+  (let [{category :Category
+         topic :Topic
+         term :Term
+         variable-level-1 :VariableLevel1
+         variable-level-2 :VariableLevel2
+         variable-level-3 :VariableLevel3
+         detailed-variable :DetailedVariable} science-keyword]
     (str/join iso/keyword-separator (map #(or % iso/nil-science-keyword-field)
                                          [category topic term variable-level-1 variable-level-2
                                           variable-level-3 detailed-variable]))))

@@ -88,11 +88,11 @@
         [:TopicKeyword (:Topic sk)]
         [:TermKeyword (:Term sk)]
         [:VariableLevel1Keyword
-         [:Value (:VariableLevel1 sk)]]
-        [:VariableLevel2Keyword
-         [:Value (:VariableLevel2 sk)]]
-        [:VariableLevel3Keyword (:VariableLevel3 sk)]
-        [:DetailedVariableKeyword (:DetailedKeyword sk)]])]))
+         [:Value (:VariableLevel1 sk)]
+         [:VariableLevel2Keyword
+          [:Value (:VariableLevel2 sk)]
+          [:VariableLevel3Keyword (:VariableLevel3 sk)]]]
+        [:DetailedVariableKeyword (:DetailedVariable sk)]])]))
 
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."

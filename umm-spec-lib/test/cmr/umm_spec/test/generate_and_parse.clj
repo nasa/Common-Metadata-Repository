@@ -43,12 +43,12 @@
         "dif10"
         :dif10
 
+        ;; Tests broken because science keywords are not supported yet
         ; "iso-smap"
         ; :iso-smap
 
-        ; "ISO19115-2"
-        ; :iso19115
-        ))
+        "ISO19115-2"
+        :iso19115))
 
 (deftest generate-valid-xml
   (testing "valid XML is generated for each format"
@@ -64,7 +64,8 @@
 
 (defspec roundtrip-generator-gen-parse 100
   (for-all [umm-record umm-gen/umm-c-generator
-            metadata-format (gen/elements [:echo10 :dif :dif10 :iso-smap :iso19115])]
+            ;; Removed iso-smap because science keywords are not supported yet
+            metadata-format (gen/elements [:echo10 :dif :dif10 :iso19115])]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip umm-record metadata-format)))))
 

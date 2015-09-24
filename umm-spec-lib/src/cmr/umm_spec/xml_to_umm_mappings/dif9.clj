@@ -97,7 +97,7 @@
                           :VariableLevel1 (value-of sk "Variable_Level_1")
                           :VariableLevel2 (value-of sk "Variable_Level_2")
                           :VariableLevel3 (value-of sk "Variable_Level_3")
-                          :DetailedVariable (value-of sk "DetailedVariable")})})
+                          :DetailedVariable (value-of sk "Detailed_Variable")})})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

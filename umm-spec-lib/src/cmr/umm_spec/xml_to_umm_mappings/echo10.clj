@@ -83,8 +83,8 @@
                           :Topic (value-of sk "TopicKeyword")
                           :Term (value-of sk "TermKeyword")
                           :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
-                          :VariableLevel2 (value-of sk "VariableLevel2Keyword/Value")
-                          :VariableLevel3 (value-of sk "VariableLevel3Keyword/Value")
+                          :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
+                          :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                           :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
 
 (defn echo10-xml-to-umm-c
