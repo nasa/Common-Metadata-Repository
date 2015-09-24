@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
-  (:require [cmr.umm-spec.simple-xpath :refer [select text]]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.spatial.encoding.gmd :as gmd]))
 
@@ -46,10 +47,12 @@
 (defn parse-key-val-str
   "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
   [description-str]
-  (when (string? description-str)
+  (when (and (string? description-str)
+             (not (str/blank? description-str)))
     (into {}
-          (for [pair-str (.split description-str ",")]
-            (vec (.split pair-str "="))))))
+          (for [pair-str (str/split description-str #",")]
+            (let [[k v] (str/split pair-str #"=")]
+              [k v])))))
 
 (defn- get-extent-info-map
   "Returns a map of equal-separated pairs from the comma-separated list in the ISO document's extent
@@ -82,4 +85,7 @@
   (let [extent-info (get-extent-info-map doc)]
     {:SpatialCoverageType (get extent-info "SpatialCoverageType")
      :GranuleSpatialRepresentation (get extent-info "SpatialGranuleSpatialRepresentation")
-     :HorizontalSpatialDomain {:Geometry (parse-geometry doc)}}))
+     :HorizontalSpatialDomain {:Geometry (parse-geometry doc)}
+     :VerticalSpatialDomains (when-let [vsd-type (get extent-info "VerticalSpatialDomainType")]
+                               [{:Type vsd-type
+                                 :Value (get extent-info "VerticalSpatialDomainValue")}])}))

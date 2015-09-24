@@ -275,6 +275,19 @@
         {:codeList (str (:ngdc code-lists) "#DS_AssociationTypeCode")
          :codeListValue "Input Collection"} "Input Collection"]]]]))
 
+(defn extent-description-string
+  "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
+  collection record."
+  [c]
+  (let [vsd (first (-> c :SpatialExtent :VerticalSpatialDomains))
+        m {"VerticalSpatialDomainType" (:Type vsd)
+           "VerticalSpatialDomainValue" (:Value vsd)
+           "SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
+           "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)}]
+    (str/join "," (for [[k v] m
+                        :when (some? v)]
+                    (str k "=" (str/replace v #"[,=]" ""))))))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -333,6 +346,8 @@
        [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
        [:gmd:extent
         [:gmd:EX_Extent {:id "boundingExtent"}
+         [:gmd:description
+          [:gco:CharacterString (extent-description-string c)]]
          (spatial/spatial-extent-elements c)
          (for [temporal (:TemporalExtents c)
                rdt (:RangeDateTimes temporal)]
