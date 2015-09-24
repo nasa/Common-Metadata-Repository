@@ -19,9 +19,4 @@
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to English to make it through the validation.
       (set-if-exist :DataLanguage "English")
-      (set-if-exist :CollectionProgress "COMPLETE")
-      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
-      (update-in-each [:Distributions] update-in [:Fees]
-                      (fn [n]
-                        (when n (Double. (format "%9.2f" n)))))
-      ))
+      (set-if-exist :CollectionProgress "COMPLETE")))

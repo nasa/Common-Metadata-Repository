@@ -98,7 +98,8 @@
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (-> c :AccessConstraints :Description)]
-     [:Price (-> c :Distributions first :Fees)]
+     [:Price (when-let [price (-> c :Distributions first :Fees)]
+               (format "%9.2f" price))]
      [:DataFormat (-> c :Distributions first :DistributionFormat)]
      [:SpatialKeywords
       (for [kw (:SpatialKeywords c)]

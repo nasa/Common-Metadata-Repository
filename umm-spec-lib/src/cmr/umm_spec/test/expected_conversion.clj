@@ -191,7 +191,11 @@
       (update-in-each [:AdditionalAttributes] assoc :Group nil :MeasurementResolution nil
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
-      (update-in-each [:Projects] assoc :Campaigns nil)))
+      (update-in-each [:Projects] assoc :Campaigns nil)
+      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
+      (update-in-each [:Distributions] update-in [:Fees]
+                      (fn [n]
+                        (when n (Double. (format "%9.2f" n)))))))
 
 ;; DIF 9
 
@@ -391,7 +395,7 @@
                       :OperationalModes nil)
       (assoc :Quality nil)
       (assoc :CollectionDataType nil)
-      (update-in [:DataLanguage] #(if (some? %) % "eng"))
+      (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
