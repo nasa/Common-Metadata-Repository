@@ -182,12 +182,13 @@
                       medias sizes formats fees)))
 
 (def resource-name->types
-  "Mapping of online resource name to related url type and sub-type"
+  "Mapping of ISO online resource name to UMM related url type and sub-type"
   {"DATA ACCESS" "GET DATA"
    "Guide" "VIEW RELATED INFORMATION"
    "Browse" "GET RELATED VISUALIZATION"})
 
 (defn- parse-online-urls
+  "Parse ISO online resource urls"
   [doc]
   (for [url (select doc distributor-online-url-xpath)
         :let [name (char-string-value url "gmd:name")
@@ -200,6 +201,7 @@
      :ContentType {:Type type}}))
 
 (defn- parse-browse-graphic
+  "Parse browse graphic urls"
   [doc]
   (for [url (select doc browse-graphic-xpath)]
     {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]

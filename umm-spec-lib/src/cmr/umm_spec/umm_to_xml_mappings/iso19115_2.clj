@@ -191,11 +191,6 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
-(defn- function-code-attributes
-  [code]
-  {:codeList "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"
-   :codeListValue code})
-
 (def type->name
   "Mapping of related url type to online resource name"
   {"GET DATA" "DATA ACCESS"
@@ -213,16 +208,16 @@
   (filter browse-url? related-urls))
 
 (defn online-resource-urls
+  "Returns all related-urls which are not browse urls"
   [related-urls]
   (remove browse-url? related-urls))
 
 (defn- generate-online-resource-url
+  "Returns content generator instructions for a related-url which is an online resource url or access url"
   [online-resource-url]
   (let [{:keys [URLs Description] {:keys [Type]} :ContentType} online-resource-url
         name (type->name Type)
-        code (if (= "GET DATA" Type)
-               (if name "" "download")
-               "information")]
+        code (if (= "GET DATA" Type) "download" "information")]
     (for [url URLs]
       [:gmd:onLine
        [:gmd:CI_OnlineResource
@@ -235,7 +230,8 @@
            (char-string Description)]
           [:gmd:description {:gco:nilReason "missing"}])
         [:gmd:function
-         [:gmd:CI_OnLineFunctionCode (function-code-attributes code) code]]]])))
+         [:gmd:CI_OnLineFunctionCode
+          {:codeList (str (:ngdc code-lists) "#CI_OnLineFunctionCode") :codeListValue code} ]]]])))
 
 (defn- generate-distributions
   [distributions related-urls]
@@ -363,6 +359,7 @@
            {:codeList (str (:ngdc code-lists) "#MD_ProgressCode")
             :codeListValue (str/lower-case collection-progress)}
            collection-progress])]
+       ;; Generation of Browse urls
        (for [{:keys [URLs Description] {:keys [Type]} :ContentType} (browse-urls (:RelatedUrls c))
              url URLs]
          [:gmd:graphicOverview

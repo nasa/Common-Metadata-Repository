@@ -1,11 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.related-url
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
-
-(def DOCUMENTATION_MIME_TYPES
-  "Mime Types that indicate the RelatedURL is of documentation type"
-  ["Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
-   "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
-   "Application/rtf" "Application/wordperfect5.1"])
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [clojure.string :as str]))
 
 (def related-url-types->resource-types
   "A mapping of UMM RelatedURL's type to ECHO10 OnlineResource's type.
@@ -74,16 +69,30 @@
         [:Type (get related-url-types->resource-types (:Type ContentType) "UNKNOWN")]
         [:MimeType MimeType]])]))
 
+(defn calculate-size
+  [size unit]
+  (when (and size unit)
+    (case (str/upper-case unit)
+      ("BYTES" "B") size
+      ("KILOBYTES" "KB") (* size 1024)
+      ("MEGABYTES" "MB") (* size 1048576)
+      ("GIGABYTES" "GB") (* size 1073741824)
+      ("TERABYTES" "TB") (* size 1099511627776)
+      ("PETABYTES" "PB") (* size 1125899906842624)
+      nil)))
+
+
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
   (when-let [urls (seq (browse-urls related-urls))]
     [:AssociatedBrowseImageUrls
      (for [related-url urls
-           :let [{:keys [FileSize Description MimeType]} related-url]
+           :let [{:keys [Description MimeType] {:keys [Size Unit]} :FileSize} related-url
+                 file-size (calculate-size Size Unit)]
            url (:URLs related-url)]
        [:ProviderBrowseUrl
         [:URL url]
-        [:FileSize (:Size FileSize)]
+        [:FileSize (when file-size (int file-size))]
         [:Description Description]
         [:MimeType MimeType]])]))

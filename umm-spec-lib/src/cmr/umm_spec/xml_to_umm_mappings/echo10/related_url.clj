@@ -49,6 +49,7 @@
    "ALGORITHM INFO" ["VIEW RELATED INFORMATION"]})
 
 (defn- parse-online-resource-urls
+  "Parse online resource urls"
   [doc]
   (for [resource (select doc "/Collection/OnlineResources/OnlineResource")
         :let [resource-type (value-of resource "Type")
@@ -57,12 +58,12 @@
               description (value-of resource "Description")]]
     {:URLs [(value-of resource "URL")]
      :Description description
-     ; :Title (value-of resource (s/trim (str description " (" resource-type ")")))
      :ContentType {:Type type
                    :Subtype sub-type}
      :MimeType (value-of resource "MimeType")}))
 
 (defn- parse-online-access-urls
+  "Parse online access urls"
   [doc]
   (for [resource (select doc "/Collection/OnlineAccessURLs/OnlineAccessURL")]
     {:URLs [(value-of resource "URL")]
@@ -71,12 +72,12 @@
      :ContentType {:Type "GET DATA"}}))
 
 (defn- parse-browse-urls
+  "Parse browse urls"
   [doc]
   (for [resource (select doc "/Collection/AssociatedBrowseImageUrls/ProviderBrowseUrl")
         :let [file-size (value-of resource "FileSize")]]
     {:URLs [(value-of resource "URL")]
-     :FileSize (when-let [matches (re-matches #"^(\d+)([a-zA-Z]+)$" (or file-size ""))]
-                 {:Size (second matches) :Unit (nth matches 2)})
+     :FileSize (when file-size {:Size file-size :Unit "Bytes"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")
      :ContentType {:Type "GET RELATED VISUALIZATION"}}))

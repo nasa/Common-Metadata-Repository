@@ -11,6 +11,7 @@
             [cmr.umm-spec.models.common :as cmn]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
 
 (def example-record
@@ -106,7 +107,7 @@
                    {:Description "Related url 2 description"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
-                    :FileSize {:Size 10 :Unit "MB"}}]}))
+                    :FileSize {:Size 10.0 :Unit "MB"}}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -191,15 +192,22 @@
 (defn- expected-echo10-related-urls
   [related-urls]
   (seq (for [related-url related-urls
+             :let [type (get-in related-url [:ContentType :Type])]
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Protocol nil :Title nil :Caption nil :FileSize nil :URLs [url])
+             (assoc :Protocol nil :Title nil :Caption nil :URLs [url])
+             (update-in [:FileSize] (fn [file-size]
+                                      (when (and file-size
+                                                 (= type "GET RELATED VISUALIZATION"))
+                                        (when-let [byte-size (echo10-ru-gen/calculate-size
+                                                               (:Size file-size) (:Unit file-size))]
+                                          (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
              (assoc-in [:ContentType :Subtype] nil)
              (update-in [:ContentType]
                         (fn [content-type]
                           (when (#{"GET DATA"
                                    "GET RELATED VISUALIZATION"
-                                   "VIEW RELATED INFORMATION"} (:Type content-type))
+                                   "VIEW RELATED INFORMATION"} type)
                             content-type)))))))
 
 (defmethod convert-internal :echo10
