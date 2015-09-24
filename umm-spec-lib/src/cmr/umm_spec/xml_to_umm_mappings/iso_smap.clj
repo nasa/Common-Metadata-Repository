@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso-smap-utils :as utils]
+            [cmr.umm-spec.iso-utils :as utils]
             [cmr.umm-spec.util :refer [without-default-value-of]]))
 
 (def md-identification-base-xpath

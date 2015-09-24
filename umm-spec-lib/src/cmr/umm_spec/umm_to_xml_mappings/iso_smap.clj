@@ -2,7 +2,7 @@
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [clojure.string :as str]
             [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
-            [cmr.umm-spec.iso-smap-utils :as util]
+            [cmr.umm-spec.iso-utils :as util]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 

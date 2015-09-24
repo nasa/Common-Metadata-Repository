@@ -353,21 +353,11 @@
              (update-in [:DOI] (fn [doi] (when doi (assoc doi :Authority nil))))
              (update-in [:PublicationDate] date-time->date)))))
 
-(defn- distribution->expected-iso
-  "Converts an UMM distribution to expected ISO19115 distribution. All the nil values are replaced
-  with empty string as we have to keep empty elements for ordering which is needed in ISO to group
-  things together."
-  [distribution]
-  (-> distribution
-      (update-in [:DistributionFormat] su/nil-to-empty-string)
-      (update-in [:DistributionMedia] su/nil-to-empty-string)))
-
 (defn- expected-iso-19115-2-distributions
   "Returns the expected ISO19115-2 distributions for comparison."
   [distributions]
   (some->> distributions
            su/remove-empty-records
-           (map distribution->expected-iso)
            vec))
 
 (defn update-iso-spatial

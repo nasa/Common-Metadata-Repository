@@ -161,12 +161,10 @@
 (defn- parse-distributions
   "Returns the distributions parsed from the given xml document."
   [doc]
-  (let [values-at-replace-nil (fn [xpath]
-                                (map su/nil-to-empty-string (values-at doc xpath)))
-        medias (values-at-replace-nil distributor-media-xpath)
-        sizes (values-at-replace-nil distributor-size-xpath)
-        formats (values-at-replace-nil distributor-format-xpath)
-        fees (values-at-replace-nil distributor-fees-xpath)]
+  (let [medias (values-at doc distributor-media-xpath)
+        sizes (values-at doc distributor-size-xpath)
+        formats (values-at doc distributor-format-xpath)
+        fees (values-at doc distributor-fees-xpath)]
     (util/map-longest (fn [media size format fee]
                         (hash-map
                           :DistributionMedia media
