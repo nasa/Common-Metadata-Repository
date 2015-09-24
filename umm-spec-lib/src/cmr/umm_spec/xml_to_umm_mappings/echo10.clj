@@ -71,8 +71,12 @@
    :ProcessingLevel {:Id (value-of doc "/Collection/ProcessingLevelId")
                      :ProcessingLevelDescription (value-of doc "/Collection/ProcessingLevelDescription")}
    :AdditionalAttributes (for [aa (select doc "/Collection/AdditionalAttributes/AdditionalAttribute")]
-                           (fields-from aa :Name :Description :DataType :ParameterRangeBegin
-                                        :ParameterRangeEnd :Value))
+                           {:Name (value-of aa "Name")
+                            :DataType (value-of aa "DataType")
+                            :Description (without-default-value-of aa "Description")
+                            :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
+                            :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
+                            :Value (value-of aa "Value")})
    :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
                {:ShortName (value-of proj "ShortName")
                 :LongName (value-of proj "LongName")

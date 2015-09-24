@@ -15,7 +15,7 @@
     {:Platforms [(umm-cmn/map->PlatformType
                    {:ShortName "Platform"
                     :Instruments [(umm-cmn/map->InstrumentType {:ShortName "Instrument"})]})]
-     :ProcessingLevel (umm-c/map->ProcessingLevelType {})
+     :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "3"})
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :Organizations [(umm-cmn/map->ResponsibilityType
                        {:Role "RESOURCEPROVIDER"

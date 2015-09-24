@@ -2,7 +2,8 @@
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [clojure.string :as str]
             [cmr.umm-spec.iso-utils :as iso]
-            [cmr.umm-spec.xml.gen :refer :all]))
+            [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as su :refer [with-default]]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"
@@ -65,7 +66,7 @@
 
           [:gmd:identifier
            [:gmd:MD_Identifier
-            [:gmd:code (char-string (:Version c))]
+            [:gmd:code (char-string (with-default (:Version c)))]
             [:gmd:description [:gco:CharacterString "The ECS Version ID"]]]]]]
         [:gmd:abstract (char-string (:Abstract c))]
         [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
@@ -78,7 +79,7 @@
           (for [instrument (mapcat :Instruments (:Platforms c))]
             [:gmd:keyword
              (char-string (iso/smap-keyword-str instrument))])]]
-        [:gmd:language (char-string (:DataLanguage c))]
+        [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
         [:gmd:extent
          [:gmd:EX_Extent
           (for [temporal (:TemporalExtents c)
@@ -86,15 +87,15 @@
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimePeriod {:gml:id (iso/gen-id)}
+               [:gml:TimePeriod {:gml:id (iso/generate-id)}
                 [:gml:beginPosition (:BeginningDateTime rdt)]
-                [:gml:endPosition (:EndingDateTime rdt)]]]]])
+                [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
           (for [temporal (:TemporalExtents c)
                 date (:SingleDateTimes temporal)]
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimeInstant {:gml:id (iso/gen-id)}
+               [:gml:TimeInstant {:gml:id (iso/generate-id)}
                 [:gml:timePosition date]]]]])]]]]
       [:gmd:identificationInfo
        [:gmd:MD_DataIdentification

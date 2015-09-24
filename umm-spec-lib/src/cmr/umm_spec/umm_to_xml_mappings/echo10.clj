@@ -115,7 +115,8 @@
      [:CollectionState (:CollectionProgress c)]
      [:RestrictionFlag (-> c :AccessConstraints :Value)]
      [:RestrictionComment (-> c :AccessConstraints :Description)]
-     [:Price (-> c :Distributions first :Fees)]
+     [:Price (when-let [price (-> c :Distributions first :Fees)]
+               (format "%9.2f" price))]
      [:DataFormat (-> c :Distributions first :DistributionFormat)]
      [:SpatialKeywords
       (for [kw (:SpatialKeywords c)]
@@ -129,9 +130,12 @@
      [:AdditionalAttributes
       (for [aa (:AdditionalAttributes c)]
         [:AdditionalAttribute
-         (elements-from aa
-                        :Name :Description :DataType :ParameterRangeBegin
-                        :ParameterRangeEnd :Value)])]
+         [:Name (:Name aa)]
+         [:DataType (:DataType aa)]
+         [:Description (with-default (:Description aa))]
+         [:ParameterRangeBegin (:ParameterRangeBegin aa)]
+         [:ParameterRangeEnd (:ParameterRangeEnd aa)]
+         [:Value (:Value aa)]])]
      [:Campaigns
       (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
         [:Campaign
