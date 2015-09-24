@@ -2,9 +2,10 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
-            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
+            [cmr.umm-spec.iso-utils :as iso]
             [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.util :as su]))
+            [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso-utils :as iso]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -51,7 +52,16 @@
   "Returns an ISO title string from the ShortName and LongName fields of the given record."
   [record]
   (let [{short-name :ShortName long-name :LongName} record]
-    (if (seq long-name) (str short-name " > " long-name) short-name)))
+    (if (seq long-name) (str short-name iso/keyword-separator long-name) short-name)))
+
+(defn- science-keyword->iso-keyword-string
+  "Returns an ISO science keyword string from the given science keyword."
+  [science-keyword]
+  (let [{:keys [category topic term variable-level-1 variable-level-2
+                variable-level-3 detailed-variable]} science-keyword]
+    (str/join iso/keyword-separator (map #(or % iso/nil-science-keyword-field)
+                                         [category topic term variable-level-1 variable-level-2
+                                          variable-level-3 detailed-variable]))))
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
@@ -315,6 +325,10 @@
            collection-progress])]
        (when-let [projects (:Projects c)]
          [:gmd:descriptiveKeywords (generate-projects-keywords projects)])
+       (when-let [science-keywords (:ScienceKeywords c)]
+         [:gmd:descriptiveKeywords (generate-descriptive-keywords
+                                     (map science-keyword->iso-keyword-string science-keywords)
+                                     "theme")])
        (when-let [spatial-keywords (:SpatialKeywords c)]
          [:gmd:descriptiveKeywords (generate-descriptive-keywords spatial-keywords "place")])
        (when-let [temporal-keywords (:TemporalKeywords c)]
@@ -337,7 +351,7 @@
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent
-              [:gml:TimePeriod {:gml:id (gen-id)}
+              [:gml:TimePeriod {:gml:id (iso/gen-id)}
                [:gml:beginPosition (:BeginningDateTime rdt)]
                [:gml:endPosition (:EndingDateTime rdt)]]]]])
          (for [temporal (:TemporalExtents c)
@@ -345,7 +359,7 @@
            [:gmd:temporalElement
             [:gmd:EX_TemporalExtent
              [:gmd:extent
-              [:gml:TimeInstant {:gml:id (gen-id)}
+              [:gml:TimeInstant {:gml:id (iso/gen-id)}
                [:gml:timePosition date]]]]])]]
        [:gmd:processingLevel
         [:gmd:MD_Identifier

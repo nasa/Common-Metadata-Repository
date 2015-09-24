@@ -5,7 +5,8 @@
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [clojure.data :as data]
-            [cmr.umm-spec.json-schema :as js]))
+            [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.iso-utils :as iso]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -152,7 +153,7 @@
           description (char-string-value proj "gmi:description")
           ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
           long-name (when-not (= short-name description)
-                      (str/replace description (str short-name " > ") ""))]
+                      (str/replace description (str short-name iso/keyword-separator) ""))]
       {:ShortName short-name
        :LongName long-name})))
 
@@ -174,6 +175,21 @@
                           :Fees fee))
                       nil
                       medias sizes formats fees)))
+
+(defn- parse-science-keywords
+  "Returns the science keywords parsed from the given xml document."
+  [md-data-id-el]
+  (for [sk (descriptive-keywords md-data-id-el "theme")
+        :let [[category topic term variable-level-1 variable-level-2 variable-level-3
+               detailed-variable] (map #(if (= iso/nil-science-keyword-field %) nil %)
+                                       (str/split sk iso/keyword-separator))]]
+    {:Category category
+     :Topic topic
+     :Term term
+     :VariableLevel1 variable-level-1
+     :VariableLevel2 variable-level-2
+     :VariableLevel3 variable-level-3
+     :DetailedVariable detailed-variable}))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -243,7 +259,8 @@
                                :ISBN (char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
-     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])}))
+     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project" "theme"])
+     :ScienceKeywords (parse-science-keywords md-data-id-el)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

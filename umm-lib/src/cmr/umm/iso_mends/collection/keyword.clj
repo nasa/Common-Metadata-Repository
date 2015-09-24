@@ -57,11 +57,11 @@
    :codeListValue type})
 
 (defn- science-keyword->keyword
-  "Retruns the ISO keyword for the given science keyword"
+  "Returns the ISO keyword for the given science keyword"
   [science-keyword]
   (let [{:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword]
-    (s/join ">" (map #(if % % "NONE")
+    (s/join ">" (map #(or % "NONE")
                      [category topic term variable-level-1 variable-level-2
                       variable-level-3 detailed-variable]))))
 
