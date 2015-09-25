@@ -63,8 +63,8 @@
         :dif10
 
         ;; Tests broken because science keywords are not supported yet
-        ; "iso-smap"
-        ; :iso-smap
+        "iso-smap"
+        :iso-smap
 
         "ISO19115-2"
         :iso19115))

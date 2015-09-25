@@ -4,6 +4,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn parse-temporal
@@ -82,6 +83,7 @@
                 :LongName (value-of proj "LongName")
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
+   :RelatedUrls (ru/parse-related-urls doc)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
                          {:Category (value-of sk "CategoryKeyword")
                           :Topic (value-of sk "TopicKeyword")

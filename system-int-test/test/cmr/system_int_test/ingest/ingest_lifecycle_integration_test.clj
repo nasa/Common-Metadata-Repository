@@ -191,8 +191,8 @@
            ;                                         :term "ter"}}}
 
            ;; downloadable
-           [coll] {:downloadable false}
-           [] {:downloadable true}
+           [] {:downloadable false}
+           [coll] {:downloadable true}
 
            ;; browsable
            [coll] {:browsable false}

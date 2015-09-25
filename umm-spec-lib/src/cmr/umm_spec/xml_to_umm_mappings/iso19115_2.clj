@@ -10,6 +10,8 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def md-data-id-base-xpath
@@ -40,24 +42,6 @@
 (def publication-xpath
   "Publication xpath relative to md-data-id-base-xpath"
   "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
-
-(def distributor-xpath
-  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
-
-(def distributor-fees-xpath
-  (str distributor-xpath
-       "/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString"))
-
-(def distributor-format-xpath
-  (str distributor-xpath "/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString"))
-
-(def distributor-media-xpath
-  (str distributor-xpath
-       "/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString"))
-
-(def distributor-size-xpath
-  (str distributor-xpath
-       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
 
 (defn- descriptive-keywords
   "Returns the descriptive keywords values for the given parent element and keyword type"
@@ -100,22 +84,6 @@
                       (str/replace description (str short-name iso-utils/keyword-separator) ""))]
       {:ShortName short-name
        :LongName long-name})))
-
-(defn- parse-distributions
-  "Returns the distributions parsed from the given xml document."
-  [doc]
-  (let [medias (values-at doc distributor-media-xpath)
-        sizes (values-at doc distributor-size-xpath)
-        formats (values-at doc distributor-format-xpath)
-        fees (values-at doc distributor-fees-xpath)]
-    (util/map-longest (fn [media size format fee]
-                        (hash-map
-                          :DistributionMedia media
-                          :DistributionSize size
-                          :DistributionFormat format
-                          :Fees fee))
-                      nil
-                      medias sizes formats fees)))
 
 (defn- parse-science-keywords
   "Returns the science keywords parsed from the given xml document."
@@ -179,7 +147,7 @@
                        (iso/char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Distributions (parse-distributions doc)
+     :Distributions (dru/parse-distributions doc)
      :Platforms (platform/parse-platforms doc)
      :Projects (parse-projects doc)
 
@@ -204,7 +172,8 @@
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (parse-science-keywords md-data-id-el)}))
+     :ScienceKeywords (parse-science-keywords md-data-id-el)
+     :RelatedUrls (dru/parse-related-urls doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
