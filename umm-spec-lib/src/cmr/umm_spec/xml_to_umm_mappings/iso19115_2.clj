@@ -67,17 +67,16 @@
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."
   [element xpath regex]
-  (let [elements (select element xpath)
-        nil-if-blank (fn [s] (when-not (str/blank? s) s))]
-    (when elements
-      (nil-if-blank
-        (str/join (for [match-el elements
-                        :let [match (re-matches regex (text match-el))]
-                        :when match]
-                    ;; A string response implies there is no group in the regular expression and the
-                    ;; entire matching string is returned and if there is a group in the regular
-                    ;; expression, the first group of the matching string is returned.
-                    (if (string? match) match (second match))))))))
+  (when-let [elements (select element xpath)]
+    (when-let [matches (seq
+                         (for [match-el elements
+                               :let [match (re-matches regex (text match-el))]
+                               :when match]
+                           ;; A string response implies there is no group in the regular expression and the
+                           ;; entire matching string is returned and if there is a group in the regular
+                           ;; expression, the first group of the matching string is returned.
+                           (if (string? match) match (second match))))]
+      (str/join matches))))
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."

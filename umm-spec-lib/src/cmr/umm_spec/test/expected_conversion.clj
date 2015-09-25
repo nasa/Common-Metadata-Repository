@@ -62,9 +62,9 @@
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
                      :VerticalSpatialDomains [{:Type "Some kind of type"
                                                :Value "Some kind of value"}]}
-     :AccessConstraints {:Description "Restriction Comment:Access constraints"
+     :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
-     :UseConstraints "Restriction Flag:Use constraints"
+     :UseConstraints "Restriction Flag: Use constraints"
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
      :Version "V5"
