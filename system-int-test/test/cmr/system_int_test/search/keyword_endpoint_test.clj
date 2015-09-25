@@ -65,8 +65,28 @@
                            "uuid" "2112a825-73c6-4b75-b33c-cc6e705a39ce"}]}],
                        "subfields" ["short_name"]}]}
    :science-keywords {"category"
-                      [{"value" "EARTH SCIENCE",
-                        "uuid" "e9f67a66-e9fc-435c-b720-ae32a2c3d8f5",
+                      [{"value" "EARTH SCIENCE SERVICES",
+                        "subfields" ["topic"],
+                        "topic"
+                        [{"value" "DATA ANALYSIS AND VISUALIZATION",
+                          "subfields" ["term"],
+                          "term"
+                          [{"value" "CALIBRATION/VALIDATION",
+                            "uuid" "4f938731-d686-4d89-b72b-ff60474bb1f0"}
+                           {"value" "GEOGRAPHIC INFORMATION SYSTEMS",
+                            "uuid" "794e3c3b-791f-44de-9ff3-358d8ed74733",
+                            "subfields" ["variable_level_1"],
+                            "variable_level_1"
+                            [{"value" "MOBILE GEOGRAPHIC INFORMATION SYSTEMS",
+                              "uuid" "0dd83b2a-e83f-4a0c-a1ff-2fbdbbcce62d"}
+                             {"value" "DESKTOP GEOGRAPHIC INFORMATION SYSTEMS",
+                              "uuid" "565cb301-44de-446c-8fe3-4b5cce428315"}]}]}
+                         {"value" "DATA MANAGEMENT/DATA HANDLING",
+                          "subfields" ["term"],
+                          "term"
+                          [{"value" "CATALOGING",
+                            "uuid" "434d40e2-4e0b-408a-9811-ff878f4f0fb0"}]}]}
+                       {"value" "EARTH SCIENCE",
                         "subfields" ["topic"],
                         "topic"
                         [{"value" "ATMOSPHERE",
@@ -108,30 +128,7 @@
                                 "variable_level_3"
                                 [{"value" "LUMINESCENCE",
                                   "uuid"
-                                  "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}
-                       {"value" "EARTH SCIENCE SERVICES",
-                        "uuid" "894f9116-ae3c-40b6-981d-5113de961710",
-                        "subfields" ["topic"],
-                        "topic"
-                        [{"value" "DATA ANALYSIS AND VISUALIZATION",
-                          "uuid" "41adc080-c182-4753-9666-435f8b1c913f",
-                          "subfields" ["term"],
-                          "term"
-                          [{"value" "CALIBRATION/VALIDATION",
-                            "uuid" "4f938731-d686-4d89-b72b-ff60474bb1f0"}
-                           {"value" "GEOGRAPHIC INFORMATION SYSTEMS",
-                            "uuid" "794e3c3b-791f-44de-9ff3-358d8ed74733",
-                            "subfields" ["variable_level_1"],
-                            "variable_level_1"
-                            [{"value" "MOBILE GEOGRAPHIC INFORMATION SYSTEMS",
-                              "uuid" "0dd83b2a-e83f-4a0c-a1ff-2fbdbbcce62d"}
-                             {"value" "DESKTOP GEOGRAPHIC INFORMATION SYSTEMS",
-                              "uuid" "565cb301-44de-446c-8fe3-4b5cce428315"}]}]}
-                         {"value" "DATA MANAGEMENT/DATA HANDLING",
-                          "subfields" ["term"],
-                          "term"
-                          [{"value" "CATALOGING",
-                            "uuid" "434d40e2-4e0b-408a-9811-ff878f4f0fb0"}]}]}]}
+                                  "3e705ebc-c58f-460d-b5e7-1da05ee45cc1"}]}]}]}]}]}]}
    :platforms {"category"
                [{"value" "Earth Observation Satellites",
                  "subfields" ["series_entity"],

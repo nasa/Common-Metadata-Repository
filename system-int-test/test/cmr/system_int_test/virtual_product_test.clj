@@ -124,6 +124,7 @@
                                                 (vp/ingest-virtual-collections [source-coll]))))
                          []
                          source-collections)
+        _ (index/wait-until-indexed)
         source-granules (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs
@@ -385,6 +386,7 @@
                                                 (vp/ingest-virtual-collections [source-coll]))))
                          []
                          source-collections)
+        _ (index/wait-until-indexed)
         src-grans (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
                                      granule-ur (vp-config/sample-source-granule-urs

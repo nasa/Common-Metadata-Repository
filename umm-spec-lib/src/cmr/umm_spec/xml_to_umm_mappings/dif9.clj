@@ -66,31 +66,38 @@
                             :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
                             :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
-
-   :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
-                            (into {} (map (fn [x]
-                                            (if (keyword? x)
-                                              [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                              x))
-                                          [:Author
-                                           :Publication_Date
-                                           :Title
-                                           :Series
-                                           :Edition
-                                           :Volume
-                                           :Issue
-                                           :Report_Number
-                                           :Publication_Place
-                                           :Publisher
-                                           :Pages
-                                           [:ISBN (value-of pub-ref "ISBN")]
-                                           [:DOI {:DOI (value-of pub-ref "DOI")}]
-                                           [:RelatedUrl
-                                            {:URLs (seq
-                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                           :Other_Reference_Details])))
-   :AncillaryKeywords (values-at doc  "/DIF/Keyword")
-   :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
+  :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
+                          (into {} (map (fn [x]
+                                          (if (keyword? x)
+                                            [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                            x))
+                                        [:Author
+                                         :Publication_Date
+                                         :Title
+                                         :Series
+                                         :Edition
+                                         :Volume
+                                         :Issue
+                                         :Report_Number
+                                         :Publication_Place
+                                         :Publisher
+                                         :Pages
+                                         [:ISBN (value-of pub-ref "ISBN")]
+                                         [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                         [:RelatedUrl
+                                          {:URLs (seq
+                                                   (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                         :Other_Reference_Details])))
+  :AncillaryKeywords (values-at doc  "/DIF/Keyword")
+  :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]
+                         {:Category (value-of sk "Category")
+                          :Topic (value-of sk "Topic")
+                          :Term (value-of sk "Term")
+                          :VariableLevel1 (value-of sk "Variable_Level_1")
+                          :VariableLevel2 (value-of sk "Variable_Level_2")
+                          :VariableLevel3 (value-of sk "Variable_Level_3")
+                          :DetailedVariable (value-of sk "Detailed_Variable")})
+  :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
                       :let [description (value-of related-url "Description")]]
                   {:URLs (values-at related-url "URL")
                    :Description description

@@ -488,6 +488,7 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :RelatedUrls nil)
+      (assoc :ScienceKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -507,7 +508,7 @@
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
     :DataDates :Organizations
-    :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
+    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 
 (defn- dissoc-not-implemented-fields
