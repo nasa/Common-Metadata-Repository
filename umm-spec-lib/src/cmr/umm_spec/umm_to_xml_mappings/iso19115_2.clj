@@ -2,7 +2,6 @@
   "Defines mappings from UMM records into ISO19115-2 XML."
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
-            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
@@ -222,7 +221,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimePeriod {:gml:id (gen-id)}
+                [:gml:TimePeriod {:gml:id (u/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
                  [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
            (for [temporal (:TemporalExtents c)
@@ -230,7 +229,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimeInstant {:gml:id (gen-id)}
+                [:gml:TimeInstant {:gml:id (u/generate-id)}
                  [:gml:timePosition date]]]]])]]
          [:gmd:processingLevel
           [:gmd:MD_Identifier

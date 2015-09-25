@@ -2,6 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM platform records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-util :as iso]
+            [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument :as inst]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
@@ -44,12 +45,13 @@
          (char-string (:ShortName platform))]
         [:gmd:description
          (char-string (:LongName platform))]]]
-      [:gmi:description (char-string (:Type platform))]
+      [:gmi:description
+       [:gco:CharacterString (with-default (:Type platform))]]
       ;; Instrument links
       (if-let [instruments (:Instruments platform)]
-            (for [instrument instruments]
-              [:gmi:instrument {:xlink:href (str "#" (:instrument-id instrument))}])
-            [:gmi:instrument {:gco:nilReason "inapplicable"}])
+        (for [instrument instruments]
+          [:gmi:instrument {:xlink:href (str "#" (:instrument-id instrument))}])
+        [:gmi:instrument {:gco:nilReason "inapplicable"}])
 
       ;; Characteristics
       (when-let [characteristics (:Characteristics platform)]

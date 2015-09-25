@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.iso19115-util :as iso]
+            [cmr.umm-spec.util :refer [without-default-value-of]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.instrument :as inst]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.characteristics :as ch]))
 
@@ -16,7 +17,7 @@
         instruments (seq (map (partial get instruments-mapping) instrument-ids))]
     {:ShortName (value-of platform-elem iso/short-name-xpath)
      :LongName (value-of platform-elem iso/long-name-xpath)
-     :Type (iso/char-string-value platform-elem "gmi:description")
+     :Type (without-default-value-of platform-elem "gmi:description/gco:CharacterString")
      :Characteristics (ch/parse-characteristics platform-elem)
      :Instruments instruments}))
 

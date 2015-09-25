@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [clojure.string :as str]
-            [cmr.umm-spec.umm-to-xml-mappings.iso-util :refer [gen-id]]
             [cmr.umm-spec.iso-utils :as util]
+            [cmr.umm-spec.iso19115-util :as u]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 
@@ -88,7 +88,7 @@
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimePeriod {:gml:id (gen-id)}
+               [:gml:TimePeriod {:gml:id (u/generate-id)}
                 [:gml:beginPosition (:BeginningDateTime rdt)]
                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
           (for [temporal (:TemporalExtents c)
@@ -96,7 +96,7 @@
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimeInstant {:gml:id (gen-id)}
+               [:gml:TimeInstant {:gml:id (u/generate-id)}
                 [:gml:timePosition date]]]]])]]]]
       [:gmd:identificationInfo
        [:gmd:MD_DataIdentification
