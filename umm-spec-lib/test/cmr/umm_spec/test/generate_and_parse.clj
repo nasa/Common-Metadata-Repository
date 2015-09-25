@@ -137,4 +137,11 @@
   (is (= (expected-conversion/convert user/failing-value metadata-format)
          (xml-round-trip user/failing-value metadata-format)))
 
+  ;; for validation errors in test failures
+  (let [umm-record (urs/sanitized-umm-record user/failing-value)]
+      (is (= (expected-conversion/convert umm-record metadata-format)
+             (new-xml-round-trip umm-record metadata-format))))
+
+
+
   )

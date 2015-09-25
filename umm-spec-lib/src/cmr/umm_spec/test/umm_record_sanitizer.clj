@@ -12,6 +12,25 @@
     (assoc record field value)
     record))
 
+(defn- sanitize-science-keywords
+  "Temporary! We should be able to define the JSON schema in a way that ensures science keyword
+  hierarchy is obeyed. It could potentially be done using a complex oneOf or anyOf."
+  [record]
+  (assoc record
+         :ScienceKeywords (seq (for [sk (:ScienceKeywords record)]
+                                 (cond
+                                   (nil? (:VariableLevel1 sk))
+                                   (assoc sk
+                                          :VariableLevel2 nil
+                                          :VariableLevel3 nil
+                                          :DetailedVariable nil)
+
+                                   (nil? (:VariableLevel2 sk))
+                                   (assoc sk :VariableLevel3 nil)
+
+                                   :else
+                                   sk)))))
+
 (defn sanitized-umm-record
   "Returns the sanitized version of the given umm record."
   [record]
@@ -19,4 +38,7 @@
       ;; DataLanguage should be from a list of enumerations which are not defined in UMM JSON schema
       ;; so here we just replace the generated value to English to make it through the validation.
       (set-if-exist :DataLanguage "English")
-      (set-if-exist :CollectionProgress "COMPLETE")))
+      (set-if-exist :CollectionProgress "COMPLETE")
+
+      ;; Figure out if we can define this in the schema
+      sanitize-science-keywords))
