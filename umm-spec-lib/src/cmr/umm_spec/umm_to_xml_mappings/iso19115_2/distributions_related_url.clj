@@ -92,11 +92,13 @@
             (for [size sizes]
               [:gmd:distributorTransferOptions
                [:gmd:MD_DigitalTransferOptions
-                (if (or size (not (str/blank? size)))
-                  [:gmd:transferSize
-                   [:gco:Real size]]
+                ;; size could be a number or string, so the checking here is verbose
+                (if (or (nil? size)
+                        (and (string? size) (str/blank? size)))
                   ;; we have to generate an empty element for Distribution Size with nil.
-                  "")]])
+                  ""
+                  [:gmd:transferSize
+                   [:gco:Real size]])]])
             [:gmd:distributorTransferOptions
              [:gmd:MD_DigitalTransferOptions
               (for [related-url related-urls]
