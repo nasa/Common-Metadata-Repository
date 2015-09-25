@@ -77,6 +77,23 @@
                        :PeriodCycleDurationUnit
                        :PeriodCycleDurationValue)])]))
 
+(defn echo10-sciencekeywords
+  "Generates ECHO 10 XML structure for science-keywords"
+  [c]
+  (when-let [science-keywords (:ScienceKeywords c)]
+    [:ScienceKeywords
+     (for [sk science-keywords]
+       [:ScienceKeyword
+        [:CategoryKeyword (:Category sk)]
+        [:TopicKeyword (:Topic sk)]
+        [:TermKeyword (:Term sk)]
+        [:VariableLevel1Keyword
+         [:Value (:VariableLevel1 sk)]
+         [:VariableLevel2Keyword
+          [:Value (:VariableLevel2 sk)]
+          [:VariableLevel3Keyword (:VariableLevel3 sk)]]]
+        [:DetailedVariableKeyword (:DetailedVariable sk)]])]))
+
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
@@ -108,6 +125,7 @@
       (for [kw (:TemporalKeywords c)]
         [:Keyword kw])]
      (echo10-temporal c)
+     (echo10-sciencekeywords c)
      (echo10-platforms c)
      [:AdditionalAttributes
       (for [aa (:AdditionalAttributes c)]

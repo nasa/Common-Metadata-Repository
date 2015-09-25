@@ -5,8 +5,9 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-2-util :as u]))
+            [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -32,7 +33,7 @@
     [:gmd:date
      [:gco:DateTime value]]
     [:gmd:dateType
-     [:gmd:CI_DateTypeCode {:codeList (str (:ngdc u/code-lists) "#CI_DateTypeCode")
+     [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
                             :codeListValue date-name} date-name]]]])
 
 (def attribute-data-type-code-list
@@ -41,8 +42,8 @@
 (defn- generate-projects-keywords
   "Returns the content generator instructions for descriptive keywords of the given projects."
   [projects]
-  (let [project-keywords (map u/generate-title projects)]
-    (u/generate-descriptive-keywords "project" project-keywords)))
+  (let [project-keywords (map iso/generate-title projects)]
+    (iso/generate-descriptive-keywords "project" project-keywords)))
 
 (defn- generate-projects
   [projects]
@@ -51,7 +52,7 @@
       [:gmi:operation
        [:gmi:MI_Operation
         [:gmi:description
-         (char-string (u/generate-title proj))]
+         (char-string (iso/generate-title proj))]
         [:gmi:identifier
          [:gmd:MD_Identifier
           [:gmd:code
@@ -109,7 +110,7 @@
              [:gco:Date (second (re-matches #"(\d\d\d\d-\d\d-\d\d)T.*" (str (:PublicationDate pub-ref))))]]
             [:gmd:dateType
              [:gmd:CI_DateTypeCode
-              {:codeList (str (:iso u/code-lists) "#CI_DateTypeCode")
+              {:codeList (str (:iso iso/code-lists) "#CI_DateTypeCode")
                :codeListValue "publication"} "publication"]]]])
         [:gmd:edition (char-string (:Edition pub-ref))]
         (when (:DOI pub-ref)
@@ -122,14 +123,14 @@
           [:gmd:organisationName (char-string (:Author pub-ref))]
           [:gmd:role
            [:gmd:CI_RoleCode
-            {:codeList (str (:ngdc u/code-lists) "#CI_RoleCode")
+            {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
              :codeListValue "author"} "author"]]]]
         [:gmd:citedResponsibleParty
          [:gmd:CI_ResponsibleParty
           [:gmd:organisationName (char-string (:Publisher pub-ref))]
           [:gmd:role
            [:gmd:CI_RoleCode
-            {:codeList (str (:ngdc u/code-lists) "#CI_RoleCode")
+            {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
              :codeListValue "publisher"} "publication"]]]]
         [:gmd:series
          [:gmd:CI_Series
@@ -140,7 +141,7 @@
         [:gmd:ISBN (char-string (:ISBN pub-ref))]]]
       [:gmd:associationType
        [:gmd:DS_AssociationTypeCode
-        {:codeList (str (:ngdc u/code-lists) "#DS_AssociationTypeCode")
+        {:codeList (str (:ngdc iso/code-lists) "#DS_AssociationTypeCode")
          :codeListValue "Input Collection"} "Input Collection"]]]]))
 
 (defn extent-description-string
@@ -156,6 +157,20 @@
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
 
+(defn- science-keyword->iso-keyword-string
+  "Returns an ISO science keyword string from the given science keyword."
+  [science-keyword]
+  (let [{category :Category
+         topic :Topic
+         term :Term
+         variable-level-1 :VariableLevel1
+         variable-level-2 :VariableLevel2
+         variable-level-3 :VariableLevel3
+         detailed-variable :DetailedVariable} science-keyword]
+    (str/join iso-utils/keyword-separator (map #(or % iso-utils/nil-science-keyword-field)
+                                               [category topic term variable-level-1 variable-level-2
+                                                variable-level-3 detailed-variable]))))
+
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -166,10 +181,10 @@
        [:gmd:fileIdentifier (char-string (:EntryTitle c))]
        [:gmd:language (char-string "eng")]
        [:gmd:characterSet
-        [:gmd:MD_CharacterSetCode {:codeList (str (:ngdc u/code-lists) "#MD_CharacterSetCode")
+        [:gmd:MD_CharacterSetCode {:codeList (str (:ngdc iso/code-lists) "#MD_CharacterSetCode")
                                    :codeListValue "utf8"} "utf8"]]
        [:gmd:hierarchyLevel
-        [:gmd:MD_ScopeCode {:codeList (str (:ngdc u/code-lists) "#MD_ScopeCode")
+        [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
        [:gmd:contact {:gco:nilReason "missing"}]
        [:gmd:dateStamp
@@ -193,13 +208,15 @@
          [:gmd:status
           (when-let [collection-progress (:CollectionProgress c)]
             [:gmd:MD_ProgressCode
-             {:codeList (str (:ngdc u/code-lists) "#MD_ProgressCode")
+             {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
          (generate-projects-keywords (:Projects c))
-         (u/generate-descriptive-keywords "place" (:SpatialKeywords c))
-         (u/generate-descriptive-keywords "temporal" (:TemporalKeywords c))
-         (u/generate-descriptive-keywords (:AncillaryKeywords c))
+         (iso/generate-descriptive-keywords
+           "theme" (map science-keyword->iso-keyword-string (:ScienceKeywords c)))
+         (iso/generate-descriptive-keywords "place" (:SpatialKeywords c))
+         (iso/generate-descriptive-keywords "temporal" (:TemporalKeywords c))
+         (iso/generate-descriptive-keywords (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)
          (platform/generate-instrument-keywords platforms)
          [:gmd:resourceConstraints
@@ -221,7 +238,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimePeriod {:gml:id (u/generate-id)}
+                [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
                  [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
            (for [temporal (:TemporalExtents c)
@@ -229,7 +246,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimeInstant {:gml:id (u/generate-id)}
+                [:gml:TimeInstant {:gml:id (iso-utils/generate-id)}
                  [:gml:timePosition date]]]]])]]
          [:gmd:processingLevel
           [:gmd:MD_Identifier
@@ -250,7 +267,7 @@
           [:gmd:DQ_Scope
            [:gmd:level
             [:gmd:MD_ScopeCode
-             {:codeList (str (:ngdc u/code-lists) "#MD_ScopeCode")
+             {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
               :codeListValue "series"}
              "series"]]]]
          [:gmd:report

@@ -2,12 +2,13 @@
   "Functions for generating ISO19115-2 XML elements from UMM sensor records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
 (defn- sensor-with-id
   "Returns the sensor with generated ids for ISO xml generation"
   [instrument-id sensor]
-  (let [sensor-id (iso/generate-id)]
+  (let [sensor-id (iso-utils/generate-id)]
     (-> sensor
         (assoc :sensor-id sensor-id)
         (assoc :instrument-id instrument-id))))
