@@ -200,7 +200,7 @@
              (update-in [:FileSize] (fn [file-size]
                                       (when (and file-size
                                                  (= type "GET RELATED VISUALIZATION"))
-                                        (when-let [byte-size (echo10-ru-gen/calculate-size
+                                        (when-let [byte-size (echo10-ru-gen/convert-to-bytes
                                                                (:Size file-size) (:Unit file-size))]
                                           (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
              (assoc-in [:ContentType :Subtype] nil)

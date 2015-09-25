@@ -69,7 +69,7 @@
         [:Type (get related-url-types->resource-types (:Type ContentType) "UNKNOWN")]
         [:MimeType MimeType]])]))
 
-(defn calculate-size
+(defn convert-to-bytes
   [size unit]
   (when (and size unit)
     (case (str/upper-case unit)
@@ -89,7 +89,7 @@
     [:AssociatedBrowseImageUrls
      (for [related-url urls
            :let [{:keys [Description MimeType] {:keys [Size Unit]} :FileSize} related-url
-                 file-size (calculate-size Size Unit)]
+                 file-size (convert-to-bytes Size Unit)]
            url (:URLs related-url)]
        [:ProviderBrowseUrl
         [:URL url]
