@@ -64,14 +64,17 @@
 (defn- regex-value
   "Utitlity function to return the value of the element that matches the given xpath and regex."
   [element xpath regex]
-  (when-let [elements (select element xpath)]
-    (first (for [match-el elements
-                 :let [match (re-matches regex (text match-el))]
-                 :when match]
-             ;; A string response implies there is no group in the regular expression and the
-             ;; entire matching string is returned and if there is a group in the regular
-             ;; expression, the first group of the matching string is returned.
-             (if (string? match) match (second match))))))
+  (let [elements (select element xpath)
+        nil-if-blank (fn [s] (when-not (str/blank? s) s))]
+    (when elements
+      (nil-if-blank
+        (str/join (for [match-el elements
+                        :let [match (re-matches regex (text match-el))]
+                        :when match]
+                    ;; A string response implies there is no group in the regular expression and the
+                    ;; entire matching string is returned and if there is a group in the regular
+                    ;; expression, the first group of the matching string is returned.
+                    (if (string? match) match (second match))))))))
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."
@@ -112,8 +115,6 @@
      :Abstract (iso/char-string-value md-data-id-el "gmd:abstract")
      :Purpose (iso/char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
-     ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
-     ;; in the JSON schema instead of a single object. CMR-1989.
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
@@ -123,8 +124,6 @@
                          (regex-value doc (str constraints-xpath
                                                "/gmd:otherConstraints/gco:CharacterString")
                                       #"Restriction Flag:(.+)")}
-     ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
-     ;; in the JSON schema instead of a single string. CMR-1989.
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"^(?!Restriction Comment:).+")
