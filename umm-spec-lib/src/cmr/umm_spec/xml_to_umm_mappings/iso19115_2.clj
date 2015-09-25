@@ -9,6 +9,7 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.iso19115-2-util :refer :all]))
 
 (def md-data-id-base-xpath
@@ -39,31 +40,6 @@
 (def publication-xpath
   "Publication xpath relative to md-data-id-base-xpath"
   "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
-
-(def distributor-xpath
-  "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
-
-(def distributor-fees-xpath
-  (str distributor-xpath
-       "/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees/gco:CharacterString"))
-
-(def distributor-format-xpath
-  (str distributor-xpath "/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString"))
-
-(def distributor-media-xpath
-  (str distributor-xpath
-       "/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString"))
-
-(def distributor-size-xpath
-  (str distributor-xpath
-       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
-
-(def distributor-online-url-xpath
-  (str distributor-xpath
-       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
-
-(def browse-graphic-xpath
-  (str md-data-id-base-xpath "/gmd:graphicOverview/gmd:MD_BrowseGraphic"))
 
 (defn- descriptive-keywords
   "Returns the descriptive keywords values for the given parent element and keyword type"
@@ -106,49 +82,6 @@
                       (str/replace description (str short-name " > ") ""))]
       {:ShortName short-name
        :LongName long-name})))
-
-(defn- parse-distributions
-  "Returns the distributions parsed from the given xml document."
-  [doc]
-  (let [medias (values-at doc distributor-media-xpath)
-        sizes (values-at doc distributor-size-xpath)
-        formats (values-at doc distributor-format-xpath)
-        fees (values-at doc distributor-fees-xpath)]
-    (util/map-longest (fn [media size format fee]
-                        (hash-map
-                          :DistributionMedia media
-                          :DistributionSize size
-                          :DistributionFormat format
-                          :Fees fee))
-                      nil
-                      medias sizes formats fees)))
-
-(def resource-name->types
-  "Mapping of ISO online resource name to UMM related url type and sub-type"
-  {"DATA ACCESS" "GET DATA"
-   "Guide" "VIEW RELATED INFORMATION"
-   "Browse" "GET RELATED VISUALIZATION"})
-
-(defn- parse-online-urls
-  "Parse ISO online resource urls"
-  [doc]
-  (for [url (select doc distributor-online-url-xpath)
-        :let [name (char-string-value url "gmd:name")
-              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
-              type (if (= "download" code)
-                     "GET DATA"
-                     (when name (resource-name->types name)))]]
-    {:URLs [(value-of url "gmd:linkage/gmd:URL")]
-     :Description (char-string-value url "gmd:description")
-     :ContentType {:Type type}}))
-
-(defn- parse-browse-graphic
-  "Parse browse graphic urls"
-  [doc]
-  (for [url (select doc browse-graphic-xpath)]
-    {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]
-     :Description (char-string-value url "gmd:fileDescription")
-     :ContentType {:Type (resource-name->types (char-string-value url "gmd:fileType"))}}))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -197,7 +130,7 @@
                        (char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
-     :Distributions (parse-distributions doc)
+     :Distributions (dru/parse-distributions doc)
      :Platforms (platform/parse-platforms doc)
      :Projects (parse-projects doc)
 
@@ -220,7 +153,7 @@
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
      :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project" "platform" "instrument"])
-     :RelatedUrls (concat (parse-online-urls doc) (parse-browse-graphic doc))}))
+     :RelatedUrls (dru/parse-related-urls doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

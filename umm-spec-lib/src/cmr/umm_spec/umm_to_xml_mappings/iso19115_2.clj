@@ -6,7 +6,8 @@
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-2-util :as u]))
+            [cmr.umm-spec.iso19115-2-util :as u]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -59,83 +60,7 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
-(def type->name
-  "Mapping of related url type to online resource name"
-  {"GET DATA" "DATA ACCESS"
-   "VIEW RELATED INFORMATION" "Guide"
-   "GET RELATED VISUALIZATION" "Browse"})
 
-(defn browse-url?
-  "Returns true if the related-url is browse url"
-  [related-url]
-  (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type])))
-
-(defn browse-urls
-  "Returns the related-urls that are browse urls"
-  [related-urls]
-  (filter browse-url? related-urls))
-
-(defn online-resource-urls
-  "Returns all related-urls which are not browse urls"
-  [related-urls]
-  (remove browse-url? related-urls))
-
-(defn- generate-online-resource-url
-  "Returns content generator instructions for a related-url which is an online resource url or access url"
-  [online-resource-url]
-  (let [{:keys [URLs Description] {:keys [Type]} :ContentType} online-resource-url
-        name (type->name Type)
-        code (if (= "GET DATA" Type) "download" "information")]
-    (for [url URLs]
-      [:gmd:onLine
-       [:gmd:CI_OnlineResource
-        [:gmd:linkage
-         [:gmd:URL url]]
-        [:gmd:name
-         (char-string name)]
-        (if Description
-          [:gmd:description
-           (char-string Description)]
-          [:gmd:description {:gco:nilReason "missing"}])
-        [:gmd:function
-         [:gmd:CI_OnLineFunctionCode
-          {:codeList (str (:ngdc u/code-lists) "#CI_OnLineFunctionCode") :codeListValue code} ]]]])))
-
-(defn- generate-distributions
-  [distributions related-urls]
-  (let [distributions (su/remove-empty-records distributions)]
-    (when (or distributions related-urls)
-      (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
-            sizes (truncate-map :DistributionSize)
-            fees (truncate-map :Fees)]
-        [:gmd:distributionInfo
-         [:gmd:MD_Distribution
-          [:gmd:distributor
-           [:gmd:MD_Distributor
-            [:gmd:distributorContact {:gco:nilReason "missing"}]
-            (for [fee (map su/nil-to-empty-string fees)]
-              [:gmd:distributionOrderProcess
-               [:gmd:MD_StandardOrderProcess
-                [:gmd:fees
-                 (char-string fee)]]])
-            (for [distribution distributions
-                  :let [{media :DistributionMedia format :DistributionFormat} distribution]]
-              [:gmd:distributorFormat
-               [:gmd:MD_Format
-                [:gmd:name
-                 (char-string (su/nil-to-empty-string format))]
-                [:gmd:version {:gco:nilReason "unknown"}]
-                [:specification
-                 (char-string (su/nil-to-empty-string media))]]])
-            (for [size (map su/nil-to-empty-string sizes)]
-              [:gmd:distributorTransferOptions
-               [:gmd:MD_DigitalTransferOptions
-                [:gmd:transferSize
-                 [:gco:Real size]]]])
-            [:gmd:distributorTransferOptions
-               [:gmd:MD_DigitalTransferOptions
-                (for [related-url related-urls]
-                  (generate-online-resource-url related-url))]]]]]]))))
 
 (defn- generate-publication-references
   [pub-refs]
@@ -241,15 +166,7 @@
              {:codeList (str (:ngdc u/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
-         ;; Generation of Browse urls
-         (for [{:keys [URLs Description] {:keys [Type]} :ContentType} (browse-urls (:RelatedUrls c))
-             url URLs]
-           [:gmd:graphicOverview
-            [:gmd:MD_BrowseGraphic
-             [:gmd:fileName
-              [:gmx:FileName {:src url}]]
-             [:gmd:fileDescription (char-string Description)]
-             [:gmd:fileType (char-string (type->name Type))]]])
+         (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (u/generate-descriptive-keywords "place" (:SpatialKeywords c))
          (u/generate-descriptive-keywords "temporal" (:TemporalKeywords c))
@@ -297,7 +214,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (generate-distributions (:Distributions c) (online-resource-urls (:RelatedUrls c)))
+       (dru/generate-distributions c)
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope
