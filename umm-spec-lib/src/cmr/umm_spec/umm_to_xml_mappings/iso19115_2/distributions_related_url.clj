@@ -86,7 +86,7 @@
                 [:gmd:name
                  (char-string (su/nil-to-empty-string format))]
                 [:gmd:version {:gco:nilReason "unknown"}]
-                [:specification
+                [:gmd:specification
                  (char-string (su/nil-to-empty-string media))]]])
             (for [size (map su/nil-to-empty-string sizes)]
               [:gmd:distributorTransferOptions

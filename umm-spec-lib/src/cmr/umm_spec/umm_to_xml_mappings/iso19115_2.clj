@@ -27,16 +27,19 @@
    :xmlns:swe "http://schemas.opengis.net/sweCommon/2.0/"
    :xmlns:gsr "http://www.isotc211.org/2005/gsr"})
 
-(defn- date-mapping
-  "Returns the date element mapping for the given name and date value in string format."
-  [date-name value]
-  [:gmd:date
-   [:gmd:CI_Date
+(defn- generate-data-dates
+  "Returns ISO XML elements for the DataDates of given UMM collection."
+  [c]
+  (for [date (:DataDates c)
+        :let [type-code (get iso/iso-date-type-codes (:Type date))
+              date-value (:Date date)]]
     [:gmd:date
-     [:gco:DateTime value]]
-    [:gmd:dateType
-     [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
-                            :codeListValue date-name} date-name]]]])
+     [:gmd:CI_Date
+      [:gmd:date
+       [:gco:DateTime date-value]]
+      [:gmd:dateType
+       [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
+                              :codeListValue type-code} type-code]]]]))
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")
@@ -168,8 +171,7 @@
          [:gmd:citation
           [:gmd:CI_Citation
            [:gmd:title (char-string (:EntryTitle c))]
-           (date-mapping "revision" "2000-12-31T19:00:00-05:00")
-           (date-mapping "creation" "2000-12-31T19:00:00-05:00")
+           (generate-data-dates c)
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]

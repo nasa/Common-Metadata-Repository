@@ -11,11 +11,12 @@
 (def valid-formats
   [
    :umm-json
-   :iso-smap
    :iso19115
-   :dif
-   :dif10
-   :echo10
+   ;; the following formats will be re-enabled once ISO support is complete
+   ;; :iso-smap
+   ;; :dif
+   ;; :dif10
+   ;; :echo10
    ])
 
 (defn assert-translate-failure
