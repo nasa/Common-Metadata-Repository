@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require [cmr.umm-spec.iso-utils :as iso-utils]
-            [cmr.umm-spec.xml.parse :refer :all]))
+            [cmr.umm-spec.xml.parse :refer :all]
+            clojure.set))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -29,8 +30,7 @@
 
 (def umm-date-type-codes
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
-  (zipmap (vals iso-date-type-codes)
-          (keys iso-date-type-codes)))
+  (clojure.set/map-invert iso-date-type-codes))
 
 (def echo-attributes-info
   [:eos:otherPropertyType
