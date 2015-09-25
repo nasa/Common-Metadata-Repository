@@ -19,10 +19,15 @@
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
-     [:Parameters
-      [:Category "dummy category"]
-      [:Topic "dummy topic"]
-      [:Term "dummy term"]]
+     (for [sk (:ScienceKeywords c)]
+       [:Parameters
+        [:Category (:Category sk)]
+        [:Topic (:Topic sk)]
+        [:Term (:Term sk)]
+        [:Variable_Level_1 (:VariableLevel1 sk)]
+        [:Variable_Level_2 (:VariableLevel2 sk)]
+        [:Variable_Level_3 (:VariableLevel3 sk)]
+        [:Detailed_Variable (:DetailedVariable sk)]])
      [:ISO_Topic_Category "dummy iso topic category"]
      (for [ak (:AncillaryKeywords c)]
        [:Keyword ak])
