@@ -37,7 +37,7 @@
       (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
              (xml-round-trip expected-conversion/example-record metadata-format))))))
 
-(defspec roundtrip-generated-records 1000
+(defspec roundtrip-generated-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
             metadata-format (gen/elements tested-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
