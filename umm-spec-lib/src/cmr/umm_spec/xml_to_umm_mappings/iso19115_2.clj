@@ -9,7 +9,7 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-util :refer :all]))
+            [cmr.umm-spec.iso19115-2-util :refer :all]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")

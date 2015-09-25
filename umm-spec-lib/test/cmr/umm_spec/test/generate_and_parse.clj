@@ -13,7 +13,7 @@
             [cmr.umm-spec.simple-xpath :refer [select context]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
-            [cmr.umm-spec.iso19115-util :as iu]
+            [cmr.umm-spec.iso19115-2-util :as iu]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 

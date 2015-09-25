@@ -2,7 +2,7 @@
   "Functions for parsing UMM characteristics records out of ISO 19115-2 XML documents."
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso19115-util :refer [char-string-value]]))
+            [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]))
 
 (def characteristics-xpath
   "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")

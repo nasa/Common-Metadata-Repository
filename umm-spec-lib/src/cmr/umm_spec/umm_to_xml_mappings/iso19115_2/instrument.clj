@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument
   "Functions for generating ISO19115-2 XML elements from UMM instrument records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-util :as iso]
+            [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.sensor :as sensor]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
@@ -52,7 +53,7 @@
         [:gmd:description
          (char-string (:LongName instrument))]]]
       [:gmi:type
-       (char-string (:Technique instrument))]
+       [:gco:CharacterString (with-default (:Technique instrument))]]
       [:gmi:description {:gco:nilReason "missing"}]
       [:gmi:mountedOn {:xlink:href (str "#" (:platform-id instrument))}]
       (ch/generate-characteristics "instrumentInformation" (:Characteristics instrument))

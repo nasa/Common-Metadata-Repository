@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics
   "Functions for generating ISO19115-2 XML elements from UMM characteristics records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-util :as iso]))
+            [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (defn generate-characteristics
   "Returns the generated characteristics content generator instructions, with the type

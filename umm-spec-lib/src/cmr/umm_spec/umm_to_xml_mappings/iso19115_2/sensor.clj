@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.sensor
   "Functions for generating ISO19115-2 XML elements from UMM sensor records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-util :as iso]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
 (defn- sensor-with-id

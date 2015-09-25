@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.iso19115-util
+(ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require [cmr.umm-spec.xml.parse :refer :all]))
 

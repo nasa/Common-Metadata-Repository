@@ -2,7 +2,8 @@
   "Functions for parsing UMM instrument records out of ISO 19115-2 XML documents."
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso19115-util :as iso :refer [char-string-value]]
+            [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.iso19115-2-util :as iso :refer [char-string-value]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.characteristics :as ch]))
 
 (def instruments-xpath
@@ -21,7 +22,7 @@
   [instrument-elem]
   {:ShortName (value-of instrument-elem iso/short-name-xpath)
    :LongName (value-of instrument-elem iso/long-name-xpath)
-   :Technique (char-string-value instrument-elem "gmi:type")
+   :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
    :Characteristics (ch/parse-characteristics instrument-elem)
    :Sensors (parse-instrument-sensors instrument-elem)})
 

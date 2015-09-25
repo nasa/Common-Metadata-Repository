@@ -6,7 +6,7 @@
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-util :as u]))
+            [cmr.umm-spec.iso19115-2-util :as u]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
