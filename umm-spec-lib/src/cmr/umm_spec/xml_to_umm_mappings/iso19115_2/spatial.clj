@@ -86,6 +86,8 @@
     {:SpatialCoverageType (get extent-info "SpatialCoverageType")
      :GranuleSpatialRepresentation (get extent-info "SpatialGranuleSpatialRepresentation")
      :HorizontalSpatialDomain {:Geometry (parse-geometry doc)}
-     :VerticalSpatialDomains (when-let [vsd-type (get extent-info "VerticalSpatialDomainType")]
-                               [{:Type vsd-type
-                                 :Value (get extent-info "VerticalSpatialDomainValue")}])}))
+     :VerticalSpatialDomains (let [vsd-type  (get extent-info "VerticalSpatialDomainType")
+                                   vsd-value (get extent-info "VerticalSpatialDomainValue")]
+                               (when (or vsd-type vsd-value)
+                                 [{:Type vsd-type
+                                   :Value vsd-value}]))}))
