@@ -783,7 +783,8 @@
           "description": "The datatype of the Characteristic/attribute.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 80,
+          "pattern": "[\\w]{1,79}"
         }
       },
       "required": ["Name", "Description", "DataType", "Unit", "Value"]
@@ -1352,7 +1353,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,79}"
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
     "LongNameType": {
       "description": "The expanded or long name of the short name.",
@@ -1388,7 +1389,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,79}"
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
     "DataTypeEnum": {
       "description": "This entity contains the additional attribute data types.",

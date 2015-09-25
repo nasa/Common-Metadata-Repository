@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url
   "Functions for generating ISO19115-2 XML elements from UMM related-url records."
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [clojure.string :as str]
+            [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as u]
             [cmr.common.util :as util]
             [cmr.umm-spec.util :as su]))
@@ -88,12 +89,15 @@
                 [:gmd:version {:gco:nilReason "unknown"}]
                 [:gmd:specification
                  (char-string (su/nil-to-empty-string media))]]])
-            (for [size (map su/nil-to-empty-string sizes)]
+            (for [size sizes]
               [:gmd:distributorTransferOptions
                [:gmd:MD_DigitalTransferOptions
-                [:gmd:transferSize
-                 [:gco:Real size]]]])
+                (if (or size (not (str/blank? size)))
+                  [:gmd:transferSize
+                   [:gco:Real size]]
+                  ;; we have to generate an empty element for Distribution Size with nil.
+                  "")]])
             [:gmd:distributorTransferOptions
-               [:gmd:MD_DigitalTransferOptions
-                (for [related-url related-urls]
-                  (generate-online-resource-url related-url))]]]]]]))))
+             [:gmd:MD_DigitalTransferOptions
+              (for [related-url related-urls]
+                (generate-online-resource-url related-url))]]]]]]))))
