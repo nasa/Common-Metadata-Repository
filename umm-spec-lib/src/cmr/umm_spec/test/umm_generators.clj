@@ -5,6 +5,7 @@
             [com.gfredericks.test.chuck.generators :as chgen]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.record-generator :as record-gen]
+            [cmr.umm-spec.test.umm-record-sanitizer :as san]
             [clojure.set :as set]))
 
 ;; We could move this to common lib if desired at some point. There's not much here that is UMM specific.
@@ -211,19 +212,11 @@
     (schema-type->generator schema (:root schema) root-type-def)))
 
 (def umm-c-generator
-  (schema->generator js/umm-c-schema))
+  (gen/fmap san/sanitized-umm-record
+            (schema->generator js/umm-c-schema)))
 
 (comment
 
-  (last (gen/sample (schema->generator js/umm-c-schema) 10))
+  (last (gen/sample umm-c-generator 10))
 
   )
-
-
-
-
-
-
-
-
-
