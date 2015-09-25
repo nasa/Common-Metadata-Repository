@@ -448,7 +448,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
-    :RelatedUrls :DataDates :Organizations
+    :RelatedUrls :Organizations
     :MetadataLineages :ScienceKeywords :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 

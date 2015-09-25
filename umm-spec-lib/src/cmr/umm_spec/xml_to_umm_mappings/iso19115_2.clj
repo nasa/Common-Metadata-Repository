@@ -32,6 +32,9 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def data-dates-xpath
+  (str md-data-id-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
+
 (def projects-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:operation"
        "/gmi:MI_Operation"))
@@ -128,6 +131,11 @@
      :Abstract (char-string-value md-data-id-el "gmd:abstract")
      :Purpose (char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
+     
+     :DataDates (for [date-el (select doc data-dates-xpath)]
+                  {:Date (value-of date-el "gmd:date/gco:DateTime")
+                   :Type (get umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
+     
      ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
      ;; in the JSON schema instead of a single object. CMR-1989.
      :AccessConstraints {:Description

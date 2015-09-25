@@ -19,6 +19,18 @@
    :ngdc "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml"
    :iso "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml"})
 
+(def iso-date-type-codes
+  "A map of UMM date type enum values to ISO date type codes."
+  {"CREATE" "creation"
+   "UPDATE" "revision"
+   "REVIEW" "lastRevision"
+   "DELETE" "unavailable"})
+
+(def umm-date-type-codes
+  "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
+  (zipmap (vals iso-date-type-codes)
+          (keys iso-date-type-codes)))
+
 (def echo-attributes-info
   [:eos:otherPropertyType
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
