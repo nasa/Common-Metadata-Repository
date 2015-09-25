@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
-  (:require [cmr.umm-spec.xml.parse :refer :all]))
+  (:require [cmr.umm-spec.iso-utils :as iso-utils]
+            [cmr.umm-spec.xml.parse :refer :all]))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -24,16 +25,11 @@
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 
-(defn generate-id
-  "Returns a 5 character random id to use as an ISO id"
-  []
-  (str "d" (java.util.UUID/randomUUID)))
-
 (defn generate-title
   "Returns an ISO title string from the ShortName and LongName fields of the given record."
   [record]
   (let [{short-name :ShortName long-name :LongName} record]
-    (if (seq long-name) (str short-name " > " long-name) short-name)))
+    (if (seq long-name) (str short-name iso-utils/keyword-separator long-name) short-name)))
 
 (defn generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
@@ -51,19 +47,4 @@
            {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
             :codeListValue keyword-type} keyword-type]])
        [:gmd:thesaurusName {:gco:nilReason "unknown"}]]])))
-
-; (defn generate-descriptive-keywords
-;   "Returns the content generator instructions for the given descriptive keywords."
-;   ([keywords]
-;    (generate-descriptive-keywords nil keywords))
-;   ([keyword-type keywords]
-;    [:gmd:MD_Keywords
-;     (for [keyword keywords]
-;       [:gmd:keyword [:gco:CharacterString keyword]])
-;     (when keyword-type
-;       [:gmd:type
-;        [:gmd:MD_KeywordTypeCode
-;         {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
-;          :codeListValue keyword-type} keyword-type]])
-;     [:gmd:thesaurusName {:gco:nilReason "unknown"}]]))
 

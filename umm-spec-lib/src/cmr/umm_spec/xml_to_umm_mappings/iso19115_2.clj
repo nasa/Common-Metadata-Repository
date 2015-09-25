@@ -8,9 +8,9 @@
             [clojure.data :as data]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso-utils :as iso]
+            [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-2-util :refer :all]))
+            [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -93,11 +93,11 @@
   "Returns the projects parsed from the given xml document."
   [doc]
   (for [proj (select doc projects-xpath)]
-    (let [short-name (value-of proj short-name-xpath)
-          description (char-string-value proj "gmi:description")
+    (let [short-name (value-of proj iso/short-name-xpath)
+          description (iso/char-string-value proj "gmi:description")
           ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
           long-name (when-not (= short-name description)
-                      (str/replace description (str short-name iso/keyword-separator) ""))]
+                      (str/replace description (str short-name iso-utils/keyword-separator) ""))]
       {:ShortName short-name
        :LongName long-name})))
 
@@ -122,8 +122,8 @@
   [md-data-id-el]
   (for [sk (descriptive-keywords md-data-id-el "theme")
         :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-               detailed-variable] (map #(if (= iso/nil-science-keyword-field %) nil %)
-                                       (str/split sk iso/keyword-separator))]]
+               detailed-variable] (map #(if (= iso-utils/nil-science-keyword-field %) nil %)
+                                       (str/split sk iso-utils/keyword-separator))]]
     {:Category category
      :Topic topic
      :Term term
@@ -138,11 +138,11 @@
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))]
-    {:EntryId (char-string-value id-el "gmd:code")
-     :EntryTitle (char-string-value citation-el "gmd:title")
-     :Version (char-string-value id-el "gmd:version")
-     :Abstract (char-string-value md-data-id-el "gmd:abstract")
-     :Purpose (char-string-value md-data-id-el "gmd:purpose")
+    {:EntryId (iso/char-string-value id-el "gmd:code")
+     :EntryTitle (iso/char-string-value citation-el "gmd:title")
+     :Version (iso/char-string-value id-el "gmd:version")
+     :Abstract (iso/char-string-value md-data-id-el "gmd:abstract")
+     :Purpose (iso/char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
      ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
      ;; in the JSON schema instead of a single object. CMR-1989.
@@ -162,7 +162,7 @@
                   #"^(?!Restriction Comment:).+")
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
-     :DataLanguage (char-string-value md-data-id-el "gmd:language")
+     :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :SpatialExtent (spatial/parse-spatial doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
@@ -171,12 +171,12 @@
                                             :EndingDateTime    (value-of period "gml:endPosition")})
                          :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
      :ProcessingLevel {:Id
-                       (char-string-value
+                       (iso/char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
 
                        :ProcessingLevelDescription
-                       (char-string-value
+                       (iso/char-string-value
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (parse-distributions doc)
@@ -186,21 +186,21 @@
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
                                         select-party (fn [name xpath]
-                                                       (char-string-value publication
+                                                       (iso/char-string-value publication
                                                                           (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
                                :PublicationDate (str (date-at publication
                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"
                                                                    "gmd:date/gco:Date")))
-                               :Title (char-string-value publication "gmd:title")
-                               :Series (char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
-                               :Edition (char-string-value publication "gmd:edition")
-                               :Issue (char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
-                               :Pages (char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
+                               :Title (iso/char-string-value publication "gmd:title")
+                               :Series (iso/char-string-value publication "gmd:series/gmd:CI_Series/gmd:name")
+                               :Edition (iso/char-string-value publication "gmd:edition")
+                               :Issue (iso/char-string-value publication "gmd:series/gmd:CI_Series/gmd:issueIdentification")
+                               :Pages (iso/char-string-value publication "gmd:series/gmd:CI_Series/gmd:page")
                                :Publisher (select-party "publisher" "/gmd:organisationName")
-                               :ISBN (char-string-value publication "gmd:ISBN")
-                               :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
-                               :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
+                               :ISBN (iso/char-string-value publication "gmd:ISBN")
+                               :DOI {:DOI (iso/char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
+                               :OtherReferenceDetails (iso/char-string-value publication "gmd:otherCitationDetails")})
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])

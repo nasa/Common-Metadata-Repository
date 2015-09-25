@@ -89,7 +89,7 @@
            (xml-round-trip umm-record metadata-format)))))
 
 (defspec new-roundtrip-generator-gen-parse 100
-  (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
+  (for-all [umm-record umm-gen/umm-c-generator
             ;; Removed iso-smap because science keywords are not supported yet
             metadata-format (gen/elements [:echo10 :dif :dif10])]
     (let [umm-record (urs/sanitized-umm-record umm-record)]
