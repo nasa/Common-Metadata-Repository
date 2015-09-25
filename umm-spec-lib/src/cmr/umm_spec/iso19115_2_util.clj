@@ -1,7 +1,8 @@
 (ns cmr.umm-spec.iso19115-2-util
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require [cmr.umm-spec.iso-utils :as iso-utils]
-            [cmr.umm-spec.xml.parse :refer :all]))
+            [cmr.umm-spec.xml.parse :refer :all]
+            clojure.set))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -19,6 +20,17 @@
   {:earthdata "http://earthdata.nasa.gov/metadata/resources/Codelists.xml"
    :ngdc "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml"
    :iso "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml"})
+
+(def iso-date-type-codes
+  "A map of UMM date type enum values to ISO date type codes."
+  {"CREATE" "creation"
+   "UPDATE" "revision"
+   "REVIEW" "lastRevision"
+   "DELETE" "unavailable"})
+
+(def umm-date-type-codes
+  "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
+  (clojure.set/map-invert iso-date-type-codes))
 
 (def echo-attributes-info
   [:eos:otherPropertyType
@@ -47,4 +59,3 @@
            {:codeList (str (:ngdc code-lists) "#MD_KeywordTypeCode")
             :codeListValue keyword-type} keyword-type]])
        [:gmd:thesaurusName {:gco:nilReason "unknown"}]]])))
-

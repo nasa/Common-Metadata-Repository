@@ -507,7 +507,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
-    :DataDates :Organizations
+    :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 
