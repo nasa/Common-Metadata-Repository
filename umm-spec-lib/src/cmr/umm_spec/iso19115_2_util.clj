@@ -32,6 +32,18 @@
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
   (clojure.set/map-invert iso-date-type-codes))
 
+(def iso-tiling-systems
+  "A map of ECHO/UMM tiling system names to ISO tiling system identifiers."
+  {"CALIPSO" "o29309,29310p171,171"
+   "MISR" "p232b1-180"
+   "MODIS Tile EASE" "h12v14"
+   "MODIS Tile SIN" "h0v9"
+   "WRS-2" "p158r4"
+   "WRS-1" "p24-24r28-28"
+   "WELD Alaska tile" nil
+   "WELD CONUS tile" nil
+   nil "x2-12y3-18"})
+
 (def echo-attributes-info
   [:eos:otherPropertyType
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
