@@ -28,7 +28,7 @@
   [record format]
   (let [metadata-xml (core/generate-metadata :collection format record)]
     ;; XML validation pending
-    ;; (is (empty? (core/validate-xml :collection format metadata-xml)))
+    (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
 (deftest roundtrip-example-record
@@ -62,6 +62,8 @@
 
 (comment
 
+  (is (= (expected-conversion/convert expected-conversion/example-record :iso19115)
+             (xml-round-trip expected-conversion/example-record :iso19115)))
 
   (is (= (expected-conversion/convert user/failing-value :echo10)
          (xml-round-trip user/failing-value :echo10)))

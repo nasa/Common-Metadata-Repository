@@ -15,7 +15,7 @@
   (for [sensor (select instrument "eos:sensor/eos:EOS_Sensor")]
     {:ShortName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:code")
      :LongName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:description")
-     :Technique (char-string-value sensor "eos:type")
+     :Technique (without-default-value-of sensor "eos:type/gco:CharacterString")
      :Characteristics (ch/parse-characteristics sensor)}))
 
 (defn- xml-elem->instrument

@@ -19,9 +19,12 @@
   (str distributor-xpath
        "/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString"))
 
-(def distributor-size-xpath
+(def distributor-transfer-options-xpath
   (str distributor-xpath
-       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
+       "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions"))
+
+(def distributor-size-xpath
+  "gmd:transferSize/gco:Real")
 
 (def distributor-online-url-xpath
   (str distributor-xpath "/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
@@ -33,7 +36,8 @@
   "Returns the distributions parsed from the given xml document."
   [doc]
   (let [medias (values-at doc distributor-media-xpath)
-        sizes (values-at doc distributor-size-xpath)
+        sizes (map #(value-of % distributor-size-xpath)
+                   (select doc distributor-transfer-options-xpath))
         formats (values-at doc distributor-format-xpath)
         fees (values-at doc distributor-fees-xpath)]
     (util/map-longest (fn [media size format fee]
