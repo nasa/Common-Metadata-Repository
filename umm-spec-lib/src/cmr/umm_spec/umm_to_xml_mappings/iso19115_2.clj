@@ -5,6 +5,7 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso-utils :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.iso19115-2-util :as u]))
 
@@ -43,7 +44,6 @@
   [projects]
   (let [project-keywords (map u/generate-title projects)]
     (u/generate-descriptive-keywords "project" project-keywords)))
-
 
 (defn- generate-projects
   [projects]
@@ -212,10 +212,8 @@
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
          (generate-projects-keywords (:Projects c))
-         (when-let [science-keywords (:ScienceKeywords c)]
-           [:gmd:descriptiveKeywords (u/generate-descriptive-keywords
-                                       "theme"
-                                       (map science-keyword->iso-keyword-string science-keywords))])
+         (u/generate-descriptive-keywords
+           "theme" (map science-keyword->iso-keyword-string (:ScienceKeywords c)))
          (u/generate-descriptive-keywords "place" (:SpatialKeywords c))
          (u/generate-descriptive-keywords "temporal" (:TemporalKeywords c))
          (u/generate-descriptive-keywords (:AncillaryKeywords c))
