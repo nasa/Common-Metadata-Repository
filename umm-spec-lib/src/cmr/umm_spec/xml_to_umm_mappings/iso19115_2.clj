@@ -7,7 +7,9 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
             [clojure.data :as data]
             [cmr.umm-spec.json-schema :as js]
-            [cmr.umm-spec.util :as su]))
+            [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
+            [cmr.umm-spec.iso19115-2-util :refer :all]))
 
 (def md-data-id-base-xpath
   "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification")
@@ -30,29 +32,13 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
-(def platforms-xpath
-  (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:platform"
-       "/eos:EOS_Platform"))
-
 (def projects-xpath
   (str "/gmi:MI_Metadata/gmi:acquisitionInformation/gmi:MI_AcquisitionInformation/gmi:operation"
        "/gmi:MI_Operation"))
 
-(def long-name-xpath
-  "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
-
-(def short-name-xpath
-  "gmi:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString")
-
-(def characteristics-xpath
-  "eos:otherProperty/gco:Record/eos:AdditionalAttributes/eos:AdditionalAttribute")
-
 (def publication-xpath
   "Publication xpath relative to md-data-id-base-xpath"
   "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
-
-(def pc-attr-base-path
-  "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
 (def distributor-xpath
   "/gmi:MI_Metadata/gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor")
@@ -78,11 +64,6 @@
 
 (def browse-graphic-xpath
   (str md-data-id-base-xpath "/gmd:graphicOverview/gmd:MD_BrowseGraphic"))
-
-(defn- char-string-value
-  "Utitlity function to return the gco:CharacterString element value of the given parent xpath."
-  [element parent-xpath]
-  (value-of element (str parent-xpath "/gco:CharacterString")))
 
 (defn- descriptive-keywords
   "Returns the descriptive keywords values for the given parent element and keyword type"
@@ -113,45 +94,6 @@
              ;; entire matching string is returned and if there is a group in the regular
              ;; expression, the first group of the matching string is returned.
              (if (string? match) match (second match))))))
-
-(defn- parse-characteristics
-  "Returns the parsed platform characteristics from the platform element."
-  [element]
-  (for [chars (select element characteristics-xpath)]
-    {:Name        (char-string-value chars (str pc-attr-base-path "/eos:name"))
-     :Description (char-string-value chars (str pc-attr-base-path "/eos:description"))
-     :DataType    (value-of chars (str pc-attr-base-path "/eos:dataType/eos:EOS_AdditionalAttributeDataTypeCode"))
-     :Unit        (char-string-value chars (str pc-attr-base-path "/eos:parameterUnitsOfMeasure"))
-     :Value       (char-string-value chars (str "eos:value"))}))
-
-(defn- parse-instrument-sensors
-  "Returns the parsed instrument sensors from the instrument element."
-  [instrument]
-  (for [sensor (select instrument "eos:sensor/eos:EOS_Sensor")]
-    {:ShortName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:code")
-     :LongName (char-string-value sensor "eos:identifier/gmd:MD_Identifier/gmd:description")
-     :Technique (char-string-value sensor "eos:type")
-     :Characteristics (parse-characteristics sensor)}))
-
-(defn- parse-platform-instruments
-  "Returns the parsed platform instruments from the platform element."
-  [platform]
-  (for [instrument (select platform "gmi:instrument/eos:EOS_Instrument")]
-    {:ShortName (value-of instrument short-name-xpath)
-     :LongName (value-of instrument long-name-xpath)
-     :Technique (char-string-value instrument "gmi:type")
-     :Characteristics (parse-characteristics instrument)
-     :Sensors (parse-instrument-sensors instrument)}))
-
-(defn- parse-platforms
-  "Returns the platforms parsed from the given xml document."
-  [doc]
-  (for [platform (select doc platforms-xpath)]
-    {:ShortName (value-of platform short-name-xpath)
-     :LongName (value-of platform long-name-xpath)
-     :Type (char-string-value platform "gmi:description")
-     :Characteristics (parse-characteristics platform)
-     :Instruments (parse-platform-instruments platform)}))
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."
@@ -256,7 +198,7 @@
                          md-data-id-el
                          "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
      :Distributions (parse-distributions doc)
-     :Platforms (parse-platforms doc)
+     :Platforms (platform/parse-platforms doc)
      :Projects (parse-projects doc)
 
      :PublicationReferences (for [publication (select md-data-id-el publication-xpath)
@@ -277,7 +219,7 @@
                                :ISBN (char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")})
-     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project"])
+     :AncillaryKeywords (descriptive-keywords-type-not-equal md-data-id-el ["place" "temporal" "project" "platform" "instrument"])
      :RelatedUrls (concat (parse-online-urls doc) (parse-browse-graphic doc))}))
 
 (defn iso19115-2-xml-to-umm-c

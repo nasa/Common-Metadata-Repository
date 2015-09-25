@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial
-  "Functions for generating ISO-MENDS XML elements from UMM spatial records."
+  "Functions for generating ISO19115-2 XML elements from UMM spatial records."
   (:require [camel-snake-kebab.core :as csk]
             [cmr.spatial.derived :as d]
             [cmr.spatial.encoding.gmd :as gmd]
