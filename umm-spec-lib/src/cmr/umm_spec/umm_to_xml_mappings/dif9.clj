@@ -102,6 +102,15 @@
      [:Summary
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]
+     (for [related-url (:RelatedUrls c)]
+       [:Related_URL
+        (when-let [ct (:ContentType related-url)]
+          [:URL_Content_Type
+            [:Type (:Type ct)]
+            [:Subtype (:Subtype ct)]])
+        (for [url (:URLs related-url)]
+          [:URL url])
+        [:Description (:Description related-url)]])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      [:Extended_Metadata

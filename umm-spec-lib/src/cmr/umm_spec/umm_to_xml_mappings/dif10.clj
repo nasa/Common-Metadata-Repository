@@ -227,8 +227,15 @@
      [:Summary
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]
-     [:Related_URL
-      [:URL "http://www.foo.com"]]
+     (for [related-url (:RelatedUrls c)]
+        [:Related_URL
+          (when-let [ct (:ContentType related-url)]
+           [:URL_Content_Type
+            [:Type (:Type ct)]
+            [:Subtype (:Subtype ct)]])
+        (for [url (get related-url :URLs ["http://www.foo.com"])]
+          [:URL url])
+        [:Description (:Description related-url)]])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 10.1"]
      [:Metadata_Dates

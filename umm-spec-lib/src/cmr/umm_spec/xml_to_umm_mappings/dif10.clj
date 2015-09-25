@@ -120,6 +120,12 @@
                                                      (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
+   :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
+                  { :URLs (values-at related-url "URL")
+                    :Description (value-of related-url "Description")
+                    :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
+                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
+                    :MimeType (value-of related-url "Mime_Type")})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]
                          {:Category (value-of sk "Category")
                           :Topic (value-of sk "Topic")

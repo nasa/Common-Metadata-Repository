@@ -27,8 +27,8 @@
    :DataLanguage (value-of doc "/DIF/Data_Set_Language")
    :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
    :Projects (for [proj (select doc "/DIF/Project")]
-                {:ShortName (value-of proj "Short_Name")
-                 :LongName (value-of proj "Long_Name")})
+               {:ShortName (value-of proj "Short_Name")
+                :LongName (value-of proj "Long_Name")})
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
    :Quality (value-of doc "/DIF/Quality")
@@ -66,7 +66,6 @@
                             :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
                             :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
-
   :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                           (into {} (map (fn [x]
                                           (if (keyword? x)
@@ -97,7 +96,13 @@
                           :VariableLevel1 (value-of sk "Variable_Level_1")
                           :VariableLevel2 (value-of sk "Variable_Level_2")
                           :VariableLevel3 (value-of sk "Variable_Level_3")
-                          :DetailedVariable (value-of sk "Detailed_Variable")})})
+                          :DetailedVariable (value-of sk "Detailed_Variable")})
+  :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
+                      :let [description (value-of related-url "Description")]]
+                  {:URLs (values-at related-url "URL")
+                   :Description description
+                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
+                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

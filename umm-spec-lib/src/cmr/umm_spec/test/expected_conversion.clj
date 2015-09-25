@@ -12,6 +12,7 @@
             [cmr.umm-spec.models.common :as cmn]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
+            [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
 
 (def example-record
@@ -52,7 +53,6 @@
                                           :EndingDateTime (t/date-time 2003)}]}]
      :ProcessingLevel {:Id "3"
                        :ProcessingLevelDescription "Processing level description"}
-     :RelatedUrls [{:URLs ["http://google.com"]}]
      :Organizations [{:Role "CUSTODIAN"
                       :Party {:OrganizationName {:ShortName "custodian"}}}]
      :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
@@ -94,7 +94,21 @@
                                     :Authority "authority"}}
                              {:Title "some title"}]
      :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
-     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]}))
+     :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
+     :RelatedUrls [{:Description "Related url description"
+                    :ContentType {:Type "GET DATA" :Subtype "sub type"}
+                    :Protocol "protocol"
+                    :URLs ["www.foo.com", "www.shoo.com"]
+                    :Title "related url title"
+                    :MimeType "mime type"
+                    :Caption "caption"}
+                   {:Description "Related url 3 description "
+                    :ContentType {:Type "Some type" :Subtype "sub type"}
+                    :URLs ["www.foo.com"]}
+                   {:Description "Related url 2 description"
+                    :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
+                    :URLs ["www.foo.com"]
+                    :FileSize {:Size 10.0 :Unit "MB"}}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -176,6 +190,27 @@
         (update-in [:Boundary :Points] fix-points)
         (update-in-each [:ExclusiveZone :Boundaries] update-in [:Points] fix-points))))
 
+(defn- expected-echo10-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls
+             :let [type (get-in related-url [:ContentType :Type])]
+             url (:URLs related-url)]
+         (-> related-url
+             (assoc :Protocol nil :Title nil :Caption nil :URLs [url])
+             (update-in [:FileSize] (fn [file-size]
+                                      (when (and file-size
+                                                 (= type "GET RELATED VISUALIZATION"))
+                                        (when-let [byte-size (echo10-ru-gen/convert-to-bytes
+                                                               (:Size file-size) (:Unit file-size))]
+                                          (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
+             (assoc-in [:ContentType :Subtype] nil)
+             (update-in [:ContentType]
+                        (fn [content-type]
+                          (when (#{"GET DATA"
+                                   "GET RELATED VISUALIZATION"
+                                   "VIEW RELATED INFORMATION"} type)
+                            content-type)))))))
+
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
@@ -193,6 +228,7 @@
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
+      (update-in [:RelatedUrls] expected-echo10-related-urls)
       ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
       (update-in-each [:Distributions] update-in [:Fees]
                       (fn [n]
@@ -236,6 +272,11 @@
                                             :Caption nil
                                             :FileSize nil))))))
 
+(defn- expected-dif-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls]
+         (assoc related-url :Protocol nil :Title nil :Caption nil :FileSize nil :MimeType nil))))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
@@ -263,7 +304,8 @@
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in-each [:PublicationReferences] dif-publication-reference)))
+      (update-in-each [:PublicationReferences] dif-publication-reference)
+      (update-in [:RelatedUrls] expected-dif-related-urls)))
 
 
 ;; DIF 10
@@ -315,7 +357,8 @@
       (update-in [:ProcessingLevel] dif10-processing-level)
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
-      (update-in-each [:PublicationReferences] dif-publication-reference)))
+      (update-in-each [:PublicationReferences] dif-publication-reference)
+      (update-in [:RelatedUrls] expected-dif-related-urls)))
 
 ;; ISO 19115-2
 (defn normalize-iso-19115-precisions
@@ -361,6 +404,19 @@
            su/remove-empty-records
            vec))
 
+(defn- expected-iso-19115-2-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls
+             url (:URLs related-url)]
+         (-> related-url
+             (assoc :Protocol nil :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
+             (assoc-in [:ContentType :Subtype] nil)
+             (update-in [:ContentType]
+                        (fn [content-type]
+                          (when (#{"GET DATA"
+                                   "GET RELATED VISUALIZATION"
+                                   "VIEW RELATED INFORMATION"} (:Type content-type))
+                            content-type)))))))
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
   (let [fix-val (fn [x]
@@ -400,7 +456,8 @@
       (update-in [:Distributions] expected-iso-19115-2-distributions)
       (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
-      (update-in [:PublicationReferences] iso-19115-2-publication-reference)))
+      (update-in [:PublicationReferences] iso-19115-2-publication-reference)
+      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)))
 
 ;; ISO-SMAP
 
@@ -430,6 +487,8 @@
       (assoc :Projects nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
+      (assoc :RelatedUrls nil)
+      (assoc :ScienceKeywords nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -448,7 +507,7 @@
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
-    :RelatedUrls :Organizations
+    :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
     :MetadataAssociations})
 

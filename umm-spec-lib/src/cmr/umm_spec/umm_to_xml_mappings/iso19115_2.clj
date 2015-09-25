@@ -7,7 +7,9 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
-            [cmr.umm-spec.iso19115-2-util :as iso]))
+            [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
+
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -63,38 +65,7 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
-(defn- generate-distributions
-  [distributions]
-  (when-let [distributions (su/remove-empty-records distributions)]
-    ;; We want to generate an empty element here because ISO distribution depends on
-    ;; the order of elements to determine how the fields of a distribution are group together.
-    (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
-          sizes (truncate-map :DistributionSize)
-          fees (truncate-map :Fees)]
-      [:gmd:distributionInfo
-       [:gmd:MD_Distribution
-        [:gmd:distributor
-         [:gmd:MD_Distributor
-          [:gmd:distributorContact {:gco:nilReason "missing"}]
-          (for [fee (map su/nil-to-empty-string fees)]
-            [:gmd:distributionOrderProcess
-             [:gmd:MD_StandardOrderProcess
-              [:gmd:fees
-               (char-string fee)]]])
-          (for [distribution distributions
-                :let [{media :DistributionMedia format :DistributionFormat} distribution]]
-            [:gmd:distributorFormat
-             [:gmd:MD_Format
-              [:gmd:name
-               (char-string (su/nil-to-empty-string format))]
-              [:gmd:version {:gco:nilReason "unknown"}]
-              [:specification
-               (char-string (su/nil-to-empty-string media))]]])
-          (for [size (map su/nil-to-empty-string sizes)]
-            [:gmd:distributorTransferOptions
-             [:gmd:MD_DigitalTransferOptions
-              [:gmd:transferSize
-               [:gco:Real size]]]])]]]])))
+
 
 (defn- generate-publication-references
   [pub-refs]
@@ -213,6 +184,7 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
+         (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (iso/generate-descriptive-keywords
            "theme" (map science-keyword->iso-keyword-string (:ScienceKeywords c)))
@@ -262,7 +234,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (generate-distributions (:Distributions c))
+       (dru/generate-distributions c)
        [:gmd:dataQualityInfo
         [:gmd:DQ_DataQuality
          [:gmd:scope
