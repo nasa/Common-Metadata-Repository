@@ -220,6 +220,7 @@
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
+      (assoc :ISOTopicCategories nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
@@ -489,6 +490,7 @@
       (assoc :AncillaryKeywords nil)
       (assoc :RelatedUrls nil)
       (assoc :ScienceKeywords nil)
+      (assoc :ISOTopicCategories nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -505,7 +507,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :ISOTopicCategories :TilingIdentificationSystem
+  #{:CollectionCitations :MetadataDates :TilingIdentificationSystem
     :MetadataLanguage :DirectoryNames :Personnel
     :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage

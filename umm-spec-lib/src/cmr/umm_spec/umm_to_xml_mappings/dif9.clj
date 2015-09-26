@@ -28,7 +28,8 @@
         [:Variable_Level_2 (:VariableLevel2 sk)]
         [:Variable_Level_3 (:VariableLevel3 sk)]
         [:Detailed_Variable (:DetailedVariable sk)]])
-     [:ISO_Topic_Category "dummy iso topic category"]
+     (for [topic-category (:ISOTopicCategories c)]
+       [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]
        [:Keyword ak])
      (for [platform (:Platforms c)]
@@ -106,8 +107,8 @@
        [:Related_URL
         (when-let [ct (:ContentType related-url)]
           [:URL_Content_Type
-            [:Type (:Type ct)]
-            [:Subtype (:Subtype ct)]])
+           [:Type (:Type ct)]
+           [:Subtype (:Subtype ct)]])
         (for [url (:URLs related-url)]
           [:URL url])
         [:Description (:Description related-url)]])

@@ -35,6 +35,9 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def topic-categories-xpath
+  (str md-data-id-base-xpath "/gmd:topicCategory/gmd:MD_TopicCategoryCode"))
+
 (def data-dates-xpath
   (str md-data-id-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
 
@@ -135,6 +138,7 @@
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
+     :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)

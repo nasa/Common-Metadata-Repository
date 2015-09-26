@@ -48,6 +48,7 @@
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Dataset_Language")
+   :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
