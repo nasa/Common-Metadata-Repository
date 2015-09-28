@@ -26,6 +26,12 @@
 (def constraints-xpath
   (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
+(def tiling-system-xpath
+  (str md-data-id-base-xpath
+       (str "/gmd:extent/gmd:EX_Extent"
+            "/gmd:geographicElement/gmd:EX_GeographicDescription"
+            "/gmd:geographicIdentifier/gmd:MD_Identifier")))
+
 (def temporal-xpath
   "Temoral xpath relative to md-data-id-base-xpath"
   (str "gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
@@ -103,6 +109,15 @@
      :VariableLevel3 variable-level-3
      :DetailedVariable detailed-variable}))
 
+(defn- parse-tiling-system
+  [doc]
+  (when-let [tiling-system-el (first (select doc tiling-system-xpath))]
+    (let [code-string (value-of tiling-system-el "gmd:code/gco:CharacterString")
+          description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")]
+      (merge
+       {:TilingIdentificationSystemName description-string}
+       (iso/parse-tiling-system-coordinates code-string)))))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -140,6 +155,7 @@
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :SpatialExtent (spatial/parse-spatial doc)
+     :TilingIdentificationSystem (parse-tiling-system doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]

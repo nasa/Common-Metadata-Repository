@@ -61,10 +61,14 @@
   (let [[extent-el] (select doc extent-xpath)]
     (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))))
 
+(defn- shape-el?
+  [el]
+  (not (seq (select el "gmd:EX_GeographicDescription"))))
+
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
   [doc]
-  (let [geo-elems      (select doc geographic-element-xpath)
+  (let [geo-elems      (filter shape-el? (select doc geographic-element-xpath))
         ;; ISO includes bounding boxes for each element (point, polygon, etc.) in the spatial extent
         ;; metadata. We can discard the redundant bounding boxes.
         shape-elems    (map second (partition 2 geo-elems))

@@ -2,7 +2,8 @@
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml.parse :refer :all]
-            clojure.set))
+            clojure.set
+            [clojure.string :as str]))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
@@ -56,6 +57,15 @@
             (str sep c2-max)))))
   ([tiling-system]
    (apply tiling-system-string tiling-system (tiling-system-coding-params tiling-system))))
+
+(defn parse-tiling-system-coordinates
+  [tiling-system-str]
+  (let [[c1 c2] (for [[_ min-str max-str] (re-seq #"(-?\d+\.?\d*)[-,]?(-?\d+\.?\d*)?"
+                                                  tiling-system-str)]
+                  {:MinimumValue (Double. min-str)
+                   :MaximumValue (when max-str (Double. max-str))})]
+    {:Coordinate1 c1
+     :Coordinate2 c2}))
 
 (def echo-attributes-info
   [:eos:otherPropertyType
