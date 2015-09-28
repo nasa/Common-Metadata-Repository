@@ -507,7 +507,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :TilingIdentificationSystem
+  #{:CollectionCitations :MetadataDates
     :MetadataLanguage :DirectoryNames :Personnel
     :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage

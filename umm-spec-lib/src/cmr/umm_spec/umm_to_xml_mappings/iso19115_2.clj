@@ -7,6 +7,7 @@
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
 
@@ -209,6 +210,7 @@
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
             [:gco:CharacterString (extent-description-string c)]]
+           (tiling/tiling-system-elements c)
            (spatial/spatial-extent-elements c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]

@@ -11,6 +11,7 @@
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -140,6 +141,7 @@
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc)
+     :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]

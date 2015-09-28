@@ -2,7 +2,8 @@
   "Defines common xpaths and functions used by various namespaces in ISO19115-2."
   (:require [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml.parse :refer :all]
-            clojure.set))
+            clojure.set
+            [clojure.string :as str]))
 
 (def long-name-xpath
   "gmi:identifier/gmd:MD_Identifier/gmd:description/gco:CharacterString")
