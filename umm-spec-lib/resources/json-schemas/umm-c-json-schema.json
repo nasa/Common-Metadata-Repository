@@ -344,7 +344,8 @@
       "description": "Describes the production status of the data set. There are three choices: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. IN WORK refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 80
+      "maxLength": 80,
+      "pattern": "[\\w]{1,79}"
     },
     "Quality": {
       "description": "This element permits the author to provide the following information about an item described in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in producing the item. Examples of appropriate element information include: A) succinct description; B) indicators of item quality or quality flags - both validated or invalidated; C) recognized or potential problems with quality; D) established quality control mechanisms; and E) established quantitative quality measurements.",
@@ -378,7 +379,7 @@
       "description": "This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List. It is a high-level thematic classification to assist in the grouping and search of available services.",
       "type": "array",
       "items": {
-        "$ref": "umm-cmn-json-schema.json#/definitions/UuidType"
+        "$ref": "umm-cmn-json-schema.json#/definitions/ISOTopicCategoryEnum"
       },
       "minItems": 0
     },

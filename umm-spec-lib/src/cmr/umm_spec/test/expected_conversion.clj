@@ -62,9 +62,9 @@
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
                      :VerticalSpatialDomains [{:Type "Some kind of type"
                                                :Value "Some kind of value"}]}
-     :AccessConstraints {:Description "Access constraints"
+     :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
-     :UseConstraints "Use constraints"
+     :UseConstraints "Restriction Flag: Use constraints"
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
      :Version "V5"
@@ -220,6 +220,7 @@
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
+      (assoc :ISOTopicCategories nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
@@ -489,6 +490,7 @@
       (assoc :AncillaryKeywords nil)
       (assoc :RelatedUrls nil)
       (assoc :ScienceKeywords nil)
+      (assoc :ISOTopicCategories nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
       (update-in-each [:Platforms] assoc :Type "Spacecraft" :Characteristics nil)
@@ -505,7 +507,7 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates :ISOTopicCategories
+  #{:CollectionCitations :MetadataDates
     :MetadataLanguage :DirectoryNames :Personnel
     :Organizations
     :MetadataLineages :SpatialInformation :PaleoTemporalCoverage

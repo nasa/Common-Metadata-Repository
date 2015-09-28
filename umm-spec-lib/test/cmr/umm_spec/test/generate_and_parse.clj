@@ -27,8 +27,8 @@
   the given to-xml and to-umm mappings."
   [record format]
   (let [metadata-xml (core/generate-metadata :collection format record)]
-    ;; XML validation pending
-    ;; (is (empty? (core/validate-xml :collection format metadata-xml)))
+    ;; validate against xml schema
+    (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
 (deftest roundtrip-example-record
@@ -62,9 +62,8 @@
 
 (comment
 
-
-  (is (= (expected-conversion/convert user/failing-value :echo10)
-         (xml-round-trip user/failing-value :echo10)))
+  (is (= (expected-conversion/convert user/failing-value :iso19115)
+         (xml-round-trip user/failing-value :iso19115)))
 
   ;; random XML gen
   (def metadata-format :iso19115)

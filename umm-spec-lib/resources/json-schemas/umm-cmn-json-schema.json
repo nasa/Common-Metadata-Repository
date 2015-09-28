@@ -783,7 +783,8 @@
           "description": "The datatype of the Characteristic/attribute.",
           "type": "string",
           "minLength": 1,
-          "maxLength": 80
+          "maxLength": 80,
+          "pattern": "[\\w]{1,79}"
         }
       },
       "required": ["Name", "Description", "DataType", "Unit", "Value"]
@@ -1341,6 +1342,11 @@
       "type": "string",
       "enum": ["RESOURCEPROVIDER", "CUSTODIAN", "OWNER", "USER", "DISTRIBUTOR", "ORIGINATOR", "POINTOFCONTACT", "PRINCIPALINVESTIGATOR", "PROCESSOR", "PUBLISHER", "AUTHOR", "SPONSOR", "COAUTHOR", "COLLABORATOR", "EDITOR", "MEDIATOR", "RIGHTSHOLDER", "CONTRIBUTOR", "FUNDER", "STAKEHOLDER"]
     },
+    "ISOTopicCategoryEnum": {
+      "description": "High-level geospatial data thematic classification to assist in the grouping and search of available geospatial collections.",
+      "type": "string",
+      "enum": ["farming", "biota", "boundaries", "climatologyMeteorologyAtmosphere", "economy", "elevation", "environment", "geoscientificInformation", "health", "imageryBaseMapsEarthCover", "intelligenceMilitary", "inlandWaters", "location", "oceans", "planningCadastre", "society", "structure", "transportation", "utilitiesCommunication"]
+    },
     "ShortNameType": {
       "description": "The unique name.",
       "type": "string",
@@ -1352,7 +1358,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,79}"
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
     "LongNameType": {
       "description": "The expanded or long name of the short name.",
@@ -1388,7 +1394,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
-      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,79}"
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
     "DataTypeEnum": {
       "description": "This entity contains the additional attribute data types.",

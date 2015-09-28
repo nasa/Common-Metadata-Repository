@@ -41,6 +41,9 @@
                           "/gmd:DQ_QuantitativeResult/gmd:value"
                           "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
+(def topic-categories-xpath
+  (str md-data-id-base-xpath "/gmd:topicCategory/gmd:MD_TopicCategoryCode"))
+
 (def data-dates-xpath
   (str md-data-id-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
 
@@ -74,13 +77,15 @@
   "Utitlity function to return the value of the element that matches the given xpath and regex."
   [element xpath regex]
   (when-let [elements (select element xpath)]
-    (first (for [match-el elements
-                 :let [match (re-matches regex (text match-el))]
-                 :when match]
-             ;; A string response implies there is no group in the regular expression and the
-             ;; entire matching string is returned and if there is a group in the regular
-             ;; expression, the first group of the matching string is returned.
-             (if (string? match) match (second match))))))
+    (when-let [matches (seq
+                         (for [match-el elements
+                               :let [match (re-matches regex (text match-el))]
+                               :when match]
+                           ;; A string response implies there is no group in the regular expression and the
+                           ;; entire matching string is returned and if there is a group in the regular
+                           ;; expression, the first group of the matching string is returned.
+                           (if (string? match) match (second match))))]
+      (str/join matches))))
 
 (defn- parse-projects
   "Returns the projects parsed from the given xml document."
@@ -130,13 +135,9 @@
      :Abstract (iso/char-string-value md-data-id-el "gmd:abstract")
      :Purpose (iso/char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
-     
      :DataDates (for [date-el (select doc data-dates-xpath)]
                   {:Date (value-of date-el "gmd:date/gco:DateTime")
                    :Type (get iso/umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
-     
-     ;; TODO: Fix AccessConstraints. Access Constraints should likely be treated as an array
-     ;; in the JSON schema instead of a single object. CMR-1989.
      :AccessConstraints {:Description
                          (regex-value doc (str constraints-xpath
                                                "/gmd:useLimitation/gco:CharacterString")
@@ -146,14 +147,13 @@
                          (regex-value doc (str constraints-xpath
                                                "/gmd:otherConstraints/gco:CharacterString")
                                       #"Restriction Flag:(.+)")}
-     ;; TODO: Fix UseConstraints. Use Constraints should likely be treated as an array
-     ;; in the JSON schema instead of a single string. CMR-1989.
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"^(?!Restriction Comment:).+")
      :SpatialKeywords (descriptive-keywords md-data-id-el "place")
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
+     :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc)
      :TilingIdentificationSystem (parse-tiling-system doc)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]

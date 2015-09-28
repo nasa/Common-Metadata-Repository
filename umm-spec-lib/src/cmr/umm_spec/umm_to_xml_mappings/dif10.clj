@@ -154,6 +154,8 @@
         [:Variable_Level_2 (:VariableLevel2 sk)]
         [:Variable_Level_3 (:VariableLevel3 sk)]
         [:Detailed_Variable (:DetailedVariable sk)]])
+     (for [topic-category (:ISOTopicCategories c)]
+       [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]
        [:Ancillary_Keyword ak])
 

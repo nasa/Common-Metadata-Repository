@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.iso-utils :as iso-utils]
+            [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
 (defn- sensor-with-id
@@ -36,7 +37,7 @@
         [:gmd:description
          (char-string (:LongName sensor))]]]
       [:eos:type
-       (char-string (:Technique sensor))]
+       (char-string (with-default (:Technique sensor)))]
       [:eos:description {:gco:nilReason "missing"}]
       [:eos:mountedOn {:xlink:href (str "#" (:instrument-id sensor))}]
       iso/echo-attributes-info

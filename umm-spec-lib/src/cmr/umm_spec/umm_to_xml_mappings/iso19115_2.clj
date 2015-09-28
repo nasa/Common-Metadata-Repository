@@ -202,6 +202,9 @@
             [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
          (generate-publication-references (:PublicationReferences c))
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
+         (for [topic-category (:ISOTopicCategories c)]
+           [:gmd:topicCategory
+            [:gmd:MD_TopicCategoryCode topic-category]])
          [:gmd:extent
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
