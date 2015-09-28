@@ -33,46 +33,6 @@
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
   (clojure.set/map-invert iso-date-type-codes))
 
-(defn tiling-system-coding-params
-  "Returns ISO tiling system encoding string parameters (coordinate 1 prefix, coordinate 2 prefix,
-  and range separator) for given tiling system map. The parameters are used by tiling-system-string."
-  [tiling-system]
-  (condp #(.contains %2 %1) (:TilingIdentificationSystemName tiling-system)
-    "CALIPSO" ["o" "p" ","]
-    "MISR"    ["p" "b" "-"]
-    "MODIS"   ["h" "v" "-"]
-    "WRS"     ["p" "r" "-"]
-    ["x" "y" "-"]))
-
-(defn tiling-system-string
-  "Returns an encoded ISO tiling system coordinate string from the given UMM tiling system. The
-  coordinate 1 and coordinate 2 prefixes and separator may be specified, or else they will be looked
-  up based on the tiling system name."
-  ([tiling-system p1 p2 sep]
-   (let [{{c1-min :MinimumValue
-           c1-max :MaximumValue} :Coordinate1
-           {c2-min :MinimumValue
-            c2-max :MaximumValue} :Coordinate2} tiling-system]
-     (str p1 c1-min
-          (when c1-max
-            (str sep c1-max))
-          p2 c2-min
-          (when c2-max
-            (str sep c2-max)))))
-  ([tiling-system]
-   (apply tiling-system-string tiling-system (tiling-system-coding-params tiling-system))))
-
-(defn parse-tiling-system-coordinates
-  "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system
-  parameter string."
-  [tiling-system-str]
-  (let [[c1 c2] (for [[_ min-str max-str] (re-seq #"(-?\d+\.?\d*)[-,]?(-?\d+\.?\d*)?"
-                                                  tiling-system-str)]
-                  {:MinimumValue (Double. min-str)
-                   :MaximumValue (when max-str (Double. max-str))})]
-    {:Coordinate1 c1
-     :Coordinate2 c2}))
-
 (def echo-attributes-info
   [:eos:otherPropertyType
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}

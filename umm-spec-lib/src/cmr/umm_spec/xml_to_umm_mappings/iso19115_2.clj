@@ -11,6 +11,7 @@
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -25,12 +26,6 @@
 
 (def constraints-xpath
   (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
-
-(def tiling-system-xpath
-  (str md-data-id-base-xpath
-       (str "/gmd:extent/gmd:EX_Extent"
-            "/gmd:geographicElement/gmd:EX_GeographicDescription"
-            "/gmd:geographicIdentifier/gmd:MD_Identifier")))
 
 (def temporal-xpath
   "Temoral xpath relative to md-data-id-base-xpath"
@@ -114,15 +109,6 @@
      :VariableLevel3 variable-level-3
      :DetailedVariable detailed-variable}))
 
-(defn- parse-tiling-system
-  [doc]
-  (when-let [tiling-system-el (first (select doc tiling-system-xpath))]
-    (let [code-string (value-of tiling-system-el "gmd:code/gco:CharacterString")
-          description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")]
-      (merge
-       {:TilingIdentificationSystemName (or description-string "")}
-       (iso/parse-tiling-system-coordinates code-string)))))
-
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -155,7 +141,7 @@
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc)
-     :TilingIdentificationSystem (parse-tiling-system doc)
+     :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
