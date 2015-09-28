@@ -64,7 +64,7 @@
 (defn- shape-el?
   "Returns true if XML element is (probably) a shape instead of other geographic information elements."
   [el]
-  (not (seq (select el "gmd:EX_GeographicDescription"))))
+  (empty? (select el "gmd:EX_GeographicDescription")))
 
 (defn parse-geometry
   "Returns UMM GeometryType map from ISO XML document."
