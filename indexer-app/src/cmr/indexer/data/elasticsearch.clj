@@ -33,7 +33,7 @@
 
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{mt/echo10 mt/dif mt/iso-smap mt/iso})
+  #{mt/echo10 mt/dif mt/dif10 mt/iso-smap mt/iso})
 
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"

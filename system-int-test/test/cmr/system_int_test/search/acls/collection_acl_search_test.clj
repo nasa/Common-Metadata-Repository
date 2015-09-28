@@ -229,9 +229,9 @@
 (deftest acl-change-test
   (let [acl1 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid1" (e/coll-id ["coll1"])))
         acl2 (e/grant-guest (s/context) (e/coll-catalog-item-id "provguid2" (e/coll-id ["coll3"])))
-        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"}))
+        coll1 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "coll1"}) {:format :dif10})
         coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"}))
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "coll3"}))
+        coll3 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "coll3"}) {:format :dif10})
         coll4 (d/ingest "PROV2" (dc/collection {:entry-title "coll4"}))]
 
     (testing "normal reindex collection permitted groups"
