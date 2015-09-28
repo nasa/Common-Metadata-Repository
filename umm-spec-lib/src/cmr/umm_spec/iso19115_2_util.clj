@@ -34,7 +34,8 @@
   (clojure.set/map-invert iso-date-type-codes))
 
 (defn tiling-system-coding-params
-  "Returns ISO tiling system encoding string parameters for given tiling system map."
+  "Returns ISO tiling system encoding string parameters (coordinate 1 prefix, coordinate 2 prefix,
+  and range separator) for given tiling system map. The parameters are used by tiling-system-string."
   [tiling-system]
   (condp #(.contains %2 %1) (:TilingIdentificationSystemName tiling-system)
     "CALIPSO" ["o" "p" ","]
