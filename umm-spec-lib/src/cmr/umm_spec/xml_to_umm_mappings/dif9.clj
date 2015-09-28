@@ -25,6 +25,7 @@
    :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Data_Set_Language")
+   :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Data_Resolution/Temporal_Resolution")
    :Projects (for [proj (select doc "/DIF/Project")]
                {:ShortName (value-of proj "Short_Name")
