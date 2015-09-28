@@ -120,7 +120,7 @@
     (let [code-string (value-of tiling-system-el "gmd:code/gco:CharacterString")
           description-string (value-of tiling-system-el "gmd:description/gco:CharacterString")]
       (merge
-       {:TilingIdentificationSystemName description-string}
+       {:TilingIdentificationSystemName (or description-string "")}
        (iso/parse-tiling-system-coordinates code-string)))))
 
 (defn- parse-iso19115-xml
