@@ -32,17 +32,30 @@
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
   (clojure.set/map-invert iso-date-type-codes))
 
-(def iso-tiling-systems
-  "A map of ECHO/UMM tiling system names to ISO tiling system identifiers."
-  {"CALIPSO" "o29309,29310p171,171"
-   "MISR" "p232b1-180"
-   "MODIS Tile EASE" "h12v14"
-   "MODIS Tile SIN" "h0v9"
-   "WRS-2" "p158r4"
-   "WRS-1" "p24-24r28-28"
-   "WELD Alaska tile" nil
-   "WELD CONUS tile" nil
-   nil "x2-12y3-18"})
+(defn tiling-system-coding-params
+  "Returns ISO tiling system encoding string parameters for given tiling system map."
+  [tiling-system]
+  (condp #(.contains %2 %1) (:TilingIdentificationSystemName tiling-system)
+    "CALIPSO" ["o" "p" ","]
+    "MISR"    ["p" "b" "-"]
+    "MODIS"   ["h" "v" "-"]
+    "WRS"     ["p" "r" "-"]
+    ["x" "y" "-"]))
+
+(defn tiling-system-string
+  ([tiling-system p1 p2 sep]
+   (let [{{c1-min :MinimumValue
+           c1-max :MaximumValue} :Coordinate1
+           {c2-min :MinimumValue
+            c2-max :MaximumValue} :Coordinate2} tiling-system]
+     (str p1 c1-min
+          (when c1-max
+            (str sep c1-max))
+          p2 c2-min
+          (when c2-max
+            (str sep c2-max)))))
+  ([tiling-system]
+   (apply tiling-system-string tiling-system (tiling-system-coding-params tiling-system))))
 
 (def echo-attributes-info
   [:eos:otherPropertyType

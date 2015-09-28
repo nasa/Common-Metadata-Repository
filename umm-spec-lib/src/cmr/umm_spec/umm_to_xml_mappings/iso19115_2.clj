@@ -206,17 +206,15 @@
           [:gmd:EX_Extent {:id "boundingExtent"}
            [:gmd:description
             [:gco:CharacterString (extent-description-string c)]]
-           [:gmd:geographicElement
-            (let [tiling-system (:TilingIdentificationSystem c)
-                  umm-name (:TilingIdentificationSystemName tiling-system)]
-              (when umm-name
-                [:gmd:EX_GeographicDescription
-                 [:gmd:geographicIdentifier
-                  [:gmd:MD_Identifier
-                   [:gmd:code
-                    (char-string (get iso/iso-tiling-systems umm-name))]
-                   [:gmd:description
-                    (char-string umm-name)]]]]))]
+           (when-let [tiling-system (:TilingIdentificationSystem c)]
+             [:gmd:geographicElement
+              [:gmd:EX_GeographicDescription
+               [:gmd:geographicIdentifier
+                [:gmd:MD_Identifier
+                 [:gmd:code
+                  (char-string (iso/tiling-system-string tiling-system))]
+                 [:gmd:description
+                  (char-string (:TilingIdentificationSystemName tiling-system))]]]]])
            (spatial/spatial-extent-elements c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
