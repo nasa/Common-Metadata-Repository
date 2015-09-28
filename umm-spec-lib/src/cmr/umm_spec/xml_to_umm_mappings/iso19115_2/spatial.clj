@@ -62,6 +62,7 @@
     (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))))
 
 (defn- shape-el?
+  "Returns true if XML element is (probably) a shape instead of other geographic information elements."
   [el]
   (not (seq (select el "gmd:EX_GeographicDescription"))))
 
