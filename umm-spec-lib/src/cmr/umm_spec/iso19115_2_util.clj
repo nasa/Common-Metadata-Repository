@@ -44,6 +44,9 @@
     ["x" "y" "-"]))
 
 (defn tiling-system-string
+  "Returns an encoded ISO tiling system coordinate string from the given UMM tiling system. The
+  coordinate 1 and coordinate 2 prefixes and separator may be specified, or else they will be looked
+  up based on the tiling system name."
   ([tiling-system p1 p2 sep]
    (let [{{c1-min :MinimumValue
            c1-max :MaximumValue} :Coordinate1
@@ -59,6 +62,8 @@
    (apply tiling-system-string tiling-system (tiling-system-coding-params tiling-system))))
 
 (defn parse-tiling-system-coordinates
+  "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system
+  parameter string."
   [tiling-system-str]
   (let [[c1 c2] (for [[_ min-str max-str] (re-seq #"(-?\d+\.?\d*)[-,]?(-?\d+\.?\d*)?"
                                                   tiling-system-str)]
