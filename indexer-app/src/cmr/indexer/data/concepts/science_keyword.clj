@@ -23,15 +23,20 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
+(defn- upper-case-values
+  "Convert all of the values in a map to upper-case"
+  [m]
+  (into {} (for [[k v] m] [k (when v (str/upper-case v))])))
+
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document. If there is a match
-  with the science keywords in KMS we index the fields using the case from KMS rather than the
-  case from the keywords in the metadata."
+  with the science keywords in KMS we also index the UUID from KMS. We index all of the science
+  keyword fields in all caps since GCMD enforces all caps when adding keywords to KMS."
   [gcmd-keywords-map science-keyword]
-  (let [{:keys [detailed-variable]} science-keyword
-        kms-science-keyword (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)
-        {:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 uuid]} (or kms-science-keyword science-keyword)]
+  (let [science-keyword-upper-case (upper-case-values science-keyword)
+        {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
+                detailed-variable]} science-keyword-upper-case
+        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic
@@ -51,8 +56,9 @@
 
 (defn science-keyword->facet-fields
   [science-keyword]
-  (let [{:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword]
+  (let [science-keyword-upper-case (upper-case-values science-keyword)
+        {:keys [category topic term variable-level-1 variable-level-2
+                variable-level-3 detailed-variable]} science-keyword-upper-case]
     {:category category
      :topic topic
      :term term
