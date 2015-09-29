@@ -389,7 +389,6 @@
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
        (propagate-first :TemporalRangeType)
-       normalize-iso-19115-precisions
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso))
