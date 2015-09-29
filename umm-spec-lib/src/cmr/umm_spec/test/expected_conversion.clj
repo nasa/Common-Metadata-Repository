@@ -7,6 +7,7 @@
             [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
@@ -381,12 +382,15 @@
       (update-in [:RelatedUrls] expected-dif-related-urls)))
 
 ;; ISO 19115-2
-(defn normalize-iso-19115-precisions
-  "Returns seq of temporal extents all having the same precision as the first."
-  [extents]
-  (let [precision (-> extents first :PrecisionOfSeconds)]
-    (map #(assoc % :PrecisionOfSeconds precision)
-         extents)))
+
+(defn propagate-first
+  "Returns coll with the first element's value under k assoc'ed to each element in coll.
+
+  Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
+  [k coll]
+  (let [v (get (first coll) k)]
+    (for [x coll]
+      (assoc x k v))))
 
 (defn sort-by-date-type-iso
   "Returns temporal extent records to match the order in which they are generated in ISO XML."
@@ -395,14 +399,36 @@
         singles (filter :SingleDateTimes extents)]
     (seq (concat ranges singles))))
 
+(defn- fixup-iso-ends-at-present
+  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
+  in RangeDateTimes, otherwise nil."
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (let [ends-at-present (:EndsAtPresentFlag extent)
+          rdts (seq (:RangeDateTimes extent))]
+      (-> extent
+          (update-in-each [:RangeDateTimes]
+                          update-in [:EndingDateTime] (fn [x]
+                                                        (when-not ends-at-present
+                                                          x)))
+          (assoc :EndsAtPresentFlag
+                 (when (and rdts ends-at-present)
+                   true))))))
+
+(defn- fixup-comma-encoded-values
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (update-in extent [:TemporalRangeType] (fn [x]
+                                             (when x
+                                               (iso/sanitize-value x))))))
+
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
-       ;; ISO 19115-2 does not support these fields.
-       (map #(assoc %
-                    :TemporalRangeType nil
-                    :EndsAtPresentFlag nil))
-       normalize-iso-19115-precisions
+       (propagate-first :PrecisionOfSeconds)
+       (propagate-first :TemporalRangeType)
+       fixup-comma-encoded-values
+       fixup-iso-ends-at-present
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso))

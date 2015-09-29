@@ -68,7 +68,9 @@
   ;; random XML gen
   (def metadata-format :iso19115)
 
-  (def sample-record (first (gen/sample (gen/such-that :DataDates umm-gen/umm-c-generator) 1)))
+  (def sample-record (first (gen/sample (gen/such-that (comp :TemporalRangeType first :TemporalExtents) umm-gen/umm-c-generator) 1)))
+
+  (def sample-record user/failing-value)
 
   ;; generated xml
   (core/generate-metadata :collection metadata-format sample-record)

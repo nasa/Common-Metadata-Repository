@@ -123,10 +123,12 @@
   collection record."
   [c]
   (let [vsd (first (-> c :SpatialExtent :VerticalSpatialDomains))
+        temporal (first (:TemporalExtents c))
         m {"VerticalSpatialDomainType" (:Type vsd)
            "VerticalSpatialDomainValue" (:Value vsd)
            "SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
-           "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)}]
+           "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
+           "Temporal Range Type" (:TemporalRangeType temporal)}]
     (str/join "," (for [[k v] m
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
@@ -220,7 +222,9 @@
                [:gmd:extent
                 [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
+                 (if (:EndsAtPresentFlag temporal)
+                   [:gml:endPosition {:indeterminatePosition "now"}]
+                   [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
            (for [temporal (:TemporalExtents c)
                  date (:SingleDateTimes temporal)]
              [:gmd:temporalElement

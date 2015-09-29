@@ -1,20 +1,17 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require [clojure.string :as str]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.spatial.encoding.gmd :as gmd]))
-
-(def extent-xpath
-  (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification"
-       "/gmd:extent/gmd:EX_Extent"))
 
 (def coordinate-system-xpath
   (str "/gmi:MI_Metadata/gmd:referenceSystemInfo/gmd:MD_ReferenceSystem"
        "/gmd:referenceSystemIdentifier/gmd:RS_Identifier/gmd:code/gco:CharacterString"))
 
 (def geographic-element-xpath
-  (str extent-xpath "/gmd:geographicElement"))
+  (str iso/extent-xpath "/gmd:geographicElement"))
 
 (def orbit-string-xpath
   (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
@@ -50,23 +47,6 @@
      :ExclusiveZone {:Boundaries (for [r interior-rings]
                                    {:Points (map umm-spec-shape (:points r))})}}))
 
-(defn parse-key-val-str
-  "Returns a map of string keys and values from a comma-separated list of equals-separated pairs."
-  [description-str]
-  (when (and (string? description-str)
-             (not (str/blank? description-str)))
-    (into {}
-          (for [pair-str (str/split description-str #",")]
-            (let [[k v] (str/split pair-str #"=")]
-              [k v])))))
-
-(defn- get-extent-info-map
-  "Returns a map of equal-separated pairs from the comma-separated list in the ISO document's extent
-  description element."
-  [doc]
-  (let [[extent-el] (select doc extent-xpath)]
-    (parse-key-val-str (value-of extent-el "gmd:description/gco:CharacterString"))))
-
 (defn- shape-el?
   "Returns true if XML element is (probably) a shape instead of other geographic information elements."
   [el]
@@ -101,14 +81,13 @@
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
-  [doc]
-  (let [extent-info (get-extent-info-map doc)]
-    {:SpatialCoverageType (get extent-info "SpatialCoverageType")
-     :GranuleSpatialRepresentation (get extent-info "SpatialGranuleSpatialRepresentation")
-     :HorizontalSpatialDomain {:Geometry (parse-geometry doc)}
-     :VerticalSpatialDomains (let [vsd-type  (get extent-info "VerticalSpatialDomainType")
-                                   vsd-value (get extent-info "VerticalSpatialDomainValue")]
-                               (when (or vsd-type vsd-value)
-                                 [{:Type vsd-type
-                                   :Value vsd-value}]))
-     :OrbitParameters (parse-orbit-parameters doc)}))
+  [doc extent-info]
+  {:SpatialCoverageType (get extent-info "SpatialCoverageType")
+   :GranuleSpatialRepresentation (get extent-info "SpatialGranuleSpatialRepresentation")
+   :HorizontalSpatialDomain {:Geometry (parse-geometry doc)}
+   :VerticalSpatialDomains (let [vsd-type  (get extent-info "VerticalSpatialDomainType")
+                                 vsd-value (get extent-info "VerticalSpatialDomainValue")]
+                             (when (or vsd-type vsd-value)
+                               [{:Type vsd-type
+                                 :Value vsd-value}]))
+   :OrbitParameters (parse-orbit-parameters doc)})
