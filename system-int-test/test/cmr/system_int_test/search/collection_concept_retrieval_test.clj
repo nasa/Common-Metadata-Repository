@@ -74,8 +74,9 @@
                          ;; remove default added by parser
                          (assoc :metadata-language nil)
                          ;; remove default added by parser
-                         (assoc :use-constraints nil))]
-    (is (= umm metadata-umm))))
+                         (assoc :use-constraints nil))
+        expected (assoc-in umm [:product :short-name] (:entry-id umm))]
+    (is (= expected metadata-umm))))
 
 (defmethod result-matches? :default
   [format-key umm response]
@@ -173,9 +174,11 @@
                                                      :long-name "ET4"})
                          {:format :dif})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
+                                                 :entry-id "S5"
                                                  :version-id "V5"})
                          {:format :iso19115})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
+                                                 :entry-id "S6"
                                                  :version-id "V6"})
                          {:format :iso19115})
         c7-smap (d/ingest "PROV1" (dc/collection {:short-name "S7"
