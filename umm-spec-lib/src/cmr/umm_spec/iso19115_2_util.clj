@@ -33,8 +33,13 @@
   "A map of ISO date type codes to UMM date type enum values. Inverse of iso-date-type-codes."
   (clojure.set/map-invert iso-date-type-codes))
 
-(def echo-attributes-info
+(def eos-echo-attributes-info
   [:eos:otherPropertyType
+   [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
+    "Echo Additional Attributes"]])
+
+(def gmd-echo-attributes-info
+  [:gmd:otherPropertyType
    [:gco:RecordType {:xlink:href "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
     "Echo Additional Attributes"]])
 

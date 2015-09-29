@@ -40,6 +40,6 @@
        (char-string (with-default (:Technique sensor)))]
       [:eos:description {:gco:nilReason "missing"}]
       [:eos:mountedOn {:xlink:href (str "#" (:instrument-id sensor))}]
-      iso/echo-attributes-info
+      iso/eos-echo-attributes-info
       (ch/generate-characteristics "sensorInformation" (:Characteristics sensor))]]))
 
