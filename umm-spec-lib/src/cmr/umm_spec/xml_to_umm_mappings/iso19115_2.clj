@@ -12,6 +12,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -191,7 +192,8 @@
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (parse-science-keywords md-data-id-el)
-     :RelatedUrls (dru/parse-related-urls doc)}))
+     :RelatedUrls (dru/parse-related-urls doc)
+     :AdditionalAttributes (aa/parse-additional-attributes doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

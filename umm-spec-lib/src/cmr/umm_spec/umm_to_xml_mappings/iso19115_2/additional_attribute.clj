@@ -269,3 +269,59 @@
               (additional-attr-name->type (:Name aa)))
             aas))
 
+(defn generate-content-info
+  "Returns the content generator instructions for generating ISO19115 contentInformation additional
+  attributes for the given list of additional attributes."
+  [aas]
+  (when (seq aas)
+    [:gmd:contentInfo
+     [:gmd:MD_CoverageDescription
+      [:gmd:attributeDescription {:gco:nilReason "missing"}]
+      [:gmd:contentType
+       [:gmd:MD_CoverageContentTypeCode
+        {:codeList (str (:ngdc iso/code-lists) "#MD_CoverageContentTypeCode")
+         :codeListValue "physicalMeasurement"} "physicalMeasurement"]]
+      [:gmd:dimension
+       [:gmd:MD_Band
+        iso/gmd-echo-attributes-info
+        [:gmd:otherProperty
+         [:gco:Record
+          [:eos:AdditionalAttributes
+           (for [aa aas]
+             [:eos:AdditionalAttribute
+              [:eos:reference
+               [:eos:EOS_AdditionalAttributeDescription
+                [:eos:type
+                 [:eos:EOS_AdditionalAttributeTypeCode
+                  {:codeList (str (:earthdata iso/code-lists) "#EOS_AdditionalAttributeTypeCode")
+                   :codeListValue "contentInformation"} "contentInformation"]]
+                (when-let [group (:Group aa)]
+                  [:eos:identifier
+                   [:gmd:MD_Identifier
+                    [:gmd:code
+                     (char-string group)]]])
+                [:eos:name
+                 (char-string (:Name aa))]
+                [:eos:description
+                 (char-string (:Description aa))]
+                [:eos:dataType
+                 [:eos:EOS_AdditionalAttributeDataTypeCode
+                  {:codeList (str (:earthdata iso/code-lists) "#EOS_AdditionalAttributeDataTypeCode")
+                   :codeListValue (:DataType aa)} (:DataType aa)]]
+                [:eos:measurementResolution
+                 (char-string (:MeasurementResolution aa))]
+                [:eos:parameterRangeBegin
+                 (char-string (:ParameterRangeBegin aa))]
+                [:eos:parameterRangeEnd
+                 (char-string (:ParameterRangeEnd aa))]
+                [:eos:parameterUnitsOfMeasure
+                 (char-string (:ParameterUnitsOfMeasure aa))]
+                [:eos:parameterValueAccuracy
+                 (char-string (:ParameterValueAccuracy aa))]
+                [:eos:valueAccuracyExplanation
+                 (char-string (:ValueAccuracyExplanation aa))]]]
+              (when-let [value (:Value aa)]
+                [:eos:value
+                 (char-string value)])])]]]]]]]))
+
+

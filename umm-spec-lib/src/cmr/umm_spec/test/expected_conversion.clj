@@ -13,7 +13,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
 
 (def example-record
   "An example record with fields supported by most formats."
@@ -113,7 +114,18 @@
                    {:Description "Related url 2 description"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
-                    :FileSize {:Size 10.0 :Unit "MB"}}]}))
+                    :FileSize {:Size 10.0 :Unit "MB"}}]
+     :AdditionalAttributes [{:Group "Accuracy"
+                             :Name "PercentGroundHit"
+                             :DataType "FLOAT"
+                             :Description "Percent of data for this granule that had a detected ground return of the transmitted laser pulse."
+                             :MeasurementResolution "1"
+                             :ParameterRangeBegin "0.0"
+                             :ParameterRangeEnd "100.0"
+                             :ParameterUnitsOfMeasure "Percent"
+                             :Value "50"
+                             :ParameterValueAccuracy "1"
+                             :ValueAccuracyExplanation "explaination for value accuracy"}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -423,6 +435,14 @@
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
                             content-type)))))))
+
+(defn- expected-iso-additional-attributes
+  [aas]
+  (->> aas
+       (map #(assoc % :UpdateDate nil))
+       (filter #(iso-aa/additional-attr-name->type (:Name %)))
+       seq))
+
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
   (let [fix-val (fn [x]
@@ -458,10 +478,10 @@
       (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
-      (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
-      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)))
+      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
+      (update-in [:AdditionalAttributes] expected-iso-additional-attributes)))
 
 ;; ISO-SMAP
 
