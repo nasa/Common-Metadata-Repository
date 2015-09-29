@@ -114,7 +114,8 @@
   [doc]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
-        id-el (first (select doc identifier-base-xpath))]
+        id-el (first (select doc identifier-base-xpath))
+        extent-info (iso/get-extent-info-map doc)]
     {:EntryId (iso/char-string-value id-el "gmd:code")
      :EntryTitle (iso/char-string-value citation-el "gmd:title")
      :Version (iso/char-string-value id-el "gmd:version")
@@ -140,10 +141,11 @@
      :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
-     :SpatialExtent (spatial/parse-spatial doc)
+     :SpatialExtent (spatial/parse-spatial doc extent-info)
      :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
+                         :TemporalRangeType (get extent-info "Temporal Range Type")
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                                            {:BeginningDateTime (value-of period "gml:beginPosition")
                                             :EndingDateTime    (value-of period "gml:endPosition")})

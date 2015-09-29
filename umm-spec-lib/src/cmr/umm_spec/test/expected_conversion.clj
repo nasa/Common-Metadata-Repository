@@ -362,12 +362,13 @@
       (update-in [:RelatedUrls] expected-dif-related-urls)))
 
 ;; ISO 19115-2
-(defn normalize-iso-19115-precisions
-  "Returns seq of temporal extents all having the same precision as the first."
-  [extents]
-  (let [precision (-> extents first :PrecisionOfSeconds)]
-    (map #(assoc % :PrecisionOfSeconds precision)
-         extents)))
+
+(defn propagate-first
+  "Returns coll with the first element's value under k assoc'ed to each element in coll."
+  [k coll]
+  (let [v (get (first coll) k)]
+    (for [x coll]
+      (assoc x k v))))
 
 (defn sort-by-date-type-iso
   "Returns temporal extent records to match the order in which they are generated in ISO XML."
@@ -379,10 +380,8 @@
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
-       ;; ISO 19115-2 does not support these fields.
-       (map #(assoc %
-                    :TemporalRangeType nil
-                    :EndsAtPresentFlag nil))
+       (propagate-first :PrecisionOfSeconds)
+       (propagate-first :TemporalRangeType)
        normalize-iso-19115-precisions
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
