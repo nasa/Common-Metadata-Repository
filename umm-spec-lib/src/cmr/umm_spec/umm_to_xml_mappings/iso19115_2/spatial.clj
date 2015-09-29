@@ -10,7 +10,7 @@
             [cmr.spatial.relations :as r]
             [cmr.spatial.ring-relations :as rr]
             [cmr.umm.spatial :as umm-s]
-            [cmr.common.util :as u]))
+            [cmr.common.util :as util]))
 
 (defn spatial-point
   [umm-point]
@@ -56,13 +56,13 @@
   "Encodes the orbit parameters as a string."
   [{:keys [SwathWidth Period InclinationAngle NumberOfOrbits StartCircularLatitude]}]
   (let [main-string (format "SwathWidth: %s Period: %s InclinationAngle: %s NumberOfOrbits: %s"
-                            (u/double->string SwathWidth)
-                            (u/double->string Period)
-                            (u/double->string InclinationAngle)
-                            (u/double->string NumberOfOrbits))]
+                            (util/double->string SwathWidth)
+                            (util/double->string Period)
+                            (util/double->string InclinationAngle)
+                            (util/double->string NumberOfOrbits))]
     ;; StartCircularLatitude is the only optional element
     (if StartCircularLatitude
-      (str main-string " StartCircularLatitude: " (u/double->string StartCircularLatitude))
+      (str main-string " StartCircularLatitude: " (util/double->string StartCircularLatitude))
       main-string)))
 
 (defn generate-orbit-parameters

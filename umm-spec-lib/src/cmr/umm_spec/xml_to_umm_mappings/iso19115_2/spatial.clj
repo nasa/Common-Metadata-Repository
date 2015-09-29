@@ -90,8 +90,9 @@
   \"SwathWidth: 2.0 Period: 96.7 InclinationAngle: 94.0 NumberOfOrbits: 2.0 StartCircularLatitude: 50.0\""
   [doc]
   (when-let [orbit-string (value-of doc orbit-string-xpath)]
-    (into {} (for [[k ^String v] (partition 2 (str/split orbit-string #" "))]
-               [(keyword (str/replace k ":" "")) (Double/parseDouble v)]))))
+    (into {} (for [[k ^String v] (partition 2 (str/split orbit-string #":? "))]
+               [(keyword k) (Double/parseDouble v)]))))
+
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
