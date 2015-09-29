@@ -77,9 +77,7 @@
         {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
-      {:entry-id (if (empty? version-id)
-                   short-name
-                   (str short-name "_" version-id))
+      {:entry-id short-name
        :entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
        :purpose (cx/string-at-path id-elem [:purpose :CharacterString])

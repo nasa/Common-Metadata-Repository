@@ -116,7 +116,7 @@
         id-el (first (select doc identifier-base-xpath))]
     {:EntryId (iso/char-string-value id-el "gmd:code")
      :EntryTitle (iso/char-string-value citation-el "gmd:title")
-     :Version (iso/char-string-value id-el "gmd:version")
+     :Version (iso/char-string-value citation-el "gmd:edition")
      :Abstract (iso/char-string-value md-data-id-el "gmd:abstract")
      :Purpose (iso/char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")

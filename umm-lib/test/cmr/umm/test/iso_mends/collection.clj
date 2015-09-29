@@ -87,7 +87,6 @@
   [coll]
   (let [{{:keys [short-name long-name version-id processing-level-id]} :product
          :keys [spatial-coverage]} coll
-        entry-id (str short-name "_" version-id)
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
@@ -102,8 +101,8 @@
         personnel (not-empty (collection->personnel coll))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))]
     (-> coll
-        ;; ISO does not have entry-id and we generate it as concatenation of short-name and version-id
-        (assoc :entry-id entry-id)
+        ;; ISO stores shortname and entry-id in the same location (for now)
+        (assoc :entry-id short-name)
         ;; ISO does not have version-description
         (assoc-in [:product :version-description] nil)
         ;; ISO does not have collection-data-type
@@ -212,7 +211,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "MINIMAL_1"
+    {:entry-id "MINIMAL"
      :entry-title "A minimal valid collection V 1"
      :summary "A minimal valid collection"
      :purpose "A grand purpose"

@@ -172,6 +172,7 @@
           [:gmd:CI_Citation
            [:gmd:title (char-string (:EntryTitle c))]
            (generate-data-dates c)
+           [:gmd:edition (char-string (:Version c))]
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]
