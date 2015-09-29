@@ -61,7 +61,12 @@
                                                :Geometry {:CoordinateSystem "GEODETIC"
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
                      :VerticalSpatialDomains [{:Type "Some kind of type"
-                                               :Value "Some kind of value"}]}
+                                               :Value "Some kind of value"}]
+                     :OrbitParameters {:SwathWidth 2.0
+                                       :Period 96.7
+                                       :InclinationAngle 94.0
+                                       :NumberOfOrbits 2.0
+                                       :StartCircularLatitude 50.0}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -432,7 +437,6 @@
 (defn update-iso-spatial
   [spatial-extent]
   (-> spatial-extent
-      (assoc :OrbitParameters nil)
       (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
