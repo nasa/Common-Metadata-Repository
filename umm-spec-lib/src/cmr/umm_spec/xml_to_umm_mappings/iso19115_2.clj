@@ -31,10 +31,17 @@
   "Temoral xpath relative to md-data-id-base-xpath"
   (str "gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
 
-(def precision-xpath (str "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:report"
-                          "/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result"
-                          "/gmd:DQ_QuantitativeResult/gmd:value"
-                          "/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
+(def data-quality-info-xpath
+  "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality")
+
+(def quality-xpath
+  (str data-quality-info-xpath
+       "/gmd:scope/gmd:DQ_Scope/gmd:levelDescription/gmd:MD_ScopeDescription/gmd:other"))
+
+(def precision-xpath
+  (str data-quality-info-xpath
+       "/gmd:report/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult"
+       "/gmd:value/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
 
 (def topic-categories-xpath
   (str md-data-id-base-xpath "/gmd:topicCategory/gmd:MD_TopicCategoryCode"))
@@ -118,10 +125,11 @@
         extent-info (iso/get-extent-info-map doc)]
     {:EntryId (iso/char-string-value id-el "gmd:code")
      :EntryTitle (iso/char-string-value citation-el "gmd:title")
-     :Version (iso/char-string-value id-el "gmd:version")
+     :Version (iso/char-string-value citation-el "gmd:edition")
      :Abstract (iso/char-string-value md-data-id-el "gmd:abstract")
      :Purpose (iso/char-string-value md-data-id-el "gmd:purpose")
      :CollectionProgress (value-of md-data-id-el "gmd:status/gmd:MD_ProgressCode")
+     :Quality (iso/char-string-value doc quality-xpath)
      :DataDates (for [date-el (select doc data-dates-xpath)]
                   {:Date (value-of date-el "gmd:date/gco:DateTime")
                    :Type (get iso/umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
@@ -167,7 +175,7 @@
                                   :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
                                         select-party (fn [name xpath]
                                                        (iso/char-string-value publication
-                                                                          (str (format role-xpath name) xpath)))]]
+                                                                              (str (format role-xpath name) xpath)))]]
                               {:Author (select-party "author" "/gmd:organisationName")
                                :PublicationDate (str (date-at publication
                                                               (str "gmd:date/gmd:CI_Date[gmd:dateType/gmd:CI_DateTypeCode/@codeListValue='publication']/"

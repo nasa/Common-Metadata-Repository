@@ -9,7 +9,8 @@
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.relations :as r]
             [cmr.spatial.ring-relations :as rr]
-            [cmr.umm.spatial :as umm-s]))
+            [cmr.umm.spatial :as umm-s]
+            [cmr.common.util :as util]))
 
 (defn spatial-point
   [umm-point]
@@ -50,6 +51,32 @@
       [:gmd:code
        [:gco:CharacterString
         (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)]]]]]])
+
+(defn- orbit-parameters->encoded-str
+  "Encodes the orbit parameters as a string."
+  [{:keys [SwathWidth Period InclinationAngle NumberOfOrbits StartCircularLatitude]}]
+  (let [main-string (format "SwathWidth: %s Period: %s InclinationAngle: %s NumberOfOrbits: %s"
+                            (util/double->string SwathWidth)
+                            (util/double->string Period)
+                            (util/double->string InclinationAngle)
+                            (util/double->string NumberOfOrbits))]
+    ;; StartCircularLatitude is the only optional element
+    (if StartCircularLatitude
+      (str main-string " StartCircularLatitude: " (util/double->string StartCircularLatitude))
+      main-string)))
+
+(defn generate-orbit-parameters
+  "Returns a geographic element for the orbit parameters"
+  [c]
+  (when-let [orbit-parameters (-> c :SpatialExtent :OrbitParameters)]
+    [:gmd:geographicElement
+     [:gmd:EX_GeographicDescription
+      [:gmd:geographicIdentifier
+       [:gmd:MD_Identifier
+        [:gmd:code
+         [:gco:CharacterString "Orbit"]]
+        [:gmd:description
+         [:gco:CharacterString (orbit-parameters->encoded-str orbit-parameters)]]]]]]))
 
 (defn spatial-extent-elements
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."

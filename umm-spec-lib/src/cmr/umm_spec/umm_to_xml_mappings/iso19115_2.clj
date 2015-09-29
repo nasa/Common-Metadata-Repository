@@ -9,7 +9,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]))
 
 
 (def iso19115-2-xml-namespaces
@@ -65,8 +66,6 @@
            (char-string short-name)]]]
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
-
-
 
 (defn- generate-publication-references
   [pub-refs]
@@ -151,7 +150,8 @@
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))
+        aas-by-iso-type (aa/group-by-iso-type (:AdditionalAttributes c))]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -175,6 +175,7 @@
           [:gmd:CI_Citation
            [:gmd:title (char-string (:EntryTitle c))]
            (generate-data-dates c)
+           [:gmd:edition (char-string (:Version c))]
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]
@@ -214,6 +215,7 @@
             [:gco:CharacterString (extent-description-string c)]]
            (tiling/tiling-system-elements c)
            (spatial/spatial-extent-elements c)
+           (spatial/generate-orbit-parameters c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
              [:gmd:temporalElement
@@ -250,7 +252,10 @@
             [:gmd:MD_ScopeCode
              {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
               :codeListValue "series"}
-             "series"]]]]
+             "series"]]
+           [:gmd:levelDescription
+            [:gmd:MD_ScopeDescription
+             [:gmd:other (char-string (:Quality c))]]]]]
          [:gmd:report
           [:gmd:DQ_AccuracyOfATimeMeasurement
            [:gmd:measureIdentification

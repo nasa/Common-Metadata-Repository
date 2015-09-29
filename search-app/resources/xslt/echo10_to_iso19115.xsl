@@ -165,7 +165,7 @@
       </xd:p>
       <xd:p>
         <xd:b>Version 1.17 (Mar 13, 2014)</xd:b>
-        <xd:p>Reverted namespace changes (keeping eos:EOS_Platform/gmi:instrument) and added 
+        <xd:p>Reverted namespace changes (keeping eos:EOS_Platform/gmi:instrument) and added
           OperationsMode to needAcquisitionExtensions (it is an AdditionalAttribute)</xd:p>
       </xd:p>
       <xd:p>
@@ -598,7 +598,8 @@
                       <!-- Collection Record -->
                       <gmd:code>
                         <xsl:call-template name="writeCharacterString">
-                          <xsl:with-param name="stringToWrite" select="/*/ShortName"/>
+                          <!-- This was changed for CMR-2039 to make the XSL generate entry id in the same location as our UMM Spec library. -->
+                          <xsl:with-param name="stringToWrite" select="concat(/*/ShortName,'_', /*/VersionId)"/>
                         </xsl:call-template>
                       </gmd:code>
                       <gmd:description>
@@ -2072,13 +2073,13 @@
       <gmd:distributionInfo>
         <gmd:MD_Distribution>
           <!-- There is a known problem with multiple distributorContacts. The standard allows only one which means that, even when you have different roles at a single distributor,
-            you need an entire distributor section for each contact. 
+            you need an entire distributor section for each contact.
             This is fixed in 19115-1  -->
-          <xsl:variable name="distributorContactCount" select="count(/*/Contacts/Contact[contains(Role,'Archive') 
-            or contains(Role,'DATA CENTER CONTACT')  
-            or contains(Role,'Distributor') 
-            or contains(Role,'User Services') 
-            or contains(Role,'GHRC USER SERVICES') 
+          <xsl:variable name="distributorContactCount" select="count(/*/Contacts/Contact[contains(Role,'Archive')
+            or contains(Role,'DATA CENTER CONTACT')
+            or contains(Role,'Distributor')
+            or contains(Role,'User Services')
+            or contains(Role,'GHRC USER SERVICES')
             or contains(Role,'ORNL DAAC User Services')])"/>
           <gmd:distributor>
             <gmd:MD_Distributor>
@@ -3318,8 +3319,8 @@
     <gmd:description>
       <xsl:choose>
         <!-- The extent description is a catch-all for a variety of textual spatial elements -->
-        <xsl:when test="/*/Spatial/SpatialCoverageType | /*/SpatialInfo/SpatialCoverageType 
-          | /*/Spatial/GranuleSpatialRepresentation | /*/Temporal/TemporalRangeType 
+        <xsl:when test="/*/Spatial/SpatialCoverageType | /*/SpatialInfo/SpatialCoverageType
+          | /*/Spatial/GranuleSpatialRepresentation | /*/Temporal/TemporalRangeType
           | /*/Temporal/TimeType | /*/Spatial/VerticalSpatialDomains/VerticalSpatialDomain">
           <xsl:variable name="extentDescription" as="xs:string+">
             <xsl:for-each select="/*/Spatial/SpatialCoverageType">
@@ -3939,7 +3940,7 @@
             <xsl:when test="$instrumentCharacteristicCount +
                             $instrumentInformationCount +
                             $sensorCharacteristicCount +
-                            $sensorInformationCount + 
+                            $sensorInformationCount +
                             count(OperationModes/OperationMode) +
                             count(Sensors/Sensor)">
               <xsl:value-of select="'eos:EOS_Instrument'"/>

@@ -13,6 +13,12 @@
 (def geographic-element-xpath
   (str iso/extent-xpath "/gmd:geographicElement"))
 
+(def orbit-string-xpath
+  (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
+    (str geographic-element-xpath
+         "[" id-xpath "/gmd:code/gco:CharacterString='Orbit']"
+         "/" id-xpath "/gmd:description/gco:CharacterString")))
+
 (defmulti umm-spec-shape
   "Returns a UMM-spec shape map from a CMR spatial lib shape type. Dispatches on type of argument."
   (fn [umm-spatial-shape]
@@ -57,12 +63,21 @@
         shapes-by-type (group-by #(.getName (class %)) shapes)
         get-shapes     (fn [k]
                          (map umm-spec-shape (get shapes-by-type k)))]
-    ;; TODO Figure out if coordinate system mapping is correct.
     {:CoordinateSystem   (value-of doc coordinate-system-xpath)
      :Points             (get-shapes "cmr.spatial.point.Point")
      :BoundingRectangles (get-shapes "cmr.spatial.mbr.Mbr")
      :Lines              (get-shapes "cmr.spatial.line_string.LineString")
      :GPolygons          (get-shapes "cmr.spatial.polygon.Polygon")}))
+
+(defn- parse-orbit-parameters
+  "Parses orbit parameters from the ISO XML document. Orbit parameters are encoded in an ISO XML
+  document as a single string like this:
+  \"SwathWidth: 2.0 Period: 96.7 InclinationAngle: 94.0 NumberOfOrbits: 2.0 StartCircularLatitude: 50.0\""
+  [doc]
+  (when-let [orbit-string (value-of doc orbit-string-xpath)]
+    (into {} (for [[k ^String v] (partition 2 (str/split orbit-string #":? "))]
+               [(keyword k) (Double/parseDouble v)]))))
+
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
@@ -74,4 +89,5 @@
                                  vsd-value (get extent-info "VerticalSpatialDomainValue")]
                              (when (or vsd-type vsd-value)
                                [{:Type vsd-type
-                                 :Value vsd-value}]))})
+                                 :Value vsd-value}]))
+   :OrbitParameters (parse-orbit-parameters doc)})

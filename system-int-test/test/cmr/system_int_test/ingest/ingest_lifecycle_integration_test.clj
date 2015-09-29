@@ -9,6 +9,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.common.util :refer [are2]]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
@@ -116,55 +117,66 @@
                                                   :metadata metadata})]
         (index/wait-until-indexed)
         ;; parameter queries
-         (are [items params]
+         (are2 [items params]
            (d/refs-match? items (search/find-refs :collection params))
 
-           ;; entry-title
+           "entry-title matches"
            [coll] {:entry_title (:EntryTitle example-record)}
+           "entry-title not matches"
            [] {:entry_title "foo"}
 
-           ;; entry-id
+           "entry-id matches"
            [coll] {:entry_id (:EntryId example-record)}
+           "entry-id not matches"
            [] {:entry_id "foo"}
 
-           ;; native-id
+           "native-id matches"
            [coll] {:native_id "native-id"}
+           "native-id not matches"
            [] {:native_id "foo"}
 
-           ;; short-name
+           "short-name matches"
            [coll] {:short_name "short_V1"}
+           "short-name not matches"
            [] {:short_name "foo"}
 
-           ;; version - TODO failing test
-           ; [coll] {:version (:Version example-record)}
+           "version matches"
+           [coll] {:version (:Version example-record)}
+           "version not matches"
            [] {:version "foo"}
 
-           ;; updated-since
+           "updated-since matches"
            [coll] {:updated_since "2000-01-01T10:00:00Z"}
+           "updated-since not matches"
            [] {:updated_since "3000-01-01T10:00:00Z"}
 
-           ;; revision-date
+           "revision-date matches"
            [coll] {:revision_date "2000-01-01T10:00:00Z,3000-01-01T10:00:00Z"}
+           "revision-date not matches"
            [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
-           ;; processing level
+           "processing level matches"
            [coll] {:processing_level (get-in example-record [:ProcessingLevel :Id])}
+           "processing level not matches"
            [] {:processing_level "foo"}
 
            ;; collection data type - TODO add test for this when collection data type is added
            ;; to UMM-JSON
 
-           ;; temporal
+           "temporal matches"
            [coll] {:temporal (date-time-range->range-param
                                (-> example-record :TemporalExtents first :RangeDateTimes first))}
+           "temporal not matches"
            [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
-           ;; concept-id
+           "concept-id matches"
            [coll] {:concept_id "C1200000000-PROV1"}
+           "concept-id not matches"
            [] {:concept-id "C1200000001-PROV1"}
 
-           ;; platform
+           "platform matches"
            [coll] {:platform (-> example-record :Platforms first :ShortName)}
+           "platform not matches"
            [] {:platform "foo"}
 
            ;; instrument - TODO failing test
@@ -174,8 +186,9 @@
            ; [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
            ;                     first :ShortName)}
 
-           ;; project
+           "project matches"
            [coll] {:project (-> example-record :Projects first :ShortName)}
+           "project not matches"
            [] {:project "foo"}
 
            ;; archive-center - TODO add test for this when archive center is added to UMM-JSON
@@ -190,12 +203,14 @@
            ;                                         :topic "top"
            ;                                         :term "ter"}}}
 
-           ;; downloadable
+           "downloadable matches"
            [] {:downloadable false}
+           "downloadable not matches"
            [coll] {:downloadable true}
 
-           ;; browsable
+           "browsable matches"
            [coll] {:browsable false}
+           "browsable not matches"
            [] {:browsable true}
 
            ;; bounding box - TODO - uncomment when spatial is implemented for UMM-JSON
