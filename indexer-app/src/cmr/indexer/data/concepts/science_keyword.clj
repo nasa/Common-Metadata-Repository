@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.common-app.services.kms-fetcher :as kf]))
 
 (defn flatten-science-keywords
@@ -23,17 +24,12 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
-(defn- upper-case-values
-  "Convert all of the values in a map to upper-case"
-  [m]
-  (into {} (for [[k v] m] [k (when v (str/upper-case v))])))
-
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document. If there is a match
   with the science keywords in KMS we also index the UUID from KMS. We index all of the science
   keyword fields in all caps since GCMD enforces all caps when adding keywords to KMS."
   [gcmd-keywords-map science-keyword]
-  (let [science-keyword-upper-case (upper-case-values science-keyword)
+  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
         {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
@@ -56,7 +52,7 @@
 
 (defn science-keyword->facet-fields
   [science-keyword]
-  (let [science-keyword-upper-case (upper-case-values science-keyword)
+  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
         {:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword-upper-case]
     {:category category
