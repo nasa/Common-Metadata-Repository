@@ -9,7 +9,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]))
 
 
 (def iso19115-2-xml-namespaces
@@ -147,7 +148,8 @@
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))
+        aas-by-iso-type (aa/group-by-iso-type (:AdditionalAttributes c))]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
