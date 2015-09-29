@@ -436,13 +436,6 @@
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
                             content-type)))))))
 
-(defn- expected-iso-additional-attributes
-  [aas]
-  (->> aas
-       (map #(assoc % :UpdateDate nil))
-       (filter #(iso-aa/additional-attr-name->type (:Name %)))
-       seq))
-
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
   (let [fix-val (fn [x]
@@ -481,7 +474,7 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
-      (update-in [:AdditionalAttributes] expected-iso-additional-attributes)))
+      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)))
 
 ;; ISO-SMAP
 

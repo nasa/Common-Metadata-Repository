@@ -148,8 +148,7 @@
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))
-        aas-by-iso-type (aa/group-by-iso-type (:AdditionalAttributes c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -233,7 +232,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
-       (aa/generate-content-info (aas-by-iso-type "contentInformation"))
+       (aa/generate-additional-attributes (:AdditionalAttributes c))
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
          [:gmd:attributeDescription ""]

@@ -13,8 +13,8 @@
   "Defineds the base xpath within the individual additional attribute of content info type."
   "eos:reference/eos:EOS_AdditionalAttributeDescription")
 
-(defn- parse-content-info
-  "Returns the parsed additional attributes from the content information portion of the xml document"
+(defn parse-additional-attributes
+  "Returns the parsed additional attributes from the given xml document."
   [doc]
   (when-let [aas (select doc content-info-base-xpath)]
     (for [aa aas]
@@ -37,8 +37,3 @@
                                                           "/eos:parameterValueAccuracy"))
        :ValueAccuracyExplanation (char-string-value aa (str content-info-attribute-xpath
                                                             "/eos:valueAccuracyExplanation"))})))
-
-(defn parse-additional-attributes
-  "Returns the parsed additional attributes from the given xml document."
-  [doc]
-  (concat (parse-content-info doc)))
