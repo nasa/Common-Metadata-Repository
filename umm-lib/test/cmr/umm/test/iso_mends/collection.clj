@@ -85,9 +85,8 @@
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [short-name long-name version-id processing-level-id]} :product
-         :keys [spatial-coverage]} coll
-        entry-id (str short-name "_" version-id)
+  (let [{{:keys [long-name version-id processing-level-id]} :product
+         :keys [spatial-coverage entry-id]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
@@ -102,12 +101,12 @@
         personnel (not-empty (collection->personnel coll))
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))]
     (-> coll
-        ;; ISO does not have entry-id and we generate it as concatenation of short-name and version-id
-        (assoc :entry-id entry-id)
         ;; ISO does not have version-description
         (assoc-in [:product :version-description] nil)
         ;; ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
+        ;; ISO stores shortname and entry-id in the same location (for now)
+        (assoc-in [:product :short-name] entry-id)
         ;; There is no delete-time in ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; Revision date time is same as update-time
@@ -157,6 +156,17 @@
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-iso collection)]
       (= parsed expected-parsed))))
+
+(comment
+
+  (let [xml (iso/umm->iso-mends-xml user/failing-value)
+        parsed (c/parse-collection xml)
+        expected-parsed (umm->expected-parsed-iso user/failing-value)]
+    (is (= parsed expected-parsed)))
+
+
+  )
+
 
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
@@ -212,7 +222,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "MINIMAL_1"
+    {:entry-id "MINIMAL"
      :entry-title "A minimal valid collection V 1"
      :summary "A minimal valid collection"
      :purpose "A grand purpose"
