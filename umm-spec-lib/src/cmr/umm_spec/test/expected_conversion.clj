@@ -369,7 +369,9 @@
 ;; ISO 19115-2
 
 (defn propagate-first
-  "Returns coll with the first element's value under k assoc'ed to each element in coll."
+  "Returns coll with the first element's value under k assoc'ed to each element in coll.
+
+  Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
   [k coll]
   (let [v (get (first coll) k)]
     (for [x coll]
