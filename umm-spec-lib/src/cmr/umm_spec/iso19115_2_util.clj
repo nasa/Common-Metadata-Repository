@@ -72,16 +72,21 @@
   (when (and (string? description-str)
              (not (str/blank? description-str)))
     (into {}
-          (for [pair-str (str/split description-str #"\s*,\s*")]
-            (let [[k v] (str/split pair-str #"\s*=\s*")]
-              [k v])))))
+          (for [pair-str (str/split description-str #",")]
+            (let [[k v] (str/split pair-str #"=")]
+              [k (or v "")])))))
+
+(defn sanitize-value
+  "Returns a key-value string value without \",\" or \"=\" characters."
+  [x]
+  (str/replace x #"[,=]" ""))
 
 (defn key-val-str
   "Returns map encoded as ISO key-value string e.g. for use in the extent description."
   [m]
   (str/join ","
             (for [[k v] m]
-              (str k "=" (str/replace v #"[,=]" "")))))
+              (str k "=" (sanitize-value v)))))
 
 (defn get-extent-info-map
   "Returns a map of equal-separated pairs from the comma-separated list in the ISO document's extent

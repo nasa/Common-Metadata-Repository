@@ -116,6 +116,13 @@
      :VariableLevel3 variable-level-3
      :DetailedVariable detailed-variable}))
 
+(defn- temporal-ends-at-present?
+  [temporal-el]
+  (-> temporal-el
+      (select "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")
+      seq
+      some?))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -154,6 +161,7 @@
      ; :TilingIdentificationSystem (tiling/parse-tiling-system md-data-id-el)
      :TemporalExtents (for [temporal (select md-data-id-el temporal-xpath)]
                         {:PrecisionOfSeconds (value-of doc precision-xpath)
+                         :EndsAtPresentFlag (temporal-ends-at-present? temporal)
                          :TemporalRangeType (get extent-info "Temporal Range Type")
                          :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                                            {:BeginningDateTime (value-of period "gml:beginPosition")

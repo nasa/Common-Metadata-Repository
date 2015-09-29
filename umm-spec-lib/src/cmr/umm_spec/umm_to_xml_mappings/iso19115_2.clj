@@ -223,7 +223,9 @@
                [:gmd:extent
                 [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
+                 (if (:EndsAtPresentFlag temporal)
+                   [:gml:endPosition {:indeterminatePosition "now"}]
+                   [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
            (for [temporal (:TemporalExtents c)
                  date (:SingleDateTimes temporal)]
              [:gmd:temporalElement

@@ -7,6 +7,7 @@
             [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
@@ -384,11 +385,36 @@
         singles (filter :SingleDateTimes extents)]
     (seq (concat ranges singles))))
 
+(defn- fixup-iso-ends-at-present
+  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
+  in RangeDateTimes, otherwise nil."
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (let [ends-at-present (:EndsAtPresentFlag extent)
+          rdts (seq (:RangeDateTimes extent))]
+      (-> extent
+          (update-in-each [:RangeDateTimes]
+                          update-in [:EndingDateTime] (fn [x]
+                                                        (when-not ends-at-present
+                                                          x)))
+          (assoc :EndsAtPresentFlag
+                 (when (and rdts ends-at-present)
+                   true))))))
+
+(defn- fixup-comma-encoded-values
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (update-in extent [:TemporalRangeType] (fn [x]
+                                             (when x
+                                               (iso/sanitize-value x))))))
+
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
        (propagate-first :TemporalRangeType)
+       fixup-comma-encoded-values
+       fixup-iso-ends-at-present
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso))
