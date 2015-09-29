@@ -598,6 +598,7 @@
                       <!-- Collection Record -->
                       <gmd:code>
                         <xsl:call-template name="writeCharacterString">
+                          <!-- This was changed for CMR-2039 to make the XSL generate entry id in the same location as our UMM Spec library. -->
                           <xsl:with-param name="stringToWrite" select="concat(/*/ShortName,'_', /*/VersionId)"/>
                         </xsl:call-template>
                       </gmd:code>
