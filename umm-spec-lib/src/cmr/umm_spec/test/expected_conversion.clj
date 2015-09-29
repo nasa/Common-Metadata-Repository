@@ -125,7 +125,9 @@
                              :ParameterUnitsOfMeasure "Percent"
                              :Value "50"
                              :ParameterValueAccuracy "1"
-                             :ValueAccuracyExplanation "explaination for value accuracy"}]}))
+                             :ValueAccuracyExplanation "explaination for value accuracy"}
+                            {:Name "aa-name"
+                             :DataType "INT"}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with

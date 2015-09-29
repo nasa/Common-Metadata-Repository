@@ -28,11 +28,10 @@
                  [:eos:EOS_AdditionalAttributeTypeCode
                   {:codeList (str (:earthdata iso/code-lists) "#EOS_AdditionalAttributeTypeCode")
                    :codeListValue "contentInformation"} "contentInformation"]]
-                (when-let [group (:Group aa)]
-                  [:eos:identifier
-                   [:gmd:MD_Identifier
-                    [:gmd:code
-                     (char-string group)]]])
+                [:eos:identifier
+                 [:gmd:MD_Identifier
+                  [:gmd:code
+                   (char-string (:Group aa))]]]
                 [:eos:name
                  (char-string (:Name aa))]
                 [:eos:description
@@ -53,8 +52,7 @@
                  (char-string (:ParameterValueAccuracy aa))]
                 [:eos:valueAccuracyExplanation
                  (char-string (:ValueAccuracyExplanation aa))]]]
-              (when-let [value (:Value aa)]
-                [:eos:value
-                 (char-string value)])])]]]]]]]))
+              [:eos:value
+               (char-string (:Value aa))]])]]]]]]]))
 
 
