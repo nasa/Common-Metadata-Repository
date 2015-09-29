@@ -229,6 +229,20 @@
             [tag2-colls tag4-colls] {:tag {:originator_id {:value "*2" :pattern true}}}
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; JSON Query Conditional constructs: and, or, not
+
+            "By or'ing tags"
+            [tag3-colls tag4-colls tag5-colls] {:or [{:tag {:namespace {:value "*other"
+                                                                        :pattern true}}}
+                                                     {:tag {:category "category2"}}]}
+
+            "By and'ing tags"
+            [tag1-colls] {:and [{:tag {:value "value1"}} {:tag {:namespace "namespace1"}}]}
+
+            "By negating (NOT) tags"
+            [tag3-colls tag4-colls tag5-colls] {:not {:tag {:namespace "Namespace1"}}}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Combinations
 
             "Combination of namespace and value"
