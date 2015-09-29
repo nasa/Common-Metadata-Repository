@@ -66,8 +66,6 @@
         [:gmi:status ""]
         [:gmi:parentOperation {:gco:nilReason "inapplicable"}]]])))
 
-
-
 (defn- generate-publication-references
   [pub-refs]
   (for [pub-ref pub-refs
@@ -249,7 +247,10 @@
             [:gmd:MD_ScopeCode
              {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
               :codeListValue "series"}
-             "series"]]]]
+             "series"]]
+           [:gmd:levelDescription
+            [:gmd:MD_ScopeDescription
+             [:gmd:other (char-string (:Quality c))]]]]]
          [:gmd:report
           [:gmd:DQ_AccuracyOfATimeMeasurement
            [:gmd:measureIdentification

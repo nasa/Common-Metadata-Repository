@@ -450,7 +450,6 @@
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
                       :NumberOfSensors nil
                       :OperationalModes nil)
-      (assoc :Quality nil)
       (assoc :CollectionDataType nil)
       (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
