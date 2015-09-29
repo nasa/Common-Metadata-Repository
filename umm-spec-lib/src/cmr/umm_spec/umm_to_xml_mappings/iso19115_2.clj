@@ -210,6 +210,7 @@
            [:gmd:description
             [:gco:CharacterString (extent-description-string c)]]
            (spatial/spatial-extent-elements c)
+           (spatial/generate-orbit-parameters c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
              [:gmd:temporalElement
