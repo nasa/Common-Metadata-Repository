@@ -248,6 +248,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
+      (assoc :MetadataAssociations nil)
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
@@ -527,6 +528,7 @@
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
       ;; Due to the way MetadataAssociatios is generated we need to fix nil types
       ; (update-in-each [:MetadataAssociations] update-in [:Type] #(or % ""))
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (update-in [:MetadataAssociations] group-metadata-assocations)))
 
 ;; ISO-SMAP

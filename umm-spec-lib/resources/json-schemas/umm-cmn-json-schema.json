@@ -483,6 +483,12 @@
         "Version": {
           "description": "The version of the metadata record that is associated with this record.",
           "$ref": "#/definitions/VersionType"
+        },
+        "ProviderId": {
+          "description": "The ProviderName of the metadata record that is associated with this record.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
         }
       },
       "required": ["EntryId"]
@@ -1382,7 +1388,7 @@
     "MetadataAssociateTypeEnum": {
       "description": "The name of supported lineage date types",
       "type": "string",
-      "enum": ["SCIENCE ASSOCIATED", "DEPENDENT", "INPUT"]
+      "enum": ["SCIENCE ASSOCIATED", "DEPENDENT", "INPUT", "LARGER CITATION WORKS"]
     },
     "KeywordStringType": {
       "type": "string",

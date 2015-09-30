@@ -46,18 +46,6 @@
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
-(defn- parse-collection-type
-  "Returns one of the enumerated types for CollectionType if present and matching one of the
-  enumerated types, nil if present and not matching, or Not Specified if not present."
-  [ca]
-  (let [ctype (value-of ca "CollectionType")]
-    (if ctype
-      (if (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT"} ctype)
-        ctype
-        nil)
-      u/not-provided)))
-
-
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
@@ -104,18 +92,7 @@
                           :VariableLevel1 (value-of sk "VariableLevel1Keyword/Value")
                           :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                           :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
-                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-   :MetadataAssociations (for [ca (select doc "/Collection/CollectionAssociations/CollectionAssociation")]
-                           {
-                            ;; TODO This should be set to CollectionType value as long as it matches
-                            ;; one of the allowed enumerated type values for this field. Otherwise we
-                            ;; should set it to nil.
-                            ;; When parsing it out we should use "Not Specified" if it isn't presents
-                            :Type (parse-collection-type ca)
-                            :Description (value-of ca "CollectionUse")
-                            :EntryId (str (value-of ca "ShortName") "_" (value-of ca "VersionId"))
-                            :Version (value-of ca "VersionId")
-                            })})
+                          :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
   [metadata]

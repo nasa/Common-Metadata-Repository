@@ -2,7 +2,7 @@
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
-            [cmr.umm-spec.util :refer [with-default gen-am-short-name]]
+            [cmr.umm-spec.util :refer [with-default]]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
 (defn characteristic-mapping
@@ -137,13 +137,6 @@
          [:ParameterRangeBegin (:ParameterRangeBegin aa)]
          [:ParameterRangeEnd (:ParameterRangeEnd aa)]
          [:Value (:Value aa)]])]
-     [:CollectionAssociations
-      (for [ca (:MetadataAssociations c)]
-        [:CollectionAssociation
-         [:ShortName (gen-am-short-name ca)]
-         [:VersionId (:Version ca)]
-         [:CollectionType (:Type ca)]
-         [:CollectionUse (:Description ca)]])]
      [:Campaigns
       (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
         [:Campaign
