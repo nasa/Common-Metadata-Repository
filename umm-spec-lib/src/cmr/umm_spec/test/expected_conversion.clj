@@ -468,6 +468,9 @@
   [vsd]
   (let [fix-val (fn [x]
                   (when x
+                    ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
+                    ;; XML, so the values must be updated to match what we expect in the resulting
+                    ;; XML document.
                     (iso/sanitize-value x)))]
     (-> vsd
         (update-in [:Type] fix-val)
