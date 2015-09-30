@@ -5,7 +5,8 @@
 (def tiling-system-xpath
   (str "gmd:extent/gmd:EX_Extent"
        "/gmd:geographicElement/gmd:EX_GeographicDescription"
-       "/gmd:geographicIdentifier/gmd:MD_Identifier"))
+       "/gmd:geographicIdentifier/gmd:MD_Identifier"
+       "[gmd:code/gco:CharacterString!='Orbit']"))
 
 (defn parse-tiling-system-coordinates
   "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system
