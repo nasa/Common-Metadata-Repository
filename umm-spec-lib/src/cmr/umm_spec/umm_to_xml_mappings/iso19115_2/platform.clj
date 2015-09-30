@@ -56,5 +56,5 @@
 
       ;; Characteristics
       (when-let [characteristics (:Characteristics platform)]
-        iso/echo-attributes-info
+        iso/eos-echo-attributes-info
         (ch/generate-characteristics "platformInformation" characteristics))]]))

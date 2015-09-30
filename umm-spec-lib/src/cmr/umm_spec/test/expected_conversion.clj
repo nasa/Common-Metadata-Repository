@@ -7,13 +7,15 @@
             [clojure.string :as str]
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
-            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]))
+            [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as echo10-spatial-parse]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]))
 
 (def example-record
   "An example record with fields supported by most formats."
@@ -61,7 +63,12 @@
                                                :Geometry {:CoordinateSystem "GEODETIC"
                                                           :BoundingRectangles [{:NorthBoundingCoordinate 45.0 :SouthBoundingCoordinate -81.0 :WestBoundingCoordinate 25.0 :EastBoundingCoordinate 30.0}]}}
                      :VerticalSpatialDomains [{:Type "Some kind of type"
-                                               :Value "Some kind of value"}]}
+                                               :Value "Some kind of value"}]
+                     :OrbitParameters {:SwathWidth 2.0
+                                       :Period 96.7
+                                       :InclinationAngle 94.0
+                                       :NumberOfOrbits 2.0
+                                       :StartCircularLatitude 50.0}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -112,7 +119,20 @@
      :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
                              :Description "Associated with a collection"
                              :EntryId "AssocEntryId"
-                             :Version "V8"}]}))
+                             :Version "V8"}]
+     :AdditionalAttributes [{:Group "Accuracy"
+                             :Name "PercentGroundHit"
+                             :DataType "FLOAT"
+                             :Description "Percent of data for this granule that had a detected ground return of the transmitted laser pulse."
+                             :MeasurementResolution "1"
+                             :ParameterRangeBegin "0.0"
+                             :ParameterRangeEnd "100.0"
+                             :ParameterUnitsOfMeasure "Percent"
+                             :Value "50"
+                             :ParameterValueAccuracy "1"
+                             :ValueAccuracyExplanation "explaination for value accuracy"}
+                            {:Name "aa-name"
+                             :DataType "INT"}]}))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -368,12 +388,15 @@
       (update-in [:RelatedUrls] expected-dif-related-urls)))
 
 ;; ISO 19115-2
-(defn normalize-iso-19115-precisions
-  "Returns seq of temporal extents all having the same precision as the first."
-  [extents]
-  (let [precision (-> extents first :PrecisionOfSeconds)]
-    (map #(assoc % :PrecisionOfSeconds precision)
-         extents)))
+
+(defn propagate-first
+  "Returns coll with the first element's value under k assoc'ed to each element in coll.
+
+  Example: (propagate-first :x [{:x 1} {:y 2}]) => [{:x 1} {:x 1 :y 2}]"
+  [k coll]
+  (let [v (get (first coll) k)]
+    (for [x coll]
+      (assoc x k v))))
 
 (defn sort-by-date-type-iso
   "Returns temporal extent records to match the order in which they are generated in ISO XML."
@@ -382,14 +405,36 @@
         singles (filter :SingleDateTimes extents)]
     (seq (concat ranges singles))))
 
+(defn- fixup-iso-ends-at-present
+  "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
+  in RangeDateTimes, otherwise nil."
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (let [ends-at-present (:EndsAtPresentFlag extent)
+          rdts (seq (:RangeDateTimes extent))]
+      (-> extent
+          (update-in-each [:RangeDateTimes]
+                          update-in [:EndingDateTime] (fn [x]
+                                                        (when-not ends-at-present
+                                                          x)))
+          (assoc :EndsAtPresentFlag
+                 (when (and rdts ends-at-present)
+                   true))))))
+
+(defn- fixup-comma-encoded-values
+  [temporal-extents]
+  (for [extent temporal-extents]
+    (update-in extent [:TemporalRangeType] (fn [x]
+                                             (when x
+                                               (iso/sanitize-value x))))))
+
 (defn expected-iso-19115-2-temporal
   [temporal-extents]
   (->> temporal-extents
-       ;; ISO 19115-2 does not support these fields.
-       (map #(assoc %
-                    :TemporalRangeType nil
-                    :EndsAtPresentFlag nil))
-       normalize-iso-19115-precisions
+       (propagate-first :PrecisionOfSeconds)
+       (propagate-first :TemporalRangeType)
+       fixup-comma-encoded-values
+       fixup-iso-ends-at-present
        (split-temporals :RangeDateTimes)
        (split-temporals :SingleDateTimes)
        sort-by-date-type-iso))
@@ -424,6 +469,7 @@
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
                             content-type)))))))
+
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
   (let [fix-val (fn [x]
@@ -438,7 +484,6 @@
 (defn update-iso-spatial
   [spatial-extent]
   (-> spatial-extent
-      (assoc :OrbitParameters nil)
       (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
       (update-in-each [:HorizontalSpatialDomain :Geometry :Lines] assoc :CenterPoint nil)
@@ -452,6 +497,7 @@
   (-> umm-coll
       (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:SpatialExtent] update-iso-spatial)
+      (assoc :TilingIdentificationSystem nil) ;JASON temporary fix. TODO fix this
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc
@@ -461,10 +507,10 @@
       (update-in [:DataLanguage] #(or % "eng"))
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] expected-iso-19115-2-distributions)
-      (assoc :AdditionalAttributes nil)
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
-      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)))
+      (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
+      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)))
 
 ;; ISO-SMAP
 

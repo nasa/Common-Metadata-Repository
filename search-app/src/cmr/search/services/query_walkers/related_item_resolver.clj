@@ -27,6 +27,13 @@
     (update-in condition [:conditions] (partial mapv #(resolve-related-item-conditions % context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.search.models.query.NegatedCondition
+
+  (resolve-related-item-conditions
+    [condition context]
+    (update-in condition [:condition] #(resolve-related-item-conditions % context)))
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.search.models.query.RelatedItemQueryCondition
 
   (resolve-related-item-conditions

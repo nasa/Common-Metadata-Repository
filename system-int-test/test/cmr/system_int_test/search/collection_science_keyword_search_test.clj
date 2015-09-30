@@ -113,7 +113,7 @@
                             {:science-keywords {:0 {science-keyword value}}
                              "options[science-keywords][ignore-case]" ignore-case}))
 
-           [coll1] :category "Cat1" false
+           [coll1] :category "CAT1" false
            [] :category "cat1" false
            [coll1] :category "cat1" true))
 
@@ -172,40 +172,40 @@
            (let [condition (merge {:scienceKeywords science-keywords} options)]
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
-           [coll1] [{:category "Cat1"}] {}
-           [coll1] [{:topic "Topic1"}] {}
-           [coll1] [{:term "Term1"}] {}
-           [coll1] [{:variable-level-1 "Level1-1"}] {}
-           [coll1] [{:variable-level-2 "Level1-2"}] {}
-           [coll1] [{:variable-level-3 "Level1-3"}] {}
-           [coll1] [{:detailed-variable "Detail1"}] {}
-           [coll5 coll6 coll7] [{:category "Tornado"}] {}
+           [coll1] [{:category "CAT1"}] {}
+           [coll1] [{:topic "TOPIC1"}] {}
+           [coll1] [{:term "TERM1"}] {}
+           [coll1] [{:variable-level-1 "LEVEL1-1"}] {}
+           [coll1] [{:variable-level-2 "LEVEL1-2"}] {}
+           [coll1] [{:variable-level-3 "LEVEL1-3"}] {}
+           [coll1] [{:detailed-variable "DETAIL1"}] {}
+           [coll5 coll6 coll7] [{:category "TORNADO"}] {}
            [coll2 coll3 coll4 coll6 coll7] [{:any "UNIVERSAL"}] {}
            [] [{:category "BLAH"}] {}
 
-           [coll2] [{:category "Hurricane"
-                     :topic "Popular"
-                     :term "Extreme"}] {}
-           [coll2 coll6] [{:category "Hurricane"
-                           :topic "Popular"}
-                          {:term "Extreme"}] {}
-           [coll2 coll6] [{:category "Hurricane"
-                           :topic "Popular"}
-                          {:term "Extreme"}] {:and true}
-           [coll2 coll3 coll5 coll6 coll7] [{:category "Hurricane"
-                                             :topic "Popular"}
-                                            {:term "Extreme"}] {:or true}
+           [coll2] [{:category "HURRICANE"
+                     :topic "POPULAR"
+                     :term "EXTREME"}] {}
+           [coll2 coll6] [{:category "HURRICANE"
+                           :topic "POPULAR"}
+                          {:term "EXTREME"}] {}
+           [coll2 coll6] [{:category "HURRICANE"
+                           :topic "POPULAR"}
+                          {:term "EXTREME"}] {:and true}
+           [coll2 coll3 coll5 coll6 coll7] [{:category "HURRICANE"
+                                             :topic "POPULAR"}
+                                            {:term "EXTREME"}] {:or true}
 
            ;; case sensitivity
            [] [{:category "cat1"}] {}
            [] [{:category "cat1" :ignore-case false}] {}
-           [coll1] [{:category "Cat1"} {:term "extreme" :ignore-case false}] {:or true}
+           [coll1] [{:category "CAT1"} {:term "extreme" :ignore-case false}] {:or true}
 
            ;; pattern
            [coll1] [{:category "C%" :pattern true}] {}
            [] [{:category "C%" :pattern false}] {}
            [] [{:category "C%"}] {}
-           [coll1] [{:category "Cat_" :pattern true}] {}))
+           [coll1] [{:category "CAT_" :pattern true}] {}))
 
     (testing "Search collections by science keywords using a JSON Query"
       (are [items search]
@@ -237,7 +237,7 @@
            ;; case sensitivity
            [coll1] {:science_keywords {:category "cat1"}}
            [] {:science_keywords {:category "cat1" :ignore_case false}}
-           [coll1] {:or [{:science_keywords {:category "Cat1"}}
+           [coll1] {:or [{:science_keywords {:category "CAT1"}}
                          {:science_keywords {:term "extreme" :ignore_case false}}]}
 
            ;; Case for exact match searches needs to match KMS case, not original metadata case

@@ -191,6 +191,10 @@
          "/catalog/book[dates/publish_date='2001-09-10']/title"
          [(x/parse-str "<title>The Sundered Grail</title>")]
 
+         ;; Tests nested element subselector that finds multiple elements
+         "/catalog/book[author='Lucy, Steven']/title"
+         [(x/parse-str "<title>Maeve Ascendant</title>")]
+
          ;; Select an attribute
          "/catalog/book/dates/publish_date/@importance"
          ["high"
@@ -256,6 +260,10 @@
 
          "/books[price!='5.95']/title"
          ["XML Developer's Guide"]
+
+         ;; Tests nested element subselector that finds multiple elements
+         "/books[author='Lucy, Steven']/title"
+         ["Maeve Ascendant"]
 
          "/books[1]/author"
          ["Gambardella, Matthew"]

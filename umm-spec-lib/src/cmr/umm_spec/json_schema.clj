@@ -210,7 +210,9 @@
                                      (Long. x))
                        :else (throw (Exception. (str "Unexpected type for integer: " (pr-str x)))))
 
-       "boolean" (= "true" x)
+       "boolean" (if (string? x)
+                   (= "true" x)
+                   (boolean x))
 
        ;; Return nil instead of empty vectors.
        "array"   (when-let [coerced (seq (keep #(coerce schema (:items definition) key-path %) x))]

@@ -9,7 +9,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]))
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]))
 
 
 (def iso19115-2-xml-namespaces
@@ -122,10 +123,12 @@
   collection record."
   [c]
   (let [vsd (first (-> c :SpatialExtent :VerticalSpatialDomains))
+        temporal (first (:TemporalExtents c))
         m {"VerticalSpatialDomainType" (:Type vsd)
            "VerticalSpatialDomainValue" (:Value vsd)
            "SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
-           "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)}]
+           "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
+           "Temporal Range Type" (:TemporalRangeType temporal)}]
     (str/join "," (for [[k v] m
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
@@ -211,6 +214,7 @@
             [:gco:CharacterString (extent-description-string c)]]
            (tiling/tiling-system-elements c)
            (spatial/spatial-extent-elements c)
+           (spatial/generate-orbit-parameters c)
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]
              [:gmd:temporalElement
@@ -218,7 +222,9 @@
                [:gmd:extent
                 [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
+                 (if (:EndsAtPresentFlag temporal)
+                   [:gml:endPosition {:indeterminatePosition "now"}]
+                   [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
            (for [temporal (:TemporalExtents c)
                  date (:SingleDateTimes temporal)]
              [:gmd:temporalElement
@@ -230,6 +236,7 @@
           [:gmd:MD_Identifier
            [:gmd:code (char-string (-> c :ProcessingLevel :Id))]
            [:gmd:description (char-string (-> c :ProcessingLevel :ProcessingLevelDescription))]]]]]
+       (aa/generate-additional-attributes (:AdditionalAttributes c))
        [:gmd:contentInfo
         [:gmd:MD_ImageDescription
          [:gmd:attributeDescription ""]
