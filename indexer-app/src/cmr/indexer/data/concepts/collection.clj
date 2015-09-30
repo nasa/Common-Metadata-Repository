@@ -71,7 +71,7 @@
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc gcmd-keywords-map %)
-                              instrument-short-names)
+                                instrument-short-names)
         instrument-long-names (distinct (keep :long-name (concat instruments instruments-nested)))
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
@@ -79,9 +79,12 @@
         project-short-names (map :short-name (:projects collection))
         project-long-names (keep :long-name (:projects collection))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        archive-center-val (org/extract-archive-centers collection)
-        archive-centers (map #(org/archive-center-short-name->elastic-doc gcmd-keywords-map %)
-                             archive-center-val)
+        archive-center-names (org/extract-data-center-names collection :archive-center)
+        archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                             archive-center-names)
+        data-center-names (org/extract-data-center-names collection)
+        data-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)
+                          data-center-names)
         start-date (sed/start-date :collection temporal)
         end-date (sed/end-date :collection temporal)
         atom-links (map json/generate-string (ru/atom-links related-urls))
@@ -128,6 +131,7 @@
             :platforms platforms-nested
             :instruments instruments-nested
             :archive-centers archive-centers
+            :data-centers data-centers
             :science-keywords (map #(sk/science-keyword->elastic-doc gcmd-keywords-map %)
                                    (:science-keywords collection))
 
@@ -146,8 +150,8 @@
             :personnel (json/generate-string personnel)
             :start-date (when start-date (f/unparse (f/formatters :date-time) start-date))
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
-            :archive-center archive-center-val
-            :archive-center.lowercase (map str/lower-case archive-center-val)
+            :archive-center archive-center-names
+            :archive-center.lowercase (map str/lower-case archive-center-names)
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links

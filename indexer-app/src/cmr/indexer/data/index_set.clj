@@ -166,8 +166,8 @@
     :uuid string-field-mapping
     :uuid.lowercase string-field-mapping}})
 
-(def archive-center-hierarchical-mapping
-  "Defines hierarchical mappings for archive centers."
+(def data-center-hierarchical-mapping
+  "Defines hierarchical mappings for any type of data center."
   {:type "nested"
    :dynamic "strict"
    :_source {:enabled false}
@@ -298,7 +298,9 @@
                                     :science-keywords science-keywords-field-mapping
                                     :platforms platform-hierarchical-mapping
                                     :instruments instrument-hierarchical-mapping
-                                    :archive-centers archive-center-hierarchical-mapping
+                                    :archive-centers data-center-hierarchical-mapping
+                                    ;; Contains all four types of data centers combined
+                                    :data-centers data-center-hierarchical-mapping
 
                                     ;; Facet fields
                                     ;; We can run aggregations on the above science keywords as a
