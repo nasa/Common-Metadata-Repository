@@ -501,11 +501,26 @@
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
-(defn- expected-organization
-  [organization]
-  (update-in organization [:Party :RelatedUrls]
-             (fn [urls]
-               (seq (map #(assoc % :ContentType nil) urls)))))
+(defn- expected-person
+  [person]
+  (when-let [{:keys [FirstName MiddleName LastName]} person]
+    (-> person
+        (assoc :Uuid nil :FirstName nil :MiddleName nil)
+        (assoc :LastName (str/join
+                                " " (remove nil? [FirstName MiddleName LastName]))))))
+
+(defn- update-with-expected-party
+  "Update the given organization or personnel with expected person in the party"
+  [p]
+  (update-in p [:Party] #(update-in % [:Person] expected-person)))
+
+(defn- expected-responsibility
+  [responsibility]
+  (-> responsibility
+      (update-in [:Party :RelatedUrls] (fn [urls]
+                                         (seq (map #(assoc % :ContentType nil) urls))))
+      update-with-expected-party))
+
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
@@ -525,7 +540,8 @@
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
-      (update-in-each [:Organizations] expected-organization)))
+      (update-in-each [:Personnel] expected-responsibility)
+      (update-in-each [:Organizations] expected-responsibility)))
 
 ;; ISO-SMAP
 
