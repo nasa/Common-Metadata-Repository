@@ -127,9 +127,9 @@
                             {:Type nil
                              :Description nil
                              :EntryId "AssocEntryId3"
-                             :Version nil}]
-                            ; {:Type "INPUT"
-                            ;  :EntryId "AssocEntryId4"}]
+                             :Version nil}
+                            {:Type "INPUT"
+                             :EntryId "AssocEntryId4"}]
      :AdditionalAttributes [{:Group "Accuracy"
                              :Name "PercentGroundHit"
                              :DataType "FLOAT"
@@ -505,7 +505,7 @@
 (defn- group-metadata-assocations
   [mas]
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
-    (concat other-types input-types)))
+    (seq (concat other-types input-types))))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
