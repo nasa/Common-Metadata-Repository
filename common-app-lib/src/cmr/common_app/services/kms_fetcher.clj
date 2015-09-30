@@ -28,7 +28,8 @@
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
   the bottom."
-  {:archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+  {:data-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
+   :archive-centers [:level-0 :level-1 :level-2 :level-3 :short-name :long-name]
    :platforms [:category :series-entity :short-name :long-name]
    :instruments [:category :class :type :subtype :short-name :long-name]
    :projects [:short-name :long-name]

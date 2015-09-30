@@ -53,7 +53,7 @@
         char-names (keep :name characteristics)
         char-descs (keep :description characteristics)
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
-        archive-centers (org/extract-archive-centers collection)
+        data-centers (org/extract-data-center-names collection)
         science-keywords (sk/science-keywords->keywords collection)
         attrib-keywords (attrib/psas->keywords collection)
         all-fields (flatten (conj [concept-id]
@@ -67,7 +67,7 @@
                                   version-id
                                   version-description
                                   processing-level-id
-                                  archive-centers
+                                  data-centers
                                   science-keywords
                                   attrib-keywords
                                   spatial-keywords

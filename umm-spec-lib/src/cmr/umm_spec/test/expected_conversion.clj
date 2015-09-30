@@ -484,9 +484,10 @@
   [vsd]
   (let [fix-val (fn [x]
                   (when x
-                    (let [x-replaced (str/replace x #"[,=]" "")]
-                      (when-not (str/blank? x-replaced)
-                        x-replaced))))]
+                    ;; Vertical spatial domain values are encoded in a comma-separated string in ISO
+                    ;; XML, so the values must be updated to match what we expect in the resulting
+                    ;; XML document.
+                    (iso/sanitize-value x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
@@ -544,7 +545,6 @@
   [umm-coll _]
   (-> umm-coll
       (update-in [:SpatialExtent] update-iso-spatial)
-      (assoc :TilingIdentificationSystem nil) ;JASON temporary fix. TODO fix this
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)
       ;; The following platform instrument properties are not supported in ISO 19115-2
       (update-in-each [:Platforms] update-in-each [:Instruments] assoc

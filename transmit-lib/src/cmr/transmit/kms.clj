@@ -60,7 +60,8 @@
 
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
-  {:archive-centers :providers})
+  {:archive-centers :providers
+   :data-centers :providers})
 
 (defn translate-keyword-scheme-to-gcmd
   "Translates a keyword scheme into a known keyword scheme for GCMD."

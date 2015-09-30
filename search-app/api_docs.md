@@ -1604,6 +1604,10 @@ Facets in XML search response formats will be formatted like the following examp
 
 ```
 <facets>
+  <facet field="data_center">
+    <value count="28989">LARC</value>
+    <value count="19965">GSFC</value>
+  </facet>
   <facet field="archive_center">
     <value count="28989">LARC</value>
     <value count="19965">GSFC</value>
@@ -1634,11 +1638,11 @@ Facets in XML search response formats will be formatted like the following examp
 
 ##### Hierarchical XML Facets
 
-Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure.
+Fields that are not hierarchical are returned in the same format as the flat response, but hierarchical fields are returned in a nested structure. Fields which are returned hierarchically include platforms, instruments, data centers, archive centers, and science keywords.
 
 ```
 <facets>
-  <facet field="archive_center"/>
+  <facet field="project"/>
   ...
   <facet field="science_keywords">
     <facet field="category">
@@ -1687,6 +1691,12 @@ Facets in JSON search response formats will be formatted like the following exam
   "feed": {
     "entry": [...],
     "facets": [{
+      "field": "data_center",
+      "value-counts": [
+        ["LARC", 28989],
+        ["GSFC", 19965]
+      ]
+    }, {
       "field": "archive_center",
       "value-counts": [
         ["LARC", 28989],
@@ -1746,7 +1756,7 @@ Fields that are not hierarchical are returned in the same format as the flat res
 
 ```
     "facets" : [ {
-      "field" : "archive_center",
+      "field" : "project",
       "value-counts" : [ ]
     ...
     }, {
@@ -1807,7 +1817,7 @@ The keyword endpoint is used to retrieve the full list of keywords for each of t
 
 The keywords are returned in a hierarchical JSON format. The response format is such that the caller does not need to know the hierarchy, but it can be inferred from the results. Keywords are not guaranteed to have values for every subfield in the hierarchy, so the response will indicate the next subfield below the current field in the hierarchy which has a value. It is possible for the keywords to have multiple potential subfields below it for different keywords with the same value for the current field in the hierarchy. When this occurs the subfields property will include each of the subfields.
 
-Supported keywords include 'archive_centers', 'platforms', 'instruments', 'projects', and 'science_keywords'. The endpoint also supports 'providers' which is an alias to 'archive_centers'.
+Supported keywords include 'archive_centers' 'data_centers', 'platforms', 'instruments', 'projects', and 'science_keywords'. The endpoint also supports 'providers' which is an alias to 'data_centers'.
 
     curl -i "%CMR-ENDPOINT%/keywords/instruments?pretty=true"
 
