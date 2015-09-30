@@ -48,8 +48,8 @@
          :Party {:OrganizationName {:ShortName (iso/char-string-value resp "gmd:organisationName")}
                  :Person (when-let [name (iso/char-string-value resp "gmd:individualName")]
                            {:LastName name})
-                 :ServiceHours (iso/char-string-value resp "gmd:hoursOfService")
-                 :ContactInstructions (iso/char-string-value resp "gmd:contactInstructions")
+                 :ServiceHours (iso/char-string-value resp "gmd:contactInfo/gmd:CI_Contact/gmd:hoursOfService")
+                 :ContactInstructions (iso/char-string-value resp "gmd:contactInfo/gmd:CI_Contact/gmd:contactInstructions")
                  :Contacts (parse-contacts resp)
                  :Addresses (parse-addresses resp)
                  :RelatedUrls (parse-party-related-urls resp)}}))))

@@ -8,8 +8,8 @@
 
 (defn responsibility-by-role
   [responsibilities role]
-  (filter (fn [responsibility]
-            (= (:Role responsibility) role)) responsibilities))
+  (seq (filter (fn [responsibility]
+              (= (:Role responsibility) role)) responsibilities)))
 
 (defn- contact-values-by-type
   [contacts type]
@@ -36,9 +36,10 @@
            :codeListValue "information"} "information"]]]])))
 
 (defn- generate-addresses
+  "ISO-19115 only supports one addresses in a contactInfo. For now we just use the first address.
+  We can look into how we want to write all addresses out later."
   [addresses]
-  (for [address addresses
-        :let [{:keys [StreetAddresses City StateProvince PostalCode Country]} address]]
+  (when-let [{:keys [StreetAddresses City StateProvince PostalCode Country]} (first addresses)]
     [:gmd:address
      [:gmd:CI_Address
       (for [street-address StreetAddresses]

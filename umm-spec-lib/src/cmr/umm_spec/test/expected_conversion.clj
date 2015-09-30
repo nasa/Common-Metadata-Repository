@@ -128,7 +128,8 @@
                             {:Name "aa-name"
                              :DataType "INT"}]
      :Organizations [{:Role "ORIGINATOR"
-                      :Party {:OrganizationName {:ShortName "org 1"}
+                      :Party {:ServiceHours "24/7"
+                              :OrganizationName {:ShortName "org 1"}
                               :Addresses [{:StreetAddresses ["23 abc st"]
                                            :City "city"}]}}
                      {:Role "POINTOFCONTACT"
@@ -507,12 +508,22 @@
     (-> person
         (assoc :Uuid nil :FirstName nil :MiddleName nil)
         (assoc :LastName (str/join
-                                " " (remove nil? [FirstName MiddleName LastName]))))))
+                           " " (remove nil? [FirstName MiddleName LastName]))))))
+
+(defn- expected-contacts
+  "Returns the contacts with type phone or email"
+  [contacts]
+  (seq (filter #(.contains #{"phone" "email"} (:Type %)) contacts)))
 
 (defn- update-with-expected-party
   "Update the given organization or personnel with expected person in the party"
-  [p]
-  (update-in p [:Party] #(update-in % [:Person] expected-person)))
+  [party]
+  (-> party
+      (update-in [:Party :Person] expected-person)
+      (update-in [:Party :Contacts] expected-contacts)
+      (update-in [:Party :Addresses] (fn [x]
+                                       (when-let [address (first x)]
+                                         [address])))))
 
 (defn- expected-responsibility
   [responsibility]
@@ -521,6 +532,13 @@
                                          (seq (map #(assoc % :ContentType nil) urls))))
       update-with-expected-party))
 
+(defn- expected-responsibilities
+  [responsibilities allowed-roles]
+  (->> responsibilities
+       (filter
+         #(.contains allowed-roles (:Role %)))
+       (map expected-responsibility)
+       seq))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
@@ -540,8 +558,10 @@
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
-      (update-in-each [:Personnel] expected-responsibility)
-      (update-in-each [:Organizations] expected-responsibility)))
+      (update-in [:Personnel]
+                 expected-responsibilities #{"POINTOFCONTACT"})
+      (update-in [:Organizations]
+                 expected-responsibilities #{"ORIGINATOR" "POINTOFCONTACT" "DISTRIBUTOR" "PROCESSOR"})))
 
 ;; ISO-SMAP
 
