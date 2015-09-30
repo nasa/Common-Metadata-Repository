@@ -301,7 +301,9 @@
                                     :platforms platform-hierarchical-mapping
                                     :instruments instrument-hierarchical-mapping
                                     :archive-centers data-center-hierarchical-mapping
-                                    ;; Contains all four types of data centers combined
+                                    ;; Contains all four types of data centers combined - archive,
+                                    ;; centers, distribution centers, processing centers, and
+                                    ;; originating centers.
                                     :data-centers data-center-hierarchical-mapping
 
                                     ;; Facet fields
