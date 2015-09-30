@@ -5,29 +5,32 @@
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.util :as spec-util]))
 
-(defmulti generate-metatdata-association
-  "Create the mapping for a UMM model metadata-assocation"
-  (fn [ma]
-    (keyword (:Type ma))))
+; MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source
 
-(defmethod generate-metatdata-association :Input
+(defn- output-character-string
+  "Write a gco:CharacterString element or a gco:nilReason"
+  [tag-name value]
+  (if value
+    [tag-name [:gco:CharacterString value]]
+    [tag-name {:gco:nilReason "missing"}]))
+
+
+(defn generate-metatdata-association-input
   [ma]
   [:gmd:source
-   [:gmd:LE_Source
-    [:gmd:description
-     [:gco:CharacterString (:Description ma)]]
+   [:gmd:LI_Source
+    (output-character-string :gmd:description (:Description ma))
     [:gmd:sourceCitation
      [:gmd:CI_Citation
       [:gmd:title
        [:gco:CharacterString (:EntryId ma)]]
       [:gmd:date {:gco:nilReason "unknown"}]
-      [:gmd:edition
-       [:gco:CharacterString (:Version ma)]]]]]])
+      (output-character-string :gmd:edition (:Version ma))]]]])
 
 (def code-list-url (str "http://www.ngdc.noaa.gov/metadata/published/xsd/schema"
                         "/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"))
 
-(defmethod generate-metatdata-association :default
+(defn generate-metatdata-association
   [ma]
   (let [entry-id (:EntryId ma)
         assoc-type (:Type ma)]
@@ -38,10 +41,8 @@
         [:gmd:title
          [:gco:CharacterString entry-id]]
         [:gmd:date {:gco:nilReason "unknown"}]
-        [:gmd:edition
-         [:gco:CharacterString (:Version ma)]]
-        [:gmd:otherCitationDetails
-         [:gco:CharacterString (:Description ma)]]]]
+        (output-character-string :gmd:edition (:Version ma))
+        (output-character-string :gmd:otherCitationDetails (:Description ma))]]
       [:gmd:aggregateDataSetIdentifier
        [:gmd:MD_Identifier
         [:gmd:code
@@ -51,14 +52,14 @@
         assoc-type]]]]))
 
 (defn generate-source-metadata-associations
-  "Generate the xml for all the source associated metadata (Type = \"Input\")"
+  "Generate the xml for all the source associated metadata (Type = \"INPUT\")"
   [umm]
-  (for [ma (:MetadataAssociations umm) :when (= "Input" (:Type ma))]
-    (generate-metatdata-association ma)))
+  (for [ma (:MetadataAssociations umm) :when (= "INPUT" (:Type ma))]
+    (generate-metatdata-association-input ma)))
 
 (defn generate-non-source-metadata-associations
-  "Generate the xml for all the non-source associated metadata (Type != \"Input\""
+  "Generate the xml for all the non-source associated metadata (Type != \"INPUT\""
   [umm]
-  (for [ma (:MetadataAssociations umm) :when (not= "Input" (:Type ma))]
+  (for [ma (:MetadataAssociations umm) :when (not= "INPUT" (:Type ma))]
     (generate-metatdata-association ma)))
 

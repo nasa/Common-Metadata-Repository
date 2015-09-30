@@ -201,7 +201,7 @@
                                :ISBN (iso/char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (iso/char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (iso/char-string-value publication "gmd:otherCitationDetails")})
-     :MetadataAssociations (ma/xml-elem->metadata-associations md-data-id-el)
+     :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
