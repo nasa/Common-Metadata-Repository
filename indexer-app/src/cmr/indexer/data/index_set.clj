@@ -269,29 +269,31 @@
                                     :version-id.lowercase  string-field-mapping
 
                                     ;; Stored to allow retrieval for implementing granule acls
-                                    :access-value          (stored float-field-mapping)
-                                    :processing-level-id   (stored string-field-mapping)
-                                    :processing-level-id.lowercase string-field-mapping
-                                    :collection-data-type  (stored string-field-mapping)
+                                    :access-value                   (stored float-field-mapping)
+                                    :processing-level-id            (stored string-field-mapping)
+                                    :processing-level-id.lowercase  string-field-mapping
+                                    :collection-data-type           (stored string-field-mapping)
                                     :collection-data-type.lowercase string-field-mapping
-                                    :start-date            (stored date-field-mapping)
-                                    :end-date              (stored date-field-mapping)
-                                    :platform-sn           string-field-mapping
-                                    :platform-sn.lowercase string-field-mapping
-                                    :instrument-sn           string-field-mapping
-                                    :instrument-sn.lowercase string-field-mapping
-                                    :sensor-sn             string-field-mapping
-                                    :sensor-sn.lowercase   string-field-mapping
-                                    :project-sn2            (stored string-field-mapping)
-                                    :project-sn2.lowercase  string-field-mapping
-                                    :archive-center        (stored string-field-mapping)
-                                    :archive-center.lowercase string-field-mapping
-                                    :spatial-keyword        string-field-mapping
-                                    :spatial-keyword.lowercase string-field-mapping
-                                    :two-d-coord-name string-field-mapping
-                                    :two-d-coord-name.lowercase string-field-mapping
-                                    :attributes attributes-field-mapping
-                                    :downloadable (stored bool-field-mapping)
+                                    :start-date                     (stored date-field-mapping)
+                                    :end-date                       (stored date-field-mapping)
+                                    :platform-sn                    string-field-mapping
+                                    :platform-sn.lowercase          string-field-mapping
+                                    :instrument-sn                  string-field-mapping
+                                    :instrument-sn.lowercase        string-field-mapping
+                                    :sensor-sn                      string-field-mapping
+                                    :sensor-sn.lowercase            string-field-mapping
+                                    :project-sn2                    (stored string-field-mapping)
+                                    :project-sn2.lowercase          string-field-mapping
+                                    :archive-center                 (stored string-field-mapping)
+                                    :archive-center.lowercase       string-field-mapping
+                                    :data-center                    (stored string-field-mapping)
+                                    :data-center.lowercase          string-field-mapping
+                                    :spatial-keyword                string-field-mapping
+                                    :spatial-keyword.lowercase      string-field-mapping
+                                    :two-d-coord-name               string-field-mapping
+                                    :two-d-coord-name.lowercase     string-field-mapping
+                                    :attributes                     attributes-field-mapping
+                                    :downloadable                   (stored bool-field-mapping)
 
                                     ;; Mappings for nested fields used for searching and
                                     ;; hierarchical facets

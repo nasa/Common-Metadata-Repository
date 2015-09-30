@@ -8,13 +8,13 @@
 
 (def UNLIMITED_TERMS_SIZE
   "The maximum number of results to return from any terms query"
+  ;; FIXME: We shouldn't try to handle this many different values.
+  ;; We should have a limit and if that's exceeded in the elastic response we should note that in
+  ;; the values returned. This can be handled as a part of CMR-1101.
   10000)
 
 (defn- terms-facet
   [field]
-  ;; FIXME: We shouldn't try to handle this many different values.
-  ;; We should have a limit and if that's exceeded in the elastic response we should note that in
-  ;; the values returned. This can be handled as a part of CMR-1101.
   {:terms {:field field :size UNLIMITED_TERMS_SIZE}})
 
 (def ^:private collection-count-aggregation
@@ -25,7 +25,7 @@
 
 (def hierarchical-facet-order
   "Order in which hierarchical facets are returned in the facet response."
-  [:archive-centers :platforms :instruments :science-keywords])
+  [:data-centers :archive-centers :platforms :instruments :science-keywords])
 
 (defn- hierarchical-aggregation-builder
   "Build an aggregations query for the given hierarchical field."
@@ -33,8 +33,8 @@
   (when-let [subfield (first field-hierarchy)]
     {subfield {:terms {:field (str (name field) "." (name subfield))
                        :size UNLIMITED_TERMS_SIZE}
-            :aggs (merge {:coll-count collection-count-aggregation}
-                         (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
+               :aggs (merge {:coll-count collection-count-aggregation}
+                            (hierarchical-aggregation-builder field (rest field-hierarchy)))}}))
 
 (defn- nested-facet
   "Returns the nested aggregation query for the given hierarchical field."
@@ -45,7 +45,8 @@
 (def ^:private flat-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
-  {:archive-center (terms-facet :archive-center)
+  {:data-center (terms-facet :data-center)
+   :archive-center (terms-facet :archive-center)
    :project (terms-facet :project-sn2)
    :platform (terms-facet :platform-sn)
    :instrument (terms-facet :instrument-sn)
@@ -63,7 +64,8 @@
 (def ^:private hierarchical-facet-aggregations
   "This is the aggregations map that will be passed to elasticsearch to request faceted results
   from a collection search."
-  {:archive-centers (nested-facet :archive-centers)
+  {:data-centers (nested-facet :data-centers)
+   :archive-centers (nested-facet :archive-centers)
    :project (terms-facet :project-sn2)
    :platforms (nested-facet :platforms)
    :instruments (nested-facet :instruments)
@@ -144,7 +146,7 @@
   (bucket-map->facets
     elastic-aggregations
     ;; Specified here so that order will be consistent with results
-    [:archive-center :project :platform :instrument :sensor
+    [:data-center :archive-center :project :platform :instrument :sensor
      :two-d-coordinate-system-name :processing-level-id :category :topic :term
      :variable-level-1 :variable-level-2 :variable-level-3 :detailed-variable]))
 
@@ -238,8 +240,10 @@
   [facets]
   (when facets
     (x/element :hash {}
-               (map facet->echo-xml-element facets))))
-
+               (map facet->echo-xml-element
+                    ;; Only include facets which are present in ECHO
+                    (filter #(cmr-facet-name->echo-facet-keyword (:field %))
+                            facets)))))
 (defn- value-count->echo-json
   "Returns value count in echo json format"
   [value-count]
@@ -257,7 +261,10 @@
   "Helper function for converting facets into an XML element in echo format"
   [facets]
   (when facets
-    (into {} (map facet->echo-json facets))))
+    (into {} (map facet->echo-json
+                  ;; Only include facets which are present in ECHO
+                  (filter #(cmr-facet-name->echo-facet-keyword (:field %))
+                          facets)))))
 
 (comment
 

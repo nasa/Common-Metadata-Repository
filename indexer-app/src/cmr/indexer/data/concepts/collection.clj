@@ -152,6 +152,8 @@
             :end-date (when end-date (f/unparse (f/formatters :date-time) end-date))
             :archive-center archive-center-names
             :archive-center.lowercase (map str/lower-case archive-center-names)
+            :data-center data-center-names
+            :data-center.lowercase (map str/lower-case data-center-names)
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links

@@ -17,9 +17,15 @@
                                           {:grant-all-search? false}))
 
 (defn- make-coll
-  "Helper for creating and ingesting a collection"
+  "Helper for creating and ingesting an ECHO10 collection"
   [n prov & attribs]
   (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))))
+
+(defn- make-dif-coll
+  "Helper for creating and ingesting a DIF collection"
+  [n prov & attribs]
+  (d/ingest prov (dc/collection (apply merge {:entry-title (str "coll" n)} attribs))
+            {:format :dif}))
 
 ;; Attrib functions - These are helpers for creating maps with collection attributes
 (defn- projects
@@ -171,6 +177,32 @@
    {:field "processing_level_id", :value-counts [["PL1" 2]]}
    {:field "detailed_variable",
     :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
+   {:field "data_centers",
+    :subfields ["level_0"],
+    :level_0
+    [{:value "GOVERNMENT AGENCIES-U.S. FEDERAL AGENCIES",
+      :count 2,
+      :subfields ["level_1"],
+      :level_1
+      [{:value "DOI",
+        :count 2,
+        :subfields ["level_2"],
+        :level_2
+        [{:value "USGS",
+          :count 2,
+          :subfields ["level_3"],
+          :level_3
+          [{:value "Added level 3 value",
+            :count 2,
+            :subfields ["short_name"],
+            :short_name
+            [{:value "DOI/USGS/CMG/WHSC",
+              :count 2,
+              :subfields ["long_name"],
+              :long_name
+              [{:value
+                "Woods Hole Science Center, Coastal and Marine Geology, U.S. Geological Survey, U.S. Department of the Interior",
+                :count 2}]}]}]}]}]}]}
    {:field "archive_centers",
     :subfields ["level_0"],
     :level_0
@@ -363,6 +395,7 @@
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable", :value-counts []}
+                                      {:field "data_centers", :subfields []}
                                       {:field "archive_centers", :subfields []}
                                       {:field "platforms", :subfields []}
                                       {:field "instruments", :subfields []}
@@ -385,7 +418,8 @@
                                            :count 1,
                                            :subfields ["term"],
                                            :term [{:value "EXTREME", :count 1}]}]}]}]
-        expected-flat-facets [{:field "archive_center", :value-counts []}
+        expected-flat-facets [{:field "data_center", :value-counts []}
+                              {:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
                               {:field "instrument", :value-counts []}
@@ -414,6 +448,7 @@
                          {:field "two_d_coordinate_system_name", :value-counts []}
                          {:field "processing_level_id", :value-counts []}
                          {:field "detailed_variable", :value-counts []}
+                         {:field "data_centers", :subfields []}
                          {:field "archive_centers", :subfields []}
                          {:field "platforms", :subfields []}
                          {:field "instruments", :subfields []}
@@ -431,6 +466,7 @@
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
                                        :value-counts [["DETAILED-NO-LEVEL2-OR-3" 1]]}
+                                      {:field "data_centers", :subfields []}
                                       {:field "archive_centers", :subfields []}
                                       {:field "platforms", :subfields []}
                                       {:field "instruments", :subfields []}
@@ -449,7 +485,8 @@
                                              :count 1,
                                              :subfields ["variable_level_1"],
                                              :variable_level_1 [{:value "V-L1", :count 1}]}]}]}]}]
-        expected-flat-facets [{:field "archive_center", :value-counts []}
+        expected-flat-facets [{:field "data_center", :value-counts []}
+                              {:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
                               {:field "instrument", :value-counts []}
@@ -479,13 +516,15 @@
                          (twod-coords "Alpha")
                          (science-keywords sk1 sk4 sk5)
                          (processing-level-id "PL1")
-                         {:organizations [(dc/org :archive-center "Larc")]})
+                         {:organizations [(dc/org :archive-center "Larc")
+                                          (dc/org :processing-center "Larc")]})
         coll2 (make-coll 2 "PROV2"
                          (projects "proj3" "PROJ2")
                          (platforms "B" 2 2 1)
                          (science-keywords sk1 sk2 sk3)
                          (processing-level-id "pl1")
-                         {:organizations [(dc/org :archive-center "GSFC")]})
+                         {:organizations [(dc/org :archive-center "GSFC")
+                                          (dc/org :processing-center "Proc")]})
         coll3 (make-coll 3 "PROV2"
                          (platforms "A" 1 1 1)
                          (twod-coords "Alpha" "Bravo")
@@ -497,6 +536,7 @@
                          (science-keywords sk3)
                          (processing-level-id "PL2")
                          {:organizations [(dc/org :archive-center "Larc")]})
+
         coll5 (make-coll 5 "PROV2")
 
         ;; Guests do not have permission to this collection so it will not appear in results
@@ -506,7 +546,13 @@
                          (twod-coords "Alpha")
                          (science-keywords sk1)
                          (processing-level-id "PL1"))
-        all-colls [coll1 coll2 coll3 coll4 coll5 coll6]]
+
+        ;; Need a dif collection because echo10 does not have a way to specify distribution centers
+        coll7 (make-dif-coll 7 "PROV1"
+                             (science-keywords sk1)
+                             {:organizations [(dc/org :distribution-center "Dist")]})
+
+        all-colls [coll1 coll2 coll3 coll4 coll5 coll6 coll7]]
 
     (index/wait-until-indexed)
 
@@ -517,7 +563,9 @@
              (search/find-refs :granule {:include-facets true}))))
 
     (testing "retreving all facets in different formats"
-      (let [expected-facets [{:field "archive_center"
+      (let [expected-facets [{:field "data_center"
+                              :value-counts [["Larc" 3] ["Dist" 1] ["GSFC" 1] ["Proc" 1]]}
+                             {:field "archive_center"
                               :value-counts [["Larc" 3] ["GSFC" 1]]}
                              {:field "project"
                               :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
@@ -546,34 +594,35 @@
                              {:field "processing_level_id"
                               :value-counts [["PL1" 2] ["PL2" 1] ["pl1" 1]]}
                              {:field "category"
-                              :value-counts [["HURRICANE" 3]
-                                             ["CAT1" 2]
+                              :value-counts [["CAT1" 3]
+                                             ["HURRICANE" 3]
                                              ["TORNADO" 2]
                                              ["UPCASE" 1]]}
                              {:field "topic"
-                              :value-counts [["POPULAR" 4] ["COOL" 2] ["TOPIC1" 2]]}
+                              :value-counts [["POPULAR" 4] ["TOPIC1" 3] ["COOL" 2]]}
                              {:field "term"
                               :value-counts [["EXTREME" 3]
-                                             ["TERM1" 2]
+                                             ["TERM1" 3]
                                              ["UNIVERSAL" 2]
                                              ["MILD" 1]
                                              ["TERM4" 1]]}
                              {:field "variable_level_1"
-                              :value-counts [["LEVEL1-1" 2] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
+                              :value-counts [["LEVEL1-1" 3] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
                              {:field "variable_level_2"
-                              :value-counts [["LEVEL1-2" 2] ["LEVEL2-2" 1]]}
+                              :value-counts [["LEVEL1-2" 3] ["LEVEL2-2" 1]]}
                              {:field "variable_level_3"
-                              :value-counts [["LEVEL1-3" 2] ["LEVEL2-3" 1]]}
+                              :value-counts [["LEVEL1-3" 3] ["LEVEL2-3" 1]]}
                              {:field "detailed_variable"
-                              :value-counts [["DETAIL1" 2] ["UNIVERSAL" 1]]}]]
+                              :value-counts [["DETAIL1" 3] ["UNIVERSAL" 1]]}]]
         (testing "refs"
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true})))))
 
         (testing "refs echo-compatible true"
-          (is (= expected-facets
+          (is (= (remove #(= "data_center" (:field %)) expected-facets)
                  (search/find-refs :collection {:include-facets true
                                                 :echo-compatible true}))))
+
         (testing "metadata items and direct transformer"
           (is (= expected-facets
                  (:facets (search/find-metadata :collection
@@ -586,14 +635,18 @@
         (testing "json"
           (is (= expected-facets
                  (:facets (:results (search/find-concepts-json :collection {:include-facets true}))))))
+
+
         (testing "json echo-compatible true"
-          (is (= (sort-by :field expected-facets)
+          (is (= (sort-by :field (remove #(= "data_center" (:field %)) expected-facets))
                  (sort-by :field (search/find-concepts-json :collection {:include-facets true
                                                                          :echo-compatible true})))))))
 
     (testing "Search conditions narrow reduce facet values found"
       (testing "search finding two documents"
-        (let [expected-facets [{:field "archive_center"
+        (let [expected-facets [{:field "data_center"
+                                :value-counts [["GSFC" 1] ["Larc" 1] ["Proc" 1]]}
+                               {:field "archive_center"
                                 :value-counts [["GSFC" 1] ["Larc" 1]]}
                                {:field "project"
                                 :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
@@ -639,7 +692,9 @@
                                                          :project "PROJ2"}))))))
 
       (testing "AND conditions narrow facets via AND not OR"
-        (let [expected-facets [{:field "archive_center"
+        (let [expected-facets [{:field "data_center"
+                                :value-counts [["GSFC" 1] ["Proc" 1]]}
+                               {:field "archive_center"
                                 :value-counts [["GSFC" 1]]}
                                {:field "project" :value-counts [["PROJ2" 1] ["proj3" 1]]}
                                {:field "platform" :value-counts [["B-p0" 1] ["B-p1" 1]]}
@@ -676,7 +731,8 @@
                                                          "options[project][and]" true}))))))
 
       (testing "search finding one document"
-        (let [expected-facets [{:field "archive_center" :value-counts [["Larc" 1]]}
+        (let [expected-facets [{:field "data_center" :value-counts [["Larc" 1]]}
+                               {:field "archive_center" :value-counts [["Larc" 1]]}
                                {:field "project" :value-counts []}
                                {:field "platform" :value-counts []}
                                {:field "instrument" :value-counts []}
@@ -694,7 +750,8 @@
                  (:facets (search/find-refs :collection {:include-facets true
                                                          :processing-level-id "PL2"}))))))
 
-      (let [empty-facets [{:field "archive_center" :value-counts []}
+      (let [empty-facets [{:field "data_center" :value-counts []}
+                          {:field "archive_center" :value-counts []}
                           {:field "project" :value-counts []}
                           {:field "platform" :value-counts []}
                           {:field "instrument" :value-counts []}
@@ -907,5 +964,4 @@
                                     :json-facets
                                     (filter #(= "archive_centers" (:field %))))]
     (is (= expected-archive-centers actual-archive-centers))))
-
 
