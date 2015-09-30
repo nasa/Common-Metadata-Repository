@@ -42,6 +42,7 @@
    :sensor :string
    :project :string
    :archive-center :nested-condition
+   :data-center :nested-condition
    :spatial-keyword :string
    :two-d-coordinate-system-name :string
    :keyword :keyword

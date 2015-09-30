@@ -282,8 +282,8 @@
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
-                          "providers, instruments, science_keywords, platforms, archive_centers,"
-                          " and projects.")]}
+                          "providers, instruments, science_keywords, platforms, archive_centers, "
+                          "data_centers, and projects.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
 
 
