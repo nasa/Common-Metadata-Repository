@@ -72,7 +72,7 @@
             [lein-test-out "0.3.1"]]
 
   :repl-options {:init-ns user
-                 :timeout 120000}
+                 :timeout 180000}
 
 
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
