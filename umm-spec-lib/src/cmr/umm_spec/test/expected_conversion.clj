@@ -468,9 +468,7 @@
   [vsd]
   (let [fix-val (fn [x]
                   (when x
-                    (let [x-replaced (str/replace x #"[,=]" "")]
-                      (when-not (str/blank? x-replaced)
-                        x-replaced))))]
+                    (iso/sanitize-value x)))]
     (-> vsd
         (update-in [:Type] fix-val)
         (update-in [:Value] fix-val))))
