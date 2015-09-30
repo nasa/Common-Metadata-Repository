@@ -9,7 +9,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [clojure.string :as str]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
@@ -169,7 +170,7 @@
     :value-counts [["Alpha" 2]]}
    {:field "processing_level_id", :value-counts [["PL1" 2]]}
    {:field "detailed_variable",
-    :value-counts [["Detail1" 2] ["UNIVERSAL" 2]]}
+    :value-counts [["DETAIL1" 2] ["UNIVERSAL" 2]]}
    {:field "archive_centers",
     :subfields ["level_0"],
     :level_0
@@ -257,82 +258,78 @@
    {:field "science_keywords",
     :subfields ["category"],
     :category
-    [{:value "Hurricane",
+    [{:value "HURRICANE",
       :count 2,
       :subfields ["topic"],
       :topic
-      [{:value "Popular",
+      [{:value "POPULAR",
         :count 2,
         :subfields ["term"],
         :term
-        [{:value "Extreme",
+        [{:value "EXTREME",
           :count 2,
           :subfields ["variable_level_1"],
           :variable_level_1
-          [{:value "Level2-1",
+          [{:value "LEVEL2-1",
             :count 2,
             :subfields ["variable_level_2"],
             :variable_level_2
-            [{:value "Level2-2",
+            [{:value "LEVEL2-2",
               :count 2,
               :subfields ["variable_level_3"],
               :variable_level_3
-              [{:value "Level2-3", :count 2}]}]}]}
+              [{:value "LEVEL2-3", :count 2}]}]}]}
          {:value "UNIVERSAL", :count 2}]}
-       {:value "Cool",
+       {:value "COOL",
         :count 2,
         :subfields ["term"],
         :term
-        [{:value "Term4",
+        [{:value "TERM4",
           :count 2,
           :subfields ["variable_level_1"],
           :variable_level_1
           [{:value "UNIVERSAL", :count 2}]}]}]}
-     {:value "Cat1",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "Topic1",
-        :count 2,
-        :subfields ["term"],
-        :term
-        [{:value "Term1",
-          :count 2,
-          :subfields ["variable_level_1"],
-          :variable_level_1
-          [{:value "Level1-1",
-            :count 2,
-            :subfields ["variable_level_2"],
-            :variable_level_2
-            [{:value "Level1-2",
-              :count 2,
-              :subfields ["variable_level_3"],
-              :variable_level_3
-              [{:value "Level1-3", :count 2}]}]}]}]}]}
-     {:value "Tornado",
-      :count 2,
-      :subfields ["topic"],
-      :topic
-      [{:value "Popular",
-        :count 2,
-        :subfields ["term"],
-        :term [{:value "Extreme", :count 2}]}]}
      {:value "UPCASE",
       :count 2,
       :subfields ["topic"],
       :topic
-      [{:value "Popular",
+      [{:value "COOL",
         :count 2,
         :subfields ["term"],
-        :term [{:value "Mild", :count 2}]}]}
-     {:value "upcase",
+        :term [{:value "MILD", :count 2}]}
+       {:value "POPULAR",
+        :count 2,
+        :subfields ["term"],
+        :term [{:value "MILD", :count 2}]}]}
+     {:value "CAT1",
       :count 2,
       :subfields ["topic"],
       :topic
-      [{:value "Cool",
+      [{:value "TOPIC1",
         :count 2,
         :subfields ["term"],
-        :term [{:value "Mild", :count 2}]}]}]}])
+        :term
+        [{:value "TERM1",
+          :count 2,
+          :subfields ["variable_level_1"],
+          :variable_level_1
+          [{:value "LEVEL1-1",
+            :count 2,
+            :subfields ["variable_level_2"],
+            :variable_level_2
+            [{:value "LEVEL1-2",
+              :count 2,
+              :subfields ["variable_level_3"],
+              :variable_level_3
+              [{:value "LEVEL1-3", :count 2}]}]}]}]}]}
+     {:value "TORNADO",
+      :count 2,
+      :subfields ["topic"],
+      :topic
+      [{:value "POPULAR",
+        :count 2,
+        :subfields ["term"],
+        :term [{:value "EXTREME", :count 2}]}]}]}])
 
 (deftest all-hierarchical-fields-test
   (grant-permissions)
@@ -372,22 +369,22 @@
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
-                                       [{:value "Hurricane",
+                                       [{:value "HURRICANE",
                                          :count 1,
                                          :subfields ["topic"],
                                          :topic
-                                         [{:value "Popular",
+                                         [{:value "POPULAR",
                                            :count 1,
                                            :subfields ["term"],
                                            :term [{:value "UNIVERSAL", :count 1}]}]}
-                                        {:value "Tornado",
+                                        {:value "TORNADO",
                                          :count 1,
                                          :subfields ["topic"],
                                          :topic
-                                         [{:value "Popular",
+                                         [{:value "POPULAR",
                                            :count 1,
                                            :subfields ["term"],
-                                           :term [{:value "Extreme", :count 1}]}]}]}]
+                                           :term [{:value "EXTREME", :count 1}]}]}]}]
         expected-flat-facets [{:field "archive_center", :value-counts []}
                               {:field "project", :value-counts []}
                               {:field "platform", :value-counts []}
@@ -396,10 +393,10 @@
                               {:field "two_d_coordinate_system_name", :value-counts []}
                               {:field "processing_level_id", :value-counts []}
                               {:field "category",
-                               :value-counts [["Hurricane" 1] ["Tornado" 1]]}
-                              {:field "topic", :value-counts [["Popular" 2]]}
+                               :value-counts [["HURRICANE" 1] ["TORNADO" 1]]}
+                              {:field "topic", :value-counts [["POPULAR" 2]]}
                               {:field "term",
-                               :value-counts [["Extreme" 1] ["UNIVERSAL" 1]]}
+                               :value-counts [["EXTREME" 1] ["UNIVERSAL" 1]]}
                               {:field "variable_level_1", :value-counts []}
                               {:field "variable_level_2", :value-counts []}
                               {:field "variable_level_3", :value-counts []}
@@ -433,22 +430,22 @@
                                       {:field "two_d_coordinate_system_name", :value-counts []}
                                       {:field "processing_level_id", :value-counts []}
                                       {:field "detailed_variable",
-                                       :value-counts [["Detailed-No-Level2-or-3" 1]]}
+                                       :value-counts [["DETAILED-NO-LEVEL2-OR-3" 1]]}
                                       {:field "archive_centers", :subfields []}
                                       {:field "platforms", :subfields []}
                                       {:field "instruments", :subfields []}
                                       {:field "science_keywords",
                                        :subfields ["category"],
                                        :category
-                                       [{:value "Category",
+                                       [{:value "CATEGORY",
                                          :count 1,
                                          :subfields ["topic"],
                                          :topic
-                                         [{:value "Topic",
+                                         [{:value "TOPIC",
                                            :count 1,
                                            :subfields ["term"],
                                            :term
-                                           [{:value "Term",
+                                           [{:value "TERM",
                                              :count 1,
                                              :subfields ["variable_level_1"],
                                              :variable_level_1 [{:value "V-L1", :count 1}]}]}]}]}]
@@ -459,14 +456,14 @@
                               {:field "sensor", :value-counts []}
                               {:field "two_d_coordinate_system_name", :value-counts []}
                               {:field "processing_level_id", :value-counts []}
-                              {:field "category", :value-counts [["Category" 1]]}
-                              {:field "topic", :value-counts [["Topic" 1]]}
-                              {:field "term", :value-counts [["Term" 1]]}
+                              {:field "category", :value-counts [["CATEGORY" 1]]}
+                              {:field "topic", :value-counts [["TOPIC" 1]]}
+                              {:field "term", :value-counts [["TERM" 1]]}
                               {:field "variable_level_1", :value-counts [["V-L1" 1]]}
                               {:field "variable_level_2", :value-counts []}
                               {:field "variable_level_3", :value-counts []}
                               {:field "detailed_variable",
-                               :value-counts [["Detailed-No-Level2-or-3" 1]]}]
+                               :value-counts [["DETAILED-NO-LEVEL2-OR-3" 1]]}]
         actual-hierarchical-facets (get-facet-results :hierarchical)
         actual-flat-facets (get-facet-results :flat)]
     (is (= expected-hierarchical-facets (:xml-facets actual-hierarchical-facets)))
@@ -549,27 +546,26 @@
                              {:field "processing_level_id"
                               :value-counts [["PL1" 2] ["PL2" 1] ["pl1" 1]]}
                              {:field "category"
-                              :value-counts [["Hurricane" 3]
-                                             ["Cat1" 2]
-                                             ["Tornado" 2]
-                                             ["UPCASE" 1]
-                                             ["upcase" 1]]}
+                              :value-counts [["HURRICANE" 3]
+                                             ["CAT1" 2]
+                                             ["TORNADO" 2]
+                                             ["UPCASE" 1]]}
                              {:field "topic"
-                              :value-counts [["Popular" 4] ["Cool" 2] ["Topic1" 2]]}
+                              :value-counts [["POPULAR" 4] ["COOL" 2] ["TOPIC1" 2]]}
                              {:field "term"
-                              :value-counts [["Extreme" 3]
-                                             ["Term1" 2]
+                              :value-counts [["EXTREME" 3]
+                                             ["TERM1" 2]
                                              ["UNIVERSAL" 2]
-                                             ["Mild" 1]
-                                             ["Term4" 1]]}
+                                             ["MILD" 1]
+                                             ["TERM4" 1]]}
                              {:field "variable_level_1"
-                              :value-counts [["Level1-1" 2] ["Level2-1" 1] ["UNIVERSAL" 1]]}
+                              :value-counts [["LEVEL1-1" 2] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
                              {:field "variable_level_2"
-                              :value-counts [["Level1-2" 2] ["Level2-2" 1]]}
+                              :value-counts [["LEVEL1-2" 2] ["LEVEL2-2" 1]]}
                              {:field "variable_level_3"
-                              :value-counts [["Level1-3" 2] ["Level2-3" 1]]}
+                              :value-counts [["LEVEL1-3" 2] ["LEVEL2-3" 1]]}
                              {:field "detailed_variable"
-                              :value-counts [["Detail1" 2] ["UNIVERSAL" 1]]}]]
+                              :value-counts [["DETAIL1" 2] ["UNIVERSAL" 1]]}]]
         (testing "refs"
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true})))))
@@ -625,19 +621,19 @@
                                {:field "processing_level_id"
                                 :value-counts [["PL1" 1] ["pl1" 1]]}
                                {:field "category"
-                                :value-counts [["Cat1" 2] ["Hurricane" 2] ["Tornado" 1]]}
+                                :value-counts [["CAT1" 2] ["HURRICANE" 2] ["TORNADO" 1]]}
                                {:field "topic"
-                                :value-counts [["Popular" 2] ["Topic1" 2] ["Cool" 1]]}
+                                :value-counts [["POPULAR" 2] ["TOPIC1" 2] ["COOL" 1]]}
                                {:field "term"
-                                :value-counts [["Extreme" 2] ["Term1" 2] ["Term4" 1] ["UNIVERSAL" 1]]}
+                                :value-counts [["EXTREME" 2] ["TERM1" 2] ["TERM4" 1] ["UNIVERSAL" 1]]}
                                {:field "variable_level_1"
-                                :value-counts [["Level1-1" 2] ["Level2-1" 1] ["UNIVERSAL" 1]]}
+                                :value-counts [["LEVEL1-1" 2] ["LEVEL2-1" 1] ["UNIVERSAL" 1]]}
                                {:field "variable_level_2"
-                                :value-counts [["Level1-2" 2] ["Level2-2" 1]]}
+                                :value-counts [["LEVEL1-2" 2] ["LEVEL2-2" 1]]}
                                {:field "variable_level_3"
-                                :value-counts [["Level1-3" 2] ["Level2-3" 1]]}
+                                :value-counts [["LEVEL1-3" 2] ["LEVEL2-3" 1]]}
                                {:field "detailed_variable"
-                                :value-counts [["Detail1" 2] ["UNIVERSAL" 1]]}]]
+                                :value-counts [["DETAIL1" 2] ["UNIVERSAL" 1]]}]]
           (is (= expected-facets
                  (:facets (search/find-refs :collection {:include-facets true
                                                          :project "PROJ2"}))))))
@@ -659,18 +655,18 @@
                                                ["B-p1-i1-s0" 1]]}
                                {:field "two_d_coordinate_system_name" :value-counts []}
                                {:field "processing_level_id" :value-counts [["pl1" 1]]}
-                               {:field "category" :value-counts [["Cat1" 1] ["Hurricane" 1]]}
-                               {:field "topic" :value-counts [["Popular" 1] ["Topic1" 1]]}
-                               {:field "term" :value-counts [["Extreme" 1]
-                                                             ["Term1" 1]
+                               {:field "category" :value-counts [["CAT1" 1] ["HURRICANE" 1]]}
+                               {:field "topic" :value-counts [["POPULAR" 1] ["TOPIC1" 1]]}
+                               {:field "term" :value-counts [["EXTREME" 1]
+                                                             ["TERM1" 1]
                                                              ["UNIVERSAL" 1]]}
-                               {:field "variable_level_1":value-counts [["Level1-1" 1]
-                                                                        ["Level2-1" 1]]}
-                               {:field "variable_level_2" :value-counts [["Level1-2" 1]
-                                                                         ["Level2-2" 1]]}
-                               {:field "variable_level_3" :value-counts [["Level1-3" 1]
-                                                                         ["Level2-3" 1]]}
-                               {:field "detailed_variable" :value-counts [["Detail1" 1]
+                               {:field "variable_level_1":value-counts [["LEVEL1-1" 1]
+                                                                        ["LEVEL2-1" 1]]}
+                               {:field "variable_level_2" :value-counts [["LEVEL1-2" 1]
+                                                                         ["LEVEL2-2" 1]]}
+                               {:field "variable_level_3" :value-counts [["LEVEL1-3" 1]
+                                                                         ["LEVEL2-3" 1]]}
+                               {:field "detailed_variable" :value-counts [["DETAIL1" 1]
                                                                           ["UNIVERSAL" 1]]}]]
 
 
@@ -687,8 +683,8 @@
                                {:field "sensor" :value-counts []}
                                {:field "two_d_coordinate_system_name" :value-counts [["alpha" 1]]}
                                {:field "processing_level_id" :value-counts [["PL2" 1]]}
-                               {:field "category" :value-counts [["Hurricane" 1]]}
-                               {:field "topic" :value-counts [["Popular" 1]]}
+                               {:field "category" :value-counts [["HURRICANE" 1]]}
+                               {:field "topic" :value-counts [["POPULAR" 1]]}
                                {:field "term" :value-counts [["UNIVERSAL" 1]]}
                                {:field "variable_level_1" :value-counts []}
                                {:field "variable_level_2" :value-counts []}
@@ -732,7 +728,7 @@
                         :category
                         (map :value))]
     ;; Make sure that all 25 individual categories are returned in the facets
-    (is (= (set (map :category science-keywords))
+    (is (= (set (map #(str/upper-case (:category %)) science-keywords))
            (set categories)))))
 
 (deftest platform-missing-fields-test

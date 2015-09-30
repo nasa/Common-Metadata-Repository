@@ -1,6 +1,7 @@
 (ns cmr.indexer.data.concepts.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
   (:require [clojure.string :as str]
+            [cmr.common.util :as util]
             [cmr.common-app.services.kms-fetcher :as kf]))
 
 (defn flatten-science-keywords
@@ -25,13 +26,16 @@
 
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document. If there is a match
-  with the science keywords in KMS we index the fields using the case from KMS rather than the
-  case from the keywords in the metadata."
+  with the science keywords in KMS we also index the UUID from KMS. We index all of the science
+  keyword fields in all caps since GCMD enforces all caps when adding keywords to KMS. Note that
+  this means there is no need to also index the keywords in all lowercase; however, we continue to
+  index in lowercase so that science keywords are not treated as a special case in parts of the
+  code that use lowercase mappings."
   [gcmd-keywords-map science-keyword]
-  (let [{:keys [detailed-variable]} science-keyword
-        kms-science-keyword (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)
-        {:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 uuid]} (or kms-science-keyword science-keyword)]
+  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
+        {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
+                detailed-variable]} science-keyword-upper-case
+        {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
     {:category category
      :category.lowercase (str/lower-case category)
      :topic topic
@@ -51,8 +55,9 @@
 
 (defn science-keyword->facet-fields
   [science-keyword]
-  (let [{:keys [category topic term variable-level-1 variable-level-2
-                variable-level-3 detailed-variable]} science-keyword]
+  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
+        {:keys [category topic term variable-level-1 variable-level-2
+                variable-level-3 detailed-variable]} science-keyword-upper-case]
     {:category category
      :topic topic
      :term term
