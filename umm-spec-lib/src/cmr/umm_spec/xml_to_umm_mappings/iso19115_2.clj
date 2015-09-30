@@ -128,6 +128,23 @@
       seq
       some?))
 
+(defn- parse-organizations
+  [doc]
+  (concat
+    (org-per/parse-responsible-parties
+      "ORIGINATOR"
+      (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "POINTOFCONTACT"
+      (select doc (str md-data-id-base-xpath "/gmd:pointOfContact/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "DISTRIBUTOR"
+      (select doc (str dru/distributor-xpath "/gmd:distributorContact/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "PROCESSOR"
+      (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))
+    ))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [doc]
@@ -209,13 +226,8 @@
      :ScienceKeywords (parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
      :AdditionalAttributes (aa/parse-additional-attributes doc)
-     :Personnel (org-per/parse-responsible-party "POINTOFCONTACT" (select doc personnel-xpath))
-     :Organizations (concat
-                      (org-per/parse-responsible-party "ORIGINATOR" (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
-                      #_(org-per/parse-responsible-party "POINTOFCONTACT" (select doc (str md-data-id-base-xpath "/gmd:pointOfContact/gmd:CI_ResponsibleParty")))
-                      #_(org-per/parse-responsible-party "DISTRIBUTOR" (select doc (str dru/distributor-xpath "/gmd:distributorContact/gmd:CI_ResponsibleParty")))
-                      #_(org-per/parse-responsible-party "PROCESSOR" (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty"))))
-     }))
+     :Personnel (org-per/parse-responsible-parties "POINTOFCONTACT" (select doc personnel-xpath))
+     :Organizations (parse-organizations doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

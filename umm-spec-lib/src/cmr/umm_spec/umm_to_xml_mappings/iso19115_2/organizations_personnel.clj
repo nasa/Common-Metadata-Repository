@@ -13,9 +13,8 @@
 
 (defn- contact-values-by-type
   [contacts type]
-  (map :Value (filter #(= (:Type %)
-                          (str/lower-case type)) contacts)))
-
+  (seq (map :Value (filter #(= (:Type %)
+                               (str/lower-case type)) contacts))))
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
@@ -36,6 +35,26 @@
           {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
            :codeListValue "information"} "information"]]]])))
 
+(defn- generate-addresses
+  [addresses]
+  (for [address addresses
+        :let [{:keys [StreetAddresses City StateProvince PostalCode Country]} address]]
+    [:gmd:address
+     [:gmd:CI_Address
+      (for [street-address StreetAddresses]
+        [:gmd:deliveryPoint (char-string street-address)])
+      [:gmd:city (char-string City)]
+      [:gmd:administrativeArea (char-string StateProvince)]
+      [:gmd:postalCode (char-string PostalCode)]
+      [:gmd:country (char-string Country)]]]))
+
+(defn- generate-emails
+  [emails]
+  [:gmd:address
+   [:gmd:CI_Address
+    (for [email emails]
+      [:gmd:electronicMailAddress (char-string email)])]])
+
 (defn generate-responsible-party
   [responsibility]
   (let [{:keys [Role] {:keys [OrganizationName Person ServiceHours
@@ -55,23 +74,13 @@
          [:gmd:phone
           [:gmd:CI_Telephone
            [:gmd:voice (char-string phone)]]])
-       (for [address Addresses
-             :let [{:keys [StreetAddresses City StateProvince PostalCode Country]} address]]
-         [:gmd:address
-          [:gmd:CI_Address
-           (for [street-address StreetAddresses]
-             [:gmd:deliveryPoint (char-string street-address)])
-           [:gmd:city (char-string City)]
-           [:gmd:administrativeArea (char-string StateProvince)]
-           [:gmd:postalCode (char-string PostalCode)]
-           [:gmd:country (char-string Country)]
-           (for [email (contact-values-by-type Contacts "email")]
-             [:gmd:electronicMailAddress (char-string email)])]])
+       (generate-addresses Addresses)
+       (generate-emails (contact-values-by-type Contacts "email"))
        [:gmd:onlineResource ]
        (for [online-resource-url RelatedUrls]
          (generate-online-resource-url online-resource-url))
-       [:gmd:ServiceHours ServiceHours]
-       [:gmd:contactInstructions ContactInstructions]]]
+       [:gmd:hoursOfService (char-string ServiceHours)]
+       [:gmd:contactInstructions (char-string ContactInstructions)]]]
      [:gmd:role
       [:gmd:CI_RoleCode {:codeList (str (:ngdc iso/code-lists) "#CI_RoleCode")
                          :codeListValue role-code} role-code]]]))

@@ -164,9 +164,11 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-       [:gmd:contact {:gco:nilReason "missing"}
-        (for [responsibility (org-per/responsibility-by-role (:Personnel c) "POINTOFCONTACT")]
-          (org-per/generate-responsible-party responsibility))]
+       (if-let [responsibilities (org-per/responsibility-by-role (:Personnel c) "POINTOFCONTACT")]
+         (for [responsibility responsibilities]
+           [:gmd:contact
+            (org-per/generate-responsible-party responsibility)])
+         [:gmd:contact {:gco:nilReason "missing"}])
        [:gmd:dateStamp
         [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
@@ -183,9 +185,9 @@
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]
              [:gmd:version (char-string (:Version c))]]]
-           [:gmd:citedResponsibleParty
-            (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
-              (org-per/generate-responsible-party responsibility))]]]
+           (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
+             [:gmd:citedResponsibleParty
+              (org-per/generate-responsible-party responsibility)])]]
          [:gmd:abstract (char-string (:Abstract c))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
@@ -194,9 +196,9 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
-         [:gmd:pointOfContact
-          (for [responsibility (org-per/responsibility-by-role (:Organizations c) "POINTOFCONTACT")]
-              (org-per/generate-responsible-party responsibility))]
+         (for [responsibility (org-per/responsibility-by-role (:Organizations c) "POINTOFCONTACT")]
+           [:gmd:pointOfContact
+            (org-per/generate-responsible-party responsibility)])
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (iso/generate-descriptive-keywords
@@ -285,9 +287,9 @@
            [:gmd:processStep
             [:gmd:LI_ProcessStep
              [:gmd:description {:gco:nilReason "unknown"}]
-             [:gmd:processor
-              (for [responsibility (org-per/responsibility-by-role (:Organizations c) "PROCESSOR")]
-              (org-per/generate-responsible-party responsibility))]]]]]]]
+             (for [responsibility (org-per/responsibility-by-role (:Organizations c) "PROCESSOR")]
+               [:gmd:processor
+                (org-per/generate-responsible-party responsibility)])]]]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)

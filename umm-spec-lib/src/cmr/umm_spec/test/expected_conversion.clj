@@ -133,16 +133,14 @@
                                            :City "city"}]}}
                      {:Role "POINTOFCONTACT"
                       :Party {:Person {:LastName "person 1"}
-                              :RelatedUrls [{:Description "Related url description"
+                              :RelatedUrls [{:Description "Organization related url description"
                                              :ContentType {:Type "Some type" :Subtype "sub type"}
                                              :URLs ["www.foo.com"]}]}}
                      {:Role "DISTRIBUTOR"
                       :Party {:OrganizationName {:ShortName "org 2"}
                               :Contacts [{:Type "email" :Value "abc@foo.com"}]}}
                      {:Role "PROCESSOR"
-                      :Party {:OrganizationName {:ShortName "org 3"}}}
-                     {:Role "CUSTODIAN"
-                      :Party {:OrganizationName {:ShortName "custodian"}}}]
+                      :Party {:OrganizationName {:ShortName "org 3"}}}]
      :Personnel [{:Role "POINTOFCONTACT"
                   :Party {:Person {:LastName "person 2"}}}]
      }))
@@ -503,6 +501,12 @@
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
+(defn- expected-organization
+  [organization]
+  (update-in organization [:Party :RelatedUrls]
+             (fn [urls]
+               (seq (map #(assoc % :ContentType nil) urls)))))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
@@ -520,7 +524,8 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)))
+      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
+      (update-in-each [:Organizations] expected-organization)))
 
 ;; ISO-SMAP
 
