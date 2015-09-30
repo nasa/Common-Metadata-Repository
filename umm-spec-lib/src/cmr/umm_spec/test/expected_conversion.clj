@@ -55,8 +55,6 @@
                                           :EndingDateTime (t/date-time 2003)}]}]
      :ProcessingLevel {:Id "3"
                        :ProcessingLevelDescription "Processing level description"}
-     :Organizations [{:Role "CUSTODIAN"
-                      :Party {:OrganizationName {:ShortName "custodian"}}}]
      :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
@@ -128,7 +126,26 @@
                              :ParameterValueAccuracy "1"
                              :ValueAccuracyExplanation "explaination for value accuracy"}
                             {:Name "aa-name"
-                             :DataType "INT"}]}))
+                             :DataType "INT"}]
+     :Organizations [{:Role "ORIGINATOR"
+                      :Party {:OrganizationName {:ShortName "org 1"}
+                              :Addresses [{:StreetAddresses ["23 abc st"]
+                                           :City "city"}]}}
+                     {:Role "POINTOFCONTACT"
+                      :Party {:Person {:LastName "person 1"}
+                              :RelatedUrls [{:Description "Related url description"
+                                             :ContentType {:Type "Some type" :Subtype "sub type"}
+                                             :URLs ["www.foo.com"]}]}}
+                     {:Role "DISTRIBUTOR"
+                      :Party {:OrganizationName {:ShortName "org 2"}
+                              :Contacts [{:Type "email" :Value "abc@foo.com"}]}}
+                     {:Role "PROCESSOR"
+                      :Party {:OrganizationName {:ShortName "org 3"}}}
+                     {:Role "CUSTODIAN"
+                      :Party {:OrganizationName {:ShortName "custodian"}}}]
+     :Personnel [{:Role "POINTOFCONTACT"
+                  :Party {:Person {:LastName "person 2"}}}]
+     }))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -553,10 +570,7 @@
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
   #{:CollectionCitations :MetadataDates
-    :MetadataLanguage :DirectoryNames :Personnel
-    :Organizations
-    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
-    :MetadataAssociations})
+    :MetadataLanguage :DirectoryNames})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

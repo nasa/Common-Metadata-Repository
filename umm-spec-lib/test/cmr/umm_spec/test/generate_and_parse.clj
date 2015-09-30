@@ -31,6 +31,9 @@
     (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
+(comment
+  (println (core/generate-metadata :collection :iso19115 expected-conversion/example-record)))
+
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
     (testing (str metadata-format)

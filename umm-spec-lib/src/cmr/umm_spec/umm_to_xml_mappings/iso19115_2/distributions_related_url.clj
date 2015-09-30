@@ -4,6 +4,7 @@
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as u]
             [cmr.common.util :as util]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su]))
 
 
@@ -40,7 +41,7 @@
       [:gmd:fileDescription (char-string Description)]
       [:gmd:fileType (char-string (type->name Type))]]]))
 
-(defn- generate-online-resource-url
+(defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
   (let [{:keys [URLs Description] {:keys [Type]} :ContentType} online-resource-url
@@ -74,7 +75,9 @@
          [:gmd:MD_Distribution
           [:gmd:distributor
            [:gmd:MD_Distributor
-            [:gmd:distributorContact {:gco:nilReason "missing"}]
+            [:gmd:distributorContact {:gco:nilReason "missing"}
+             (for [responsibility (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR")]
+              (org-per/generate-responsible-party responsibility))]
             (for [fee (map su/nil-to-empty-string fees)]
               [:gmd:distributionOrderProcess
                [:gmd:MD_StandardOrderProcess

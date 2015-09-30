@@ -8,6 +8,7 @@
             [cmr.umm-spec.iso-utils :as iso-utils]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]))
@@ -150,7 +151,8 @@
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
-  (let [platforms (platform/platforms-with-id (:Platforms c))]
+  (let [platforms (platform/platforms-with-id (:Platforms c))
+        organizations (:Organizations c)]
     (xml
       [:gmi:MI_Metadata
        iso19115-2-xml-namespaces
@@ -162,7 +164,9 @@
        [:gmd:hierarchyLevel
         [:gmd:MD_ScopeCode {:codeList (str (:ngdc iso/code-lists) "#MD_ScopeCode")
                             :codeListValue "series"} "series"]]
-       [:gmd:contact {:gco:nilReason "missing"}]
+       [:gmd:contact {:gco:nilReason "missing"}
+        (for [responsibility (org-per/responsibility-by-role (:Personnel c) "POINTOFCONTACT")]
+          (org-per/generate-responsible-party responsibility))]
        [:gmd:dateStamp
         [:gco:DateTime "2014-08-25T15:25:44.641-04:00"]]
        [:gmd:metadataStandardName (char-string "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data")]
@@ -178,7 +182,10 @@
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]
-             [:gmd:version (char-string (:Version c))]]]]]
+             [:gmd:version (char-string (:Version c))]]]
+           [:gmd:citedResponsibleParty
+            (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
+              (org-per/generate-responsible-party responsibility))]]]
          [:gmd:abstract (char-string (:Abstract c))]
          [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
          [:gmd:status
@@ -187,6 +194,9 @@
              {:codeList (str (:ngdc iso/code-lists) "#MD_ProgressCode")
               :codeListValue (str/lower-case collection-progress)}
              collection-progress])]
+         [:gmd:pointOfContact
+          (for [responsibility (org-per/responsibility-by-role (:Organizations c) "POINTOFCONTACT")]
+              (org-per/generate-responsible-party responsibility))]
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
          (iso/generate-descriptive-keywords
@@ -269,7 +279,15 @@
              [:gmd:valueUnit ""]
              [:gmd:value
               [:gco:Record {:xsi:type "gco:Real_PropertyType"}
-               [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]]]
+               [:gco:Real (:PrecisionOfSeconds (first (:TemporalExtents c)))]]]]]]]
+         [:gmd:lineage
+          [:gmd:LI_Lineage
+           [:gmd:processStep
+            [:gmd:LI_ProcessStep
+             [:gmd:description {:gco:nilReason "unknown"}]
+             [:gmd:processor
+              (for [responsibility (org-per/responsibility-by-role (:Organizations c) "PROCESSOR")]
+              (org-per/generate-responsible-party responsibility))]]]]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)
