@@ -495,7 +495,6 @@
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:SpatialExtent] update-iso-spatial)
       (assoc :TilingIdentificationSystem nil) ;JASON temporary fix. TODO fix this
       (update-in [:TemporalExtents] expected-iso-19115-2-temporal)

@@ -195,9 +195,15 @@
      (condp = (:type definition)
 
        "string"  (condp = (:format definition)
-                   "date-time" (if (instance? org.joda.time.DateTime x)
-                                 x
-                                 (dtp/parse-datetime x))
+                   "date-time"
+                   (if (instance? org.joda.time.DateTime x)
+                     x
+                     (try (dtp/parse-datetime x)
+                       (catch Exception e
+                         (throw (IllegalArgumentException.
+                                  (format "Failed to parse date-time [%s] at key-path [%s]"
+                                          x (pr-str (vec key-path)))
+                                  e)))))
                    (str x))
 
        "number"  (cond (number? x) x

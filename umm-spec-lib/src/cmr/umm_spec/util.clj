@@ -53,3 +53,14 @@
   "Returns the string itself or empty string if it is nil."
   [s]
   (if (some? s) s ""))
+
+(defn gen-am-short-name
+  "Creates a short name from the associated metadata entry-id"
+  [am]
+  (let [entry-id (:EntryId am)]
+    (if-let [version-id (:Version am)]
+      (let [sn-index (.lastIndexOf entry-id (str "_" version-id))]
+        (if (> sn-index 0)
+          (subs entry-id 0 sn-index)
+          entry-id))
+      entry-id)))

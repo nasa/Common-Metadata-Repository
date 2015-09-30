@@ -105,7 +105,7 @@
                           :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                           :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                           :DetailedVariable (value-of sk "DetailedVariableKeyword")})
-   :MetadataAssociations (for [ca (select doc "/Collection/CollectionAssociations")]
+   :MetadataAssociations (for [ca (select doc "/Collection/CollectionAssociations/CollectionAssociation")]
                            {
                             ;; TODO This should be set to CollectionType value as long as it matches
                             ;; one of the allowed enumerated type values for this field. Otherwise we
