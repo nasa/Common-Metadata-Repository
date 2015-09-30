@@ -311,11 +311,12 @@
 (defmethod process-xml-selector :element-value-selector
   [elements {:keys [selectors element-value not-equal?]}]
   (filterv (fn [element]
-             (when-let [selected-element (first (process-selectors
-                                                  [element] selectors process-xml-selector))]
-               (if not-equal?
-                 (not= (-> selected-element :content first) element-value)
-                 (= (-> selected-element :content first) element-value))))
+             (some (fn [selected-element]
+                     (if not-equal?
+                       (not= (-> selected-element :content first) element-value)
+                       (= (-> selected-element :content first) element-value)))
+                   (process-selectors
+                     [element] selectors process-xml-selector)))
            elements))
 
 (defmethod process-xml-selector :nth-selector
@@ -381,11 +382,11 @@
 (defmethod process-data-selector :element-value-selector
   [data {:keys [selectors element-value not-equal?]}]
   (filterv (fn [d]
-             (when-let [result (first (process-selectors
-                                        [d] selectors process-data-selector))]
-               (if not-equal?
-                 (not= (str result) element-value)
-                 (= (str result) element-value))))
+             (some (fn [result]
+                     (if not-equal?
+                       (not= (str result) element-value)
+                       (= (str result) element-value)))
+                   (process-selectors [d] selectors process-data-selector)))
            (as-vector data)))
 
 (defmethod process-data-selector :nth-selector
