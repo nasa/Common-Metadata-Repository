@@ -13,8 +13,8 @@
 
 (defn- contact-values-by-type
   [contacts type]
-  (seq (map :Value (filter #(= (:Type %)
-                               (str/lower-case type)) contacts))))
+  (seq (map :Value (filter #(= (:Type %) type) contacts))))
+
 (defn generate-online-resource-urls
   "ISO-19115 only supports one related url in a contactInfo. For now we just use the first related url. We can look into how we want to write all related urls out later."
   [online-resource-urls]
