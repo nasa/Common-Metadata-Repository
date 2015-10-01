@@ -333,7 +333,12 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      ;; not supported in DIF 9 (some just not yet...)
+      (assoc :MetadataAssociations nil
+             :DataDates nil
+             :Personnel nil
+             :Organizations nil
+             :TilingIdentificationSystem nil)
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil

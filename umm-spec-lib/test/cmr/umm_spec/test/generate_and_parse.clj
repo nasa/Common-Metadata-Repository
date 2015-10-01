@@ -22,7 +22,7 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   ;; We will re-enable the other formats after ISO support is complete.
   ;; Pending formats: :dif :iso-smap :echo10
-  [:iso19115 :dif10])
+  [:iso19115 :dif10 :dif])
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -70,9 +70,9 @@
          (xml-round-trip user/failing-value :iso19115)))
 
   ;; random XML gen
-  (def metadata-format :iso19115)
+  (def metadata-format :dif)
 
-  (def sample-record (first (gen/sample (gen/such-that (comp :TemporalRangeType first :TemporalExtents) umm-gen/umm-c-generator) 1)))
+  (def sample-record (first (gen/sample (gen/such-that :DataDates umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
 
