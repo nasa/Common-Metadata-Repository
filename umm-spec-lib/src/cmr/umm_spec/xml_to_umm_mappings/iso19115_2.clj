@@ -132,18 +132,17 @@
   [doc]
   (concat
     (org-per/parse-responsible-parties
-      "ORIGINATOR"
-      (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
-    (org-per/parse-responsible-parties
       "POINTOFCONTACT"
       (select doc (str md-data-id-base-xpath "/gmd:pointOfContact/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "ORIGINATOR"
+      (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
     (org-per/parse-responsible-parties
       "DISTRIBUTOR"
       (select doc (str dru/distributor-xpath "/gmd:distributorContact/gmd:CI_ResponsibleParty")))
     (org-per/parse-responsible-parties
       "PROCESSOR"
-      (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))
-    ))
+      (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."

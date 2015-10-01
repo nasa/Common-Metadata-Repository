@@ -15,11 +15,11 @@
   [contacts type]
   (seq (map :Value (filter #(= (:Type %)
                                (str/lower-case type)) contacts))))
-(defn generate-online-resource-url
-  "Returns content generator instructions for an online resource url or access url"
-  [online-resource-url]
-  (let [{:keys [URLs Description]} online-resource-url]
-    (for [url URLs]
+(defn generate-online-resource-urls
+  "ISO-19115 only supports one related url in a contactInfo. For now we just use the first related url. We can look into how we want to write all related urls out later."
+  [online-resource-urls]
+  (when-let [{:keys [URLs Description]} (first online-resource-urls)]
+    (when-let [url (first URLs)]
       [:gmd:onlineResource
        [:gmd:CI_OnlineResource
         [:gmd:linkage
@@ -36,8 +36,7 @@
            :codeListValue "information"} "information"]]]])))
 
 (defn- generate-addresses
-  "ISO-19115 only supports one addresses in a contactInfo. For now we just use the first address.
-  We can look into how we want to write all addresses out later."
+  "ISO-19115 only supports one addresses in a contactInfo. For now we just use the first address. We can look into how we want to write all addresses out later."
   [addresses]
   (when-let [{:keys [StreetAddresses City StateProvince PostalCode Country]} (first addresses)]
     [:gmd:address
@@ -77,9 +76,7 @@
            [:gmd:voice (char-string phone)]]])
        (generate-addresses Addresses)
        (generate-emails (contact-values-by-type Contacts "email"))
-       [:gmd:onlineResource ]
-       (for [online-resource-url RelatedUrls]
-         (generate-online-resource-url online-resource-url))
+       (generate-online-resource-urls RelatedUrls)
        [:gmd:hoursOfService (char-string ServiceHours)]
        [:gmd:contactInstructions (char-string ContactInstructions)]]]
      [:gmd:role

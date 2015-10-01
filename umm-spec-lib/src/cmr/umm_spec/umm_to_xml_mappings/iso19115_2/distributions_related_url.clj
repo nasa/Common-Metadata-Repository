@@ -76,8 +76,8 @@
           [:gmd:distributor
            [:gmd:MD_Distributor
             [:gmd:distributorContact {:gco:nilReason "missing"}
-             (for [responsibility (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR")]
-              (org-per/generate-responsible-party responsibility))]
+             (when-let [responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))]
+               (org-per/generate-responsible-party responsibility))]
             (for [fee (map su/nil-to-empty-string fees)]
               [:gmd:distributionOrderProcess
                [:gmd:MD_StandardOrderProcess

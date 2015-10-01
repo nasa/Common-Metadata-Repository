@@ -129,7 +129,9 @@
                              :DataType "INT"}]
      :Organizations [{:Role "ORIGINATOR"
                       :Party {:ServiceHours "24/7"
-                              :OrganizationName {:ShortName "org 1"}
+                              :OrganizationName {:ShortName "org 1"
+                                                 :LongName "longname"
+                                                 :Uuid "uuid"}
                               :Addresses [{:StreetAddresses ["23 abc st"]
                                            :City "city"}]}}
                      {:Role "POINTOFCONTACT"
@@ -522,9 +524,20 @@
   (-> party
       (update-in [:Party :Person] expected-person)
       (update-in [:Party :Contacts] expected-contacts)
+      (update-in [:Party :OrganizationName] (fn [org-name]
+                                              (when org-name
+                                                (assoc org-name :LongName nil :Uuid nil))))
       (update-in [:Party :Addresses] (fn [x]
                                        (when-let [address (first x)]
-                                         [address])))))
+                                         [address])))
+      (update-in [:Party :RelatedUrls] (fn [x]
+                                       (when-let [related-url (first x)]
+                                         (-> related-url
+                                             (assoc :Protocol nil :Title nil
+                                                    :FileSize nil :ContentType nil
+                                                    :MimeType nil :Caption nil)
+                                             (update-in [:URLs] (fn [urls] [(first urls)]))
+                                             vector))))))
 
 (defn- expected-responsibility
   [responsibility]
@@ -535,11 +548,10 @@
 
 (defn- expected-responsibilities
   [responsibilities allowed-roles]
-  (->> responsibilities
-       (filter
-         #(.contains allowed-roles (:Role %)))
-       (map expected-responsibility)
-       seq))
+  (let [resp-by-role (group-by :Role responsibilities)
+        resp-by-role (update-in resp-by-role ["DISTRIBUTOR"] #(take 1 %))]
+    (seq (map expected-responsibility
+            (mapcat resp-by-role allowed-roles)))))
 
 (defmethod convert-internal :iso19115
   [umm-coll _]
@@ -559,9 +571,9 @@
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
       (update-in [:Personnel]
-                 expected-responsibilities #{"POINTOFCONTACT"})
+                 expected-responsibilities ["POINTOFCONTACT"])
       (update-in [:Organizations]
-                 expected-responsibilities #{"ORIGINATOR" "POINTOFCONTACT" "DISTRIBUTOR" "PROCESSOR"})))
+                 expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])))
 
 ;; ISO-SMAP
 
@@ -610,8 +622,10 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates
-    :MetadataLanguage :DirectoryNames})
+  #{:CollectionCitations :MetadataDates :MetadataLanguage
+    :DirectoryNames :MetadataLineages :SpatialInformation
+    :PaleoTemporalCoverage :MetadataAssociations})
+
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
