@@ -13,6 +13,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
@@ -59,6 +60,9 @@
   "Publication xpath relative to md-data-id-base-xpath"
   (str "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation"
        "[gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:role/gmd:CI_RoleCode='publication']"))
+
+(def personnel-xpath
+  "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
 
 (defn- descriptive-keywords
   "Returns the descriptive keywords values for the given parent element and keyword type"
@@ -125,6 +129,22 @@
       (select "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")
       seq
       some?))
+
+(defn- parse-organizations
+  [doc]
+  (concat
+    (org-per/parse-responsible-parties
+      "POINTOFCONTACT"
+      (select doc (str md-data-id-base-xpath "/gmd:pointOfContact/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "ORIGINATOR"
+      (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "DISTRIBUTOR"
+      (select doc (str dru/distributor-xpath "/gmd:distributorContact/gmd:CI_ResponsibleParty")))
+    (org-per/parse-responsible-parties
+      "PROCESSOR"
+      (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))))
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
@@ -206,7 +226,9 @@
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
      :ScienceKeywords (parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
-     :AdditionalAttributes (aa/parse-additional-attributes doc)}))
+     :AdditionalAttributes (aa/parse-additional-attributes doc)
+     :Personnel (org-per/parse-responsible-parties "POINTOFCONTACT" (select doc personnel-xpath))
+     :Organizations (parse-organizations doc)}))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."

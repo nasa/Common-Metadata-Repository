@@ -33,14 +33,6 @@
     (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
-(comment
-
-  (println (cmr.common.xml/pretty-print-xml
-    (core/generate-metadata :collection :iso19115 expected-conversion/example-record)))
-
-  (xml-round-trip expected-conversion/example-record :iso19115)
-  )
-
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
     (testing (str metadata-format)
@@ -71,6 +63,8 @@
              (parse-iso19115-projects-keywords metadata-xml))))))
 
 (comment
+
+  (println (core/generate-metadata :collection :iso19115 user/failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso19115)
          (xml-round-trip user/failing-value :iso19115)))

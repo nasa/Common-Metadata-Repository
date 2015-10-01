@@ -55,8 +55,6 @@
                                           :EndingDateTime (t/date-time 2003)}]}]
      :ProcessingLevel {:Id "3"
                        :ProcessingLevelDescription "Processing level description"}
-     :Organizations [{:Role "CUSTODIAN"
-                      :Party {:OrganizationName {:ShortName "custodian"}}}]
      :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
@@ -142,7 +140,26 @@
                              :ParameterValueAccuracy "1"
                              :ValueAccuracyExplanation "explaination for value accuracy"}
                             {:Name "aa-name"
-                             :DataType "INT"}]}))
+                             :DataType "INT"}]
+     :Organizations [{:Role "ORIGINATOR"
+                      :Party {:ServiceHours "24/7"
+                              :OrganizationName {:ShortName "org 1"
+                                                 :LongName "longname"}
+                              :Addresses [{:StreetAddresses ["23 abc st"]
+                                           :City "city"}]}}
+                     {:Role "POINTOFCONTACT"
+                      :Party {:Person {:LastName "person 1"}
+                              :RelatedUrls [{:Description "Organization related url description"
+                                             :ContentType {:Type "Some type" :Subtype "sub type"}
+                                             :URLs ["www.foo.com"]}]}}
+                     {:Role "DISTRIBUTOR"
+                      :Party {:OrganizationName {:ShortName "org 2"}
+                              :Contacts [{:Type "email" :Value "abc@foo.com"}]}}
+                     {:Role "PROCESSOR"
+                      :Party {:OrganizationName {:ShortName "org 3"}}}]
+     :Personnel [{:Role "POINTOFCONTACT"
+                  :Party {:Person {:LastName "person 2"}}}]
+     }))
 
 (defn- prune-empty-maps
   "If x is a map, returns nil if all of the map's values are nil, otherwise returns the map with
@@ -504,6 +521,54 @@
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
+(defn- expected-person
+  [person]
+  (when-let [{:keys [FirstName MiddleName LastName]} person]
+    (-> person
+        (assoc :Uuid nil :FirstName nil :MiddleName nil)
+        (assoc :LastName (str/join
+                           " " (remove nil? [FirstName MiddleName LastName]))))))
+
+(defn- expected-contacts
+  "Returns the contacts with type phone or email"
+  [contacts]
+  (seq (filter #(.contains #{"phone" "email"} (:Type %)) contacts)))
+
+(defn- update-with-expected-party
+  "Update the given organization or personnel with expected person in the party"
+  [party]
+  (-> party
+      (update-in [:Party :Person] expected-person)
+      (update-in [:Party :Contacts] expected-contacts)
+      (update-in [:Party :OrganizationName] (fn [org-name]
+                                              (when org-name
+                                                (assoc org-name :LongName nil :Uuid nil))))
+      (update-in [:Party :Addresses] (fn [x]
+                                       (when-let [address (first x)]
+                                         [address])))
+      (update-in [:Party :RelatedUrls] (fn [x]
+                                       (when-let [related-url (first x)]
+                                         (-> related-url
+                                             (assoc :Protocol nil :Title nil
+                                                    :FileSize nil :ContentType nil
+                                                    :MimeType nil :Caption nil)
+                                             (update-in [:URLs] (fn [urls] [(first urls)]))
+                                             vector))))))
+
+(defn- expected-responsibility
+  [responsibility]
+  (-> responsibility
+      (update-in [:Party :RelatedUrls] (fn [urls]
+                                         (seq (map #(assoc % :ContentType nil) urls))))
+      update-with-expected-party))
+
+(defn- expected-responsibilities
+  [responsibilities allowed-roles]
+  (let [resp-by-role (group-by :Role responsibilities)
+        resp-by-role (update-in resp-by-role ["DISTRIBUTOR"] #(take 1 %))]
+    (seq (map expected-responsibility
+            (mapcat resp-by-role allowed-roles)))))
+
 (defn- group-metadata-assocations
   [mas]
   (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
@@ -526,13 +591,16 @@
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
       (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
+      (update-in [:Personnel]
+                 expected-responsibilities ["POINTOFCONTACT"])
+      (update-in [:Organizations]
+                 expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
       ;; Due to the way MetadataAssociatios is generated we need to fix nil types
       ; (update-in-each [:MetadataAssociations] update-in [:Type] #(or % ""))
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (update-in [:MetadataAssociations] group-metadata-assocations)))
 
 ;; ISO-SMAP
-
 (defn- normalize-smap-instruments
   "Collects all instruments across given platforms and returns a seq of platforms with all
   instruments under each one."
@@ -579,10 +647,9 @@
 
 (def not-implemented-fields
   "This is a list of required but not implemented fields."
-  #{:CollectionCitations :MetadataDates
-    :MetadataLanguage :DirectoryNames :Personnel
-    :Organizations
-    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage})
+  #{:CollectionCitations :MetadataDates :MetadataLanguage
+    :DirectoryNames :MetadataLineages :SpatialInformation
+    :PaleoTemporalCoverage})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
