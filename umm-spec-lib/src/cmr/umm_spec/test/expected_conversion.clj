@@ -144,8 +144,7 @@
      :Organizations [{:Role "ORIGINATOR"
                       :Party {:ServiceHours "24/7"
                               :OrganizationName {:ShortName "org 1"
-                                                 :LongName "longname"
-                                                 :Uuid "uuid"}
+                                                 :LongName "longname"}
                               :Addresses [{:StreetAddresses ["23 abc st"]
                                            :City "city"}]}}
                      {:Role "POINTOFCONTACT"
