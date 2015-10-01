@@ -265,7 +265,11 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil)
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
@@ -333,7 +337,11 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -402,9 +410,13 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -611,12 +623,23 @@
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
-  (-> (convert-internal umm-coll :iso19115)
+  (-> umm-coll
+      ;; TODO - Implement this as part of CMR-2058
+      (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
+      (convert-internal :iso19115)
       (assoc :SpatialExtent nil)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      ;; TODO - Implement this as part of CMR-2057
+      (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
+      ;; TODO - Implement this as part of CMR-1946
+      (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
