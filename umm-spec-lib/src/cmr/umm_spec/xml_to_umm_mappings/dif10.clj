@@ -6,7 +6,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
-            [cmr.umm-spec.dif10 :as dif10]))
+            [cmr.umm-spec.dif10-util :as dif10]))
 
 (defn- parse-characteristics
   [el]

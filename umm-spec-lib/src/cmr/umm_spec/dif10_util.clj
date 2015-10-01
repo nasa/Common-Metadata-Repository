@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.dif10
+(ns cmr.umm-spec.dif10-util
   "Generic DIF 10-related values and functions.")
 
 (def default-date-value "1970-01-01T00:00:00")

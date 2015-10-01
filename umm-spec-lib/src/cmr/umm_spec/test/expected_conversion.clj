@@ -426,7 +426,8 @@
       (update-in [:RelatedUrls] expected-dif-related-urls)
       ;; The following fields are not supported yet
       (assoc :TilingIdentificationSystem  nil
-             :Organizations nil)))
+             :Organizations nil
+             :Personnel nil)))
 
 ;; ISO 19115-2
 

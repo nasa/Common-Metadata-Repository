@@ -21,8 +21,8 @@
 (def tested-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   ;; We will re-enable the other formats after ISO support is complete.
-  ;; :dif :dif10 :iso-smap :echo10
-  [:iso19115])
+  ;; Pending formats: :dif :iso-smap :echo10
+  [:iso19115 :dif10])
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
