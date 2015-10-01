@@ -81,7 +81,7 @@
   (def sample-record user/failing-value)
 
   ;; generated xml
-  (core/generate-metadata :collection metadata-format sample-record)
+  (println (core/generate-metadata :collection metadata-format sample-record))
 
   ;; round-trip
   (xml-round-trip sample-record metadata-format)
