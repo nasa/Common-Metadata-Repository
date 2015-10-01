@@ -11,8 +11,8 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.distributions-related-url :as dru]
-            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]))
-
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as aa]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association :as ma]))
 
 (def iso19115-2-xml-namespaces
   {:xmlns:xs "http://www.w3.org/2001/XMLSchema"
@@ -215,6 +215,7 @@
             [:gco:CharacterString (str "Restriction Comment:" (-> c :AccessConstraints :Description))]]
            [:gmd:otherConstraints
             [:gco:CharacterString (str "Restriction Flag:" (-> c :AccessConstraints :Value))]]]]
+         (ma/generate-non-source-metadata-associations c)
          (generate-publication-references (:PublicationReferences c))
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
          (for [topic-category (:ISOTopicCategories c)]
@@ -289,7 +290,8 @@
              [:gmd:description {:gco:nilReason "unknown"}]
              (for [responsibility (org-per/responsibility-by-role (:Organizations c) "PROCESSOR")]
                [:gmd:processor
-                (org-per/generate-responsible-party responsibility)])]]]]]]
+                (org-per/generate-responsible-party responsibility)])]]
+           (ma/generate-source-metadata-associations c)]]]]
        [:gmi:acquisitionInformation
         [:gmi:MI_AcquisitionInformation
          (platform/generate-instruments platforms)

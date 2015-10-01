@@ -14,6 +14,7 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.organizations-personnel :as org-per]
+            [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
             [cmr.umm-spec.iso19115-2-util :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]))
 
@@ -57,7 +58,8 @@
 
 (def publication-xpath
   "Publication xpath relative to md-data-id-base-xpath"
-  "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation")
+  (str "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation"
+       "[gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:role/gmd:CI_RoleCode='publication']"))
 
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
@@ -218,6 +220,7 @@
                                :ISBN (iso/char-string-value publication "gmd:ISBN")
                                :DOI {:DOI (iso/char-string-value publication "gmd:identifier/gmd:MD_Identifier/gmd:code")}
                                :OtherReferenceDetails (iso/char-string-value publication "gmd:otherCitationDetails")})
+     :MetadataAssociations (ma/xml-elem->metadata-associations doc)
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
