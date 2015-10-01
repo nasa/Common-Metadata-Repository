@@ -399,11 +399,20 @@
             geom
             other-keys)))
 
+(defn fixup-dif10-data-dates
+  [data-dates]
+  (when (seq data-dates)
+    (let [date-types (group-by :Type data-dates)]
+      (filter some?
+              (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
+                (last (sort-by :Date (get date-types date-type))))))))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:DataDates] fixup-dif10-data-dates)
       (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
@@ -413,7 +422,10 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)))
+      (update-in [:RelatedUrls] expected-dif-related-urls)
+      ;; The following fields are not supported yet
+      (assoc :TilingIdentificationSystem  nil
+             :Organizations nil)))
 
 ;; ISO 19115-2
 

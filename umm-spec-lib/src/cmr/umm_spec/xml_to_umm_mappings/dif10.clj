@@ -5,7 +5,8 @@
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
-            [cmr.umm-spec.util :as u :refer [without-default-value-of]]))
+            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
+            [cmr.umm-spec.dif10 :as dif10]))
 
 (defn- parse-characteristics
   [el]
@@ -38,6 +39,20 @@
                    :Technique (value-of sensor "Technique")
                    :Characteristics (parse-characteristics sensor)})})))
 
+(defn- parse-data-dates
+  [doc]
+  (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
+        tag-types [["Data_Creation"      "CREATE"]
+                   ["Data_Last_Revision" "UPDATE"]
+                   ["Data_Future_Review" "REVIEW"]
+                   ["Data_Delete"        "DELETE"]]]
+    (filter :Date
+            (for [[tag date-type] tag-types]
+              {:Type date-type
+               :Date (let [date-val (value-of md-dates-el tag)]
+                       (when (not= date-val dif10/default-date-value)
+                         date-val))}))))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc]
@@ -48,6 +63,7 @@
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Dataset_Language")
+   :DataDates (parse-data-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")
