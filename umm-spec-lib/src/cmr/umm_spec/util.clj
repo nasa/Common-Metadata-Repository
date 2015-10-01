@@ -9,6 +9,10 @@
   "place holder string value for not provided string field"
   "Not provided")
 
+(def not-provided
+  "place holder string value for not provided string field"
+  "Not provided")
+
 (defn load-json-resource
   "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
   [json-resource]

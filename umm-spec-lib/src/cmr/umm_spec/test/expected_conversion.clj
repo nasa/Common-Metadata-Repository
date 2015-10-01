@@ -116,6 +116,20 @@
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
                     :FileSize {:Size 10.0 :Unit "MB"}}]
+     :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
+                             :Description "Associated with a collection"
+                             :EntryId "AssocEntryId"
+                             :Version "V8"},
+                            {:Type "INPUT"
+                             :Description "Some other collection"
+                             :EntryId "AssocEntryId2"
+                             :Version "V2"}
+                            {:Type nil
+                             :Description nil
+                             :EntryId "AssocEntryId3"
+                             :Version nil}
+                            {:Type "INPUT"
+                             :EntryId "AssocEntryId4"}]
      :AdditionalAttributes [{:Group "Accuracy"
                              :Name "PercentGroundHit"
                              :DataType "FLOAT"
@@ -234,6 +248,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
+      (assoc :MetadataAssociations nil)
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
@@ -301,6 +316,7 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -371,6 +387,7 @@
   (-> umm-coll
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -487,6 +504,11 @@
       (update-in-each [:VerticalSpatialDomains] fix-iso-vertical-spatial-domain-values)
       prune-empty-maps))
 
+(defn- group-metadata-assocations
+  [mas]
+  (let [{input-types true other-types false} (group-by (fn [ma] (= "INPUT" (:Type ma))) mas)]
+    (seq (concat other-types input-types))))
+
 (defmethod convert-internal :iso19115
   [umm-coll _]
   (-> umm-coll
@@ -503,7 +525,11 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in [:PublicationReferences] iso-19115-2-publication-reference)
       (update-in [:RelatedUrls] expected-iso-19115-2-related-urls)
-      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)))
+      (update-in-each [:AdditionalAttributes] assoc :UpdateDate nil)
+      ;; Due to the way MetadataAssociatios is generated we need to fix nil types
+      ; (update-in-each [:MetadataAssociations] update-in [:Type] #(or % ""))
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
+      (update-in [:MetadataAssociations] group-metadata-assocations)))
 
 ;; ISO-SMAP
 
@@ -522,6 +548,7 @@
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; Fields not supported by ISO-SMAP
+      (assoc :MetadataAssociations nil) ;; TODO implement this
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
@@ -555,8 +582,7 @@
   #{:CollectionCitations :MetadataDates
     :MetadataLanguage :DirectoryNames :Personnel
     :Organizations
-    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage
-    :MetadataAssociations})
+    :MetadataLineages :SpatialInformation :PaleoTemporalCoverage})
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"

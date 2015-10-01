@@ -491,7 +491,7 @@
           "maxLength": 255
         }
       },
-      "required": ["EntryId", "ProviderId"]
+      "required": ["EntryId"]
     },
     "PublicationReferenceType": {
       "type": "object",
@@ -1388,7 +1388,7 @@
     "MetadataAssociateTypeEnum": {
       "description": "The name of supported lineage date types",
       "type": "string",
-      "enum": ["SCIENCE ASSOCIATED", "LARGER CITATION WORKS"]
+      "enum": ["SCIENCE ASSOCIATED", "DEPENDENT", "INPUT", "LARGER CITATION WORKS"]
     },
     "KeywordStringType": {
       "type": "string",
