@@ -40,6 +40,7 @@
                    :Characteristics (parse-characteristics sensor)})})))
 
 (defn- parse-data-dates
+  "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
   [doc]
   (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
         tag-types [["Data_Creation"      "CREATE"]

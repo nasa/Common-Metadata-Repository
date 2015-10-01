@@ -400,6 +400,7 @@
             other-keys)))
 
 (defn fixup-dif10-data-dates
+  "Returns DataDates seq as it would be parsed from DIF 10 XML document."
   [data-dates]
   (when (seq data-dates)
     (let [date-types (group-by :Type data-dates)]
