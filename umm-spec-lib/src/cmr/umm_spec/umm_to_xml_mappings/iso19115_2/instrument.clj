@@ -34,7 +34,7 @@
 (defn generate-instrument-keywords
   [instruments]
   (let [keywords (map iso/generate-title instruments)]
-    (iso/generate-descriptive-keywords "instrument" keywords)))
+    (iso-utils/generate-iso19115-descriptive-keywords "instrument" keywords)))
 
 (defn generate-instruments
   "Returns content generator instructions for the given instruments."

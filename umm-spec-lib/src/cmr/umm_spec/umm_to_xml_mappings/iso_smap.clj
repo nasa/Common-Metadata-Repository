@@ -72,6 +72,8 @@
         [:gmd:abstract (char-string (:Abstract c))]
         [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
         [:gmd:status (generate-collection-progress c)]
+        (iso-utils/generate-iso-smap-descriptive-keywords
+           "theme" (map iso-utils/science-keyword->iso-keyword-string (:ScienceKeywords c)))
         [:gmd:descriptiveKeywords
          [:gmd:MD_Keywords
           (for [platform (:Platforms c)]

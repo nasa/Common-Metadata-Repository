@@ -64,14 +64,6 @@
 (def personnel-xpath
   "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
 
-(defn- descriptive-keywords
-  "Returns the descriptive keywords values for the given parent element and keyword type"
-  [md-data-id-el keyword-type]
-  (values-at md-data-id-el
-             (str "gmd:descriptiveKeywords/gmd:MD_Keywords"
-                  (format "[gmd:type/gmd:MD_KeywordTypeCode/@codeListValue='%s']" keyword-type)
-                  "/gmd:keyword/gco:CharacterString")))
-
 (defn- descriptive-keywords-type-not-equal
   "Returns the descriptive keyword values for the given parent element for all keyword types excepting
   those given"
@@ -104,24 +96,9 @@
           description (iso/char-string-value proj "gmi:description")
           ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
           long-name (when-not (= short-name description)
-                      (str/replace description (str short-name iso-utils/keyword-separator) ""))]
+                      (str/replace description (str short-name iso/keyword-separator) ""))]
       {:ShortName short-name
        :LongName long-name})))
-
-(defn- parse-science-keywords
-  "Returns the science keywords parsed from the given xml document."
-  [md-data-id-el]
-  (for [sk (descriptive-keywords md-data-id-el "theme")
-        :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-               detailed-variable] (map #(if (= iso-utils/nil-science-keyword-field %) nil %)
-                                       (str/split sk iso-utils/keyword-separator))]]
-    {:Category category
-     :Topic topic
-     :Term term
-     :VariableLevel1 variable-level-1
-     :VariableLevel2 variable-level-2
-     :VariableLevel3 variable-level-3
-     :DetailedVariable detailed-variable}))
 
 (defn- temporal-ends-at-present?
   [temporal-el]
@@ -175,8 +152,8 @@
      :UseConstraints
      (regex-value doc (str constraints-xpath "/gmd:useLimitation/gco:CharacterString")
                   #"^(?!Restriction Comment:).+")
-     :SpatialKeywords (descriptive-keywords md-data-id-el "place")
-     :TemporalKeywords (descriptive-keywords md-data-id-el "temporal")
+     :SpatialKeywords (iso-utils/descriptive-keywords md-data-id-el "place")
+     :TemporalKeywords (iso-utils/descriptive-keywords md-data-id-el "temporal")
      :DataLanguage (iso/char-string-value md-data-id-el "gmd:language")
      :ISOTopicCategories (values-at doc topic-categories-xpath)
      :SpatialExtent (spatial/parse-spatial doc extent-info)
@@ -224,7 +201,7 @@
      :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
                           ["place" "temporal" "project" "platform" "instrument" "theme"])
-     :ScienceKeywords (parse-science-keywords md-data-id-el)
+     :ScienceKeywords (iso-utils/parse-science-keywords md-data-id-el)
      :RelatedUrls (dru/parse-related-urls doc)
      :AdditionalAttributes (aa/parse-additional-attributes doc)
      :Personnel (org-per/parse-responsible-parties "POINTOFCONTACT" (select doc personnel-xpath))

@@ -51,7 +51,7 @@
   "Returns the content generator instructions for descriptive keywords of the given projects."
   [projects]
   (let [project-keywords (map iso/generate-title projects)]
-    (iso/generate-descriptive-keywords "project" project-keywords)))
+    (iso-utils/generate-iso19115-descriptive-keywords "project" project-keywords)))
 
 (defn- generate-projects
   [projects]
@@ -134,20 +134,6 @@
                         :when (some? v)]
                     (str k "=" (str/replace v #"[,=]" ""))))))
 
-(defn- science-keyword->iso-keyword-string
-  "Returns an ISO science keyword string from the given science keyword."
-  [science-keyword]
-  (let [{category :Category
-         topic :Topic
-         term :Term
-         variable-level-1 :VariableLevel1
-         variable-level-2 :VariableLevel2
-         variable-level-3 :VariableLevel3
-         detailed-variable :DetailedVariable} science-keyword]
-    (str/join iso-utils/keyword-separator (map #(or % iso-utils/nil-science-keyword-field)
-                                               [category topic term variable-level-1 variable-level-2
-                                                variable-level-3 detailed-variable]))))
-
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
   [c]
@@ -201,11 +187,11 @@
             (org-per/generate-responsible-party responsibility)])
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
-         (iso/generate-descriptive-keywords
-           "theme" (map science-keyword->iso-keyword-string (:ScienceKeywords c)))
-         (iso/generate-descriptive-keywords "place" (:SpatialKeywords c))
-         (iso/generate-descriptive-keywords "temporal" (:TemporalKeywords c))
-         (iso/generate-descriptive-keywords (:AncillaryKeywords c))
+         (iso-utils/generate-iso19115-descriptive-keywords
+           "theme" (map iso-utils/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+         (iso-utils/generate-iso19115-descriptive-keywords "place" (:SpatialKeywords c))
+         (iso-utils/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
+         (iso-utils/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)
          (platform/generate-instrument-keywords platforms)
          [:gmd:resourceConstraints
