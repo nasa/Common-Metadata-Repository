@@ -2,8 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM organization and personnel records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [clojure.string :as str]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-utils :as iso-utils]))
+            [cmr.umm-spec.iso19115-2-util :as iso]))
 
 
 (defn responsibility-by-role

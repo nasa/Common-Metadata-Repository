@@ -53,3 +53,8 @@
   "Returns the string itself or empty string if it is nil."
   [s]
   (if (some? s) s ""))
+
+(defn generate-id
+  "Returns a 5 character random id to use as an ISO id"
+  []
+  (str "d" (java.util.UUID/randomUUID)))

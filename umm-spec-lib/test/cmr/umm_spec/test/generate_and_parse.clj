@@ -13,6 +13,7 @@
             [cmr.umm-spec.simple-xpath :refer [select context]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.iso19115-2-util :as iu]
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
             [cmr.common.util :refer [are2]]
@@ -20,8 +21,6 @@
 
 (def tested-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  ;; We will re-enable the other formats after ISO support is complete.
-  ;; :dif :dif10 :iso-smap :echo10
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
 (defn xml-round-trip
@@ -49,7 +48,7 @@
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
   [metadata-xml]
   (let [md-data-id-el (first (select (context metadata-xml) iso-xml-to-umm/md-data-id-base-xpath))]
-    (seq (#'iso-xml-to-umm/descriptive-keywords md-data-id-el "project"))))
+    (seq (#'kws/descriptive-keywords md-data-id-el "project"))))
 
 ;; Info in UMM Projects field is duplicated in ISO191152 xml in two different places.
 ;; We parse UMM Projects from the gmi:MI_Operation, not from gmd:descriptiveKeywords.
@@ -64,10 +63,10 @@
 
 (comment
 
-  (println (core/generate-metadata :collection :iso19115 user/failing-value))
+  (println (core/generate-metadata :collection :iso-smap user/failing-value))
 
-  (is (= (expected-conversion/convert user/failing-value :iso19115)
-         (xml-round-trip user/failing-value :iso19115)))
+  (is (= (expected-conversion/convert user/failing-value :iso-smap)
+         (xml-round-trip user/failing-value :iso-smap)))
 
   ;; random XML gen
   (def metadata-format :iso19115)
