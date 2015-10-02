@@ -131,9 +131,9 @@
          variable-level-2 :VariableLevel2
          variable-level-3 :VariableLevel3
          detailed-variable :DetailedVariable} science-keyword]
-    (str/join iso/keyword-separator (map #(or % nil-science-keyword-field)
-                                               [category topic term variable-level-1 variable-level-2
-                                                variable-level-3 detailed-variable]))))
+    (->> [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]
+         (map #(or % nil-science-keyword-field))
+         (str/join iso/keyword-separator))))
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."
