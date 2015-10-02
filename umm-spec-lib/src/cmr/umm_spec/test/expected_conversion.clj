@@ -8,7 +8,7 @@
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-utils :as iso-utils]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
@@ -672,7 +672,7 @@
       (update-in [:ScienceKeywords]
                  (fn [sks]
                    (seq
-                     (filter #(.contains iso-utils/science-keyword-categories (:Category %)) sks))))
+                     (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
       (update-in [:Platforms] normalize-smap-instruments)))
 
 ;;; Unimplemented Fields

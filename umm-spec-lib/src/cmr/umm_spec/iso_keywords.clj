@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.iso-utils
-  "Contains utility functions and constants for parsing and generating ISO-19115-2 and SMAP ISO.
-  SMAP ISO collection science keywords, platforms and instruments are all represented as
+(ns cmr.umm-spec.iso-keywords
+  "Contains utility functions and constants for parsing and generating ISO-19115-2 and SMAP ISO
+  keywords. Collection science keywords, platforms and instruments are all represented as
   descriptiveKeywords. It would be better if the type element within the descriptiveKeywords could
   identify the type of the keywords. But currently it is always set to 'theme'. We will propose to
   get this changed, but in the mean time, we will have to parse the keyword string to determine the
@@ -120,11 +120,6 @@
   (format "Dummy Instruments > DUMMY > DUMMY > DUMMY > %s > %s"
           (:ShortName instrument)
           (str (:LongName instrument))))
-
-(defn generate-id
-  "Returns a 5 character random id to use as an ISO id"
-  []
-  (str "d" (java.util.UUID/randomUUID)))
 
 (defn science-keyword->iso-keyword-string
   "Returns an ISO science keyword string from the given science keyword."

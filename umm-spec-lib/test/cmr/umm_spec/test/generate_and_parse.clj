@@ -13,7 +13,7 @@
             [cmr.umm-spec.simple-xpath :refer [select context]]
             [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
-            [cmr.umm-spec.iso-utils :as iso-utils]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.iso19115-2-util :as iu]
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
             [cmr.common.util :refer [are2]]
@@ -48,7 +48,7 @@
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
   [metadata-xml]
   (let [md-data-id-el (first (select (context metadata-xml) iso-xml-to-umm/md-data-id-base-xpath))]
-    (seq (#'iso-utils/descriptive-keywords md-data-id-el "project"))))
+    (seq (#'kws/descriptive-keywords md-data-id-el "project"))))
 
 ;; Info in UMM Projects field is duplicated in ISO191152 xml in two different places.
 ;; We parse UMM Projects from the gmi:MI_Operation, not from gmd:descriptiveKeywords.

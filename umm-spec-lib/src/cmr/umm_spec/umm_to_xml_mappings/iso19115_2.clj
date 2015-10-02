@@ -5,7 +5,7 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
-            [cmr.umm-spec.iso-utils :as iso-utils]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
@@ -51,7 +51,7 @@
   "Returns the content generator instructions for descriptive keywords of the given projects."
   [projects]
   (let [project-keywords (map iso/generate-title projects)]
-    (iso-utils/generate-iso19115-descriptive-keywords "project" project-keywords)))
+    (kws/generate-iso19115-descriptive-keywords "project" project-keywords)))
 
 (defn- generate-projects
   [projects]
@@ -187,11 +187,11 @@
             (org-per/generate-responsible-party responsibility)])
          (dru/generate-browse-urls c)
          (generate-projects-keywords (:Projects c))
-         (iso-utils/generate-iso19115-descriptive-keywords
-           "theme" (map iso-utils/science-keyword->iso-keyword-string (:ScienceKeywords c)))
-         (iso-utils/generate-iso19115-descriptive-keywords "place" (:SpatialKeywords c))
-         (iso-utils/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
-         (iso-utils/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
+         (kws/generate-iso19115-descriptive-keywords
+           "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+         (kws/generate-iso19115-descriptive-keywords "place" (:SpatialKeywords c))
+         (kws/generate-iso19115-descriptive-keywords "temporal" (:TemporalKeywords c))
+         (kws/generate-iso19115-descriptive-keywords nil (:AncillaryKeywords c))
          (platform/generate-platform-keywords platforms)
          (platform/generate-instrument-keywords platforms)
          [:gmd:resourceConstraints
@@ -219,7 +219,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
+                [:gml:TimePeriod {:gml:id (su/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
                  (if (:EndsAtPresentFlag temporal)
                    [:gml:endPosition {:indeterminatePosition "now"}]
@@ -229,7 +229,7 @@
              [:gmd:temporalElement
               [:gmd:EX_TemporalExtent
                [:gmd:extent
-                [:gml:TimeInstant {:gml:id (iso-utils/generate-id)}
+                [:gml:TimeInstant {:gml:id (su/generate-id)}
                  [:gml:timePosition date]]]]])]]
          [:gmd:processingLevel
           [:gmd:MD_Identifier

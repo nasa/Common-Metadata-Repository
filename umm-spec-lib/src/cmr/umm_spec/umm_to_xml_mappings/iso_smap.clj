@@ -1,8 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [clojure.string :as str]
-            [cmr.umm-spec.iso-utils :as iso-utils]
-            [cmr.umm-spec.iso19115-2-util :as u]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 
@@ -72,16 +71,16 @@
         [:gmd:abstract (char-string (:Abstract c))]
         [:gmd:purpose {:gco:nilReason "missing"} (char-string (:Purpose c))]
         [:gmd:status (generate-collection-progress c)]
-        (iso-utils/generate-iso-smap-descriptive-keywords
-           "theme" (map iso-utils/science-keyword->iso-keyword-string (:ScienceKeywords c)))
+        (kws/generate-iso-smap-descriptive-keywords
+           "theme" (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
         [:gmd:descriptiveKeywords
          [:gmd:MD_Keywords
           (for [platform (:Platforms c)]
             [:gmd:keyword
-             (char-string (iso-utils/smap-keyword-str platform))])
+             (char-string (kws/smap-keyword-str platform))])
           (for [instrument (mapcat :Instruments (:Platforms c))]
             [:gmd:keyword
-             (char-string (iso-utils/smap-keyword-str instrument))])]]
+             (char-string (kws/smap-keyword-str instrument))])]]
         [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
         [:gmd:extent
          [:gmd:EX_Extent
@@ -90,7 +89,7 @@
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimePeriod {:gml:id (iso-utils/generate-id)}
+               [:gml:TimePeriod {:gml:id (su/generate-id)}
                 [:gml:beginPosition (:BeginningDateTime rdt)]
                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
           (for [temporal (:TemporalExtents c)
@@ -98,7 +97,7 @@
             [:gmd:temporalElement
              [:gmd:EX_TemporalExtent
               [:gmd:extent
-               [:gml:TimeInstant {:gml:id (iso-utils/generate-id)}
+               [:gml:TimeInstant {:gml:id (su/generate-id)}
                 [:gml:timePosition date]]]]])]]]]
       [:gmd:identificationInfo
        [:gmd:MD_DataIdentification

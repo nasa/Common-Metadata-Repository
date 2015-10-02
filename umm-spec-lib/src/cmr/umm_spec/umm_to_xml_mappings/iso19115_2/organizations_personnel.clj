@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [clojure.string :as str]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-utils :as iso-utils]))
+            [cmr.umm-spec.iso-keywords :as kws]))
 
 
 (defn responsibility-by-role

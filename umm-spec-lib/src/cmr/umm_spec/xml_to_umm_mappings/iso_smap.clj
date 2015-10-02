@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso-utils :as utils]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :refer [without-default-value-of]]))
 
 (def md-identification-base-xpath
@@ -44,8 +44,8 @@
   Category of each theme descriptive keyword to determine if it is a science keyword."
   [data-id-el]
   (->> data-id-el
-       utils/parse-science-keywords
-       (filter #(.contains utils/science-keyword-categories (:Category %)))))
+       kws/parse-science-keywords
+       (filter #(.contains kws/science-keyword-categories (:Category %)))))
 
 (defn iso-smap-xml-to-umm-c
   [doc]
@@ -60,7 +60,7 @@
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
-                    (utils/parse-platforms smap-keywords))
+                    (kws/parse-platforms smap-keywords))
        :TemporalExtents (for [temporal (select data-id-el temporal-extent-xpath-str)]
                           {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                                              {:BeginningDateTime (value-of period "gml:beginPosition")

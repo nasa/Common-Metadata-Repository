@@ -2,15 +2,15 @@
   "Functions for generating ISO19115-2 XML elements from UMM platform records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-utils :as iso-utils]
-            [cmr.umm-spec.util :refer [with-default]]
+            [cmr.umm-spec.iso-keywords :as kws]
+            [cmr.umm-spec.util :as su :refer [with-default]]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.instrument :as inst]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.characteristics :as ch]))
 
 (defn- platform-with-id
   "Returns the platform with generated ids for ISO xml generation"
   [platform]
-  (let [platform-id (iso-utils/generate-id)
+  (let [platform-id (su/generate-id)
         instruments (inst/instruments-with-id (:Instruments platform) platform-id)]
     (-> platform
         (assoc :Instruments instruments)
@@ -24,7 +24,7 @@
 (defn generate-platform-keywords
   [platforms]
   (let [keywords (map iso/generate-title platforms)]
-    (iso-utils/generate-iso19115-descriptive-keywords "platform" keywords)))
+    (kws/generate-iso19115-descriptive-keywords "platform" keywords)))
 
 (defn generate-instrument-keywords
   [platforms]
