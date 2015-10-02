@@ -8,6 +8,7 @@
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
@@ -55,7 +56,10 @@
                                           :EndingDateTime (t/date-time 2003)}]}]
      :ProcessingLevel {:Id "3"
                        :ProcessingLevelDescription "Processing level description"}
-     :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
+     :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                       {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
+                        :VariableLevel1 "var 1" :VariableLevel2 "var 2"
+                        :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -265,7 +269,11 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil)
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
@@ -333,12 +341,12 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      ;; not supported in DIF 9 (some just not yet...)
-      (assoc :MetadataAssociations nil
-             :DataDates nil
-             :Personnel nil
-             :Organizations nil
-             :TilingIdentificationSystem nil)
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      ;; DIF 9 does not support DataDates
+      (assoc :DataDates nil)
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -416,10 +424,13 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:DataDates] fixup-dif10-data-dates)
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -566,13 +577,13 @@
                                        (when-let [address (first x)]
                                          [address])))
       (update-in [:Party :RelatedUrls] (fn [x]
-                                       (when-let [related-url (first x)]
-                                         (-> related-url
-                                             (assoc :Protocol nil :Title nil
-                                                    :FileSize nil :ContentType nil
-                                                    :MimeType nil :Caption nil)
-                                             (update-in [:URLs] (fn [urls] [(first urls)]))
-                                             vector))))))
+                                         (when-let [related-url (first x)]
+                                           (-> related-url
+                                               (assoc :Protocol nil :Title nil
+                                                      :FileSize nil :ContentType nil
+                                                      :MimeType nil :Caption nil)
+                                               (update-in [:URLs] (fn [urls] [(first urls)]))
+                                               vector))))))
 
 (defn- expected-responsibility
   [responsibility]
@@ -586,7 +597,7 @@
   (let [resp-by-role (group-by :Role responsibilities)
         resp-by-role (update-in resp-by-role ["DISTRIBUTOR"] #(take 1 %))]
     (seq (map expected-responsibility
-            (mapcat resp-by-role allowed-roles)))))
+              (mapcat resp-by-role allowed-roles)))))
 
 (defn- group-metadata-assocations
   [mas]
@@ -630,12 +641,23 @@
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
-  (-> (convert-internal umm-coll :iso19115)
+  (-> umm-coll
+      ;; TODO - Implement this as part of CMR-2058
+      (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
+      (convert-internal :iso19115)
       (assoc :SpatialExtent nil)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
+      ;; TODO - Implement this as part of CMR-2057
+      (update-in-each [:TemporalExtents] assoc :TemporalRangeType nil)
+      ;; TODO - Implement this as part of CMR-1946
+      (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :MetadataAssociations nil) ;; TODO implement this
+      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
+      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
+      (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)
       (assoc :SpatialKeywords nil)
@@ -648,7 +670,6 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :RelatedUrls nil)
-      (assoc :ScienceKeywords nil)
       (assoc :ISOTopicCategories nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
@@ -660,6 +681,12 @@
                       :NumberOfSensors nil
                       :Sensors nil
                       :Technique nil)
+      ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
+      ;; science keyword.
+      (update-in [:ScienceKeywords]
+                 (fn [sks]
+                   (seq
+                     (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
       (update-in [:Platforms] normalize-smap-instruments)))
 
 ;;; Unimplemented Fields

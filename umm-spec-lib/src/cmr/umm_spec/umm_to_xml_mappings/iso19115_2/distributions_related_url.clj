@@ -2,7 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM related-url records."
   (:require [clojure.string :as str]
             [cmr.umm-spec.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-2-util :as u]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su]))
@@ -60,7 +60,8 @@
           [:gmd:description {:gco:nilReason "missing"}])
         [:gmd:function
          [:gmd:CI_OnLineFunctionCode
-          {:codeList (str (:ngdc u/code-lists) "#CI_OnLineFunctionCode") :codeListValue code} ]]]])))
+          {:codeList (str (:ngdc iso/code-lists) "#CI_OnLineFunctionCode")
+           :codeListValue code}]]]])))
 
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"
