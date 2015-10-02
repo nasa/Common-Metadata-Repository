@@ -69,13 +69,14 @@
          (xml-round-trip user/failing-value :iso-smap)))
 
   ;; random XML gen
+  (def metadata-format :dif)
   (def metadata-format :iso19115)
   (def metadata-format :echo10)
   (def metadata-format :dif)
   (def metadata-format :dif10)
   (def metadata-format :iso-smap)
 
-  (def sample-record (first (gen/sample (gen/such-that (comp :TemporalRangeType first :TemporalExtents) umm-gen/umm-c-generator) 1)))
+  (def sample-record (first (gen/sample (gen/such-that :DataDates umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
 
