@@ -6,7 +6,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
-            [cmr.umm-spec.dif10-util :as dif10]))
+            [cmr.umm-spec.date-util :as date]))
 
 (defn- parse-characteristics
   [el]
@@ -50,9 +50,7 @@
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
-               :Date (let [date-val (value-of md-dates-el tag)]
-                       (when (not= date-val dif10/default-date-value)
-                         date-val))}))))
+               :Date (date/not-default (value-of md-dates-el tag))}))))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."

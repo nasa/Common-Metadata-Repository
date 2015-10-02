@@ -194,6 +194,21 @@
 
 ;;; Utililty Functions
 
+(defn fixup-dif10-data-dates
+  "Returns DataDates seq as it would be parsed from ECHO and DIF 10 XML document."
+  [data-dates]
+  (when (seq data-dates)
+    (let [date-types (group-by :Type data-dates)]
+      (filter some?
+              (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
+                (last (sort-by :Date (get date-types date-type))))))))
+
+(defn fixup-echo10-data-dates
+  [data-dates]
+  (seq
+   (remove #(= "REVIEW" (:Type %))
+           (fixup-dif10-data-dates data-dates))))
+
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
   [date]
@@ -271,16 +286,19 @@
   (-> umm-coll
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
+      (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
+      (assoc :Personnel nil)
+      (assoc :Organizations nil)
+      (assoc :TilingIdentificationSystem nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
@@ -411,15 +429,6 @@
               (assoc m k nil))
             geom
             other-keys)))
-
-(defn fixup-dif10-data-dates
-  "Returns DataDates seq as it would be parsed from DIF 10 XML document."
-  [data-dates]
-  (when (seq data-dates)
-    (let [date-types (group-by :Type data-dates)]
-      (filter some?
-              (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
-                (last (sort-by :Date (get date-types date-type))))))))
 
 (defmethod convert-internal :dif10
   [umm-coll _]

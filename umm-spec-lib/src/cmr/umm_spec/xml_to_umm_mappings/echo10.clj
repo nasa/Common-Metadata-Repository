@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.simple-xpath :refer [select text]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.date-util :as date]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
             [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.json-schema :as js]
@@ -46,12 +47,24 @@
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
+(defn parse-data-dates
+  "Returns UMM DataDates seq from ECHO 10 XML document."
+  [doc]
+  (for [[date-type xpath] [["CREATE" "InsertTime"]
+                           ["UPDATE" "LastUpdate"]
+                           ["DELETE" "DeleteTime"]]
+        :let [date-val (date/not-default (value-of doc (str "/Collection/" xpath)))]
+        :when date-val]
+    {:Type date-type
+     :Date date-val}))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
    :EntryId    (value-of doc "/Collection/ShortName")
    :Version    (without-default-value-of doc "/Collection/VersionId")
+   :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
    :Purpose    (value-of doc "/Collection/SuggestedUsage")

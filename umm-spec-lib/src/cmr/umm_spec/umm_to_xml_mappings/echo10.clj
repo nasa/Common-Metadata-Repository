@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.util :refer [with-default]]
+            [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
 (defn characteristic-mapping
@@ -102,8 +103,9 @@
     [:Collection
      [:ShortName (:EntryId c)]
      [:VersionId (with-default (:Version c))]
-     [:InsertTime "1999-12-31T19:00:00-05:00"]
-     [:LastUpdate "1999-12-31T19:00:00-05:00"]
+     [:InsertTime (dates/or-default (dates/data-create-date c))]
+     [:LastUpdate (dates/or-default (dates/data-update-date c))]
+     [:DeleteTime (dates/data-delete-date c)]
      [:LongName "dummy-long-name"]
      [:DataSetId (:EntryTitle c)]
      [:Description (:Abstract c)]
