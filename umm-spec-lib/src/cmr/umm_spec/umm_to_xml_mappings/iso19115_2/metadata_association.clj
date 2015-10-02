@@ -2,10 +2,7 @@
   "Functions for generating ISO19115-2 XML elements from UMM instrument records."
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :as spec-util]))
-
-; MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality/gmd:lineage/gmd:LI_Lineage/gmd:source
 
 (defn- output-character-string
   "Write a gco:CharacterString element or a gco:nilReason"
