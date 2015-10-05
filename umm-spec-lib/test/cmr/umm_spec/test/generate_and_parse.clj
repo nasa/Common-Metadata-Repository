@@ -64,7 +64,7 @@
 
 (comment
 
-  (println (core/generate-metadata :collection :iso19115 user/failing-value))
+  (println (core/generate-metadata :collection :echo10 user/failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso19115)
          (xml-round-trip user/failing-value :iso19115)))
@@ -79,6 +79,8 @@
   (def sample-record (first (gen/sample (gen/such-that (comp :TemporalRangeType first :TemporalExtents) umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
+  '
+  (def sample-record expected-conversion/example-record)
 
   ;; generated xml
   (println (core/generate-metadata :collection metadata-format sample-record))

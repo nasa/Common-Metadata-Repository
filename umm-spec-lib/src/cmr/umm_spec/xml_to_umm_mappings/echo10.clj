@@ -46,6 +46,23 @@
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
+;; /Collection/CollectionAssociations/CollectionAssociation/
+
+(defn parse-metadata-association
+  "Returns a UMM MetadataAssocation record from an ECHO10 CollectionAsscociation element."
+  [element]
+  (let [version-id (value-of element "VersionId")
+        assoc-type (value-of element "CollectionType")]
+    {:EntryId (value-of element "ShortName")
+     :Version (when (not= u/not-provided version-id) version-id)
+     :Type (when (not= u/not-provided assoc-type) assoc-type)
+     :Description (value-of element "CollectionUse")}))
+
+(defn parse-metadata-associations
+  "Returns a seq of UMM MetadataAssocation records from an ECHO10 document."
+  [doc]
+  (map parse-metadata-association (select doc "/Collection/CollectionAssociations/CollectionAssociation")))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
@@ -79,6 +96,7 @@
                             :ParameterRangeBegin (value-of aa "ParameterRangeBegin")
                             :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
                             :Value (value-of aa "Value")})
+   :MetadataAssociations (parse-metadata-associations doc)
    :Projects (for [proj (select doc "/Collection/Campaigns/Campaign")]
                {:ShortName (value-of proj "ShortName")
                 :LongName (value-of proj "LongName")

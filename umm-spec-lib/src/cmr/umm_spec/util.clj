@@ -9,10 +9,6 @@
   "place holder string value for not provided string field"
   "Not provided")
 
-(def not-provided
-  "place holder string value for not provided string field"
-  "Not provided")
-
 (defn load-json-resource
   "Loads a json resource from the classpath. The JSON file may contain comments which are ignored"
   [json-resource]
@@ -54,13 +50,20 @@
   [s]
   (if (some? s) s ""))
 
-(defn gen-am-short-name
-  "Creates a short name from the associated metadata entry-id"
-  [am]
-  (let [entry-id (:EntryId am)]
-    (if-let [version-id (:Version am)]
+(defn gen-ma-short-name
+  "Creates a short name from the metadta association entry-id"
+  [ma]
+  (let [entry-id (:EntryId ma)]
+    (if-let [version-id (:Version ma)]
       (let [sn-index (.lastIndexOf entry-id (str "_" version-id))]
         (if (> sn-index 0)
           (subs entry-id 0 sn-index)
           entry-id))
       entry-id)))
+
+(defn gen-ma-entry-id
+  "Creates an entry-id from the short-name and verision-id for a metadata association"
+  [short-name version-id]
+  (if (= not-provided version-id)
+    short-name
+    (str short-name "_" version-id)))

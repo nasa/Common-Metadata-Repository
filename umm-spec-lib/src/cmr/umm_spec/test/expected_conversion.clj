@@ -269,7 +269,6 @@
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
