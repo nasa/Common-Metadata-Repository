@@ -103,7 +103,9 @@
                   {:URLs (values-at related-url "URL")
                    :Description description
                    :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})})
+                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})
+  :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
+                          {:EntryId parent-dif})})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

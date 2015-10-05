@@ -46,8 +46,6 @@
          :Characteristics (parse-characteristics inst)
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
-;; /Collection/CollectionAssociations/CollectionAssociation/
-
 (defn parse-metadata-association
   "Returns a UMM MetadataAssocation record from an ECHO10 CollectionAsscociation element."
   [element]

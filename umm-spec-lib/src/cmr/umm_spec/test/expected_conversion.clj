@@ -336,7 +336,7 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
