@@ -2,7 +2,7 @@
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
-            [cmr.umm-spec.dif10-util :as dif10]
+            [cmr.umm-spec.date-util :as date]
             [camel-snake-kebab.core :as csk]
             [clj-time.format :as f]
             [cmr.umm-spec.util :as u :refer [with-default]]))
@@ -140,12 +140,11 @@
 (defn- generate-data-dates
   "Returns DIF 10 elements for UMM-C collection c's DataDates."
   [c]
-  (let [get-date (partial dif10/latest-date-of-type (:DataDates c))]
-    (list
-     [:Data_Creation (or (get-date "CREATE") dif10/default-date-value)]
-     [:Data_Last_Revision (or (get-date "UPDATE") dif10/default-date-value)]
-     [:Data_Future_Review (get-date "REVIEW")]
-     [:Data_Delete (get-date "DELETE")])))
+  (list
+   [:Data_Creation (date/or-default (date/data-create-date c))]
+   [:Data_Last_Revision (date/or-default (date/data-update-date c))]
+   [:Data_Future_Review (date/data-review-date c)]
+   [:Data_Delete (date/data-delete-date c)]))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."

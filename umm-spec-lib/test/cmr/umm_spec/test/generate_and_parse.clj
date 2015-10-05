@@ -83,6 +83,9 @@
   ;; generated xml
   (println (core/generate-metadata :collection metadata-format sample-record))
 
+  ;; our simple example record
+  (core/generate-metadata :collection metadata-format expected-conversion/example-record)
+
   ;; round-trip
   (xml-round-trip sample-record metadata-format)
 
