@@ -12,12 +12,13 @@
            java.io.StringReader
            java.io.StringWriter
            org.w3c.dom.Node
-           org.w3c.dom.bootstrap.DOMImplementationRegistry
-           org.w3c.dom.ls.DOMImplementationLS
-           org.w3c.dom.ls.LSSerializer
            org.xml.sax.InputSource
            org.xml.sax.SAXParseException
-           javax.xml.parsers.DocumentBuilderFactory))
+           javax.xml.parsers.DocumentBuilderFactory
+           javax.xml.transform.TransformerFactory
+           javax.xml.transform.dom.DOMSource
+           javax.xml.transform.stream.StreamResult
+           javax.xml.transform.OutputKeys))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -173,17 +174,11 @@
   [xml]
   (let [src (InputSource. (StringReader. xml))
         builder (.newDocumentBuilder (DocumentBuilderFactory/newInstance))
-        document (.getDocumentElement (.parse builder src))
-        ^Boolean keep-declaration (.startsWith xml "<?xml")
-        registry (DOMImplementationRegistry/newInstance)
-        ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
-        writer (.createLSSerializer impl)
-        dom-config (.getDomConfig writer)
-        output (.createLSOutput impl)]
-    (.setParameter dom-config "format-pretty-print" true)
-    (.setParameter dom-config "xml-declaration" keep-declaration)
-    (.setCharacterStream output (new StringWriter))
-    (.setEncoding output "UTF-8")
-    (.write writer document output)
-    (.toString (.getCharacterStream output))))
+        source (DOMSource. (.parse builder src))
+        result (StreamResult. (StringWriter.))
+        transformer (.newTransformer (TransformerFactory/newInstance))]
+    (.setOutputProperty transformer OutputKeys/INDENT "yes")
+    (.setOutputProperty transformer "{http://xml.apache.org/xslt}indent-amount", "2")
+    (.transform transformer source result)
+    (.. result getWriter toString)))
 
