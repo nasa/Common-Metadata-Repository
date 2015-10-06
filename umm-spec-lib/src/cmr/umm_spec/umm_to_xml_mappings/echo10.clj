@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.util :refer [with-default]]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
