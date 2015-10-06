@@ -1,4 +1,5 @@
 (ns cmr.indexer.data.index-set
+  (:refer-clojure :exclude [update])
   (:require [cmr.common.lifecycle :as lifecycle]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
