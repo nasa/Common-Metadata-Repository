@@ -48,7 +48,7 @@
          :Sensors (map parse-sensor (select inst "Sensors/Sensor"))))
 
 (defn parse-metadata-association
-  "Returns a UMM MetadataAssocation record from an ECHO10 CollectionAsscociation element."
+  "Returns a UMM MetadataAssocation from an ECHO10 CollectionAsscociation element."
   [element]
   (let [version-id (value-of element "VersionId")
         assoc-type (value-of element "CollectionType")]
@@ -58,9 +58,10 @@
      :Description (value-of element "CollectionUse")}))
 
 (defn parse-metadata-associations
-  "Returns a seq of UMM MetadataAssocation records from an ECHO10 document."
+  "Returns a seq of UMM MetadataAssocations from an ECHO10 document."
   [doc]
-  (map parse-metadata-association (select doc "/Collection/CollectionAssociations/CollectionAssociation")))
+  (map parse-metadata-association
+       (select doc "/Collection/CollectionAssociations/CollectionAssociation")))
 
 (defn parse-data-dates
   "Returns UMM DataDates seq from ECHO 10 XML document."
