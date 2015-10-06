@@ -408,10 +408,10 @@
             geom
             other-keys)))
 
-(defn- clean-metadata-associations
-  [ma]
-  (when (not= (:Type ma) "LARGER CITATION WORKS")
-    ma))
+(defn- filter-metadata-associations
+  [mas]
+  (seq (filter #(not= (:Type %) "LARGER CITATION WORKS")
+               mas)))
 
 (defn- fix-matadata-association-type
   [ma]
@@ -420,7 +420,7 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in-each [:MetadataAssociations] clean-metadata-associations)
+      (update-in [:MetadataAssociations] filter-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-matadata-association-type)
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
@@ -571,13 +571,13 @@
                                        (when-let [address (first x)]
                                          [address])))
       (update-in [:Party :RelatedUrls] (fn [x]
-                                       (when-let [related-url (first x)]
-                                         (-> related-url
-                                             (assoc :Protocol nil :Title nil
-                                                    :FileSize nil :ContentType nil
-                                                    :MimeType nil :Caption nil)
-                                             (update-in [:URLs] (fn [urls] [(first urls)]))
-                                             vector))))))
+                                         (when-let [related-url (first x)]
+                                           (-> related-url
+                                               (assoc :Protocol nil :Title nil
+                                                      :FileSize nil :ContentType nil
+                                                      :MimeType nil :Caption nil)
+                                               (update-in [:URLs] (fn [urls] [(first urls)]))
+                                               vector))))))
 
 (defn- expected-responsibility
   [responsibility]
@@ -591,7 +591,7 @@
   (let [resp-by-role (group-by :Role responsibilities)
         resp-by-role (update-in resp-by-role ["DISTRIBUTOR"] #(take 1 %))]
     (seq (map expected-responsibility
-            (mapcat resp-by-role allowed-roles)))))
+              (mapcat resp-by-role allowed-roles)))))
 
 (defn- group-metadata-assocations
   [mas]
