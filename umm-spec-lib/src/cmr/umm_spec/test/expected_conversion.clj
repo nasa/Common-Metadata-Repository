@@ -265,6 +265,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
@@ -407,12 +408,20 @@
             geom
             other-keys)))
 
+(defn- clean-metadata-associations
+  [ma]
+  (when (not= (:Type ma) "LARGER CITATION WORKS")
+    ma))
+
+(defn- fix-matadata-association-type
+  [ma]
+  (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in-each [:MetadataAssociations] #(when (not= (:Type %) "LARGER CITATION WORKS")
-                                                 %))
-      (update-in-each [:MetadataAssociations] update-in [:Type] #(or % "SCIENCE ASSOCIATED"))
+      (update-in-each [:MetadataAssociations] clean-metadata-associations)
+      (update-in-each [:MetadataAssociations] fix-matadata-association-type)
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
@@ -610,8 +619,6 @@
                  expected-responsibilities ["POINTOFCONTACT"])
       (update-in [:Organizations]
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
-      ;; Due to the way MetadataAssociatios is generated we need to fix nil types
-      ; (update-in-each [:MetadataAssociations] update-in [:Type] #(or % ""))
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (update-in [:MetadataAssociations] group-metadata-assocations)))
 
@@ -638,7 +645,7 @@
       ;; TODO - Implement this as part of CMR-1946
       (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
