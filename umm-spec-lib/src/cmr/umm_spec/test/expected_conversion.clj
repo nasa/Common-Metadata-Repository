@@ -431,20 +431,23 @@
             geom
             other-keys)))
 
-(defn- filter-metadata-associations
+(defn- filter-dif10-metadata-associations
+  "Removes metadata associations with type \"LARGER CITATIONS WORKS\" since this type is not
+  allowed in DIF10."
   [mas]
   (seq (filter #(not= (:Type %) "LARGER CITATION WORKS")
                mas)))
 
-(defn- fix-matadata-association-type
+(defn- fix-dif10-matadata-association-type
+  "Defaults metadata association type to \"SCIENCE ASSOCIATED\"."
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
-      (update-in [:MetadataAssociations] filter-metadata-associations)
-      (update-in-each [:MetadataAssociations] fix-matadata-association-type)
+      (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
+      (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
