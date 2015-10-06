@@ -5,6 +5,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
             [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes]]))
 
 (def md-identification-base-xpath
@@ -73,4 +74,5 @@
                                              {:BeginningDateTime (value-of period "gml:beginPosition")
                                               :EndingDateTime    (value-of period "gml:endPosition")})
                            :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
-       :ScienceKeywords (parse-science-keywords data-id-el)})))
+       :ScienceKeywords (parse-science-keywords data-id-el)
+       :SpatialExtent (spatial/parse-spatial data-id-el)})))
