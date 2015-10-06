@@ -238,6 +238,13 @@
         (for [url (get related-url :URLs ["http://www.foo.com"])]
           [:URL url])
         [:Description (:Description related-url)]])
+     (for [ma (:MetadataAssociations c)
+           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" nil} (:Type ma))]
+       [:Metadata_Association
+        [:Entry_Id (:EntryId ma)]
+        [:Version (u/with-default (:Version ma))]
+        [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
+        [:Description (:Description ma)]])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 10.1"]
      [:Metadata_Dates

@@ -79,7 +79,7 @@
   (def sample-record (first (gen/sample (gen/such-that (comp :TemporalRangeType first :TemporalExtents) umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
-  '
+
   (def sample-record expected-conversion/example-record)
 
   ;; generated xml

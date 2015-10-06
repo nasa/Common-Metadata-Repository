@@ -3,7 +3,8 @@
   (:require [cheshire.core :as json]
             [cheshire.factory :as factory]
             [cmr.common.util :as util]
-            [cmr.umm-spec.xml.parse :as p]))
+            [cmr.umm-spec.xml.parse :as p]
+            [clojure.string :as string]))
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -50,20 +51,10 @@
   [s]
   (if (some? s) s ""))
 
-(defn gen-ma-short-name
-  "Creates a short name from the metadta association entry-id"
-  [ma]
-  (let [entry-id (:EntryId ma)]
-    (if-let [version-id (:Version ma)]
-      (let [sn-index (.lastIndexOf entry-id (str "_" version-id))]
-        (if (> sn-index 0)
-          (subs entry-id 0 sn-index)
-          entry-id))
-      entry-id)))
-
-(defn gen-ma-entry-id
-  "Creates an entry-id from the short-name and verision-id for a metadata association"
-  [short-name version-id]
-  (if (= not-provided version-id)
-    short-name
-    (str short-name "_" version-id)))
+(defn capitalize-words
+  "Capitalize every word in a string"
+  [s]
+  (when s
+    (->> (string/split (str s) #"\b")
+         (map string/capitalize)
+         (string/join))))

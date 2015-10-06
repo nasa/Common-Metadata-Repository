@@ -336,7 +336,8 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
+      (update-in-each [:MetadataAssociations]
+                      assoc :Type nil :Description nil :Version nil :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
@@ -409,13 +410,16 @@
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (update-in-each [:MetadataAssociations] #(when (not= (:Type %) "LARGER CITATION WORKS")
+                                                 %))
+      (update-in-each [:MetadataAssociations] update-in [:Type] #(or % "SCIENCE ASSOCIATED"))
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
