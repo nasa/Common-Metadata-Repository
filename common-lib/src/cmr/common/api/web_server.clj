@@ -54,18 +54,6 @@
     (.setHandler existing-handler)
     (.setMinGzipSize min_gzip_size)))
 
-(comment
-
-
-  (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)
-
-
-
-  )
-
-
-
-
 (defrecord WebServer
   [
    ;; The port Jetty will be running on
@@ -99,7 +87,8 @@
                               :max-threads MAX_THREADS
                               :configurator (fn [jetty]
                                               (doseq [connector (.getConnectors jetty)]
-                                                (let [^HttpConnectionFactory http-conn-factory (first (.getConnectionFactories connector))]
+                                                (let [^HttpConnectionFactory http-conn-factory
+                                                      (first (.getConnectionFactories connector))]
                                                   (.setRequestHeaderSize
                                                     (.getHttpConfiguration http-conn-factory)
                                                     MAX_REQUEST_HEADER_SIZE))))})]

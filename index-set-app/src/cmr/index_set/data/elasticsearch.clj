@@ -10,8 +10,7 @@
             [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.elastic-utils.connect :as es]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.elastic-utils.connect :as es]))
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -133,7 +132,7 @@
   [config]
   (map->ESstore {:config config}))
 
-(deftracefn save-document-in-elastic
+(defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
@@ -150,7 +149,7 @@
             msg (str "Call to Elasticsearch caught exception " err-msg)]
         (throw (Exception. msg))))))
 
-(deftracefn delete-document
+(defn delete-document
   "Delete the document from elastic, raise error on failure."
   [context index-name mapping-type id]
   (let [{:keys [host port admin-token]} (get-in context [:system :index :config])

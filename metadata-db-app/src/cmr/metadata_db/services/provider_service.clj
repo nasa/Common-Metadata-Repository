@@ -6,10 +6,9 @@
             [cmr.metadata-db.services.provider-validation :as pv]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.common.log :refer (debug info warn error)]))
 
-(deftracefn create-provider
+(defn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]
   (info "Creating provider [" provider-id "]")
@@ -22,14 +21,14 @@
       (cmsg/data-error :conflict msg/provider-with-short-name-exists existing-provider))
     (providers/save-provider db provider)))
 
-(deftracefn get-providers
+(defn get-providers
   "Get the list of providers. The special provider 'cmr' is not included in the returned list."
   [context]
   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)]
     (providers/get-providers db)))
 
-(deftracefn get-provider-by-id
+(defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based
   on the throw-error flag"
   ([context provider-id]
@@ -41,7 +40,7 @@
        (when throw-error?
          (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))))
 
-(deftracefn update-provider
+(defn update-provider
   "Updates a provider."
   [context {:keys [provider-id short-name small] :as provider}]
   (info "Updating provider [" provider-id "]")
@@ -57,7 +56,7 @@
       (cmsg/data-error :bad-request msg/provider-small-field-cannot-be-modified provider-id))
     (providers/update-provider db provider)))
 
-(deftracefn delete-provider
+(defn delete-provider
   "Delete a provider and all its concept tables."
   [context provider-id]
   (info "Deleting provider [" provider-id "]")
@@ -68,7 +67,7 @@
     (when (:error result)
       (errors/internal-error! (:error-message result)))))
 
-(deftracefn reset-providers
+(defn reset-providers
   "Delete all the providers and their concepts."
   [context]
   (info "Deleting all providers and concepts.")

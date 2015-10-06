@@ -7,7 +7,6 @@
             [cmr.common.nrepl :as nrepl]
             [cmr.virtual-product.api.routes :as routes]
             [cmr.common.api.web-server :as web]
-            [cmr.system-trace.context :as context]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as transmit-config]
             [cmr.virtual-product.services.virtual-product-service :as vps]
@@ -31,7 +30,6 @@
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)
-             :zipkin (context/zipkin-config "virtual-product" false)
              :queue-broker (rmq/create-queue-broker (config/rabbit-mq-config))}]
     (transmit-config/system-with-connections sys [:metadata-db :ingest :search])))
 

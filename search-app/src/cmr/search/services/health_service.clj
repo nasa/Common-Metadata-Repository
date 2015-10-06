@@ -1,11 +1,10 @@
 (ns cmr.search.services.health-service
   "Contains fuctions to provider health status of the search app."
-  (:require [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.transmit.echo.rest :as rest]
+  (:require [cmr.transmit.echo.rest :as rest]
             [cmr.metadata-db.services.health-service :as meta-db]
             [cmr.transmit.index-set :as index-set]))
 
-(deftracefn health
+(defn health
   "Returns the health state of the app."
   [context]
   (let [echo-rest-health (rest/health context)

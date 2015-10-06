@@ -23,7 +23,6 @@
             [cmr.metadata-db.data.oracle.search]
 
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.system-trace.core :refer [deftracefn]]
             [clojure.set :as set]
             [clojure.string]
             [clj-time.core :as t]
@@ -181,7 +180,7 @@
 
 ;;; service methods
 
-(deftracefn get-concept
+(defn get-concept
   "Get a concept by concept-id."
   ([context concept-id]
    (let [db (util/context->db context)
@@ -227,7 +226,7 @@
   (let [existing-provider-ids (set (map :provider-id (provider-db/get-providers db)))]
     (into {} (filter (comp existing-provider-ids first) provider-id-map))))
 
-(deftracefn get-concepts
+(defn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
   [context concept-id-revision-id-tuples allow-missing?]
   (info (format "Getting [%d] concepts by concept-id/revision-id"
@@ -271,7 +270,7 @@
             (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
                  missing-concept-tuples)))))))
 
-(deftracefn get-latest-concepts
+(defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids allow-missing?]
@@ -314,7 +313,7 @@
             (map msg/concept-does-not-exist
                  missing-concept-ids)))))))
 
-(deftracefn get-expired-collections-concept-ids
+(defn get-expired-collections-concept-ids
   "Returns the concept ids of expired collections in the provider."
   [context provider-id]
   (let [db (util/context->db context)
@@ -393,7 +392,7 @@
         (ingest-events/concept-update-event concept))
       concept)))
 
-(deftracefn force-delete
+(defn force-delete
   "Remove a revision of a concept from the database completely."
   [context concept-id revision-id]
   (let [db (util/context->db context)
@@ -412,13 +411,13 @@
     {:concept-id concept-id
      :revision-id revision-id}))
 
-(deftracefn reset
+(defn reset
   "Delete all concepts from the concept store and all providers."
   [context]
   (provider-service/reset-providers context)
   (c/reset (util/context->db context)))
 
-(deftracefn get-concept-id
+(defn get-concept-id
   "Get a concept id for a given concept."
   [context concept-type provider-id native-id]
   (cu/validate-concept-type concept-type)
@@ -445,7 +444,7 @@
                    (provider-db/get-providers db)))))
 
 ;; There's not sufficient integration tests for this. Filed CMR-1579
-(deftracefn get-provider-holdings
+(defn get-provider-holdings
   "Gets provider holdings within Metadata DB"
   [context]
   (let [db (util/context->db context)

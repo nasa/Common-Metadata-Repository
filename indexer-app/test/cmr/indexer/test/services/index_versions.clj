@@ -2,13 +2,13 @@
   "Integration test for index versions during save and delete in elasticsearch"
   (:require [clojure.test :refer :all]
             [clojure.string :as s]
-            [taoensso.timbre :as timbre]
             [clojurewerkz.elastisch.rest :as esr]
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as doc]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.data.index-set :as idx-set]
+            [cmr.common.test.test-util :as tu]
             [cmr.common.cache :as cache]
             [clojure.data.codec.base64 :as b64]
             [cmr.common.lifecycle :as lifecycle]))
@@ -45,23 +45,22 @@
 (defn server-setup
   "Fixture that starts an instance of elastic in the JVM runs the tests and then shuts it down."
   [f]
-
   (let [http-port (:port test-config)
         server (lifecycle/start (elastic-server/create-server http-port 9215 "es_data/indexer_test") nil)]
     (reset! context {:system {:db {:config test-config
                                    :conn (esr/connect (str "http://localhost:" http-port))}}})
-
-    ;; Disables standard out logging during testing because it breaks the JUnit parser in bamboo.
-    (timbre/set-config! [:appenders :standard-out :enabled?] false)
-
     (try
       (f)
       (finally
-        (lifecycle/stop server nil)
-        (timbre/set-config! [:appenders :standard-out :enabled?] true)))))
+        (lifecycle/stop server nil)))))
 
 ;; Run once for the whole test suite
-(use-fixtures :once server-setup)
+(use-fixtures
+  :once
+  (join-fixtures [
+                  ;; Disables standard out logging during testing because it breaks the JUnit parser in bamboo.
+                  tu/silence-logging-fixture
+                  server-setup]))
 
 (defn- assert-version
   "Assert the retrieved document for the given id is of the given version"

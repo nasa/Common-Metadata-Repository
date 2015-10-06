@@ -25,7 +25,7 @@
                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
 
                  ; include ring-core to support encoding of params
-                 [ring/ring-core "1.3.2" :exclusions [clj-time]]]
+                 [ring/ring-core "1.4.0" :exclusions [clj-time]]]
   :plugins [[lein-test-out "0.3.1"]]
 
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]

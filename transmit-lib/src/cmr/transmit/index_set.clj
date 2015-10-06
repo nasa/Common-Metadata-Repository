@@ -4,7 +4,6 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
             [cheshire.core :as cheshire]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.transmit.config :as config]
             [cmr.transmit.connection :as conn]))
 

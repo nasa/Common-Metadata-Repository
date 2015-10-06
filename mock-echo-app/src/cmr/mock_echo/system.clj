@@ -9,7 +9,7 @@
             [cmr.mock-echo.data.token-db :as token-db]
             [cmr.mock-echo.data.provider-db :as provider-db]
             [cmr.mock-echo.data.acl-db :as acl-db]
-            [cmr.system-trace.context :as context]))
+            [cmr.common.api.context :as context]))
 
 (def PORT 3008)
 
@@ -25,8 +25,7 @@
    :token-db (token-db/create-db)
    :provider-db (provider-db/create-db)
    :acl-db (acl-db/create-db)
-   :web (web/create-web-server PORT routes/make-api)
-   :zipkin (context/zipkin-config "mock-echo" false)})
+   :web (web/create-web-server PORT routes/make-api)})
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

@@ -6,8 +6,7 @@
             [cmr.metadata-db.services.messages :as msg]
             [clojure.set :as set]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.util :as util]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.common.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
@@ -70,7 +69,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service methods for finding concepts
 
-(deftracefn find-concepts
+(defn find-concepts
   "Find concepts with specific parameters"
   [context params]
   (validate-find-params params)

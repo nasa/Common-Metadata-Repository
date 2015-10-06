@@ -3,7 +3,6 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/message-queue-lib"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [com.novemberain/langohr "3.0.1"]]

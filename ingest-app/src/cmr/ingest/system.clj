@@ -6,7 +6,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.api.web-server :as web]
             [cmr.common.nrepl :as nrepl]
-            [cmr.system-trace.context :as context]
             [cmr.ingest.api.routes :as routes]
             [cmr.transmit.config :as transmit-config]
             [cmr.oracle.config :as oracle-config]
@@ -51,7 +50,6 @@
               :web (web/create-web-server (transmit-config/ingest-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (oracle/create-db (config/db-spec connection-pool-name))
-              :zipkin (context/zipkin-config "Ingest" false)
               :scheduler (jobs/create-clustered-scheduler
                            `system-holder :db
                            (conj ingest-jobs/jobs (af/refresh-acl-cache-job "ingest-acl-cache-refresh")))

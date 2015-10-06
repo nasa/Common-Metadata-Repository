@@ -11,8 +11,7 @@
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.connection :as transmit-conn]
             [cmr.common.cache :as cache]
-            [cmr.common.config :as cfg]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.common.config :as cfg]))
 
 ;; The number of shards to use for the collections index, the granule indexes containing granules
 ;; for a single collection, and the granule index containing granules for the remaining collections

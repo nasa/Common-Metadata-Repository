@@ -22,7 +22,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.xml :as cx]
             [cmr.search.services.query-service :as query-svc]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.services.health-service :as hs]
@@ -424,7 +424,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler

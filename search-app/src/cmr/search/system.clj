@@ -12,7 +12,6 @@
             [cmr.search.api.routes :as routes]
             [cmr.search.data.elastic-search-index :as idx]
             [cmr.search.services.acls.acl-helper :as ah]
-            [cmr.system-trace.context :as context]
             [cmr.metadata-db.system :as mdb-system]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.transmit.config :as transmit-config]
@@ -90,7 +89,6 @@
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
                       kf/kms-cache-key (kf/create-kms-cache)}
-             :zipkin (context/zipkin-config "Search" false)
              :search-public-conf search-public-conf
              :scheduler (jobs/create-scheduler
                           `system-holder

@@ -4,16 +4,15 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/ingest-app"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
-                 [compojure "1.3.2"]
-                 [ring/ring-core "1.3.2" :exclusions [clj-time]]
-                 [ring/ring-json "0.3.1"]
+                 [compojure "1.4.0"]
+                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [ring/ring-json "0.4.0"]
                  [clj-http "1.0.1"]
                  [drift "1.5.2"]
 

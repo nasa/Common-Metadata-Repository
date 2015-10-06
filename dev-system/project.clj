@@ -16,7 +16,6 @@
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"
    :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
-   :cmr-system-trace-lib "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
