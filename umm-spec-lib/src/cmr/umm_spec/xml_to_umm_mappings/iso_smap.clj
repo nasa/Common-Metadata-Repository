@@ -4,7 +4,8 @@
             [cmr.umm-spec.simple-xpath :refer [select]]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.iso-keywords :as kws]
-            [cmr.umm-spec.util :refer [without-default-value-of]]))
+            [cmr.umm-spec.util :refer [without-default-value-of]]
+            [cmr.umm-spec.iso19115-2-util :refer [umm-date-type-codes]]))
 
 (def md-identification-base-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata/gmi:MI_Metadata"
@@ -39,6 +40,9 @@
 (def keywords-xpath-str
   "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
+(def data-dates-xpath
+  (str md-identification-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
+
 (defn- parse-science-keywords
   "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
   Category of each theme descriptive keyword to determine if it is a science keyword."
@@ -58,6 +62,9 @@
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
        :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
+       :DataDates (for [date-el (select doc data-dates-xpath)]
+                    {:Date (value-of date-el "gmd:date/gco:DateTime")
+                     :Type (get umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
