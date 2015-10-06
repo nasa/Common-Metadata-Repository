@@ -2,6 +2,7 @@
   "Defines mappings from a UMM record into DIF10 XML"
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
+            [cmr.umm-spec.date-util :as date]
             [camel-snake-kebab.core :as csk]
             [clj-time.format :as f]
             [cmr.umm-spec.util :as u :refer [with-default]]))
@@ -136,6 +137,15 @@
      [:ValueAccuracyExplanation (:ValueAccuracyExplanation aa)]
      [:Value (:Value aa)]]))
 
+(defn- generate-data-dates
+  "Returns DIF 10 elements for UMM-C collection c's DataDates."
+  [c]
+  (list
+   [:Data_Creation (date/or-default (date/data-create-date c))]
+   [:Data_Last_Revision (date/or-default (date/data-update-date c))]
+   [:Data_Future_Review (date/data-review-date c)]
+   [:Data_Delete (date/data-delete-date c)]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -250,8 +260,7 @@
      [:Metadata_Dates
       [:Metadata_Creation "2000-03-24T22:20:41-05:00"]
       [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
-      [:Data_Creation "1970-01-01T00:00:00"]
-      [:Data_Last_Revision "1970-01-01T00:00:00"]]
+      (generate-data-dates c)]
      (generate-additional-attributes (:AdditionalAttributes c))
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
      [:Collection_Data_Type (:CollectionDataType c)]

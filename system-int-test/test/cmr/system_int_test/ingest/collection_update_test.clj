@@ -513,6 +513,31 @@
            coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
            coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
 
+
+;; TODO uncomment with CMR-2061 and add more tests for other fields.
+; (deftest collection-update-ids-test
+;   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+;                                                 :native-id "coll1"}))
+;         collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
+;                                                         :native-id "coll2"}))
+;         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+;         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))]
+;     (index/wait-until-indexed)
+
+;     (testing "Update collection successful cases"
+;       (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Entry Title"
+;                                                        :native-id "coll2"}))
+;             {:keys [status errors]} response]
+;         (= [200 nil] [status errors])))
+
+;     (testing "Update collection failure cases"
+;       (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Entry Title"
+;                                                        :native-id "coll1"})
+;                                {:allow-failure? true})
+;             {:keys [status errors]} response]
+;         (is (= [400 ["TODO change this to a reasonable error message"]]
+;                [status errors]))))))
+
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "2001-01-01T12:00:00Z"

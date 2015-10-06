@@ -3,7 +3,7 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.iso-utils :as utils]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.util :refer [without-default-value-of]]))
 
 (def md-identification-base-xpath
@@ -39,22 +39,31 @@
 (def keywords-xpath-str
   "gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:keyword/gco:CharacterString")
 
+(defn- parse-science-keywords
+  "Returns the parsed science keywords for the given ISO SMAP xml element. ISO-SMAP checks on the
+  Category of each theme descriptive keyword to determine if it is a science keyword."
+  [data-id-el]
+  (->> data-id-el
+       kws/parse-science-keywords
+       (filter #(.contains kws/science-keyword-categories (:Category %)))))
+
 (defn iso-smap-xml-to-umm-c
   [doc]
-  (let [data-id (first (select doc md-identification-base-xpath))
+  (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/coerce
-     {:EntryId (value-of data-id entry-id-xpath)
-      :EntryTitle (value-of doc entry-title-xpath)
-      :Version (without-default-value-of data-id version-xpath)
-      :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
-      :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
-      :CollectionProgress (value-of data-id "gmd:status/gmd:MD_ProgressCode")
-      :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
-      :Platforms (let [smap-keywords (values-at data-id keywords-xpath-str)]
-                   (utils/parse-platforms smap-keywords))
-      :TemporalExtents (for [temporal (select data-id temporal-extent-xpath-str)]
-                         {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                                            {:BeginningDateTime (value-of period "gml:beginPosition")
-                                             :EndingDateTime    (value-of period "gml:endPosition")})
-                          :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})})))
+      {:EntryId (value-of data-id-el entry-id-xpath)
+       :EntryTitle (value-of doc entry-title-xpath)
+       :Version (without-default-value-of data-id-el version-xpath)
+       :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
+       :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
+       :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
+       :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
+       :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
+                    (kws/parse-platforms smap-keywords))
+       :TemporalExtents (for [temporal (select data-id-el temporal-extent-xpath-str)]
+                          {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
+                                             {:BeginningDateTime (value-of period "gml:beginPosition")
+                                              :EndingDateTime    (value-of period "gml:endPosition")})
+                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
+       :ScienceKeywords (parse-science-keywords data-id-el)})))

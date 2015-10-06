@@ -6,7 +6,8 @@
             [clojure.string :as string]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
-            [cmr.umm-spec.util :as u :refer [without-default-value-of]]))
+            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
+            [cmr.umm-spec.date-util :as date]))
 
 (defn- parse-characteristics
   [el]
@@ -39,6 +40,19 @@
                    :Technique (value-of sensor "Technique")
                    :Characteristics (parse-characteristics sensor)})})))
 
+(defn- parse-data-dates
+  "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
+  [doc]
+  (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
+        tag-types [["Data_Creation"      "CREATE"]
+                   ["Data_Last_Revision" "UPDATE"]
+                   ["Data_Future_Review" "REVIEW"]
+                   ["Data_Delete"        "DELETE"]]]
+    (filter :Date
+            (for [[tag date-type] tag-types]
+              {:Type date-type
+               :Date (date/not-default (value-of md-dates-el tag))}))))
+
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
   [doc]
@@ -49,6 +63,7 @@
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
    :DataLanguage (value-of doc "/DIF/Dataset_Language")
+   :DataDates (parse-data-dates doc)
    :ISOTopicCategories (values-at doc "DIF/ISO_Topic_Category")
    :TemporalKeywords (values-at doc "/DIF/Temporal_Coverage/Temporal_Info/Ancillary_Temporal_Keyword")
    :CollectionProgress (value-of doc "/DIF/Dataset_Progress")

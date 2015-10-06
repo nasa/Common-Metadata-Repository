@@ -58,3 +58,8 @@
     (->> (string/split (str s) #"\b")
          (map string/capitalize)
          (string/join))))
+
+(defn generate-id
+  "Returns a 5 character random id to use as an ISO id"
+  []
+  (str "d" (java.util.UUID/randomUUID)))

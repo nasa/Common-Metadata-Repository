@@ -8,6 +8,7 @@
             [cmr.common.util :as util :refer [update-in-each]]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
@@ -55,7 +56,10 @@
                                           :EndingDateTime (t/date-time 2003)}]}]
      :ProcessingLevel {:Id "3"
                        :ProcessingLevelDescription "Processing level description"}
-     :ScienceKeywords [{:Category "cat" :Topic "top" :Term "ter"}]
+     :ScienceKeywords [{:Category "EARTH SCIENCE" :Topic "top" :Term "ter"}
+                       {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
+                        :VariableLevel1 "var 1" :VariableLevel2 "var 2"
+                        :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -190,6 +194,21 @@
 
 ;;; Utililty Functions
 
+(defn fixup-dif10-data-dates
+  "Returns DataDates seq as it would be parsed from ECHO and DIF 10 XML document."
+  [data-dates]
+  (when (seq data-dates)
+    (let [date-types (group-by :Type data-dates)]
+      (filter some?
+              (for [date-type ["CREATE" "UPDATE" "REVIEW" "DELETE"]]
+                (last (sort-by :Date (get date-types date-type))))))))
+
+(defn fixup-echo10-data-dates
+  [data-dates]
+  (seq
+   (remove #(= "REVIEW" (:Type %))
+           (fixup-dif10-data-dates data-dates))))
+
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
   [date]
@@ -268,15 +287,18 @@
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
+      (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
       (assoc :UseConstraints nil)
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :ISOTopicCategories nil)
+      (assoc :Personnel nil)
+      (assoc :Organizations nil)
+      (assoc :TilingIdentificationSystem nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)
@@ -341,8 +363,9 @@
                       assoc :Type nil :Description nil :Version nil :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
+      ;; DIF 9 does not support DataDates
+      (assoc :DataDates nil)
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -425,10 +448,10 @@
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
+      (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -437,7 +460,11 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)))
+      (update-in [:RelatedUrls] expected-dif-related-urls)
+      ;; The following fields are not supported yet
+      (assoc :TilingIdentificationSystem  nil
+             :Organizations nil
+             :Personnel nil)))
 
 ;; ISO 19115-2
 
@@ -662,7 +689,6 @@
       (assoc :PublicationReferences nil)
       (assoc :AncillaryKeywords nil)
       (assoc :RelatedUrls nil)
-      (assoc :ScienceKeywords nil)
       (assoc :ISOTopicCategories nil)
       ;; Because SMAP cannot account for type, all of them are converted to Spacecraft.
       ;; Platform Characteristics are also not supported.
@@ -674,6 +700,12 @@
                       :NumberOfSensors nil
                       :Sensors nil
                       :Technique nil)
+      ;; ISO-SMAP checks on the Category of theme descriptive keywords to determine if it is
+      ;; science keyword.
+      (update-in [:ScienceKeywords]
+                 (fn [sks]
+                   (seq
+                     (filter #(.contains kws/science-keyword-categories (:Category %)) sks))))
       (update-in [:Platforms] normalize-smap-instruments)))
 
 ;;; Unimplemented Fields
