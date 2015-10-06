@@ -1,4 +1,5 @@
 (ns cmr.metadata-db.data.oracle.sql-utils
+  (:refer-clojure :exclude [update])
   (:require [cmr.common.log :refer (debug info warn error)]
             [cmr.metadata-db.config :as config]
             [clojure.java.jdbc :as j]

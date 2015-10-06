@@ -50,7 +50,7 @@
            (search/find-params-validation {:concept-type "granule"
                                            :foo "f"}))))
   (testing "invalid concept-type"
-    (is (= [(msg/find-not-supported-combination :foo [:provider-id :entry-title])]
+    (is (= [(msg/find-not-supported-combination :foo [:entry-title :provider-id])]
            (search/find-params-validation {:concept-type "foo"
                                            :entry-title "e"
                                            :provider-id "p"})))))

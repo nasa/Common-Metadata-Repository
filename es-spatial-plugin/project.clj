@@ -16,7 +16,7 @@
 (defproject nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
   :description "A Elastic Search plugin that enables spatial search entirely within elastic."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/es-spatial-plugin"
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [org.elasticsearch/elasticsearch "1.6.2"]
 

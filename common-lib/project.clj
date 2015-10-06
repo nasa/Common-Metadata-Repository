@@ -2,7 +2,7 @@
   :description "Provides common utility code for CMR projects."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.taoensso/timbre "3.4.0"]
                  [ring/ring-jetty-adapter "1.3.2"]

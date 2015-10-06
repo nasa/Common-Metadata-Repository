@@ -51,9 +51,9 @@
   ;; Due to a stack overflow issue in the latest version of leiningen we can only list the top level
   ;; libraries in the dependencies. Sub dependencies that are also under another project can't be
   ;; included
-  ; :dependencies ~(concat '[[org.clojure/clojure "1.6.0"]]
+  ; :dependencies ~(concat '[[org.clojure/clojure "1.7.0"]]
   ;                        project-dependencies)
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]

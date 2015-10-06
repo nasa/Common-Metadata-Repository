@@ -38,7 +38,9 @@
       (is (nil? (seq (v/validate (rr/ords->ring :cartesian 0 -70, -180.0 -70, 180.0 -90.0, 180.0 -70, 0.0 -70)))))))
   (testing "invalid rings"
     (u/are2
-      [ords msgs] (= (seq msgs) (seq (v/validate (apply rr/ords->ring :cartesian ords))))
+      [ords msgs]
+      (is (= (seq msgs)
+             (seq (v/validate (apply rr/ords->ring :cartesian ords)))))
 
       "invalid point"
       [0 0, 181 0, 0 1, 0 0]
@@ -64,9 +66,9 @@
 
       "Multiple duplicate points"
       [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
-      [(msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])
+      [(msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])
        (msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
-       (msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
+       (msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])]
 
       "very very close points"
       [0 0, 1 1, 1 1.000000001, 0 1, 0 0]

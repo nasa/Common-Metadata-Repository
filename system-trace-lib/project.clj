@@ -2,7 +2,7 @@
   :description "Provides library functions for tracing requests throughout the CMR system. Built on
                Twitter Zipkin and clj-zipkin."
   :url "***REMOVED***projects/CMR/repos/cmr/browse/system-trace-lib"
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
                 ;; clj-zipkin macros don't work very well. It's included mostly for some utility

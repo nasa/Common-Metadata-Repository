@@ -4,7 +4,6 @@
   (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cheshire.core :as cheshire]
-            [cmr.system-int-test.utils.index-util :as index]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.common.util :as u]
