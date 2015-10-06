@@ -3,6 +3,7 @@
   to limit the dependency on a particular logging framework."
   (:require [cmr.common.lifecycle :as lifecycle]
             [taoensso.timbre :as t]
+            [taoensso.timbre.appenders.core :as a]
             [clojure.string :as s]
             [clojure.java.io :as io]))
 
@@ -11,42 +12,59 @@
   a UUID so it's easy to search for. If request id is not set the thread name or id will be used."
   nil)
 
+;; TODO test logging by running an application
+;; Checkout the config before and after
 (defn- setup-logging
   "Configures logging using Timbre."
   [{:keys [level file stdout-enabled?]}]
 
   (t/set-level! (or level :warn))
-  (t/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss.SSS")
+  (t/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
 
-  (if file
+  (when file
     ;; Enable file logging
     (do
       ;; Make sure the log directory exists
       (.. (io/file file) getParentFile mkdirs)
-      (t/set-config! [:appenders :spit :enabled?] true)
-      (t/set-config! [:shared-appender-config :spit-filename] file))
-    ;; Disable file logging
-    (t/set-config! [:appenders :spit :enabled?] false))
+      (t/merge-config! {:appenders {:spit (a/spit-appender {:fname file})}})))
 
 
   ;; Set the format for logging.
-  (t/set-config! [:fmt-output-fn]
-                 (fn [{:keys [level throwable message timestamp hostname ns]}
-                      ;; Any extra appender-specific opts:
-                      & [{:keys [nofonts?] :as appender-fmt-output-opts}]]
-                   ;; <timestamp> <hostname> <request id> <LEVEL> [<ns>] - <message> <throwable>
-                   (format "%s %s [%s] %s [%s] - %s%s"
-                           timestamp
-                           hostname
-                           (or *request-id* (.getName (Thread/currentThread)) (.getId (Thread/currentThread)))
-                           (-> level name s/upper-case)
-                           ns
-                           (or message "")
-                           (or (t/stacktrace throwable "\n" (when nofonts? {})) ""))))
+  (t/merge-config! {:output-fn
+                    (fn [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as data}]
+                      ;; <timestamp_> <hostname_> <request id> <LEVEL> [<?ns-str>] - <msg_> <?err_>
+                      (format "%s %s [%s] %s [%s] - %s%s"
+                              (force timestamp_)
+                              (force hostname_)
+                              (or *request-id* (.getName (Thread/currentThread)) (.getId (Thread/currentThread)))
+                              (-> level name s/upper-case)
+                              (or ?ns-str "?ns")
+                              (force msg_)
+                              (if-let [err (force ?err_)]
+                                (str "\n" (t/stacktrace err))
+                                "")))
+                    :appenders {:println {:enabled? stdout-enabled?}}}))
+(comment
 
+  (defn default-output-fn
+    "Default (fn [data]) -> string output fn.
+    You can modify default options with `(partial default-output-fn <opts-map>)`."
+    ([data] (default-output-fn nil data))
+    ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
+     (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
+       (str
+         (force timestamp_)       " "
+         (force hostname_)        " "
+         (str/upper-case (name level))  " "
+         "[" (or ?ns-str "?ns") "] - "
+         (force msg_)
+         (when-not no-stacktrace?
+           (when-let [err (force ?err_)]
+             (str "\n" (stacktrace err opts))))))))
 
-  ; Enable/disable stdout logs
-  (t/set-config! [:appenders :standard-out :enabled?] stdout-enabled?))
+  (println (t/stacktrace (Exception. "")))
+
+  )
 
 (defmacro with-request-id
   "Sets the dynamic var *request-id* so that any log messages executed within this binding will

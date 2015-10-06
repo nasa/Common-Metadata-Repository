@@ -27,7 +27,7 @@
                  :timeout 120000}
   :jvm-opts []
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.7.0"]

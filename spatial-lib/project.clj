@@ -9,12 +9,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
 
                  ; Fast math library for atan2, acos, asin, etc
-                 ;; Available in devrepo1 repository. Must be on vpn and run "lein deps".
-                 ;; http://sourceforge.net/projects/jafama/?source=dlp
-                 ;; Note that this has to be manually installed in the maven repo. It must be
-                 ;; downloaded from the source forge and installed. lein ancient will not be able
-                 ;; to detect when this library has been updated.
-                 [jafama/jafama "2.1"]
+                 [net.jafama/jafama "2.1.0"]
 
                  ;; Matrix multiplication
                  [net.mikera/core.matrix "0.33.2"]
@@ -55,7 +50,7 @@
 
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.7.0"]]

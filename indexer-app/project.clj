@@ -19,7 +19,7 @@
 
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.10"]
+                        [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
    :uberjar {:main cmr.indexer.runner

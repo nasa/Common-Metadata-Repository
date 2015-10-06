@@ -31,7 +31,7 @@
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
                         [pjstadig/humane-test-output "0.7.0"]]
