@@ -206,8 +206,8 @@
 (defn fixup-echo10-data-dates
   [data-dates]
   (seq
-   (remove #(= "REVIEW" (:Type %))
-           (fixup-dif10-data-dates data-dates))))
+    (remove #(= "REVIEW" (:Type %))
+            (fixup-dif10-data-dates data-dates))))
 
 (defn single-date->range
   "Returns a RangeDateTimeType for a single date."
@@ -648,13 +648,26 @@
     (for [platform platforms]
       (assoc platform :Instruments all-instruments))))
 
+(defn- expected-smap-iso-spatial-extent
+  "Returns the expected SMAP ISO spatial extent"
+  [spatial-extent]
+  (when (get-in spatial-extent [:HorizontalSpatialDomain :Geometry :BoundingRectangles])
+    (-> spatial-extent
+        (assoc :SpatialCoverageType "GEODETIC" :GranuleSpatialRepresentation "GEODETIC")
+        (assoc :VerticalSpatialDomains nil :OrbitParameters nil)
+        (assoc-in [:HorizontalSpatialDomain :ZoneIdentifier] nil)
+        (update-in [:HorizontalSpatialDomain :Geometry]
+                   assoc :CoordinateSystem "GEODETIC" :Points nil :GPolygons nil :Lines nil)
+        (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
+        prune-empty-maps)))
+
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> umm-coll
       ;; TODO - Implement this as part of CMR-2058
       (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
       (convert-internal :iso19115)
-      (assoc :SpatialExtent nil)
+      (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; TODO - Implement this as part of CMR-2057
