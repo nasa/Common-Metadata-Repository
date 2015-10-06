@@ -661,6 +661,13 @@
         (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
         prune-empty-maps)))
 
+(defn- fixup-smap-data-dates
+  "Because when we generate our bogus SMAP data for round-trip tests, we duplicate the first date
+  value in DataDates."
+  [data-dates]
+  (cons (first data-dates)
+        data-dates))
+
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> umm-coll
@@ -668,6 +675,7 @@
       (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
       (convert-internal :iso19115)
       (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
+      (update-in [:DataDates] fixup-smap-data-dates)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; TODO - Implement this as part of CMR-2057
@@ -678,7 +686,6 @@
       (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :DataDates nil) ;; TODO Implement this as part of CMR-1840
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (assoc :UseConstraints nil)
       (assoc :AccessConstraints nil)

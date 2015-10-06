@@ -2,6 +2,7 @@
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require [clojure.string :as str]
             [cmr.umm-spec.iso-keywords :as kws]
+            [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 
@@ -18,17 +19,19 @@
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
 
-(defn- date-mapping
-  "Returns the date element mapping for the given name and date value in string format."
-  [date-name value]
-  [:gmd:date
-   [:gmd:CI_Date
+(defn- date-element
+  "Returns ISO XML gmd:date element for given UMM DateType record."
+  [umm-date]
+  (let [type-code (get iso/iso-date-type-codes (:Type umm-date))
+        date-value (:Date umm-date)]
     [:gmd:date
-     [:gco:DateTime value]]
-    [:gmd:dateType
-     [:gmd:CI_DateTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
-                            :codeListValue date-name}
-      date-name]]]])
+     [:gmd:CI_Date
+      [:gmd:date
+       [:gco:DateTime date-value]]
+      [:gmd:dateType
+       [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
+                              :codeListValue type-code}
+        type-code]]]]))
 
 (defn- generate-collection-progress
   "Returns ISO SMAP CollectionProgress element from UMM-C collection c."
@@ -74,8 +77,9 @@
          [:gmd:citation
           [:gmd:CI_Citation
            [:gmd:title (char-string "SMAP Level 1A Parsed Radar Instrument Telemetry")]
-           (date-mapping "revision" "2000-12-31T19:00:00-05:00")
-
+           ;; This is kind of bogus
+           (when-let [some-date (first (:DataDates c))]
+             (date-element some-date))
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:EntryId c))]
@@ -122,7 +126,8 @@
          [:gmd:citation
           [:gmd:CI_Citation
            [:gmd:title (char-string "DataSetId")]
-           (date-mapping "revision" "2000-12-31T19:00:00-05:00")]]
+           (when-let [some-date (first (:DataDates c))]
+             (date-element some-date))]]
          [:gmd:abstract (char-string "DataSetId")]
          [:gmd:aggregationInfo
           [:gmd:MD_AggregateInformation
@@ -133,5 +138,14 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         [:gmd:language (char-string "eng")]]]]]]))
-
+         [:gmd:language (char-string "eng")]]]
+       (for [date (drop 1 (:DataDates c))
+             :let [description (str (:Type date) " date")]]
+         [:gmd:identificationInfo
+          [:gmd:MD_DataIdentification
+           [:gmd:citation
+            [:gmd:CI_Citation
+             [:gmd:title (char-string description)]
+             (date-element date)]]
+           [:gmd:abstract (char-string description)]
+           [:gmd:language (char-string "eng")]]])]]]))
