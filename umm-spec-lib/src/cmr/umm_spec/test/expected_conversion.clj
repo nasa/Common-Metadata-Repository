@@ -284,6 +284,7 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
+      ;; ProviderId is not used and will be removed from the UMM metadata associations.
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
@@ -359,6 +360,7 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
+      ;; DIF 9 only supports entry-id in metadata associations
       (update-in-each [:MetadataAssociations]
                       assoc :Type nil :Description nil :Version nil :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
