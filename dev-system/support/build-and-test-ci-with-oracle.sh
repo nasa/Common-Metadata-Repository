@@ -1,10 +1,9 @@
 #!/bin/sh
 # This script is used to manage building and testing the CMR applications within the continuous
-# integration (CI) environment. The intent is to never need to modify the configuration of the CI
-# server. Instead the CI server will simply call this script. The script should be run from the cmr
-# root directory, ie, ./dev-system/support/build-and-test-ci.sh
-# There is one optional parameter 'skip-uberjars'. The script will not build the uberjars for the
-# CMR applications when this parameter is passed.
+# integration (CI) environment connecting to an external Oracle database server. The intent is to
+# never need to modify the configuration of the CI server. Instead the CI server will simply call
+# this script. The script should be run from the cmr root directory, ie,
+# ./dev-system/support/build-and-test-ci-with-oracle.sh
 
 date && echo "Installing all apps" &&
 lein modules do clean, install
