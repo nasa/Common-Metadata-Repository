@@ -83,7 +83,6 @@
 (def vnir1-mode? (matches-on-psa "VNIR1_ObservationMode" "ON"))
 (def vnir2-mode? (matches-on-psa "VNIR2_ObservationMode" "ON"))
 
-
 (def source-to-virtual-product-config
   "A map of source collection provider id and entry titles to virtual product configs"
   {["LPDAAC_ECS" "ASTER L1A Reconstructed Unprocessed Instrument Data V003"]
@@ -141,7 +140,15 @@
    ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
    {:short-name "AIRX3STM"
     :virtual-collections [{:entry-title "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) Clear Sky Outgoing Longwave Flux V006"
-                           :short-name "AIRX3STM_006_ClrOLR"}]}})
+                           :short-name "AIRX3STM_006_ClrOLR"}]}
+   ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
+   {:short-name "AST_L1T"
+    :virtual-collections [{:entry-title "ASTER Level 1 Full Resolution Browse Thermal Infrared V003"
+                           :short-name "AST_FRBT"
+                           :matcher (matches-on-psa "FullResolutionThermalBrowseAvailable" "YES")}
+                          {:entry-title "ASTER Level 1 Full Resolution Browse Visible Near Infrared V003"
+                           :short-name "AST_FRBV"
+                           :matcher (matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES")}]}})
 
 (def virtual-product-to-source-config
   "A map derived from the map source-to-virtual-product-config. This map consists of keys which are
@@ -179,7 +186,11 @@
    ["GSFCS4PA" "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"]
    ["AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
     "AIRX3STM.006:AIRS.2002.10.01.L3.RetStd031.v6.0.9.0.G13211133235.hdf"
-    "AIRX3STM.006:AIRS.2002.11.01.L3.RetStd030.v6.0.9.0.G13209234123.hdf"]})
+    "AIRX3STM.006:AIRS.2002.11.01.L3.RetStd030.v6.0.9.0.G13209234123.hdf"]
+   ["LPDAAC_ECS" "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"]
+   ["SC:AST_L1T.003:2148809731"
+    "SC:AST_L1T.003:2148809742"
+    "SC:AST_L1T.003:2148809779"]})
 
 (defmulti generate-granule-ur
   "Generates a new granule ur for the virtual collection"
@@ -236,7 +247,7 @@
   "Dispatch function to update virtual granule umm based on source granule umm. All the non-core
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
-  (fn [provider-id source-short-name source-umm virtual-umm]
+  (fn [provider-id source-short-name virtual-short-name virtual-umm]
     [provider-id source-short-name]))
 
 ;; Default is to not do any update
@@ -271,18 +282,20 @@
   "Generate the OpenDAP data access url for the virtual granule based on the OpenDAP link for the
   source dataset. Remove the size of the data from data granule as it is no longer valid since it
   represents the size of the original granule, not the subset."
-  [source-umm virtual-umm opendap-subset]
-  (-> virtual-umm
-      (update-in [:related-urls] subset-opendap-url (:granule-ur source-umm) opendap-subset)
-      remove-granule-size))
+  [provider-id source-short-name virtual-short-name virtual-umm opendap-subset]
+  (let [source-granule-ur (compute-source-granule-ur
+                            provider-id source-short-name virtual-short-name (:granule-ur virtual-umm))]
+    (-> virtual-umm
+        (update-in [:related-urls] subset-opendap-url source-granule-ur opendap-subset)
+        remove-granule-size)))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
-  [provider-id source-short-name source-umm virtual-umm]
-  (subset-opendap-data-access-url source-umm virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
+  [provider-id source-short-name virtual-short-name virtual-umm]
+  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMTO3d"]
-  [provider-id source-short-name source-umm virtual-umm]
-  (subset-opendap-data-access-url source-umm virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
+  [provider-id source-short-name virtual-short-name virtual-umm]
+  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
 
 (def airx3std-opendap-subsets
   "A map of short names of the virtual products based on AIRXSTD dataset to the string representing
@@ -295,15 +308,42 @@
    "AIRX3STD_006_TotCO" "TotCO_A,TotCO_D,Latitude,Longitude"})
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
-  [provider-id source-short-name source-umm virtual-umm]
-  (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])
-        virtual-short-name (:short-name (get virtual-product-to-source-config
-                                             [provider-id virtual-entry-title]))]
-    (subset-opendap-data-access-url source-umm virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
+  [provider-id source-short-name virtual-short-name virtual-umm]
+  (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
+    (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
-  [provider-id source-short-name source-umm virtual-umm]
-  (subset-opendap-data-access-url source-umm virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
+  [provider-id source-short-name virtual-short-name virtual-umm]
+  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
+
+(defn- update-ast-l1t-related-urls
+  [virtual-umm virtual-short-name]
+  (let [online-access-urls (filter #(= (:type %) "GET DATA") (:related-urls virtual-umm))
+        frb-url-matches (fn [related-url suffix fmt]
+                          (let [url (:url related-url)]
+                            (or (.endsWith url suffix) (.contains url (format "FORMAT=%s" fmt)))))]
+      (assoc virtual-umm :related-urls
+             (cond
+               (and (= "AST_FRBT" virtual-short-name)
+                    ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
+               (seq (filter #(frb-url-matches % "_T.tif" "TIR") online-access-urls))
+
+               (and (= "AST_FRBV" virtual-short-name)
+                    ((matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES") virtual-umm))
+               (seq (filter #(frb-url-matches % "_V.tif" "VNIR") online-access-urls))))))
+
+
+(defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1T"]
+  [provider-id source-short-name virtual-short-name virtual-umm]
+  (-> virtual-umm
+      (update-ast-l1t-related-urls virtual-short-name)
+      (update-in [:product-specific-attributes]
+                 (fn [psas] (remove #(#{"identifier_product_doi"
+                                        "identifier_product_doi_authority"
+                                        "FullResolutionVisibleBrowseAvailable"
+                                        "FullResolutionThermalBrowseAvailable"}
+                                        (:name %)) psas)))))
+
 
 (defn generate-virtual-granule-umm
   "Generate the virtual granule umm based on source granule umm"
@@ -313,6 +353,6 @@
                              source-short-name
                              (:short-name virtual-coll)
                              (:granule-ur source-umm))
-        virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)]
-    (update-virtual-granule-umm provider-id source-short-name
-                                source-umm virtual-umm)))
+        virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)
+        virtual-short-name (:short-name virtual-coll)]
+    (update-virtual-granule-umm provider-id source-short-name virtual-short-name virtual-umm)))

@@ -102,8 +102,15 @@
         psa2 (dc/psa {:name "SWIR_ObservationMode" :data-type :string})
         psa3 (dc/psa {:name "VNIR1_ObservationMode" :data-type :string})
         psa4 (dc/psa {:name "VNIR2_ObservationMode" :data-type :string})]
-              (assoc collection
-                     :product-specific-attributes [psa1 psa2 psa3 psa4])))
+    (assoc collection
+           :product-specific-attributes [psa1 psa2 psa3 psa4])))
+
+(defmethod add-collection-attributes ["LPDAAC_ECS" "AST_L1T"]
+  [collection]
+  (let [frbt (dc/psa {:name "FullResolutionThermalBrowseAvailable" :data-type :string})
+        frbv (dc/psa {:name "FullResolutionVisibleBrowseAvailable" :data-type :string})]
+    (assoc collection
+           :product-specific-attributes [frbt frbv])))
 
 (defn ingest-source-collections
   "Ingests the source collections and returns their UMM records with some extra information."
@@ -146,6 +153,13 @@
                  {:day-night "DAY"
                   :production-date-time "2014-09-26T11:11:00Z"}))
         (assoc :product-specific-attributes [psa1 psa2 psa3 psa4]))))
+
+(defmethod add-granule-attributes ["LPDAAC_ECS" "AST_L1T"]
+  [provider-id granule]
+  (let [frbt (dg/psa "FullResolutionThermalBrowseAvailable" ["YES"])
+        frbv (dg/psa "FullResolutionVisibleBrowseAvailable" ["YES"])]
+    (-> granule
+        (assoc :product-specific-attributes [frbt frbv]))))
 
 (defn ingest-source-granule
   [provider-id concept & options]
