@@ -164,7 +164,8 @@
          {:granule-ur "SC:AST_L1T.003:2148809731"
           :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
                                 (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url]))
-          :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["YES"]}]}
+          :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["YES"]}
+                                        {:name "identifier_product_doi_authority" :values ["authority"]}]}
          {:granule-ur "SC:AST_FRBT.003:2148809731"
           :related-urls (gen-access-urls [frbt-data-pool-url frbt-egi-url])}
 
@@ -178,9 +179,12 @@
          {:granule-ur "SC:AST_L1T.003:2148809731"
           :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
                                 (gen-access-urls [frbv-data-pool-url frbv-egi-url random-url]))
-          :product-specific-attributes [{:name "FullResolutionVisibleBrowseAvailable" :values ["YES"]}]}
+          :product-specific-attributes [{:name "FullResolutionVisibleBrowseAvailable" :values ["YES"]}
+                                        {:name "identifier_product_doi" :values ["doi"]}
+                                        {:name "some other psa" :values ["psa-val"]}]}
          {:granule-ur "SC:AST_FRBV.003:2148809731"
-          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url])}
+          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url])
+          :product-specific-attributes [{:name "some other psa" :values ["psa-val"]}]}
 
          "LPDAAC_ECS" ast-l1t "AST_FRBV"
          {:granule-ur "SC:AST_L1T.003:2148809731"
