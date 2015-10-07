@@ -24,18 +24,35 @@ if [ $? -ne 0 ] ; then
   echo "Failed to generate ingest docs" >&2
   exit 1
 fi
-if [ "$1" != "skip-uberjars" ] ; then
-  date && echo "Building uberjars" &&
-  lein with-profile uberjar modules uberjar
-  if [ $? -ne 0 ] ; then
-    echo "Failed to generate uberjars" >&2
-    exit 1
-  fi
-fi
-date && echo "Building and starting dev-system" &&
-(cd dev-system && support/build-and-run.sh)
+
+##############################################################################
+# Build uberjars and setup the database for ingest, bootstrap, and metadata-db
+date && echo "Building uberjars" &&
+lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" uberjar
 if [ $? -ne 0 ] ; then
-  echo "Failed to build and start up dev system" >&2
+  echo "Failed to generate uberjars" >&2
+  exit 1
+fi
+
+date && echo "Creating database users" &&
+lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
+if [ $? -ne 0 ] ; then
+  echo "Failed to create database users" >&2
+  exit 1
+fi
+
+date && echo "Running database migrations" &&
+lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" migrate
+if [ $? -ne 0 ] ; then
+  echo "Failed to run database migrations" >&2
+  exit 1
+fi
+##############################################################################
+
+date && echo "Building and starting dev-system using Oracle" &&
+(cd dev-system && CMR_DEV_SYSTEM_DB_TYPE=external support/build-and-run.sh)
+if [ $? -ne 0 ] ; then
+  echo "Failed to build and start up dev system using Oracle" >&2
   exit 1
 fi
 date && echo "Running tests" &&
