@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
+            [clojure.string :as string]
             [cmr.umm-spec.xml.parse :refer :all]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
             [cmr.umm-spec.util :as u :refer [without-default-value-of]]
@@ -142,6 +143,11 @@
                     :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
                                   :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                     :MimeType (value-of related-url "Mime_Type")})
+   :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
+                           {:EntryId (value-of ma "Entry_Id")
+                            :Version (without-default-value-of ma "Version")
+                            :Description (without-default-value-of ma "Description")
+                            :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]
                          {:Category (value-of sk "Category")
                           :Topic (value-of sk "Topic")

@@ -112,6 +112,8 @@
         (for [url (:URLs related-url)]
           [:URL url])
         [:Description (:Description related-url)]])
+     (for [ma (:MetadataAssociations c)]
+       [:Parent_DIF (:EntryId ma)])
      [:Metadata_Name "CEOS IDN DIF"]
      [:Metadata_Version "VERSION 9.9.3"]
      [:Extended_Metadata

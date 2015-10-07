@@ -284,10 +284,11 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
+      ;; ProviderId is not used and will be removed from the UMM metadata associations.
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
       (update-in [:DataDates] fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
@@ -359,7 +360,9 @@
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      ;; DIF 9 only supports entry-id in metadata associations
+      (update-in-each [:MetadataAssociations]
+                      assoc :Type nil :Description nil :Version nil :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
@@ -430,16 +433,30 @@
             geom
             other-keys)))
 
+(defn- filter-dif10-metadata-associations
+  "Removes metadata associations with type \"LARGER CITATIONS WORKS\" since this type is not
+  allowed in DIF10."
+  [mas]
+  (seq (filter #(not= (:Type %) "LARGER CITATION WORKS")
+               mas)))
+
+(defn- fix-dif10-matadata-association-type
+  "Defaults metadata association type to \"SCIENCE ASSOCIATED\"."
+  [ma]
+  (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
+      (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
+      (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
+      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:DataDates] fixup-dif10-data-dates)
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
       (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
@@ -634,8 +651,6 @@
                  expected-responsibilities ["POINTOFCONTACT"])
       (update-in [:Organizations]
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
-      ;; Due to the way MetadataAssociatios is generated we need to fix nil types
-      ; (update-in-each [:MetadataAssociations] update-in [:Type] #(or % ""))
       (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (update-in [:MetadataAssociations] group-metadata-assocations)))
 
@@ -683,7 +698,7 @@
       ;; TODO - Implement this as part of CMR-1946
       (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
-      (assoc :MetadataAssociations nil) ;; TODO Implement this as part of CMR-1852
+      (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841

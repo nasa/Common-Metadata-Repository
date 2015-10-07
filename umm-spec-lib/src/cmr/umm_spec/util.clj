@@ -3,11 +3,8 @@
   (:require [cheshire.core :as json]
             [cheshire.factory :as factory]
             [cmr.common.util :as util]
-            [cmr.umm-spec.xml.parse :as p]))
-
-(def not-provided
-  "place holder string value for not provided string field"
-  "Not provided")
+            [cmr.umm-spec.xml.parse :as p]
+            [clojure.string :as str]))
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -53,6 +50,14 @@
   "Returns the string itself or empty string if it is nil."
   [s]
   (if (some? s) s ""))
+
+(defn capitalize-words
+  "Capitalize every word in a string"
+  [s]
+  (when s
+    (->> (str/split (str s) #"\b")
+         (map str/capitalize)
+         (str/join))))
 
 (defn generate-id
   "Returns a 5 character random id to use as an ISO id"

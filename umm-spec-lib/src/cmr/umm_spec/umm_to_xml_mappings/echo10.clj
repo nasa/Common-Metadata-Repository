@@ -3,6 +3,7 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as ru]
             [cmr.umm-spec.util :refer [with-default]]
+            [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.date-util :as dates]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]))
 
@@ -96,6 +97,18 @@
           [:VariableLevel3Keyword (:VariableLevel3 sk)]]]
         [:DetailedVariableKeyword (:DetailedVariable sk)]])]))
 
+(defn metadata-associations
+  "Generates ECHO 10 XML structure for metadata associations"
+  [c]
+  (when-let [mas (:MetadataAssociations c)]
+    [:CollectionAssociations
+     (for [ma mas]
+       [:CollectionAssociation
+        [:ShortName (:EntryId ma)]
+        [:VersionId (or (:Version ma) spec-util/not-provided)]
+        [:CollectionType (or (:Type ma) spec-util/not-provided)]
+        [:CollectionUse (:Description ma)]])]))
+
 (defn umm-c-to-echo10-xml
   "Returns ECHO10 XML structure from UMM collection record c."
   [c]
@@ -139,6 +152,7 @@
          [:ParameterRangeBegin (:ParameterRangeBegin aa)]
          [:ParameterRangeEnd (:ParameterRangeEnd aa)]
          [:Value (:Value aa)]])]
+     (metadata-associations c)
      [:Campaigns
       (for [{:keys [ShortName LongName StartDate EndDate]} (:Projects c)]
         [:Campaign
