@@ -10,7 +10,7 @@
           (repeat kf/FIELD_NOT_PRESENT)))
 
 (defn- normalize-ps-value
-  "Trim leading and trailing whitespace Convert a platform short-name value."
+  "Trim leading and trailing whitespace from a platform short-name value."
   [value]
   (when value (str/trim value)))
 
