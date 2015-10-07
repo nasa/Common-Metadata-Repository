@@ -27,10 +27,16 @@
         omto3d "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"
         airx3std "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"
         airx3stm "Aqua AIRS Level 3 Monthly Standard Physical Retrieval (AIRS+AMSU) V006"
+        ast-l1t "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"
         ;; Generate access url objects from string urls
         gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))
         opendap-url "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/some-file-name"
-        non-opendap-url "http://s4psci.gesdisc.eosdis.nasa.gov/data/s4pa_TS2/some-file-name"]
+        non-opendap-url "http://s4psci.gesdisc.eosdis.nasa.gov/data/s4pa_TS2/some-file-name"
+        frbt-data-pool-url "http://f5eil01v.edn.ecs.nasa.gov/FS1/ASTT/AST_L1T.003/2014.04.27/AST_L1T_00304272014172403_20140428144310_12345_T.tif"
+        frbt-egi-url "http://f5eil01v.edn.ecs.nasa.gov:22500/egi_DEV07/request?REQUEST_MODE=STREAM&amp;SUBAGENT_ID=FRI&amp;FORMAT=TIR&amp;FILE_IDS=94306"
+        frbv-data-pool-url "ftp://f5eil01v.edn.ecs.nasa.gov/FS1/ASTT/AST_L1T.003/2014.04.27/AST_L1T_00304272014172403_20140428144310_12345_V.tif"
+        frbv-egi-url "http://f5eil01v.edn.ecs.nasa.gov:22500/egi_DEV07/request?REQUEST_MODE=STREAM&amp;SUBAGENT_ID=FRI&amp;FORMAT=VNIR&amp;FILE_IDS=94306"
+        random-url "http://www.foo.com"]
 
     (are [provider-id src-entry-title virt-short-name src-gran-attrs expected-virt-gran-attrs]
          (let [src-vp-config (vp-config/source-to-virtual-product-config [provider-id src-entry-title])
@@ -47,12 +53,12 @@
                generated-virt-gran (vp-config/generate-virtual-granule-umm
                                      provider-id src-short-name src-gran virt-coll)]
 
-           (= virt-entry-title (get-in generated-virt-gran [:collection-ref :entry-title]))
+           (is (= virt-entry-title (get-in generated-virt-gran [:collection-ref :entry-title])))
            (assert-src-gran-ur-psa-equals generated-virt-gran (:granule-ur src-gran))
-           (= expected-virt-gran-attrs (-> generated-virt-gran
+           (is (= expected-virt-gran-attrs (-> generated-virt-gran
                                                (dissoc :collection-ref)
                                                (update-in [:product-specific-attributes] remove-src-granule-ur-psa)
-                                               util/remove-nil-keys)))
+                                               util/remove-nil-keys))))
 
          ;; AST_L1A
          "LPDAAC_ECS" ast-l1a "AST_05"
@@ -152,5 +158,36 @@
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STM_006_ClrOLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-access-urls [(str opendap-url "?" "ClrOLR_A,ClrOLR_D,Latitude,Longitude") non-opendap-url])
-          :data-granule {:size nil}})))
+          :data-granule {:size nil}}
+
+         "LPDAAC_ECS" ast-l1t "AST_FRBT"
+         {:granule-ur "SC:AST_L1T.003:2148809731"
+          :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
+                                (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url]))
+          :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["YES"]}
+                                        {:name "identifier_product_doi_authority" :values ["authority"]}]}
+         {:granule-ur "SC:AST_FRBT.003:2148809731"
+          :related-urls (gen-access-urls [frbt-data-pool-url frbt-egi-url])}
+
+         "LPDAAC_ECS" ast-l1t "AST_FRBT"
+         {:granule-ur "SC:AST_L1T.003:2148809731"
+          :related-urls (gen-access-urls [frbt-data-pool-url frbt-egi-url random-url])
+          :product-specific-attributes [{:name "FullResolutionThermalBrowseAvailable" :values ["NO"]}]}
+         {:granule-ur "SC:AST_FRBT.003:2148809731"}
+
+         "LPDAAC_ECS" ast-l1t "AST_FRBV"
+         {:granule-ur "SC:AST_L1T.003:2148809731"
+          :related-urls (concat [{:type "GET RELATED VISUALIZATION" :url random-url}]
+                                (gen-access-urls [frbv-data-pool-url frbv-egi-url random-url]))
+          :product-specific-attributes [{:name "FullResolutionVisibleBrowseAvailable" :values ["YES"]}
+                                        {:name "identifier_product_doi" :values ["doi"]}
+                                        {:name "some other psa" :values ["psa-val"]}]}
+         {:granule-ur "SC:AST_FRBV.003:2148809731"
+          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url])
+          :product-specific-attributes [{:name "some other psa" :values ["psa-val"]}]}
+
+         "LPDAAC_ECS" ast-l1t "AST_FRBV"
+         {:granule-ur "SC:AST_L1T.003:2148809731"
+          :related-urls (gen-access-urls [frbv-data-pool-url frbv-egi-url random-url])}
+         {:granule-ur "SC:AST_FRBV.003:2148809731"})))
 
