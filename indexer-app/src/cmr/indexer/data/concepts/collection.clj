@@ -7,6 +7,7 @@
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.mime-types :as mt]
+            [cmr.common.util :as util]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
@@ -63,11 +64,13 @@
                                collection-data-type)
         personnel (person-with-email personnel)
         platforms (:platforms collection)
-        platform-short-names (map :short-name platforms)
+        platform-short-names (->> (map :short-name platforms)
+                                  (map str/trim))
         gcmd-keywords-map (kf/get-gcmd-keywords-map context)
         platforms-nested (map #(platform/platform-short-name->elastic-doc gcmd-keywords-map %)
                               platform-short-names)
-        platform-long-names (distinct (keep :long-name (concat platforms platforms-nested)))
+        platform-long-names (->> (distinct (keep :long-name (concat platforms platforms-nested)))
+                                 (map str/trim))
         instruments (mapcat :instruments platforms)
         instrument-short-names (keep :short-name instruments)
         instruments-nested (map #(instrument/instrument-short-name->elastic-doc gcmd-keywords-map %)
@@ -76,8 +79,10 @@
         sensors (mapcat :sensors instruments)
         sensor-short-names (keep :short-name sensors)
         sensor-long-names (keep :long-name sensors)
-        project-short-names (map :short-name (:projects collection))
-        project-long-names (keep :long-name (:projects collection))
+        project-short-names (->> (map :short-name (:projects collection))
+                                 (map str/trim))
+        project-long-names (->> (keep :long-name (:projects collection))
+                                (map str/trim))
         two-d-coord-names (map :name (:two-d-coordinate-systems collection))
         archive-center-names (org/extract-data-center-names collection :archive-center)
         archive-centers (map #(org/data-center-short-name->elastic-doc gcmd-keywords-map %)

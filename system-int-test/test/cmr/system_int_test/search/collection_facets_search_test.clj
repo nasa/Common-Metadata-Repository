@@ -1013,6 +1013,8 @@
                          (science-keywords sk1-trailing-ws))
 
         coll5 (make-coll 5 "PROV2"
+                         (platforms " A" 1)
+                         (projects "proj3 " " PROJ2")
                          (science-keywords sk1-leading-and-trailing-ws))]
 
     (index/wait-until-indexed)
@@ -1023,10 +1025,10 @@
                              {:field "archive_center",
                               :value-counts [["GSFC" 1] ["Larc" 1]]}
                              {:field "project",
-                              :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
+                              :value-counts [["PROJ2" 3] ["proj3" 2] ["proj1" 1]]}
                              {:field "platform",
                               :value-counts
-                              [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                              [["A-p0" 2] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
                              {:field "instrument",
                               :value-counts
                               [["A-p0-i0" 1]
@@ -1058,13 +1060,13 @@
                                ["TORNADO" 1]]}
                              {:field "topic",
                               :value-counts
-                              [["POPULAR" 2]
-                               ["TOPIC1" 4]
+                              [["TOPIC1" 4]
+                               ["POPULAR" 2]
                                ["COOL" 1]]}
                              {:field "term",
                               :value-counts
-                              [["EXTREME" 2]
-                               ["TERM1" 4]
+                              [["TERM1" 4]
+                               ["EXTREME" 2]
                                ["TERM4" 1]
                                ["UNIVERSAL" 1]]}
                              {:field "variable_level_1",
