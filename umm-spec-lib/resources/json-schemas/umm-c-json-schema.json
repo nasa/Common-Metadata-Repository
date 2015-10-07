@@ -413,7 +413,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/MetadataAssociationType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "TemporalExtents": {
       "description": "This class contains attributes, which describe the temporal range of a specific collection. This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date Time",

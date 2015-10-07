@@ -284,8 +284,6 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      ;; ProviderId is not used and will be removed from the UMM metadata associations.
-      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
@@ -361,8 +359,7 @@
   [umm-coll _]
   (-> umm-coll
       ;; DIF 9 only supports entry-id in metadata associations
-      (update-in-each [:MetadataAssociations]
-                      assoc :Type nil :Description nil :Version nil :ProviderId nil)
+      (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
@@ -450,7 +447,6 @@
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
@@ -651,7 +647,6 @@
                  expected-responsibilities ["POINTOFCONTACT"])
       (update-in [:Organizations]
                  expected-responsibilities ["POINTOFCONTACT" "ORIGINATOR" "DISTRIBUTOR" "PROCESSOR"])
-      (update-in-each [:MetadataAssociations] assoc :ProviderId nil)
       (update-in [:MetadataAssociations] group-metadata-assocations)))
 
 ;; ISO-SMAP

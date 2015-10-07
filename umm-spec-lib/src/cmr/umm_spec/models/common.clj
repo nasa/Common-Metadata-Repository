@@ -486,9 +486,6 @@
 
    ;; The version of the metadata record that is associated with this record.
    Version
-
-   ;; The ProviderName of the metadata record that is associated with this record.
-   ProviderId
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
