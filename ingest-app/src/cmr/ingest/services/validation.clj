@@ -4,6 +4,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.umm.mime-types :as umm-mime-types]
             [cmr.common.mime-types :as mt]
+            [cmr.common.log :as log :refer (warn)]
             [cmr.umm.core :as umm]
             [cmr.umm.validation.core :as umm-validation]
             [cmr.ingest.services.business-rule-validation :as bv]
@@ -86,10 +87,16 @@
 
 (defn validate-collection-umm
   [context collection validate-keywords?]
-  (if-errors-throw (umm-validation/validate-collection
-                     collection
-                     (when validate-keywords?
-                       [(keyword-validations context)]))))
+  (do
+    ;; Log any errors from the keyword validation if we are not returning them to the client.
+    (when-not validate-keywords?
+      (doseq [err-msg (v/validate (keyword-validations context) collection)]
+        (warn err-msg)))
+    ;; Validate the collection and throw errors that will be sent to the client.
+    (if-errors-throw (umm-validation/validate-collection
+                       collection
+                       (when validate-keywords?
+                         [(keyword-validations context)])))))
 
 (defn validate-granule-umm
   [context collection granule]
