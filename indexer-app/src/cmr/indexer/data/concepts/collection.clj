@@ -7,7 +7,6 @@
             [cmr.indexer.services.index-service :as idx]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
             [cmr.umm.related-url-helper :as ru]
