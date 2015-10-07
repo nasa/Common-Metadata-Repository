@@ -317,6 +317,7 @@
   (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
 
 (defn- update-ast-l1t-related-urls
+  "Filter online access urls corresponding to the virtual collection from the source related urls"
   [virtual-umm virtual-short-name]
   (let [online-access-urls (filter #(= (:type %) "GET DATA") (:related-urls virtual-umm))
         frb-url-matches (fn [related-url suffix fmt]
