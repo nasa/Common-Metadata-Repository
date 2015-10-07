@@ -965,3 +965,126 @@
                                     (filter #(= "archive_centers" (:field %))))]
     (is (= expected-archive-centers actual-archive-centers))))
 
+(deftest leading-and-trailing-whitespace-facets-test
+  (grant-permissions)
+  (let [sk1-leading-ws (dc/science-keyword {:category "  Cat1"
+                                            :topic " Topic1"
+                                            :term " Term1"
+                                            :variable-level-1 "   Level1-1"
+                                            :variable-level-2 " Level1-2"
+                                            :variable-level-3 " Level1-3"
+                                            :detailed-variable " Detail1"})
+
+        sk1-trailing-ws (dc/science-keyword {:category "Cat1   "
+                                             :topic "Topic1 "
+                                             :term "Term1 "
+                                             :variable-level-1 "Level1-1     "
+                                             :variable-level-2 "Level1-2 "
+                                             :variable-level-3 "Level1-3 "
+                                             :detailed-variable "Detail1 "})
+
+        sk1-leading-and-trailing-ws (dc/science-keyword {:category "    Cat1 "
+                                                         :topic " Topic1 "
+                                                         :term " Term1 "
+                                                         :variable-level-1 " Level1-1 "
+                                                         :variable-level-2 " Level1-2 "
+                                                         :variable-level-3 " Level1-3    "
+                                                         :detailed-variable "  Detail1 "})
+
+        coll1 (make-coll 1 "PROV1"
+                         (projects "proj1" "PROJ2")
+                         (platforms "A" 2 2 1)
+                         (twod-coords "Alpha")
+                         (science-keywords sk1 sk4 sk5)
+                         (processing-level-id "PL1")
+                         {:organizations [(dc/org :archive-center "Larc")
+                                          (dc/org :processing-center "Larc")]})
+        coll2 (make-coll 2 "PROV2"
+                         (projects "proj3" "PROJ2")
+                         (platforms "B" 2 2 1)
+                         (science-keywords sk1 sk2 sk3)
+                         (processing-level-id "pl1")
+                         {:organizations [(dc/org :archive-center "GSFC")
+                                          (dc/org :processing-center "Proc")]})
+        coll3 (make-coll 3 "PROV2"
+                         (science-keywords sk1-leading-ws))
+
+        coll4 (make-coll 4 "PROV2"
+                         (science-keywords sk1-trailing-ws))
+
+        coll5 (make-coll 5 "PROV2"
+                         (science-keywords sk1-leading-and-trailing-ws))]
+
+    (index/wait-until-indexed)
+
+    (testing "retreving all facets in refs formats"
+      (let [expected-facets [{:field "data_center",
+                              :value-counts [["GSFC" 1] ["Larc" 1] ["Proc" 1]]}
+                             {:field "archive_center",
+                              :value-counts [["GSFC" 1] ["Larc" 1]]}
+                             {:field "project",
+                              :value-counts [["PROJ2" 2] ["proj1" 1] ["proj3" 1]]}
+                             {:field "platform",
+                              :value-counts
+                              [["A-p0" 1] ["A-p1" 1] ["B-p0" 1] ["B-p1" 1]]}
+                             {:field "instrument",
+                              :value-counts
+                              [["A-p0-i0" 1]
+                               ["A-p0-i1" 1]
+                               ["A-p1-i0" 1]
+                               ["A-p1-i1" 1]
+                               ["B-p0-i0" 1]
+                               ["B-p0-i1" 1]
+                               ["B-p1-i0" 1]
+                               ["B-p1-i1" 1]]}
+                             {:field "sensor",
+                              :value-counts
+                              [["A-p0-i0-s0" 1]
+                               ["A-p0-i1-s0" 1]
+                               ["A-p1-i0-s0" 1]
+                               ["A-p1-i1-s0" 1]
+                               ["B-p0-i0-s0" 1]
+                               ["B-p0-i1-s0" 1]
+                               ["B-p1-i0-s0" 1]
+                               ["B-p1-i1-s0" 1]]}
+                             {:field "two_d_coordinate_system_name",
+                              :value-counts [["Alpha" 1]]}
+                             {:field "processing_level_id",
+                              :value-counts [["PL1" 1] ["pl1" 1]]}
+                             {:field "category",
+                              :value-counts
+                              [["CAT1" 4]
+                               ["HURRICANE" 2]
+                               ["TORNADO" 1]]}
+                             {:field "topic",
+                              :value-counts
+                              [["POPULAR" 2]
+                               ["TOPIC1" 4]
+                               ["COOL" 1]]}
+                             {:field "term",
+                              :value-counts
+                              [["EXTREME" 2]
+                               ["TERM1" 4]
+                               ["TERM4" 1]
+                               ["UNIVERSAL" 1]]}
+                             {:field "variable_level_1",
+                              :value-counts
+                              [["LEVEL1-1" 4]
+                               ["LEVEL2-1" 1]
+                               ["UNIVERSAL" 1]]}
+                             {:field "variable_level_2",
+                              :value-counts
+                              [["LEVEL1-2" 4]
+                               ["LEVEL2-2" 1]]}
+                             {:field "variable_level_3",
+                              :value-counts
+                              [["LEVEL1-3" 4]
+                               ["LEVEL2-3" 1]]}
+                             {:field "detailed_variable",
+                              :value-counts
+                              [["DETAIL1" 4]
+                               ["UNIVERSAL" 1]]}]]
+
+        (is (= expected-facets
+               (:facets (search/find-refs :collection {:include-facets true}))))))))
+
