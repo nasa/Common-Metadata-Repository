@@ -167,7 +167,7 @@
     (let [access-value-cond (some-> access-value access-value->query-condition)
           temporal-cond (some-> temporal temporal->query-condition)]
       (if (and access-value-cond temporal-cond)
-        (gc/and-conds access-value-cond temporal-cond)
+        (gc/and-conds [access-value-cond temporal-cond])
         (or access-value-cond temporal-cond)))))
 
 (defn acl->query-condition
