@@ -26,11 +26,11 @@
                  :timeout 120000}
   :jvm-opts []
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+  {:dev {:dependencies [[ring-mock "0.1.5"]
+                        [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
                         [drift "1.5.3"]]
          :source-paths ["src" "dev" "test"]

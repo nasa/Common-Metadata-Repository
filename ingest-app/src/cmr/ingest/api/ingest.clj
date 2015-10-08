@@ -181,7 +181,7 @@
     concept))
 
 (defn- sanitize-content-type
-  "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
+  "Drops the parameter part of the MediaTypes from content-type and returns the type/sub-type part"
   [content-type]
   (when content-type (first (str/split content-type #";"))))
 

@@ -3,7 +3,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha" :exclusions [org.ow2.asm/asm-all]]
                  [com.taoensso/timbre "4.1.4"]
                  [ring/ring-jetty-adapter "1.4.0"]
                  ;; Needed for parsing accept header

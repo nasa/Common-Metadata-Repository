@@ -230,8 +230,7 @@
   [concept-type params]
   (if-let [or-value (get-in params [:science-keywords :or])]
     (-> params
-        ;; TODO check that this works
-        (update :science-keywords dissoc :or)
+        (cu/dissoc-in [:science-keywords :or])
         (assoc-in [:options :science-keywords :or] or-value))
     params))
 

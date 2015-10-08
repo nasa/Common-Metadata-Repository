@@ -21,7 +21,7 @@
 
 (def internal-error-ring-response
   {:status 500
-   :headers {CONTENT_TYPE_HEADER "application/json"
+   :headers {CONTENT_TYPE_HEADER mt/json
              CORS_ORIGIN_HEADER "*"}
    :body {:errors ["An Internal Error has occurred."]}})
 

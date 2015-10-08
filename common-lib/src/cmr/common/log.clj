@@ -44,27 +44,6 @@
                                 (str "\n" (t/stacktrace err))
                                 "")))
                     :appenders {:println {:enabled? stdout-enabled?}}}))
-(comment
-
-  (defn default-output-fn
-    "Default (fn [data]) -> string output fn.
-    You can modify default options with `(partial default-output-fn <opts-map>)`."
-    ([data] (default-output-fn nil data))
-    ([{:keys [no-stacktrace? stacktrace-fonts] :as opts} data]
-     (let [{:keys [level ?err_ vargs_ msg_ ?ns-str hostname_ timestamp_]} data]
-       (str
-         (force timestamp_)       " "
-         (force hostname_)        " "
-         (str/upper-case (name level))  " "
-         "[" (or ?ns-str "?ns") "] - "
-         (force msg_)
-         (when-not no-stacktrace?
-           (when-let [err (force ?err_)]
-             (str "\n" (stacktrace err opts))))))))
-
-  (println (t/stacktrace (Exception. "")))
-
-  )
 
 (defmacro with-request-id
   "Sets the dynamic var *request-id* so that any log messages executed within this binding will

@@ -26,8 +26,7 @@
 
   :repl-options {:init-ns user}
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]
-                        [org.clojure/tools.namespace "0.2.11"]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]]
          :source-paths ["src" "dev" "test"]}
 
