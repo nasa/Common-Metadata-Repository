@@ -13,15 +13,15 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
-                 [clj-http "1.0.1"]
-                 [drift "1.5.2"]
+                 [clj-http "2.0.0"]
+                 [drift "1.5.3"]
 
                  ;; Database related
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-test-out "0.3.1"]
-            [drift "1.5.2"]
+            [drift "1.5.3"]
             [lein-exec "0.3.4"]]
 
   :repl-options {:init-ns user}

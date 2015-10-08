@@ -191,7 +191,6 @@
   (map to-polygon (apply to-swaths args)))
 
 ;; Tests
-;(require '[cmr.spatial.dev.viz-helper :as viz-helper])
 (comment
 
   (defn to-polygons

@@ -4,10 +4,10 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/transmit-lib"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [clj-http "1.0.1"]
+                 [clj-http "2.0.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [prismatic/schema "1.0.0"]
-                 [org.clojure/data.csv "0.1.2"]]
+                 [prismatic/schema "1.0.1"]
+                 [org.clojure/data.csv "0.1.3"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 

@@ -14,7 +14,6 @@
             [cmr.spatial.derived :as derived]
             [cmr.spatial.codec :as codec]
             [clojure.string :as str]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs]

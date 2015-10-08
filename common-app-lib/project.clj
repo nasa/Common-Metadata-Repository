@@ -10,7 +10,7 @@
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
 
                  ;; Markdown generator needed for API documentation
-                 [org.pegdown/pegdown "1.4.2"]]
+                 [org.pegdown/pegdown "1.6.0"]]
 
   :plugins [[lein-test-out "0.3.1"]]
 

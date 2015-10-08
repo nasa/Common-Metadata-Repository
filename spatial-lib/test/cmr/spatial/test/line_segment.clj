@@ -14,33 +14,9 @@
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
             [clojure.string :as str]))
 
 (primitive-math/use-primitive-operators)
-
-(comment
-
-  (display-segment (s/ords->line-segment 0 0 45 45))
-
-
-  )
-
-(defn display-segment
-  [ls]
-  (viz-helper/clear-geometries)
-  (let [callback "cmr.spatial.test.segment/handle-segment-moved"
-        ls (assoc ls :options {:callbackFn callback})]
-    (viz-helper/add-geometries [ls])))
-
-(defn handle-segment-moved
-  [ords-str]
-  (println "Line segment moved:" ords-str)
-  (let [ords (map #(Double. ^String %) (str/split ords-str #","))
-        ls (apply s/ords->line-segment ords)]
-    (println (s/course ls)
-             (p/course (:point1 ls) (:point2 ls)))))
-
 
 (defn valid-double?
   [^double v]

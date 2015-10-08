@@ -16,7 +16,6 @@
             [cmr.spatial.mbr :as mbr]
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.validation :as v]))
 
 ;; Ring tests. These are functions that return true if the ring is correct and false if invalid.
@@ -131,16 +130,6 @@
           [boundary & holes] rings]
       (and (empty? failed-tests)
            (every? (partial rr/covers-ring? boundary) holes)))))
-
-(comment
-
-  (do
-    (viz-helper/clear-geometries)
-    (viz-helper/add-geometries (gen/sample sgen/polygons-with-holes 1)))
-
-
-
-  )
 
 
 

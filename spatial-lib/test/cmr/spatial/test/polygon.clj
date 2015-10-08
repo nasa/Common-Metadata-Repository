@@ -14,8 +14,7 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [cmr.spatial.messages :as msg]))
 
 (deftest polygon-validation
   (testing "geodetic polygons"

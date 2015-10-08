@@ -138,7 +138,7 @@
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
-        (let [err-msg (get-in (ex-data e) [:object :body])
+        (let [err-msg (get-in (ex-data e) [:body])
               msg (str "Call to Elasticsearch caught exception " err-msg)]
           (errors/internal-error! msg))))))
 

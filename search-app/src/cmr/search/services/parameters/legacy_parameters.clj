@@ -5,7 +5,6 @@
             [ring.util.codec :as rc]
             [cmr.common.util :as cu]
             [clojure.walk :as w]
-            [clojure.core.incubator :as incubator]
             [cmr.common.services.messages :as msg]
             [cmr.search.services.messages.attribute-messages :as a-msg]
             [cmr.common.services.errors :as errors]))
@@ -231,7 +230,8 @@
   [concept-type params]
   (if-let [or-value (get-in params [:science-keywords :or])]
     (-> params
-        (incubator/dissoc-in [:science-keywords :or])
+        ;; TODO check that this works
+        (update :science-keywords dissoc :or)
         (assoc-in [:options :science-keywords :or] or-value))
     params))
 

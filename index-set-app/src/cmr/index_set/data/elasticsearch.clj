@@ -31,10 +31,10 @@
       (try
         (esi/create conn index-name :settings settings :mappings mapping)
         (catch clojure.lang.ExceptionInfo e
-          (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+          (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
-            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error)))
-          (throw e))))))
+            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error))
+            (throw e)))))))
 
 (defn update-index
   "Update elastic index"
@@ -54,10 +54,10 @@
           (info "Index" index-name "does not exist so it will be created")
           (esi/create conn index-name :settings settings :mappings mapping)))
       (catch clojure.lang.ExceptionInfo e
-        (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
-          (info e (format "error updating %s elastic index, elastic reported error: %s" index-name error)))
-        (throw e)))))
+          (info (format "error updating %s elastic index, elastic reported error: %s" index-name error))
+          (throw e))))))
 
 (defn index-set-exists?
   "Check index-set existence in elastic."
@@ -145,7 +145,7 @@
         ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
         (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))
     (catch clojure.lang.ExceptionInfo e
-      (let [err-msg (get-in (ex-data e) [:object :body])
+      (let [err-msg (get-in (ex-data e) [:body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
         (throw (Exception. msg))))))
 

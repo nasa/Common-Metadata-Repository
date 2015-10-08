@@ -12,10 +12,14 @@
                  [net.jafama/jafama "2.1.0"]
 
                  ;; Matrix multiplication
-                 [net.mikera/core.matrix "0.33.2"]
+                 [net.mikera/core.matrix "0.42.0" :exclusions [org.clojure/clojure]]
+
                  ;; Fast vectors
-                 ;; core.matrix "0.33.2" has a dependency on vectorz-clj "0.26.2"
-                 [net.mikera/vectorz-clj "0.26.2"]
+                 ;; I could not update this past 0.28.0 without a failure in code when trying to do
+                 ;; a matrix multiply with two matrices. We should test updating this in the future
+                 ;; when doing updates to see if it's been fixed or take a closer look at the code
+                 ;; to make sure it's doing the right thing.
+                 [net.mikera/vectorz-clj "0.28.0"]
 
                  ;; allows enable and disable when assertions run by jvm flags.
                  ;; Can skip assertions for better performance
@@ -24,11 +28,8 @@
                  ;; Helps prevent auto boxing when performing math in Clojure
                  [primitive-math "0.1.4"]
 
-                 ;; visualize spatial areas
-                 [nasa-cmr/cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"]
-
                  ;; Added for combinations function
-                 [org.clojure/math.combinatorics "0.0.8"]]
+                 [org.clojure/math.combinatorics "0.1.1"]]
 
 
   :plugins [[lein-test-out "0.3.1"]]

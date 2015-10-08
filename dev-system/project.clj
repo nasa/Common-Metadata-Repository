@@ -12,7 +12,6 @@
    :cmr-acl-lib "0.1.0-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
-   :cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"
    :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
@@ -94,7 +93,7 @@
                         [ring-mock "0.1.5"]
                         [criterium "0.4.3"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]]
+                        [drift "1.5.3"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

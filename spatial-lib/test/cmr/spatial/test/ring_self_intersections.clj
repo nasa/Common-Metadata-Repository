@@ -12,8 +12,7 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.ring-relations :as rr]
             [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [cmr.spatial.test.generators :as sgen]))
 
 (declare ring-examples)
 
@@ -31,24 +30,6 @@
               (format "%s should have approximate self intersections" (name ring-name))))
         (is (empty? self-intersections)
             (format "%s should have no self intersections" (name ring-name)))))))
-
-(comment
-
-  (def ring (d/calculate-derived (rr/ords->ring :geodetic 17.12,86.62, -45.66,87.6, -160.24,87.53, 164.04,86.47,
-                                                -168.51,88.09, 65.79,89.38, -53.04,89.25, 141.99,88.12,
-                                                32.67,88.08, 17.12,86.62)))
-
-  (rr/self-intersections ring)
-
-  (viz-helper/add-geometries [ring])
-
-  (not (approx= ((cmr.spatial.point/point 1.0 4.999999999999997)
-                 (cmr.spatial.point/point 1.0 4.999999999999998)
-                 (cmr.spatial.point/point 1.0000000000000004 4.999999999999998))
-                (
-                 (cmr.spatial.point/point 1.0 5.0)) 0.001))
-
-  )
 
 
 (def ring-examples

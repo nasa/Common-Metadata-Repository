@@ -54,8 +54,8 @@
 (defn handle-elastic-exception
   "Expects context message and the cause. Context message to indicate create problems with index or doc."
   [context-msg e]
-  (let [status (get-in (ex-data e) [:object :status])
-        body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+  (let [status (get-in (ex-data e) [:status])
+        body (cheshire/decode (get-in (ex-data e) [:body]) true)
         error (format "context: %s, error: %s" context-msg (:error body))]
     (condp = status
       400 (errors/throw-service-error :bad-request error e)

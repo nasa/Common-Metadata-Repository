@@ -17,8 +17,8 @@
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/data.csv "0.1.2"]
-                 [net.sf.saxon/Saxon-HE "9.6.0-4"]
+                 [org.clojure/data.csv "0.1.3"]
+                 [net.sf.saxon/Saxon-HE "9.6.0-7"]
                  [com.github.fge/json-schema-validator "2.2.6"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
@@ -32,7 +32,7 @@
                         [pjstadig/humane-test-output "0.7.0"]
                         [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]]
+                        [drift "1.5.3"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

@@ -87,7 +87,7 @@
   `(try
      ~@body
      (catch clojure.lang.ExceptionInfo e#
-       (let [{{status# :status body# :body} :object} (ex-data e#)
+       (let [{status# :status body# :body} (ex-data e#)
              errors# (:errors (json/decode body# true))]
          {:status status# :errors errors#}))))
 
@@ -106,7 +106,7 @@
   `(try
      ~@body
      (catch clojure.lang.ExceptionInfo e#
-       (let [{{status# :status body# :body} :object} (ex-data e#)
+       (let [{status# :status body# :body} (ex-data e#)
              errors# (safe-parse-error-xml body#)]
          {:status status# :errors errors#}))))
 

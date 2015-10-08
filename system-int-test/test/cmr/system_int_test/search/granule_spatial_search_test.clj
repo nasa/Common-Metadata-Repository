@@ -19,7 +19,6 @@
             [cmr.spatial.codec :as codec]
             [cmr.spatial.messages :as smsg]
             [clojure.string :as str]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.spatial.serialize :as srl]
             [cmr.common.dev.util :as dev-util]
             [cmr.spatial.lr-binary-search :as lbs]
@@ -46,31 +45,6 @@
   "Returns a url encoded polygon for searching"
   [& ords]
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
-
-(def spatial-viz-enabled
-  "Set this to true to debug test failures with the spatial visualization."
-  false)
-
-(defn display-indexed-granules
-  "Displays the spatial areas of granules on the map."
-  [granules]
-  (let [geometries (mapcat (comp :geometries :spatial-coverage) granules)
-        geometries (map derived/calculate-derived geometries)
-        geometries (mapcat (fn [g]
-                             [g
-                              (srl/shape->mbr g)
-                              (srl/shape->lr g)])
-                           geometries)]
-    (viz-helper/add-geometries geometries)))
-
-(defn display-search-area
-  "Displays a spatial search area on the map"
-  [geometry]
-  (let [geometry (derived/calculate-derived geometry)]
-    (viz-helper/add-geometries [geometry
-                                (srl/shape->mbr geometry)
-                                (srl/shape->lr geometry)])))
-
 
 ;; Tests that invalid spatial areas are detected and error messages are returned.
 (deftest spatial-search-validation-test
@@ -303,11 +277,6 @@
              (when-not matches?
                (println "Expected:" (->> items (map :granule-ur) sort pr-str))
                (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-             (when (and (not matches?) spatial-viz-enabled)
-               (println "Displaying failed granules and search area")
-               (viz-helper/clear-geometries)
-               (display-indexed-granules items)
-               (display-search-area (apply polygon ords)))
              matches?)
 
            [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]

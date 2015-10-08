@@ -14,10 +14,10 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
-                        [clj-http "1.0.1"]]
+                        [clj-http "2.0.0"]]
          :source-paths ["src" "dev" "test" "int_test"]}
    :integration-test {:test-paths ["int_test"]
-                      :dependencies [[clj-http "1.0.1"]]}
+                      :dependencies [[clj-http "2.0.0"]]}
    :uberjar {:main cmr.index-set.runner
              :aot :all}}
   :aliases {;; Prints out documentation on configuration environment variables.

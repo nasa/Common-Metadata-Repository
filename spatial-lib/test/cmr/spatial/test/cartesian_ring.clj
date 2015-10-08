@@ -15,7 +15,6 @@
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.dev.viz-helper :as viz-helper]
             [cmr.common.util :as u]))
 
 (deftest ring-winding-test

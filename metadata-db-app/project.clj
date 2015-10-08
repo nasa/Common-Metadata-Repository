@@ -11,14 +11,12 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
-                 [org.clojure/java.jdbc "0.3.6"]
-                 [sqlingvo "0.7.8"]
-                 [drift "1.5.2"]
-                 [inflections "0.9.13"]
+                 [drift "1.5.3"]
+                 [inflections "0.9.14"]
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]]
 
   :plugins [[lein-test-out "0.3.1"]
-            [drift "1.5.2"]
+            [drift "1.5.3"]
             [lein-exec "0.3.2"]]
 
   :repl-options {:init-ns user}
@@ -27,13 +25,13 @@
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [clj-http "1.0.1"]
+                        [clj-http "2.0.0"]
                         [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]]
          :source-paths ["src" "dev" "test" "int_test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
    :integration-test {:test-paths ["int_test"]
-                      :dependencies [[clj-http "1.0.1"]]}
+                      :dependencies [[clj-http "2.0.0"]]}
    :uberjar {:main cmr.metadata-db.runner
              :aot :all}}
 
