@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.concepts.platform
   "Contains functions for converting platform hierarchies into elastic documents"
   (:require [clojure.string :as str]
-            [cmr.common.util :as util]
             [cmr.common-app.services.kms-fetcher :as kf]))
 
 (def default-platform-values

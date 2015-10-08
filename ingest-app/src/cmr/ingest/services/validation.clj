@@ -87,17 +87,16 @@
 
 (defn validate-collection-umm
   [context collection validate-keywords?]
-  (do
-    ;; Log any errors from the keyword validation if we are not returning them to the client.
-    (when-not validate-keywords?
-      (when-let [errors (v/validate (keyword-validations context) collection)]
-        (format "Collection with entry title [%s] had the following keyword validation errors: %s"
-                (:entry-title collection) (pr-str errors))))
-    ;; Validate the collection and throw errors that will be sent to the client.
-    (if-errors-throw (umm-validation/validate-collection
-                       collection
-                       (when validate-keywords?
-                         [(keyword-validations context)])))))
+  ;; Log any errors from the keyword validation if we are not returning them to the client.
+  (when-not validate-keywords?
+    (when-let [errors (seq (v/validate (keyword-validations context) collection))]
+      (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
+                    (:entry-title collection) (pr-str errors)))))
+  ;; Validate the collection and throw errors that will be sent to the client.
+  (if-errors-throw (umm-validation/validate-collection
+                     collection
+                     (when validate-keywords?
+                       [(keyword-validations context)]))))
 
 (defn validate-granule-umm
   [context collection granule]
