@@ -90,8 +90,9 @@
   (do
     ;; Log any errors from the keyword validation if we are not returning them to the client.
     (when-not validate-keywords?
-      (doseq [err-msg (v/validate (keyword-validations context) collection)]
-        (warn err-msg)))
+      (when-let [errors (v/validate (keyword-validations context) collection)]
+        (format "Collection with entry title [%s] had the following keyword validation errors: %s"
+                (:entry-title collection) (pr-str errors))))
     ;; Validate the collection and throw errors that will be sent to the client.
     (if-errors-throw (umm-validation/validate-collection
                        collection
