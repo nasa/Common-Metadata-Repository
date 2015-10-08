@@ -519,7 +519,7 @@
             ;; Neither is in the map so compare them directly
             :else (compare k1 k2)))))))
 
-;; Copied from clojure.core.incubator. We were having issues referring to this after updating Clojure.
+;; Copied from clojure.core.incubator. We were having issues referring to this after updating to Clojure 1.7.
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new
   nested structure. keys is a sequence of keys. Any empty maps that result
