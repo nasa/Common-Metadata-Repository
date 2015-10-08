@@ -25,13 +25,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 ##############################################################################
-# Build uberjars and setup the database for ingest, bootstrap, and metadata-db
-date && echo "Building uberjars" &&
-lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" uberjar
-if [ $? -ne 0 ] ; then
-  echo "Failed to generate uberjars" >&2
-  exit 1
-fi
+# Setup the database for ingest, bootstrap, and metadata-db
 
 date && echo "Creating database users" &&
 lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
