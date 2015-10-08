@@ -19,8 +19,7 @@
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
-            [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.common.services.errors :as errors]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
@@ -164,7 +163,7 @@
         {:keys [revision-id]} (mdb/save-concept context concept)]
     {:concept-id concept-id, :revision-id revision-id}))
 
-(deftracefn reset
+(defn reset
   "Resets the queue broker"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
@@ -180,7 +179,7 @@
    :cubby cubby/get-cubby-health
    :rabbit-mq #(queue/health (get-in % [:system :queue-broker]))})
 
-(deftracefn health
+(defn health
   "Returns the health state of the app."
   [context]
   (let [dep-health (util/map-values #(% context) health-check-fns)

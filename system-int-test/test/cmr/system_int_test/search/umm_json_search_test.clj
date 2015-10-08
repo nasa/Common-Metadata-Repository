@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.search.umm-json-search-test
   "Integration test for UMMJSON format search"
   (:require [clojure.test :refer :all]
-            [clojure.core.incubator :as incubator]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -45,7 +44,7 @@
   ;; We do not check the revision-date in umm-json as it is not available in UMM record.
   ;; We also don't check hits and tooks in the UMMJSON.
   (is (= (collections->umm-jsons collections)
-         (set (map #(incubator/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
+         (set (map #(util/dissoc-in % [:meta :revision-date]) (get-in search-result [:results  :items]))))))
 
 (deftest search-collection-umm-json
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
@@ -161,8 +160,8 @@
     (testing "find collections in umm-json extension"
       (let [results (search/find-concepts-umm-json :collection {})
             extension-results (search/find-concepts-umm-json :collection {} {:url-extension "umm-json"})]
-        (is (= (incubator/dissoc-in results [:results :took])
-               (incubator/dissoc-in extension-results [:results :took])))))))
+        (is (= (util/dissoc-in results [:results :took])
+               (util/dissoc-in extension-results [:results :took])))))))
 
 (deftest search-umm-json-error-cases
   (testing "granule umm-json search is not supported"

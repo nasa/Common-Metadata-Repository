@@ -12,11 +12,9 @@
    :cmr-acl-lib "0.1.0-SNAPSHOT"
    :cmr-transmit-lib "0.1.0-SNAPSHOT"
    :cmr-spatial-lib "0.1.0-SNAPSHOT"
-   :cmr-vdd-spatial-viz "0.1.0-SNAPSHOT"
    :cmr-es-spatial-plugin "0.1.0-SNAPSHOT"
    :cmr-umm-lib "0.1.0-SNAPSHOT"
    :cmr-umm-spec-lib "0.1.0-SNAPSHOT"
-   :cmr-system-trace-lib "0.1.0-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-system-int-test "0.1.0-SNAPSHOT"
    :cmr-oracle-lib "0.1.0-SNAPSHOT"
@@ -51,9 +49,9 @@
   ;; Due to a stack overflow issue in the latest version of leiningen we can only list the top level
   ;; libraries in the dependencies. Sub dependencies that are also under another project can't be
   ;; included
-  ; :dependencies ~(concat '[[org.clojure/clojure "1.6.0"]]
+  ; :dependencies ~(concat '[[org.clojure/clojure "1.7.0"]]
   ;                        project-dependencies)
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-cubby-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-es-spatial-plugin "0.1.0-SNAPSHOT"]
@@ -88,14 +86,14 @@
 
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+  {:dev {:dependencies [[ring-mock "0.1.5"]
+                        [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [pjstadig/humane-test-output "0.7.0"]
                         [debugger "0.1.7"]
-                        [ring-mock "0.1.5"]
                         [criterium "0.4.3"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]]
+                        [drift "1.5.3"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}

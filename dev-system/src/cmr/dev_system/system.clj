@@ -30,8 +30,6 @@
             [cmr.search.data.elastic-search-index :as es-search]
             [cmr.search.system :as search-system]
 
-            [cmr.spatial.dev.viz-helper :as viz-helper]
-
             [cmr.elastic-utils.test-util :as elastic-test-util]
             [cmr.elastic-utils.embedded-elastic-server :as elastic-server]
             [cmr.elastic-utils.config :as elastic-config]
@@ -288,9 +286,7 @@
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})
-     :post-components {:control-server control-server
-                       ; :vdd-server (viz-helper/create-viz-server)
-                       }}))
+     :post-components {:control-server control-server}}))
 
 (defn- stop-components
   [system components-key]

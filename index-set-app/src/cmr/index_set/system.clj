@@ -7,7 +7,6 @@
             [cmr.common.nrepl :as nrepl]
             [cmr.index-set.api.routes :as routes]
             [cmr.common.api.web-server :as web]
-            [cmr.system-trace.context :as context]
             [cmr.index-set.data.elasticsearch :as es]
             [cmr.elastic-utils.config :as es-config]
             [cmr.transmit.config :as transmit-config]
@@ -36,7 +35,6 @@
              :web (web/create-web-server (index-set-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (index-set-nrepl-port))
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
-             :zipkin (context/zipkin-config "index-set" false)
              :relative-root-url (transmit-config/index-set-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 

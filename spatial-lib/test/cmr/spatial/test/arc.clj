@@ -13,8 +13,7 @@
             [cmr.spatial.point :as p]
             [cmr.spatial.vector :as v]
             [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [cmr.spatial.test.generators :as sgen]))
 
 (defspec arc-equivalency-spec 1000
   (for-all [arc sgen/arcs]

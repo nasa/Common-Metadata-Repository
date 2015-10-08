@@ -22,10 +22,10 @@
                      :condition (gc/or-conds
                                   [(gc/and-conds [(q/string-condition :entry-title "foo")
                                                   (q/string-condition :provider "bar")])
-                                   (gc/and-conds [(q/negated-condition
-                                                    (q/string-condition :provider "alpha"))
+                                   (gc/and-conds [(q/string-condition :provider "soap")
                                                   (q/string-condition :entry-title "ET")
-                                                  (q/string-condition :provider "soap")])])})
+                                                  (q/negated-condition
+                                                    (q/string-condition :provider "alpha"))])])})
            (jp/parse-json-query
              :collection
              {}
@@ -55,12 +55,12 @@
            (jp/parse-json-condition :not {:provider "alpha"}))))
 
   (testing "Nested conditions"
-    (is (= (gc/or-conds [(gc/and-conds [(q/string-condition :provider "bar")
-                                        (q/string-condition :entry-title "foo")])
-                         (gc/and-conds [(q/->NegatedCondition
-                                          (q/string-condition :provider "alpha"))
+    (is (= (gc/or-conds [(gc/and-conds [(q/string-condition :entry-title "foo")
+                                        (q/string-condition :provider "bar")])
+                         (gc/and-conds [(q/string-condition :provider "soap")
                                         (q/string-condition :entry-title "ET")
-                                        (q/string-condition :provider "soap")])])
+                                        (q/->NegatedCondition
+                                          (q/string-condition :provider "alpha"))])])
            (jp/parse-json-condition :or [{:entry-title "foo"
                                           :provider "bar"}
                                          {:provider "soap"

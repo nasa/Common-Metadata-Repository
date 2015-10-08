@@ -12,8 +12,7 @@
             [cmr.spatial.line-segment :as s]
             [cmr.spatial.arc-line-segment-intersections :as asi]
             [cmr.spatial.test.generators :as sgen]
-            [clojure.string :as str]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [clojure.string :as str]))
 
 
 (defn print-failure
@@ -89,58 +88,3 @@
        ;; arc ends on north pole
        [0 0 -25 -30] [-14 -20 85 90] [-14 -16.8]))
 
-
-(comment
-
-(do
-  (def arc  (cmr.spatial.arc/ords->arc -51.857142857142854 -83.99130434782609 -20.037037037037038 -68.97560975609755))
-  (def ls (cmr.spatial.line-segment/ords->line-segment -41.01298701298701 -86.98113207547169 40.01219512195122 63.992248062015506))
-
-  (def intersections (asi/intersections ls arc))
-
-  (s/subselect ls (:mbr1 arc))
-
-  )
-
-
-  (viz-helper/clear-geometries)
-  (viz-helper/add-geometries [ls arc])
-  (viz-helper/add-geometries intersections)
-
-  (viz-helper/add-geometries [ls (:mbr1 arc)])
-  (viz-helper/add-geometries [(s/subselect ls (:mbr1 arc))])
-
-  (viz-helper/add-geometries (s/mbr->line-segments (:mbr1 arc)))
-  (viz-helper/add-geometries [(cmr.spatial.point/point 55.0 -54.353923205342234)
-                              (cmr.spatial.point/point -80.47701149425286 -15.0)
-                              (cmr.spatial.point/point -113.0 -5.552587646076795)])
-
-
-
-  (require '[criterium.core :refer [with-progress-reporting bench]])
-  (with-progress-reporting
-      (bench
-        (doall (asi/intersections ls arc))))
-
-
-  (s/vertical? ls)
-  (a/vertical? arc)
-  (a/point-at-lon arc -180)
-
-
-  (and (every? (fn [point]
-                 (let [lon (:lon point)
-                       line-point (p/point lon (s/segment+lon->lat ls lon))
-                       arc-point (a/point-at-lon arc lon)]
-                   (println (pr-str line-point))
-                   (println (pr-str arc-point))
-                   (approx= line-point arc-point 0.001)))
-               intersections)
-       (every? (partial m/covers-point? (:mbr ls)) intersections)
-       (every? (fn [point]
-                 (some #(m/covers-point? % point) (a/mbrs arc)))
-               intersections))
-
-
-
-  )

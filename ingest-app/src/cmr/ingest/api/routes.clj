@@ -14,7 +14,7 @@
             [cmr.ingest.services.jobs :as jobs]
             [cmr.acl.core :as acl]
             [cmr.ingest.services.ingest-service :as ingest]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.ingest.api.provider :as provider-api]
             [cmr.ingest.api.ingest :as ingest-api]
             [cmr.ingest.api.translation :as translation-api]
@@ -72,7 +72,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       api-errors/invalid-url-encoding-handler

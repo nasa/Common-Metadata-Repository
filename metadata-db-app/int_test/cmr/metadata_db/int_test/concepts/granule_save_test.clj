@@ -6,7 +6,6 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
-            [cmr.system-int-test.utils.index-util :as index]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]))

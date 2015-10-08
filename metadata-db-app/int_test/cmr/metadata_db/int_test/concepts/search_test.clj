@@ -332,7 +332,7 @@
 (deftest find-granules-with-invalid-parameters
   (testing "invalid combination"
     (is (= {:status 400
-            :errors ["Finding concept type [granule] with parameter combination [native-id, provider-id, granule-ur] is not supported."]}
+            :errors ["Finding concept type [granule] with parameter combination [provider-id, granule-ur, native-id] is not supported."]}
            (util/find-concepts :granule {:provider-id "REG_PROV"
                                          :granule-ur "GRAN_UR"
                                          :native-id "NV1"})))))

@@ -65,9 +65,9 @@
 
          ;; Multiple duplicate points
          [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
-         [(msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])
+         [(msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])
           (msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
-          (msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])]
+          (msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])]
 
          ;; very very close points
          [0 0, 1 1, 1 1.000000001, 0 1, 0 0]

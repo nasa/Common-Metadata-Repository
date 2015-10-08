@@ -8,7 +8,6 @@
             [cmr.bootstrap.api.routes :as routes]
             [cmr.common.api.web-server :as web]
             [cmr.oracle.connection :as oracle]
-            [cmr.system-trace.context :as context]
             [clojure.core.async :as ca :refer [chan]]
             [cmr.bootstrap.data.bulk-migration :as bm]
             [cmr.bootstrap.data.bulk-index :as bi]
@@ -85,7 +84,6 @@
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :scheduler (when-let [jobs (bootstrap-jobs/jobs)]
                           (cj/create-clustered-scheduler `system-holder :jobs-db jobs))
-             :zipkin (context/zipkin-config "bootstrap" false)
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)}}]

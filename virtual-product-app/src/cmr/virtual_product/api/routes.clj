@@ -8,7 +8,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as serv-errors]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.common.mime-types :as mt]
             [cmr.virtual-product.services.virtual-product-service :as vps]
             [cheshire.core :as json]
@@ -55,7 +55,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site

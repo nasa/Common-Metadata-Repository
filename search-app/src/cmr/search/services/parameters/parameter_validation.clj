@@ -4,6 +4,8 @@
             [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as c-msg]
             [cmr.common.parameter-parser :as parser]
+            [cmr.common.config :as cfg]
+            [cmr.common.util :as util]
             [clojure.string :as s]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.common.date-time-range-parser :as dtr-parser]
@@ -16,10 +18,8 @@
             [cmr.search.services.messages.orbit-number-messages :as on-msg]
             [cmr.search.services.messages.common-messages :as msg]
             [cmr.search.data.messages :as d-msg]
-            [cmr.common.config :as cfg]
             [camel-snake-kebab.core :as csk]
             [cmr.spatial.codec :as spatial-codec]
-            [clojure.core.incubator :as incubator]
             [clj-time.core :as t])
   (:import clojure.lang.ExceptionInfo
            java.lang.Integer))
@@ -624,7 +624,7 @@
     (if (or (nil? value) (map? value))
       [params []]
       (let [param-name (assoc-keys->param-name keys)]
-        [(incubator/dissoc-in params keys)
+        [(util/dissoc-in params keys)
          [(str "Parameter [" param-name "] must include a nested key, " param-name "[...]=value.")]]))))
 
 (defn- apply-type-validations

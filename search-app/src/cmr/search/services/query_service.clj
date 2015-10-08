@@ -73,7 +73,6 @@
             [cmr.metadata-db.services.search-service :as mdb-search]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.api.route-helpers :as rh]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.concepts :as cc]
             [cmr.common.services.errors :as errors]
             [cmr.common.util :as u]
@@ -84,7 +83,7 @@
             [cmr.spatial.codec :as spatial-codec]
             [cmr.common.log :refer (debug info warn error)]))
 
-(deftracefn validate-query
+(defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
   [context query]
@@ -151,7 +150,7 @@
     {:results result-str :hits (:hits results) :took took :total-took total-took
      :result-format (:result-format query)}))
 
-(deftracefn find-concepts-by-parameters
+(defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
@@ -172,7 +171,7 @@
                   (pr-str params)))
     results))
 
-(deftracefn find-concepts-by-json-query
+(defn find-concepts-by-json-query
   "Executes a search for concepts using the given JSON. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params json-query]
@@ -187,7 +186,7 @@
                   json-query (pr-str params)))
     results))
 
-(deftracefn find-concepts-by-aql
+(defn find-concepts-by-aql
   "Executes a search for concepts using the given aql. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context params aql]
@@ -215,7 +214,7 @@
     (format
       "Concept with concept-id [%s] and revision-id [%s] could not be found." concept-id revision-id)))
 
-(deftracefn find-concept-by-id
+(defn find-concept-by-id
   "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
   [context result-format concept-id]
   (if (contains? #{:atom :json} result-format)
@@ -235,7 +234,7 @@
         (throw-id-not-found concept-id))
       {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))})))
 
-(deftracefn find-concept-by-id-and-revision
+(defn find-concept-by-id-and-revision
   "Executes a search to metadata-db and returns the concept with the given concept-id and
   revision-id."
   [context result-format concept-id revision-id]
@@ -246,7 +245,7 @@
       (throw-concept-revision-not-found concept-id revision-id))
     {:results (:metadata concept) :result-format (mt/mime-type->format (:format concept))}))
 
-(deftracefn get-granule-timeline
+(defn get-granule-timeline
   "Finds granules and returns the results as a list of intervals of granule counts per collection."
   [context params]
   (let [query (->> params
@@ -260,7 +259,7 @@
         results (qe/execute-query context query)]
     (search-results->response context query results)))
 
-(deftracefn get-collections-by-providers
+(defn get-collections-by-providers
   "Returns all collections limited optionally by the given provider ids"
   ([context skip-acls?]
    (get-collections-by-providers context nil skip-acls?))
@@ -278,7 +277,7 @@
      (:items results))))
 
 
-(deftracefn get-provider-holdings
+(defn get-provider-holdings
   "Executes elasticsearch search to get provider holdings"
   [context params]
   (let [{:keys [provider-id echo-compatible]} (u/map-keys->kebab-case params)
@@ -302,7 +301,7 @@
   [spatial-type shape]
   (set (tile/geometry->tiles (spatial-codec/url-decode spatial-type shape))))
 
-(deftracefn find-tiles-by-geometry
+(defn find-tiles-by-geometry
   "Gets all the tile coordinates for the given input parameters. The function returns all the tile
   coordinates if the input parameters does not include any spatial parameters"
   [context params]

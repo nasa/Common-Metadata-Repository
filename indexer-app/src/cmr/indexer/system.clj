@@ -5,7 +5,6 @@
   (:require [cmr.common.lifecycle :as lifecycle]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.nrepl :as nrepl]
-            [cmr.system-trace.context :as context]
             [cmr.common.api.web-server :as web]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.indexer.config :as config]
@@ -48,7 +47,6 @@
              :colls-with-separate-indexes-fn colls-with-separate-indexes
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))
-             :zipkin (context/zipkin-config "Indexer" false)
              :relative-root-url (transmit-config/indexer-relative-root-url)
              :caches {af/acl-cache-key (af/create-acl-cache
                                          (stl-cache/create-single-thread-lookup-cache

@@ -3,7 +3,6 @@
   (:require [clojure.string :as s]
             [clojure.test :refer :all]
             [cmr.index-set.services.index-service :as svc]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.index-set.int-test.utility :as util]))
 
 

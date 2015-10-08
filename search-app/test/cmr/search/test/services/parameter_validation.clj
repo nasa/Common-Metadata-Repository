@@ -40,8 +40,8 @@
     (is (= ["Parameter [keyword] must have a single value."]
            (pv/single-value-validation :collection {:keyword ["foo"]}))))
   (testing "for multiple parameters requiring single values validating value vectors returns multiple errors"
-    (is (= ["Parameter [keyword] must have a single value."
-            "Parameter [page_size] must have a single value."]
+    (is (= ["Parameter [page_size] must have a single value."
+            "Parameter [keyword] must have a single value."]
            (pv/single-value-validation :collection {:keyword ["foo"] :page-size [10] :platform ["bar"]}))))
   (testing "for a parameter allowing multiple values validating a value vector returns no error"
     (is (= []
@@ -56,8 +56,8 @@
     (is (= ["Parameter [concept_id] must have a single value or multiple values."]
            (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}}))))
   (testing "for multiple parameters requiring vector of values validating value maps returns multiple errors"
-    (is (= ["Parameter [platform] must have a single value or multiple values."
-            "Parameter [concept_id] must have a single value or multiple values."]
+    (is (= ["Parameter [concept_id] must have a single value or multiple values."
+            "Parameter [platform] must have a single value or multiple values."]
            (pv/multiple-value-validation :collection {:concept-id {0 "C1-PROV1"}
                                                     :platform {0 "bar"}
                                                     :page-size 10}))))
@@ -148,8 +148,8 @@
                                                      :hierarchical-facets "TRUE"
                                                      :downloadable "uNSet"}))))
   (testing "boolean parameters with an invalid value return an error"
-    (is (= ["Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"
-            "Parameter include_facets must take value of true, false, or unset, but was [TRUE-ISH]"]
+    (is (= ["Parameter include_facets must take value of true, false, or unset, but was [TRUE-ISH]"
+            "Parameter hierarchical_facets must take value of true, false, or unset, but was [not-right]"]
            (pv/boolean-value-validation :collection {:include-facets "TRUE-ISH"
                                                      :hierarchical-facets "not-right"})))))
 
@@ -246,8 +246,8 @@
        :detailed-variable)
   (is (= ["parameter [categories] is not a valid science keyword search term."]
          (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"}}})))
-  (is (= ["parameter [topics] is not a valid science keyword search term."
-          "parameter [categories] is not a valid science keyword search term."]
+  (is (= ["parameter [categories] is not a valid science keyword search term."
+          "parameter [topics] is not a valid science keyword search term."]
          (pv/science-keywords-validation :collection {:science-keywords {:0 {:categories "Cat1"
                                                                              :topics "Topic1"}}}))))
 

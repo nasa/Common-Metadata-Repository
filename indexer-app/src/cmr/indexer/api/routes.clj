@@ -20,7 +20,7 @@
             [cmr.indexer.data.concepts.tag]
 
             [cmr.indexer.services.index-service :as index-svc]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.common-app.api.routes :as common-routes]))
 
 (defn- ignore-conflict?
@@ -98,7 +98,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site

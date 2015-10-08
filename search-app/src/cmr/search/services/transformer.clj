@@ -1,7 +1,6 @@
 (ns cmr.search.services.transformer
   "Provides functions for retrieving concepts in a desired format."
-  (:require [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.metadata-db.services.concept-service :as metadata-db]
+  (:require [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
             [cmr.umm.start-end-date :as sed]
             [cmr.common.cache :as cache]
@@ -69,7 +68,7 @@
       (assoc value-map :collection-concept-id collection-concept-id)
       value-map)))
 
-(deftracefn get-formatted-concept-revisions
+(defn get-formatted-concept-revisions
   "Get concepts with given concept-id, revision-id pairs in a given format. Does not apply acls to
   the concepts found."
   [context concepts-tuples target-format allow-missing?]
@@ -83,7 +82,7 @@
            "concept->value-map time:" t2)
     values))
 
-(deftracefn get-latest-formatted-concepts
+(defn get-latest-formatted-concepts
   "Get latest version of concepts with given concept-ids in a given format. Applies ACLs to the concepts
   found."
   ([context concept-ids target-format]
@@ -118,7 +117,7 @@
                 "concept->value-map time:" t5)
          values)))))
 
-(deftracefn get-formatted-concept
+(defn get-formatted-concept
   "Get a specific revision of a concept with the given concept-id in a given format.
   Applies ACLs to the concept found."
   [context concept-id revision-id target-format]

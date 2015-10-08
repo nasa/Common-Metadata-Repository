@@ -180,17 +180,17 @@
     (assoc concept :concept-id concept-id)
     concept))
 
-(defn- sanitize-concept-type
-  "Drops the parameter part of the MediaTypes from concept-type and returns the type/sub-type part"
-  [concept-type]
-  (first (str/split concept-type #";")))
+(defn- sanitize-content-type
+  "Drops the parameter part of the MediaTypes from content-type and returns the type/sub-type part"
+  [content-type]
+  (when content-type (first (str/split content-type #";"))))
 
 (defn- body->concept
   "Create a metadata concept from the given request body"
   [concept-type provider-id native-id body content-type headers]
   (let [metadata (str/trim (slurp body))]
     (-> {:metadata metadata
-         :format (sanitize-concept-type content-type)
+         :format (sanitize-content-type content-type)
          :provider-id provider-id
          :native-id native-id
          :concept-type concept-type}
@@ -281,7 +281,7 @@
   "Converts a multipart parameter "
   [provider-id native-id concept-type {:keys [content-type content]}]
   {:metadata content
-   :format (sanitize-concept-type content-type)
+   :format (sanitize-content-type content-type)
    :provider-id provider-id
    :native-id native-id
    :concept-type concept-type})

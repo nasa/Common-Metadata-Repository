@@ -9,7 +9,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.services.errors :as svc-errors]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.mock-echo.api.tokens :as token-api]
             [cmr.mock-echo.api.providers :as providers-api]
             [cmr.mock-echo.api.acls :as acls-api]
@@ -39,7 +39,7 @@
 
 (defn make-api [system]
   (-> (build-routes system)
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site

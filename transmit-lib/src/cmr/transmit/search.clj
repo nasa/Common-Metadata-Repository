@@ -4,7 +4,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.transmit.config :as config]
             [cheshire.core :as cheshire]
-            [cmr.system-trace.http :as ch]
+            [cmr.common.api.context :as ch]
             [cmr.transmit.connection :as conn]
             [cheshire.core :as json]
             [clojure.string :as str]

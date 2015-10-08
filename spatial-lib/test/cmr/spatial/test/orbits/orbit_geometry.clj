@@ -74,8 +74,8 @@
       (is (= default-ascending-crossing (/ (+ (:lon left-edge) (:lon right-edge)) 2.0))) ; centered on 88 lon
       (is (> 0 (:lat left-edge))) ; left edge is below the equator
       (is (< 0 (:lat right-edge))) ; right edge is above the equator
-      (is (approx= (swath-width-rad orbit-params) (p/angular-distance left-edge right-edge))) ; swath-width apart
-    ))
+      ; swath-width apart
+      (is (approx= (swath-width-rad orbit-params) (p/angular-distance left-edge right-edge)))))
   (testing "returns an entry for each time interval"
     (let [swath (to-swaths (make-orbit-parameters)
                            default-ascending-crossing
@@ -83,8 +83,7 @@
                            default-start-date
                            default-end-date)]
       (is (= 21 (count (first swath))))
-      (is (= 21 (count (second swath))))
-    ))
+      (is (= 21 (count (second swath))))))
   (testing "returns an entry for each interval when time intervals do not evenly divide the orbit"
     (let [swath (to-swaths (make-orbit-parameters)
                            default-ascending-crossing
@@ -93,8 +92,7 @@
                            default-end-date
                            (* 60 150))]
       (is (= 2 (count (first swath)))) ; Entries at t=0, t=150, t=200
-      (is (= 2 (count (second swath))))
-    ))
+      (is (= 2 (count (second swath))))))
   (testing "returns entries along the orbit"
     ;; Numbers below verified using orbital backtracking visualization. See CMR-1368 in JIRA
     ;; for screenshot. This test is primarily a regression test.
