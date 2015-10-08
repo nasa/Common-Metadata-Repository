@@ -25,7 +25,8 @@
 
                  ;; Needed for timeout a function execution
                  [clojail "1.0.6"]
-                 [com.github.fge/json-schema-validator "2.2.6"]]
+                 [com.github.fge/json-schema-validator "2.2.6"]
+                 [com.dadrox/quiet-slf4j "0.1"]]
 
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.2"]]
