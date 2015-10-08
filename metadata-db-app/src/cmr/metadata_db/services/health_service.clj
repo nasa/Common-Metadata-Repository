@@ -1,7 +1,6 @@
 (ns cmr.metadata-db.services.health-service
   (require [cmr.oracle.connection :as conn]
            [cmr.transmit.echo.rest :as rest]
-           [cmr.system-trace.core :refer [deftracefn]]
            [cmr.common.services.health-helper :as hh]
            [cmr.metadata-db.services.util :as util]))
 
@@ -15,7 +14,7 @@
      :dependencies {:oracle db-health
                     :echo echo-rest-health}}))
 
-(deftracefn health
+(defn health
   "Returns the metadata-db health with timeout handling."
   [context]
   (let [timeout-ms (* 1000 (+ 1 (hh/health-check-timeout-seconds)))]

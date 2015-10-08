@@ -7,7 +7,6 @@
             [cmr.common.nrepl :as nrepl]
             [cmr.cubby.api.routes :as routes]
             [cmr.common.api.web-server :as web]
-            [cmr.system-trace.context :as context]
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.elastic-utils.config :as es-config]
             [cmr.cubby.data.elastic-cache-store :as elastic-cache-store]
@@ -29,8 +28,7 @@
              :db (elastic-cache-store/create-elastic-cache-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/cubby-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (cubby-nrepl-port))
-             :relative-root-url (transmit-config/cubby-relative-root-url)
-             :zipkin (context/zipkin-config "cubby" false)}]
+             :relative-root-url (transmit-config/cubby-relative-root-url)}]
     (transmit-config/system-with-connections sys [:echo-rest])))
 
 (defn start

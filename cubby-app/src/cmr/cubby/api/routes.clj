@@ -6,7 +6,7 @@
             [ring.middleware.json :as ring-json]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.cubby.data :as d]
             [cmr.common.cache :as cache]
             [cmr.acl.core :as acl]
@@ -96,7 +96,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
       handler/site

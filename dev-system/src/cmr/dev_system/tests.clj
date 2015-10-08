@@ -91,8 +91,8 @@
         success? (= 0 (+ num-failing num-error))]
     (when speak?
       (if success?
-        (du/speak "Success")
-        (du/speak "Failure")))
+        (du/speak "Good News" "The tests are passing.")
+        (du/speak "Zarvox" "Failure makes me sad")))
 
     (println "-------------------------------------------------------------------")
     (println "Slowest Tests:")

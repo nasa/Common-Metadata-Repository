@@ -1,11 +1,10 @@
 (ns cmr.virtual-product.services.health-service
   "Contains fuctions to provider health status of the search app."
-  (:require [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.transmit.ingest :as ingest]
+  (:require [cmr.transmit.ingest :as ingest]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.message-queue.services.queue :as queue]))
 
-(deftracefn health
+(defn health
   "Returns the health state of the app."
   [context]
   (let [ingest-health (ingest/get-ingest-health context)

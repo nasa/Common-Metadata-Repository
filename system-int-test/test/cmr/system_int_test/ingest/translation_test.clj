@@ -32,7 +32,7 @@
       (let [input-str (umm-spec/generate-metadata :collection input-format expected-conversion/example-record)
             expected (expected-conversion/convert expected-conversion/example-record input-format output-format)
             {:keys [status headers body]} (ingest/translate-metadata :collection input-format input-str output-format)
-            content-type (:content-type headers)]
+            content-type (first (mt/extract-mime-types (:content-type headers)))]
         (is (= 200 status))
         (is (= (mt/format->mime-type output-format) content-type))
         (is (= expected (umm-spec/parse-metadata :collection output-format body))))))

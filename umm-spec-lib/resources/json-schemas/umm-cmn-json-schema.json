@@ -483,12 +483,6 @@
         "Version": {
           "description": "The version of the metadata record that is associated with this record.",
           "$ref": "#/definitions/VersionType"
-        },
-        "ProviderId": {
-          "description": "The ProviderName of the metadata record that is associated with this record.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 255
         }
       },
       "required": ["EntryId"]

@@ -34,7 +34,7 @@
                     :project "E*",
                     :options {:entry-title {:ignore-case "true"} :project {:pattern "true"}}
                     :exclude
-                    {:concept-id ["G1000000006-PROV2" "C1000000002-PROV2" "G1000000006-PROV2"]}}]
+                    {:concept-id ["G1000000006-PROV2" "G1000000006-PROV2" "C1000000002-PROV2"]}}]
       (is (= expected
              (lp/replace-parameter-aliases params))))))
 
@@ -87,8 +87,8 @@
            (p/parse-parameter-query :collection {:entry-title ["foo"]}))))
   (testing "with multiple conditions"
     (is (= (q/query {:concept-type :collection
-                     :condition (gc/and-conds [(q/string-condition :provider "bar")
-                                               (q/string-condition :entry-title "foo")])})
+                     :condition (gc/and-conds [(q/string-condition :entry-title "foo")
+                                               (q/string-condition :provider "bar")])})
            (p/parse-parameter-query :collection {:entry-title ["foo"] :provider "bar"})))))
 
 (deftest parse-sort-key-test

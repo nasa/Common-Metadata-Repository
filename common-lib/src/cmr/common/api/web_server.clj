@@ -5,10 +5,10 @@
             [cmr.common.log :refer (debug info warn error)])
   (:import [org.eclipse.jetty.server
             Server
-            NCSARequestLog]
-           [org.eclipse.jetty.server.handler
-            GzipHandler
-            RequestLogHandler]))
+            NCSARequestLog
+            HttpConnectionFactory]
+           org.eclipse.jetty.servlets.gzip.GzipHandler
+           org.eclipse.jetty.server.handler.RequestLogHandler))
 
 (def MIN_THREADS
   "The minimum number of threads for Jetty to use to process requests. The was originally set to the
@@ -54,7 +54,6 @@
     (.setHandler existing-handler)
     (.setMinGzipSize min_gzip_size)))
 
-
 (defrecord WebServer
   [
    ;; The port Jetty will be running on
@@ -88,9 +87,13 @@
                               :max-threads MAX_THREADS
                               :configurator (fn [jetty]
                                               (doseq [connector (.getConnectors jetty)]
-                                                (.setRequestHeaderSize connector
-                                                                       MAX_REQUEST_HEADER_SIZE)))})]
+                                                (let [^HttpConnectionFactory http-conn-factory
+                                                      (first (.getConnectionFactories connector))]
+                                                  (.setRequestHeaderSize
+                                                    (.getHttpConfiguration http-conn-factory)
+                                                    MAX_REQUEST_HEADER_SIZE))))})]
 
+        (.stop server)
         (let [request-handler (if use-compression?
                                 (create-gzip-handler (.getHandler server) MIN_GZIP_SIZE)
                                 (.getHandler server))
@@ -98,10 +101,8 @@
                                 (create-access-log-handler request-handler)
                                 request-handler)]
           (doto server
-            (.stop)
             (.setHandler request-handler)
             (.start)))
-
 
         (info "Jetty started on port" port)
         (assoc this :server server))

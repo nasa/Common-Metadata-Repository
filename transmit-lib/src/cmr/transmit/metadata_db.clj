@@ -6,7 +6,7 @@
             [cmr.transmit.config :as config]
             [cheshire.core :as json]
             [clojure.walk :as walk]
-            [cmr.system-trace.http :as ch]
+            [cmr.common.api.context :as ch]
             [ring.util.codec :as codec]
             [cmr.transmit.connection :as conn]
             [cmr.common.log :refer (debug info warn error)]

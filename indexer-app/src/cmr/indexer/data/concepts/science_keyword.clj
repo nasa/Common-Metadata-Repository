@@ -24,6 +24,12 @@
   [collection]
   (mapcat science-keyword->keywords (:science-keywords collection)))
 
+(defn- normalize-sk-field-value
+  "Convert science keyword field values into upper case and trim whitespace from both ends."
+  [sk-field-value]
+  (when sk-field-value
+    (-> sk-field-value str/trim str/upper-case)))
+
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document. If there is a match
   with the science keywords in KMS we also index the UUID from KMS. We index all of the science
@@ -32,7 +38,7 @@
   index in lowercase so that science keywords are not treated as a special case in parts of the
   code that use lowercase mappings."
   [gcmd-keywords-map science-keyword]
-  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
+  (let [science-keyword-upper-case (util/map-values normalize-sk-field-value science-keyword)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
         {:keys [uuid]} (kf/get-full-hierarchy-for-science-keyword gcmd-keywords-map science-keyword)]
@@ -55,7 +61,7 @@
 
 (defn science-keyword->facet-fields
   [science-keyword]
-  (let [science-keyword-upper-case (util/map-values #(when % (str/upper-case %)) science-keyword)
+  (let [science-keyword-upper-case (util/map-values normalize-sk-field-value science-keyword)
         {:keys [category topic term variable-level-1 variable-level-2
                 variable-level-3 detailed-variable]} science-keyword-upper-case]
     {:category category

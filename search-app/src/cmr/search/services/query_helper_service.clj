@@ -1,8 +1,7 @@
 (ns cmr.search.services.query-helper-service
   "Helper queries for other services, for instance fetching collection-level
    data required to construct granule queries or results."
-  (:require [cmr.system-trace.core :refer [deftracefn]]
-            [cmr.search.services.query-execution :as qe]
+  (:require [cmr.search.services.query-execution :as qe]
             [cmr.search.models.query :as qm]
             [cmr.search.models.group-query-conditions :as gc]))
 
@@ -41,7 +40,7 @@
   (let [query (collections-query condition collection-ids fields)]
     (:items (qe/execute-query context query))))
 
-(deftracefn collection-orbit-parameters
+(defn collection-orbit-parameters
   "Fetch elastic orbit parameters for the given collection ids.
    If treat-empty-as-all? is true, scopes the results to the passed collection ids
    and null or empty collection ids implies that no scoping should be applied (all

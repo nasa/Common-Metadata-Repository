@@ -21,7 +21,6 @@
             [cmr.indexer.config :as config]
             [cmr.acl.acl-fetcher :as acl-fetcher]
             [cmr.common.services.errors :as errors]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.message-queue.config :as qcfg]
             [cmr.indexer.data.elasticsearch :as es]
             [cmr.common.lifecycle :as lifecycle]
@@ -40,7 +39,7 @@
                   (t/after? delete-time (tk/now)))))
           batch))
 
-(deftracefn bulk-index
+(defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db. The bulk API is
   invoked repeatedly if necessary - processing batch-size concepts each time. Returns the number
@@ -66,7 +65,7 @@
 
 (def REINDEX_BATCH_SIZE 2000)
 
-(deftracefn reindex-provider-collections
+(defn reindex-provider-collections
   "Reindexes all the collections in the providers given.
 
   The optional all-revisions-index? will cause the following behavior changes:
@@ -176,7 +175,7 @@
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 
-(deftracefn delete-concept
+(defn delete-concept
   "Delete the concept with the given id"
   [context concept-id revision-id options]
   ;; Assuming ingest will pass enough info for deletion
@@ -226,7 +225,7 @@
       revision-id
       elastic-options)))
 
-(deftracefn delete-provider
+(defn delete-provider
   "Delete all the concepts within the given provider"
   [context provider-id]
   (info (format "Deleting provider-id %s" provider-id))
@@ -252,14 +251,14 @@
         (concept-mapping-types :granule)
         {:term {:provider-id provider-id}}))))
 
-(deftracefn reset
+(defn reset
   "Delegates reset elastic indices operation to index-set app as well as resetting caches"
   [context]
   (cache/reset-caches context)
   (es/reset-es-store context)
   (cache/reset-caches context))
 
-(deftracefn update-indexes
+(defn update-indexes
   "Updates the index mappings and settings."
   [context]
   (cache/reset-caches context)
@@ -277,7 +276,7 @@
                 (when-let [qb (get-in context [:system :queue-broker])]
                   (queue/health qb)))})
 
-(deftracefn health
+(defn health
   "Returns the health state of the app."
   [context]
   (let [dep-health (util/remove-nil-keys (util/map-values #(% context) health-check-fns))

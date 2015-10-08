@@ -12,6 +12,5 @@
     (is (= `(= :a 5)
            (sh/find-params->sql-clause {:a 5}))))
   (testing "converting multiple parameters"
-    (is (= `(and (= :b "bravo")
-                 (= :a 5))
+    (is (= `(and (= :a 5) (= :b "bravo"))
            (sh/find-params->sql-clause {:a 5 :b "bravo"})))))

@@ -11,7 +11,7 @@
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.api.errors :as errors]
             [cmr.common.cache :as cache]
-            [cmr.system-trace.http :as http-trace]
+            [cmr.common.api.context :as context]
             [cmr.metadata-db.services.health-service :as hs]
             [cmr.metadata-db.services.concept-service :as concept-service]
             [cmr.metadata-db.services.jobs :as mdb-jobs]
@@ -62,7 +62,7 @@
 (defn make-api [system]
   (-> (build-routes system)
       acl/add-authentication-handler
-      (http-trace/build-request-context-handler system)
+      (context/build-request-context-handler system)
       errors/invalid-url-encoding-handler
       errors/exception-handler
       keyword-params/wrap-keyword-params

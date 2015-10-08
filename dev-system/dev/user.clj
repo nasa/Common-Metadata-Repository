@@ -10,10 +10,7 @@
             [cmr.common.dev.util :as d]
             [cmr.system-int-test.system :as sit-sys]
             [cmr.common.jobs :as jobs]
-            [cmr.common.config :as config]
-            [earth.driver :as earth-viz]
-            [common-viz.util :as common-viz]
-            [vdd-core.core :as vdd])
+            [cmr.common.config :as config])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         [alex-and-georges.debug-repl]))
@@ -71,12 +68,6 @@
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
-
-(defn reload-coffeescript []
-  (do
-    (println "Compiling coffeescript")
-    (println (common-viz/compile-coffeescript (get-in system [:components :vdd-server :config])))
-    (vdd/data->viz {:cmd :reload})))
 
 (defn run-all-tests-future
   "Runs all tests asynchronously, with :fail-fast? and :speak? enabled."

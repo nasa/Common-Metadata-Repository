@@ -30,9 +30,6 @@
 (defn silence-logging-fixture
   "A test fixture that will mute any logging"
   [f]
-  (let [current-level (deref t/level-atom)]
-    (t/set-level! :fatal)
-    (try
-      (f)
-      (finally
-        (t/set-level! current-level)))))
+  (t/with-level
+    :fatal
+    (f)))

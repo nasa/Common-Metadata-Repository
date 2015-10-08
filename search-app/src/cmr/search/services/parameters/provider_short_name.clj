@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.provider-short-name
   "Contains functions for tranforming provider_short_name parameter to provider parameter."
   (:require [clojure.string :as s]
-            [clojure.core.incubator :as incubator]
+            [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]
             [cmr.search.services.transformer :as transformer]
             [cmr.metadata-db.services.provider-service :as metadata-db]))
@@ -73,7 +73,7 @@
                          providers provider-short-names case-sensitive?)]
       (-> params
           (dissoc :provider-short-name)
-          (incubator/dissoc-in [:options :provider-short-name])
+          (util/dissoc-in [:options :provider-short-name])
           (add-provider-ids-to-params provider-ids)))))
 
 (defn replace-provider-short-names

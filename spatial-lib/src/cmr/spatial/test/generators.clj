@@ -15,8 +15,7 @@
             [cmr.spatial.derived :as d]
             [cmr.spatial.line-segment :as s]
             [cmr.spatial.arc-line-segment-intersections :as asi]
-            [clojure.math.combinatorics :as combo]
-            [cmr.spatial.dev.viz-helper :as viz-helper]))
+            [clojure.math.combinatorics :as combo]))
 
 (comment
   ;; If you have trouble reloading this namespace, evaluate the

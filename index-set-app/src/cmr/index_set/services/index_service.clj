@@ -13,8 +13,7 @@
             [cmr.index-set.services.messages :as m]
             [clojure.walk :as walk]
             [cheshire.core :as cheshire]
-            [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.system-trace.core :refer [deftracefn]])
+            [cmr.index-set.config.elasticsearch-config :as es-config])
   (:import clojure.lang.ExceptionInfo))
 
 ;; configured list of cmr concepts
@@ -67,7 +66,7 @@
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                       [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
 
-(deftracefn get-index-sets
+(defn get-index-sets
   "Fetch all index-sets in elastic."
   [context]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
@@ -76,14 +75,14 @@
     (map #(select-keys (:index-set %) [:id :name :concepts])
          index-sets)))
 
-(deftracefn index-set-exists?
+(defn index-set-exists?
   "Check index-set existsence"
   [context index-set-id]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
         idx-mapping-type (first (keys mapping))]
     (es/index-set-exists? (context->es-store context) index-name idx-mapping-type index-set-id)))
 
-(deftracefn get-index-set
+(defn get-index-set
   "Fetch index-set associated with an index-set id."
   [context index-set-id]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
@@ -126,7 +125,7 @@
       (m/index-set-exists-msg index-set-id))))
 
 
-(deftracefn validate-requested-index-set
+(defn validate-requested-index-set
   "Verify input index-set is valid."
   [context index-set allow-update?]
 
@@ -141,7 +140,7 @@
   (when-let [error (index-cfg-validation index-set)]
     (errors/throw-service-error :invalid-data error)))
 
-(deftracefn index-requested-index-set
+(defn index-requested-index-set
   "Index requested index-set along with generated elastic index names"
   [context index-set]
   (let [index-set-w-es-index-names (assoc-in index-set [:index-set :concepts]
@@ -157,7 +156,7 @@
         idx-mapping-type (first (keys mapping))]
     (es/save-document-in-elastic context index-name idx-mapping-type doc-id es-doc)))
 
-(deftracefn create-index-set
+(defn create-index-set
   "Create indices listed in index-set. Rollback occurs if indices creation or index-set doc indexing fails."
   [context index-set]
   (validate-requested-index-set context index-set false)
@@ -179,7 +178,7 @@
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to index index-set doc failed"  e)))))
 
-(deftracefn update-index-set
+(defn update-index-set
   "Updates indices in the index set"
   [context index-set]
   (info "Updating index-set" (pr-str index-set))
@@ -195,7 +194,7 @@
 
     (index-requested-index-set context index-set)))
 
-(deftracefn delete-index-set
+(defn delete-index-set
   "Delete all indices having 'id_' as the prefix in the elastic, followed by index-set doc delete"
   [context index-set-id]
   (let [index-names (get-index-names (get-index-set context index-set-id))
@@ -204,7 +203,7 @@
     (dorun (map #(es/delete-index (context->es-store context) %) index-names))
     (es/delete-document context index-name idx-mapping-type index-set-id)))
 
-(deftracefn reset
+(defn reset
   "Put elastic in a clean state after deleting indices associated with index-sets and index-set docs."
   [context]
   (let [{:keys [index-name mapping]} es-config/idx-cfg-for-index-sets
@@ -214,7 +213,7 @@
     (doseq [id index-set-ids]
       (delete-index-set context (str id)))))
 
-(deftracefn health
+(defn health
   "Returns the health state of the app."
   [context]
   (let [elastic-health (es-util/health context :index)

@@ -10,8 +10,7 @@
             [cmr.index-set.services.messages :as m]
             [cheshire.core :as cheshire]
             [cmr.index-set.config.elasticsearch-config :as es-config]
-            [cmr.elastic-utils.connect :as es]
-            [cmr.system-trace.core :refer [deftracefn]]))
+            [cmr.elastic-utils.connect :as es]))
 
 (defn- decode-field
   "Attempt to decode a field using gzip, b64. Return the original field json decoded
@@ -32,10 +31,10 @@
       (try
         (esi/create conn index-name :settings settings :mappings mapping)
         (catch clojure.lang.ExceptionInfo e
-          (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+          (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
-            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error)))
-          (throw e))))))
+            (info (format "error creating %s elastic index, elastic reported error: %s" index-name error))
+            (throw e)))))))
 
 (defn update-index
   "Update elastic index"
@@ -55,10 +54,10 @@
           (info "Index" index-name "does not exist so it will be created")
           (esi/create conn index-name :settings settings :mappings mapping)))
       (catch clojure.lang.ExceptionInfo e
-        (let [body (cheshire/decode (get-in (ex-data e) [:object :body]) true)
+        (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
               error (:error body)]
-          (info e (format "error updating %s elastic index, elastic reported error: %s" index-name error)))
-        (throw e)))))
+          (info (format "error updating %s elastic index, elastic reported error: %s" index-name error))
+          (throw e))))))
 
 (defn index-set-exists?
   "Check index-set existence in elastic."
@@ -133,7 +132,7 @@
   [config]
   (map->ESstore {:config config}))
 
-(deftracefn save-document-in-elastic
+(defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error on failure."
   [context es-index es-mapping-type doc-id es-doc]
   (try
@@ -146,11 +145,11 @@
         ;; to result in 503 if replicas setting value of 'indext-sets' is set to > 0 when running on a single node
         (throw (Exception. (format "Save to Elasticsearch failed. Reported status: %s and error: %s " status error)))))
     (catch clojure.lang.ExceptionInfo e
-      (let [err-msg (get-in (ex-data e) [:object :body])
+      (let [err-msg (get-in (ex-data e) [:body])
             msg (str "Call to Elasticsearch caught exception " err-msg)]
         (throw (Exception. msg))))))
 
-(deftracefn delete-document
+(defn delete-document
   "Delete the document from elastic, raise error on failure."
   [context index-name mapping-type id]
   (let [{:keys [host port admin-token]} (get-in context [:system :index :config])

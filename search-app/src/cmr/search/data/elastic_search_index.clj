@@ -16,7 +16,6 @@
             [cmr.search.data.query-to-elastic :as q2e]
             [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
             [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.common.services.errors :as e]
             [cmr.common.concepts :as concepts]))
 

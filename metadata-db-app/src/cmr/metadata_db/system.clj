@@ -7,7 +7,6 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.nrepl :as nrepl]
             [cmr.common.api.web-server :as web]
-            [cmr.system-trace.context :as context]
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.api.routes :as routes]
             [cmr.metadata-db.services.jobs :as mdb-jobs]
@@ -41,7 +40,6 @@
               :log (log/create-logger)
               :web (web/create-web-server (config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
-              :zipkin (context/zipkin-config "Metadata DB" false)
               :parallel-chunk-size (config/parallel-chunk-size)
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)}
               :scheduler (jobs/create-clustered-scheduler `system-holder :db mdb-jobs/jobs)

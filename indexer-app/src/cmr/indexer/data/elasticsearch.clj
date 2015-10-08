@@ -11,7 +11,6 @@
             [cmr.elastic-utils.connect :as es]
             [cmr.transmit.index-set :as index-set]
             [cmr.indexer.data.index-set :as idx-set]
-            [cmr.system-trace.core :refer [deftracefn]]
             [cmr.umm.core :as umm]
             [clj-time.core :as t]
             [clj-time.format :as f]
@@ -139,7 +138,7 @@
     (try
       (f conn es-index es-type elastic-id es-doc options)
       (catch clojure.lang.ExceptionInfo e
-        (let [err-msg (get-in (ex-data e) [:object :body])
+        (let [err-msg (get-in (ex-data e) [:body])
               msg (str "Call to Elasticsearch caught exception " err-msg)]
           (errors/internal-error! msg))))))
 
@@ -213,7 +212,7 @@
                                         (pr-str concept))))))
                     parseable-batch)))))
 
-(deftracefn bulk-index
+(defn bulk-index
   "Save a batch of documents in Elasticsearch."
   [context docs]
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
@@ -232,7 +231,7 @@
       (when bad-errors
         (errors/internal-error! (format "Bulk indexing failed with response %s" response))))))
 
-(deftracefn save-document-in-elastic
+(defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
   ([context es-index es-type es-doc concept-id revision-id]
    (save-document-in-elastic context es-index es-type es-doc concept-id revision-id nil))
@@ -248,12 +247,12 @@
            (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
-(deftracefn get-document
+(defn get-document
   "Get the document from Elasticsearch, raise error if failed."
   [context es-index es-type elastic-id]
   (doc/get (context->conn context) es-index es-type elastic-id))
 
-(deftracefn delete-document
+(defn delete-document
   "Delete the document from Elasticsearch, raise error if failed."
   ([context es-index es-type concept-id revision-id]
    (delete-document context es-index es-type concept-id revision-id nil))
@@ -278,7 +277,7 @@
            (errors/throw-service-error :conflict (str "Delete from Elasticsearch failed " (str response))))
          (errors/internal-error! (str "Delete from Elasticsearch failed " (str response))))))))
 
-(deftracefn delete-by-query
+(defn delete-by-query
   "Delete document that match the given query"
   [context es-index es-type query]
   (let [{:keys [admin-token]} (context->es-config context)

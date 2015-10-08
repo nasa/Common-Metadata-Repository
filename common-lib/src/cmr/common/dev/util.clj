@@ -32,8 +32,10 @@
 
 (defn speak
   "Says the specified text outloud."
-  [text]
-  (sh/sh "say" "-v" "Victoria" text))
+  ([text]
+   (speak "Victoria" text))
+  ([voice text]
+   (sh/sh "say" "-v" voice text)))
 
 (defn copy-to-clipboard
   "Copies the string into the clipboard and returns the string"

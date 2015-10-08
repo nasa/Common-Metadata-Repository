@@ -7,19 +7,18 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/search-app"
   ;; Need the maven repo for the echo-orbits-java jar that isn't available in public maven repos.
   :repositories [["releases" "http://devrepo1.dev.echo.nasa.gov/data/dist/projects/echo/mavenrepo/"]]
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [nasa-cmr/cmr-system-trace-lib "0.1.0-SNAPSHOT"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-metadata-db-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-echo/echo-orbits-java "0.1.10"]
-                 [ring/ring-core "1.3.2" :exclusions [clj-time]]
-                 [ring/ring-json "0.3.1"]
+                 [ring/ring-core "1.4.0" :exclusions [clj-time]]
+                 [ring/ring-json "0.4.0"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/data.csv "0.1.2"]
-                 [net.sf.saxon/Saxon-HE "9.6.0-4"]
+                 [org.clojure/data.csv "0.1.3"]
+                 [net.sf.saxon/Saxon-HE "9.6.0-7"]
                  [com.github.fge/json-schema-validator "2.2.6"]]
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.4"]]
@@ -27,13 +26,13 @@
                  :timeout 120000}
   :jvm-opts []
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.10"]
+  {:dev {:dependencies [[ring-mock "0.1.5"]
+                        [org.clojure/tools.namespace "0.2.11"]
                         [org.clojars.gjahad/debug-repl "0.3.3"]
                         [criterium "0.4.3"]
                         [pjstadig/humane-test-output "0.7.0"]
-                        [ring-mock "0.1.5"]
                         ;; Must be listed here as metadata db depends on it.
-                        [drift "1.5.2"]]
+                        [drift "1.5.3"]]
          :source-paths ["src" "dev" "test"]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]}
