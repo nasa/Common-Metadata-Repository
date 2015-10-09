@@ -23,6 +23,7 @@
 
 (def supported-tag-parameters
   "Set of parameters supported by find for collections"
+  ;; We can add some search parameters later, for now we don't see a need for any.
   #{})
 
 (def find-concepts-flags
