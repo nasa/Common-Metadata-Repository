@@ -48,6 +48,10 @@
   "An ACL for managing access to ingest management functions."
   "INGEST_MANAGEMENT_ACL")
 
+(def tag-acl
+  "An ACL for managing access to tag modification functions."
+  "TAG_GROUP")
+
 (defn coll-id
   "Creates an ACL collection identifier"
   ([entry-titles]
@@ -144,6 +148,17 @@
          {:target ingest-management-acl
           :provider-guid provider-guid}))
 
+(defn grant-all-tag
+  "Creates an ACL in mock echo granting registered users ability to tag anything"
+  [context]
+  (grant context
+         [{:permissions [:create :update :delete]
+           :user-type :registered}
+          {:permissions [:create :update :delete]
+           :user-type :guest}]
+         :system-object-identity
+         {:target tag-acl}))
+
 (defn grant-guest
   "Creates an ACL in mock echo granting guests access to catalog items identified by the
   catalog-item-identity"
@@ -180,5 +195,14 @@
          :provider-object-identity
          {:target ingest-management-acl
           :provider-guid provider-guid}))
+
+(defn grant-group-tag
+  "Creates an ACL in mock echo granting users in the group the given permissions to modify tags.  If
+   no permissions are provided the group is given create, update, and delete permissions."
+  [context group-guid & permission-types]
+  (grant context [(group-ace group-guid (or (seq permission-types)
+                                            [:create :update :delete]))]
+         :system-object-identity
+         {:target tag-acl}))
 
 

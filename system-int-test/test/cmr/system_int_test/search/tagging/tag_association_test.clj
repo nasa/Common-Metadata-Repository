@@ -12,8 +12,10 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                                          {:grant-all-search? false}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
+                                          {:grant-all-search? false})
+                       tags/grant-all-tag-fixture]))
 
 (deftest associate-tags-by-query-with-collections-test
 

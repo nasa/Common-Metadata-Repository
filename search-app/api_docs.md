@@ -1907,6 +1907,10 @@ Tags have the following fields:
 
 Both the tag namespace and value cannot contain the Group Separator character. This is the ASCII decimal character 29 and in Unicode U+001D.
 
+#### Tag Access Control
+
+Access to tags is granted through the TAG_ACL system object identity. Users can only create, update, or delete a tag if they are granted the appropriate permission in ECHO. Associating and disassociating collections with a tag is considered an update.
+
 #### Creating a Tag
 
 Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.

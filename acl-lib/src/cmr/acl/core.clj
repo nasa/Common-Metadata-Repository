@@ -101,18 +101,30 @@
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
+(defn get-permitting-acls
+  "Gets ACLs for the current user of the given object identity type and target that grant the given
+  permission.
+  Example arguments:
+  * object-identity-type = :system-object
+  * target = \"INGEST_MANAGEMENT_ACL\"
+  * permission-type = :read"
+  [context object-identity-type target permission-type]
+  (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
+    (->> (acl-fetcher/get-acls context [object-identity-type])
+         ;; Find acls on INGEST_MANAGEMENT
+         (filter #(= target (get-in % [acl-oit-key :target])))
+         ;; Find acls for this user and permission type
+         (filter (partial acl-matches-sids-and-permission?
+                          (context->sids context)
+                          permission-type))
+         seq)))
+
 (defn- has-ingest-management-permission?
   "Returns true if the user identified by the token in the cache has been granted
   INGEST_MANAGEMENT_PERMISSION in ECHO ACLS for the given permission type."
   [context permission-type object-identity-type provider-id]
   (let [acl-oit-key (echo-acls/acl-type->acl-key object-identity-type)]
-    (->> (acl-fetcher/get-acls context [object-identity-type])
-         ;; Find acls on INGEST_MANAGEMENT
-         (filter #(= "INGEST_MANAGEMENT_ACL" (get-in % [acl-oit-key :target])))
-         ;; Find acls for this user and permission type
-         (filter (partial acl-matches-sids-and-permission?
-                          (context->sids context)
-                          permission-type))
+    (->> (get-permitting-acls context object-identity-type "INGEST_MANAGEMENT_ACL" permission-type)
          ;; Find acls for this provider
          (filter #(or (nil? provider-id)
                       (= provider-id (get-in % [acl-oit-key :provider-id]))))
