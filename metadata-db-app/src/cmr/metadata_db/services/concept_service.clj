@@ -57,10 +57,16 @@
                (not (:system-level? provider)))
       (errors/throw-service-errors :invalid-data [(msg/tags-only-system-level provider-id)]))))
 
+(defn- provider-ids-for-validation
+  "Returns the set of provider-ids for validation purpose. It is a list of existing provider ids
+  and 'CMR', which is reserved for tags."
+  [db]
+  (set (conj (map :provider-id (provider-db/get-providers db)) "CMR")))
+
 (defn- validate-providers-exist
   "Validates that all of the providers in the list exist."
   [db provider-ids]
-  (let [existing-provider-ids (set (map :provider-id (provider-db/get-providers db)))
+  (let [existing-provider-ids (provider-ids-for-validation db)
         unknown-providers (set/difference (set provider-ids) existing-provider-ids)]
     (when (> (count unknown-providers) 0)
       (errors/throw-service-error :not-found (msg/providers-do-not-exist unknown-providers)))))
@@ -223,7 +229,7 @@
 (defn- filter-non-existent-providers
   "Removes providers that don't exist from a map of provider-ids to values."
   [db provider-id-map]
-  (let [existing-provider-ids (set (map :provider-id (provider-db/get-providers db)))]
+  (let [existing-provider-ids (provider-ids-for-validation db)]
     (into {} (filter (comp existing-provider-ids first) provider-id-map))))
 
 (defn get-concepts

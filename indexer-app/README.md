@@ -133,6 +133,10 @@ Example un-healthy response body:
 
     curl -XPOST -H "Content-Type: application/json" http://localhost:3004/reindex-provider-collections?token=XXXX -d '["PROV1","PROV2"]'
 
+### Reindex all tags
+
+    curl -XPOST http://localhost:3004/reindex-tags?token=XXXX'
+
 ### Ignore version conflict
 
 By default, version conflict returned from elasticsearch will be ignored. User can override the default by passing in query parameter "ignore_conflict=false" to the request.

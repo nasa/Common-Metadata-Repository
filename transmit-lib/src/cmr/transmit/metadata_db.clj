@@ -1,6 +1,7 @@
 (ns cmr.transmit.metadata-db
   "Provide functions to invoke metadata db app"
   (:require [clj-http.client :as client]
+            [clojure.string :as str]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
             [cmr.transmit.config :as config]
@@ -152,11 +153,11 @@
                                     " "
                                     response))))))
 
-(defn-timed find-collections
+(defn- find-concepts
   "Searches metadata db for concepts matching the given parameters."
-  [context params]
+  [context params concept-type]
   (let [conn (config/context->app-connection context :metadata-db)
-        request-url (str (conn/root-url conn) "/concepts/search/collections")
+        request-url (str (conn/root-url conn) (format "/concepts/search/%ss" (name concept-type)))
         response (client/get request-url (merge
                                            (config/conn-params conn)
                                            {:accept :json
@@ -168,16 +169,21 @@
       200 (map finish-parse-concept (json/decode body true))
       ;; default
       (errors/internal-error!
-        (format "Collection search failed. status: %s body: %s"
-                status body)))))
+        (format "%s search failed. status: %s body: %s"
+                (str/capitalize (name concept-type)) status body)))))
 
-(defn find-collections-in-batches
-  "Searches metadata db for collection revisions matching the given parameters and pulls them back
+(defn-timed find-collections
+  "Searches metadata db for concepts matching the given parameters."
+  [context params]
+  (find-concepts context params :collection))
+
+(defn find-in-batches
+  "Searches metadata db for collection/tag revisions matching the given parameters and pulls them back
   with metadata in batches in order to save memory. It does this by first doing a search excluding
   metadata. Then it lazily pulls back batches of those with metadata. This assumes every concept
   found can fit into memory without the metadata."
-  [context batch-size params]
-  (->> (find-collections context (assoc params :exclude-metadata true))
+  [context concept-type batch-size params]
+  (->> (find-concepts context (assoc params :exclude-metadata true) concept-type)
        (map #(vector (:concept-id %) (:revision-id %)))
        (partition-all batch-size)
        ;; It's important this step is done lazily.

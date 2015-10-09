@@ -74,6 +74,11 @@
         (index-svc/reindex-provider-collections request-context body)
         {:status 200})
 
+      (POST "/reindex-tags" {:keys [request-context params headers]}
+        (acl/verify-ingest-management-permission request-context :update)
+        (index-svc/reindex-tags request-context)
+        {:status 200})
+
       ;; Unindex all concepts within a provider
       (context "/provider/:provider-id" [provider-id]
         (DELETE "/" {:keys [request-context params headers]}

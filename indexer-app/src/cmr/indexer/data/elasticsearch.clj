@@ -15,7 +15,8 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [cmr.common.time-keeper :as tk]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cmr.indexer.data.concept-parser :as cp]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
@@ -32,11 +33,11 @@
 
 (def supported-formats
   "Defines the set of supported concept forms, new forms shold be added once it is supported."
-  #{mt/echo10 mt/dif mt/dif10 mt/iso-smap mt/iso})
+  #{mt/echo10 mt/dif mt/dif10 mt/iso-smap mt/iso mt/edn})
 
 (defmulti concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
-  (fn [context concept umm-concept]
+  (fn [context concept parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
 (defn requires-update?
@@ -181,15 +182,15 @@
                                             :_type type
                                             :_version revision-id
                                             :_version_type "external_gte"})
-                            (let [umm-concept (umm/parse-concept concept)
-                                  delete-time (get-in umm-concept
+                            (let [parsed-concept (cp/parse-concept concept)
+                                  delete-time (get-in parsed-concept
                                                       [:data-provider-timestamps :delete-time])
                                   now (tk/now)
                                   ttl (when delete-time
                                         (if (t/after? delete-time now)
                                           (t/in-millis (t/interval now delete-time))
                                           0))
-                                  elastic-doc (concept->elastic-doc context concept umm-concept)
+                                  elastic-doc (concept->elastic-doc context concept parsed-concept)
                                   elastic-doc (if ttl
                                                 (assoc elastic-doc :_ttl ttl)
                                                 elastic-doc)]
