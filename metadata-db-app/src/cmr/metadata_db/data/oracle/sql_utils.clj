@@ -71,3 +71,16 @@
                            (from :inner)
                            (where '(= :ROWNUM 1))))]
     (first (query db (build stmt)))))
+
+(defmacro ignore_already_exists_errors
+  "Used to make SQL calls where an error indicating that an object already exists can be safely
+  ignored."
+  [object-name & body]
+  `(try
+     (do
+       ~@body)
+     (catch Exception e#
+       (if (re-find #"(ORA-00955|ORA-01920):" (.getMessage e#))
+         (info (str ~object-name " already exists, ignoring error."))
+         (throw e#)))))
+
