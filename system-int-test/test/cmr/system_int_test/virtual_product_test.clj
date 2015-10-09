@@ -488,9 +488,11 @@
 
                "Related urls with only one access url which matches the pattern"
                granule-ur
-               [{:url opendap-file-path :type "GET DATA"}]
+               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}]
                [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}]
+                 :type "OPENDAP DATA ACCESS"
+                 :mime-type "application/x-netcdf"
+                 :title "(GET DATA : OPENDAP DATA (DODS))"}]
 
                "Related urls with only one access url which matches the pattern, but is not
                an online access url"
@@ -503,10 +505,12 @@
 
                "Multiple related urls"
                granule-ur
-               [{:url opendap-file-path :type "GET DATA"}
+               [{:url opendap-file-path :type "OPENDAP DATA ACCESS" :mime-type "application/x-netcdf"}
                 {:url "http://www.foo.com"}]
                [{:url (str opendap-file-path "?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")
-                 :type "GET DATA"}
+                 :type "OPENDAP DATA ACCESS"
+                 :mime-type "application/x-netcdf"
+                 :title "(GET DATA : OPENDAP DATA (DODS))"}
                 {:url "http://www.foo.com"
                  :type "VIEW RELATED INFORMATION"
                  :title "(USER SUPPORT)"}])))
