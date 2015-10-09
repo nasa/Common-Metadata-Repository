@@ -341,11 +341,11 @@
   (let [tag1 (util/create-and-save-tag 1 3)
         tag2 (util/create-and-save-tag 2 2)]
     (testing "find latest revsions"
-      (are2 [granules params]
-            (= (set (map util/expected-granule-concept granules))
-               (set (-> (util/find-latest-concepts :tags params)
-                        :concepts
-                        concepts-for-comparison)))
+      (are2 [tags params]
+            (= (set tags)
+               (set (->> (util/find-latest-concepts :tags params)
+                         :concepts
+                         (map #(dissoc % :provider-id :revision-date)))))
             "with metadata"
             [tag1 tag2] {}
 
