@@ -219,12 +219,14 @@ Supported combinations of concept type and parameters:
   * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
+  * tags with no parameters
 
 ```
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&short-name=s&version-id=1"
 curl "http://localhost:3001/concepts/search/collections?provider-id=PROV1&entry-title=et"
 curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&granule_ur=ur"
 curl "http://localhost:3001/concepts/search/granules?provider-id=PROV1&native_id=id"
+curl "http://localhost:3001/concepts/search/tags"
 ```
 
 ### GET /concepts/search/expired-collections?provider=PROV

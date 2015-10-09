@@ -21,6 +21,10 @@
   #{#{:provider-id :granule-ur}
     #{:provider-id :native-id}})
 
+(def supported-tag-parameters
+  "Set of parameters supported by find for collections"
+  #{})
+
 (def find-concepts-flags
   "Flags that affect find concepts but aren't part of the actual search parameters."
   #{:exclude-metadata :latest})
@@ -45,6 +49,14 @@
     (when-not (contains? granule-supported-parameter-combinations search-params)
       [(msg/find-not-supported-combination concept-type (keys params))])))
 
+(defmethod supported-parameter-combinations-validation :tag
+  [params]
+  (let [params (dissoc params :concept-type)
+        supported-params (set/union supported-tag-parameters find-concepts-flags)]
+    (when-let [unsupported-params (seq (set/difference (set (keys params))
+                                                       supported-params))]
+      [(msg/find-not-supported :tag unsupported-params)])))
+
 (defmethod supported-parameter-combinations-validation :default
   [{:keys [concept-type] :as params}]
   [(msg/find-not-supported-combination concept-type (keys (dissoc params :concept-type)))])
@@ -66,13 +78,20 @@
       [provider])
     (provider-service/get-providers context)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Service methods for finding concepts
+(defn- find-tags
+  "Find tags with specific parameters"
+  [context params]
+  (let [db (db-util/context->db context)
+        latest-only? (or (true? (:latest params))
+                         (= "true" (:latest params)))
+        params (dissoc params :latest)]
+    (if latest-only?
+      (c/find-latest-concepts db {:provider-id "CMR"} params)
+      (c/find-concepts db [{:provider-id "CMR"}] params))))
 
-(defn find-concepts
+(defn- find-provider-concepts
   "Find concepts with specific parameters"
   [context params]
-  (validate-find-params params)
   (let [db (db-util/context->db context)
         latest-only? (or (true? (:latest params))
                          (= "true" (:latest params)))
@@ -82,6 +101,17 @@
       (if latest-only?
         (mapcat #(c/find-latest-concepts db % params) providers)
         (c/find-concepts db providers params)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Service methods for finding concepts
+
+(defn find-concepts
+  "Find concepts with specific parameters"
+  [context params]
+  (validate-find-params params)
+  (if (= :tag (:concept-type params))
+    (find-tags context params)
+    (find-provider-concepts context params)))
 
 (defn find-concept
   "Returns nil or exactly one concept matching the params.

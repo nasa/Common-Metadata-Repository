@@ -49,6 +49,13 @@
                      :user-id}]
     (disj all-fields (when exclude-metadata? :metadata))))
 
+(defmethod columns-for-find-concept :tag
+  [concpet-type params]
+  (let [exclude-metadata? (= "true" (:exclude-metadata params))
+        all-fields #{:native_id :concept_id :revision_date :revision_id :metadata
+                     :deleted :format :user-id}]
+    (disj all-fields (when exclude-metadata? :metadata))))
+
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [provider params]
@@ -79,7 +86,9 @@
   "Retrieve concept maps from the given table, handling small providers separately from
   normal providers."
   (fn [db table concept-type providers params]
-    (:small (first providers))))
+    (if (= :tag concept-type)
+      :tag
+      (:small (first providers)))))
 
 ;; Execute a query against the small providers table
 (defmethod find-concepts-in-table true
@@ -109,6 +118,17 @@
       ;; connection closed errors will occur
       (doall (mapv #(oc/db-result->concept-map concept-type conn provider-id %)
                    (su/query conn stmt))))))
+
+(defmethod find-concepts-in-table :tag
+  [db table concept-type _ params]
+  (let [fields (columns-for-find-concept concept-type params)
+        params (params->sql-params nil params)
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
+    (j/with-db-transaction
+      [conn db]
+      (doall
+        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+              (su/query conn stmt))))))
 
 (extend-protocol c/ConceptSearch
   OracleStore
