@@ -16,6 +16,8 @@
                  [clj-http "2.0.0"]
                  [drift "1.5.3"]
 
+                 [org.clojure/tools.nrepl "0.2.11"]
+
                  ;; Database related
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]

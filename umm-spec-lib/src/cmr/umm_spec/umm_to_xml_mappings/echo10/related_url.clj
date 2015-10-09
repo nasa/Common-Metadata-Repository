@@ -7,7 +7,8 @@
   This list is used for generating ECHO10 OnlineResources from UMM RelatedURLs."
   {"GET DATA" "DATA ACCESS"
    "GET RELATED VISUALIZATION" "BROWSE"
-   "VIEW RELATED INFORMATION" "USER SUPPORT"})
+   "VIEW RELATED INFORMATION" "USER SUPPORT"
+   "OPENDAP DATA ACCESS" "GET DATA : OPENDAP DATA (DODS)"})
 
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"

@@ -78,7 +78,7 @@
              :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
                       af/acl-cache-key (af/create-acl-cache
                                          (stl-cache/create-single-thread-lookup-cache)
-                                         [:catalog-item])
+                                         [:catalog-item :system-object])
                       ;; Caches a map of tokens to the security identifiers
                       ah/token-sid-cache-name (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_CACHE_TIME})
                       :has-granules-map (hgrf/create-has-granules-map-cache)

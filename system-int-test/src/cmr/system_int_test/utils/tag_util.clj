@@ -5,7 +5,14 @@
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.metadata-db-util :as mdb]
             [cmr.transmit.echo.tokens :as tokens]
+            [cmr.mock-echo.client.echo-util :as e]
             [cmr.common.mime-types :as mt]))
+
+(defn grant-all-tag-fixture
+  "A test fixture that grants all users the ability to create and modify tags"
+  [f]
+  (e/grant-all-tag (s/context))
+  (f))
 
 (defn make-tag
   "Makes a valid tag"

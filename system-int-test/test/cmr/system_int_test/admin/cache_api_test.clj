@@ -168,7 +168,7 @@
            (url/ingest-read-caches-url) "token-imp" [[nil "update"]
                                                      ["ABC-1" "read"]
                                                      ["ABC-2" "read"]]
-           (url/search-read-caches-url) "acls" []
+           (url/search-read-caches-url) "acls" ["acls"]
            (url/search-read-caches-url) "collections-for-gran-acls" []
            (url/search-read-caches-url) "has-granules-map" []
            (url/search-read-caches-url) "index-names" []

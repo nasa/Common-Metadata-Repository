@@ -12,7 +12,9 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       tags/grant-all-tag-fixture]))
 
 (def field-maxes
   "A map of fields to their max lengths"

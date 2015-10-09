@@ -3,7 +3,8 @@
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as mq-conf]
             [cmr.umm.granule :as umm-g]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.common.mime-types :as mt])
   (:import java.util.regex.Pattern))
 
 (defconfig virtual-products-enabled
@@ -255,21 +256,20 @@
   [provider-id source-short-name source-umm virtual-umm]
   virtual-umm)
 
-(defn- subset-opendap-url
+(defn- subset-opendap-resource-url
   "Update online-access-url of OMI/AURA virtual-collection to use an OpenDAP url. For example:
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc
   will be translated to
   http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.nc?ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"
   [related-urls src-granule-ur opendap-subset]
-  (let [re (Pattern/compile ".*/opendap/.*")]
-    (seq (for [related-url related-urls]
-           ;; Online Access URLs have type of "GET DATA"
-           (if (= (:type related-url) "GET DATA")
-             (if-let [match (re-matches re (:url related-url))]
-               (assoc related-url
-                      :url (str match "?" opendap-subset))
-               related-url)
-             related-url)))))
+  (seq (for [related-url related-urls
+             ;; access urls shouldn't be present in the virtual granules
+             :when (not= (:type related-url) "GET DATA")]
+         (if (and (= (:type related-url) "OPENDAP DATA ACCESS")
+                  (= (:mime-type related-url) mt/opendap))
+           (assoc related-url
+                  :url (str (:url related-url) "?" opendap-subset))
+           related-url))))
 
 (defn- remove-granule-size
   "Remove the size of the data granule if it is present"
@@ -278,7 +278,7 @@
     (assoc-in virtual-umm [:data-granule :size] nil)
     virtual-umm))
 
-(defn- subset-opendap-data-access-url
+(defn- update-related-urls
   "Generate the OpenDAP data access url for the virtual granule based on the OpenDAP link for the
   source dataset. Remove the size of the data from data granule as it is no longer valid since it
   represents the size of the original granule, not the subset."
@@ -286,16 +286,16 @@
   (let [source-granule-ur (compute-source-granule-ur
                             provider-id source-short-name virtual-short-name (:granule-ur virtual-umm))]
     (-> virtual-umm
-        (update-in [:related-urls] subset-opendap-url source-granule-ur opendap-subset)
+        (update-in [:related-urls] subset-opendap-resource-url source-granule-ur opendap-subset)
         remove-granule-size)))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
   [provider-id source-short-name virtual-short-name virtual-umm]
-  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
+  (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMTO3d"]
   [provider-id source-short-name virtual-short-name virtual-umm]
-  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
+  (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
 
 (def airx3std-opendap-subsets
   "A map of short names of the virtual products based on AIRXSTD dataset to the string representing
@@ -310,11 +310,11 @@
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
   [provider-id source-short-name virtual-short-name virtual-umm]
   (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
-    (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
+    (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
   [provider-id source-short-name virtual-short-name virtual-umm]
-  (subset-opendap-data-access-url provider-id source-short-name virtual-short-name virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
+  (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ClrOLR_A,ClrOLR_D,Latitude,Longitude"))
 
 (defn- update-ast-l1t-related-urls
   "Filter online access urls corresponding to the virtual collection from the source related urls"

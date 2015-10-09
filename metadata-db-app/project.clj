@@ -11,6 +11,7 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
+                 [org.clojure/tools.nrepl "0.2.11"]
                  [drift "1.5.3"]
                  [inflections "0.9.14"]
                  [org.quartz-scheduler/quartz-oracle "2.1.7"]]

@@ -12,7 +12,9 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                      tags/grant-all-tag-fixture]))
 
 (deftest search-for-collections-with-tag-params-validation-test
   (testing "Unsupported options"
