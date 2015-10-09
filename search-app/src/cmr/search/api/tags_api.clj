@@ -6,7 +6,8 @@
             [cmr.common.mime-types :as mt]
             [cmr.common.validations.json-schema :as js]
             [cmr.search.services.tagging-service :as tagging-service]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.acl.core :as acl]))
 
 (def ^:private base-tag-schema-structure
   "Base Schema for tags as json. Namespace and value are combined to with a separator character to
@@ -51,9 +52,18 @@
     :body (if encode? (json/generate-string data) data)
     :headers {"Content-Type" mt/json}}))
 
+(defn- verify-tag-modification-permission
+  "Verifies the current user has been granted permission to modify tags in ECHO ACLs"
+  [context permission-type]
+  (when-not (seq (acl/get-permitting-acls context :system-object "TAG_GROUP" permission-type))
+    (errors/throw-service-error
+      :unauthorized
+      (format "You do not have permission to %s a tag." (name permission-type)))))
+
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
+  (verify-tag-modification-permission context :create)
   (validate-tag-content-type headers)
   (validate-tag-json create-tag-schema body)
   (->> (json/parse-string body true)
@@ -72,6 +82,7 @@
 (defn update-tag
   "Processes a request to update a tag."
   [context headers body concept-id]
+  (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
   (validate-tag-json update-tag-schema body)
   (->> (json/parse-string body true)
@@ -81,20 +92,21 @@
 (defn delete-tag
   "Deletes the tag with the given concept-id."
   [context concept-id]
+  (verify-tag-modification-permission context :delete)
   (tag-api-response (tagging-service/delete-tag context concept-id)))
 
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body concept-id]
+  (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-
   (tag-api-response (tagging-service/associate-tag-by-query context concept-id body)))
 
 (defn disassociate-tag-by-query
   "Processes a request to disassociate a tag."
   [context headers body concept-id]
+  (verify-tag-modification-permission context :update)
   (validate-tag-content-type headers)
-
   (tag-api-response (tagging-service/disassociate-tag-by-query context concept-id body)))
 
 (defn search-for-tags

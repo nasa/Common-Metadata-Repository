@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.common.util :as util]
             [clojure.string :as str]
-            [cmr.virtual-product.config :as vp-config]))
+            [cmr.virtual-product.config :as vp-config]
+            [cmr.common.mime-types :as mt]))
 
 (defn- assert-src-gran-ur-psa-equals
   "Assert that product specific attribute with the name source-granule-ur in virt-gran has the value
@@ -30,6 +31,9 @@
         ast-l1t "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"
         ;; Generate access url objects from string urls
         gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))
+        gen-resource-urls (fn [urls] (map #(hash-map :type "OPENDAP DATA ACCESS"
+                                                     :mime-type mt/opendap
+                                                     :url %) urls))
         opendap-url "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/some-file-name"
         non-opendap-url "http://s4psci.gesdisc.eosdis.nasa.gov/data/s4pa_TS2/some-file-name"
         frbt-data-pool-url "http://f5eil01v.edn.ecs.nasa.gov/FS1/ASTT/AST_L1T.003/2014.04.27/AST_L1T_00304272014172403_20140428144310_12345_T.tif"
@@ -95,69 +99,70 @@
          ;; OMUVBD
          "GSFCS4PA" omuvbd "OMUVBd_ErythemalUV"
          {:granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (concat (gen-resource-urls [opendap-url]) (gen-access-urls [non-opendap-url]))
           :data-granule {:size 40}}
          {:granule-ur "OMUVBd_ErythemalUV.003:OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5"
-          :related-urls (gen-access-urls [(str opendap-url "?" "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat")])
           :data-granule {:size nil}}
 
          ;; OMTO3D
          "GSFCS4PA" omto3d "OMTO3d_O3_AI"
          {:granule-ur "OMTO3d.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (concat (gen-resource-urls [opendap-url]) {:type "SOME TYPE" :url random-url})
           :data-granule {:size 40}}
          {:granule-ur "OMTO3d_O3_AI.003:OMI-Aura_L3-OMTO3d_2004m1001_v003-2012m0405t174138.he5"
-          :related-urls (gen-access-urls [(str opendap-url "?" "ColumnAmountO3,UVAerosolIndex,lon,lat") non-opendap-url])
+          :related-urls (concat (gen-resource-urls [(str opendap-url "?" "ColumnAmountO3,UVAerosolIndex,lon,lat")])
+                                {:type "SOME TYPE" :url random-url})
           :data-granule {:size nil}}
 
          ;; AIRX3STD
          "GSFCS4PA" airx3std "AIRX3STD_006_H2O_MMR_Surf"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_H2O_MMR_Surf.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "H2O_MMR_A,H2OPrsLvls_A,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "H2O_MMR_A,H2OPrsLvls_A,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_OLR"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur  "AIRX3STD_006_OLR.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "OLR_A,OLR_D,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "OLR_A,OLR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_SurfAirTemp"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_SurfAirTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_SurfSkinTemp"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_SurfSkinTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_TotCO"
          {:granule-ur "AIRX3STD.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_TotCO.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "TotCO_A,TotCO_D,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "TotCO_A,TotCO_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          ;; AIRX3STM
          "GSFCS4PA" airx3stm "AIRX3STM_006_ClrOLR"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
-          :related-urls (gen-access-urls [opendap-url non-opendap-url])
+          :related-urls (gen-resource-urls [opendap-url])
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STM_006_ClrOLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
-          :related-urls (gen-access-urls [(str opendap-url "?" "ClrOLR_A,ClrOLR_D,Latitude,Longitude") non-opendap-url])
+          :related-urls (gen-resource-urls [(str opendap-url "?" "ClrOLR_A,ClrOLR_D,Latitude,Longitude")])
           :data-granule {:size nil}}
 
          "LPDAAC_ECS" ast-l1t "AST_FRBT"

@@ -63,7 +63,9 @@
                  [nasa-cmr/cmr-virtual-product-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-system-int-test "0.1.0-SNAPSHOT"]
-                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]]
+                 [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+
+                 [org.clojure/tools.nrepl "0.2.11"]]
 
 
   :plugins [[lein-shell "0.4.0"]

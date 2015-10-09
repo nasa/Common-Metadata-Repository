@@ -3,7 +3,12 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/common-lib"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
+
+                 ;; ASM is excluded here because we use the pegdown markdown generator in common app lib which uses a different version
                  [org.clojure/core.async "0.1.346.0-17112a-alpha" :exclusions [org.ow2.asm/asm-all]]
+                 ;; This matches the ASM version used by pegdown at the time of this writing
+                 [org.ow2.asm/asm "5.0.3"]
+
                  [com.taoensso/timbre "4.1.4"]
                  [ring/ring-jetty-adapter "1.4.0"]
                  ;; Needed for parsing accept header
@@ -25,7 +30,8 @@
 
                  ;; Needed for timeout a function execution
                  [clojail "1.0.6"]
-                 [com.github.fge/json-schema-validator "2.2.6"]]
+                 [com.github.fge/json-schema-validator "2.2.6"]
+                 [com.dadrox/quiet-slf4j "0.1"]]
 
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.2"]]

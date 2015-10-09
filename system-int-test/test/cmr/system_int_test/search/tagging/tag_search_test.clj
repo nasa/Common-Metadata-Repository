@@ -12,7 +12,8 @@
             [cmr.mock-echo.client.echo-util :as e]
             [cmr.system-int-test.system :as s]))
 
-(use-fixtures :each (ingest/reset-fixture {}))
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {})
+                                    tags/grant-all-tag-fixture]))
 
 (deftest search-for-tags-validation-test
   (testing "Unrecognized parameters"
