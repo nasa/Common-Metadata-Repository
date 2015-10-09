@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [cmr.common.util :as util]
             [clojure.string :as str]
-            [cmr.virtual-product.config :as vp-config]))
+            [cmr.virtual-product.config :as vp-config]
+            [cmr.common.mime-types :as mt]))
 
 (defn- assert-src-gran-ur-psa-equals
   "Assert that product specific attribute with the name source-granule-ur in virt-gran has the value
@@ -31,7 +32,7 @@
         ;; Generate access url objects from string urls
         gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))
         gen-resource-urls (fn [urls] (map #(hash-map :type "OPENDAP DATA ACCESS"
-                                                     :mime-type "application/x-netcdf"
+                                                     :mime-type mt/opendap
                                                      :url %) urls))
         opendap-url "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5/some-file-name"
         non-opendap-url "http://s4psci.gesdisc.eosdis.nasa.gov/data/s4pa_TS2/some-file-name"

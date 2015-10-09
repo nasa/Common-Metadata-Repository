@@ -3,7 +3,8 @@
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as mq-conf]
             [cmr.umm.granule :as umm-g]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [cmr.common.mime-types :as mt])
   (:import java.util.regex.Pattern))
 
 (defconfig virtual-products-enabled
@@ -265,7 +266,7 @@
              ;; access urls shouldn't be present in the virtual granules
              :when (not= (:type related-url) "GET DATA")]
          (if (and (= (:type related-url) "OPENDAP DATA ACCESS")
-                  (= (:mime-type related-url) "application/x-netcdf"))
+                  (= (:mime-type related-url) mt/opendap))
            (assoc related-url
                   :url (str (:url related-url) "?" opendap-subset))
            related-url))))
