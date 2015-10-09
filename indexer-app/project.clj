@@ -10,6 +10,7 @@
                  [compojure "1.4.0"]
                  [ring/ring-core "1.4.0" :exclusions [clj-time]]
                  [ring/ring-json "0.4.0"]
+                 [org.clojure/tools.nrepl "0.2.11"]
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]]
   :plugins [[lein-test-out "0.3.1"]]
   :repl-options {:init-ns user}
