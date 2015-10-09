@@ -6,7 +6,7 @@
             [clojure.java.jdbc :as j]
             [clojure.string :as str]
             [clojure.set :as set]
-            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [select]]
+            [cmr.oracle.sql-utils :as su :refer [select]]
             [cmr.bootstrap.data.migration-utils :as mu]
             [cmr.bootstrap.data.util :as data]
             [cmr.common.util :as util]

@@ -2,7 +2,7 @@
   "Functions to support migration of data form catlog rest to metadata db."
   (:require [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [select insert from where delete]]
+            [cmr.oracle.sql-utils :as su :refer [select insert from where delete]]
             [clojure.core.async :as ca :refer [thread alts!! <!!]]
             [cmr.transmit.config :as transmit-config]
             [cmr.transmit.metadata-db :as transmit-mdb]

@@ -28,11 +28,18 @@ fi
 # Setup the database for ingest, bootstrap, and metadata-db
 
 date && echo "Creating database users" &&
-lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
-if [ $? -ne 0 ] ; then
-  echo "Failed to create database users" >&2
-  exit 1
-fi
+
+# Should be able to use lein modules, however it is reporting that create-user is returning a
+# non-zero exit code even though manually running lein create-user for an app returns 0 exit code
+# lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
+
+for i in metadata-db-app bootstrap-app ingest-app; do
+  (cd $i && lein create-user)
+  if [ $? -ne 0 ] ; then
+    echo "Failed to create database users for $i" >&2
+    exit 1
+  fi
+done
 
 date && echo "Running database migrations" &&
 lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" migrate

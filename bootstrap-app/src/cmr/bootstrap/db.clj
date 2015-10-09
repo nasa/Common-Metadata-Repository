@@ -6,14 +6,17 @@
             [cmr.oracle.config :as oracle-config]
             [cmr.bootstrap.config :as bootstrap-config]
             [cmr.metadata-db.config :as mdb-config]
-            [config.migrate-config :as mc])
+            [config.migrate-config :as mc]
+            [cmr.oracle.sql-utils :as su])
   (:gen-class))
 
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)
         bootstrap-db-user (bootstrap-config/bootstrap-username)]
-    (o/create-user db bootstrap-db-user (bootstrap-config/bootstrap-password))))
+    (su/ignore_already_exists_errors
+      "CMR_BOOTSTRAP user"
+      (o/create-user db bootstrap-db-user (bootstrap-config/bootstrap-password)))))
 
 (defn drop-user
   []

@@ -6,7 +6,7 @@
             [cmr.oracle.config :as oracle-config]
             [cmr.metadata-db.config :as mdb-config]
             [cmr.common.config :as cfg]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]
+            [cmr.oracle.sql-utils :as su]
             [config.migrate-config :as mc]
             [clojure.java.jdbc :as j])
   (:gen-class))
