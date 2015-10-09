@@ -37,9 +37,9 @@
       (testing "Failure cases"
         (are
           [token]
-          (is (= {:status 401
-                  :errors ["You do not have permission to create a tag."]}
-                 (tags/create-tag token (uniq-tag))))
+          (= {:status 401
+              :errors ["You do not have permission to create a tag."]}
+             (tags/create-tag token (uniq-tag)))
 
           guest-token
           reg-user-token
@@ -56,9 +56,9 @@
         (testing "Failure Cases"
           (are
             [token]
-            (is (= {:status 401
-                    :errors ["You do not have permission to update a tag."]}
-                   (tags/update-tag token concept-id (uniq-tag))))
+            (= {:status 401
+                :errors ["You do not have permission to update a tag."]}
+               (tags/update-tag token concept-id (uniq-tag)))
 
             guest-token
             reg-user-token
@@ -68,23 +68,23 @@
     (testing "Delete permissions"
       (testing "Success"
         (are [token]
-             (is (= 200 (->> (uniq-tag)
-                             (tags/create-tag all-user)
-                             :concept-id
-                             (tags/delete-tag token)
-                             :status)))
+             (= 200 (->> (uniq-tag)
+                         (tags/create-tag all-user)
+                         :concept-id
+                         (tags/delete-tag token)
+                         :status))
              delete-user
              all-user))
 
       (testing "Failure Cases"
         (are
           [token]
-          (is (= {:status 401
-                  :errors ["You do not have permission to delete a tag."]}
-                 (->> (uniq-tag)
-                      (tags/create-tag all-user)
-                      :concept-id
-                      (tags/delete-tag token))))
+          (= {:status 401
+              :errors ["You do not have permission to delete a tag."]}
+             (->> (uniq-tag)
+                  (tags/create-tag all-user)
+                  :concept-id
+                  (tags/delete-tag token)))
 
           guest-token
           reg-user-token
@@ -101,9 +101,9 @@
         (testing "Failure Cases"
           (are
             [token]
-            (is (= {:status 401
-                    :errors ["You do not have permission to update a tag."]}
-                   (tags/associate-by-query token concept-id {:provider "foo"})))
+            (= {:status 401
+                :errors ["You do not have permission to update a tag."]}
+               (tags/associate-by-query token concept-id {:provider "foo"}))
 
             guest-token
             reg-user-token
@@ -120,9 +120,9 @@
         (testing "Failure Cases"
           (are
             [token]
-            (is (= {:status 401
-                    :errors ["You do not have permission to update a tag."]}
-                   (tags/disassociate-by-query token concept-id {:provider "foo"})))
+            (= {:status 401
+                :errors ["You do not have permission to update a tag."]}
+               (tags/disassociate-by-query token concept-id {:provider "foo"}))
 
             guest-token
             reg-user-token
