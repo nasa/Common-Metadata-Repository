@@ -44,6 +44,7 @@
    :namespace-prefix "migrations"
    :migration-number-generator incremental-migration-number-generator
    :init maybe-create-schema-table
+   :finished shutdown-agents
    :current-version current-db-version
    :update-version update-db-version })
 

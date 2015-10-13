@@ -92,6 +92,8 @@
 
       (catch Throwable e
         (error e (.getMessage e))
+        (shutdown-agents)
         (System/exit 1))))
 
+  (shutdown-agents)
   (System/exit 0))

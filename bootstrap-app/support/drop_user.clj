@@ -1,4 +1,7 @@
 ;;; run with lein exec -p drop_user.clj
-(require '[cmr.bootstrap.db :as db])
+(require '[cmr.db :as db])
 
-(db/drop-user)
+(try
+  (db/drop-user)
+  (finally
+    (shutdown-agents)))

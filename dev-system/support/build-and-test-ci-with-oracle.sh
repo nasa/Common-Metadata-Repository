@@ -27,12 +27,11 @@ fi
 ##############################################################################
 # Setup the database for ingest, bootstrap, and metadata-db
 
-date && echo "Creating database users" &&
-
 # Should be able to use lein modules, however it is reporting that create-user is returning a
 # non-zero exit code even though manually running lein create-user for an app returns 0 exit code
 # lein modules :dirs "ingest-app:bootstrap-app:metadata-db-app" create-user
 
+date && echo "Creating database users" &&
 for i in metadata-db-app bootstrap-app ingest-app; do
   (cd $i && lein create-user)
   if [ $? -ne 0 ] ; then
@@ -47,7 +46,7 @@ if [ $? -ne 0 ] ; then
   echo "Failed to run database migrations" >&2
   exit 1
 fi
-##############################################################################
+# ##############################################################################
 
 date && echo "Building and starting dev-system using Oracle" &&
 (cd dev-system && CMR_DEV_SYSTEM_DB_TYPE=external support/build-and-run.sh)
@@ -64,5 +63,5 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 cat */testreports.xml
-date && echo "Stopping applications" &&
+date && echo "Stopping applications" && true
 (curl -XPOST http://localhost:2999/stop; true)

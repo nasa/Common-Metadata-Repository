@@ -1,4 +1,7 @@
 ;;; run with lein exec -p create_user.clj
-(require '[cmr.bootstrap.db :as db])
+(require '[cmr.db :as db])
 
-(db/create-user)
+(try
+  (db/create-user)
+  (finally
+    (shutdown-agents)))
