@@ -19,4 +19,5 @@
      :category.lowercase (when category (str/lower-case category))
      :description description
      :originator-id.lowercase  (str/lower-case originator-id)
-     :associated-concept-ids-gzip-b64 (util/string->gzip-base64 (pr-str associated-concept-ids))}))
+     :associated-concept-ids-gzip-b64 (util/string->gzip-base64 (pr-str associated-concept-ids))
+     :associated-concept-ids associated-concept-ids}))

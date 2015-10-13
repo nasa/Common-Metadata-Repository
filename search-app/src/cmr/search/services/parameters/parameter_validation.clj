@@ -27,7 +27,8 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :echo-compatible :include-granule-counts
-    :include-has-granules :include-facets :hierarchical-facets :include-highlights :all-revisions})
+    :include-has-granules :include-facets :hierarchical-facets :include-highlights
+    :include-tags :all-revisions})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -271,7 +272,7 @@
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :hierarchical-facets :include-highlights :all-revisions)
+                         :hierarchical-facets :include-highlights :include-tags :all-revisions)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -494,7 +495,7 @@
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :include-facets
                                          :hierarchical-facets :include-highlights
-                                         :all-revisions])]
+                                         :include-tags :all-revisions])]
     (mapcat
       (fn [[param value]]
         (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
@@ -532,7 +533,8 @@
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :options
                              :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible :hierarchical-facets :include-highlights]))))
+                             :echo-compatible :hierarchical-facets :include-highlights
+                             :include-tags]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"

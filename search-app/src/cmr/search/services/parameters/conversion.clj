@@ -330,7 +330,9 @@
                                     [:hierarchical-facets]
                                     [:facets]))
                                 (when (= (:include-highlights params) "true")
-                                  [:highlights]))]
+                                  [:highlights])
+                                (when (= (:include-tags params) "true")
+                                  [:tags]))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
@@ -356,7 +358,7 @@
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible :hierarchical-facets :include-highlights
-                       :all-revisions)]
+                       :include-tags :all-revisions)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

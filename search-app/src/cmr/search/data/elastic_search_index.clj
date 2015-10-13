@@ -133,7 +133,7 @@
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
-        fields (concept-type+result-format->fields concept-type query)
+        fields (or (:result-fields query) (concept-type+result-format->fields concept-type query))
         from (* (dec page-num) page-size)
         query-map (util/remove-nil-keys {:query elastic-query
                                          :version true
@@ -267,7 +267,22 @@
                                               :concept-type :collection})
                   num-granules])))))
 
-
-
-
+(defn get-tags
+  "Returns the tags associated with the given collection concept-ids"
+  [context coll-concept-ids]
+  (let [tag-query (qm/query
+                    {:concept-type :tag
+                     :condition (qm/string-conditions :associated-concept-ids coll-concept-ids true)
+                     :skip-acls? true
+                     :page-size :unlimited
+                     :result-fields [:namespace :value :associated-concept-ids-gzip-b64]})
+        elastic-results (execute-query context tag-query)
+        field-value-fn (fn [result field]
+                         (get-in result [:fields field 0]))]
+    (->> (get-in elastic-results [:hits :hits])
+         (map #(hash-map
+                 :namespace (field-value-fn % :namespace)
+                 :value (field-value-fn % :value)
+                 :associated-concept-ids-gzip-b64
+                 (field-value-fn % :associated-concept-ids-gzip-b64))))))
 
