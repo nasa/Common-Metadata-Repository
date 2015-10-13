@@ -82,6 +82,10 @@
   []
   (str (elastic-root) "/_refresh"))
 
+(defn elastic-delete-tags-url
+  []
+  (str (elastic-root) "/1_tags/_query"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Cubby URLs
 
@@ -385,6 +389,11 @@
   "URL to check indexer health."
   []
   (format "http://localhost:%s/health" (transmit-config/indexer-port)))
+
+(defn indexer-reindex-tags-url
+  "URL to reindex tags."
+  []
+  (format "http://localhost:%s/reindex-tags" (transmit-config/indexer-port)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Virtual Product URLs

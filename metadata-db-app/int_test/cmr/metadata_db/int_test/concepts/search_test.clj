@@ -337,5 +337,30 @@
                                          :granule-ur "GRAN_UR"
                                          :native-id "NV1"})))))
 
+(deftest find-tags
+  (let [tag1 (util/create-and-save-tag 1 3)
+        tag2 (util/create-and-save-tag 2 2)]
+    (testing "find latest revsions"
+      (are2 [tags params]
+            (= (set tags)
+               (set (->> (util/find-latest-concepts :tags params)
+                         :concepts
+                         (map #(dissoc % :provider-id :revision-date)))))
+            "with metadata"
+            [tag1 tag2] {}
 
+            "exclude metadata"
+            [(dissoc tag1 :metadata) (dissoc tag2 :metadata)] {:exclude-metadata true}))
+
+    (testing "find all revisions"
+      (let [num-of-tags (-> (util/find-concepts :tags {})
+                            :concepts
+                            count)]
+        (is (= 5 num-of-tags))))))
+
+(deftest find-tags-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [tag] with parameters [provider-id] is not supported."]}
+           (util/find-concepts :tag {:provider-id "REG_PROV"})))))
 

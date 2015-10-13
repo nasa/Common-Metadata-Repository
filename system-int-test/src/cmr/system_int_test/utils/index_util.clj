@@ -34,6 +34,24 @@
                     :throw-exceptions false})]
     (is (= 200 (:status response)) (:body response))))
 
+(defn delete-all-tags-from-elastic
+  "Delete all tags from elasticsearch index"
+  []
+  (let [response (client/delete (url/elastic-delete-tags-url)
+                   {:connection-manager (s/conn-mgr)
+                    :body "{\"query\": {\"match_all\": {}}}"
+                    :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
+(defn reindex-tags
+  "Re-index all tags"
+  []
+  (let [response (client/post (url/indexer-reindex-tags-url)
+                   {:connection-manager (s/conn-mgr)
+                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}
+                    :throw-exceptions false})]
+    (is (= 200 (:status response)) (:body response))))
+
 (defn set-message-queue-retry-behavior
   "Set the message queue retry behavior"
   [num-retries]

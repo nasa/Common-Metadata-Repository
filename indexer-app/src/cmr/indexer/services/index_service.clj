@@ -26,7 +26,8 @@
             [cmr.common.lifecycle :as lifecycle]
             [clojure.edn :as edn]
             [clj-time.core :as t]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [cmr.indexer.data.concept-parser :as cp]))
 
 (defn filter-expired-concepts
   "Remove concepts that have an expired delete-time."
@@ -84,8 +85,9 @@
    (doseq [provider-id provider-ids]
      (when (or (nil? all-revisions-index?) (not all-revisions-index?))
        (info "Reindexing latest collections for provider" provider-id)
-       (let [latest-collection-batches (meta-db/find-collections-in-batches
+       (let [latest-collection-batches (meta-db/find-in-batches
                                          context
+                                         :collection
                                          REINDEX_BATCH_SIZE
                                          {:provider-id provider-id :latest true})]
          (bulk-index context latest-collection-batches false)))
@@ -94,11 +96,23 @@
        ;; Note that this will not unindex revisions that were removed directly from the database.
        ;; We will handle that with the index management epic.
        (info "Reindexing all collection revisions for provider" provider-id)
-       (let [all-revisions-batches (meta-db/find-collections-in-batches
+       (let [all-revisions-batches (meta-db/find-in-batches
                                      context
+                                     :collection
                                      REINDEX_BATCH_SIZE
                                      {:provider-id provider-id})]
          (bulk-index context all-revisions-batches true))))))
+
+(defn reindex-tags
+  "Reindexes all the tags. Only the latest revisions will be indexed"
+  [context]
+  (info "Reindexing tags")
+  (let [latest-tag-batches (meta-db/find-in-batches
+                             context
+                             :tag
+                             REINDEX_BATCH_SIZE
+                             {:latest true})]
+    (bulk-index context latest-tag-batches false)))
 
 (defn- log-ingest-to-index-time
   "Add a log message indicating the time it took to go from ingest to completed indexing."
@@ -116,20 +130,6 @@
               "Cannot compute time from ingest to search visibility for [%s] with revision date [%s]."
               concept-id
               revision-date)))))
-
-(defmulti parse-concept
-  "Parse the metadata from a concept map into a UMM model or map containing data needed for
-  indexing."
-  (fn [concept]
-   (:concept-type concept)))
-
-(defmethod parse-concept :tag
-  [concept]
-  (edn/read-string (:metadata concept)))
-
-(defmethod parse-concept :default
-  [concept]
-  (umm/parse-concept concept))
 
 (defn index-concept
   "Index the given concept with the parsed umm record."
@@ -171,7 +171,7 @@
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
-            parsed-concept (parse-concept concept)]
+            parsed-concept (cp/parse-concept concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))
 

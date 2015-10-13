@@ -49,6 +49,13 @@
                      :user-id}]
     (disj all-fields (when exclude-metadata? :metadata))))
 
+(defmethod columns-for-find-concept :tag
+  [concpet-type params]
+  (let [exclude-metadata? (= "true" (:exclude-metadata params))
+        all-fields #{:native_id :concept_id :revision_date :revision_id :metadata
+                     :deleted :format :user-id}]
+    (disj all-fields (when exclude-metadata? :metadata))))
+
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [provider params]
