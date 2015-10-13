@@ -12,7 +12,7 @@
 
 (def CHANNEL_BUFFER_SIZE
   "The number of messages that can be placed on a channel before the caller will block."
-  10)
+  100)
 
 (defn- attempt-retry
   "Attempts to retry processing the message unless the retry count has been exceeded."
