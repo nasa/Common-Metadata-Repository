@@ -26,6 +26,6 @@
              :aot :all}}
   :test-paths ["int_test"]
   :aliases {;; Prints out documentation on configuration environment variables.
-            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]})
+            "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]})
 
 
