@@ -23,6 +23,9 @@ NOTE: this document is not final.
 History:
     2014-1?-?? : 10.0a-10.0c - development copies.
     2014-12-18 : 10.0 - Milestone.
+    2015-03-28 : 10.1 - Milestone.
+    2015-10-?? : 10.2 - Milestone.
+
 -->
 
 <xs:schema  xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -30,7 +33,7 @@ History:
             xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
             elementFormDefault="qualified">
 
-    <xs:include schemaLocation="UmmCommon_1.1.xsd"/>
+    <xs:include schemaLocation="UmmCommon.xsd"/>
 
     <!-- *********************************************************** -->
     <!-- #mark DIF -->
@@ -44,13 +47,14 @@ History:
             </xs:appinfo>
 
             <xs:documentation>
-                The GCMD Directory Interchange Format. Description of changes in DIF Version 10.0
+                The GCMD Directory Interchange Format. Description of changes in DIF Version 10.2
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="Entry_ID"                     type="EntryIDType"/>                                                        <!-- None -->
-                <xs:element name="Version"                      type="VersionType"/>                                                        <!-- Added from UMM (ECHO) -->
+                <xs:element name="Entry_ID"                     type="EntryIDType"/>                                                        <!-- Renamed from Entry_ID -->
+                                                                                                                                            <!-- Moved Dataset_Short_Name to inside Entry_ID (CMR) -->
+                                                                                                                                            <!-- Moved Dataset_Version to inside Entry_ID (CMR) -->
                 <xs:element name="Version_Description"          type="VersionDescriptionType"       minOccurs="0"/>                         <!-- Added from UMM (ECHO) -->
                 <xs:element name="Entry_Title"                  type="EntryTitleType"/>                                                     <!-- None -->
                 <xs:element name="Dataset_Citation"             type="DatasetCitationType"          minOccurs="0"   maxOccurs="unbounded"/> <!-- Renamed -->
@@ -64,7 +68,7 @@ History:
                 <xs:element name="Platform"                     type="PlatformType"                                 maxOccurs="unbounded"/> <!-- Required in dif_v9.8.3.xsd  -->
                 <xs:element name="Temporal_Coverage"            type="TemporalCoverageType"                         maxOccurs="unbounded"/> <!-- Required now, not required in dif_v9.8.3.xsd -->
                 <xs:element name="Dataset_Progress"             type="DatasetProgressType"          minOccurs="0"/>                         <!-- Renamed -->
-                <xs:element name="Spatial_Coverage"             type="SpatialCoverageType"                          maxOccurs="unbounded"/> <!-- Required now, not required in dif_v9.8.3.xsd -->
+                <xs:element name="Spatial_Coverage"             type="SpatialCoverageType"/>                                                <!-- Required now, not required in dif_v9.8.3.xsd ; see CMRQ-618 -->
                 <xs:element name="Location"                     type="LocationType"                 minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Data_Resolution"              type="DataResolutionType"           minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
                 <xs:element name="Project"                      type="ProjectType"                                  maxOccurs="unbounded"/> <!-- Required now, not required in dif_v9.8.3.xsd -->
@@ -93,9 +97,9 @@ History:
                 <xs:element name="Private"                      type="PrivateType"                  minOccurs="0"/>                         <!-- None-->
                 <xs:element name="Additional_Attributes"        type="AdditionalAttributesType"     minOccurs="0"   maxOccurs="unbounded"/> <!-- Added from UMM (ECHO), renamed in C -->
                                                                                                                                             <!-- Moved Data_Provider_Timestamps to Metadata_Dates -->
-                <xs:element name="Product_Level_Id"             type="ProductLevelIdType"           minOccurs="0"/>                         <!-- Added from UMM (ECHO) -->
+                <xs:element name="Product_Level_Id"             type="ProcessingLevelIdType"        minOccurs="0"/>                         <!-- Added from UMM (ECHO) to be renamed Processing_Level_Id in 10.3 -->
                 <xs:element name="Collection_Data_Type"         type="CollectionDataTypeEnum"       minOccurs="0"   maxOccurs="unbounded"/> <!-- Added from UMM (ECHO) -->
-                <xs:element name="Product_Flag"                 type="ProductFlagEnum"/>                                                    <!-- Added from UMM (EMS) -->
+                <xs:element name="Product_Flag"                 type="ProductFlagEnum"                    minOccurs="0"/>                         <!-- Added from UMM (EMS), made not required in 10.2, to be removed in in 10.3 -->
                 <xs:element name="Extended_Metadata"            type="ExtendedMetadataType"         minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
             </xs:sequence>
         </xs:complexType>
@@ -104,9 +108,9 @@ History:
     <!-- *********************************************************** -->
     <!-- #mark Entry ID -->
 
-    <xs:simpleType name="EntryIDType">
+    <xs:complexType name="EntryIDType">
         <xs:annotation>
-            <xs:appinfo><details><path>/DIF/Entry_ID</path></details></xs:appinfo>
+            <xs:appinfo><details><path>/DIF/Entry_ID/Short_Name</path></details></xs:appinfo>
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:documentation>
                 The GCMD collection ID, identifies the metadata record.
@@ -114,14 +118,30 @@ History:
                 and Version and can be represented as:
                 `[Orig_Node]Entry_ID[Version]`
 
-                | DIF 9    | ECHO 10   | UMM     | DIF 10   | Notes          |
-                | -------- | --------- | ------- | -------- | -------------- |
-                | Entry_ID | ShortName | EntryID | Entry_ID | No change      |
+                * Note, version constants:
+                    * 'Not applicable' means Not Applicable for the metadata situation and should be ignored
+                    * 'Not provided' means Not provided and should be ignored unless record is in review
+                * Also see Parent_Metadata
+
+                | DIF 9    | ECHO 10   | UMM               | DIF 10              | Notes                |
+                | -------- | --------- | ----------------- | ------------------- | -------------------- |
+                | Entry_ID | ShortName | EntryID/ShortName | Entry_ID/Short_Name | No change            |
+                |          | Version   | EntryID/Version   | Entry_ID/Version    | moved from top level |
 
             </xs:documentation>
         </xs:annotation>
-        <xs:restriction base="xs:string"/>
-    </xs:simpleType>
+        <xs:sequence>
+            <xs:element name="Short_Name"   type="xs:string"/>
+            <xs:element name="Version"      type="xs:string"/>
+        </xs:sequence>
+        <!--xs:restriction base="xs:string"/-->
+
+        <!-- proposed attentions for 10.3 -->
+        <!--
+        <xs:attribute name="uuid" type="UuidType"/>
+        <xs:attribute name="provider" type="xs:string"/>
+        -->
+    </xs:complexType>
 
     <!-- *********************************************************** -->
     <!-- #mark Version -->
@@ -433,8 +453,12 @@ History:
             <xs:appinfo>
                 <action>changed</action>
                 <src>UMM (DIF)</src>
-
             </xs:appinfo>
+            <xs:appinfo>
+                <action>changed</action>
+                <src>UMM (DIF)</src>
+            </xs:appinfo>
+
             <xs:documentation>
                 | DIF 9      | ECHO 10         | UMM                  | DIF 10           | Notes                                                              |
                 | ---------- | --------------- | -------------------- | ---------------- | ------------------------------------------------------------------ |
@@ -788,9 +812,10 @@ History:
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="Paleo_Start_Date"         type="xs:string"                   minOccurs="0"/>
-            <xs:element name="Paleo_Stop_Date"          type="xs:string"                   minOccurs="0"/>
-            <xs:element name="Chronostratigraphic_Unit" type="ChronostratigraphicUnitType" minOccurs="0"   maxOccurs="unbounded"/>
+            <!-- these dates will change from xs:string to xs:date in 10.3 -->
+            <xs:element name="Paleo_Start_Date"         type="xs:string"                      minOccurs="0"/>
+            <xs:element name="Paleo_Stop_Date"          type="xs:string"                      minOccurs="0"/>
+            <xs:element name="Chronostratigraphic_Unit" type="ChronostratigraphicUnitType"  minOccurs="0"   maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -928,17 +953,19 @@ History:
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM</src></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>CMR</src><since>10.2</since><note>CMRQ-618</note></xs:appinfo>
             <xs:documentation>
-               | DIF 9        | ECHO 10                     | UMM                               | DIF 10                         | Notes                                   |
-               | ------------ | --------------------------- | --------------------------------- |--------------------------------| --------------------------------------- |
-               |      -       |              -              |  HorizontalSpatialDomain/Geometry | Geometry                       | Added from ECHO HorizontalSpatialDomain |
+               | DIF 9        | ECHO 10                      | UMM                              | DIF 10                       | Notes                                   |
+               | ------------ | ---------------------------- | -------------------------------- |------------------------------| --------------------------------------- |
+               |      -       |               -              | HorizontalSpatialDomain/Geometry | Geometry                     | Added from ECHO HorizontalSpatialDomain |
+               |      -       | Choice maxOccurs="unbounded" | Choice maxOccurs="unbounded"     | Choice maxOccurs="unbounded" | Changed in 10.2 from CMRQ-618           |
 
             </xs:documentation>
         </xs:annotation>
 
         <xs:sequence>
-            <xs:element name="Coordinate_System"    type="CoordinateSystemEnum"/>
-            <xs:choice>
+            <xs:element name="Coordinate_System"    type="CoordinateSystemEnum" maxOccurs="unbounded"/>
+            <xs:choice maxOccurs="unbounded">
                 <xs:element name="Bounding_Rectangle"   type="BoundingRectangle"/>
                 <xs:element name="Point"                type="Point"/>
                 <xs:element name="Line"                 type="Line"/>
@@ -1760,21 +1787,22 @@ History:
             <xs:appinfo><action>none</action></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (CMRSCI-437)</src><since>10.1</since><note>Version</note></xs:appinfo>
             <xs:appinfo><action>rename</action><src>UMM (CMRSCI-437)</src><since>10.1</since><note>From Parent_DIF to Parent_Metadata</note></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM (CMRSCI-437)</src><since>10.2</since><note>From Parent_DIF to Parent_Metadata</note></xs:appinfo>
             <xs:documentation>
 
             | DIF 9      | ECHO 10 | UMM               | DIF 10           | Notes                            |
             | ---------- | ------- | ----------------- | ---------------- | -------------------------------- |
             | Parent_DIF |    -    | ParentAssociation | Parent_Metadata  | Adding Type                      |
             |                                                                                                |
-            | Parent_DIF |    -    | > Paret_DIF       | > Parent_DIF     | Now a subfield                   |
-            | > Version  |    -    | > Version         | > Version        | Adding Version as it was missing |
+            | Parent_DIF |    -    | > Paret_DIF       | > Short_Name     | Now a subfield                   |
+            |      -     |    -    | > Version         | > Version        | Adding Version as it was missing |
 
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="Entry_ID"     type="xs:string"/>
-            <xs:element name="Version"      type="VersionType"/>
-        </xs:sequence>
+
+        <xs:complexContent>
+            <xs:extension base="EntryIDType"/>
+        </xs:complexContent>
     </xs:complexType>
 
     <!-- *********************************************************** -->
@@ -1870,17 +1898,22 @@ History:
     </xs:complexType>
 
     <!-- *********************************************************** -->
-    <!-- #mark ProductLevelId -->
+    <!-- #mark Processing_Level_Id -->
 
-    <xs:simpleType name="ProductLevelIdType">
+    <xs:simpleType name="ProcessingLevelIdType">
         <xs:annotation>
             <xs:appinfo><details><path>/DIF/ProductLevelId</path></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM</src></xs:appinfo>
-            <xs:appinfo><action>changed</action><src>10.1</src></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>UMM</src><since>10.1</since></xs:appinfo>
+            <xs:appinfo><action>changed</action><src>CMR</src><since>10.2</since><details>changed to ProcessingLevelIdType</details></xs:appinfo>
             <xs:documentation>
-                | DIF 9 | ECHO 10              | UMM            | DIF 10           | Notes                     |
-                | ----- | -------------------- | -------------- | ---------------- |---------------------------|
-                |   -   |           -          | ProductLevelId | Product_Level_Id | Added to match UMM field  |
+
+                Field renamed after a conversation on:
+                https://wiki.earthdata.nasa.gov/pages/viewpage.action?pageId=49447425
+
+                | DIF 9 | ECHO 10 | UMM               | DIF 10              | Notes                       |
+                | ----- | ------- | ----------------- | ------------------- |---------------------------- |
+                |   -   |    -    | ProcessingLevelId | Processing_Level_Id | Renamed to remove confusion |
             </xs:documentation>
         </xs:annotation>
 
@@ -1931,7 +1964,7 @@ History:
 
     <xs:simpleType name="MetadataVersionType">
         <xs:annotation>
-            <xs:appinfo><details><path>/DIF/Metaadata_Version</path></details></xs:appinfo>
+            <xs:appinfo><details><path>/DIF/Metadata_Version</path></details></xs:appinfo>
             <xs:appinfo><action>changed</action><src>UMM (DIF)</src><since>b</since><note>uses an enum now</note></xs:appinfo>
             <xs:documentation>
                 Version of the metadata schema used to create the metadata. In
@@ -2090,7 +2123,11 @@ History:
             <xs:element name="Name"         type="xs:string"/>
             <xs:element name="Description"  type="xs:string"                 minOccurs="0"/>
             <xs:element name="Type"         type="xs:string"                 minOccurs="0"/>
-            <xs:element name="Update_Date"  type="xs:string"                 minOccurs="0"/><!-- Downstream only, system supplied if variable has been updated via software -->
+
+            <!-- Downstream only, system supplied if variable has been updated via software -->
+            <!-- will change to xs:dateTime in 10.3-->
+            <xs:element name="Update_Date"  type="xs:string"                 minOccurs="0"/>
+
             <xs:element name="Value"        type="ExtendedMetadataValueType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
