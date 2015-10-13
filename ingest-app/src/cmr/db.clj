@@ -12,7 +12,7 @@
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (su/ignore_already_exists_errors
+    (su/ignore-already-exists-errors
       "CMR_INGEST user"
       (o/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password)))))
 

@@ -71,7 +71,7 @@
                            (where '(= :ROWNUM 1))))]
     (first (query db (build stmt)))))
 
-(defmacro ignore_already_exists_errors
+(defmacro ignore-already-exists-errors
   "Used to make SQL calls where an error indicating that an object already exists can be safely
   ignored."
   [object-name & body]

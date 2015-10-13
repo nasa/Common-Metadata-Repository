@@ -12,7 +12,7 @@
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (su/ignore_already_exists_errors
+    (su/ignore-already-exists-errors
       "CMR_BOOTSTRAP user"
       (o/create-user
         db (bootstrap-config/bootstrap-username) (bootstrap-config/bootstrap-password)))))
