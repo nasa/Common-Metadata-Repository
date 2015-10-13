@@ -5,7 +5,9 @@
             [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.search.services.query-execution :as query-execution]
-            [cmr.search.data.elastic-search-index :as idx]))
+            [cmr.search.data.elastic-search-index :as idx]
+            [cmr.search.models.query :as qm]
+            [cmr.search.models.group-query-conditions :as gc]))
 
 (defn- tag->unzipped-tag
   "Returns the unzipped tag by gunzip the :associated-concept-ids-gzip-b64 field and replace it
@@ -27,10 +29,25 @@
     (assoc coll :tags (mapv #(vector (:namespace %) (:value %)) matching-tags))
     coll))
 
+(defn- tag-query
+  "Returns the query for searching tags with the given include-tags parameter value and list of
+  collection concept-ids."
+  [tags-value coll-concept-ids]
+  (let [tag-namespaces (map str/trim (str/split tags-value #","))]
+    (qm/query
+      {:concept-type :tag
+       :condition (gc/and-conds
+                    [(qm/string-conditions :namespace tag-namespaces false true :or)
+                     (qm/string-conditions :associated-concept-ids coll-concept-ids true)])
+       :skip-acls? true
+       :page-size :unlimited
+       :result-fields [:namespace :value :associated-concept-ids-gzip-b64]})))
+
 (defmethod query-execution/post-process-query-result-feature :tags
   [context query elastic-results query-results feature]
   (let [coll-concept-ids (seq (keep :id (:items query-results)))
         tags (some->> coll-concept-ids
+                      (tag-query (get-in query [:result-options :tags]))
                       (idx/get-tags context)
                       (map tag->unzipped-tag))]
     (util/update-in-each query-results [:items] (partial coll-with-tags tags))))

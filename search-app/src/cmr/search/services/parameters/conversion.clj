@@ -331,7 +331,7 @@
                                     [:facets]))
                                 (when (= (:include-highlights params) "true")
                                   [:highlights])
-                                (when (= (:include-tags params) "true")
+                                (when-not (str/blank? (:include-tags params))
                                   [:tags]))]
     {:concept-type concept-type
      :page-size page-size
@@ -341,11 +341,14 @@
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?
      :all-revisions? all-revisions?
-     :result-options (when (or begin-tag end-tag snippet-length num-snippets)
-                       {:highlights {:begin-tag begin-tag
-                                     :end-tag end-tag
-                                     :snippet-length (when snippet-length (Integer. snippet-length))
-                                     :num-snippets (when num-snippets (Integer. num-snippets))}})}))
+     :result-options (merge (when-not (str/blank? (:include-tags params))
+                              {:tags (:include-tags params)})
+                            (when (or begin-tag end-tag snippet-length num-snippets)
+                              {:highlights
+                               {:begin-tag begin-tag
+                                :end-tag end-tag
+                                :snippet-length (when snippet-length (Integer. snippet-length))
+                                :num-snippets (when num-snippets (Integer. num-snippets))}}))}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."

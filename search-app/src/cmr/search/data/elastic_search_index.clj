@@ -268,21 +268,17 @@
                   num-granules])))))
 
 (defn get-tags
-  "Returns the tags associated with the given collection concept-ids"
-  [context coll-concept-ids]
-  (let [tag-query (qm/query
-                    {:concept-type :tag
-                     :condition (qm/string-conditions :associated-concept-ids coll-concept-ids true)
-                     :skip-acls? true
-                     :page-size :unlimited
-                     :result-fields [:namespace :value :associated-concept-ids-gzip-b64]})
-        elastic-results (execute-query context tag-query)
+  "Returns the tags found by the given tag query. Only the namespace, value and
+  associated-concept-ids-gzip-b64 fields are retrieved and returned."
+  [context tag-query]
+  (let [get-elastic-results #(get-in % [:hits :hits])
         field-value-fn (fn [result field]
                          (get-in result [:fields field 0]))]
-    (->> (get-in elastic-results [:hits :hits])
+    (->> tag-query
+         (execute-query context)
+         get-elastic-results
          (map #(hash-map
                  :namespace (field-value-fn % :namespace)
                  :value (field-value-fn % :value)
                  :associated-concept-ids-gzip-b64
                  (field-value-fn % :associated-concept-ids-gzip-b64))))))
-

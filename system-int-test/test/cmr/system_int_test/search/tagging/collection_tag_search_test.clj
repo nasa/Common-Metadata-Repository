@@ -276,6 +276,7 @@
 (deftest search-for-collections-with-include-tags-test
   (let [[coll1 coll2 coll3 coll4] (for [n (range 1 5)]
                                     (d/ingest "PROV1" (dc/collection {:entry-title (str "coll" n )})))
+        coll5 (d/ingest "PROV2" (dc/collection))
         all-prov1-colls [coll1 coll2 coll3 coll4]
 
         ;; Wait until collections are indexed so tags can be associated with them
@@ -284,7 +285,7 @@
         user1-token (e/login (s/context) "user1")
         user2-token (e/login (s/context) "user2")
 
-        tag1-colls [coll1]
+        tag1-colls [coll1 coll5]
         tag2-colls [coll1 coll2]
         tag3-colls [coll3]
 
@@ -294,30 +295,56 @@
                tag1-colls)
         tag2 (tags/save-tag
                user2-token
-               (tags/make-tag {:namespace "Namespace1" :value "Value2"})
+               (tags/make-tag {:namespace "Namespace100" :value "Value2"})
                tag2-colls)
         tag3 (tags/save-tag
                user1-token
-               (tags/make-tag {:namespace "Namespace2" :value "Value1" :category "Category2"})
+               (tags/make-tag {:namespace "cmr.namespace2" :value "Value1" :category "Category2"})
                tag3-colls)
         ;; Tag 4 is not associated with any collections
         tag4 (tags/save-tag
                user1-token
-               (tags/make-tag {:namespace "Namespace Other" :value "Value Other"}))
-        dataset-id-tags {"coll1" [["Namespace1" "Value1"] ["Namespace1" "Value2"]]
-                         "coll2" [["Namespace1" "Value2"]]
-                         "coll3" [["Namespace2" "Value1"]]}]
+               (tags/make-tag {:namespace "Namespace Other" :value "Value Other"}))]
     (index/wait-until-indexed)
 
-    (testing "include-tags in json format has tags added to json response."
-      (let [expected-json (-> (da/collections->expected-atom
-                                all-prov1-colls
-                                "collections.json?provider=PROV1&include_tags=true")
-                              (update-in [:entries] add-tags-to-collections dataset-id-tags))
-            response (search/find-concepts-json :collection {:provider "PROV1"
-                                                             :include-tags "true"})
-            {:keys [status results]} response]
-        (is (= [200 expected-json] [status results]))))
+    (testing "include-tags in json format has proper tags added to json response."
+      (are2 [include-tags dataset-id-tags]
+            (let [feed-id (->> (-> include-tags
+                                   (str/replace "?" "%3F")
+                                   (str/replace "," "%2C"))
+                               (format "collections.json?provider=PROV1&include_tags=%s"))
+                  expected-json (-> (da/collections->expected-atom all-prov1-colls feed-id)
+                                    (update-in [:entries] add-tags-to-collections dataset-id-tags))
+                  response (search/find-concepts-json :collection {:provider "PROV1"
+                                                                   :include-tags include-tags})
+                  {:keys [status results]} response]
+              (= [200 expected-json] [status results]))
+
+            "match all tags"
+            "*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+                 "coll2" [["Namespace100" "Value2"]]
+                 "coll3" [["cmr.namespace2" "Value1"]]}
+
+            "match one tag"
+            "namespace1" {"coll1" [["Namespace1" "Value1"]]}
+
+            "match tags with wildcard *"
+            "namespace1*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+                           "coll2" [["Namespace100" "Value2"]]}
+
+            "match tags with wildcard ?"
+            "namespace?" {"coll1" [["Namespace1" "Value1"]]}
+
+            "match no tag"
+            "namespace3*" {}
+
+            "match empty tag"
+            "" {}
+
+            "match multiple tags"
+            "namespace1*,cmr.*" {"coll1" [["Namespace1" "Value1"] ["Namespace100" "Value2"]]
+                                 "coll2" [["Namespace100" "Value2"]]
+                                 "coll3" [["cmr.namespace2" "Value1"]]}))
 
     (testing "include-tags in collection search with result formats orther than JSON is ignored."
       ;; search in different metadata formats
@@ -325,7 +352,7 @@
            (d/assert-metadata-results-match
              metadata-format all-prov1-colls
              (search/find-metadata
-               :collection metadata-format {:provider "PROV1" :include-tags "true"}))
+               :collection metadata-format {:provider "PROV1" :include-tags "*"}))
 
            :dif
            :dif10
@@ -333,27 +360,22 @@
            :iso19115)
 
       ;; search in xml reference
-      (is (d/refs-match? [coll1 coll2] (search/find-refs :collection {:tag-namespace "namespace1"
-                                                                      :provider "PROV1"
-                                                                      :include-tags "true"})))
+      (is (d/refs-match? [coll1] (search/find-refs :collection {:tag-namespace "namespace1"
+                                                                :provider "PROV1"
+                                                                :include-tags "*"})))
 
       ;; search in atom format
       (let [expected-atom (da/collections->expected-atom
                             all-prov1-colls
-                            "collections.atom?provider=PROV1&include_tags=true")
+                            "collections.atom?provider=PROV1&include_tags=*")
             response (search/find-concepts-atom :collection {:provider "PROV1"
-                                                             :include-tags "true"})
+                                                             :include-tags "*"})
             {:keys [status results]} response]
         (is (= [200 expected-atom] [status results]))))
 
-    (testing "Invalid include-tags param"
-      (testing "include-tags must be boolean value."
-        (is (= {:status 400
-                :errors ["Parameter include_tags must take value of true, false, or unset, but was [foo]"]}
-               (search/find-refs :collection {:include-tags "foo"}))))
-      (testing "include-tags is not supported on granule searches."
-        (is (= {:status 400
-                :errors ["Parameter [include_tags] was not recognized."]}
-               (search/find-refs :granule {:include-tags true})))))))
+    (testing "include-tags is not supported on granule searches."
+      (is (= {:status 400
+              :errors ["Parameter [include_tags] was not recognized."]}
+             (search/find-refs :granule {:include-tags true}))))))
 
 
