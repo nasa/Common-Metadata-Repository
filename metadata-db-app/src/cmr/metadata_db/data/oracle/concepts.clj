@@ -15,7 +15,7 @@
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.data.oracle.sql-helper :as sh]
             [cmr.metadata-db.services.provider-service :as provider-service]
-            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+            [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
 (def INITIAL_CONCEPT_NUM

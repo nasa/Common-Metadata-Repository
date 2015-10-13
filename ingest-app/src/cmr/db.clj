@@ -5,13 +5,16 @@
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.ingest.config :as ingest-config]
-            [config.migrate-config :as mc])
+            [config.migrate-config :as mc]
+            [cmr.oracle.sql-utils :as su])
   (:gen-class))
 
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
-    (o/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password))))
+    (su/ignore-already-exists-errors
+      "CMR_INGEST user"
+      (o/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password)))))
 
 (defn drop-user
   []
@@ -39,6 +42,8 @@
 
       (catch Throwable e
         (error e (.getMessage e))
+        (shutdown-agents)
         (System/exit 1))))
 
+  (shutdown-agents)
   (System/exit 0))

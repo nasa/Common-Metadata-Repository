@@ -15,13 +15,13 @@ fi
 date && echo "Generating Search API documentation" &&
 (cd search-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
-  echo "Failed to generate docs" >&2
+  echo "Failed to generate search docs" >&2
   exit 1
 fi
 date && echo "Generating Ingest API documentation" &&
 (cd ingest-app && lein with-profile docs generate-docs)
 if [ $? -ne 0 ] ; then
-  echo "Failed to generate docs" >&2
+  echo "Failed to generate ingest docs" >&2
   exit 1
 fi
 if [ "$1" != "skip-uberjars" ] ; then

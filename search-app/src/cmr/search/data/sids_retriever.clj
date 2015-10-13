@@ -6,7 +6,7 @@
   (:require [cmr.common.config :as cfg]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.java.jdbc :as j]
-            [cmr.metadata-db.data.oracle.sql-utils :as sql-utils]
+            [cmr.oracle.sql-utils :as sql-utils]
             [cmr.oracle.connection :as oracle]
             [clj-time.core :as t]
             [cmr.metadata-db.data.memory-db]))

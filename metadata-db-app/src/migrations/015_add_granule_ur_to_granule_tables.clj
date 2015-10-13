@@ -1,7 +1,7 @@
 (ns migrations.015-add-granule-ur-to-granule-tables
   "Adds granule_ur column to granule tables"
   (:require [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.data.oracle.sql-utils :as su]))
+            [cmr.oracle.sql-utils :as su]))
 
 (defn up
   "Migrates the database up to version 15, adding granule-ur column to provider granule tables."

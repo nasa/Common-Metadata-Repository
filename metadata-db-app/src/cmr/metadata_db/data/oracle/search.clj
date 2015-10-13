@@ -9,7 +9,7 @@
             [cmr.common.util :as util]
             [clojure.java.jdbc :as j]
             [cmr.metadata-db.data.oracle.sql-helper :as sh]
-            [cmr.metadata-db.data.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+            [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import cmr.oracle.connection.OracleStore))
 
 (defn- find-batch-starting-id

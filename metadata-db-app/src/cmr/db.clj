@@ -5,19 +5,64 @@
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
             [cmr.metadata-db.config :as mdb-config]
-            [config.migrate-config :as mc])
+            [cmr.common.config :as cfg]
+            [cmr.oracle.sql-utils :as su]
+            [config.migrate-config :as mc]
+            [clojure.java.jdbc :as j])
   (:gen-class))
+
+(def business-user (cfg/config-value-fn :echo-business-user "DEV_52_BUSINESS"))
+
+(def create-security-token-table-sql
+  "Create security token table in ECHO business schema"
+  (format "CREATE TABLE %s.SECURITY_TOKEN (
+          token VARCHAR2(200 CHAR),
+          guest NUMBER(10),
+          user_guid VARCHAR2(50 CHAR),
+          act_as_user_guid VARCHAR2(50 CHAR),
+          expires TIMESTAMP(6),
+          revoked TIMESTAMP(6))"
+          (business-user)))
+
+(def create-group2-member-table-sql
+  "Create group2_member table in ECHO business schema"
+  (format "CREATE TABLE %s.GROUP2_MEMBER (
+          user_guid VARCHAR2(50 CHAR),
+          group_guid VARCHAR2(50 CHAR))"
+          (business-user)))
+
+(defn- create-echo-business-schema
+  "Creates the minimum business-schema setup in order to support metadata-db accesses. Only the
+  tables actually accessed are created and those tables only have the columns used by metadata-db.
+  Throws an exception if creation fails."
+  [db]
+  (su/ignore-already-exists-errors "ECHO business user"
+                                   (o/create-user db (business-user) (business-user)))
+  (su/ignore-already-exists-errors "ECHO business schema SECURITY_TOKEN table"
+                                   (j/db-do-commands db create-security-token-table-sql))
+  (su/ignore-already-exists-errors "ECHO business schema GROUP2_MEMBER table"
+                                   (j/db-do-commands db create-group2-member-table-sql)))
 
 (defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)
         catalog-rest-user (mdb-config/catalog-rest-db-username)
         metadata-db-user (mdb-config/db-username)]
-    (o/create-user db metadata-db-user (mdb-config/db-password))
+    (su/ignore-already-exists-errors "METADATA_DB user"
+                                     (o/create-user db metadata-db-user (mdb-config/db-password)))
+    ;; Metadata DB needs access to the catalog-rest database tables for the DB synchronization task.
+    ;; It also needed access for the initial migration of data from ECHO to CMR.
+    (su/ignore-already-exists-errors "Catalog rest user"
+                                     (o/create-user db catalog-rest-user catalog-rest-user))
     (o/grant-select-privileges db catalog-rest-user metadata-db-user)
 
-    ;; This is done to allow bootstrap tests to create and drop test tables in the Catalog REST
-    ;; database schema.
+    ;; Due to poor performance from the ECHO ACL endpoint we directly access the ECHO business
+    ;; schema. For initial setup the database tables may or may not exist already. We create the
+    ;; tables as needed for CMR if they do not exist.
+    (create-echo-business-schema db)
+    (o/grant-select-privileges db (business-user) metadata-db-user)
+
+    ;; Allow database synchronization tests to create and drop tables in the Catalog REST database.
     (o/grant-create-drop-any-table-privileges db metadata-db-user)))
 
 (defn drop-user
@@ -47,6 +92,8 @@
 
       (catch Throwable e
         (error e (.getMessage e))
+        (shutdown-agents)
         (System/exit 1))))
 
+  (shutdown-agents)
   (System/exit 0))
