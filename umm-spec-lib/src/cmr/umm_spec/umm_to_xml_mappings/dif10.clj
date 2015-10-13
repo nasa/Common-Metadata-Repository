@@ -41,7 +41,8 @@
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"})
+   ; :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"
+   })
 
 (defn- temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
@@ -152,8 +153,9 @@
   (xml
     [:DIF
      dif10-xml-namespaces
-     [:Entry_ID (:EntryId c)]
-     [:Version (u/with-default (:Version c))]
+     [:Entry_ID
+      [:Short_Name (:EntryId c)]
+      [:Version (u/with-default (:Version c))]]
      [:Entry_Title (:EntryTitle c)]
      (for [sk (:ScienceKeywords c)]
        [:Science_Keywords

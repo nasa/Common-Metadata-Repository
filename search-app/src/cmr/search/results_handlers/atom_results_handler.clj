@@ -123,8 +123,10 @@
         atom-links (map #(json/decode % true) atom-links)
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
         ;; For DIF collection, its entry-id is the same as its short-name
-        associated-difs (if (#{"dif" "dif10"} metadata-format)
-                          [short-name] associated-difs)]
+        associated-difs (case metadata-format
+                          "dif" [short-name]
+                          "dif10" [(format "%s_%s" short-name version-id)]
+                          associated-difs)]
     (merge {:id concept-id
             :score (r/normalize-score score)
             :title entry-title
