@@ -591,6 +591,14 @@
               (csk/->snake_case_string param) value)))))
     [:snippet-length :num-snippets]))
 
+(defn- result-format-parameters-validation
+  "Validates parameters against result format."
+  [concept-type params]
+  (concat
+    (when (and (not= :json (:result-format params))
+               (not (s/blank? (:include-tags params))))
+      [(format "Parameter [include_tags] is only supported in JSON format search.")])))
+
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
   #{"year" "month" "day" "hour" "minute" "second"})
@@ -680,7 +688,8 @@
    point-validation
    line-validation
    no-highlight-options-without-highlights-validation
-   highlights-numeric-options-validation])
+   highlights-numeric-options-validation
+   result-format-parameters-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

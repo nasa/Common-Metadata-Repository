@@ -484,7 +484,7 @@ __Example__
 
 #### JSON
 
-The JSON response contains the same fields as the ATOM response, only in JSON format instead of XML.
+The JSON response contains the same fields as the ATOM response, only in JSON format except the `tags` field which is added as a result of the `include_tags` search parameter.
 
 __Example__
 
@@ -506,7 +506,8 @@ __Example__
       "id" : "C1200000000-PROV1",
       "original_format" : "ECHO10",
       "browse_flag" : false,
-      "online_access_flag" : false
+      "online_access_flag" : false,
+      "tags" : [["Namespace1", "Value1"], ["Namespace2", "Value2"]]
     } ]
   }
 }

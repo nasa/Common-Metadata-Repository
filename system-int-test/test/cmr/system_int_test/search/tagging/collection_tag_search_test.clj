@@ -346,36 +346,46 @@
                                  "coll2" [["Namespace100" "Value2"]]
                                  "coll3" [["cmr.namespace2" "Value1"]]}))
 
-    (testing "include-tags in collection search with result formats orther than JSON is ignored."
-      ;; search in different metadata formats
-      (are [metadata-format]
-           (d/assert-metadata-results-match
-             metadata-format all-prov1-colls
-             (search/find-metadata
-               :collection metadata-format {:provider "PROV1" :include-tags "*"}))
+    (testing "Invalid include-tags params"
+      (testing "include-tags in collection search with metadata formats orther than JSON is invalid."
+        (are [metadata-format]
+             (= {:status 400
+                 :errors ["Parameter [include_tags] is only supported in JSON format search."]}
+                (search/find-metadata
+                  :collection metadata-format {:provider "PROV1" :include-tags "*"}))
 
-           :dif
-           :dif10
-           :echo10
-           :iso19115)
+             :dif
+             :dif10
+             :echo10
+             :iso19115))
 
-      ;; search in xml reference
-      (is (d/refs-match? [coll1] (search/find-refs :collection {:tag-namespace "namespace1"
-                                                                :provider "PROV1"
-                                                                :include-tags "*"})))
+      (testing "include-tags in collection search with result formats orther than JSON is invalid."
+        (are2 [search-fn]
+              (= {:status 400
+                  :errors ["Parameter [include_tags] is only supported in JSON format search."]}
+                 (search-fn :collection {:include-tags "*"}))
 
-      ;; search in atom format
-      (let [expected-atom (da/collections->expected-atom
-                            all-prov1-colls
-                            "collections.atom?provider=PROV1&include_tags=*")
-            response (search/find-concepts-atom :collection {:provider "PROV1"
-                                                             :include-tags "*"})
-            {:keys [status results]} response]
-        (is (= [200 expected-atom] [status results]))))
+              "search in xml reference"
+              search/find-refs
 
-    (testing "include-tags is not supported on granule searches."
-      (is (= {:status 400
-              :errors ["Parameter [include_tags] was not recognized."]}
-             (search/find-refs :granule {:include-tags true}))))))
+              "search in atom format"
+              search/find-concepts-atom
+
+              "search in kml format"
+              search/find-concepts-kml
+
+              "search in csv format"
+              search/find-concepts-csv
+
+              "search in opendata format"
+              search/find-concepts-opendata
+
+              "search in umm-json format"
+              search/find-concepts-umm-json))
+
+      (testing "include-tags is not supported on granule searches."
+        (is (= {:status 400
+                :errors ["Parameter [include_tags] was not recognized."]}
+               (search/find-concepts-json :granule {:include-tags true})))))))
 
 
