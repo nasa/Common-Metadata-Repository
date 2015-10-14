@@ -183,11 +183,9 @@
 
     ;; resave the tag
     (let [tag1-3 (tags/save-tag user1-token (dissoc tag1 :revision-id :concept-id))]
-      ; (cmr.common.dev.capture-reveal/capture-all)
 
       (index/wait-until-indexed)
 
       ;; Now I should find the tag when searching
       (tags/assert-tag-search [tag1-3 tag2] (tags/search {})))))
-; ))
 
