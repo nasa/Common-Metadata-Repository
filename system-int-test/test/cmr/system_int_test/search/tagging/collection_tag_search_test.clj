@@ -308,6 +308,9 @@
     (index/wait-until-indexed)
 
     (testing "include-tags in json format has proper tags added to json response."
+      ;; dataset-id-tags is a map of collection dataset-id to tags that should be associated
+      ;; with the collection. The tags are in tuples of tag namespace and value which is the same
+      ;; as tags in the JSON response. It is used to construct the tags field in the expected JSON.
       (are2 [include-tags dataset-id-tags]
             (let [feed-id (->> (-> include-tags
                                    (str/replace "?" "%3F")

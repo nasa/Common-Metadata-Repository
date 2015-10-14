@@ -342,7 +342,7 @@
      :echo-compatible? echo-compatible?
      :all-revisions? all-revisions?
      :result-options (merge (when-not (str/blank? (:include-tags params))
-                              {:tags (:include-tags params)})
+                              {:tags (map str/trim (str/split (:include-tags params) #","))})
                             (when (or begin-tag end-tag snippet-length num-snippets)
                               {:highlights
                                {:begin-tag begin-tag
