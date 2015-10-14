@@ -37,7 +37,7 @@
   [spatial-coverage]
   (if (nil? spatial-coverage)
     (umm-c/map->SpatialCoverage {:granule-spatial-representation :cartesian})
-    (update-in spatial-coverage [:geometries] #(when (some? %) [(first %)]))))
+    spatial-coverage))
 
 (defn- product->expected-parsed
   [short-name version-id long-name]
@@ -178,11 +178,10 @@
 
 (defn- revert-spatial-coverage
   "The spatial coverage is removed if spatial coverage in the original UMM collection is absent.
-  The geometries in the spatial coverge are reverted to original since DIF 10 only reads the first
-  geometry"
+  DIF 10 generator adds a default if there is none in the original. We get rid of that here."
   [spatial-coverage orig-spatial-coverage]
-  (when orig-spatial-coverage
-    (assoc spatial-coverage :geometries (:geometries orig-spatial-coverage))))
+  (when (some? orig-spatial-coverage)
+    spatial-coverage))
 
 (defn- revert-platform-type
   "The platform types are reverted to original types since DIF 10 uses enumeration types which

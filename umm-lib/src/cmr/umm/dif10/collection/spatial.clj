@@ -53,7 +53,7 @@
 (defn geometry-element->geometries
   "Converts a Geometry element into a sequence of spatial geometry objects"
   [geom-elem]
-  (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem))))
+  (seq (map parse-geometry (filter (comp geometry-tags :tag) (:content geom-elem)))))
 
 (defn- xml-elem->OrbitParameters
   "Returns a UMM OrbitParameters record from a parsed OrbitParameters XML structure"
@@ -176,9 +176,8 @@
                    (x/element :Granule_Spatial_Representation {} gsr)
                    (x/element :Geometry {}
                               (x/element :Coordinate_System {} sr)
-                              ;; We consider only the first geometry
-                              ;; since DIF 10.1 accepts only a single geometry. CMRIN-79
-                              (shape-to-xml (first geometries)))
+                              (for [geometry geometries]
+                                (shape-to-xml geometry)))
                    (generate-orbit-parameters orbit-parameters))
         (x/element :Spatial_Coverage {}
                    (x/element :Granule_Spatial_Representation {} gsr)
