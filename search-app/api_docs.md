@@ -273,7 +273,6 @@ __Example__
                 <Data_Creation>1970-01-01T00:00:00</Data_Creation>
                 <Data_Last_Revision>1970-01-01T00:00:00</Data_Last_Revision>
             </Metadata_Dates>
-            <Product_Flag>Not provided</Product_Flag>
         </DIF>
     </result>
 </results>
