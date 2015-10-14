@@ -41,6 +41,8 @@
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
+   ;; TODO: The schema location below is for DIF 10.1. Obtain a sample DIF 10.2 from GCMD
+   ;; and update the schemaLocation based on it.
    ; :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"
    })
 
