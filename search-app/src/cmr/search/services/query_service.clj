@@ -63,6 +63,7 @@
             [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
             [cmr.search.services.query-execution.facets-results-feature]
             [cmr.search.services.query-execution.highlight-results-feature]
+            [cmr.search.services.query-execution.tags-results-feature]
 
             [cmr.search.services.parameters.legacy-parameters :as lp]
             [cmr.search.services.parameters.provider-short-name :as psn]

@@ -27,7 +27,8 @@
 (def single-value-params
   "Parameters that must take a single value, never a vector of values."
   #{:keyword :page-size :page-num :result-format :echo-compatible :include-granule-counts
-    :include-has-granules :include-facets :hierarchical-facets :include-highlights :all-revisions})
+    :include-has-granules :include-facets :hierarchical-facets :include-highlights
+    :include-tags :all-revisions})
 
 (def multiple-value-params
   "Parameters that must take a single value or a vector of values, never a map of values."
@@ -271,7 +272,7 @@
         params (if (= :collection concept-type)
                  ;; Parameters only supported on collections
                  (dissoc params :include-granule-counts :include-has-granules :include-facets
-                         :hierarchical-facets :include-highlights :all-revisions)
+                         :hierarchical-facets :include-highlights :include-tags :all-revisions)
                  params)]
     (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
          (set/difference (set (keys params))
@@ -493,8 +494,7 @@
   [concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :include-facets
-                                         :hierarchical-facets :include-highlights
-                                         :all-revisions])]
+                                         :hierarchical-facets :include-highlights :all-revisions])]
     (mapcat
       (fn [[param value]]
         (if (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
@@ -532,7 +532,8 @@
        (set/difference (set (keys params))
                        (set [:page-size :page-num :sort-key :result-format :options
                              :include-granule-counts :include-has-granules :include-facets
-                             :echo-compatible :hierarchical-facets :include-highlights]))))
+                             :echo-compatible :hierarchical-facets :include-highlights
+                             :include-tags]))))
 
 (defn timeline-start-date-validation
   "Validates the timeline start date parameter"
@@ -589,6 +590,14 @@
               "%s option [%s] for highlights is not a valid integer."
               (csk/->snake_case_string param) value)))))
     [:snippet-length :num-snippets]))
+
+(defn- result-format-parameters-validation
+  "Validates parameters against result format."
+  [concept-type params]
+  (concat
+    (when (and (not= :json (:result-format params))
+               (not (s/blank? (:include-tags params))))
+      [(format "Parameter [include_tags] is only supported in JSON format search.")])))
 
 (def valid-timeline-intervals
   "A list of the valid values for timeline intervals."
@@ -679,7 +688,8 @@
    point-validation
    line-validation
    no-highlight-options-without-highlights-validation
-   highlights-numeric-options-validation])
+   highlights-numeric-options-validation
+   result-format-parameters-validation])
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

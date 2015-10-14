@@ -330,7 +330,9 @@
                                     [:hierarchical-facets]
                                     [:facets]))
                                 (when (= (:include-highlights params) "true")
-                                  [:highlights]))]
+                                  [:highlights])
+                                (when-not (str/blank? (:include-tags params))
+                                  [:tags]))]
     {:concept-type concept-type
      :page-size page-size
      :page-num page-num
@@ -339,11 +341,14 @@
      :result-features (seq result-features)
      :echo-compatible? echo-compatible?
      :all-revisions? all-revisions?
-     :result-options (when (or begin-tag end-tag snippet-length num-snippets)
-                       {:highlights {:begin-tag begin-tag
-                                     :end-tag end-tag
-                                     :snippet-length (when snippet-length (Integer. snippet-length))
-                                     :num-snippets (when num-snippets (Integer. num-snippets))}})}))
+     :result-options (merge (when-not (str/blank? (:include-tags params))
+                              {:tags (map str/trim (str/split (:include-tags params) #","))})
+                            (when (or begin-tag end-tag snippet-length num-snippets)
+                              {:highlights
+                               {:begin-tag begin-tag
+                                :end-tag end-tag
+                                :snippet-length (when snippet-length (Integer. snippet-length))
+                                :num-snippets (when num-snippets (Integer. num-snippets))}}))}))
 
 (defn parse-parameter-query
   "Converts parameters into a query model."
@@ -356,7 +361,7 @@
         params (dissoc params :options :page-size :page-num :sort-key :result-format
                        :include-granule-counts :include-has-granules :include-facets
                        :echo-compatible :hierarchical-facets :include-highlights
-                       :all-revisions)]
+                       :include-tags :all-revisions)]
     (if (empty? params)
       ;; matches everything
       (qm/query query-attribs)

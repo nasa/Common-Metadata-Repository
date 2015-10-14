@@ -21,7 +21,6 @@
             [cmr.umm.collection.product-specific-attribute :as psa])
   (:import cmr.spatial.mbr.Mbr))
 
-
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
@@ -41,10 +40,11 @@
     (update-in spatial-coverage [:geometries] #(when (some? %) [(first %)]))))
 
 (defn- product->expected-parsed
-  [short-name long-name]
+  [short-name version-id long-name]
   (fn [product]
     (-> product
         (assoc-in [:short-name] short-name)
+        (assoc-in [:version-id] version-id)
         (assoc-in [:long-name] long-name)
         umm-c/map->Product)))
 
@@ -139,12 +139,14 @@
   "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record and
   fields which are required by DIF 10 are added."
   [coll]
-  (let [short-name (:entry-id coll)
+  (let [entry-id (:entry-id coll)
+        {:keys [short-name version-id]} (:product coll)
         long-name (:entry-title coll)]
     (-> coll
         remove-unsupported-fields
         add-required-placeholder-fields
-        (update-in [:product] (product->expected-parsed short-name long-name))
+        (update-in [:product] (product->expected-parsed short-name version-id long-name))
+        (assoc :entry-id (format "%s_%s" short-name version-id))
         umm-c/map->UmmCollection)))
 
 (defspec generate-and-parse-collection-test 100
@@ -249,8 +251,10 @@
 
 (def dif10-collection-xml
   "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
-    <Entry_ID>minimal_dif_dataset</Entry_ID>
-    <Version>001</Version>
+    <Entry_ID>
+     <Short_Name>minimal_dif_dataset</Short_Name>
+     <Version>001</Version>
+    </Entry_ID>
     <Entry_Title>A minimal dif dataset</Entry_Title>
   <Personnel>
     <Role>TECHNICAL CONTACT</Role>
@@ -445,7 +449,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "minimal_dif_dataset"
+    {:entry-id "minimal_dif_dataset_001"
      :entry-title "A minimal dif dataset"
      :summary "summary of the dataset"
      :purpose "A grand purpose"
@@ -607,7 +611,7 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml dif10-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Line 19 - cvc-complex-type.2.4.a: Invalid content"
+    (is (= [(str "Line 21 - cvc-complex-type.2.4.a: Invalid content"
                  " was found starting with element 'XXXX'. One of"
                  " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"

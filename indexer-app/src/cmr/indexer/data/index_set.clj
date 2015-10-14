@@ -491,8 +491,10 @@
                  :value.lowercase string-field-mapping
                  :description (not-indexed (stored string-field-mapping))
                  :originator-id.lowercase (stored string-field-mapping)
-                 ;; set of concept-ids stored as EDN gzipped and base64 encoded
-                 :associated-concept-ids-gzip-b64 (not-indexed (stored string-field-mapping))}}})
+                 ;; set of concept-ids stored as EDN gzipped and base64 encoded for retrieving purpose
+                 :associated-concept-ids-gzip-b64 (not-indexed (stored string-field-mapping))
+                 ;; for searching purpose
+                 :associated-concept-ids string-field-mapping}}})
 
 (defn index-set
   "Returns the index-set configuration"

@@ -291,7 +291,7 @@
   ([concept-type params]
    (find-concepts-kml concept-type params {}))
   ([concept-type params options]
-   (let [response (get-search-failure-data
+   (let [response (get-search-failure-xml-data
                     (find-concepts-in-format mime-types/kml
                                              concept-type params options))
          {:keys [status body]} response]

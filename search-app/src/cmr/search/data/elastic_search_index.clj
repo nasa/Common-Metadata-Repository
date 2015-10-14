@@ -133,7 +133,7 @@
         elastic-query (q2e/query->elastic query)
         sort-params (q2e/query->sort-params query)
         index-info (concept-type->index-info context concept-type query)
-        fields (concept-type+result-format->fields concept-type query)
+        fields (or (:result-fields query) (concept-type+result-format->fields concept-type query))
         from (* (dec page-num) page-size)
         query-map (util/remove-nil-keys {:query elastic-query
                                          :version true
@@ -266,8 +266,4 @@
                                               :provider-id provider-id
                                               :concept-type :collection})
                   num-granules])))))
-
-
-
-
 

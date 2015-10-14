@@ -66,7 +66,7 @@
 
       (testing "wrong xml format"
         (assert-translate-failure
-          #"Invalid content was found starting with element 'Version'"
+          #"Element 'Entry_ID' is a simple type, so it must have no element information item"
           :collection :dif (umm-spec/generate-metadata :collection :dif10 expected-conversion/example-record) :umm-json))
 
       (testing "bad json"
