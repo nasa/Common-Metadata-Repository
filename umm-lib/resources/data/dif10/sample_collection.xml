@@ -1,6 +1,8 @@
 <DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:dif="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Entry_ID>minimal_dif10_dataset</Entry_ID>
-    <Version>001</Version>
+    <Entry_ID>
+      <Short_Name>minimal_dif10_dataset</Short_Name>
+      <Version>001</Version>
+    </Entry_ID>
     <Entry_Title>A minimal dif dataset</Entry_Title>
   <Personnel>
     <Role>TECHNICAL CONTACT</Role>

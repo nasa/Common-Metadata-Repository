@@ -27,11 +27,11 @@
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
   (c/map->Product
-    {:short-name (cx/string-at-path collection-content [:Entry_ID])
+    {:short-name (cx/string-at-path collection-content [:Entry_ID :Short_Name])
      :long-name (util/trunc
                   (cx/string-at-path collection-content [:Entry_Title])
                   1024)
-     :version-id (cx/string-at-path collection-content [:Version])
+     :version-id (cx/string-at-path collection-content [:Entry_ID :Version])
      :collection-data-type (cx/string-at-path collection-content [:Collection_Data_Type])}))
 
 (defn- xml-elem->DataProviderTimestamps
@@ -50,7 +50,9 @@
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
   (c/map->UmmCollection
-    {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
+    {:entry-id (format "%s_%s"
+                       (cx/string-at-path xml-struct [:Entry_ID :Short_Name])
+                       (cx/string-at-path xml-struct [:Entry_ID :Version]))
      :entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :personnel (personnel/xml-elem->personnel xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
@@ -92,16 +94,17 @@
   UmmCollection
   (umm->dif10-xml
     ([collection]
-     (let [{{:keys [version-id collection-data-type]} :product
+     (let [{{:keys [short-name version-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            :keys [entry-id entry-title summary purpose temporal organizations science-keywords
+            :keys [entry-title summary purpose temporal organizations science-keywords
                    platforms product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references temporal]} collection]
        (x/emit-str
          (x/element :DIF dif10-header-attributes
-                    (x/element :Entry_ID {} entry-id)
-                    (x/element :Version {} version-id)
+                    (x/element :Entry_ID {}
+                               (x/element :Short_Name {} short-name)
+                               (x/element :Version {} version-id))
                     (x/element :Entry_Title {} entry-title)
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
@@ -142,4 +145,4 @@
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (v/validate-xml (io/resource "schema/dif10/dif_v10.1.xsd") xml))
+  (v/validate-xml (io/resource "schema/dif10/dif.xsd") xml))

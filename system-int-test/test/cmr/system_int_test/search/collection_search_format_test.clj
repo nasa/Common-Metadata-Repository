@@ -76,14 +76,12 @@
         c7-smap (d/ingest "PROV1" (dc/collection-smap {:short-name "S7"
                                                        :version-id "V7"})
                           {:format :iso-smap})
-        c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-id "S8"
-                                                         :short-name "S8"
+        c8-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:short-name "S8"
                                                          :version-id "V8"
                                                          :entry-title "ET8"
                                                          :long-name "ET8"})
                            {:format :dif10})
-        c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-id "S9"
-                                                         :short-name "S9"
+        c9-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:short-name "S9"
                                                          :version-id "V9"
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
