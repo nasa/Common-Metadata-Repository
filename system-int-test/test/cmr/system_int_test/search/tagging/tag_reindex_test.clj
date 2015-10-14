@@ -18,6 +18,7 @@
                                           {:namespace "Namespace1"
                                            :value "Value1"
                                            :category "Category1"}))
+        tag1-2 (tags/save-tag user1-token (dissoc tag1 :revision-id))
         tag2 (tags/save-tag user2-token (tags/make-tag
                                           {:namespace "Namespace1"
                                            :value "Value2"}))
@@ -25,10 +26,11 @@
                                           {:namespace "Namespace2"
                                            :value "Value1"
                                            :category "Category2"}))
-        all-tags [tag1 tag2 tag3]]
+        tag3-tombstone (tags/delete-tag user1-token (:concept-id tag3))
+        all-tags [tag1-2 tag2]]
     (index/wait-until-indexed)
 
-    ;; Now I should find all tags when searching
+    ;; Now I should find all tags when searching - not the tombstoned tag
     (tags/assert-tag-search all-tags (tags/search {}))
 
     ;; Delete tags from elasticsearch index
@@ -41,5 +43,5 @@
     (index/reindex-tags)
     (index/wait-until-indexed)
 
-    ;; Now I should find all tags when searching
+    ;; Now I should find all tags when searching - not the tombstoned tag
     (tags/assert-tag-search all-tags (tags/search {}))))
