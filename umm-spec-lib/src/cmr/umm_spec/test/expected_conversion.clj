@@ -415,21 +415,6 @@
       (update-in [:StartDate] date-time->date)
       (update-in [:EndDate] date-time->date)))
 
-(defn trim-dif10-geometry
-  "Returns GeometryType record with a maximium of one value in the collections under each key."
-  [geom]
-  ;; The shape key sequence here must be in the same order as in the DIF 10 XML generation.
-  (let [shape-keys [:GPolygons :BoundingRectangles :Lines :Points]
-        found-shape (first (filter #(seq (get geom %)) shape-keys))
-        other-keys (remove #{found-shape} shape-keys)
-        geom (if found-shape
-               (update-in geom [found-shape] #(take 1 %))
-               geom)]
-    (reduce (fn [m k]
-              (assoc m k nil))
-            geom
-            other-keys)))
-
 (defn- filter-dif10-metadata-associations
   "Removes metadata associations with type \"LARGER CITATIONS WORKS\" since this type is not
   allowed in DIF10."
@@ -450,7 +435,6 @@
       (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :Geometry] trim-dif10-geometry)
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:DataDates] fixup-dif10-data-dates)
       (update-in [:AccessConstraints] dif-access-constraints)

@@ -62,14 +62,12 @@
      (let [geom (-> sp :HorizontalSpatialDomain :Geometry)]
        [:Geometry
         [:Coordinate_System (:CoordinateSystem geom)]
-        ;; DIF 10 only supports one of each type of geometry, so we just use the first one.
-        (first
-          (concat
-            ;; From most-specific to least specific. This is arbitrary.
-            (map polygon-element (:GPolygons geom))
-            (map bounding-rect-element (:BoundingRectangles geom))
-            (map line-element (:Lines geom))
-            (map point-element (:Points geom))))])
+        (concat
+          ;; From most-specific to least specific. This is arbitrary.
+          (map polygon-element (:GPolygons geom))
+          (map bounding-rect-element (:BoundingRectangles geom))
+          (map line-element (:Lines geom))
+          (map point-element (:Points geom)))])
      (let [o (:OrbitParameters sp)]
        [:Orbit_Parameters
         [:Swath_Width (:SwathWidth o)]
