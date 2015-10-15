@@ -65,73 +65,73 @@
     (index/wait-until-indexed)
 
     (are2 [expected-tags query]
-         (tags/assert-tag-search expected-tags (tags/search query))
+          (tags/assert-tag-search expected-tags (tags/search query))
 
-         "Find all"
-         all-tags {}
+          "Find all"
+          all-tags {}
 
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-         ;; Parameter Combinations
-         "Combination of namespace and value"
-         [tag1] {:namespace "namespace1" :value "value1"}
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Parameter Combinations
+          "Combination of namespace and value"
+          [tag1] {:namespace "namespace1" :value "value1"}
 
-         "Combination with multiple values"
-         [tag1 tag3] {:namespace ["namespace1" "namespace2" "foo"] :value "value1"}
+          "Combination with multiple values"
+          [tag1 tag3] {:namespace ["namespace1" "namespace2" "foo"] :value "value1"}
 
 
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-         ;; Namespace Param
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Namespace Param
 
-         "By Namespace - Ignore Case Default"
-         [tag1 tag2] {:namespace "namespace1"}
+          "By Namespace - Ignore Case Default"
+          [tag1 tag2] {:namespace "namespace1"}
 
-         "By Namespace Case Sensitive - no match"
-         [] {:namespace "namespace1" "options[namespace][ignore-case]" false}
+          "By Namespace Case Sensitive - no match"
+          [] {:namespace "namespace1" "options[namespace][ignore-case]" false}
 
-         "By Namespace Case Sensitive - matches"
-         [tag1 tag2] {:namespace "Namespace1" "options[namespace][ignore-case]" false}
+          "By Namespace Case Sensitive - matches"
+          [tag1 tag2] {:namespace "Namespace1" "options[namespace][ignore-case]" false}
 
-         "By Namespace Pattern"
-         [tag5] {:namespace "*other" "options[namespace][pattern]" true}
+          "By Namespace Pattern"
+          [tag5] {:namespace "*other" "options[namespace][pattern]" true}
 
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-         ;; Value Param
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Value Param
 
-         "By Value - Ignore Case Default"
-         [tag1 tag3] {:value "value1"}
+          "By Value - Ignore Case Default"
+          [tag1 tag3] {:value "value1"}
 
-         "By Value Case Sensitive - no match"
-         [] {:value "value1" "options[value][ignore-case]" false}
+          "By Value Case Sensitive - no match"
+          [] {:value "value1" "options[value][ignore-case]" false}
 
-         "By Value Case Sensitive - matches"
-         [tag1 tag3] {:value "Value1" "options[value][ignore-case]" false}
+          "By Value Case Sensitive - matches"
+          [tag1 tag3] {:value "Value1" "options[value][ignore-case]" false}
 
-         "By Value Pattern"
-         [tag5] {:value "*other" "options[value][pattern]" true}
+          "By Value Pattern"
+          [tag5] {:value "*other" "options[value][pattern]" true}
 
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-         ;; Category Param
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Category Param
 
-         "By Category - Ignore Case Default"
-         [tag3 tag4] {:category "category2"}
+          "By Category - Ignore Case Default"
+          [tag3 tag4] {:category "category2"}
 
-         "By Category Case Sensitive - no match"
-         [] {:category "category2" "options[category][ignore-case]" false}
+          "By Category Case Sensitive - no match"
+          [] {:category "category2" "options[category][ignore-case]" false}
 
-         "By Category Case Sensitive - matches"
-         [tag3 tag4] {:category "Category2" "options[category][ignore-case]" false}
+          "By Category Case Sensitive - matches"
+          [tag3 tag4] {:category "Category2" "options[category][ignore-case]" false}
 
-         "By Category Pattern"
-         [tag1] {:category "*1" "options[category][pattern]" true}
+          "By Category Pattern"
+          [tag1] {:category "*1" "options[category][pattern]" true}
 
-         ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-         ;; Originator Id Param
+          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+          ;; Originator Id Param
 
-         "By Originator Id - Ignore Case Default" ;; Case sensitive not supported
-         [tag1 tag3 tag5] {:originator-id "USER1"}
+          "By Originator Id - Ignore Case Default" ;; Case sensitive not supported
+          [tag1 tag3 tag5] {:originator-id "USER1"}
 
-         "By Originator Id - Pattern"
-         [tag2 tag4] {:originator-id "*2" "options[originator-id][pattern]" true})))
+          "By Originator Id - Pattern"
+          [tag2 tag4] {:originator-id "*2" "options[originator-id][pattern]" true})))
 
 (deftest tag-paging-search-test
   (let [token (e/login (s/context) "user1")
@@ -157,4 +157,35 @@
 
     (testing "After last page"
       (tags/assert-tag-search num-tags [] (tags/search {:page-size 5 :page-num 5})))))
+
+(deftest deleted-tags-not-found-test
+  (let [user1-token (e/login (s/context) "user1")
+        tag1 (tags/save-tag user1-token (tags/make-tag
+                                          {:namespace "Namespace1"
+                                           :value "Value1"
+                                           :category "Category1"}))
+        tag2 (tags/save-tag user1-token (tags/make-tag
+                                          {:namespace "Namespace1"
+                                           :value "Value2"}))
+        all-tags [tag1 tag2]]
+    (index/wait-until-indexed)
+
+    ;; Now I should find the all tags when searching
+    (tags/assert-tag-search all-tags (tags/search {}))
+
+    ;; Delete tag1
+    (tags/delete-tag user1-token (:concept-id tag1))
+
+    (index/wait-until-indexed)
+
+    ;; Now searching tags finds nothing
+    (tags/assert-tag-search [tag2] (tags/search {}))
+
+    ;; resave the tag
+    (let [tag1-3 (tags/save-tag user1-token (dissoc tag1 :revision-id :concept-id))]
+
+      (index/wait-until-indexed)
+
+      ;; Now I should find the tag when searching
+      (tags/assert-tag-search [tag1-3 tag2] (tags/search {})))))
 

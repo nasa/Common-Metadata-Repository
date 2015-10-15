@@ -14,7 +14,7 @@
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"}
-                                          {:grant-all-search? false})
+                                             {:grant-all-search? false})
                        tags/grant-all-tag-fixture]))
 
 (deftest associate-tags-by-query-with-collections-test
@@ -247,12 +247,12 @@
         (index/wait-until-indexed)
 
         (testing "Not associated after tag deleted"
-          (assert-tag-not-associated)))
+          (assert-tag-not-associated))
 
-      (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 5}
-             (tags/create-tag token (tags/make-tag {:value "tag1"}))))
-      (index/wait-until-indexed)
-      (testing "Not associated after being recreated."
-        (assert-tag-not-associated)))))
+        (is (= {:status 200 :concept-id (:concept-id tag) :revision-id 5}
+               (tags/create-tag token (tags/make-tag {:value "tag1"}))))
+        (index/wait-until-indexed)
+        (testing "Not associated after being recreated."
+          (assert-tag-not-associated))))))
 
 
