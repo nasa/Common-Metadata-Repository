@@ -267,5 +267,4 @@
       (generate-data-dates c)]
      (generate-additional-attributes (:AdditionalAttributes c))
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
-     [:Collection_Data_Type (:CollectionDataType c)]
-     [:Product_Flag u/not-provided]]))
+     [:Collection_Data_Type (:CollectionDataType c)]]))

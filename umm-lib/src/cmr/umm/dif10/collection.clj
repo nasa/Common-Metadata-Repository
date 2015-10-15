@@ -136,11 +136,7 @@
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (psa/generate-product-specific-attributes product-specific-attributes)
                     (when collection-data-type
-                      (x/element :Collection_Data_Type {} collection-data-type))
-                    ;; The next element which is required in DIF 10.1 will be removed in the future
-                    ;; vesions of DIF 10. No equivalent UMM field exists in our code base. Currently
-                    ;; using a valid enum value as a place holder.CMRIN-75
-                    (x/element :Product_Flag {} "Not provided")))))))
+                      (x/element :Collection_Data_Type {} collection-data-type))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."
