@@ -35,9 +35,9 @@
   "Asserts that when the granule and optional collection concept are validated the expected errors
   are returned. The collection concept can be passed as a third argument and it will be sent along
   with the granule instead of using a previously ingested collection."
-  [expected-errors & gran-and-optional-coll-concept ]
+  [expected-status-code expected-errors & gran-and-optional-coll-concept]
   (let [response (apply ingest/validate-granule gran-and-optional-coll-concept)]
-    (is (= {:status 400 :errors expected-errors}
+    (is (= {:status expected-status-code :errors expected-errors}
            (select-keys response [:status :errors])))))
 
 (defn assert-validation-success
@@ -86,6 +86,7 @@
 
         (testing "invalid collection xml"
           (assert-validation-errors
+            400
             [(msg/invalid-parent-collection-for-validation
                "Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
             (d/item->concept (dg/granule collection))
@@ -93,6 +94,7 @@
 
         (testing "invalid granule xml"
           (assert-validation-errors
+            400
             expected-errors
             (-> collection
                 dg/granule
@@ -112,6 +114,7 @@
 
         (testing "invalid granule metadata format"
           (assert-validation-errors
+            415
             ["Invalid content-type: application/xml. Valid content-types: application/echo10+xml, application/iso:smap+xml."]
             (-> (d/item->concept (dg/granule collection))
                 (assoc :format "application/xml"))
@@ -119,6 +122,7 @@
 
         (testing "invalid collection metadata format"
           (assert-validation-errors
+            415
             [(msg/invalid-parent-collection-for-validation
                (str "Invalid content-type: application/xml. Valid content-types: "
                     "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml, application/dif10+xml."))]
@@ -133,6 +137,7 @@
                                  :collection-ref
                                  (umm-g/map->CollectionRef {:entry-title "wrong"}))]
               (assert-validation-errors
+                422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Entry Title [wrong] does not match the Entry Title of the parent collection [correct]"]}]
                 (d/item->concept granule)
@@ -145,6 +150,7 @@
                                  :collection-ref
                                  (umm-g/map->CollectionRef {:entry-id "wrong"}))]
               (assert-validation-errors
+                422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Entry Id [wrong] does not match the Entry Id of the parent collection [correct]"]}]
                 (d/item->concept granule)
@@ -154,6 +160,7 @@
                 coll-concept (d/item->concept collection :echo10)]
             (testing "shortname"
               (assert-validation-errors
+                422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Short Name [S2] does not match the Short Name of the parent collection [S1]"]}]
                 (d/item->concept (assoc (dg/granule collection)
@@ -163,6 +170,7 @@
                 coll-concept))
             (testing "version id"
               (assert-validation-errors
+                422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference Version Id [V2] does not match the Version Id of the parent collection [V1]"]}]
                 (d/item->concept (assoc (dg/granule collection)
@@ -189,6 +197,7 @@
                                           :collection-ref
                                           (umm-g/map->CollectionRef (merge collection-ref-attrs attrs)))]
                        (assert-validation-errors
+                         422
                          [{:path ["CollectionRef"] :errors errors}]
                          (d/item->concept granule :iso-smap)
                          coll-concept))
@@ -218,6 +227,7 @@
                                                             :short-name nil
                                                             :version-id "V1"}))]
               (assert-validation-errors
+                422
                 [{:path ["CollectionRef"],
                   :errors ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]}]
                 (d/item->concept granule :iso-smap)
@@ -233,6 +243,7 @@
               (assert-validation-success granule-concept (d/item->concept collection)))))
         (testing "invalid granule xml"
           (assert-validation-errors
+            400
             expected-errors
             (-> collection
                 dg/granule
@@ -254,7 +265,7 @@
            granule (dg/granule coll gran-attributes)
            gran-concept (d/item->concept granule)
            response (ingest/validate-granule gran-concept coll-concept)]
-       (is (= {:status 400
+       (is (= {:status 422
                :errors [{:path field-path
                          :errors errors}]}
               (select-keys response [:status :errors])))))
@@ -263,7 +274,7 @@
      (let [coll (d/ingest "PROV1" (dc/collection coll-attributes) {:format metadata-format})
            response (d/ingest "PROV1" (dg/granule coll gran-attributes) {:format metadata-format
                                                                          :allow-failure? true})]
-       (is (= {:status 400
+       (is (= {:status 422
                :errors [{:path field-path
                          :errors errors}]}
               (select-keys response [:status :errors])))))))

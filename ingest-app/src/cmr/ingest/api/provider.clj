@@ -20,7 +20,7 @@
   (if (= mt/json (mt/content-type-mime-type headers))
     (json/decode (slurp body-input) true)
     (errors/throw-service-error
-      :bad-request "Creating or updating a provider requires a JSON content type.")))
+      :invalid-content-type "Creating or updating a provider requires a JSON content type.")))
 
 (def provider-api-routes
   (context "/providers" []

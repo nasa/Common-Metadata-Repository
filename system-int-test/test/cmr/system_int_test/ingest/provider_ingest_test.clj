@@ -55,7 +55,7 @@
                                    :connection-manager (s/conn-mgr)
                                    :headers {transmit-config/token-header (transmit-config/echo-system-token)}})
             {:keys [status body]} response]
-        (is (= 400 status))
+        (is (= 415 status))
         (is (re-find #"Creating or updating a provider requires a JSON content type" body))))))
 
 (deftest update-provider-test

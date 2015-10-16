@@ -42,7 +42,7 @@
                        "ingest indirectly through ECHO. It appears from the client id [%s] "
                        "that ingest was not sent from ECHO.")
                   provider-id client-id))]
-      (srvc-errors/throw-service-error :bad-request msg))))
+      (srvc-errors/throw-service-error :invalid-data msg))))
 
 (defn verify-provider-against-client-id
   "Verifies the given provider's CMR-ONLY flag matches the client-id in the request."
@@ -59,7 +59,7 @@
         (verify-provider-cmr-only-against-client-id
           provider-id (:cmr-only provider) client-id)))
     (srvc-errors/throw-service-error
-      :bad-request (format "Provider with provider-id [%s] does not exist." provider-id))))
+      :invalid-data (format "Provider with provider-id [%s] does not exist." provider-id))))
 
 (def valid-response-mime-types
   "Supported ingest response formats"
@@ -127,7 +127,7 @@
   "Throw an error saying that revision is invalid"
   [revision-id]
   (srvc-errors/throw-service-error
-    :bad-request
+    :invalid-data
     (msg/invalid-revision-id revision-id)))
 
 (defn- parse-validate-revision-id

@@ -12,7 +12,7 @@
                        :body  "dummy body"
                        :content-type "application/echo10+xml"}
                {:keys [status errors]} (ingest/exec-ingest-http-request params)]
-           (= [400 ["Provider with provider-id [NOT_PROV] does not exist."]]
+           (= [422 ["Provider with provider-id [NOT_PROV] does not exist."]]
               [status errors]))
          :collection
          :granule))
@@ -24,7 +24,7 @@
                        :body  "dummy body"
                        :content-type "application/echo10+xml"}
                {:keys [status errors]} (ingest/exec-ingest-http-request params)]
-           (= [400 ["Provider with provider-id [NOT_PROV] does not exist."]]
+           (= [422 ["Provider with provider-id [NOT_PROV] does not exist."]]
               [status errors]))
          :collection
          :granule))
@@ -34,7 +34,7 @@
          (let [params {:method :delete
                        :url (url/ingest-url "NOT_PROV" concept-type "native-id")}
                {:keys [status errors]} (ingest/exec-ingest-http-request params)]
-           (= [400 ["Provider with provider-id [NOT_PROV] does not exist."]]
+           (= [422 ["Provider with provider-id [NOT_PROV] does not exist."]]
               [status errors]))
          :collection
          :granule)))
