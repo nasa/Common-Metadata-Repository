@@ -9,11 +9,12 @@
             [cmr.common.config :as cfg]))
 
 (def type->http-status-code
-  {:not-found 404
-   :bad-request 400
+  {:bad-request 400
    :unauthorized 401
-   :invalid-data 422
+   :not-found 404
    :conflict 409
+   :invalid-content-type 415
+   :invalid-data 422
    :service-unavailable 503})
 
 (def CONTENT_TYPE_HEADER "Content-Type")

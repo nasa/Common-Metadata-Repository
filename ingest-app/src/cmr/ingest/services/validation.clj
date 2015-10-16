@@ -12,38 +12,32 @@
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.ingest.services.messages :as msg]))
 
-(defn- format-validation
-  "Validates the format of the concept."
+(defn- validate-format
+  "Validates the format of the concept. Throws a 415 error if invalid."
   [concept]
   (let [content-type (:format concept)
         valid-types (umm-mime-types/concept-type->valid-mime-types (:concept-type concept))]
-    (if (contains? valid-types content-type)
-      []
-      [(format "Invalid content-type: %s. Valid content-types: %s."
-               content-type (s/join ", " valid-types))])))
-
-(defn- metadata-length-validation
+    (when-not (contains? valid-types content-type)
+      (errors/throw-service-error :invalid-content-type
+                                  (format "Invalid content-type: %s. Valid content-types: %s."
+                                          content-type (s/join ", " valid-types))))))
+(defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
-  (if (> (count (:metadata concept)) 4)
-    []
-    ["XML content is too short."]))
+  (when (<= (count (:metadata concept)) 4)
+    (errors/throw-service-error :bad-request "XML content is too short.")))
 
-(def concept-validations
-  "A list of the functions that can validate concept."
-  [format-validation
-   metadata-length-validation])
+(defn validate-concept-request
+  "Validates the initial request to ingest a concept."
+  [concept]
+  (validate-format concept)
+  (validate-metadata-length concept))
 
 (defn if-errors-throw
   "Throws an error if there are any errors."
-  [errors]
+  [error-type errors]
   (when (seq errors)
-    (errors/throw-service-errors :bad-request errors)))
-
-(defn validate-concept-request
-  "Validates the initial request to ingest a concept. "
-  [concept]
-  (if-errors-throw (mapcat #(% concept) concept-validations)))
+    (errors/throw-service-errors error-type errors)))
 
 (defn match-kms-keywords-validation
   "A validation that checks that the item matches a known KMS field. Takes the following arguments:
@@ -83,7 +77,7 @@
 (defn validate-concept-xml
   "Validates the concept xml to ingest a concept. "
   [concept]
-  (if-errors-throw (umm/validate-concept-xml concept)))
+  (if-errors-throw :bad-request (umm/validate-concept-xml concept)))
 
 (defn validate-collection-umm
   [context collection validate-keywords?]
@@ -93,19 +87,19 @@
       (warn (format "Collection with entry title [%s] had the following keyword validation errors: %s"
                     (:entry-title collection) (pr-str errors)))))
   ;; Validate the collection and throw errors that will be sent to the client.
-  (if-errors-throw (umm-validation/validate-collection
-                     collection
-                     (when validate-keywords?
-                       [(keyword-validations context)]))))
+  (if-errors-throw :invalid-data (umm-validation/validate-collection
+                                   collection
+                                   (when validate-keywords?
+                                     [(keyword-validations context)]))))
 
 (defn validate-granule-umm
   [context collection granule]
-  (if-errors-throw (umm-validation/validate-granule collection granule)))
+  (if-errors-throw :invalid-data (umm-validation/validate-granule collection granule)))
 
 (defn validate-business-rules
   "Validates the concept against CMR ingest rules."
   [context concept]
-  (if-errors-throw (mapcat #(% context concept)
-                           (bv/business-rule-validations (:concept-type concept)))))
+  (if-errors-throw :invalid-data (mapcat #(% context concept)
+                                         (bv/business-rule-validations (:concept-type concept)))))
 
 

@@ -56,7 +56,7 @@
   ([coll-attributes field-path errors options]
    (let [response (d/ingest "PROV1" (dc/collection coll-attributes)
                             (merge {:allow-failure? true} options))]
-     (is (= {:status 400
+     (is (= {:status 422
              :errors [{:path field-path
                        :errors errors}]}
             (select-keys response [:status :errors]))))))
@@ -112,7 +112,7 @@
     (let [concept (dc/collection-concept {:platforms [(dc/platform {:short-name "foo"
                                                                     :long-name "Airbus A340-600"})]})
           response (ingest/validate-concept concept {:validate-keywords true})]
-      (is (= {:status 400
+      (is (= {:status 422
               :errors [{:path ["Platforms" 0]
                         :errors [(str "Platform short name [foo] and long name [Airbus A340-600] "
                                       "was not a valid keyword combination.")]}]}
@@ -384,13 +384,13 @@
   (testing "attempting to ingest using an non-integer revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "NaN"}))]
-      (is (= {:status 400
+      (is (= {:status 422
               :errors [(msg/invalid-revision-id "NaN")]}
              response))))
   (testing "attempting to ingest using a negative revision id returns an error"
     (let [response (ingest/ingest-concept (dc/collection-concept {:concept-id "C2-PROV1"
                                                                   :revision-id "-1"}))]
-      (is (= {:status 400
+      (is (= {:status 422
               :errors [(msg/invalid-revision-id "-1")]}
              response))))
   (testing "ingesting a concept with just the revision-id succeeds"

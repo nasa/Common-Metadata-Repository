@@ -130,7 +130,7 @@
             response (ingest/ingest-concept granule {:accept-format :json :raw? true})
             status (:status response)
             {:keys [errors]} (ingest/parse-ingest-body :json response)]
-        (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+        (is (= [422 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
                [status errors]))))
     (testing "xml response"
       (let [umm-granule (dg/granule collection {:concept-id "G1-PROV1"
@@ -139,7 +139,7 @@
             response (ingest/ingest-concept granule {:accept-format :xml :raw? true})
             status (:status response)
             {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-        (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+        (is (= [422 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
                [status errors]))))))
 
 ;; Verify that the accept header works with deletions
@@ -209,7 +209,7 @@
          status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
-    (is (= 400 status))
+    (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid  content type.
@@ -220,7 +220,7 @@
         status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
-    (is (= 400 status))
+    (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify deleting same granule twice is not an error if ignore conflict is true.
@@ -236,7 +236,7 @@
     (is (= 200 (:status delete1-result)))
     (is (= 200 (:status delete2-result)))))
 
-;; Verify that attempts to ingest a granule whose parent does not exist result in a 400 error
+;; Verify that attempts to ingest a granule whose parent does not exist result in a 422 error
 (deftest ingest-orphan-granule-test
   (let [collection (d/ingest "PROV1" (dc/collection {:entry-title "Coll1"}))
         umm-granule (dg/granule collection {:concept-id "G1-PROV1"
@@ -245,7 +245,7 @@
         _ (ingest/delete-concept (d/item->concept collection :echo10))
         {:keys [status errors]} (ingest/ingest-concept granule)]
     (index/wait-until-indexed)
-    (is (= [400 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
+    (is (= [422 ["Collection with Entry Title [Coll1] referenced in granule [Gran1] provider [PROV1] does not exist."]]
            [status errors]))
     (is (not (mdb/concept-exists-in-mdb? "G1-PROV1" 0)))))
 
@@ -312,7 +312,7 @@
                              (assoc :collection-ref collection-ref)
                              (d/item->concept :iso-smap))
                  {:keys [status errors]} (ingest/ingest-concept granule)]
-             (= [400 expected-errors] [status errors]))
+             (= [422 expected-errors] [status errors]))
 
            {}
            ["Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."]

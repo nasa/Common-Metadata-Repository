@@ -98,7 +98,7 @@
                                             :product-specific-attributes additional-attributes})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 expected-errors] [status errors]))
+          (= [422 expected-errors] [status errors]))
 
         "Removing an additional attribute that is referenced by its granules is invalid."
         [a2 a3 a4 a5 a6 a7 a8 a9]
@@ -173,7 +173,7 @@
                                                                            :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 [expected-error]]
+          (= [422 [expected-error]]
              [status errors]))
 
         "invalid max" [0 4] 1
@@ -226,7 +226,7 @@
                                                                            :max-value (second range)})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 [expected-error]]
+          (= [422 [expected-error]]
              [status errors]))
 
         "invalid max" [-3.0 4.99] 1
@@ -284,7 +284,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 [expected-error]]
+          (= [422 [expected-error]]
              [status errors]))
 
         "invalid max" ["2012-02-01T01:02:02Z" "2012-08-01T01:02:02.999Z"] 1
@@ -340,7 +340,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 [expected-error]]
+          (= [422 [expected-error]]
              [status errors]))
 
         "invalid max" ["2012-02-01Z" "2012-08-01Z"] 1
@@ -395,7 +395,7 @@
                                               :max-value (parse-fn (second range))})]})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 [expected-error]]
+          (= [422 [expected-error]]
              [status errors]))
 
         "invalid max" ["01:02:04Z" "06:02:02.999Z"] 1
@@ -441,7 +441,7 @@
                                             :projects (apply dc/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 expected-errors] [status errors]))
+          (= [422 expected-errors] [status errors]))
 
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
@@ -499,7 +499,7 @@
 
     (testing "Updates not permitted with granules"
       (are [coll new-spatial-params prev-gsr new-gsr]
-           (= {:status 400
+           (= {:status 422
                :errors [(format (str "Collection changing from %s granule spatial representation to "
                                      "%s is not allowed when the collection has granules."
                                      " Found 1 granules.")
@@ -621,7 +621,7 @@
                                             :ending-date-time ending-date-time})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
-          (= [400 expected-errors] [status errors]))
+          (= [422 expected-errors] [status errors]))
 
         "Update dataset with smaller temporal coverage and does not contain all existing granules, begin date time too late"
         "Dataset1" "2010-01-02T12:00:00Z" "2010-04-01T12:00:00Z"

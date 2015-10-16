@@ -129,7 +129,7 @@
     (testing "update concept with a different concept-id is invalid"
       (let [{:keys [status errors]} (ingest/ingest-concept (assoc concept :concept-id "C1111-PROV1"))]
         (index/wait-until-indexed)
-        (is (= [400 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
+        (is (= [422 ["Concept-id [C1111-PROV1] does not match the existing concept-id [C1000-PROV1] for native-id [Atlantic-1]"]]
                [status errors]))))))
 (comment
   (cmr.metadata-db.int-test.utility/find-concepts :collection
@@ -317,7 +317,7 @@
         {:keys [status errors]} (ingest/ingest-concept
                                   (d/item->concept (assoc coll :provider-id "PROV1") :echo10))]
     (index/wait-until-indexed)
-    (is (= status 400))
+    (is (= status 422))
     (is (re-find #"DeleteTime 2000-01-01T12:00:00.000Z is before the current time." (first errors)))))
 
 (deftest delete-collection-test-old
@@ -410,7 +410,7 @@
         status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
-    (is (= 400 status))
+    (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify ingest behaves properly if request contains invalid content type.
@@ -420,7 +420,7 @@
         status (:status response)
         {:keys [errors]} (ingest/parse-ingest-body :json response)]
     (index/wait-until-indexed)
-    (is (= 400 status))
+    (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
 ;; Verify deleting same concept twice is not an error if ignore conflict is true.
