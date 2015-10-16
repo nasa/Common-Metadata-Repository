@@ -5,6 +5,7 @@
             [cmr.common.config :as config :refer [defconfig]]
             [cmr.common.util :as u]
             [cmr.common.jobs :as jobs]
+            [cmr.common.dev.gorilla-repl :as gorilla-repl]
 
             [cmr.bootstrap.system :as bootstrap-system]
 
@@ -256,6 +257,11 @@
   {:default :in-memory
    :parser parse-dev-system-component-type})
 
+(defconfig gorilla-repl-port
+  "Specifies the port gorilla repl should listen on. It will only be started if non-zero."
+  {:default 0
+   :type Long})
+
 (defn component-type-map
   "Returns a map of dev system components options to run in memory or externally."
   []
@@ -286,13 +292,15 @@
      :pre-components (u/remove-nil-keys
                        {:elastic-server elastic-server
                         :broker-wrapper queue-broker})
-     :post-components {:control-server control-server}}))
+     :post-components {:control-server control-server
+                       :gorilla-repl (when-not (zero? (gorilla-repl-port))
+                                       (gorilla-repl/create-gorilla-repl-server (gorilla-repl-port)))}}))
 
 (defn- stop-components
   [system components-key]
   (reduce (fn [system component]
             (update-in system [components-key component]
-                       #(lifecycle/stop % system)))
+                       #(when % (lifecycle/stop % system))))
           system
           (keys (components-key system))))
 
@@ -309,7 +317,7 @@
   (reduce (fn [system component]
             (update-in system [components-key component]
                        #(try
-                          (lifecycle/start % system)
+                          (when % (lifecycle/start % system))
                           (catch Exception e
                             (error e "Failure during startup")
                             (stop-components (stop-apps system) :pre-components)
