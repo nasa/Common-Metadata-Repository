@@ -24,6 +24,8 @@
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
+  (system/set-gorilla-repl-port! 8090)
+
   ;; Comment/uncomment these lines to switch between external and internal settings.
 
   (system/set-dev-system-elastic-type! :in-memory)

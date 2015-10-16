@@ -31,7 +31,16 @@
                  ;; Needed for timeout a function execution
                  [clojail "1.0.6"]
                  [com.github.fge/json-schema-validator "2.2.6"]
-                 [com.dadrox/quiet-slf4j "0.1"]]
+                 [com.dadrox/quiet-slf4j "0.1"]
+
+                 [compojure "1.4.0"]
+                 [ring/ring-json "0.4.0"]
+                 ;; Excludes things that are specified with other parts of the CMR
+                 [gorilla-repl "0.3.4"  :exclusions [org.clojure/java.classpath
+                                                     ch.qos.logback/logback-classic
+                                                     javax.servlet/servlet-api
+                                                     compojure
+                                                     ring-json]]]
 
   :plugins [[lein-test-out "0.3.1"]
             [lein-exec "0.3.2"]]
