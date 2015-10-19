@@ -77,15 +77,17 @@ The user id header allows specifying the user-id to use when saving or deleting 
 
 #### <a name="http-status-codes"></a> HTTP Status Codes
 
-| Status Code |                                               Description                                                |
-| ----------- | -------------------------------------------------------------------------------------------------------- |
-|         200 | Success                                                                                                  |
-|         201 | Success creating an entity                                                                               |
-|         400 | Bad request. The body will contain errors.                                                               |
-|         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found. |
-|         409 | Conflict. This is returned when a revision id conflict occurred while saving the item.                   |
-|         500 | Internal error. Contact CMR Operations if this occurs.                                                   |
-|         503 | Internal error because a service dependency is not available.                                            |
+| Status Code |                                               Description                                                                          |
+| ----------- | -----------------------------------------------------------------------------------------------------------------------------------|
+|         200 | Success                                                                                                                            |
+|         201 | Success creating an entity                                                                                                         |
+|         400 | Bad request. The body will contain errors.                                                                                         |
+|         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found.                           |
+|         409 | Conflict. This is returned when a revision id conflict occurred while saving the item.                                             |
+|         415 | Unsupported Media Type. The body will return an error message that contains the list of supported ingest formats.                  |
+|         422 | Unprocessable entity. Ingest understood the request, but the concept failed ingest validation rules. The body will contain errors. |
+|         500 | Internal error. Contact CMR Operations if this occurs.                                                                             |
+|         503 | Internal error because a service dependency is not available.                                                                      |
 
 #### <a name="successful-responses"></a> Successful Responses
 

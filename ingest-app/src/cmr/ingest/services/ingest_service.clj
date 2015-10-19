@@ -67,7 +67,7 @@
   (let [{:keys [short-name version-id entry-title entry-id]} collection-ref]
     (when-not (or entry-title entry-id (and short-name version-id))
       (errors/throw-service-error
-        :bad-request
+        :invalid-data
         "Collection Reference should have at least Entry Id, Entry Title or Short Name and Version Id."))))
 
 (defn- get-granule-parent-collection-and-concept
@@ -83,7 +83,7 @@
                                             collection-ref))
         coll-concept (first (h/find-visible-collections context params))]
     (when-not coll-concept
-      (cmsg/data-error :bad-request
+      (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
 
     [coll-concept (umm/parse-concept coll-concept)]))

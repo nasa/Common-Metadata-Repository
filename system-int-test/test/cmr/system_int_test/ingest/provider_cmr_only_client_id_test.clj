@@ -31,7 +31,7 @@
     (let [coll1 (d/ingest "PROV1" (dc/collection))
           concept (dissoc (d/item->concept coll1) :revision-id)]
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 400 cmr-only-true-errors)
+        (assert-ingest-result func concept "ECHO" 422 cmr-only-true-errors)
         (assert-ingest-result func concept "any" 200 nil))))
   (testing "validation on non CMR-ONLY provider must be submitted by client Echo"
     (let [coll1 (d/ingest "PROV1" (dc/collection))
@@ -42,7 +42,7 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "bad" 400 cmr-only-false-errors)
+        (assert-ingest-result func concept "bad" 422 cmr-only-false-errors)
         (assert-ingest-result func concept "ECHO" 200 nil)))))
 
 (deftest granule-cmr-only-client-id-test
@@ -51,7 +51,7 @@
           concept (d/item->concept (dg/granule collection))]
       (ingest/ingest-concept concept)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "ECHO" 400 cmr-only-true-errors)
+        (assert-ingest-result func concept "ECHO" 422 cmr-only-true-errors)
         (assert-ingest-result func concept "any" 200 nil))))
   (testing "validation on non CMR-ONLY provider must be submitted by client Echo"
     (let [collection (d/ingest "PROV1" (dc/collection {}))
@@ -63,7 +63,7 @@
                                       :small false})
       (ingest/clear-caches)
       (doseq [func ingest-functions-to-test]
-        (assert-ingest-result func concept "bad" 400 cmr-only-false-errors)
+        (assert-ingest-result func concept "bad" 422 cmr-only-false-errors)
         (assert-ingest-result func concept "ECHO" 200 nil)))))
 
 (deftest granule-virtual-product-service-ingest-test
