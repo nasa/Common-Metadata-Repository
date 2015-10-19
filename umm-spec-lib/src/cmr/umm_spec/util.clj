@@ -63,15 +63,3 @@
   "Returns a 5 character random id to use as an ISO id"
   []
   (str "d" (java.util.UUID/randomUUID)))
-
-(defn short-name-part
-  "Returns the short name part of an EntryId string."
-  [entry-id version]
-  (str/replace entry-id (str "_" version) ""))
-
-(defn make-entry-id
-  "Returns an EntryId string from ShortName and Version values."
-  [short-name version]
-  (if version
-    (str short-name "_" version)
-    short-name))
