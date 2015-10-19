@@ -789,10 +789,10 @@
       "description": "This entity registers the device used to measure or record data, including direct human observation. In cases where instruments have a single sensor or the instrument and sensor are used synonymously (e.g. AVHRR) the both Instrument and Sensor should be recorded. The Sensor information is represented by some other entities.",
       "properties": {
         "ShortName": {
-          "$ref": "#/definitions/ShortNameType"
+          "$ref": "#/definitions/PlatformShortNameType"
         },
         "LongName": {
-          "$ref": "#/definitions/LongNameType"
+          "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
           "description": "The characteristics of this instrument expressed as custom attributes. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
