@@ -63,15 +63,18 @@
         spatial-representation (get-in spatial-coverage [:parent :granule-spatial-representation])]
     (assoc spatial-coverage
            :geometries
-           (map #(umm-s/set-coordinate-system spatial-representation %) geometries))))
+           ;; if the granule spatial representation is nil, then just ignore the geometries
+           (when (not= :no-spatial spatial-representation)
+             (map #(umm-s/set-coordinate-system spatial-representation %)
+                  geometries)))))
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
   [(v/pre-validation
-     ;; The spatial representation has to be set on the geometries before the conversion because
-     ;; polygons etc do not know whether they are geodetic or not.
-     set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)})])
+    ;; The spatial representation has to be set on the geometries before the conversion because
+    ;; polygons etc do not know whether they are geodetic or not.
+    set-geometries-spatial-representation
+    {:geometries (v/every sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
