@@ -33,6 +33,7 @@
    :platforms [:category :series-entity :short-name :long-name]
    :instruments [:category :class :type :subtype :short-name :long-name]
    :projects [:short-name :long-name]
+   :temporal-resolution-ranges [:temporal-resolution-range]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]})
 
 (def FIELD_NOT_PRESENT

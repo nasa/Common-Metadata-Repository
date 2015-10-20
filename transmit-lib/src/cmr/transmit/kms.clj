@@ -27,6 +27,7 @@
    :platforms :short-name
    :instruments :short-name
    :projects :short-name
+   :temporal-resolution-ranges :temporal-resolution-range
    :science-keywords :uuid})
 
 (def keyword-scheme->gcmd-resource-name
@@ -35,6 +36,7 @@
    :platforms "platforms/platforms.csv"
    :instruments "instruments/instruments.csv"
    :projects "projects/projects.csv"
+   :temporal-resolution-ranges "temporalresolutionrange/temporalresolutionrange.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
 (def keyword-scheme->field-names
@@ -43,6 +45,7 @@
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
    :projects [:bucket :short-name :long-name :uuid]
+   :temporal-resolution-ranges [:temporal-resolution-range :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]})
 
