@@ -30,7 +30,7 @@
 (def concept-type+metadata-format->schema
   {[:collection :echo10] (io/resource "xml-schemas/echo10/Collection.xsd")
    [:collection :dif] (io/resource "xml-schemas/dif9/dif_v9.9.3.xsd")
-   [:collection :dif10] (io/resource "xml-schemas/dif10/dif.xsd")
+   [:collection :dif10] (io/resource "xml-schemas/dif10/dif_v10.2.xsd")
    [:collection :iso19115] (io/resource "xml-schemas/iso19115_2/schema/1.0/ISO19115-2_EOS.xsd")
    [:collection :iso-smap] (io/resource "xml-schemas/iso_smap/schema.xsd")})
 
