@@ -428,6 +428,11 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
+(defn- expected-dif10-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls]
+         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -446,7 +451,7 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)
+      (update-in [:RelatedUrls] expected-dif10-related-urls)
       ;; The following fields are not supported yet
       (assoc :TilingIdentificationSystem  nil
              :Organizations nil
