@@ -33,7 +33,7 @@ History:
             xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
             elementFormDefault="qualified">
     
-    <xs:include schemaLocation="UmmCommon_10.2.xsd"/>
+    <xs:include schemaLocation="UmmCommon_1.2.xsd"/>
 
     <!-- *********************************************************** -->
     <!-- #mark DIF -->
