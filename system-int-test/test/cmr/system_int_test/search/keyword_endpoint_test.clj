@@ -254,7 +254,7 @@
                   "SEDAC Goddard Institute for Space Studies Crop-Climate Database Query",
                   "uuid" "8ff7fd0b-caa4-423d-8387-c749e2795c46"}]}]}
    :temporal-resolution-ranges {"temporal_resolution_range"
-                                 [{"value" "Monthly Climatology",
+                                [{"value" "Monthly Climatology",
                                   "uuid" "8c8c70b1-f6c5-4f34-89b5-510049b8c8ab"}
                                  {"value" "Monthly - < Annual",
                                   "uuid" "8900c323-8789-4403-91e9-c399de369935"}
@@ -285,7 +285,37 @@
                                  {"value" "Hourly Climatology",
                                   "uuid" "027dee16-b361-481e-868d-add966eb5b71"}
                                  {"value" "Daily Climatology",
-                                  "uuid" "f86e464a-cf9d-4e15-a39b-501855d1dc5a"}]}})
+                                  "uuid" "f86e464a-cf9d-4e15-a39b-501855d1dc5a"}]}
+   :spatial-keywords {"category"
+                      [{"value" "CONTINENT",
+                        "subfields" ["type"],
+                        "type"
+                        [{"value" "AFRICA",
+                          "subfields" ["subregion_1"],
+                          "subregion_1"
+                          [{"value" "CENTRAL AFRICA",
+                            "subfields" ["subregion_2"],
+                            "subregion_2"
+                            [{"value" "ANGOLA",
+                              "uuid"
+                              "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}
+                       {"value" "GEOGRAPHIC REGION",
+                        "subfields" ["type"],
+                        "type"
+                        [{"value" "ARCTIC",
+                          "uuid" "d40d9651-aa19-4b2c-9764-7371bb64b9a7"}]}
+                       {"value" "OCEAN",
+                        "subfields" ["type"],
+                        "type"
+                        [{"value" "ATLANTIC OCEAN",
+                          "subfields" ["subregion_1"],
+                          "subregion_1"
+                          [{"value" "NORTH ATLANTIC OCEAN",
+                            "subfields" ["subregion_2"],
+                            "subregion_2"
+                            [{"value" "BALTIC SEA",
+                              "uuid"
+                              "41cd228c-4677-4900-9507-70144d8b50bc"}]}]}]}]}})
 
 (deftest get-keywords-test
   (util/are2
@@ -312,14 +342,18 @@
     :projects (:projects expected-hierarchy)
 
     "Testing correct keyword hierarchy returned for temporal resolution ranges."
-    :temporal-resolution-ranges (:temporal-resolution-ranges expected-hierarchy)))
+    :temporal-resolution-ranges (:temporal-resolution-ranges expected-hierarchy)
+
+    "Testing correct keyword hierarchy returned for spatial keywords."
+    :spatial-keywords (:spatial-keywords expected-hierarchy)))
 
 (deftest invalid-keywords-test
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
                           "platforms, instruments, projects, temporal_resolution_ranges, "
-                          "science_keywords, archive_centers, data_centers, and providers.")]}
+                          "spatial_keywords, science_keywords, archive_centers, data_centers, and "
+                          "providers.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
 
 

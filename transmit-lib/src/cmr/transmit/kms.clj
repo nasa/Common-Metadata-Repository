@@ -28,6 +28,7 @@
    :instruments :short-name
    :projects :short-name
    :temporal-resolution-ranges :temporal-resolution-range
+   :spatial-keywords :category
    :science-keywords :uuid})
 
 (def keyword-scheme->gcmd-resource-name
@@ -37,6 +38,7 @@
    :instruments "instruments/instruments.csv"
    :projects "projects/projects.csv"
    :temporal-resolution-ranges "temporalresolutionrange/temporalresolutionrange.csv"
+   :spatial-keywords "locations/locations.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
 (def keyword-scheme->field-names
@@ -46,15 +48,18 @@
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
    :projects [:bucket :short-name :long-name :uuid]
    :temporal-resolution-ranges [:temporal-resolution-range :uuid]
+   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
-  the names of some fields for providers."
+  the names of some fields to provide a better name on our API."
   (merge keyword-scheme->field-names
          {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
-                      :long-name :data-center-url :uuid]}))
+                      :long-name :data-center-url :uuid]
+          :spatial-keywords [:location-category :location-type :location-subregion-1
+                             :location-subregion-2 :location-subregion-3 :uuid]}))
 
 (def keyword-scheme->required-field
   "Maps each keyword scheme to a field that must be present for a keyword to be valid."
