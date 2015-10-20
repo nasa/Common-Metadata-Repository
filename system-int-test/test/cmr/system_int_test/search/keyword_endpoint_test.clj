@@ -253,39 +253,39 @@
                 [{"value"
                   "SEDAC Goddard Institute for Space Studies Crop-Climate Database Query",
                   "uuid" "8ff7fd0b-caa4-423d-8387-c749e2795c46"}]}]}
-   :temporal-resolution-ranges {"temporal_resolution_range"
-                                [{"value" "Monthly Climatology",
-                                  "uuid" "8c8c70b1-f6c5-4f34-89b5-510049b8c8ab"}
-                                 {"value" "Monthly - < Annual",
-                                  "uuid" "8900c323-8789-4403-91e9-c399de369935"}
-                                 {"value" "Decadal",
-                                  "uuid" "3d97e993-dc6a-41ff-8a49-3e837c1fc2b1"}
-                                 {"value" "Annual Climatology",
-                                  "uuid" "af931dca-9a7d-4ba9-b40f-2a21e31f2d5b"}
-                                 {"value" "1 second - < 1 minute",
-                                  "uuid" "48ff676f-836c-4cff-bc88-4c4cc06b2e1b"}
-                                 {"value" "Daily - < Weekly",
-                                  "uuid" "1ac968ef-a90a-4ffc-adbf-ea0c0d69a7f9"}
-                                 {"value" "1 minute - < 1 hour",
-                                  "uuid" "bca20202-2b06-4657-a425-5b0e416bce0c"}
-                                 {"value" "Climate Normal (30-year climatology)",
-                                  "uuid" "f308a8db-40ea-4932-a58c-fb0a093959dc"}
-                                 {"value" "Weekly - < Monthly",
-                                  "uuid" "7b2a303c-3cb7-4961-9851-650548964674"}
-                                 {"value" "< 1 second",
-                                  "uuid" "42a2f639-d1c3-4e82-a8b8-63f0f4a60ac6"}
-                                 {"value" "Annual",
-                                  "uuid" "40e09855-fb48-4a7d-9851-d6e809e6c309"}
-                                 {"value" "Weekly Climatology",
-                                  "uuid" "2de882f0-d84a-471e-8fb5-9f8a1c7913c1"}
-                                 {"value" "Hourly - < Daily",
-                                  "uuid" "31765761-b153-478a-92b3-1088997fd74b"}
-                                 {"value" "Pentad Climatology",
-                                  "uuid" "e0040d4b-e398-4b65-bd42-d39434b5cc95"}
-                                 {"value" "Hourly Climatology",
-                                  "uuid" "027dee16-b361-481e-868d-add966eb5b71"}
-                                 {"value" "Daily Climatology",
-                                  "uuid" "f86e464a-cf9d-4e15-a39b-501855d1dc5a"}]}
+   :temporal-keywords {"temporal_resolution_range"
+                       [{"value" "Monthly Climatology",
+                         "uuid" "8c8c70b1-f6c5-4f34-89b5-510049b8c8ab"}
+                        {"value" "Monthly - < Annual",
+                         "uuid" "8900c323-8789-4403-91e9-c399de369935"}
+                        {"value" "Decadal",
+                         "uuid" "3d97e993-dc6a-41ff-8a49-3e837c1fc2b1"}
+                        {"value" "Annual Climatology",
+                         "uuid" "af931dca-9a7d-4ba9-b40f-2a21e31f2d5b"}
+                        {"value" "1 second - < 1 minute",
+                         "uuid" "48ff676f-836c-4cff-bc88-4c4cc06b2e1b"}
+                        {"value" "Daily - < Weekly",
+                         "uuid" "1ac968ef-a90a-4ffc-adbf-ea0c0d69a7f9"}
+                        {"value" "1 minute - < 1 hour",
+                         "uuid" "bca20202-2b06-4657-a425-5b0e416bce0c"}
+                        {"value" "Climate Normal (30-year climatology)",
+                         "uuid" "f308a8db-40ea-4932-a58c-fb0a093959dc"}
+                        {"value" "Weekly - < Monthly",
+                         "uuid" "7b2a303c-3cb7-4961-9851-650548964674"}
+                        {"value" "< 1 second",
+                         "uuid" "42a2f639-d1c3-4e82-a8b8-63f0f4a60ac6"}
+                        {"value" "Annual",
+                         "uuid" "40e09855-fb48-4a7d-9851-d6e809e6c309"}
+                        {"value" "Weekly Climatology",
+                         "uuid" "2de882f0-d84a-471e-8fb5-9f8a1c7913c1"}
+                        {"value" "Hourly - < Daily",
+                         "uuid" "31765761-b153-478a-92b3-1088997fd74b"}
+                        {"value" "Pentad Climatology",
+                         "uuid" "e0040d4b-e398-4b65-bd42-d39434b5cc95"}
+                        {"value" "Hourly Climatology",
+                         "uuid" "027dee16-b361-481e-868d-add966eb5b71"}
+                        {"value" "Daily Climatology",
+                         "uuid" "f86e464a-cf9d-4e15-a39b-501855d1dc5a"}]}
    :spatial-keywords {"category"
                       [{"value" "CONTINENT",
                         "subfields" ["type"],
@@ -341,8 +341,8 @@
     "Testing correct keyword hierarchy returned for projects."
     :projects (:projects expected-hierarchy)
 
-    "Testing correct keyword hierarchy returned for temporal resolution ranges."
-    :temporal-resolution-ranges (:temporal-resolution-ranges expected-hierarchy)
+    "Testing correct keyword hierarchy returned for temporal keywords."
+    :temporal-keywords (:temporal-keywords expected-hierarchy)
 
     "Testing correct keyword hierarchy returned for spatial keywords."
     :spatial-keywords (:spatial-keywords expected-hierarchy)))
@@ -351,9 +351,8 @@
   (testing "Invalid keyword scheme returns 400 error"
     (is (= {:status 400
             :errors [(str "The keyword scheme [foo] is not supported. Valid schemes are: "
-                          "platforms, instruments, projects, temporal_resolution_ranges, "
-                          "spatial_keywords, science_keywords, archive_centers, data_centers, and "
-                          "providers.")]}
+                          "platforms, instruments, projects, temporal_keywords, spatial_keywords, "
+                          "science_keywords, archive_centers, data_centers, and providers.")]}
            (search/get-keywords-by-keyword-scheme :foo)))))
 
 

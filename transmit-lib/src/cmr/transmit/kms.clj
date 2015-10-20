@@ -27,7 +27,7 @@
    :platforms :short-name
    :instruments :short-name
    :projects :short-name
-   :temporal-resolution-ranges :temporal-resolution-range
+   :temporal-keywords :temporal-resolution-range
    :spatial-keywords :category
    :science-keywords :uuid})
 
@@ -37,7 +37,7 @@
    :platforms "platforms/platforms.csv"
    :instruments "instruments/instruments.csv"
    :projects "projects/projects.csv"
-   :temporal-resolution-ranges "temporalresolutionrange/temporalresolutionrange.csv"
+   :temporal-keywords "temporalresolutionrange/temporalresolutionrange.csv"
    :spatial-keywords "locations/locations.csv"
    :science-keywords "sciencekeywords/sciencekeywords.csv"})
 
@@ -47,7 +47,7 @@
    :platforms [:category :series-entity :short-name :long-name :uuid]
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
    :projects [:bucket :short-name :long-name :uuid]
-   :temporal-resolution-ranges [:temporal-resolution-range :uuid]
+   :temporal-keywords [:temporal-resolution-range :uuid]
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]})
