@@ -63,7 +63,7 @@
         spatial-representation (get-in spatial-coverage [:parent :granule-spatial-representation])]
     (assoc spatial-coverage
            :geometries
-           ;; if the granule spatial representation is nil, then just ignore the geometries
+           ;; If the granule spatial representation is :no-spatial, then just ignore the geometries.
            (when (not= :no-spatial spatial-representation)
              (map #(umm-s/set-coordinate-system spatial-representation %)
                   geometries)))))
