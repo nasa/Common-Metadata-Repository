@@ -155,8 +155,9 @@
 (defn-timed delete-concept
   "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
   the latest revision for the concept is already a tombstone."
-  [context {:keys [concept-type provider-id native-id] :as concept-attribs}]
-  (let [existing-concept (first (mdb/find-concepts context
+  [context concept-attribs]
+  (let [{:keys [concept-type provider-id native-id]} concept-attribs
+        existing-concept (first (mdb/find-concepts context
                                                    {:provider-id provider-id
                                                     :native-id native-id
                                                     :exclude-metadata true
