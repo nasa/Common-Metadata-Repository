@@ -5,8 +5,6 @@
             [cmr.search.models.query :as q]
             [cmr.search.models.group-query-conditions :as gc]))
 
-
-
 (deftest conds-test
   (testing "AND simplification"
     (testing "no conditions"

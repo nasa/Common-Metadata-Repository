@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [cmr.common.services.errors :as errors]
             [cmr.common.services.health-helper :as hh]
+            [cmr.common.services.messages :as cmsg]
             [cmr.transmit.config :as config]
             [cheshire.core :as json]
             [clojure.walk :as walk]
@@ -78,8 +79,7 @@
        (when throw-service-error?
          (errors/throw-service-error
            :not-found
-           (format "%s with native id [%s] in provider [%s] does not exist."
-                   (csk/->PascalCaseString concept-type) native-id provider-id)))
+           (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
 
        200
        (get body "concept-id")
@@ -153,7 +153,7 @@
                                     " "
                                     response))))))
 
-(defn- find-concepts
+(defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
   [context params concept-type]
   (let [conn (config/context->app-connection context :metadata-db)

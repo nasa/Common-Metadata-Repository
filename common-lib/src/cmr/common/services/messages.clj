@@ -2,6 +2,7 @@
   "This namespace provides functions to generate messages used for error reporting, logging, etc.
   Messages used in more than one project should be placed here."
   (:require [clojure.string :as str]
+            [camel-snake-kebab.core :as csk]
             [cmr.common.services.errors :as errors]))
 
 (defn data-error [error-type msg-fn & args]
@@ -35,3 +36,9 @@
   (format (str "[%s] is not of the form 'value', 'min-value,max-value', 'min-value,', or ',max-value'"
                " where value, min-value, and max-value are optional date-time values.")
           input-str))
+
+(defn invalid-native-id-msg
+  "Creates a message stating that no concept exists for the provided native-id and provider-id."
+  [concept-type provider-id native-id]
+  (format "%s with native id [%s] in provider [%s] does not exist."
+          (csk/->PascalCaseString concept-type) native-id provider-id))
