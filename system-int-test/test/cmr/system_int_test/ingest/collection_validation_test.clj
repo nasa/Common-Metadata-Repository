@@ -438,12 +438,14 @@
           response (ingest/ingest-concept (assoc concept :revision-id 3))]
       (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
 
-  (testing "Delete with lower revision id than latest tombstone should be rejected"
+  (testing "Delete with lower revision id than latest tombstone results in a 404"
     (let [concept (dc/collection-concept {})
           concept-id (:concept-id (ingest/ingest-concept concept))
           _ (ingest/delete-concept concept {:revision-id 5})
-          response (ingest/delete-concept concept {:revision-id 3})]
-      (assert-revision-conflict concept-id "Expected revision-id of [6] got [3] for [%s]" response)))
+          {:keys [status errors]} (ingest/delete-concept concept {:revision-id 3})]
+      (is (= status 404))
+      (is (= errors [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                             (:native-id concept) concept-id)]))))
 
   (testing "Deleting non-existent collection should be rejected"
     (let [concept (dc/collection-concept {})

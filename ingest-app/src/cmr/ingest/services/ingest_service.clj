@@ -153,15 +153,29 @@
       {:concept-id concept-id, :revision-id revision-id})))
 
 (defn-timed delete-concept
-  "Delete a concept from mdb and indexer."
+  "Delete a concept from mdb and indexer. Throws a 404 error if the concept does not exist or
+  the latest revision for the concept is already a tombstone."
   [context concept-attribs]
   (let [{:keys [concept-type provider-id native-id]} concept-attribs
-        concept-id (mdb/get-concept-id context concept-type provider-id native-id)
-        concept (-> concept-attribs
-                    (dissoc :provider-id :native-id)
-                    (assoc :concept-id concept-id :deleted true))
-        {:keys [revision-id]} (mdb/save-concept context concept)]
-    {:concept-id concept-id, :revision-id revision-id}))
+        existing-concept (first (mdb/find-concepts context
+                                                   {:provider-id provider-id
+                                                    :native-id native-id
+                                                    :exclude-metadata true
+                                                    :latest true}
+                                                   concept-type))
+        concept-id (:concept-id existing-concept)]
+    (when-not concept-id
+      (errors/throw-service-error
+        :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
+    (when (:deleted existing-concept)
+      (errors/throw-service-error
+        :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                           native-id concept-id)))
+    (let [concept (-> concept-attribs
+                      (dissoc :provider-id :native-id)
+                      (assoc :concept-id concept-id :deleted true))
+          {:keys [revision-id]} (mdb/save-concept context concept)]
+      {:concept-id concept-id, :revision-id revision-id})))
 
 (defn reset
   "Resets the queue broker"

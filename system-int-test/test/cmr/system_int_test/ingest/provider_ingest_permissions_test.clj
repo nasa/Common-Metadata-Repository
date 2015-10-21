@@ -17,9 +17,8 @@
   "Returns true if the provided token has permission to perform the given function."
   [response]
   (let [status (:status response)]
-    (is (some #{status} [200 201 204 401]))
+    (is (some #{status} [200 201 204 401 404]))
     (not= status 401)))
-
 
 (deftest ingest-provider-management-permissions-test
   ;; Grant provider admin permission

@@ -382,18 +382,22 @@
           [gran3]
           (search/find-refs :granule {"concept-id" (:concept-id gran3)})))))
 
-(deftest delete-deleted-collection-with-new-revision-id
+(deftest delete-deleted-collection-with-new-revision-id-returns-404
   (let [coll (d/ingest "PROV1" (dc/collection))
         concept-id (:concept-id coll)
+        native-id (:entry-title coll)
         coll-del1 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 5})
         coll-del2 (ingest/delete-concept (d/item->concept coll :echo10) {:revision-id 7})]
-    (is (= 200 (:status coll-del1) (:status coll-del2)))
+    (is (= 200 (:status coll-del1)))
+    (is (= 404 (:status coll-del2)))
+    (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                   native-id concept-id)]
+           (:errors coll-del2)))
     (is (= 5 (:revision-id coll-del1)))
-    (is (= 7 (:revision-id coll-del2)))
     (index/wait-until-indexed)
     (is (empty? (:refs (search/find-refs :collection {"concept-id" concept-id}))))
     (is (mdb/concept-exists-in-mdb? concept-id 5))
-    (is (mdb/concept-exists-in-mdb? concept-id 7))))
+    (is (not (mdb/concept-exists-in-mdb? concept-id 7)))))
 
 ;; Verify ingest is successful for request with content type that has parameters
 (deftest content-type-with-parameter-ingest-test
@@ -422,17 +426,6 @@
     (index/wait-until-indexed)
     (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
-
-;; Verify deleting same concept twice is not an error if ignore conflict is true.
-(deftest delete-same-collection-twice-test
-  (let [concept (dc/collection-concept {})
-        ingest-result (ingest/ingest-concept concept)
-        delete1-result (ingest/delete-concept concept)
-        delete2-result (ingest/delete-concept concept)]
-    (index/wait-until-indexed)
-    (is (= 200 (:status ingest-result)))
-    (is (= 200 (:status delete1-result)))
-    (is (= 200 (:status delete2-result)))))
 
 ;; Verify that collections with embedded / (%2F) in the native-id are handled correctly
 (deftest ingest-collection-with-slash-in-native-id-test
