@@ -25,6 +25,25 @@
     (is (= 400 status))
     (is (re-find error-regex body))))
 
+(defn assert-invalid-data
+  [error-regex & args]
+  (let [{:keys [status body]} (apply ingest/translate-metadata args)]
+    (is (= 422 status))
+    (is (re-find error-regex body))))
+
+(def minimal-valid-echo-xml "<Collection>
+  <ShortName>ShortName_Larc</ShortName>
+  <VersionId>Version01</VersionId>
+  <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
+  <LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate>
+  <DeleteTime>2015-05-23T22:30:59</DeleteTime>
+  <LongName>LarcLongName</LongName>
+  <DataSetId>LarcDatasetId</DataSetId>
+  <Description>A minimal valid collection</Description>
+  <Orderable>true</Orderable>
+  <Visible>true</Visible>
+</Collection>")
+
 (deftest translate-metadata
   (doseq [input-format valid-formats
           output-format valid-formats]
@@ -71,7 +90,11 @@
 
       (testing "bad json"
         (assert-translate-failure #"object has missing required properties"
-                                  :collection :umm-json "{}" :echo10)))))
+                                  :collection :umm-json "{}" :echo10))
+
+      (testing "Good XML, invalid UMM"
+        (assert-invalid-data #"object has missing required properties"
+                             :collection :echo10 minimal-valid-echo-xml :dif10)))))
 
 
 

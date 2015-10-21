@@ -30,15 +30,23 @@
         input-mime-type (mt/extract-header-mime-type supported-formats headers "content-type" true)
         input-format (mt/mime-type->format input-mime-type)]
 
-    ;; Validate the input data
+    ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
     (if-let [errors (seq (umm-spec/validate-metadata concept-type input-format body))]
       (errors/throw-service-errors :bad-request errors)
 
+      ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
+      ;; validation errors.
       (let [umm (umm-spec/parse-metadata concept-type input-format body)
-            output-str (umm-spec/generate-metadata concept-type output-format umm)]
-        {:status 200
-         :body output-str
-         :headers {"Content-Type" output-mime-type}}))))
+            umm-json (umm-spec/generate-metadata :collection :umm-json umm)]
+
+        (if-let [umm-errors (seq (umm-spec/validate-metadata :collection :umm-json umm-json))]
+          (errors/throw-service-errors :invalid-data umm-errors)
+          ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
+          ;; requested XML format.
+          (let [output-str (umm-spec/generate-metadata concept-type output-format umm)]
+            {:status 200
+             :body output-str
+             :headers {"Content-Type" output-mime-type}}))))))
 
 (def translation-routes
   (context "/translate" []
