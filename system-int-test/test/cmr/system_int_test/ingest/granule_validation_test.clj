@@ -366,6 +366,17 @@
         [(m/mbr -180 45 180 46)]
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
+(deftest inappropriate-spatial-coverage-test
+  (testing "granule with spatial when parent collection has NO_SPATIAL"
+    (assert-invalid {:spatial-coverage (dc/spatial {:gsr "NO_SPATIAL"})}
+                    {:spatial-coverage (dg/spatial
+                                        (umm-s/set-coordinate-system
+                                         :geodetic
+                                         (poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
+                                                        (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])))}
+                    ["SpatialCoverage" "Geometries"]
+                    ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"])))
+
 (deftest missing-spatial-coverage-test
   (let [collection-attrs {:spatial-coverage {:granule-spatial-representation :geodetic}}
         granule-attrs {:format "application/echo10+xml; charset=utf-8"}]

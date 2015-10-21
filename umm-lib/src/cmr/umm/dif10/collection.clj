@@ -2,6 +2,7 @@
   "Contains functions for parsing and generating the DIF dialect."
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.dif10.core :as dif10-core]
@@ -123,7 +124,7 @@
                     (ru/generate-related-urls related-urls)
                     (ma/generate-metadata-associations collection-associations)
                     (x/element :Metadata_Name {} "CEOS IDN DIF")
-                    (x/element :Metadata_Version {} "VERSION 10.1")
+                    (x/element :Metadata_Version {} "VERSION 10.2")
                     (x/element :Metadata_Dates {}
                                (x/element :Metadata_Creation {} (str insert-time))
                                (x/element :Metadata_Last_Revision {} (str update-time))
@@ -141,4 +142,4 @@
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (v/validate-xml (io/resource "schema/dif10/dif.xsd") xml))
+  (v/validate-xml (io/resource "schema/dif10/dif_v10.2.xsd") xml))

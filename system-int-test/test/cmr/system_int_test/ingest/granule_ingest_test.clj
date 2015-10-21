@@ -212,7 +212,7 @@
     (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
-;; Verify ingest behaves properly if request contains invalid  content type.
+;; Verify ingest behaves properly if request contains invalid content type.
 (deftest invalid-content-type-ingest-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept (dg/granule collection))
@@ -223,7 +223,7 @@
     (is (= 415 status))
     (is (re-find #"Invalid content-type" (first errors)))))
 
-;; Verify deleting same granule twice is not an error if ignore conflict is true.
+;; Verify deleting same granule twice returns a 404
 (deftest delete-same-granule-twice-test
   (let [collection (d/ingest "PROV1" (dc/collection {}))
         granule (d/item->concept
@@ -234,7 +234,10 @@
     (index/wait-until-indexed)
     (is (= 200 (:status ingest-result)))
     (is (= 200 (:status delete1-result)))
-    (is (= 200 (:status delete2-result)))))
+    (is (= 404 (:status delete2-result)))
+    (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                   (:native-id granule) (:concept-id granule))]
+           (:errors delete2-result)))))
 
 ;; Verify that attempts to ingest a granule whose parent does not exist result in a 422 error
 (deftest ingest-orphan-granule-test

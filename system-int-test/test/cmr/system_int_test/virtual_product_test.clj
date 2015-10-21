@@ -194,10 +194,7 @@
     ;; check revision ids are in sync after delete operations
     (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 12})
     (index/wait-until-indexed)
-    (assert-tombstones vp-granule-ids 12)
-    (ingest/delete-concept (d/item->concept ingest-result) {:revision-id 14})
-    (index/wait-until-indexed)
-    (assert-tombstones vp-granule-ids 14)))
+    (assert-tombstones vp-granule-ids 12)))
 
 (defn- get-granule-entry-triplet
   "Get granule entry triplet consisting of entry title, concept id and granule ur for the

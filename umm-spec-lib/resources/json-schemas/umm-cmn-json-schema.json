@@ -705,7 +705,9 @@
         },
         "Fees": {
           "description": "The fee for ordering the data or service.",
-          "$ref": "#/definitions/DollarAmountType"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       }
     },
@@ -1380,9 +1382,9 @@
       "maxLength": 12000
     },
     "MetadataAssociateTypeEnum": {
-      "description": "The name of supported lineage date types",
+      "description": "The set of supported values for MetadataAssociationType.Type.",
       "type": "string",
-      "enum": ["SCIENCE ASSOCIATED", "DEPENDENT", "INPUT", "LARGER CITATION WORKS"]
+      "enum": ["SCIENCE ASSOCIATED", "DEPENDENT", "INPUT", "PARENT", "CHILD", "RELATED", "LARGER CITATION WORKS"]
     },
     "KeywordStringType": {
       "type": "string",

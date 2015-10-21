@@ -74,6 +74,14 @@
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
+     :Distributions [{:DistributionSize 10.0
+                      :DistributionMedia "8 track"
+                      :DistributionFormat "Animated GIF"
+                      :Fees "Gratuit-Free"}
+                     {:DistributionSize 100000000000.0
+                      :DistributionMedia "Download"
+                      :DistributionFormat "Bits"
+                      :Fees "0.99"}]
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
      :Version "V5"
@@ -115,6 +123,7 @@
                     :ContentType {:Type "Some type" :Subtype "sub type"}
                     :URLs ["www.foo.com"]}
                    {:Description "Related url 2 description"
+                    :Protocol "ftp"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
                     :FileSize {:Size 10.0 :Unit "MB"}}]
@@ -236,14 +245,22 @@
 
 ;;; Format-Specific Translation Functions
 
+(defn- echo10-expected-fees
+  "Returns the fees if it is a number string, i.e., can be converted to a decimal, otherwise nil."
+  [fees]
+  (when (and fees
+             (try (Double. fees)
+               (catch NumberFormatException e)))))
+
 (defn- echo10-expected-distributions
   "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
   record. ECHO10 only has one Distribution, so here we just pick the first one."
   [distributions]
   (some-> distributions
           first
-          su/convert-empty-record-to-nil
           (assoc :DistributionSize nil :DistributionMedia nil)
+          (update-in [:Fees] echo10-expected-fees)
+          su/convert-empty-record-to-nil
           vector))
 
 ;; ECHO 10
@@ -306,11 +323,7 @@
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)
-      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
-      (update-in-each [:Distributions] update-in [:Fees]
-                      (fn [n]
-                        (when n (Double. (format "%9.2f" n)))))))
+      (update-in [:RelatedUrls] expected-echo10-related-urls)))
 
 ;; DIF 9
 
@@ -392,7 +405,6 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif-related-urls)))
 
-
 ;; DIF 10
 (defn dif10-platform
   [platform]
@@ -427,6 +439,11 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
+(defn- expected-dif10-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls]
+         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -445,7 +462,7 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)
+      (update-in [:RelatedUrls] expected-dif10-related-urls)
       ;; The following fields are not supported yet
       (assoc :TilingIdentificationSystem  nil
              :Organizations nil
@@ -520,19 +537,27 @@
            su/remove-empty-records
            vec))
 
+(defn- update-iso-19115-2-related-url-protocol
+  "Returns the related url with protocol field updated. Browse urls do not have Protocol field."
+  [related-url]
+  (if (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type]))
+    (assoc related-url :Protocol nil)
+    related-url))
+
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (seq (for [related-url related-urls
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Protocol nil :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
+             (assoc :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
              (assoc-in [:ContentType :Subtype] nil)
              (update-in [:ContentType]
                         (fn [content-type]
                           (when (#{"GET DATA"
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
-                            content-type)))))))
+                            content-type)))
+             update-iso-19115-2-related-url-protocol))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

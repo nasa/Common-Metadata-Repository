@@ -84,25 +84,31 @@
       <URL>http://www.foo.com</URL>
     </Related_URL>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-237</Entry_Id>
-      <Version>1</Version>
+      <Entry_Id>
+        <Short_Name>COLLOTHER-237</Short_Name>
+        <Version>1</Version>
+      </Entry_Id>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-238</Entry_Id>
-      <Version>1</Version>
+      <Entry_Id>
+        <Short_Name>COLLOTHER-238</Short_Name>
+        <Version>1</Version>
+      </Entry_Id>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-239</Entry_Id>
-      <Version>1</Version>
+      <Entry_Id>
+        <Short_Name>COLLOTHER-239</Short_Name>
+        <Version>1</Version>
+      </Entry_Id>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Name>CEOS IDN DIF</Metadata_Name>
-    <Metadata_Version>VERSION 10.1</Metadata_Version>
+    <Metadata_Version>VERSION 10.2</Metadata_Version>
     <Metadata_Dates>
       <Metadata_Creation>2000-03-24T22:20:41-05:00</Metadata_Creation>
       <Metadata_Last_Revision>2000-03-24T22:20:41-05:00</Metadata_Last_Revision>
