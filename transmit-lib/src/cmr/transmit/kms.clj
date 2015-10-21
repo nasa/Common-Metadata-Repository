@@ -28,7 +28,7 @@
    :instruments :short-name
    :projects :short-name
    :temporal-keywords :temporal-resolution-range
-   :spatial-keywords :category
+   :spatial-keywords :uuid
    :science-keywords :uuid})
 
 (def keyword-scheme->gcmd-resource-name
@@ -64,7 +64,8 @@
 (def keyword-scheme->required-field
   "Maps each keyword scheme to a field that must be present for a keyword to be valid."
   (merge keyword-scheme->leaf-field-name
-         {:science-keywords :term}))
+         {:science-keywords :term
+          :spatial-keywords :category}))
 
 (def cmr-to-gcmd-keyword-scheme-aliases
   "Map of all keyword schemes which are referred to with a different name within CMR and GCMD."
@@ -194,5 +195,5 @@
     keywords))
 
 (comment
-  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :providers))
+  (get-keywords-for-keyword-scheme {:system (cmr.indexer.system/create-system)} :spatial-keywords))
 

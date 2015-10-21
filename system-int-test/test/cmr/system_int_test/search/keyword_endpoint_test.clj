@@ -288,29 +288,36 @@
                          "uuid" "f86e464a-cf9d-4e15-a39b-501855d1dc5a"}]}
    :spatial-keywords {"category"
                       [{"value" "CONTINENT",
+                        "uuid" "0a672f19-dad5-4114-819a-2eb55bdbb56a",
                         "subfields" ["type"],
                         "type"
                         [{"value" "AFRICA",
+                          "uuid" "2ca1b865-5555-4375-aa81-72811335b695",
                           "subfields" ["subregion_1"],
                           "subregion_1"
                           [{"value" "CENTRAL AFRICA",
+                            "uuid" "f2ffbe58-8792-413b-805b-3e1c8de1c6ff",
                             "subfields" ["subregion_2"],
                             "subregion_2"
                             [{"value" "ANGOLA",
                               "uuid"
                               "9b0a194d-d617-4fed-9625-df176319892d"}]}]}]}
                        {"value" "GEOGRAPHIC REGION",
+                        "uuid" "204270d9-8039-4768-851e-63635af5fb65",
                         "subfields" ["type"],
                         "type"
                         [{"value" "ARCTIC",
                           "uuid" "d40d9651-aa19-4b2c-9764-7371bb64b9a7"}]}
                        {"value" "OCEAN",
+                        "uuid" "ff03e9fc-9882-4a5e-ad0b-830d8f1186cb",
                         "subfields" ["type"],
                         "type"
                         [{"value" "ATLANTIC OCEAN",
+                          "uuid" "cf249a36-2e82-4d32-84cd-23a4f40bb393",
                           "subfields" ["subregion_1"],
                           "subregion_1"
                           [{"value" "NORTH ATLANTIC OCEAN",
+                            "uuid" "a4202721-0cba-4fa1-853f-890f146b04f9",
                             "subfields" ["subregion_2"],
                             "subregion_2"
                             [{"value" "BALTIC SEA",
