@@ -254,14 +254,15 @@
           [:URL url])
         [:Description (:Description related-url)]])
      (for [ma (:MetadataAssociations c)
-           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" nil} (:Type ma))]
+           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
        [:Metadata_Association
-        [:Entry_Id (:EntryId ma)]
-        [:Version (u/with-default (:Version ma))]
+        [:Entry_Id
+         [:Short_Name (:EntryId ma)]
+         [:Version (u/with-default (:Version ma))]]
         [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
         [:Description (:Description ma)]])
      [:Metadata_Name "CEOS IDN DIF"]
-     [:Metadata_Version "VERSION 10.1"]
+     [:Metadata_Version "VERSION 10.2"]
      [:Metadata_Dates
       [:Metadata_Creation "2000-03-24T22:20:41-05:00"]
       [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]

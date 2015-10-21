@@ -134,7 +134,7 @@
                                              [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
                                            [:RelatedUrl
                                             {:URLs (seq
-                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                                    (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
    :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
@@ -145,8 +145,8 @@
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
-                           {:EntryId (value-of ma "Entry_Id")
-                            :Version (without-default-value-of ma "Version")
+                           {:EntryId (value-of ma "Entry_Id/Short_Name")
+                            :Version (without-default-value-of ma "Entry_Id/Version")
                             :Description (without-default-value-of ma "Description")
                             :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]
