@@ -115,6 +115,7 @@
                     :ContentType {:Type "Some type" :Subtype "sub type"}
                     :URLs ["www.foo.com"]}
                    {:Description "Related url 2 description"
+                    :Protocol "ftp"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
                     :FileSize {:Size 10.0 :Unit "MB"}}]
@@ -427,6 +428,11 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
+(defn- expected-dif10-related-urls
+  [related-urls]
+  (seq (for [related-url related-urls]
+         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+
 (defmethod convert-internal :dif10
   [umm-coll _]
   (-> umm-coll
@@ -445,7 +451,7 @@
       (update-in-each [:Projects] dif10-project)
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
-      (update-in [:RelatedUrls] expected-dif-related-urls)
+      (update-in [:RelatedUrls] expected-dif10-related-urls)
       ;; The following fields are not supported yet
       (assoc :TilingIdentificationSystem  nil
              :Organizations nil
@@ -520,19 +526,27 @@
            su/remove-empty-records
            vec))
 
+(defn- update-iso-19115-2-related-url-protocol
+  "Returns the related url with protocol field updated. Browse urls do not have Protocol field."
+  [related-url]
+  (if (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type]))
+    (assoc related-url :Protocol nil)
+    related-url))
+
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (seq (for [related-url related-urls
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Protocol nil :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
+             (assoc :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
              (assoc-in [:ContentType :Subtype] nil)
              (update-in [:ContentType]
                         (fn [content-type]
                           (when (#{"GET DATA"
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
-                            content-type)))))))
+                            content-type)))
+             update-iso-19115-2-related-url-protocol))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]

@@ -44,7 +44,7 @@
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
-  (let [{:keys [URLs Description] {:keys [Type]} :ContentType} online-resource-url
+  (let [{:keys [URLs Protocol Description] {:keys [Type]} :ContentType} online-resource-url
         name (type->name Type)
         code (if (= "GET DATA" Type) "download" "information")]
     (for [url URLs]
@@ -52,6 +52,8 @@
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL url]]
+        [:gmd:protocol
+         (char-string Protocol)]
         [:gmd:name
          (char-string name)]
         (if Description

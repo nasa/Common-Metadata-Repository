@@ -138,7 +138,8 @@
                                            :Other_Reference_Details])))
    :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
    :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
-                  { :URLs (values-at related-url "URL")
+                  {:URLs (values-at related-url "URL")
+                   :Protocol (value-of related-url "Protocol")
                    :Description (value-of related-url "Description")
                    :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
