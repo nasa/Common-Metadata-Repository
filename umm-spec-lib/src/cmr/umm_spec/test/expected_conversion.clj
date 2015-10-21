@@ -74,6 +74,14 @@
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
+     :Distributions [{:DistributionSize 10.0
+                      :DistributionMedia "8 track"
+                      :DistributionFormat "Animated GIF"
+                      :Fees "Gratuit-Free"}
+                     {:DistributionSize 100000000000.0
+                      :DistributionMedia "Download"
+                      :DistributionFormat "Bits"
+                      :Fees "0.99"}]
      :EntryId "short_V1"
      :EntryTitle "The entry title V5"
      :Version "V5"
@@ -237,14 +245,22 @@
 
 ;;; Format-Specific Translation Functions
 
+(defn- echo10-expected-fees
+  "Returns the fees if it is a number string, i.e., can be converted to a decimal, otherwise nil."
+  [fees]
+  (when (and fees
+             (try (Double. fees)
+               (catch NumberFormatException e)))))
+
 (defn- echo10-expected-distributions
   "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
   record. ECHO10 only has one Distribution, so here we just pick the first one."
   [distributions]
   (some-> distributions
           first
-          su/convert-empty-record-to-nil
           (assoc :DistributionSize nil :DistributionMedia nil)
+          (update-in [:Fees] echo10-expected-fees)
+          su/convert-empty-record-to-nil
           vector))
 
 ;; ECHO 10
@@ -307,11 +323,7 @@
                       :ParameterUnitsOfMeasure nil :ParameterValueAccuracy nil
                       :ValueAccuracyExplanation nil :UpdateDate nil)
       (update-in-each [:Projects] assoc :Campaigns nil)
-      (update-in [:RelatedUrls] expected-echo10-related-urls)
-      ;; ECHO10 requires Price to be %9.2f which maps to UMM JSON DistributionType Fees
-      (update-in-each [:Distributions] update-in [:Fees]
-                      (fn [n]
-                        (when n (Double. (format "%9.2f" n)))))))
+      (update-in [:RelatedUrls] expected-echo10-related-urls)))
 
 ;; DIF 9
 
@@ -392,7 +404,6 @@
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif-related-urls)))
-
 
 ;; DIF 10
 (defn dif10-platform

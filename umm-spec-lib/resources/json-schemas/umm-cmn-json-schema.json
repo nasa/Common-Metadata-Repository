@@ -705,7 +705,9 @@
         },
         "Fees": {
           "description": "The fee for ordering the data or service.",
-          "$ref": "#/definitions/DollarAmountType"
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       }
     },
