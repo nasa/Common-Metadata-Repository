@@ -37,9 +37,9 @@
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema
       ;; validation errors.
       (let [umm (umm-spec/parse-metadata concept-type input-format body)
-            umm-json (umm-spec/generate-metadata :collection :umm-json umm)]
+            umm-json (umm-spec/generate-metadata concept-type :umm-json umm)]
 
-        (if-let [umm-errors (seq (umm-spec/validate-metadata :collection :umm-json umm-json))]
+        (if-let [umm-errors (seq (umm-spec/validate-metadata concept-type :umm-json umm-json))]
           (errors/throw-service-errors :invalid-data umm-errors)
           ;; Otherwise, if the parsed UMM validates, return a response with the metadata in the
           ;; requested XML format.
