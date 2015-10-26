@@ -118,6 +118,31 @@
    end-coordinate-2
    ])
 
+(defrecord QAStats
+  [
+   qa-percent-missing-data
+   qa-percent-out-of-bounds-data
+   qa-percent-interpolated-data
+   qa-percent-cloud-cover
+   ])
+
+(defrecord QAFlags
+  [
+   automatic-quality-flag
+   automatic-quality-flag-explanation
+   operational-quality-flag
+   operational-quality-flag-explanation
+   science-quality-flag
+   science-quality-flag-explanation
+   ])
+
+(defrecord MeasuredParameter
+  [
+   parameter-name
+   qa-stats
+   qa-flags
+   ])
+
 (defrecord UmmGranule
   [
    ;; maps to Granule/GranuleUR in echo granule schema
@@ -138,6 +163,8 @@
    spatial-coverage
 
    orbit-calculated-spatial-domains
+
+   measured-parameters
 
    platform-refs
 
@@ -168,4 +195,7 @@
   PlatformRef
   SpatialCoverage
   TwoDCoordinateSystem
+  QAStats
+  QAFlags
+  MeasuredParameter
   UmmGranule)

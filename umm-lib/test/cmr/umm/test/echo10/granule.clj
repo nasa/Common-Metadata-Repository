@@ -62,6 +62,32 @@
       </RangeDateTime>
       <SingleDateTime>2010-01-05T05:30:30.550-05:00</SingleDateTime>
     </Temporal>
+    <MeasuredParameters>
+      <MeasuredParameter>
+        <ParameterName>Surface_Elevation</ParameterName>
+        <QAStats>
+          <QAPercentMissingData>5</QAPercentMissingData>
+          <QAPercentOutOfBoundsData>0</QAPercentOutOfBoundsData>
+          <QAPercentInterpolatedData>10</QAPercentInterpolatedData>
+          <QAPercentCloudCover>20</QAPercentCloudCover>
+        </QAStats>
+        <QAFlags>
+          <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+          <AutomaticQualityFlagExplanation>Passed indicates parameter passed for specific automatic test; Suspect, QA not run; Failed, parameter failed specific automatic test.</AutomaticQualityFlagExplanation>
+          <OperationalQualityFlag>Inferred Passed Operational</OperationalQualityFlag>
+          <OperationalQualityFlagExplanation>Passed,parameter passed the specified operational test. Inferred Pass,parameter terminated with warnings. Failed parameter terminated with fatal errors.</OperationalQualityFlagExplanation>
+          <ScienceQualityFlag>Inferred Passed Science</ScienceQualityFlag>
+          <ScienceQualityFlagExplanation>Passed,parameter passed the specified science test. Inferred Pass,parameter terminated with warnings for specified science test. Failed parameter terminated with fatal errors for specified science test.</ScienceQualityFlagExplanation>
+        </QAFlags>
+      </MeasuredParameter>
+      <MeasuredParameter>
+        <ParameterName>Surface_Reflectance</ParameterName>
+        <QAStats>
+          <QAPercentMissingData>6</QAPercentMissingData>
+          <QAPercentOutOfBoundsData>1</QAPercentOutOfBoundsData>
+        </QAStats>
+      </MeasuredParameter>
+    </MeasuredParameters>
     <Platforms>
       <Platform>
         <ShortName>RADARSAT-1</ShortName>
@@ -203,6 +229,26 @@
      :project-refs ["Short Name-240" "Short Name-241"]
      :cloud-cover 0.8
      :temporal expected-temporal
+     :measured-parameters
+     [(umm-g/map->MeasuredParameter
+        {:parameter-name "Surface_Elevation"
+         :qa-stats (umm-g/map->QAStats
+                     {:qa-percent-missing-data 5.0
+                      :qa-percent-out-of-bounds-data 0.0
+                      :qa-percent-interpolated-data 10.0
+                      :qa-percent-cloud-cover 20.0})
+         :qa-flags (umm-g/map->QAFlags
+                     {:automatic-quality-flag "Passed"
+                      :automatic-quality-flag-explanation "Passed indicates parameter passed for specific automatic test; Suspect, QA not run; Failed, parameter failed specific automatic test."
+                      :operational-quality-flag "Inferred Passed Operational"
+                      :operational-quality-flag-explanation "Passed,parameter passed the specified operational test. Inferred Pass,parameter terminated with warnings. Failed parameter terminated with fatal errors."
+                      :science-quality-flag "Inferred Passed Science"
+                      :science-quality-flag-explanation "Passed,parameter passed the specified science test. Inferred Pass,parameter terminated with warnings for specified science test. Failed parameter terminated with fatal errors for specified science test."})})
+      (umm-g/map->MeasuredParameter
+        {:parameter-name "Surface_Reflectance"
+         :qa-stats (umm-g/map->QAStats
+                     {:qa-percent-missing-data 6.0
+                      :qa-percent-out-of-bounds-data 1.0})})]
      :platform-refs
      [(umm-g/map->PlatformRef
         {:short-name "RADARSAT-1"
