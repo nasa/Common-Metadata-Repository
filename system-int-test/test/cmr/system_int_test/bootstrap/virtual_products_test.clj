@@ -12,7 +12,8 @@
             [cmr.system-int-test.utils.virtual-product-util :as vp]
             [cmr.system-int-test.system :as s]
             [cmr.umm.granule :as umm-g]
-            [cmr.virtual-product.config :as vp-config]
+            [cmr.virtual-product.config]
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]
             [cmr.common.util :refer [are2]]))
 
 ;; test procedure:
@@ -28,7 +29,7 @@
 (defn bootstrap-and-index
   []
   (index/wait-until-indexed)
-  (doseq [[provider-id entry-title] (keys vp-config/source-to-virtual-product-config)]
+  (doseq [[provider-id entry-title] (keys svm/source-to-virtual-product-mapping)]
     (bootstrap/bootstrap-virtual-products provider-id entry-title))
   (index/wait-until-indexed))
 
@@ -105,7 +106,7 @@
                            source-collections)
           source-granules (doall (for [source-coll source-collections
                                        :let [{:keys [provider-id entry-title]} source-coll]
-                                       granule-ur (vp-config/sample-source-granule-urs
+                                       granule-ur (svm/sample-source-granule-urs
                                                     [provider-id entry-title])]
                                    (vp/ingest-source-granule provider-id
                                                              (dg/granule source-coll {:granule-ur granule-ur}))))
@@ -131,8 +132,8 @@
                       source-short-name (get-in source-collection [:product :short-name])
                       vp-short-name (get-in vp-coll [:product :short-name])]]
           (vp/assert-matching-granule-urs
-            (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
-                 (vp-config/sample-source-granule-urs
+            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+                 (svm/sample-source-granule-urs
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                         :page-size 50})))))))

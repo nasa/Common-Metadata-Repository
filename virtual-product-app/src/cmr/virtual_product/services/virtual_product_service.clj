@@ -3,7 +3,6 @@
   applies equivalent updates to virtual products."
   (:require [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.ingest :as ingest]
-            [cmr.virtual-product.config :as config]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.umm.core :as umm]
@@ -15,7 +14,9 @@
             [cmr.transmit.search :as search]
             [clojure.string :as str]
             [cmr.message-queue.config :as queue-config]
-            [cmr.common.util :as u :refer [defn-timed]]))
+            [cmr.common.util :as u :refer [defn-timed]]
+            [cmr.virtual-product.config :as config]
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
 
 (defmulti handle-ingest-event
   "Handles an ingest event. Checks if it is an event that should be applied to virtual granules. If
@@ -38,7 +39,7 @@
 
 (def source-provider-id-entry-titles
   "A set of the provider id entry titles for the source collections."
-  (-> config/source-to-virtual-product-config keys set))
+  (-> svm/source-to-virtual-product-mapping keys set))
 
 (defn- annotate-event
   "Adds extra information to the event to help with processing"
@@ -47,7 +48,7 @@
          provider-alias :provider-id} (concepts/parse-concept-id concept-id)]
     (-> event
         (update-in [:action] keyword)
-        (assoc :provider-id (config/provider-alias->provider-id provider-alias)
+        (assoc :provider-id (svm/provider-alias->provider-id provider-alias)
                :concept-type concept-type))))
 
 (defn- virtual-granule-event?
@@ -99,7 +100,7 @@
   "Check if the source granule umm matches with the matcher for the virtual collection under
   the given provider and with the given entry title"
   [provider-id virt-entry-title src-granule-umm]
-  (let [matcher (:matcher (get config/virtual-product-to-source-config
+  (let [matcher (:matcher (get svm/virtual-product-to-source-mapping
                                [provider-id virt-entry-title]))]
     (or (nil? matcher) (matcher src-granule-umm))))
 
@@ -108,12 +109,12 @@
   [context {:keys [provider-id entry-title concept-id revision-id]}]
   (let [orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
-        vp-config (config/source-to-virtual-product-config [provider-id entry-title])
+        vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])
         source-short-name (:short-name vp-config)]
     (doseq [virtual-coll (:virtual-collections vp-config)
             :when (source-granule-matches-virtual-product?
                     provider-id (:entry-title virtual-coll) orig-umm)]
-      (let [new-umm (config/generate-virtual-granule-umm provider-id source-short-name
+      (let [new-umm (svm/generate-virtual-granule-umm provider-id source-short-name
                                                          orig-umm virtual-coll)
             new-granule-ur (:granule-ur new-umm)
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
@@ -204,9 +205,9 @@
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
   [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
-  (let [vp-config (config/source-to-virtual-product-config [provider-id entry-title])]
+  (let [vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])]
     (doseq [virtual-coll (:virtual-collections vp-config)]
-      (let [new-granule-ur (config/generate-granule-ur provider-id
+      (let [new-granule-ur (svm/generate-granule-ur provider-id
                                                        (:short-name vp-config)
                                                        (:short-name virtual-coll)
                                                        granule-ur)
@@ -248,9 +249,9 @@
     (if (= entry-title src-entry-title)
       [granule-ur granule-ur]
       (let [{:keys [source-short-name short-name]}
-            (get config/virtual-product-to-source-config [provider-id entry-title])]
+            (get svm/virtual-product-to-source-mapping [provider-id entry-title])]
         [granule-ur
-         (config/compute-source-granule-ur
+         (svm/compute-source-granule-ur
            provider-id source-short-name short-name granule-ur)]))))
 
 (defn- create-source-entries
@@ -272,7 +273,7 @@
   [entry]
   (let [provider-id (:provider-id (meta entry))
         entry-title (:entry-title entry)
-        source-entry-title (get-in config/virtual-product-to-source-config
+        source-entry-title (get-in svm/virtual-product-to-source-mapping
                                    [[provider-id entry-title] :source-entry-title])]
     ;; If source entry title is null, that means it is not a virtual entry in which case we use
     ;; the entry title of the entry itself.

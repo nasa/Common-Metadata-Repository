@@ -6,7 +6,7 @@
             [cmr.common.mime-types :as mt]
             [cmr.umm.granule :as umm-g]
             [cmr.umm.echo10.granule :as g]
-            [cmr.virtual-product.config :as vp-config]))
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
 
 (def airx3std-measured-parameters
   "Defines the AIRX3STD measured parameters parsed from a sample AIRX3STD granule."
@@ -22,7 +22,7 @@
   [virt-gran expected-src-gran-ur]
   (is (= expected-src-gran-ur (->> virt-gran
                                    :product-specific-attributes
-                                   (filter #(= (:name %) vp-config/source-granule-ur-additional-attr-name))
+                                   (filter #(= (:name %) svm/source-granule-ur-additional-attr-name))
                                    first
                                    :values
                                    first))))
@@ -30,7 +30,7 @@
 (defn- remove-src-granule-ur-psa
   "Remove product specific attribute with the name source-granule-ur from the given psas."
   [psas]
-  (seq (remove #(= (:name %) vp-config/source-granule-ur-additional-attr-name) psas)))
+  (seq (remove #(= (:name %) svm/source-granule-ur-additional-attr-name) psas)))
 
 (deftest generate-virtual-granule-test
   (let [ast-l1a "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
@@ -60,7 +60,7 @@
         random-url "http://www.foo.com"]
 
     (are [provider-id src-entry-title virt-short-name src-gran-attrs expected-virt-gran-attrs]
-         (let [src-vp-config (vp-config/source-to-virtual-product-config [provider-id src-entry-title])
+         (let [src-vp-config (svm/source-to-virtual-product-mapping [provider-id src-entry-title])
                src-short-name (:short-name src-vp-config)
                virt-entry-title (-> src-vp-config
                                     :virtual-collections
@@ -71,7 +71,7 @@
                           :short-name virt-short-name}
                src-gran (assoc src-gran-attrs
                                :collection-ref {:entry-title src-entry-title})
-               generated-virt-gran (vp-config/generate-virtual-granule-umm
+               generated-virt-gran (svm/generate-virtual-granule-umm
                                      provider-id src-short-name src-gran virt-coll)]
 
            (is (= virt-entry-title (get-in generated-virt-gran [:collection-ref :entry-title])))

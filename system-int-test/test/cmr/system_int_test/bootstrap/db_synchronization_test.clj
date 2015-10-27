@@ -10,7 +10,6 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
-            [cmr.virtual-product.config :as vp-config]
             [cmr.system-int-test.system :as s]
             [cmr.umm.core :as umm]
             [cmr.system-int-test.data2.core :as d]
