@@ -100,7 +100,7 @@
         (let [input-format :echo10
               output-format :dif10
               {:keys [status headers body]} (ingest/translate-metadata :collection input-format minimal-valid-echo-xml output-format
-                                                                       {"skip_umm_validation" "true"})
+                                                                       {:query-params {"skip_umm_validation" "true"}})
               content-type (first (mt/extract-mime-types (:content-type headers)))]
           (is (= 200 status))
           (is (= (mt/format->mime-type output-format) content-type))

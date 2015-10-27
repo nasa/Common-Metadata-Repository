@@ -114,13 +114,12 @@
 
 (defn translate-metadata
   "Translates metadata using the ingest translation endpoint. Returns the response."
-  ([concept-type input-format metadata output-format params]
-   (println "params to post =" (str params))
+  ([concept-type input-format metadata output-format options]
    (client/post (url/translate-metadata-url concept-type)
                 {:connection-manager (s/conn-mgr)
                  :throw-exceptions false
                  :body metadata
-                 :query-params params
+                 :query-params (:query-params options)
                  :headers {"content-type" (mt/format->mime-type input-format)
                            "accept" (mt/format->mime-type output-format)}}))
   ([concept-type input-format metadata output-format]
