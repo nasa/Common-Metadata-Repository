@@ -114,13 +114,16 @@
 
 (defn translate-metadata
   "Translates metadata using the ingest translation endpoint. Returns the response."
-  [concept-type input-format metadata output-format]
-  (client/post (url/translate-metadata-url concept-type)
-               {:connection-manager (s/conn-mgr)
-                :throw-exceptions false
-                :body metadata
-                :headers {"content-type" (mt/format->mime-type input-format)
-                          "accept" (mt/format->mime-type output-format)}}))
+  ([concept-type input-format metadata output-format options]
+   (client/post (url/translate-metadata-url concept-type)
+                {:connection-manager (s/conn-mgr)
+                 :throw-exceptions false
+                 :body metadata
+                 :query-params (:query-params options)
+                 :headers {"content-type" (mt/format->mime-type input-format)
+                           "accept" (mt/format->mime-type output-format)}}))
+  ([concept-type input-format metadata output-format]
+   (translate-metadata concept-type input-format metadata output-format nil)))
 
 (defn- parse-error-path
   "Convert the error path string into a sequence with element conversion to integers where possible"
