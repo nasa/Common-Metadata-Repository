@@ -52,7 +52,6 @@
 (def translation-routes
   (context "/translate" []
     (POST "/collection" {:keys [body headers request-context params]}
-          (println "params received =" (pr-str params))
           (translate request-context :collection headers body
                      (= "true" (:skip_umm_validation params))))
     ;; Granule translation is not supported yet. This will be done when granules are added to the UMM spec.
