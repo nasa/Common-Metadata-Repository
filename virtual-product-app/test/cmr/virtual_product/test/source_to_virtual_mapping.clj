@@ -1,4 +1,4 @@
-(ns cmr.virtual-product.test.config
+(ns cmr.virtual-product.test.source-to-virtual-mapping
   (:require [clojure.test :refer :all]
             [clojure.string :as str]
             [clojure.java.io :as io]
@@ -10,7 +10,7 @@
 
 (def airx3std-measured-parameters
   "Defines the AIRX3STD measured parameters parsed from a sample AIRX3STD granule."
-  (-> "data/airx3std_granule.xml"
+  (-> "example_granules/airx3std_granule.xml"
       io/resource
       slurp
       g/parse-granule
