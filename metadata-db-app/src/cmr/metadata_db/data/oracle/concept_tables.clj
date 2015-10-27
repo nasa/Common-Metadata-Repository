@@ -11,7 +11,7 @@
            [cmr.metadata-db.data.oracle.granule-table :as gt]
            [cmr.metadata-db.data.oracle.service-table :as st]))
 
-(def all-concept-types [:collection :granule])
+(def all-concept-types [:collection :granule :service])
 
 (defn get-table-name
   "Get the name for the table for a given provider and concept-type"
