@@ -31,14 +31,6 @@
       (throw (Exception. (format "The fields [%s] are not supported by generators with schema type [%s]"
                                  (pr-str unexpected-fields) (pr-str schema-type)))))))
 
-(defn- non-empty-obj-gen
-  "Returns a generator which returns nil instead of empty maps."
-  [g]
-  (gen/fmap (fn [x]
-              (when (some some? (vals x))
-                x))
-            g))
-
 (defn- object-like-schema-type->generator
   "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
   with keys properties, required, and additionalProperties. This is used to handle a normal object
@@ -56,7 +48,7 @@
         ;; Figure out which properties are required and which are optional
         required-properties (set (map keyword (:required schema-type)))
         optional-properties (vec (set/difference (set (keys properties)) required-properties))]
-    (non-empty-obj-gen
+    (ext-gen/non-empty-obj-gen
      (chgen/for [;; Determine which properties to generate in this instance of the object
                  num-optional-fields (gen/choose 0 (count optional-properties))
                  :let [selected-properties (concat required-properties

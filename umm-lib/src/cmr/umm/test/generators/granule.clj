@@ -83,6 +83,35 @@
                      platform-ref-short-names
                      (ext-gen/nil-if-empty (gen/vector instrument-refs 0 4))))
 
+(def measured-parameter-names
+  (ext-gen/string-ascii 1 10))
+
+(def qa-stats
+  (ext-gen/non-empty-obj-gen
+    (ext-gen/model-gen
+      g/map->QAStats
+      (gen/hash-map :qa-percent-missing-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                    :qa-percent-out-of-bounds-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                    :qa-percent-interpolated-data (ext-gen/optional (ext-gen/choose-double 0 100))
+                    :qa-percent-cloud-cover (ext-gen/optional (ext-gen/choose-double 0 100))))))
+
+(def qa-flags
+  (ext-gen/non-empty-obj-gen
+    (ext-gen/model-gen
+      g/map->QAFlags
+      (gen/hash-map :automatic-quality-flag (ext-gen/optional (ext-gen/string-ascii 1 10))
+                    :automatic-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
+                    :operational-quality-flag (ext-gen/optional (ext-gen/string-ascii 1 10))
+                    :operational-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))
+                    :science-quality-flag (ext-gen/optional (ext-gen/string-ascii 1 10))
+                    :science-quality-flag-explanation (ext-gen/optional (ext-gen/string-ascii 1 10))))))
+
+(def measured-parameters
+  (ext-gen/model-gen g/->MeasuredParameter
+                     measured-parameter-names
+                     (ext-gen/optional qa-stats)
+                     (ext-gen/optional qa-flags)))
+
 (def two-d-coordinate-system
   (let [coords-gen (gen/fmap sort (gen/vector (ext-gen/choose-double 0 1000) 1 2))]
     (gen/fmap
@@ -126,5 +155,7 @@
       :two-d-coordinate-system (ext-gen/optional two-d-coordinate-system)
       :related-urls (ext-gen/nil-if-empty (gen/vector c/related-url 0 5))
       :spatial-coverage (ext-gen/optional spatial-coverages)
+      :measured-parameters (ext-gen/optional
+                             (ext-gen/nil-if-empty (gen/vector measured-parameters 0 5)))
       :product-specific-attributes (ext-gen/nil-if-empty
                                      (gen/vector product-specific-attribute-refs 0 5)))))
