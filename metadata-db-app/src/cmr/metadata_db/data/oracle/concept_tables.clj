@@ -8,7 +8,8 @@
            [inflections.core :as inf]
            [cmr.metadata-db.services.provider-validation :as pv]
            [cmr.metadata-db.data.oracle.collection-table :as ct]
-           [cmr.metadata-db.data.oracle.granule-table :as gt]))
+           [cmr.metadata-db.data.oracle.granule-table :as gt]
+           [cmr.metadata-db.data.oracle.service-table :as st]))
 
 (def all-concept-types [:collection :granule])
 
@@ -54,6 +55,16 @@
                                  (gt/granule-column-sql provider)
                                  (gt/granule-constraint-sql provider table-name)))
     (gt/create-granule-indexes db provider table-name)))
+
+(defmethod create-concept-table :service
+  [db provider concept-type]
+  (let [table-name (get-table-name provider :service)]
+    (info "Creating table [" table-name "]")
+    (j/db-do-commands db (format "CREATE TABLE %s (%s, %s)"
+                                 table-name
+                                 (st/service-column-sql provider)
+                                 (st/service-constraint-sql provider table-name)))
+    (st/create-service-indexes db provider table-name)))
 
 (defn create-provider-concept-tables
   "Create all the concept tables for the given provider."
