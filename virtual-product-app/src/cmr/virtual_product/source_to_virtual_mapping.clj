@@ -294,7 +294,9 @@
 
 (def airx3std-measured-parameters
   "A map of short names of the virtual products based on AIRXSTD dataset to the measured parameter
-  names that should be kept in the virtual granule metadata."
+  names that should be kept in the virtual granule metadata. For virtual short-names that are mapped
+  to empty set, no measured parameters will be kept in the virtual granules. The same is true for
+  virtual short-names (currently there are none) that are not defined in the mapping."
   {"AIRX3STD_006_H2O_MMR_Surf" #{"Water Vapor Mass Mixing Ratio"}
    "AIRX3STD_006_OLR" #{}
    "AIRX3STD_006_SurfAirTemp" #{"Surface Air Temperature"}
