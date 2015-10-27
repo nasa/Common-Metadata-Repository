@@ -333,10 +333,34 @@
    "AIRX3STD_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
    "AIRX3STD_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
+(def airx3std-measured-parameters
+  "A map of short names of the virtual products based on AIRXSTD dataset to the measured parameter
+  names that should be kept in the virtual granule metadata."
+  {"AIRX3STD_006_H2O_MMR_Surf" #{"Water Vapor Mass Mixing Ratio"}
+   "AIRX3STD_006_OLR" #{}
+   "AIRX3STD_006_SurfAirTemp" #{"Surface Air Temperature"}
+   "AIRX3STD_006_SurfSkinTemp" #{"Surface Skin Temperature"}
+   "AIRX3STD_006_TotCO" #{}
+   "AIRX3STD_ClrOLR" #{}
+   "AIRX3STD_TotCH4" #{}})
+
+(defn- update-airx3std-measured-parameters
+  "Returns the virtual umm record with the measured parameters updated based on the rules defined in
+  airx3std-measured-parameters."
+  [virtual-short-name virtual-umm]
+  (let [virtual-measured-parameters
+        (fn [mps]
+          (seq
+            (filter
+              #(contains? (airx3std-measured-parameters virtual-short-name) (:parameter-name %))
+              mps)))]
+    (update-in virtual-umm [:measured-parameters] virtual-measured-parameters)))
+
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
   [provider-id source-short-name virtual-short-name virtual-umm]
   (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
-    (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
+    (->> (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))
+         (update-airx3std-measured-parameters virtual-short-name))))
 
 (def airx3stm-opendap-subsets
   "A map of short names of the virtual products based on AIRXSTM dataset to the string representing
@@ -369,15 +393,15 @@
         frb-url-matches (fn [related-url suffix fmt]
                           (let [url (:url related-url)]
                             (or (.endsWith url suffix) (.contains url (format "FORMAT=%s" fmt)))))]
-      (assoc virtual-umm :related-urls
-             (cond
-               (and (= "AST_FRBT" virtual-short-name)
-                    ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
-               (seq (filter #(frb-url-matches % "_T.tif" "TIR") online-access-urls))
+    (assoc virtual-umm :related-urls
+           (cond
+             (and (= "AST_FRBT" virtual-short-name)
+                  ((matches-on-psa "FullResolutionThermalBrowseAvailable" "YES") virtual-umm))
+             (seq (filter #(frb-url-matches % "_T.tif" "TIR") online-access-urls))
 
-               (and (= "AST_FRBV" virtual-short-name)
-                    ((matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES") virtual-umm))
-               (seq (filter #(frb-url-matches % "_V.tif" "VNIR") online-access-urls))))))
+             (and (= "AST_FRBV" virtual-short-name)
+                  ((matches-on-psa "FullResolutionVisibleBrowseAvailable" "YES") virtual-umm))
+             (seq (filter #(frb-url-matches % "_V.tif" "VNIR") online-access-urls))))))
 
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1T"]
