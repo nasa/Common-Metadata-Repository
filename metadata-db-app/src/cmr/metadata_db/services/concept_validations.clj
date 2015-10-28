@@ -32,7 +32,9 @@
   {:collection {true #{}
                 false #{:short-name :version-id :entry-id :entry-title}}
    :granule {true #{:parent-collection-id }
-             false #{:parent-collection-id :parent-entry-title :granule-ur}}})
+             false #{:parent-collection-id :parent-entry-title :granule-ur}}
+   :services {true {}
+              false #{:entry-id :entry-title}}})
 
 (defn extra-fields-missing-validation
   "Validates that the concept is provided with extra fields and that all of them are present and not nil."

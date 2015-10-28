@@ -30,6 +30,14 @@
    :provider-id "CMR"
    :concept-type :tag})
 
+(def valid-service
+  {:concept-id "S1-PROV1"
+   :native-id "foo"
+   :provider-id "PROV1"
+   :concept-type :service
+   :user-id "user1"
+   :extra-fields {:entry-id "short_v1"
+                  :entry-title "entry"}})
 
 (deftest find-params-validation-test
   (testing "valid params"
@@ -143,6 +151,39 @@
            (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :parent-collection-id))))
     (is (= [(msg/missing-extra-field :granule-ur)]
            (v/default-concept-validation (update-in valid-granule [:extra-fields] dissoc :granule-ur))))))
+
+(deftest service-validation-test
+  (testing "valid-concept"
+    (is (= [] (v/default-concept-validation valid-service))))
+  (testing "missing concept type"
+    (is (= [(msg/missing-concept-type)
+            (msg/invalid-concept-id "S1-PROV1" "PROV1" nil)]
+           (v/default-concept-validation (dissoc valid-service :concept-type)))))
+  (testing "missing provider id"
+    (is (= [(msg/invalid-concept-id "S1-PROV1" nil :service)
+            (msg/missing-provider-id)]
+           (v/default-concept-validation (dissoc valid-service :provider-id)))))
+  (testing "missing native id"
+    (is (= [(msg/missing-native-id)]
+           (v/default-concept-validation (dissoc valid-service :native-id)))))
+  (testing "invalid concept-id"
+    (is (= ["Concept-id [1234] is not valid."]
+           (v/default-concept-validation (assoc valid-service :concept-id "1234")))))
+  (testing "provider id and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "S1-PROV1" "PROV2" :service)]
+           (v/default-concept-validation (assoc valid-service :provider-id "PROV2")))))
+  (testing "concept type and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "S1-PROV1" "PROV1" :collection)]
+           (v/default-concept-validation (assoc valid-service
+                                        :concept-type :collection
+                                        :extra-fields (:extra-fields valid-collection))))))
+  (testing "extra fields missing"
+    (is (= [(msg/missing-extra-fields)]
+           (v/default-concept-validation (dissoc valid-service :extra-fields))))
+    (are [field] (= [(msg/missing-extra-field field)]
+                    (v/default-concept-validation (update-in valid-collection [:extra-fields] dissoc field)))
+         :entry-id
+         :entry-title)))
 
 (deftest tag-validation-test
   (testing "valid-concept"
