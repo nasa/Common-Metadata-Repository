@@ -17,6 +17,7 @@
     entry_id VARCHAR(255) NOT NULL,
     entry_title VARCHAR(1030) NOT NULL,
     delete_time TIMESTAMP WITH TIME ZONE,
+    user_id VARCHAR(30) NOT NULL,
     provider_id VARCHAR(255) NOT NULL,
     CONSTRAINT small_prov_services_pk PRIMARY KEY (id),
     CONSTRAINT small_prov_services_con_rev

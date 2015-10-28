@@ -26,6 +26,8 @@
     (sh/force-delete-concept-by-params db provider {:concept-type :granule
                                                     :provider-id provider-id})
     (sh/force-delete-concept-by-params db provider {:concept-type :collection
+                                                    :provider-id provider-id})
+    (sh/force-delete-concept-by-params db provider {:concept-type :service
                                                     :provider-id provider-id})))
 
 (extend-protocol p/ProvidersStore

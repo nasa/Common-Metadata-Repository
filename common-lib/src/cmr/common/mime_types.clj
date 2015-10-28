@@ -28,7 +28,8 @@
    :opendata {:mime-type "application/opendata+json"}
    :native {:mime-type "application/metadata+xml"}
    :edn {:mime-type "application/edn"}
-   :opendap {:mime-type "application/x-netcdf"}})
+   :opendap {:mime-type "application/x-netcdf"}
+   :serf {:mime-type "application/serf+xml"}})
 
 ;; Define vars for each of the mime type formats, e.g. (def json "application/json")
 (doseq [[format-kw {:keys [mime-type]}] mime-types]
