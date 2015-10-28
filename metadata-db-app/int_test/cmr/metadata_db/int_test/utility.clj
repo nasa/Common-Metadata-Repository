@@ -72,6 +72,39 @@
     <Visible>true</Visible>
   </Collection>")
 
+(def service-xml
+  "Valid SERF service for concept generation"
+  "<SERF xsi:schemaLocation=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/serf/ http://gcmd.nasa.gov/Aboutus/xml/serf/serf_v9.8.4.xsd\" xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/serf/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
+    <Entry_ID>PSU_GEOG_IMPROVISE</Entry_ID>
+    <Entry_Title>Title of the service</Entry_Title>
+    <Service_Parameters>
+     <Service_Category>EARTH SCIENCE SERVICES</Service_Category>
+     <Service_Topic>Models</Service_Topic>
+     <Service_Term>Space Weather Advisories</Service_Term>
+     <Service_Specific_Name>Aurora Forecasts</Service_Specific_Name>
+    </Service_Parameters>
+    <Science_Parameters>
+     <Science_Category>Earth Science</Science_Category>
+     <Science_Topic>Atmosphere</Science_Topic>
+     <Science_Term>Precipitation</Science_Term>
+    </Science_Parameters>
+    <Service_Provider>
+        <Service_Organization>
+          <Short_Name>DOI/USGS/GEOG/MCMC</Short_Name>
+          <Long_Name>Mid-Continent Mapping Center, Geography Division, U.S. Geological Survey, U.S. Department of the Interior</Long_Name>
+        </Service_Organization>
+        <Personnel>
+          <Role>SERVICE PROVIDER CONTACT</Role>
+          <Last_Name>MID-CONTINENT MAPPING CENTER</Last_Name>
+        </Personnel>
+    </Service_Provider>
+    <Summary>
+     <Abstract>A short summary.</Abstract>
+    </Summary>
+    <Metadata_Name>CEOS IDN SERF</Metadata_Name>
+    <Metadata_Version>VERSION 9.9</Metadata_Version>
+  </SERF>")
+
 (def tag-edn
   "Valid EDN for tag metadata"
   (pr-str {:namespace "org.nasa.something"
@@ -88,6 +121,7 @@
   by default."
   {:collection collection-xml
    :granule granule-xml
+   :service service-xml
    :tag tag-edn})
 
 (defn- concept
@@ -151,6 +185,21 @@
                            attributes)]
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
+
+(defn service-concept
+  "Creates a service concept"
+  ([provider-id uniq-num]
+   (service-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
+   (let [extra-fields (merge {:entry-id (str "service_entry_id_" uniq-num)
+                              :entry-title (str "service" uniq-num)
+                              :delete-time nil}
+                             (:extra-fields attributes))
+         attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/serf+xml"
+                            :extra-fields extra-fields}
+                           (dissoc attributes :extra-fields))]
+     (concept provider-id :service uniq-num attributes))))
 
 (defn- parse-concept
   "Parses a concept from a JSON response"
@@ -398,6 +447,19 @@
    (create-and-save-tag uniq-num num-revisions {}))
   ([uniq-num num-revisions attributes]
    (let [concept (tag-concept uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-service
+  "Creates, saves, and returns a service concept with its data from metadata-db. "
+  ([provider-id uniq-num]
+   (create-and-save-service provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-service provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (service-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

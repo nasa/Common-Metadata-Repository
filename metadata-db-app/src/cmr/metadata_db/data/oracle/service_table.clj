@@ -1,13 +1,13 @@
-(ns cmr.metadata-db.data.oracle.collection-table
-  "Contains helper functions to create collection table."
+(ns cmr.metadata-db.data.oracle.service-table
+  "Contains helper functions to create services tables."
   (require [clojure.java.jdbc :as j]))
 
-(defmulti collection-column-sql
-  "Returns the sql to define provider collection columns"
+(defmulti service-column-sql
+  "Returns the sql to define provider service columns"
   (fn [provider]
     (:small provider)))
 
-(defmethod collection-column-sql false
+(defmethod service-column-sql false
   [provider]
   "id NUMBER,
   concept_id VARCHAR(255) NOT NULL,
@@ -17,25 +17,23 @@
   revision_id INTEGER DEFAULT 1 NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
-  short_name VARCHAR(85) NOT NULL,
-  version_id VARCHAR(80),
   entry_id VARCHAR(255) NOT NULL,
   entry_title VARCHAR(1030) NOT NULL,
   delete_time TIMESTAMP WITH TIME ZONE,
   user_id VARCHAR(30)")
 
-(defmethod collection-column-sql true
+(defmethod service-column-sql true
   [provider]
-  ;; For small provider collection table, there is an extra provider_id column
-  (str (collection-column-sql {:small false})
+  ;; For small provider service table, there is an extra provider_id column
+  (str (service-column-sql {:small false})
        ",provider_id VARCHAR(255) NOT NULL"))
 
-(defmulti collection-constraint-sql
-  "Returns the sql to define constraint on provider collection table"
+(defmulti service-constraint-sql
+  "Returns the sql to define constraint on provider service table"
   (fn [provider table-name]
     (:small provider)))
 
-(defmethod collection-constraint-sql false
+(defmethod service-constraint-sql false
   [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
@@ -58,7 +56,7 @@
           table-name
           table-name))
 
-(defmethod collection-constraint-sql true
+(defmethod service-constraint-sql true
   [provider table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
@@ -81,17 +79,14 @@
           table-name
           table-name))
 
-(defmulti create-collection-indexes
-  "Create indexes on provider collection table"
+(defmulti create-service-indexes
+  "Create indexes on provider service table"
   (fn [db provider table-name]
     (:small provider)))
 
-(defmethod create-collection-indexes false
+(defmethod create-service-indexes false
   [db _ table-name]
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
-                               table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s (short_name, version_id)"
                                table-name
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_eid_i ON %s (entry_id)"
@@ -101,12 +96,9 @@
                                table-name
                                table-name)))
 
-(defmethod create-collection-indexes true
+(defmethod create-service-indexes true
   [db _ table-name]
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
-                               table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_p_s_i ON %s (provider_id, short_name, version_id)"
                                table-name
                                table-name))
   (j/db-do-commands db (format "CREATE INDEX %s_p_ed_i ON %s (provider_id, entry_id)"
