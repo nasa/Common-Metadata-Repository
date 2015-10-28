@@ -190,6 +190,73 @@
              {:status status
               :revision-id revision-id}))))
 
+(deftest delete-service-using-delete-end-point-test
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+    (let [serv1 (util/create-and-save-service provider-id 1 3)
+          serv2 (util/create-and-save-service provider-id 2)
+          {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id serv1))
+          deleted-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) revision-id))
+          saved-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) (dec revision-id)))]
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id}))
+
+      (is (= (dissoc (assoc saved-serv1
+                            :deleted true
+                            :metadata ""
+                            :revision-id revision-id
+                            :user-id nil)
+                     :revision-date)
+             (dissoc deleted-serv1 :revision-date)))
+
+      ;; Make sure that a deleted service gets it's own unique revision date
+      (is (t/after? (:revision-date deleted-serv1) (:revision-date saved-serv1))
+          "The deleted service revision date should be after the previous revisions revision date.")
+
+      ;; Other data left in database
+      (util/verify-concept-was-saved serv2))))
+
+(deftest delete-service-using-save-end-point-test
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+    (let [serv1 (util/create-and-save-service provider-id 1 3)
+          serv2 (util/create-and-save-service provider-id 2)
+          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id serv1)
+                                                           :deleted true
+                                                           :user-id "user101"})
+          deleted-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) revision-id))
+          saved-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) (dec revision-id)))]
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id}))
+
+      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
+      ;; and deleted = true.
+      (is (= (dissoc (assoc saved-serv1
+                            :deleted true
+                            :metadata ""
+                            :revision-id revision-id
+                            :user-id "user101")
+                     :revision-date)
+             (dissoc deleted-serv1 :revision-date)))
+
+      ;; Make sure that a deleted service gets it's own unique revision date
+      (is (t/after? (:revision-date deleted-serv1) (:revision-date saved-serv1))
+          "The deleted service revision date should be after the previous revisions revision date.")
+
+      ;; Other data left in database
+      (util/verify-concept-was-saved serv2))))
+
+(deftest delete-service-with-valid-revision-test
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+    (let [serv1 (util/create-and-save-service provider-id 1 3)
+          {:keys [status revision-id]} (util/delete-concept (:concept-id serv1) 4)]
+      (is (= {:status 201
+              :revision-id 4}
+             {:status status
+              :revision-id revision-id})))))
+
 (deftest delete-concept-with-skipped-revisions-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1)
