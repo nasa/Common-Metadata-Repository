@@ -96,6 +96,14 @@
   [constructor & args]
   (gen/fmap (partial apply constructor) (apply gen/tuple args)))
 
+(defn non-empty-obj-gen
+  "Returns a generator which returns nil instead of empty maps."
+  [g]
+  (gen/fmap (fn [x]
+              (when (some some? (vals x))
+                x))
+            g))
+
 (defn choose-double
   "Creates a generator that returns values between lower and upper inclusive. Min and max values must
   integers and the must be separated by more than 2."

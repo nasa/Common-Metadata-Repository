@@ -13,6 +13,7 @@
             [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
             [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
             [cmr.umm.echo10.granule.two-d-coordinate-system :as two-d]
+            [cmr.umm.echo10.granule.measured-parameter :as mp]
             [cmr.common.xml :as v]
             [cmr.common.util :as util]
             [cmr.umm.echo10.core])
@@ -120,6 +121,7 @@
                         :two-d-coordinate-system (two-d/xml-elem->TwoDCoordinateSystem xml-struct)
                         :related-urls (ru/xml-elem->related-urls xml-struct)
                         :spatial-coverage (xml-elem->SpatialCoverage xml-struct)
+                        :measured-parameters (mp/xml-elem->MeasuredParameters xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
 (defn parse-granule
@@ -152,7 +154,7 @@
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                   spatial-coverage orbit two-d-coordinate-system]} granule]
+                   spatial-coverage orbit two-d-coordinate-system measured-parameters]} granule]
        (x/emit-str
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
@@ -175,6 +177,7 @@
                     (gt/generate-temporal temporal)
                     (generate-spatial spatial-coverage)
                     (ocsd/generate-orbit-calculated-spatial-domains orbit-calculated-spatial-domains)
+                    (mp/generate-measured-parameters measured-parameters)
                     (p-ref/generate-platform-refs platform-refs)
                     (generate-project-refs project-refs)
                     (psa/generate-product-specific-attribute-refs product-specific-attributes)

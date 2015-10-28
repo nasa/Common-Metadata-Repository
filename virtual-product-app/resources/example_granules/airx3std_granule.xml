@@ -1,0 +1,203 @@
+<Granule>
+  <GranuleUR>AIRX3STD.006:AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf</GranuleUR>
+  <InsertTime>2013-07-27T06:11:12.000Z</InsertTime>
+  <LastUpdate>2013-07-27T06:11:12.000Z</LastUpdate>
+  <Collection>
+    <DataSetId>Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006</DataSetId>
+  </Collection>
+  <RestrictionFlag>0</RestrictionFlag>
+  <RestrictionComment>None</RestrictionComment>
+  <DataGranule>
+    <SizeMBDataGranule>381.900844573975</SizeMBDataGranule>
+    <ProducerGranuleId>AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf</ProducerGranuleId>
+    <DayNightFlag>UNSPECIFIED</DayNightFlag>
+    <ProductionDateTime>2013-07-27T06:06:23.000Z</ProductionDateTime>
+  </DataGranule>
+  <PGEVersionClass>
+    <PGEVersion>6.0.9.0</PGEVersion>
+  </PGEVersionClass>
+  <Temporal>
+    <RangeDateTime>
+      <BeginningDateTime>2002-09-04T00:00:00.000Z</BeginningDateTime>
+      <EndingDateTime>2002-09-05T00:00:00.000Z</EndingDateTime>
+    </RangeDateTime>
+  </Temporal>
+  <Spatial>
+    <VerticalSpatialDomains>
+      <VerticalSpatialDomain>
+        <Type>Maximum Altitude</Type>
+        <Value>0.1mb, or appr. 50km</Value>
+      </VerticalSpatialDomain>
+      <VerticalSpatialDomain>
+        <Type>Minimum Altitude</Type>
+        <Value>SFC</Value>
+      </VerticalSpatialDomain>
+      <VerticalSpatialDomain>
+        <Type>Atmosphere Layer</Type>
+        <Value>Atmosphere Profile</Value>
+      </VerticalSpatialDomain>
+    </VerticalSpatialDomains>
+    <HorizontalSpatialDomain>
+      <Geometry>
+        <BoundingRectangle>
+          <WestBoundingCoordinate>-180.0</WestBoundingCoordinate>
+          <NorthBoundingCoordinate>90.0</NorthBoundingCoordinate>
+          <EastBoundingCoordinate>180.0</EastBoundingCoordinate>
+          <SouthBoundingCoordinate>-90.0</SouthBoundingCoordinate>
+        </BoundingRectangle>
+      </Geometry>
+    </HorizontalSpatialDomain>
+  </Spatial>
+  <OrbitCalculatedSpatialDomains/>
+  <MeasuredParameters>
+    <MeasuredParameter>
+      <ParameterName>Surface Skin Temperature</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Surface Air Temperature</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Atmospheric Temperature</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Water Vapor Mass Mixing Ratio</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Total Precipitable Water Vapor</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Ozone Volume Mixing Ratio</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Total Ozone Burden</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Spectral IR Surface Emissivities</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Spectral IR Surf Bidirect Reflectivity</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>MW Surface Brightness</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>MW Emissivity</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Total Cloud Water</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Cloud Top Temperature</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Cloud Top Pressure</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Effective Cloud Fraction</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Geopotential Heights</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+    <MeasuredParameter>
+      <ParameterName>Geopotential Height of Surface</ParameterName>
+      <QAStats/>
+      <QAFlags>
+        <AutomaticQualityFlag>Passed</AutomaticQualityFlag>
+        <AutomaticQualityFlagExplanation>Based on percentage of product that is good. Suspect used where true quality is not known.</AutomaticQualityFlagExplanation>
+      </QAFlags>
+    </MeasuredParameter>
+  </MeasuredParameters>
+  <Platforms/>
+  <Campaigns/>
+  <AdditionalAttributes/>
+  <InputGranules/>
+  <OnlineAccessURLs>
+    <OnlineAccessURL>
+      <URL>http://acdisc.gesdisc.eosdis.nasa.gov/data/s4pa///Aqua_AIRS_Level3/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf</URL>
+    </OnlineAccessURL>
+  </OnlineAccessURLs>
+  <OnlineResources/>
+  <Orderable>false</Orderable>
+  <DataFormat>HDF</DataFormat>
+  <Visible>true</Visible>
+</Granule>
