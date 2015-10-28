@@ -301,7 +301,6 @@
 (defmethod convert-internal :echo10
   [umm-coll _]
   (-> umm-coll
-      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:TemporalExtents] (comp seq (partial take 1)))
@@ -314,7 +313,6 @@
       (assoc :ISOTopicCategories nil)
       (assoc :Personnel nil)
       (assoc :Organizations nil)
-      (assoc :TilingIdentificationSystem nil)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in [:Distributions] echo10-expected-distributions)
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :GPolygons] fix-echo10-polygon)

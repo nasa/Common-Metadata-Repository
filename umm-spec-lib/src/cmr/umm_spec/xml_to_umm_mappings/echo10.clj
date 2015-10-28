@@ -74,6 +74,14 @@
     {:Type date-type
      :Date date-val}))
 
+(defn parse-tiling
+  "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
+  [doc]
+  (let [sys-el (first (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem"))]
+    {:TilingIdentificationSystemName (u/without-default (value-of sys-el "TwoDCoordinateSystemName"))
+     :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
+     :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)}))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
@@ -114,6 +122,7 @@
                 :LongName (value-of proj "LongName")
                 :StartDate (value-of proj "StartDate")
                 :EndDate (value-of proj "EndDate")})
+   :TilingIdentificationSystem (parse-tiling doc)
    :RelatedUrls (ru/parse-related-urls doc)
    :ScienceKeywords (for [sk (select doc "/Collection/ScienceKeywords/ScienceKeyword")]
                          {:Category (value-of sk "CategoryKeyword")

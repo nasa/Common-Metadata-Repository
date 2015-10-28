@@ -38,6 +38,11 @@
     value
     not-provided))
 
+(defn without-default
+  [x]
+  (when (not= x not-provided)
+    x))
+
 (defn without-default-value-of
   "Returns the parsed value of the given doc on the given xpath and converting the 'Not provided'
   default value to nil."
