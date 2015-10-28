@@ -1254,7 +1254,8 @@
       "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc. This platform includes zero or more instruments",
       "properties": {
         "TilingIdentificationSystemName": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "Coordinate1": {
           "$ref": "#/definitions/TilingCoordinateType"

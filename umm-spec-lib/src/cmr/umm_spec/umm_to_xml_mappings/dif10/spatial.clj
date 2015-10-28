@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
-  (:require [cmr.umm-spec.xml.gen :refer :all]))
+  (:require [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.util :as u]))
 
 ;; TODO: We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
 ;; See CMR-1990
@@ -51,6 +52,14 @@
    ;; Yes, it's CenterPoint here, and Center_Point everywhere else.
    [:CenterPoint (point-contents (:CenterPoint line))]])
 
+(defn tiling-system-coord-element
+  [tiling-sys k]
+  (let [coord (get tiling-sys k)]
+    ;; the element will have the same tag name as the key (Coordinate1 or Coordinate2)
+    [k
+     [:Minimum_Value (:MinimumValue coord)]
+     [:Maximum_Value (:MaximumValue coord)]]))
+
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
@@ -77,4 +86,12 @@
         [:Start_Circular_Latitude (:StartCircularLatitude o)]])
      (for [vert (:VerticalSpatialDomains sp)]
        [:Vertical_Spatial_Info
-        (elements-from vert :Type :Value)])]))
+        (elements-from vert :Type :Value)])
+     [:Spatial_Info
+      (when-let [sys (:TilingIdentificationSystem c)]
+        (list
+         [:Spatial_Coverage_Type u/not-provided]
+         [:TwoD_Coordinate_System
+          [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
+          (tiling-system-coord-element sys :Coordinate1)
+          (tiling-system-coord-element sys :Coordinate2)]))]]))

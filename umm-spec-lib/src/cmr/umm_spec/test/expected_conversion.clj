@@ -371,7 +371,8 @@
   (-> umm-coll
       ;; DIF 9 only supports entry-id in metadata associations
       (update-in-each [:MetadataAssociations] assoc :Type nil :Description nil :Version nil)
-      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
+      ;; DIF 9 does not support tiling identification system
+      (assoc :TilingIdentificationSystem nil)
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
@@ -447,7 +448,6 @@
   (-> umm-coll
       (update-in [:MetadataAssociations] filter-dif10-metadata-associations)
       (update-in-each [:MetadataAssociations] fix-dif10-matadata-association-type)
-      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent] prune-empty-maps)
@@ -462,8 +462,7 @@
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif10-related-urls)
       ;; The following fields are not supported yet
-      (assoc :TilingIdentificationSystem  nil
-             :Organizations nil
+      (assoc :Organizations nil
              :Personnel nil)))
 
 ;; ISO 19115-2
