@@ -33,7 +33,7 @@
                 false #{:short-name :version-id :entry-id :entry-title}}
    :granule {true #{:parent-collection-id }
              false #{:parent-collection-id :parent-entry-title :granule-ur}}
-   :services {true {}
+   :services {true #{}
               false #{:entry-id :entry-title}}})
 
 (defn extra-fields-missing-validation
