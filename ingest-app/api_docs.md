@@ -368,10 +368,12 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
 
+To disable validation of the parsed UMM metadata against the UMM spec, pass `skip_umm_validation=true` as a query parameter.
+
 Example: Translate ECHO10 metadata to UMM JSON
 
 ```
-curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/umm+json" %CMR-ENDPOINT%/translate/collection -d \
+curl -i -XPOST -H "Content-Type: application/echo10+xml" -H "Accept: application/umm+json" %CMR-ENDPOINT%/translate/collection?skip_umm_validation=true -d \
 "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
