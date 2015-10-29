@@ -52,7 +52,8 @@
    ;; Yes, it's CenterPoint here, and Center_Point everywhere else.
    [:CenterPoint (point-contents (:CenterPoint line))]])
 
-(defn tiling-system-coord-element
+(defn- tiling-system-coord-element
+  "Returns a DIF 10 tiling system Coordinate(n) element."
   [tiling-sys k]
   (let [coord (get tiling-sys k)]
     ;; the element will have the same tag name as the key (Coordinate1 or Coordinate2)

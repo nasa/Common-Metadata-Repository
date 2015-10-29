@@ -39,6 +39,7 @@
     not-provided))
 
 (defn without-default
+  "Returns nil if x is the not-provided placeholder value, else returns x."
   [x]
   (when (not= x not-provided)
     x))
