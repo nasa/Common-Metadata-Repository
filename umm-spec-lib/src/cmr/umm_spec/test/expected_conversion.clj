@@ -248,9 +248,10 @@
 (defn- echo10-expected-fees
   "Returns the fees if it is a number string, i.e., can be converted to a decimal, otherwise nil."
   [fees]
-  (when (and fees
-             (try (Double. fees)
-               (catch NumberFormatException e)))))
+  (when fees
+    (try
+      (format "%9.2f" (Double. fees))
+      (catch NumberFormatException e))))
 
 (defn- echo10-expected-distributions
   "Returns the ECHO10 expected distributions for comparing with the distributions in the UMM-C
