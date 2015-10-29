@@ -21,7 +21,8 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]
             [cmr.virtual-product.source-to-virtual-mapping :as svm]
-            [cmr.bootstrap.embedded-system-helper :as helper]))
+            [cmr.bootstrap.embedded-system-helper :as helper]
+            [cmr.bootstrap.config :as bs-config]))
 
 (defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"
@@ -78,11 +79,23 @@
   (format "parent_collection_id = (select distinct concept_id from %s where entry_title = ?)"
           (mu/metadata-db-concept-table provider-id :collection)))
 
+(defn- provider-alias->provider-id
+  "Get the provider-id for the given provider alias. If the alias is provider-id itself, returns
+  provider-id, otherwise returns the matching provider-id or nil if no such alias is defined."
+  [alias]
+  (let [provider-aliases (bs-config/virtual-product-provider-aliases)]
+    ;; Check if alias is one of the provider ids defined in provider aliases configuration
+    (if (contains? provider-aliases alias)
+      alias
+      (some (fn [[provider-id aliases]]
+              (when (contains? aliases alias) provider-id)) provider-aliases))))
+
 (defn- provider-virtual-entry-titles
   "Returns all the virtual entry titles for the given provider as sql strings"
   [provider-id]
   (let [virt-collections-by-prov (group-by first (keys svm/virtual-product-to-source-mapping))
-        provider-virt-collections (get virt-collections-by-prov provider-id)]
+        provider-virt-collections (get virt-collections-by-prov
+                                       (provider-alias->provider-id provider-id))]
     (map second provider-virt-collections)))
 
 (defn- granule-is-not-virtual-clause

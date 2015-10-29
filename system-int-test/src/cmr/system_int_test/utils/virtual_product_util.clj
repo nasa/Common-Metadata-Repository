@@ -136,7 +136,8 @@
 (defmulti add-granule-attributes
   "A method to add custom attributes to granule concepts depending on the source granule"
   (fn [provider-id granule]
-    [provider-id (get-in granule [:collection-ref :short-name])]))
+    [(svm/provider-alias->provider-id provider-id)
+     (get-in granule [:collection-ref :short-name])]))
 
 (defmethod add-granule-attributes :default
   [provider-id granule]
