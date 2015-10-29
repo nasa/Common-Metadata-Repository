@@ -5,7 +5,8 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
-            [cmr.virtual-product.config :as vp-config]
+            [cmr.virtual-product.config]
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.umm.granule :as umm-g]
@@ -15,7 +16,7 @@
 
 (def virtual-product-providers
   "Returns a list of the provider ids of the providers with virtual products."
-  (->> vp-config/source-to-virtual-product-config
+  (->> svm/source-to-virtual-product-mapping
        keys
        (map first)))
 
@@ -23,7 +24,7 @@
   "Returns a sequence of UMM collection records that are sources of virtual products."
   []
   (for [[[provider-id entry-title]
-         {:keys [short-name]}] vp-config/source-to-virtual-product-config]
+         {:keys [short-name]}] svm/source-to-virtual-product-mapping]
     (assoc (dc/collection {:entry-title entry-title :short-name short-name})
            :provider-id provider-id)))
 
@@ -53,15 +54,15 @@
 (defn source-collection->virtual-collections
   "Returns virtual collections from a source collection"
   [source-collection]
-  (for [virtual-coll-attribs (-> vp-config/source-to-virtual-product-config
-                                 (get [(vp-config/provider-alias->provider-id (:provider-id source-collection))
+  (for [virtual-coll-attribs (-> svm/source-to-virtual-product-mapping
+                                 (get [(svm/provider-alias->provider-id (:provider-id source-collection))
                                        (:entry-title source-collection)])
                                  :virtual-collections)]
     (assoc (dc/collection (merge (dissoc source-collection
                                          :revision-id :native-id :concept-id :entry-id :product)
                                  virtual-coll-attribs))
            :product-specific-attributes (conj (:product-specific-attributes source-collection)
-                                              {:name vp-config/source-granule-ur-additional-attr-name
+                                              {:name svm/source-granule-ur-additional-attr-name
                                                :description "Granule-ur of the source granule"
                                                :data-type :string})
            :provider-id (:provider-id source-collection))))
@@ -71,10 +72,10 @@
   [granule]
   (let [{provider-alias :provider-id granule-ur :granule-ur
          {:keys [entry-title]} :collection-ref} granule
-        provider-id (vp-config/provider-alias->provider-id provider-alias)
-        vp-config (get vp-config/source-to-virtual-product-config [provider-id entry-title])]
+        provider-id (svm/provider-alias->provider-id provider-alias)
+        vp-config (get svm/source-to-virtual-product-mapping [provider-id entry-title])]
     (for [virtual-coll (:virtual-collections vp-config)]
-      (vp-config/generate-granule-ur
+      (svm/generate-granule-ur
         provider-id (:short-name vp-config) (:short-name virtual-coll) granule-ur))))
 
 (defn translate-granule-entries
@@ -89,7 +90,7 @@
 (defmulti add-collection-attributes
   "A method to add custom attributes to collection concepts depending on the source collection"
   (fn [collection]
-    [(vp-config/provider-alias->provider-id (:provider-id collection))
+    [(svm/provider-alias->provider-id (:provider-id collection))
      (get-in collection [:product :short-name])]))
 
 (defmethod add-collection-attributes :default
@@ -165,7 +166,7 @@
   [provider-id concept & options]
   (d/ingest provider-id
             (add-granule-attributes
-                          (vp-config/provider-alias->provider-id provider-id) concept)
+                          (svm/provider-alias->provider-id provider-id) concept)
             (apply hash-map options)))
 
 
@@ -201,7 +202,7 @@
     (ingest-virtual-collections [ast-coll])
     (are [granule-attrs expected-granule-urs]
         (let [params {"attribute[]" (format "string,%s,%s"
-                                            vp-config/source-granule-ur-additional-attr-name
+                                            svm/source-granule-ur-additional-attr-name
                                             (:granule-ur granule-attrs))
                       :page-size 20}]
           (d/ingest "LPDAAC_ECS" (dg/granule ast-coll granule-attrs))

@@ -18,7 +18,7 @@
             [cmr.bootstrap.services.health-service :as hs]
             [cmr.common.date-time-parser :as date-time-parser]
             [cmr.common-app.api.routes :as common-routes]
-            [cmr.virtual-product.config :as vp-config]))
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]))
 
 (defn- migrate-collection
   "Copy collections data from catalog-rest to metadata db (including granules)"
@@ -119,7 +119,7 @@
       (srv-errors/throw-service-error
         :bad-request
         "provider-id and entry-title are required parameters."))
-    (when-not (vp-config/source-to-virtual-product-config [provider-id entry-title])
+    (when-not (svm/source-to-virtual-product-mapping [provider-id entry-title])
       (srv-errors/throw-service-error
         :not-found
         (format "No virtual product configuration found for provider [%s] and entry-title [%s]"

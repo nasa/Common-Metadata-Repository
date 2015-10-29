@@ -9,7 +9,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
-            [cmr.virtual-product.config :as vp-config]
+            [cmr.virtual-product.config]
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.time-keeper :as tk]
             [cheshire.core :as json]
@@ -68,7 +69,7 @@
                "Find all granules in a virtual collection using source granule-ur as an additional
                attribute"
                expected-granule-urs
-               {"attribute[]" (format "string,%s,%s" vp-config/source-granule-ur-additional-attr-name
+               {"attribute[]" (format "string,%s,%s" svm/source-granule-ur-additional-attr-name
                                       granule-ur)
                 :page-size 50}
 
@@ -78,7 +79,7 @@
     (testing "Find all granules in virtual collections"
       (doseq [vp-coll vp-colls]
         (vp/assert-matching-granule-urs
-          [(vp-config/generate-granule-ur
+          [(svm/generate-granule-ur
              "LPDAAC_ECS" "AST_L1A" (get-in vp-coll [:product :short-name]) granule-ur)]
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 50}))))
@@ -128,7 +129,7 @@
         _ (index/wait-until-indexed)
         source-granules (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
-                                     granule-ur (vp-config/sample-source-granule-urs
+                                     granule-ur (svm/sample-source-granule-urs
                                                   [provider-id entry-title])]
                                  (vp/ingest-source-granule provider-id
                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
@@ -147,8 +148,8 @@
                     source-short-name (get-in source-collection [:product :short-name])
                     vp-short-name (get-in vp-coll [:product :short-name])]]
         (vp/assert-matching-granule-urs
-          (map #(vp-config/generate-granule-ur provider-id source-short-name vp-short-name %)
-               (vp-config/sample-source-granule-urs
+          (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+               (svm/sample-source-granule-urs
                  [provider-id (:entry-title source-collection)]))
           (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                       :page-size 1000}))))))
@@ -357,7 +358,7 @@
         provider-id (:provider-id src-umm)
         entry-title (get-in src-umm [:collection-ref :entry-title])]
     (flatten
-      (for [virt-coll (:virtual-collections (get vp-config/source-to-virtual-product-config
+      (for [virt-coll (:virtual-collections (get svm/source-to-virtual-product-mapping
                                                  [provider-id entry-title]))
             :let [virt-entry-title (:entry-title virt-coll)
                   granule-refs (:refs (search/find-refs
@@ -387,7 +388,7 @@
         _ (index/wait-until-indexed)
         src-grans (doall (for [source-coll source-collections
                                      :let [{:keys [provider-id entry-title]} source-coll]
-                                     granule-ur (vp-config/sample-source-granule-urs
+                                     granule-ur (svm/sample-source-granule-urs
                                                   [provider-id entry-title])]
                                  (vp/ingest-source-granule provider-id
                                                           (dg/granule source-coll {:granule-ur granule-ur}))))
@@ -451,7 +452,7 @@
 (defn- get-virtual-granule-umms
   [src-granule-ur]
   (let [query-param {"attribute[]" (format "string,%s,%s"
-                                           vp-config/source-granule-ur-additional-attr-name
+                                           svm/source-granule-ur-additional-attr-name
                                            src-granule-ur)
                      :page-size 20}
         virt-gran-refs (:refs (search/find-refs :granule query-param))]

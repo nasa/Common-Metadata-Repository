@@ -1,18 +1,20 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
   (:require [clojure.set]
+            [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.services.errors :as errors]))
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag})
+  #{:collection :granule :tag :service})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
   {"C" :collection
    "G" :granule
-   "T" :tag})
+   "T" :tag
+   "S" :service})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
@@ -21,7 +23,8 @@
 (defn concept-id-validation
   "Validates the concept id and returns errors if it's invalid. Returns nil if valid."
   [concept-id]
-  (let [regex #"[CGT]\d+-[A-Za-z0-9_]+"]
+  (let [valid-prefixes (str/join (keys concept-prefix->concept-type))
+        regex (re-pattern (str "[" valid-prefixes "]\\d+-[A-Za-z0-9_]+"))]
     (when-not (re-matches regex concept-id)
       [(format "Concept-id [%s] is not valid." concept-id)])))
 

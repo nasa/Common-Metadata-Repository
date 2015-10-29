@@ -20,7 +20,7 @@
             [cmr.oracle.connection :as oracle]
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]
-            [cmr.virtual-product.config :as vp-config]
+            [cmr.virtual-product.source-to-virtual-mapping :as svm]
             [cmr.bootstrap.embedded-system-helper :as helper]))
 
 (defconfig db-sync-work-items-batch-size
@@ -81,7 +81,7 @@
 (defn- provider-virtual-entry-titles
   "Returns all the virtual entry titles for the given provider as sql strings"
   [provider-id]
-  (let [virt-collections-by-prov (group-by first (keys vp-config/virtual-product-to-source-config))
+  (let [virt-collections-by-prov (group-by first (keys svm/virtual-product-to-source-mapping))
         provider-virt-collections (get virt-collections-by-prov provider-id)]
     (map second provider-virt-collections)))
 

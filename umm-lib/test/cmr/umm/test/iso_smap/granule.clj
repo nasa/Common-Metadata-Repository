@@ -77,6 +77,8 @@
       (dissoc :cloud-cover)
       ;; SMAP ISO does not support two-d-coordinate-system
       (dissoc :two-d-coordinate-system)
+      ;; SMAP ISO does not support measured-parameters
+      (dissoc :measured-parameters)
       umm-g/map->UmmGranule))
 
 (defspec generate-granule-is-valid-xml-test 100
