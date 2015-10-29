@@ -140,10 +140,6 @@
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_H2O_MMR_Surf.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "H2O_MMR_A,H2O_MMR_D,Latitude,Longitude")])
-          :measured-parameters [(gen-measured-parameter
-                                  {:parameter-name "Water Vapor Mass Mixing Ratio"
-                                   :qa-flags {:automatic-quality-flag "Passed"
-                                              :automatic-quality-flag-explanation "Based on percentage of product that is good. Suspect used where true quality is not known."}})]
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_OLR"
@@ -162,10 +158,6 @@
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_SurfAirTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfAirTemp_A,SurfAirTemp_D,Latitude,Longitude")])
-          :measured-parameters [(gen-measured-parameter
-                                  {:parameter-name "Surface Air Temperature"
-                                   :qa-flags {:automatic-quality-flag "Passed"
-                                              :automatic-quality-flag-explanation "Based on percentage of product that is good. Suspect used where true quality is not known."}})]
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_SurfSkinTemp"
@@ -175,10 +167,6 @@
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STD_006_SurfSkinTemp.006:AIRS.2002.08.31.L3.RetStd001.v6.0.9.0.G13208034313.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "SurfSkinTemp_A,SurfSkinTemp_D,Latitude,Longitude")])
-          :measured-parameters [(gen-measured-parameter
-                                  {:parameter-name "Surface Skin Temperature"
-                                   :qa-flags {:automatic-quality-flag "Passed"
-                                              :automatic-quality-flag-explanation "Based on percentage of product that is good. Suspect used where true quality is not known."}})]
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3std "AIRX3STD_006_TotCO"
@@ -209,16 +197,12 @@
           :data-granule {:size nil}}
 
          ;; AIRX3STM
-         ;; The measured parameters are fake and are added to show that measured parameters are
-         ;; preserved from source granule to virtual granule by default.
          "GSFCS4PA" airx3stm "AIRX3STM_006_ClrOLR"
          {:granule-ur "AIRX3STM.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [opendap-url])
-          :measured-parameters airx3std-measured-parameters
           :data-granule {:size 40}}
          {:granule-ur "AIRX3STM_006_ClrOLR.006:AIRS.2002.09.01.L3.RetStd030.v6.0.9.0.G13208054216.hdf"
           :related-urls (gen-resource-urls [(str opendap-url "?" "ClrOLR_A,ClrOLR_D,Latitude,Longitude")])
-          :measured-parameters airx3std-measured-parameters
           :data-granule {:size nil}}
 
          "GSFCS4PA" airx3stm "AIRX3STM_006_H2O_MMR_Surf"

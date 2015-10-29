@@ -231,12 +231,12 @@
   "Dispatch function to update virtual granule umm based on source granule umm. All the non-core
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
-  (fn [provider-id source-short-name virtual-short-name virtual-umm]
+  (fn [virtual-umm provider-id source-short-name virtual-short-name]
     [provider-id source-short-name]))
 
 ;; Default is to not do any update
 (defmethod update-virtual-granule-umm :default
-  [provider-id source-short-name source-umm virtual-umm]
+  [virtual-umm provider-id source-short-name source-umm]
   virtual-umm)
 
 (defn- subset-opendap-resource-url
@@ -273,11 +273,11 @@
         remove-granule-size)))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMUVBd"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ErythemalDailyDose,ErythemalDoseRate,UVindex,lon,lat"))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "OMTO3d"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "ColumnAmountO3,UVAerosolIndex,lon,lat"))
 
 (def airx3std-opendap-subsets
@@ -292,36 +292,10 @@
    "AIRX3STD_ClrOLR" "ClrOLR_A,ClrOLR_D,Latitude,Longitude"
    "AIRX3STD_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
-(def airx3std-measured-parameters
-  "A map of short names of the virtual products based on AIRXSTD dataset to the measured parameter
-  names that should be kept in the virtual granule metadata. For virtual short-names that are mapped
-  to empty set, no measured parameters will be kept in the virtual granules. The same is true for
-  virtual short-names (currently there are none) that are not defined in the mapping."
-  {"AIRX3STD_006_H2O_MMR_Surf" #{"Water Vapor Mass Mixing Ratio"}
-   "AIRX3STD_006_OLR" #{}
-   "AIRX3STD_006_SurfAirTemp" #{"Surface Air Temperature"}
-   "AIRX3STD_006_SurfSkinTemp" #{"Surface Skin Temperature"}
-   "AIRX3STD_006_TotCO" #{}
-   "AIRX3STD_ClrOLR" #{}
-   "AIRX3STD_TotCH4" #{}})
-
-(defn- update-airx3std-measured-parameters
-  "Returns the virtual umm record with the measured parameters updated based on the rules defined in
-  airx3std-measured-parameters."
-  [virtual-short-name virtual-umm]
-  (let [virtual-measured-parameters
-        (fn [mps]
-          (seq
-            (filter
-              #(contains? (airx3std-measured-parameters virtual-short-name) (:parameter-name %))
-              mps)))]
-    (update-in virtual-umm [:measured-parameters] virtual-measured-parameters)))
-
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STD"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (let [virtual-entry-title (get-in virtual-umm [:collection-ref :entry-title])]
-    (->> (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))
-         (update-airx3std-measured-parameters virtual-short-name))))
+    (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3std-opendap-subsets virtual-short-name))))
 
 (def airx3stm-opendap-subsets
   "A map of short names of the virtual products based on AIRXSTM dataset to the string representing
@@ -336,15 +310,15 @@
    "AIRX3STM_TotCH4" "TotCH4_A,TotCH4_D,Latitude,Longitude"})
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "AIRX3STM"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm (get airx3stm-opendap-subsets virtual-short-name)))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "GLDAS_NOAH10_3H"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "Rainf_tavg,AvgSurfT_inst,SoilMoi0_10cm_inst,time,lat,lon"))
 
 (defmethod update-virtual-granule-umm ["GSFCS4PA" "GLDAS_NOAH10_M"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (update-related-urls provider-id source-short-name virtual-short-name virtual-umm "Rainf_tavg,AvgSurfT_inst,SoilMoi0_10cm_inst,time,lat,lon"))
 
 (defn- update-ast-l1t-related-urls
@@ -366,7 +340,7 @@
 
 
 (defmethod update-virtual-granule-umm ["LPDAAC_ECS" "AST_L1T"]
-  [provider-id source-short-name virtual-short-name virtual-umm]
+  [virtual-umm provider-id source-short-name virtual-short-name]
   (-> virtual-umm
       (update-ast-l1t-related-urls virtual-short-name)
       (update-in [:product-specific-attributes]
@@ -380,11 +354,14 @@
 (defn generate-virtual-granule-umm
   "Generate the virtual granule umm based on source granule umm"
   [provider-id source-short-name source-umm virtual-coll]
-  (let [virtual-granule-ur (generate-granule-ur
+  (let [virtual-short-name (:short-name virtual-coll)
+        virtual-granule-ur (generate-granule-ur
                              provider-id
                              source-short-name
-                             (:short-name virtual-coll)
-                             (:granule-ur source-umm))
-        virtual-umm (update-core-fields source-umm virtual-granule-ur virtual-coll)
-        virtual-short-name (:short-name virtual-coll)]
-    (update-virtual-granule-umm provider-id source-short-name virtual-short-name virtual-umm)))
+                             virtual-short-name
+                             (:granule-ur source-umm))]
+    (-> source-umm
+        ;; Remove measured parameters from virtual granules
+        (assoc :measured-parameters nil)
+        (update-core-fields virtual-granule-ur virtual-coll)
+        (update-virtual-granule-umm provider-id source-short-name virtual-short-name))))
