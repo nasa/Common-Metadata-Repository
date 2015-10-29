@@ -48,7 +48,7 @@
    :Lines              (map parse-line (select g "Line"))})
 
 (defn parse-spatial
-  "Returns UMM-C spatial map from ECHO10 XML document."
+  "Returns UMM-C spatial map from DIF 10 XML document."
   [doc]
   (let [[spatial] (select doc "/DIF/Spatial_Coverage")]
     {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
@@ -64,3 +64,20 @@
                                       :InclinationAngle (value-of o "Inclination_Angle")
                                       :NumberOfOrbits (value-of o "Number_Of_Orbits")
                                       :StartCircularLatitude (value-of o "Start_Circular_Latitude")})}))
+
+(def tiling-system-xpath
+  "/DIF/Spatial_Coverage/Spatial_Info/TwoD_Coordinate_System")
+
+(defn- parse-tiling-coord
+  [twod-el coord-xpath]
+  (when-let [[coord-el] (select twod-el coord-xpath)]
+    {:MinimumValue (value-of coord-el "Minimum_Value")
+     :MaximumValue (value-of coord-el "Maximum_Value")}))
+
+(defn parse-tiling
+  "Returns UMM-C TilingIdentificationSystem map from DIF 10 XML document."
+  [doc]
+  (when-let [[twod-el] (select doc tiling-system-xpath)]
+    {:TilingIdentificationSystemName (value-of twod-el "TwoD_Coordinate_System_Name")
+     :Coordinate1 (parse-tiling-coord twod-el "Coordinate1")
+     :Coordinate2 (parse-tiling-coord twod-el "Coordinate2")}))
