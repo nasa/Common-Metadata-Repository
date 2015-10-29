@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 
@@ -105,6 +106,7 @@
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
          [:gmd:extent
           [:gmd:EX_Extent
+           (tiling/tiling-system-elements c)
            (generate-spatial-extent (:SpatialExtent c))
            (for [temporal (:TemporalExtents c)
                  rdt (:RangeDateTimes temporal)]

@@ -700,7 +700,6 @@
       (assoc :Quality nil)
       ;; Fields not supported by ISO-SMAP
       (assoc :MetadataAssociations nil) ;; Not supported for ISO SMAP
-      (assoc :TilingIdentificationSystem nil) ;; TODO Implement this as part of CMR-1862
       (assoc :Personnel nil) ;; TODO Implement this as part of CMR-1841
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (assoc :UseConstraints nil)
