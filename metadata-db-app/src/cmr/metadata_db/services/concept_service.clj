@@ -35,7 +35,8 @@
   "Number of revisions to keep by concept-type. If a concept instance has more than the number
   of revisions here the oldest ones will be deleted."
   {:collection 10
-   :granule 1})
+   :granule 1
+   :service 10})
 
 (def days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."

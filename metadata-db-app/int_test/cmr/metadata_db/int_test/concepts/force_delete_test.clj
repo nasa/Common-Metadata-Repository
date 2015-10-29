@@ -54,6 +54,26 @@
         (is (= 404 (:status (util/force-delete-concept concept-id 2))))
         (is (= 404 (:status (util/force-delete-concept concept-id 22))))))))
 
+(deftest force-delete-service-test
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
+    (let [serv (util/create-and-save-service provider-id 1)
+          concept-id (:concept-id serv)
+          _ (dorun (repeatedly 3 #(util/save-concept (dissoc serv :revision-id))))
+          {:keys [status revision-id]} (util/force-delete-concept concept-id 2)]
+      (testing "revision-id correct"
+        (is (= status 200))
+        (is (= revision-id 2)))
+      (testing "revision is gone"
+        (is (= 404 (:status (util/get-concept-by-id-and-revision concept-id 2)))))
+      (testing "earlier revisions still available"
+        (util/verify-concept-was-saved (assoc serv :revision-id 1)))
+      (testing "later revisions still available"
+        (util/verify-concept-was-saved (assoc serv :revision-id 3))
+        (util/verify-concept-was-saved (assoc serv :revision-id 4)))
+      (testing "delete non-existent revision gets 404"
+        (is (= 404 (:status (util/force-delete-concept concept-id 2))))
+        (is (= 404 (:status (util/force-delete-concept concept-id 22))))))))
+
 (deftest force-delete-tag-test
   (let [tag (util/create-and-save-tag 1)
         concept-id (:concept-id tag)
