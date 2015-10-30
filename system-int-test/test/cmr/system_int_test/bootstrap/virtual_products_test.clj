@@ -40,6 +40,9 @@
     (ingest/create-provider {:provider-guid (str provider-id "-guid")
                              :provider-id provider-id
                              :cmr-only true}))
+  (ingest/create-provider {:provider-guid "lp-alias-guid"
+                           :provider-id "LP_ALIAS"
+                           :cmr-only true})
   ;; turn off virtual products using eval-in-dev-sys so that it works
   ;; with integration tests when the CMR is running in another process
   (eval-in-dev-sys
@@ -137,6 +140,55 @@
                    [provider-id (:entry-title source-collection)]))
             (search/find-refs :granule {:entry-title (:entry-title vp-coll)
                                         :page-size 50})))))))
+
+(deftest virtual-product-provider-alias-bootstrap
+  (s/only-with-real-database
+    (vp/with-provider-aliases
+      {"LPDAAC_ECS"  #{"LP_ALIAS"}}
+      (let [entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+            bootstrap-collection (fn []
+                                   (index/wait-until-indexed)
+                                   (bootstrap/bootstrap-virtual-products "LP_ALIAS" entry-title)
+                                   (index/wait-until-indexed))
+            [ast-coll] (vp/ingest-source-collections
+                         [(assoc
+                            (dc/collection
+                              {:entry-title entry-title
+                               :short-name "AST_L1A"
+                               :projects (dc/projects "proj1" "proj2" "proj3")})
+                            :provider-id "LP_ALIAS")])
+            vp-colls (vp/ingest-virtual-collections [ast-coll])
+            granule-ur "SC:AST_L1A.003:2006227720"
+            ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
+                                                   (dg/granule ast-coll {:granule-ur granule-ur
+                                                                         :project-refs ["proj1"]}))
+            virtual-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
+            all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) virtual-granule-urs)]
+        (index/wait-until-indexed)
+
+        (testing "Only source granules exist (virtual products system is disabled)"
+          (vp/assert-matching-granule-urs
+            [(:granule-ur ast-l1a-gran)]
+            (search/find-refs :granule {:page-size 100})))
+
+        ;; Bootstrap collection
+        (bootstrap-collection)
+
+        (testing "Virtual granules are generated after bootstrap source granule"
+          (vp/assert-matching-granule-urs
+            all-expected-granule-urs
+            (search/find-refs :granule {:page-size 100})))
+
+        ;; delete the source granule
+        (ingest/delete-concept (d/item->concept ast-l1a-gran) {:revision-id 12})
+
+        ;; Bootstrap collection again
+        (bootstrap-collection)
+
+        (testing "Virtual granules are deleted as a result of bootstrap deleted source granule"
+          (vp/assert-matching-granule-urs
+            []
+            (search/find-refs :granule {:page-size 100})))))))
 
 ;; Verify that latest revision ids of virtual granules and the corresponding source granules
 ;; are in sync as various ingest operations are performed on the source granules

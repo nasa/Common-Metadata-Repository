@@ -119,7 +119,8 @@
       (srv-errors/throw-service-error
         :bad-request
         "provider-id and entry-title are required parameters."))
-    (when-not (svm/source-to-virtual-product-mapping [provider-id entry-title])
+    (when-not (svm/source-to-virtual-product-mapping
+                [(svm/provider-alias->provider-id provider-id) entry-title])
       (srv-errors/throw-service-error
         :not-found
         (format "No virtual product configuration found for provider [%s] and entry-title [%s]"
