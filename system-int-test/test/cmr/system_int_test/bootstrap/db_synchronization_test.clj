@@ -23,6 +23,7 @@
   (into
     {"CPROV1" false
      "CPROV2" false
+     "LP_ALIAS" false
      ;; This provider will be CMR Only
      "CPROV3" true}
     (for [p vp/virtual-product-providers]
@@ -1030,145 +1031,156 @@
     (is (= (set expected-urs)
            (set found-urs)))))
 
-;; Test to check if virtual granules which are created automically within CMR but are not created
+;; Test to check if virtual granules which are created automatically within CMR but are not created
 ;; in Catalog-Rest are not deleted during db synchronization.
 (deftest db-synchronize-virtual-concept-delete-test
   (s/only-with-real-database
-    (let [concept-counter (atom 1)
-          ;; Function to create collection umm using entry title. provider id is added to the
-          ;; record created for later use.
-          collection-umm (fn [provider-id entry-title short-name]
-                           (assoc (dc/collection {:entry-title entry-title
-                                                  :short-name short-name})
-                                  :provider-id provider-id))
-          ;; Function to create a collection concept which can be ingested directly
-          ;; to Catalog Rest.
-          coll-concept (fn [coll-umm]
-                         (create-collection-concept
-                           coll-umm (:provider-id coll-umm) :echo10 concept-counter))
-          non-virt-coll1 (collection-umm "CPROV1" "non virtual collection 1" "non-virtual-1")
-          non-virt-coll-concept1 (coll-concept non-virt-coll1)
-          non-virt-coll2 (collection-umm "LPDAAC_ECS" "non virtual collection 2" "non-virtual-2")
-          non-virt-coll-concept2 (coll-concept non-virt-coll2)
-          ast-coll (vp/add-collection-attributes
-                     (collection-umm "LPDAAC_ECS"
-                                     "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
-                                     "AST_L1A"))
-          ast-coll-concept (coll-concept  ast-coll)
-          omi-coll (vp/add-collection-attributes
-                     (collection-umm "GSFCS4PA"
-                                     (str "OMI/Aura Surface UVB Irradiance and Erythemal"
-                                          " Dose Daily L3 Global 1.0x1.0 deg Grid V003") "OMUVBd"))
-          omi-coll-concept (coll-concept omi-coll)
-          non-virt-collection-concepts [non-virt-coll-concept1 non-virt-coll-concept2]
-          src-collection-concepts [ast-coll-concept omi-coll-concept]
-          virt-collection-concepts (map coll-concept
-                                        (mapcat vp/source-collection->virtual-collections
-                                                [ast-coll omi-coll]))
-          all-coll-concepts (concat non-virt-collection-concepts
-                                    src-collection-concepts
-                                    virt-collection-concepts)
-          providers (conj vp/virtual-product-providers "CPROV1")
-          ast-gran-ur "SC:AST_L1A.003:2006227720"
-          omi-gran-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
-          system (bootstrap/system)]
-      ;; Save the collections concepts in Catalog REST
-      (cat-rest/insert-concepts system all-coll-concepts)
-      ;; Migrate the providers.
-      (apply bootstrap/bulk-migrate-providers providers)
-      (apply bootstrap/bulk-index-providers providers)
+    (vp/with-provider-aliases
+      {"LPDAAC_ECS" #{"LP_ALIAS"} "GSFCS4PA" #{}}
+      (let [concept-counter (atom 1)
+            ;; Function to create collection umm using entry title. provider id is added to the
+            ;; record created for later use.
+            collection-umm (fn [provider-id entry-title short-name]
+                             (assoc (dc/collection {:entry-title entry-title
+                                                    :short-name short-name})
+                                    :provider-id provider-id))
+            ;; Function to create a collection concept which can be ingested directly
+            ;; to Catalog Rest.
+            coll-concept (fn [coll-umm]
+                           (create-collection-concept
+                             coll-umm (:provider-id coll-umm) :echo10 concept-counter))
+            non-virt-coll1 (collection-umm "CPROV1" "non virtual collection 1" "non-virtual-1")
+            non-virt-coll-concept1 (coll-concept non-virt-coll1)
+            non-virt-coll2 (collection-umm "LPDAAC_ECS" "non virtual collection 2" "non-virtual-2")
+            non-virt-coll-concept2 (coll-concept non-virt-coll2)
+            ast-coll (vp/add-collection-attributes
+                       (collection-umm "LPDAAC_ECS"
+                                       "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                                       "AST_L1A"))
+            ast-coll-concept (coll-concept  ast-coll)
+            ast-alias-coll (vp/add-collection-attributes
+                             (collection-umm "LP_ALIAS"
+                                             "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+                                             "AST_L1A"))
+            ast-alias-coll-concept (coll-concept  ast-alias-coll)
+            omi-coll (vp/add-collection-attributes
+                       (collection-umm "GSFCS4PA"
+                                       (str "OMI/Aura Surface UVB Irradiance and Erythemal"
+                                            " Dose Daily L3 Global 1.0x1.0 deg Grid V003") "OMUVBd"))
+            omi-coll-concept (coll-concept omi-coll)
+            non-virt-collection-concepts [non-virt-coll-concept1 non-virt-coll-concept2]
+            src-collection-concepts [ast-coll-concept ast-alias-coll-concept omi-coll-concept]
+            virt-collection-concepts (map coll-concept
+                                          (mapcat vp/source-collection->virtual-collections
+                                                  [ast-coll ast-alias-coll omi-coll]))
+            all-coll-concepts (concat non-virt-collection-concepts
+                                      src-collection-concepts
+                                      virt-collection-concepts)
+            providers (conj vp/virtual-product-providers "CPROV1" "LP_ALIAS")
+            ast-gran-ur "SC:AST_L1A.003:2006227720"
+            ast-alias-gran-ur "SC:AST_L1A.003:2006227722"
+            omi-gran-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2004m1001_v003-2013m0314t081851.he5"
+            system (bootstrap/system)]
+        ;; Save the collections concepts in Catalog REST
+        (cat-rest/insert-concepts system all-coll-concepts)
+        ;; Migrate the providers.
+        (apply bootstrap/bulk-migrate-providers providers)
+        (apply bootstrap/bulk-index-providers providers)
 
-      (testing "Virtual granules should be unaffected by db synchronization"
-        (let [;; Function to create granule umm using granule-ur and collection umm. Collection
-              ;; concept id and provider id are added to the record created for later use.
-              granule-umm (fn [coll-umm collection-id granule-ur]
-                            (assoc (vp/add-granule-attributes
-                                     (:provider-id coll-umm)
-                                     (dg/granule coll-umm {:granule-ur granule-ur}))
-                                   :provider-id (:provider-id coll-umm)
-                                   :collection-id collection-id))
-              ;; Function to create a granule concept which can be ingested directly
-              ;; to Catalog Rest.
-              gran-concept (fn [gran-umm]
-                             (create-granule-concept
-                               gran-umm
-                               (:collection-id gran-umm)
-                               (:provider-id gran-umm)
-                               concept-counter))
-              gran-concept1 (gran-concept
-                              (granule-umm non-virt-coll1
-                                           (:concept-id non-virt-coll-concept1)
-                                           "gran1"))
-              gran-concept2 (gran-concept
-                              (granule-umm non-virt-coll1
-                                           (:concept-id non-virt-coll-concept1)
-                                           "gran2"))
-              gran-concept3 (gran-concept
-                              (granule-umm non-virt-coll2
-                                           (:concept-id non-virt-coll-concept2)
-                                           "gran3"))
-              ast-gran-umm (granule-umm ast-coll (:concept-id ast-coll-concept) ast-gran-ur)
-              ast-gran-concept (gran-concept ast-gran-umm)
-              omi-gran-umm (granule-umm omi-coll (:concept-id omi-coll-concept) omi-gran-ur)
-              omi-gran-concept (gran-concept omi-gran-umm)
-              src-gran-concepts [ast-gran-concept omi-gran-concept]]
+        (testing "Virtual granules should be unaffected by db synchronization"
+          (let [;; Function to create granule umm using granule-ur and collection umm. Collection
+                ;; concept id and provider id are added to the record created for later use.
+                granule-umm (fn [coll-umm collection-id granule-ur]
+                              (assoc (vp/add-granule-attributes
+                                       (:provider-id coll-umm)
+                                       (dg/granule coll-umm {:granule-ur granule-ur}))
+                                     :provider-id (:provider-id coll-umm)
+                                     :collection-id collection-id))
+                ;; Function to create a granule concept which can be ingested directly
+                ;; to Catalog Rest.
+                gran-concept (fn [gran-umm]
+                               (create-granule-concept
+                                 gran-umm
+                                 (:collection-id gran-umm)
+                                 (:provider-id gran-umm)
+                                 concept-counter))
+                gran-concept1 (gran-concept
+                                (granule-umm non-virt-coll1
+                                             (:concept-id non-virt-coll-concept1)
+                                             "gran1"))
+                gran-concept2 (gran-concept
+                                (granule-umm non-virt-coll1
+                                             (:concept-id non-virt-coll-concept1)
+                                             "gran2"))
+                gran-concept3 (gran-concept
+                                (granule-umm non-virt-coll2
+                                             (:concept-id non-virt-coll-concept2)
+                                             "gran3"))
+                ast-gran-umm (granule-umm ast-coll (:concept-id ast-coll-concept) ast-gran-ur)
+                ast-gran-concept (gran-concept ast-gran-umm)
+                ast-alias-gran-umm (granule-umm ast-alias-coll
+                                                (:concept-id ast-alias-coll-concept) ast-alias-gran-ur)
+                ast-alias-gran-concept (gran-concept ast-alias-gran-umm)
+                omi-gran-umm (granule-umm omi-coll (:concept-id omi-coll-concept) omi-gran-ur)
+                omi-gran-concept (gran-concept omi-gran-umm)
+                src-gran-concepts [ast-gran-concept ast-alias-gran-concept omi-gran-concept]]
 
-          ;; Insert a non-virtual granule to catalog REST, but not to CMR
-          (cat-rest/insert-concepts system [gran-concept2])
+            ;; Insert a non-virtual granule to catalog REST, but not to CMR
+            (cat-rest/insert-concepts system [gran-concept2])
 
-          ;; Insert the source granules to catalog REST and CMR separately
-          (cat-rest/insert-concepts system src-gran-concepts)
-          (ingest/ingest-concept ast-gran-concept {:client-id "ECHO"})
-          (ingest/ingest-concept omi-gran-concept {:client-id "ECHO"})
+            ;; Insert the source granules to catalog REST and CMR separately
+            (cat-rest/insert-concepts system src-gran-concepts)
+            (ingest/ingest-concept ast-gran-concept {:client-id "ECHO"})
+            (ingest/ingest-concept ast-alias-gran-concept {:client-id "ECHO"})
+            (ingest/ingest-concept omi-gran-concept {:client-id "ECHO"})
 
-          ;; Insert some non-virtual-granules to CMR only
-          (ingest/ingest-concept gran-concept1 {:client-id "ECHO"})
-          (ingest/ingest-concept gran-concept3 {:client-id "ECHO"})
+            ;; Insert some non-virtual-granules to CMR only
+            (ingest/ingest-concept gran-concept1 {:client-id "ECHO"})
+            (ingest/ingest-concept gran-concept3 {:client-id "ECHO"})
 
-          (index/wait-until-indexed)
+            (index/wait-until-indexed)
 
-          ;; metadata-db should now have additional virtual granules and gran-concept1
-          ;; and gran-concept3 which catalog-rest doesn't
-          (let [virtual-concepts (mapcat get-virtual-granule-concepts [ast-gran-ur omi-gran-ur])
-                cmr-gran-concepts (concat [gran-concept1 gran-concept3]
-                                          src-gran-concepts virtual-concepts)]
-            (assert-virtual-granules virtual-concepts [ast-gran-umm omi-gran-umm])
-            (assert-concepts-in-mdb cmr-gran-concepts)
-            (assert-concepts-indexed cmr-gran-concepts)
+            ;; metadata-db should now have additional virtual granules and gran-concept1
+            ;; and gran-concept3 which catalog-rest doesn't
+            (let [virtual-concepts (mapcat get-virtual-granule-concepts
+                                           [ast-gran-ur ast-alias-gran-ur omi-gran-ur])
+                  cmr-gran-concepts (concat [gran-concept1 gran-concept3]
+                                            src-gran-concepts virtual-concepts)]
+              (assert-virtual-granules virtual-concepts [ast-gran-umm ast-alias-gran-umm omi-gran-umm])
+              (assert-concepts-in-mdb cmr-gran-concepts)
+              (assert-concepts-indexed cmr-gran-concepts)
 
-            ;; Catalog REST and Metadata DB are not in sync now.
-            ;; Put them back in sync
-            (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing]})
+              ;; Catalog REST and Metadata DB are not in sync now.
+              ;; Put them back in sync
+              (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing]})
 
-            ;; After synchronization gran-concept1 and gran-concept3 should be gone from CMR,
-            ;; gran-concept2 should be added and virtual granules should still be present
-            (assert-concepts-in-mdb (concat [gran-concept2] virtual-concepts))
-            (assert-concepts-indexed (concat [gran-concept2] virtual-concepts))
+              ;; After synchronization gran-concept1 and gran-concept3 should be gone from CMR,
+              ;; gran-concept2 should be added and virtual granules should still be present
+              (assert-concepts-in-mdb (concat [gran-concept2] virtual-concepts))
+              (assert-concepts-indexed (concat [gran-concept2] virtual-concepts))
 
-            (assert-tombstones-in-mdb [gran-concept1 gran-concept3])
-            (assert-concepts-not-indexed [gran-concept1 gran-concept3]))))
+              (assert-tombstones-in-mdb [gran-concept1 gran-concept3])
+              (assert-concepts-not-indexed [gran-concept1 gran-concept3]))))
 
-      (testing "Virtual collections should behave like other collections"
+        (testing "Virtual collections should behave like other collections"
 
-        ;; Delete virtual collections from Catalog REST
-        (cat-rest/delete-concepts system virt-collection-concepts)
+          ;; Delete virtual collections from Catalog REST
+          (cat-rest/delete-concepts system virt-collection-concepts)
 
-        ;; Synchronize Catalog REST and Metadata DB
-        (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing]})
+          ;; Synchronize Catalog REST and Metadata DB
+          (bootstrap/synchronize-databases {:sync-types [:updates :deletes :missing]})
 
-        ;; non-virtual-collections and source collections should be present in metadata-db
-        (assert-concepts-in-mdb (concat non-virt-collection-concepts src-collection-concepts))
-        ;; Revision-id of 3 here because synchronization has run 3 times.
-        (assert-concepts-indexed (map #(assoc % :revision-id 3)
-                                      (concat non-virt-collection-concepts src-collection-concepts)))
+          ;; non-virtual-collections and source collections should be present in metadata-db
+          (assert-concepts-in-mdb (concat non-virt-collection-concepts src-collection-concepts))
+          ;; Revision-id of 3 here because synchronization has run 3 times.
+          (assert-concepts-indexed (map #(assoc % :revision-id 3)
+                                        (concat non-virt-collection-concepts src-collection-concepts)))
 
-        ;; virtual collections should have tombstones
-        (assert-tombstones-in-mdb virt-collection-concepts)
-        (assert-concepts-not-indexed virt-collection-concepts)
+          ;; virtual collections should have tombstones
+          (assert-tombstones-in-mdb virt-collection-concepts)
+          (assert-concepts-not-indexed virt-collection-concepts)
 
-        ;; all virtual granules should be deleted as well
-        (is (empty? (apply concat (map get-virtual-granule-concepts [ast-gran-ur omi-gran-ur]))))))))
-
-
+          ;; all virtual granules should be deleted as well
+          (is (empty? (apply concat (map get-virtual-granule-concepts [ast-gran-ur ast-alias-gran-ur omi-gran-ur])))))))))
 
 
