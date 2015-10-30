@@ -33,9 +33,3 @@
   {:default true
    :type Boolean})
 
-(defconfig virtual-product-provider-aliases
-  "For each provider-id for which a virtual product is configured, define a set of provider-ids
-  which have the same virtual product configuration as the original."
-  {:default {"LPDAAC_ECS"  #{}
-             "GSFCS4PA" #{}}
-   :type :edn})
