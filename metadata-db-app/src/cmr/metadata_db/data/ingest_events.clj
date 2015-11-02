@@ -3,12 +3,15 @@
   (:require [cmr.metadata-db.config :as config]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
+            [cmr.common.concepts :as cc]
             [cmr.message-queue.services.queue :as queue]))
 
 (defn publish-event
   "Put an ingest event on the message queue."
   [context exchange-name msg]
-  (when (config/publish-messages)
+  (when (and (config/publish-messages)
+             ;; TODO - Remove this when we add service indexing in CMR-1508
+             (not= :service (cc/concept-id->type (:concept-id msg))))
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])]
       (when queue-broker
