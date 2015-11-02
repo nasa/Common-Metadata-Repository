@@ -1094,7 +1094,7 @@ Example of sorting by start_date in descending order: (Most recent data first)
 
 #### Retrieving All Revisions of a Collection
 
-In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in `all_revisons=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a collection parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisons, by passing in `all_revisions=true` with the URL parameters. The reference and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/collections?provider=PROV1&all_revisions=true&pretty=true"
 
