@@ -421,8 +421,19 @@
                                          (assoc ast-l1a-gran :provider-id "LPDAAC_ECS"))
           all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-virtual-granule-urs)]
       (index/wait-until-indexed)
+
+      ;; Found all granules including the virtual granules
       (vp/assert-matching-granule-urs
         all-expected-granule-urs
+        (search/find-refs :granule {:page-size 50}))
+
+      ;; delete the source granule
+      (ingest/delete-concept (d/item->concept ast-l1a-gran))
+      (index/wait-until-indexed)
+
+      ;; Found no granules, virtual granules are deleted as a result of deletion of source granule
+      (vp/assert-matching-granule-urs
+        []
         (search/find-refs :granule {:page-size 50})))))
 
 (deftest virtual-product-non-cmr-only-provider-test

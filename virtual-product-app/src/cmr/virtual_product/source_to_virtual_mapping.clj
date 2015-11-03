@@ -232,7 +232,7 @@
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
   (fn [virtual-umm provider-id source-short-name virtual-short-name]
-    [provider-id source-short-name]))
+    [(provider-alias->provider-id provider-id) source-short-name]))
 
 ;; Default is to not do any update
 (defmethod update-virtual-granule-umm :default

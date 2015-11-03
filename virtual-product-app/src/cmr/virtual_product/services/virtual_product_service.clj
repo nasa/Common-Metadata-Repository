@@ -44,18 +44,18 @@
 (defn- annotate-event
   "Adds extra information to the event to help with processing"
   [{:keys [concept-id] :as event}]
-  (let [{concept-type :concept-type
-         provider-alias :provider-id} (concepts/parse-concept-id concept-id)]
+  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
     (-> event
         (update-in [:action] keyword)
-        (assoc :provider-id (svm/provider-alias->provider-id provider-alias)
+        (assoc :provider-id provider-id
                :concept-type concept-type))))
 
 (defn- virtual-granule-event?
   "Returns true if the granule identified by concept-type, provider-id and entry-title is virtual"
   [{:keys [concept-type provider-id entry-title]}]
   (and (= :granule concept-type)
-       (contains? source-provider-id-entry-titles [provider-id entry-title])))
+       (contains? source-provider-id-entry-titles
+                  [(svm/provider-alias->provider-id provider-id) entry-title])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handle updates
@@ -107,7 +107,8 @@
 (defn-timed apply-source-granule-update-event
   "Applies a source granule update event to the virtual granules"
   [context {:keys [provider-id entry-title concept-id revision-id]}]
-  (let [orig-concept (mdb/get-concept context concept-id revision-id)
+  (let [provider-id (svm/provider-alias->provider-id provider-id)
+        orig-concept (mdb/get-concept context concept-id revision-id)
         orig-umm (umm/parse-concept orig-concept)
         vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])
         source-short-name (:short-name vp-config)]
@@ -115,7 +116,7 @@
             :when (source-granule-matches-virtual-product?
                     provider-id (:entry-title virtual-coll) orig-umm)]
       (let [new-umm (svm/generate-virtual-granule-umm provider-id source-short-name
-                                                         orig-umm virtual-coll)
+                                                      orig-umm virtual-coll)
             new-granule-ur (:granule-ur new-umm)
             new-metadata (umm/umm->xml new-umm (mime-types/mime-type->format
                                                  (:format orig-concept)))
@@ -140,7 +141,7 @@
 (defn- annotate-granule-delete-event
   "Adds extra information to the granule delete event to aid in processing."
   [context event]
-  (let [{:keys [concept-id revision-id provider-id]} event
+  (let [{:keys [concept-id revision-id]} event
         granule-delete-concept (mdb/get-concept context concept-id revision-id)
         {{:keys [parent-collection-id granule-ur]} :extra-fields} granule-delete-concept
         parent-collection-concept (mdb/get-latest-concept context parent-collection-id)
@@ -181,7 +182,7 @@
       (= status 404)
       (if (>= retry-count (count (queue-config/rabbit-mq-ttls)))
         (info (format (str "The number of retries has exceeded the maximum retry count."
-                   "The delete event for the virtual granule [%s] will be ignored") granule-ur))
+                           "The delete event for the virtual granule [%s] will be ignored") granule-ur))
         (errors/internal-error!
           (format (str "Received a response with status code [404] and the following response body "
                        "when deleting the virtual granule [%s] : [%s]. The delete request will be "
@@ -205,12 +206,13 @@
 (defn-timed apply-source-granule-delete-event
   "Applies a source granule delete event to the virtual granules"
   [context {:keys [provider-id revision-id granule-ur entry-title retry-count]}]
-  (let [vp-config (svm/source-to-virtual-product-mapping [provider-id entry-title])]
+  (let [vp-config (svm/source-to-virtual-product-mapping
+                    [(svm/provider-alias->provider-id provider-id) entry-title])]
     (doseq [virtual-coll (:virtual-collections vp-config)]
       (let [new-granule-ur (svm/generate-granule-ur provider-id
-                                                       (:short-name vp-config)
-                                                       (:short-name virtual-coll)
-                                                       granule-ur)
+                                                    (:short-name vp-config)
+                                                    (:short-name virtual-coll)
+                                                    granule-ur)
             resp (ingest/delete-concept context {:provider-id provider-id
                                                  :concept-type :granule
                                                  :native-id new-granule-ur}
