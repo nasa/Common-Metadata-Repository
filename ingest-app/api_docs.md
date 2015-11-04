@@ -80,7 +80,6 @@ The user id header allows specifying the user-id to use when saving or deleting 
 | Status Code |                                               Description                                                                          |
 | ----------- | -----------------------------------------------------------------------------------------------------------------------------------|
 |         200 | Success                                                                                                                            |
-|         201 | Success creating an entity                                                                                                         |
 |         400 | Bad request. The body will contain errors.                                                                                         |
 |         404 | Not found. This could be returned either because the URL isn't known by ingest or the item wasn't found.                           |
 |         409 | Conflict. This is returned when a revision id conflict occurred while saving the item.                                             |
@@ -91,7 +90,7 @@ The user id header allows specifying the user-id to use when saving or deleting 
 
 #### <a name="successful-responses"></a> Successful Responses
 
-Successful ingest responses will return an HTTP Status code of 200 or 201 and a body containing the [CMR Concept Id](#concept-id) of the item that was updated or deleted along with the [revision id](#revision-id).
+Successful ingest responses will return an HTTP Status code of 200 and a body containing the [CMR Concept Id](#concept-id) of the item that was updated or deleted along with the [revision id](#revision-id).
 
     {"concept-id":"C12345-PROV","revision-id":1}
 
