@@ -11,11 +11,14 @@
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.mime-types :as mt]
             [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
             [cmr.umm.core :as umm]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.date-util :as spec-dates]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
@@ -25,8 +28,13 @@
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defn- add-extra-fields-for-collection
-  "Adds the extra fields for a collection concept."
+(defmulti add-extra-fields-for-collection
+  "Returns collection concept with fields necessary for ingest into metadata db
+  under :extra-fields."
+  (fn [context concept collection]
+    (type collection)))
+
+(defmethod add-extra-fields-for-collection cmr.umm.collection.UmmCollection
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
@@ -38,17 +46,32 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
+(defmethod add-extra-fields-for-collection cmr.umm_spec.models.collection.UMM-C
+  [context concept collection]
+  (let [{entry-id :EntryId} collection]
+    (assoc concept :extra-fields
+           {:entry-id entry-id
+            :version-id (:Version collection)
+            :short-name (string/replace entry-id (str "-" (:Version collection)) "")
+            :entry-title (:EntryTitle collection)
+            :delete-time (when-let [delete-time (spec-dates/data-delete-date collection)]
+                           (str delete-time))})))
+
 (defn- validate-and-parse-collection-concept
   "Validates a collection concept and parses it. Returns the UMM record."
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
-  (v/validate-concept-xml collection-concept)
+  (v/validate-concept-metadata collection-concept)
 
-  (let [collection (umm/parse-concept collection-concept)]
-    ;; UMM Validation
-    (when (ingest-validation-enabled?)
-      (v/validate-collection-umm context collection validate-keywords?))
-    collection))
+  (if (= mt/umm-json (:format collection-concept))
+    (umm-spec/parse-metadata :collection
+                             (mt/mime-type->format (:format collection-concept))
+                             (:metadata collection-concept))
+    (let [collection (umm/parse-concept collection-concept)]
+      ;; UMM Validation
+      (when (ingest-validation-enabled?)
+        (v/validate-collection-umm context collection validate-keywords?))
+      collection)))
 
 (defn-timed validate-collection
   "Validate the collection. Throws a service error if any validation issues are found."
@@ -56,6 +79,7 @@
   (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
+    (println "collection =" collection)
     (v/validate-business-rules
       context
       (assoc coll-concept :umm-concept collection))
@@ -111,7 +135,7 @@
      context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
-   (v/validate-concept-xml concept)
+   (v/validate-concept-metadata concept)
 
    (let [granule (umm/parse-concept concept)
          [parent-collection-concept
