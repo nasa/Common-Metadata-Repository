@@ -114,6 +114,13 @@
            :originator-id "jnorton"
            :associated-concept-ids #{}}))
 
+(def group-edn
+  "Valid EDN for group metadata"
+  (pr-str {:name "LPDAAC_ECS Administrators"
+            :provider-id "LPDAAC_ECS"
+            :description "Contains users with permission to manage LPDAAC_ECS holdings."
+            :members ["jsmith" "prevere" "ndrew"]}))
+
 (def concept-dummy-metadata
   "Index events are now created by MDB when concepts are saved. So the Indexer will attempt
   to look up the metadata for the concepts and parse it. So we need to provide valid
@@ -122,7 +129,8 @@
   {:collection collection-xml
    :granule granule-xml
    :service service-xml
-   :tag tag-edn})
+   :tag tag-edn
+   :access-group group-edn})
 
 (defn- concept
   "Create a concept map for any concept type. "
@@ -185,6 +193,17 @@
                            attributes)]
      ;; no provider-id should be specified for tags
      (dissoc (concept nil :tag uniq-num attributes) :provider-id))))
+
+(defn group-concept
+  "Creates a group concept"
+  ([provider-id uniq-num]
+   (group-concept provider-id uniq-num {}))
+  ([provider-id uniq-num attributes]
+   (let [attributes (merge {:user-id (str "user" uniq-num)
+                            :format "application/edn"
+                            :extra-fields {}}
+                           attributes)]
+     (concept provider-id :access-group uniq-num attributes))))
 
 (defn service-concept
   "Creates a service concept"
@@ -460,6 +479,19 @@
    (create-and-save-service provider-id uniq-num num-revisions {}))
   ([provider-id uniq-num num-revisions attributes]
    (let [concept (service-concept provider-id uniq-num attributes)
+         _ (dotimes [n (dec num-revisions)]
+             (assert-no-errors (save-concept concept)))
+         {:keys [concept-id revision-id]} (save-concept concept)]
+     (assoc concept :concept-id concept-id :revision-id revision-id))))
+
+(defn create-and-save-group
+  "Creates, saves, and returns a group concept with its data from metadata-db. "
+  ([provider-id uniq-num]
+   (create-and-save-group provider-id uniq-num 1))
+  ([provider-id uniq-num num-revisions]
+   (create-and-save-group provider-id uniq-num num-revisions {}))
+  ([provider-id uniq-num num-revisions attributes]
+   (let [concept (group-concept provider-id uniq-num attributes)
          _ (dotimes [n (dec num-revisions)]
              (assert-no-errors (save-concept concept)))
          {:keys [concept-id revision-id]} (save-concept concept)]

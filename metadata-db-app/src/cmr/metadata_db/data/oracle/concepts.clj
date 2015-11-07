@@ -310,7 +310,7 @@
                              seq-name
                              (str/join "," (repeat (count values) "?")))]
             ;; Uncomment to debug what's inserted
-            ; (debug "Executing" stmt "with values" (pr-str values))
+            (debug "Executing" stmt "with values" (pr-str values))
             (j/db-do-prepared db stmt values)
             (after-save conn provider concept)
 
@@ -393,7 +393,8 @@
                                    START WITH %d
                                    INCREMENT BY 1
                                    CACHE 20" INITIAL_CONCEPT_NUM))
-    (j/db-do-commands this "DELETE FROM cmr_tags"))
+    (j/db-do-commands this "DELETE FROM cmr_tags")
+    (j/db-do-commands this "DELETE FROM cmr_groups"))
 
   (get-expired-concepts
     [this provider concept-type]
