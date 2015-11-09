@@ -472,7 +472,7 @@
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-service
-  "Creates, saves, and returns a service concept with its data from metadata-db. "
+  "Creates, saves, and returns a service concept with its data from metadata-db."
   ([provider-id uniq-num]
    (create-and-save-service provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
@@ -485,7 +485,7 @@
      (assoc concept :concept-id concept-id :revision-id revision-id))))
 
 (defn create-and-save-group
-  "Creates, saves, and returns a group concept with its data from metadata-db. "
+  "Creates, saves, and returns a group concept with its data from metadata-db."
   ([provider-id uniq-num]
    (create-and-save-group provider-id uniq-num 1))
   ([provider-id uniq-num num-revisions]
