@@ -114,13 +114,3 @@
     (find-tags context params)
     (find-provider-concepts context params)))
 
-(defn find-concept
-  "Returns nil or exactly one concept excluding tombstones matching the params.
-  Throws exception if more than one non-tombstoned concept matches the given params."
-  [context params]
-  (let [concepts (->> (find-concepts context params)
-                      (filter #(not (:deleted %))))]
-    (condp = (count concepts)
-      0 nil
-      1 (first concepts)
-      (throw (IllegalArgumentException. "Query returned more than one concept.")))))
