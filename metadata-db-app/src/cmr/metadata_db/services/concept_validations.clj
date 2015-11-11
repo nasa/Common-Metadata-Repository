@@ -119,13 +119,13 @@
           concept-id-match-fields-validation
           provider-id-missing-validation)))
 
-(def no-provider-concept-validation
+(def tag-concept-validation
   "Builds a function that validates a concept map that has no provider and returns a list of errors"
   (util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
-(def group-concept-validations
-  "Builds a function that validates a group concept that DOES have a provider"
+(def group-concept-validation
+  "Builds a function that validates a group concept"
   (util/compose-validations (conj base-concept-validations
                                   concept-id-match-fields-validation
                                   provider-id-missing-validation)))
@@ -136,11 +136,11 @@
 
 (def validate-concept-no-provider
   "validates a tag concept. Throws an error if invalid."
-  (util/build-validator :invalid-data no-provider-concept-validation))
+  (util/build-validator :invalid-data tag-concept-validation))
 
 (def validate-concept-group
   "Validates a group concept. Throws and error if invalid."
-  (util/build-validator :invalid-data group-concept-validations))
+  (util/build-validator :invalid-data group-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -154,10 +154,7 @@
 
 (defmethod validate-concept :access-group
   [concept]
-  ;; access-groups may or may not have a provider-id
-  (if (:provider-id concept)
-    (validate-concept-group concept)
-    (validate-concept-no-provider concept)))
+  (validate-concept-group concept))
 
 (defmethod validate-concept :default
   [concept]

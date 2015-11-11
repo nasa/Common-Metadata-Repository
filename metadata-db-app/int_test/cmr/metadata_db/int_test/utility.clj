@@ -135,18 +135,13 @@
 (defn- concept
   "Create a concept map for any concept type. "
   [provider-id concept-type uniq-num attributes]
-  (let [con (merge {:native-id (str "native-id " uniq-num)
-                    :metadata (concept-type concept-dummy-metadata)
-                    :deleted false}
-                   attributes
-                   ;; concept-type and provider-id args take precedence over attributes
-                   {:provider-id provider-id
-                    :concept-type concept-type})]
-    ;; CMR indicates use the system providier, which means don't send a provider-id
-    (if (or (= "CMR" provider-id)
-            (nil? provider-id))
-      (dissoc con :provider-id)
-      con)))
+  (merge {:native-id (str "native-id " uniq-num)
+          :metadata (concept-type concept-dummy-metadata)
+          :deleted false}
+         attributes
+         ;; concept-type and provider-id args take precedence over attributes
+         {:provider-id provider-id
+          :concept-type concept-type}))
 
 (defn collection-concept
   "Creates a collection concept"
