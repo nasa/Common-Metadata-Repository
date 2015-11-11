@@ -26,6 +26,12 @@
   ;; We can add some search parameters later, for now we don't see a need for any.
   #{})
 
+
+(def supported-group-parameters
+  "Set of parameters supported by find for groups"
+  #{:concept-id :provider-id :native-id})
+
+
 (def find-concepts-flags
   "Flags that affect find concepts but aren't part of the actual search parameters."
   #{:exclude-metadata :latest})
@@ -57,6 +63,14 @@
     (when-let [unsupported-params (seq (set/difference (set (keys params))
                                                        supported-params))]
       [(msg/find-not-supported :tag unsupported-params)])))
+
+(defmethod supported-parameter-combinations-validation :access-group
+  [params]
+  (let [params (dissoc params :concept-type)
+        supported-params (set/union supported-group-parameters find-concepts-flags)]
+    (when-let [unsupported-params (seq (set/difference (set (keys params))
+                                                       supported-params))]
+      [(msg/find-not-supported :access-group unsupported-params)])))
 
 (defmethod supported-parameter-combinations-validation :default
   [{:keys [concept-type] :as params}]
