@@ -39,6 +39,20 @@
    :extra-fields {:entry-id "short_v1"
                   :entry-title "entry"}})
 
+(def valid-group
+  {:concept-id "AG1-PROV1"
+   :native-id "foo"
+   :provider-id "PROV1"
+   :concept-type :access-group
+   :user-id "user1"})
+
+(def valid-system-group
+  {:concept-id "AG1-CMR"
+   :native-id "foo"
+   :provider-id "CMR"
+   :concept-type :access-group
+   :user-id "user1"})
+
 (deftest find-params-validation-test
   (testing "valid params"
     (are [params]
@@ -201,6 +215,44 @@
   (testing "concept type and concept-id don't match"
     (is (= [(msg/invalid-concept-id "T1-CMR" "CMR" :collection)]
            (v/tag-concept-validation (assoc valid-tag
+                                        :concept-type :collection
+                                        :extra-fields (:extra-fields valid-collection)))))))
+
+(deftest group-validation-test
+  (testing "valid-concept"
+    (is (= [] (v/group-concept-validation valid-group))))
+  (testing "missing concept type"
+    (is (= [(msg/missing-concept-type)
+            (msg/invalid-concept-id "AG1-PROV1" "PROV1" nil)]
+           (v/group-concept-validation (dissoc valid-group :concept-type)))))
+  (testing "missing native id"
+    (is (= [(msg/missing-native-id)]
+           (v/group-concept-validation (dissoc valid-group :native-id)))))
+  (testing "invalid concept-id"
+    (is (= ["Concept-id [1234] is not valid."]
+           (v/group-concept-validation (assoc valid-group :concept-id "1234")))))
+  (testing "concept type and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "AG1-PROV1" "PROV1" :collection)]
+           (v/group-concept-validation (assoc valid-group
+                                        :concept-type :collection
+                                        :extra-fields (:extra-fields valid-collection)))))))
+
+(deftest system-group-validation-test
+  (testing "valid-concept"
+    (is (= [] (v/group-concept-validation valid-system-group))))
+  (testing "missing concept type"
+    (is (= [(msg/missing-concept-type)
+            (msg/invalid-concept-id "AG1-CMR" "CMR" nil)]
+           (v/group-concept-validation (dissoc valid-system-group :concept-type)))))
+  (testing "missing native id"
+    (is (= [(msg/missing-native-id)]
+           (v/group-concept-validation (dissoc valid-system-group :native-id)))))
+  (testing "invalid concept-id"
+    (is (= ["Concept-id [1234] is not valid."]
+           (v/group-concept-validation (assoc valid-system-group :concept-id "1234")))))
+  (testing "concept type and concept-id don't match"
+    (is (= [(msg/invalid-concept-id "AG1-CMR" "CMR" :collection)]
+           (v/group-concept-validation (assoc valid-system-group
                                         :concept-type :collection
                                         :extra-fields (:extra-fields valid-collection)))))))
 

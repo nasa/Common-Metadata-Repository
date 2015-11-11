@@ -77,14 +77,14 @@
   (when-let [concept-id (:concept-id concept)]
     (cc/concept-id-validation concept-id)))
 
-(defn tag-concept-id-matches-tag-fields-validation
-  "Validate that the concept-id has the correct form and that values represented in the tag's
-  concept-id match the values in the tag's concept map. In particular, that the concept-type
+(defn concept-id-matches-concept-fields-validation-no-provider
+  "Validate that the concept-id has the correct form and that values represented in the concept's
+  concept-id match the values in the concept's concept map. In particular, that the concept-type
   in the map matches the concept-type parsed from the concpet-id.
 
   This is a subset of the fields validation done for other concept types. Other types require
-  the provider-id to match as well. This check is not done here as the provider-id for tags is
-  not yet set at the point at which this validation is called."
+  the provider-id to match as well. This check is not done here as the provider-id for tags
+  and groups is not yet set at the point at which this validation is called."
   [concept]
   (when-let [concept-id (:concept-id concept)]
     (when-not (cc/concept-id-validation concept-id)
@@ -120,17 +120,27 @@
           provider-id-missing-validation)))
 
 (def tag-concept-validation
-  "Creates a function that validates a tag concept and returns a list of errors"
+  "Builds a function that validates a concept map that has no provider and returns a list of errors"
   (util/compose-validations (conj base-concept-validations
-                                  tag-concept-id-matches-tag-fields-validation)))
+                                  concept-id-matches-concept-fields-validation-no-provider)))
+
+(def group-concept-validation
+  "Builds a function that validates a group concept"
+  (util/compose-validations (conj base-concept-validations
+                                  concept-id-match-fields-validation
+                                  provider-id-missing-validation)))
 
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
 
-(def validate-concept-tag
+(def validate-tag-concept
   "validates a tag concept. Throws an error if invalid."
   (util/build-validator :invalid-data tag-concept-validation))
+
+(def validate-concept-group
+  "Validates a group concept. Throws and error if invalid."
+  (util/build-validator :invalid-data group-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -139,7 +149,11 @@
 
 (defmethod validate-concept :tag
   [concept]
-  (validate-concept-tag concept))
+  (validate-tag-concept concept))
+
+(defmethod validate-concept :access-group
+  [concept]
+  (validate-concept-group concept))
 
 (defmethod validate-concept :default
   [concept]

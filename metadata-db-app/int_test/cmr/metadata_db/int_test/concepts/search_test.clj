@@ -32,7 +32,7 @@
            (let [tuples (map #(update-in % [0] :concept-id) item-revision-tuples)
                  {:keys [status concepts]} (util/get-concepts tuples)
                  expected-concepts (map (fn [[item revision]]
-                                          (assoc (util/expected-granule-concept item)
+                                          (assoc (util/expected-concept item)
                                                  :revision-id revision))
                                         item-revision-tuples)]
              (and (= 200 status)
@@ -78,7 +78,7 @@
          (let [ids (map #(:concept-id (first %)) item-revision-tuples)
                {:keys [status concepts]} (util/get-latest-concepts ids)
                expected-concepts (map (fn [[item revision]]
-                                        (assoc (util/expected-granule-concept item)
+                                        (assoc (util/expected-concept item)
                                                :revision-id revision))
                                       item-revision-tuples)]
            (and (is (= 200 status))
@@ -292,7 +292,7 @@
     (testing "find with parameters"
       (testing "latest revsions"
         (are2 [granules params]
-              (= (set (map util/expected-granule-concept granules))
+              (= (set (map util/expected-concept granules))
                  (set (-> (util/find-latest-concepts :granule params)
                           :concepts
                           concepts-for-comparison)))
