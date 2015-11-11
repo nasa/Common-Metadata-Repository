@@ -125,7 +125,7 @@
             415
             [(msg/invalid-parent-collection-for-validation
                (str "Invalid content-type: application/xml. Valid content-types: "
-                    "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml, application/dif10+xml."))]
+                    "application/echo10+xml, application/iso:smap+xml, application/iso19115+xml, application/dif+xml, application/umm+json, application/dif10+xml."))]
             (d/item->concept (dg/granule collection))
             (assoc coll-concept :format "application/xml")))
 
