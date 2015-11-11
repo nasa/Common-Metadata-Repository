@@ -1026,7 +1026,7 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
 #### Find collections by tag parameters
 
-Collections can be found by searching for associated tags. The following tag parameters are supported. When `exclude_tag_namespace` parameter is provided, any collections that are associated with the specified tag namespaces in the `exclude_tag_namespace` parameter value are excluded from the search result.
+Collections can be found by searching for associated tags. The following tag parameters are supported.
 
 * tag_namespace
   * options: ignore_case, pattern
@@ -1036,12 +1036,16 @@ Collections can be found by searching for associated tags. The following tag par
   * options: ignore_case, pattern
 * tag_originator_id
   * options: pattern
-* exclude_tag_namespace
-  * options: ignore_case, pattern
+
+`exclude` parameter can be used with tag_namespace to exclude any collections that are associated with the specified tag namespaces from the search result.
 
 Find collections matching tag namespace and value.
 
     curl "%CMR-ENDPOINT%/collections?tag_namespace=org.ceos.wgiss.cwic&tag_value=quality"
+
+Find collections with exclude tag namespace.
+
+    curl "%CMR-ENDPOINT%/collections?exclude\[tag_namespace\]=gov.nasa.earthdata.search.cwic"
 
 #### Find collections by Spatial
 

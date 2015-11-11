@@ -43,13 +43,13 @@
                 :point :point
                 :keyword :keyword
                 :line :line
+                :exclude :exclude
 
                 ;; Tag parameters
                 :tag-namespace :tag-query
                 :tag-value :tag-query
                 :tag-category :tag-query
-                :tag-originator-id :tag-query
-                :exclude-tag-namespace :exclude-tag-query}
+                :tag-originator-id :tag-query}
    :granule {:granule-ur :string
              :concept-id :granule-concept-id
              :collection-concept-id :string
@@ -83,8 +83,7 @@
    :tag {:namespace :string
          :value :string
          :category :string
-         :originator-id :string
-         :exclude :exclude}})
+         :originator-id :string}})
 
 (def always-case-sensitive-fields
   "A set of parameters that will always be case sensitive"
@@ -187,14 +186,6 @@
            (qm/map->NegatedCondition
              {:condition (parameter->condition concept-type exclude-param exclude-val options)}))
          value)))
-
-(defmethod parameter->condition :exclude-tag-query
-  [concept-type param value options]
-  (let [rename-tag-param #(keyword (str/replace (name %) "exclude-tag-" ""))
-        tag-param-name (rename-tag-param param)
-        options (u/map-keys rename-tag-param options)]
-    (tag-related/tag-related-item-query-condition
-      (parameter->condition :tag :exclude {tag-param-name value} options))))
 
 (defmethod parameter->condition :updated-since
   [concept-type param value options]
