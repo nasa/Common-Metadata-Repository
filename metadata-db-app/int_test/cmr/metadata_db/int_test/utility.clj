@@ -135,13 +135,18 @@
 (defn- concept
   "Create a concept map for any concept type. "
   [provider-id concept-type uniq-num attributes]
-  (merge {:native-id (str "native-id " uniq-num)
-          :metadata (concept-type concept-dummy-metadata)
-          :deleted false}
-         attributes
-         ;; concept-type and provider-id args take precedence over attributes
-         {:provider-id provider-id
-          :concept-type concept-type}))
+  (let [con (merge {:native-id (str "native-id " uniq-num)
+                    :metadata (concept-type concept-dummy-metadata)
+                    :deleted false}
+                   attributes
+                   ;; concept-type and provider-id args take precedence over attributes
+                   {:provider-id provider-id
+                    :concept-type concept-type})]
+    ;; CMR indicates use the system providier, which means don't send a provider-id
+    (if (or (= "CMR" provider-id)
+            (nil? provider-id))
+      (dissoc con :provider-id)
+      con)))
 
 (defn collection-concept
   "Creates a collection concept"
@@ -409,20 +414,35 @@
         {:keys [revision-id errors]} body]
     {:status status :revision-id revision-id :errors errors}))
 
-(defn expected-granule-concept
-  "Modifies a granule concept for comparison with a retrieved granule concept."
+(defmulti expected-concept
+  "Modifies a concept for comparison with a retrieved concept."
+  (fn [concept]
+    (:concept-type concept)))
+
+
+(defmethod expected-concept :granule
   [concept]
   ;; :parent-entry-title is saved but not retrieved
   (if (:extra-fields concept)
     (update-in concept [:extra-fields] dissoc :parent-entry-title)
     concept))
 
+(defmethod expected-concept :access-group
+  [concept]
+  (if (:provider-id concept)
+    concept
+    (assoc concept :provider-id "CMR")))
+
+(defmethod expected-concept :default
+  [concept]
+  concept)
+
 (defn verify-concept-was-saved
   "Check to make sure a concept is stored in the database."
   [concept]
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
-    (is (= (expected-granule-concept concept) (dissoc stored-concept :revision-date)))))
+    (is (= (expected-concept concept) (dissoc stored-concept :revision-date)))))
 
 (defn assert-no-errors
   [save-result]

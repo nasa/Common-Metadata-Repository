@@ -17,12 +17,12 @@
 
 (def ^:private groups-constraint-sql
   (str "CONSTRAINT cmr_groups_pk PRIMARY KEY (id), "
-       ;; Unique constraint on native id and revision id
-       "CONSTRAINT cmr_groups_con_rev UNIQUE (provider_id, native_id, revision_id)
+       ;; Unique constraint on provider-id, native id and revision id
+       "CONSTRAINT cmr_groups_pnid_rev UNIQUE (provider_id, native_id, revision_id)
        USING INDEX (create unique index cmr_groups_nr_i ON cmr_groups (provider_id, native_id, revision_id)), "
 
-       ;; Unique constraint on concept id and revision id
-       "CONSTRAINT cmr_groups_cid_rev UNIQUE (provider_id, concept_id, revision_id)
+       ;; Unique constraint on provider-id, concept id and revision id
+       "CONSTRAINT cmr_groups_pcid_rev UNIQUE (provider_id, concept_id, revision_id)
        USING INDEX (create unique index cmr_groups_cr_i ON cmr_groups (provider_id, concept_id, revision_id))"))
 
 (defn- create-groups-table
@@ -50,5 +50,5 @@
   "Migrates the database down from version 24."
   []
   (println "migrations.024-setup-groups-table down...")
-  (h/sql "DROP SEQUENCE METADATA_DB.groups_seq")
-  (h/sql "DROP TABLE METADATA_DB.groups"))
+  (h/sql "DROP SEQUENCE METADATA_DB.cmr_groups_seq")
+  (h/sql "DROP TABLE METADATA_DB.cmr_groups"))

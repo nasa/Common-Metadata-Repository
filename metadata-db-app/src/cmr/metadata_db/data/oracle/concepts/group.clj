@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.data.oracle.concepts.group
-  "Implements multi-method variations for services"
+  "Implements multi-method variations for groups"
   (:require [cmr.metadata-db.data.oracle.concepts :as c]
             [cmr.metadata-db.data.oracle.concept-tables :as tables]
             [cmr.common.log :refer (debug info warn error)]
@@ -16,7 +16,7 @@
           ;; groups don't use extra-fields, but the validations require them
           (assoc :extra-fields {})))
 
-(defn group-concept->insert-args
+(defn- group-concept->insert-args
   [concept]
   (let [{:keys [user-id provider-id]} concept
         [cols values] (c/concept->common-insert-args concept)]

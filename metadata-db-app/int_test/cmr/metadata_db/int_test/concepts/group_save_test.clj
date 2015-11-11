@@ -6,6 +6,7 @@
             [clj-time.core :as t]
             [clj-time.format :as f]
             [clj-time.local :as l]
+            [clojure.string :as str]
             [cmr.common.util :refer (are2)]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
@@ -23,7 +24,8 @@
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-group-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  ;; "CMR" is the sytem provider - the tsystem provider is handled separately in utils.
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
@@ -31,13 +33,21 @@
       (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-group-with-concept-id
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [group-concept-id (str "AG10-" provider-id)
           group (util/group-concept provider-id 1 {:concept-id group-concept-id})
           {:keys [status revision-id concept-id]} (util/save-concept group)]
       (is (= 201 status))
       (is (= revision-id 1))
       (util/verify-concept-was-saved (assoc group :revision-id revision-id :concept-id concept-id))
+
+      (testing "save again with same concept-id"
+        (let [{:keys [status revision-id concept-id]} (util/save-concept group)]
+          (is (= 201 status))
+          (is (= revision-id 2))
+          (util/verify-concept-was-saved
+            (assoc group :revision-id revision-id :concept-id concept-id))))
+
 
       (testing "with incorrect native id"
         (let [response (util/save-concept (assoc group :native-id "foo"))]
@@ -73,7 +83,7 @@
                  (select-keys response [:status :errors]))))))))
 
 (deftest save-group-with-revision-date-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1 {:revision-date (t/date-time 2001 1 1 12 12 14)})
           {:keys [status revision-id concept-id]} (util/save-concept concept)]
       (is (= 201 status))
@@ -82,7 +92,7 @@
         (is (= (:revision-date concept) (:revision-date (:concept retrieved-concept))))))))
 
 (deftest save-group-with-bad-revision-date-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1 {:revision-date "foo"})
           {:keys [status errors]} (util/save-concept concept)]
       (is (= 422 status))
@@ -98,7 +108,7 @@
       (is (not= serv1-concept-id serv2-concept-id)))))
 
 (deftest save-group-test-with-proper-revision-id-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)]
       ;; save the concept once
       (let [{:keys [revision-id concept-id]} (util/save-concept concept)
@@ -116,7 +126,7 @@
           (util/verify-concept-was-saved updated-concept))))))
 
 (deftest save-group-with-skipped-revisions-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-skipped-revisions (assoc concept :concept-id concept-id :revision-id 100)
@@ -126,7 +136,7 @@
       (is (= 100 revision-id (:revision-id retrieved-concept))))))
 
 (deftest auto-increment-of-revision-id-works-with-skipped-revisions-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-concept-id (assoc concept :concept-id concept-id)
@@ -137,7 +147,7 @@
       (is (= 101 revision-id (:revision-id retrieved-concept))))))
 
 (deftest save-group-with-low-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)
           {:keys [concept-id]} (util/save-concept concept)
           concept-with-bad-revision (assoc concept :concept-id concept-id :revision-id 0)
@@ -146,12 +156,10 @@
       (is (nil? revision-id)))))
 
 (deftest save-group-with-missing-required-field
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+  (doseq [provider-id ["REG_PROV" "SMAL_PROV1" ]]
     (let [concept (util/group-concept provider-id 1)]
       (are [field] (let [{:keys [status errors]} (util/save-concept (dissoc concept field))]
                      (and (= 422 status)
                           (re-find (re-pattern (name field)) (first errors))))
            :concept-type
-           :provider-id
-           :native-id
-           :extra-fields))))
+           :native-id))))

@@ -208,7 +208,7 @@
     (is (= 204 (util/old-revision-concept-cleanup)))
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
-      (is (= (set (map util/expected-granule-concept [gran1 gran2 gran4-3]))
+      (is (= (set (map util/expected-concept [gran1 gran2 gran4-3]))
              (set concepts-after-cleanup))))
 
     ;; Back to the future!
@@ -219,7 +219,7 @@
     (is (= 204 (util/old-revision-concept-cleanup)))
 
     (let [concepts-after-cleanup (:concepts (util/get-concepts all-concept-tuples true))]
-      (is (= (set (map util/expected-granule-concept [gran2 gran4-3]))
+      (is (= (set (map util/expected-concept [gran2 gran4-3]))
              (set concepts-after-cleanup))))))
 
 

@@ -12,17 +12,18 @@
 
 
 (deftest parse-concept-id-test
-  (are [concept-type concept-id]
+  (are [concept-type concept-id provider-id]
        (= {:concept-type concept-type
            :sequence-number 12
-           :provider-id "PROV_A42"}
+           :provider-id provider-id}
           (c/parse-concept-id concept-id))
 
-       :collection "C12-PROV_A42"
-       :granule "G12-PROV_A42"
-       :service "S12-PROV_A42"
-       :tag "T12-PROV_A42"
-       :access-group "AG12-PROV_A42"))
+       :collection "C12-PROV_A42" "PROV_A42"
+       :granule "G12-PROV_A42" "PROV_A42"
+       :service "S12-PROV_A42" "PROV_A42"
+       :tag "T12-PROV_A42" "PROV_A42"
+       :access-group "AG12-PROV_A42" "PROV_A42"
+       :access-group "AG12-CMR" "CMR"))
 
 (deftest concept-type-validation-test
   (testing "valid types"

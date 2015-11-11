@@ -19,15 +19,17 @@
     concept-type))
 
 (defmethod get-table-name :access-group
-  [provider concept-type]
+  [_ _]
   "cmr_groups")
+
+(defmethod get-table-name :tag
+  [_ _]
+  "cmr_tags")
 
 (defmethod get-table-name :default
   [provider concept-type]
   ;; Dont' remove the next line - needed to prevent SQL injection
-  (when-not (and (= :tag concept-type)
-                 (= "CMR" (:provider-id provider)))
-    (pv/validate-provider provider))
+  (pv/validate-provider provider)
   (let [{:keys [provider-id small]} provider
         db-provider-id (if small pv/small-provider-id provider-id)]
     (format "%s_%s" (string/lower-case db-provider-id) (inf/plural (name concept-type)))))

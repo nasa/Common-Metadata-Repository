@@ -380,24 +380,24 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)
-                        (if (= :tag (:concept-type concept))
+                        (if (contains? #{:tag :access-group} (:concept-type concept))
                           "CMR"))
-        ;; need this for tags since they don't have a provider-id in their concept maps, but
-        ;; later processing requires it
-        concept (assoc concept :provider-id provider-id)
+        ;; Need this for tags (and sometimes groups) since they don't have a provider-id in their
+        ;; concept maps, but later processing requires it.
+        concept1 (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-provider-for-tags concept provider)
-        concept (set-or-generate-concept-id db provider concept)]
+        concept2 (set-or-generate-concept-id db provider concept1)]
     (validate-concept-revision-id db provider concept)
-    (let [concept (->> concept
+    (let [concept3 (->> concept2
                        (set-or-generate-revision-id db provider)
                        (set-deleted-flag false)
                        (try-to-save db provider))]
       (ingest-events/publish-event
         context
         (config/ingest-exchange-name)
-        (ingest-events/concept-update-event concept))
-      concept)))
+        (ingest-events/concept-update-event concept3))
+      concept3)))
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."

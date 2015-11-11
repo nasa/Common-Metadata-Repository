@@ -67,7 +67,7 @@
       "concept-id": "AG1-PROV1",
       "provider-id": "PROV1",
       "user-id": "user101",
-      "metadata": "xml here",
+      "metadata": "group representation here",
       "format": "application/edn",
       "revision-id": 1, //(optional field)
       "revision-date": "2012-01-01T00:00:00", //(optional field)
