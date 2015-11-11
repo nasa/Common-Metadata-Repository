@@ -134,7 +134,7 @@
   "Validates a concept. Throws an error if invalid."
   (util/build-validator :invalid-data default-concept-validation))
 
-(def validate-concept-no-provider
+(def validate-tag-concept
   "validates a tag concept. Throws an error if invalid."
   (util/build-validator :invalid-data tag-concept-validation))
 
@@ -149,8 +149,7 @@
 
 (defmethod validate-concept :tag
   [concept]
-  ;; tags never have a provider-id
-  (validate-concept-no-provider concept))
+  (validate-tag-concept concept))
 
 (defmethod validate-concept :access-group
   [concept]
