@@ -11,7 +11,7 @@
   [context exchange-name msg]
   (when (and (config/publish-messages)
              ;; TODO - Update/remove this when we add service indexing and group indexing.
-             (not (contains? [:service :access-group] (cc/concept-id->type (:concept-id msg)))))
+             (not (contains? #{:service :access-group} (cc/concept-id->type (:concept-id msg)))))
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])]
       (when queue-broker
