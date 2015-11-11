@@ -27,9 +27,12 @@
   ;; "CMR" is the sytem provider - the tsystem provider is handled separately in utils.
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1" "CMR"]]
     (let [concept (util/group-concept provider-id 1)
-          {:keys [status revision-id concept-id]} (util/save-concept concept)]
+          {:keys [status revision-id concept-id]} (util/save-concept concept)
+          id-matcher (re-matcher #".+\d+-(.+)" concept-id)
+          [_ concept-id-provider](re-find id-matcher)]
       (is (= 201 status))
       (is (= 1 revision-id))
+      (is (= provider-id concept-id-provider))
       (util/verify-concept-was-saved (assoc concept :revision-id revision-id :concept-id concept-id)))))
 
 (deftest save-group-with-concept-id
