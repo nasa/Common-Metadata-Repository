@@ -41,7 +41,7 @@
 
 (def valid-group
   {:concept-id "AG1-PROV1"
-   :native-id "foo␝PROV1"
+   :native-id "foo"
    :provider-id "PROV1"
    :concept-type :access-group
    :user-id "user1"})
