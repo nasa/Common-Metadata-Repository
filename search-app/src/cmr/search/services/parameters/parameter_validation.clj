@@ -53,8 +53,9 @@
   (set #{:attribute :science-keywords}))
 
 (def exclude-params
-  "Lists parameters which can be used to exclude items from results."
-  (set #{:concept-id}))
+  "Map of concept-type to parameters which can be used to exclude items from results."
+  {:collection (set #{:tag-namespace})
+   :granule (set #{:concept-id})})
 
 (defn- concept-type->valid-param-names
   "A set of the valid parameter names for the given concept-type."
@@ -394,7 +395,7 @@
             (fn [errors param]
               (if-not (some #{param} (nf/get-subfield-names :science-keywords))
                 (conj errors (format "parameter [%s] is not a valid science keyword search term."
-                                    (name param)))
+                                     (name param)))
                 errors))
             []
             (mapcat keys values))))
@@ -478,7 +479,8 @@
   "Validates that the key(s) supplied in 'exclude' param value are in exclude-params set"
   [concept-type params]
   (if-let [exclude-kv (:exclude params)]
-    (let [invalid-exclude-params (set/difference (set (keys exclude-kv)) exclude-params)]
+    (let [invalid-exclude-params (set/difference (set (keys exclude-kv))
+                                                 (exclude-params concept-type))]
       (if (empty? invalid-exclude-params)
         (let [exclude-values (flatten (vals exclude-kv))]
           (if (every? string? exclude-values)
