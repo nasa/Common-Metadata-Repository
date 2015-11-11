@@ -79,7 +79,6 @@
   (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
         coll-concept (add-extra-fields-for-collection context concept collection)]
-    (println "collection =" collection)
     (v/validate-business-rules
       context
       (assoc coll-concept :umm-concept collection))

@@ -18,7 +18,9 @@
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.system-int-test.system :as s]
             [cmr.system-int-test.utils.search-util :as search]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.test.expected-conversion :as exc]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
@@ -488,6 +490,24 @@
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+
+(deftest ingest-umm-json
+  (let [json (umm-spec/generate-metadata :collection :umm-json exc/example-record)
+        response (ingest/ingest-concept {:provider-id "PROV1"
+                                         :native-id "umm_json_coll_V1"
+                                         :revision-id "1"
+                                         :concept-type :collection
+                                         :format "application/umm+json"
+                                         :metadata json})]
+    (is (= 200 (:status response)))
+    (index/wait-until-indexed)
+    (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))
+    (is (= 1 (:revision-id response)))
+    (is (= [{:id "C1200000000-PROV1",
+             :name "The entry title V5",
+             :revision-id 1,
+             :location "http://localhost:3003/concepts/C1200000000-PROV1/1"}]
+           (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters

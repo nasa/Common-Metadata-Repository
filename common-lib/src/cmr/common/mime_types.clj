@@ -31,15 +31,15 @@
    :opendap {:mime-type "application/x-netcdf"}
    :serf {:mime-type "application/serf+xml"}})
 
-(defn xml?
-  "Returns true if format is a known XML format."
-  [format]
-  (contains? #{:xml :echo10 :iso-smap :iso19115 :dif :dif10 :atom :serf}
-             format))
-
 ;; Define vars for each of the mime type formats, e.g. (def json "application/json")
 (doseq [[format-kw {:keys [mime-type]}] mime-types]
   (eval `(def ~(symbol (name format-kw)) ~mime-type)))
+
+(defn xml?
+  "Returns true if format is a known XML format."
+  [format]
+  (contains? #{xml echo10 iso-smap iso19115 dif dif10 atom serf}
+             format))
 
 (def iso
   "Defines a shorter alias for iso19115."
@@ -59,6 +59,7 @@
                             (for [a aliases]
                               [a mime-type])))
                    mime-types)))
+
 ;; extra helpers
 
 (def all-supported-mime-types

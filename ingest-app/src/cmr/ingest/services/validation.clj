@@ -83,12 +83,12 @@
 (defn validate-concept-metadata
   [concept]
   (if-errors-throw :bad-request
-                   (cond
-                     (mt/xml? (:format concept)) (umm/validate-concept-xml concept)
-                     ;; umm-spec XML validation is not ready yet
-                     (= :umm-json (:format concept)) (umm-spec/validate-metadata (:concept-type concept)
-                                                                                 (:format concept)
-                                                                                 (:metadata concept)))))
+                   (if (= mt/umm-json (:format concept))
+                     ;; umm-spec doesn't understand ingest/indexing concept maps:
+                     (umm-spec/validate-metadata (:concept-type concept)
+                                                 (mt/mime-type->format (:format concept))
+                                                 (:metadata concept))
+                     (umm/validate-concept-xml concept))))
 
 (defn validate-collection-umm
   [context collection validate-keywords?]
