@@ -1026,7 +1026,7 @@ Find collections matching the given 'short\_name' and any of the 'version' param
 
 #### Find collections by tag parameters
 
-Collections can be found by searching for associated tags. The following tag parameters are supported.
+Collections can be found by searching for associated tags. The following tag parameters are supported. When `exclude_tag_namespace` parameter is provided, any collections that are associated with the specified tag namespaces in the `exclude_tag_namespace` parameter value are excluded from the search result.
 
 * tag_namespace
   * options: ignore_case, pattern
@@ -1036,6 +1036,8 @@ Collections can be found by searching for associated tags. The following tag par
   * options: ignore_case, pattern
 * tag_originator_id
   * options: pattern
+* exclude_tag_namespace
+  * options: ignore_case, pattern
 
 Find collections matching tag namespace and value.
 

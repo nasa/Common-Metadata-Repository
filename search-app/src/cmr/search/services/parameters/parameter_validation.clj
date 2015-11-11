@@ -193,7 +193,8 @@
    :tag-namespace string-param-options
    :tag-value string-param-options
    :tag-category string-param-options
-   :tag-originator-id pattern-option})
+   :tag-originator-id pattern-option
+   :exclude-tag-namespace string-param-options})
 
 (defn parameter-options-validation
   [concept-type params]
