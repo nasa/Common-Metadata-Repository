@@ -3,14 +3,15 @@
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as p]
-            [cmr.umm.core :as umm]
+            [cmr.common.mime-types :as mt]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.search :as search]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.services.additional-attribute-validation :as aa]
             [cmr.ingest.services.project-validation :as pv]
             [cmr.ingest.services.temporal-validation :as tv]
-            [cmr.ingest.services.spatial-validation :as sv]))
+            [cmr.ingest.services.spatial-validation :as sv]
+            [cmr.ingest.services.umm :as umm]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.

@@ -7,16 +7,15 @@
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
+            [cmr.ingest.services.umm :as umm]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
-            [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
-            [cmr.umm.core :as umm]
             [cmr.umm-spec.core :as umm-spec]
             [cmr.umm-spec.date-util :as spec-dates]
             [clojure.string :as string]
@@ -34,7 +33,7 @@
   (fn [context concept collection]
     (type collection)))
 
-(defmethod add-extra-fields-for-collection cmr.umm.collection.UmmCollection
+(defn add-extra-fields-for-collection
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
@@ -46,31 +45,15 @@
                                   :version-id version-id
                                   :delete-time (when delete-time (str delete-time))})))
 
-(defmethod add-extra-fields-for-collection cmr.umm_spec.models.collection.UMM-C
-  [context concept collection]
-  (let [{entry-id :EntryId} collection]
-    (assoc concept :extra-fields
-           {:entry-id entry-id
-            :version-id (:Version collection)
-            :short-name (string/replace entry-id (str "-" (:Version collection)) "")
-            :entry-title (:EntryTitle collection)
-            :delete-time (when-let [delete-time (spec-dates/data-delete-date collection)]
-                           (str delete-time))})))
-
 (defn- validate-and-parse-collection-concept
   "Validates a collection concept and parses it. Returns the UMM record."
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
 
-  (if (= mt/umm-json (:format collection-concept))
-    (umm-spec/parse-metadata :collection
-                             (mt/mime-type->format (:format collection-concept))
-                             (:metadata collection-concept))
-    (let [collection (umm/parse-concept collection-concept)]
-      ;; UMM Validation
-      (when (ingest-validation-enabled?)
-        (v/validate-collection-umm context collection validate-keywords?))
+  (let [collection (umm/parse-concept collection-concept)]
+    (when (ingest-validation-enabled?)
+      (v/validate-collection-umm context collection validate-keywords?)
       collection)))
 
 (defn-timed validate-collection

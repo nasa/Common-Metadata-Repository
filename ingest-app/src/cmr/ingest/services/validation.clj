@@ -84,7 +84,6 @@
   [concept]
   (if-errors-throw :bad-request
                    (if (= mt/umm-json (:format concept))
-                     ;; umm-spec doesn't understand ingest/indexing concept maps:
                      (umm-spec/validate-metadata (:concept-type concept)
                                                  (mt/mime-type->format (:format concept))
                                                  (:metadata concept))

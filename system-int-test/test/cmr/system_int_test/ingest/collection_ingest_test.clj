@@ -493,21 +493,27 @@
 
 (deftest ingest-umm-json
   (let [json (umm-spec/generate-metadata :collection :umm-json exc/example-record)
-        response (ingest/ingest-concept {:provider-id "PROV1"
-                                         :native-id "umm_json_coll_V1"
-                                         :revision-id "1"
-                                         :concept-type :collection
-                                         :format "application/umm+json"
-                                         :metadata json})]
+        coll-map {:provider-id "PROV1"
+                  :native-id "umm_json_coll_V1"
+                  :revision-id "1"
+                  :concept-type :collection
+                  :format "application/umm+json"
+                  :metadata json}
+        response (ingest/ingest-concept coll-map)]
     (is (= 200 (:status response)))
     (index/wait-until-indexed)
-    (is (mdb/concept-exists-in-mdb? (:concept-id response) (:revision-id response)))
+    (is (mdb/concept-exists-in-mdb? (:concept-id response) 1))
     (is (= 1 (:revision-id response)))
-    (is (= [{:id "C1200000000-PROV1",
-             :name "The entry title V5",
-             :revision-id 1,
-             :location "http://localhost:3003/concepts/C1200000000-PROV1/1"}]
-           (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
+
+    ;; The UMM-JSON concept should NOT be searchable.
+    (is (empty? (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))
+    
+    (testing "Updating a UMM-JSON collection"
+      (let [response (ingest/ingest-concept (assoc coll-map :revision-id "2"))]
+        (is (= 200 (:status response)))
+        (index/wait-until-indexed)
+        (is (mdb/concept-exists-in-mdb? (:concept-id response) 2))
+        (is (= 2 (:revision-id response)))))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters
