@@ -41,7 +41,7 @@
       (t/minus (t/date-time (inc current-year)) (t/seconds 1)))
 
     ;; recurring range does not cross over a year boundary - for example January 25 - May 6
-    (> end-day start-day)
+    (>= end-day start-day)
     (let [current-end (t/plus (t/date-time current-year) (t/days (dec end-day)))]
       (if (and end-date (t/after? current-end end-date))
         end-date
