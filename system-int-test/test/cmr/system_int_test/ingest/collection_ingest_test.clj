@@ -505,7 +505,7 @@
     (is (mdb/concept-exists-in-mdb? (:concept-id response) 1))
     (is (= 1 (:revision-id response)))
 
-    ;; The UMM-JSON concept should NOT be searchable.
+    ;; The UMM-JSON concept should NOT be searchable until CMR-2153 is implemented.
     (is (empty? (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))
     
     (testing "Updating a UMM-JSON collection"
