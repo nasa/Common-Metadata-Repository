@@ -37,7 +37,7 @@
   {:collection 10
    :granule 1
    :service 10
-   :tags 10
+   :tag 10
    :access-group 10})
 
 (def days-to-keep-tombstone

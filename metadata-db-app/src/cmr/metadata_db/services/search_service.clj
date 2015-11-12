@@ -11,9 +11,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
 
-(def supported-collection-parameters
-  "Set of parameters supported by find for collections"
-  #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id})
+(def default-supported-find-parameters
+  "The set of find parameters supported by most concepts."
+  #{:concept-id :provider-id :native-id})
+
+(def supported-find-parameters
+  "Map of concept-types to sets of parameters supported by find for each type."
+  {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
+   :tag #{:concept-id :provider-id}
+   :service default-supported-find-parameters
+   :access-group default-supported-find-parameters})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -21,34 +28,18 @@
   #{#{:provider-id :granule-ur}
     #{:provider-id :native-id}})
 
-(def supported-tag-parameters
-  "Set of parameters supported by find for collections"
-  ;; We can add some search parameters later, for now we don't see a need for any.
-  #{})
-
-
-(def supported-group-parameters
-  "Set of parameters supported by find for groups"
-  #{:concept-id :provider-id :native-id})
-
-
 (def find-concepts-flags
   "Flags that affect find concepts but aren't part of the actual search parameters."
   #{:exclude-metadata :latest})
 
 (defmulti supported-parameter-combinations-validation
-  "Validates the find parameters for a concept type"
+  "Validates the find parameters for a concept type."
   (fn [params]
-    (:concept-type params)))
+    (keyword (:concept-type params))))
 
-(defmethod supported-parameter-combinations-validation :collection
-  [params]
-  (let [params (dissoc params :concept-type)
-        supported-params (set/union supported-collection-parameters find-concepts-flags)]
-    (when-let [unsupported-params (seq (set/difference (set (keys params))
-                                                       supported-params))]
-      [(msg/find-not-supported :collection unsupported-params)])))
-
+;; For performance reasons we only support finding granules using combinations of indexed fields,
+;; so we validate the parameters for granules separately from other concept types that allow
+;; finds using single fields.
 (defmethod supported-parameter-combinations-validation :granule
   [{:keys [concept-type] :as params}]
   (let [params (dissoc params :concept-type)
@@ -56,28 +47,18 @@
     (when-not (contains? granule-supported-parameter-combinations search-params)
       [(msg/find-not-supported-combination concept-type (keys params))])))
 
-(defmethod supported-parameter-combinations-validation :tag
-  [params]
-  (let [params (dissoc params :concept-type)
-        supported-params (set/union supported-tag-parameters find-concepts-flags)]
-    (when-let [unsupported-params (seq (set/difference (set (keys params))
-                                                       supported-params))]
-      [(msg/find-not-supported :tag unsupported-params)])))
-
-(defmethod supported-parameter-combinations-validation :access-group
-  [params]
-  (let [params (dissoc params :concept-type)
-        supported-params (set/union supported-group-parameters find-concepts-flags)]
-    (when-let [unsupported-params (seq (set/difference (set (keys params))
-                                                       supported-params))]
-      [(msg/find-not-supported :access-group unsupported-params)])))
-
 (defmethod supported-parameter-combinations-validation :default
-  [{:keys [concept-type] :as params}]
-  [(msg/find-not-supported-combination concept-type (keys (dissoc params :concept-type)))])
+  [params]
+  (let [concept-type (:concept-type params)
+        params (dissoc params :concept-type)
+        supported-params (set/union (get supported-find-parameters concept-type)
+                                    find-concepts-flags)]
+    (when-let [unsupported-params (seq (set/difference (set (keys params))
+                                                       supported-params))]
+      [(msg/find-not-supported concept-type unsupported-params)])))
 
 (def find-params-validation
-  "Validates parameters for finding a concept"
+  "Validates parameters for finding a concept."
   (util/compose-validations [supported-parameter-combinations-validation]))
 
 (def validate-find-params
