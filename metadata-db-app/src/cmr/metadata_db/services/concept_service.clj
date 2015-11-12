@@ -36,7 +36,9 @@
   of revisions here the oldest ones will be deleted."
   {:collection 10
    :granule 1
-   :service 10})
+   :service 10
+   :tag 10
+   :access-group 10})
 
 (def days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."

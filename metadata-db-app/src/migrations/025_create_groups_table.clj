@@ -1,4 +1,4 @@
-(ns migrations.024-create-groups-table
+(ns migrations.025-create-groups-table
   (:require [clojure.java.jdbc :as j]
             [config.migrate-config :as config]
             [config.mdb-migrate-helper :as h]))
@@ -39,16 +39,16 @@
   (h/sql "CREATE SEQUENCE cmr_groups_seq"))
 
 (defn up
-  "Migrates the database up to version 24."
+  "Migrates the database up to version 25."
   []
-  (println "migrations.024-setup-groups-table up...")
+  (println "migrations.025-setup-groups-table up...")
   (create-groups-table)
   (create-groups-indices)
   (create-groups-sequence))
 
 (defn down
-  "Migrates the database down from version 24."
+  "Migrates the database down from version 25."
   []
-  (println "migrations.024-setup-groups-table down...")
+  (println "migrations.025-setup-groups-table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_groups_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_groups"))

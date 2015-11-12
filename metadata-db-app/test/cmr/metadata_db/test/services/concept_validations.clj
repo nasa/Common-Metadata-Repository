@@ -65,14 +65,14 @@
          {:provider-id "p" :entry-title "t" :version-id "v"}
          {:provider-id "p" :entry-title "t" :short-name "s" :version-id "v"}))
   (testing "invalid param"
-    (is (= [(msg/find-not-supported-combination :collection [:foo])]
+    (is (= [(msg/find-not-supported :collection [:foo])]
            (search/find-params-validation {:concept-type "collection"
                                            :foo "f"})))
     (is (= [(msg/find-not-supported-combination :granule [:foo])]
            (search/find-params-validation {:concept-type "granule"
                                            :foo "f"}))))
   (testing "invalid concept-type"
-    (is (= [(msg/find-not-supported-combination :foo [:entry-title :provider-id])]
+    (is (= [(msg/find-not-supported :foo [:provider-id, :entry-title])]
            (search/find-params-validation {:concept-type "foo"
                                            :entry-title "e"
                                            :provider-id "p"})))))
