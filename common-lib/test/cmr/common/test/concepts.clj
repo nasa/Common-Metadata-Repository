@@ -10,29 +10,30 @@
             [cmr.common.concepts :as c]
             [cmr.common.test.test-util :as tu]))
 
+
 (deftest parse-concept-id-test
-  (testing "parse collection id"
-    (is (= {:concept-type :collection
-            :sequence-number 12
-            :provider-id "PROV_A42"}
-           (c/parse-concept-id "C12-PROV_A42"))))
-  (testing "parse granule id"
-    (is (= {:concept-type :granule
-            :sequence-number 12
-            :provider-id "PROV_A42"}
-           (c/parse-concept-id "G12-PROV_A42"))))
-  (testing "parse invalid concept id"
-    (tu/assert-exception-thrown-with-errors
-      :bad-request
-      ["Concept-id [G5-PROV1;] is not valid."]
-      (c/parse-concept-id "G5-PROV1;"))))
+  (are [concept-type concept-id provider-id]
+       (= {:concept-type concept-type
+           :sequence-number 12
+           :provider-id provider-id}
+          (c/parse-concept-id concept-id))
+
+       :collection "C12-PROV_A42" "PROV_A42"
+       :granule "G12-PROV_A42" "PROV_A42"
+       :service "S12-PROV_A42" "PROV_A42"
+       :tag "T12-PROV_A42" "PROV_A42"
+       :access-group "AG12-PROV_A42" "PROV_A42"
+       :access-group "AG12-CMR" "CMR"))
 
 (deftest concept-type-validation-test
   (testing "valid types"
     (are [type] (and (nil? (c/concept-type-validation type))
                      (nil? (c/concept-type-validation (name type))))
          :collection
-         :granule))
+         :granule
+         :service
+         :tag
+         :access-group))
   (testing "invalid type"
     (is (= ["[foo] is not a valid concept type."]
            (c/concept-type-validation "foo")))

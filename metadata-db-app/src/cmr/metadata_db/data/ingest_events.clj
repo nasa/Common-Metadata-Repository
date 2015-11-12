@@ -10,8 +10,8 @@
   "Put an ingest event on the message queue."
   [context exchange-name msg]
   (when (and (config/publish-messages)
-             ;; TODO - Remove this when we add service indexing in CMR-1508
-             (not= :service (cc/concept-id->type (:concept-id msg))))
+             ;; TODO - Update/remove this when we add service indexing and group indexing.
+             (not (contains? #{:service :access-group} (cc/concept-id->type (:concept-id msg)))))
     (let [timeout-ms (config/publish-timeout-ms)
           queue-broker (get-in context [:system :queue-broker])]
       (when queue-broker

@@ -70,12 +70,23 @@
   [values top-n]
   (drop-last top-n (sort values)))
 
-(defn- by-provider
+(defmulti by-provider
   "Converts the sql condition clause into provider aware condition clause, i.e. adding the provider-id
   condition to the condition clause when the given provider is small; otherwise returns the same
   condition clause. For example:
   `(= :native-id \"blah\") becomes `(and (= :native-id \"blah\") (= :provider-id \"PROV1\"))"
-  [{:keys [provider-id small]} base-clause]
+  (fn [concept-type provider base-clause]
+    concept-type))
+
+(defmethod by-provider :access-group
+  [_ {:keys [provider-id small]} base-clause]
+  (if (= (first base-clause) 'clojure.core/and)
+    ;; Insert the provider id clause at the beginning.
+    `(and (= :provider-id ~provider-id) ~@(rest base-clause))
+    `(and (= :provider-id ~provider-id) ~base-clause)))
+
+(defmethod by-provider :default
+  [_ {:keys [provider-id small]} base-clause]
   (if small
     (if (= (first base-clause) 'clojure.core/and)
       ;; Insert the provider id clause at the beginning.
@@ -184,9 +195,9 @@
       ;; instead of using group-by in SQL
       (let [table (tables/get-table-name provider concept-type)
             stmt (su/build (select [:c.concept-id :c.revision-id]
-                                   (from (as (keyword table) :c)
-                                         (as :get-concepts-work-area :t))
-                                   (where `(and (= :c.concept-id :t.concept-id)))))
+                             (from (as (keyword table) :c)
+                                   (as :get-concepts-work-area :t))
+                             (where `(and (= :c.concept-id :t.concept-id)))))
             cid-rid-maps (su/query conn stmt)
             concept-id-to-rev-id-maps (map #(hash-map (:concept_id %) (long (:revision_id %)))
                                            cid-rid-maps)
@@ -204,12 +215,15 @@
   [db provider concept]
   (let [{:keys [concept-type provider-id concept-id native-id]} concept
         table (tables/get-table-name provider concept-type)
-        {:keys [concept_id native_id]} (or (su/find-one db (select [:concept-id :native-id]
-                                                                   (from table)
-                                                                   (where (by-provider provider `(= :native-id ~native-id)))))
+        {:keys [concept_id native_id]} (or (su/find-one
+                                             db (select [:concept-id :native-id]
+                                                  (from table)
+                                                  (where (by-provider
+                                                           concept-type provider `(= :native-id
+                                                                                     ~native-id)))))
                                            (su/find-one db (select [:concept-id :native-id]
-                                                                   (from table)
-                                                                   (where `(= :concept-id ~concept-id)))))]
+                                                             (from table)
+                                                             (where `(= :concept-id ~concept-id)))))]
     (when (and (and concept_id native_id)
                (or (not= concept_id concept-id) (not= native_id native-id)))
       {:error :concept-id-concept-conflict
@@ -235,8 +249,8 @@
     (let [table (tables/get-table-name provider concept-type)]
       (:concept_id
         (su/find-one db (select [:concept-id]
-                                (from table)
-                                (where (by-provider provider `(= :native-id ~native-id))))))))
+                          (from table)
+                          (where (by-provider concept-type provider `(= :native-id ~native-id))))))))
 
   (get-concept
     ([db concept-type provider concept-id]
@@ -245,9 +259,9 @@
        (let [table (tables/get-table-name provider concept-type)]
          (db-result->concept-map concept-type conn (:provider-id provider)
                                  (su/find-one conn (select '[*]
-                                                           (from table)
-                                                           (where `(= :concept-id ~concept-id))
-                                                           (order-by (desc :revision-id))))))))
+                                                     (from table)
+                                                     (where `(= :concept-id ~concept-id))
+                                                     (order-by (desc :revision-id))))))))
     ([db concept-type provider concept-id revision-id]
      (if revision-id
        (let [table (tables/get-table-name provider concept-type)]
@@ -255,9 +269,9 @@
            [conn db]
            (db-result->concept-map concept-type conn (:provider-id provider)
                                    (su/find-one conn (select '[*]
-                                                             (from table)
-                                                             (where `(and (= :concept-id ~concept-id)
-                                                                          (= :revision-id ~revision-id))))))))
+                                                       (from table)
+                                                       (where `(and (= :concept-id ~concept-id)
+                                                                    (= :revision-id ~revision-id))))))))
        (c/get-concept db concept-type provider concept-id))))
 
   (get-concepts
@@ -273,10 +287,10 @@
           (let [provider-id (:provider-id provider)
                 table (tables/get-table-name provider concept-type)
                 stmt (su/build (select [:c.*]
-                                       (from (as (keyword table) :c)
-                                             (as :get-concepts-work-area :t))
-                                       (where `(and (= :c.concept-id :t.concept-id)
-                                                    (= :c.revision-id :t.revision-id)))))
+                                 (from (as (keyword table) :c)
+                                       (as :get-concepts-work-area :t))
+                                 (where `(and (= :c.concept-id :t.concept-id)
+                                              (= :c.revision-id :t.revision-id)))))
 
                 result (doall (map (partial db-result->concept-map concept-type conn provider-id)
                                    (su/query conn stmt)))
@@ -332,8 +346,8 @@
     [this concept-type provider concept-id revision-id]
     (let [table (tables/get-table-name provider concept-type)
           stmt (su/build (delete table
-                                 (where `(and (= :concept-id ~concept-id)
-                                              (= :revision-id ~revision-id)))))]
+                           (where `(and (= :concept-id ~concept-id)
+                                        (= :revision-id ~revision-id)))))]
       (j/execute! this stmt)))
 
   (force-delete-by-params
@@ -393,7 +407,8 @@
                                    START WITH %d
                                    INCREMENT BY 1
                                    CACHE 20" INITIAL_CONCEPT_NUM))
-    (j/db-do-commands this "DELETE FROM cmr_tags"))
+    (j/db-do-commands this "DELETE FROM cmr_tags")
+    (j/db-do-commands this "DELETE FROM cmr_groups"))
 
   (get-expired-concepts
     [this provider concept-type]
