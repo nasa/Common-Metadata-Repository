@@ -3,7 +3,6 @@
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
             [cmr.common.date-time-parser :as p]
-            [cmr.common.mime-types :as mt]
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.search :as search]
             [cmr.ingest.services.helper :as h]
