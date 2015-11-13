@@ -49,8 +49,8 @@
 
   (let [collection (umm/parse-concept collection-concept)]
     (when (ingest-validation-enabled?)
-      (v/validate-collection-umm context collection validate-keywords?)
-      collection)))
+      (v/validate-collection-umm context collection validate-keywords?))
+    collection))
 
 (defn-timed validate-collection
   "Validate the collection. Throws a service error if any validation issues are found."
