@@ -71,7 +71,8 @@
 (defmethod reference->xml-element false
   [_ results reference]
   (let [{:keys [has-granules-map granule-counts-map]} results
-        {:keys [concept-id revision-id location name score deleted]} reference]
+        {:keys [concept-id revision-id location name score deleted]} reference
+        granule-count (get granule-counts-map concept-id 0)]
     (x/element :reference {}
                (x/element :name {} name)
                (x/element :id {} concept-id)
@@ -80,9 +81,10 @@
                  (x/element :location {} location))
                (x/element :revision-id {} (str revision-id))
                (when has-granules-map
-                 (x/element :has-granules {} (get has-granules-map concept-id false)))
+                 (x/element :has-granules {} (or (< 0 granule-count)
+                                                 (get has-granules-map concept-id false))))
                (when granule-counts-map
-                 (x/element :granule-count {} (get granule-counts-map concept-id 0)))
+                 (x/element :granule-count {} granule-count))
                (when score (x/element :score {} score)))))
 
 (defmethod results->xml-element false
