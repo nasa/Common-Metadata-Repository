@@ -36,7 +36,9 @@
   of revisions here the oldest ones will be deleted."
   {:collection 10
    :granule 1
-   :service 10})
+   :service 10
+   :tag 10
+   :access-group 10})
 
 (def days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -380,10 +382,9 @@
   (cv/validate-concept concept)
   (let [db (util/context->db context)
         provider-id (or (:provider-id concept)
-                        (if (= :tag (:concept-type concept))
-                          "CMR"))
-        ;; need this for tags since they don't have a provider-id in their concept maps, but
-        ;; later processing requires it
+                        (when (contains? #{:tag} (:concept-type concept)) "CMR"))
+        ;; Need this for tags since they don't have a provider-id in their
+        ;; concept maps, but later processing requires it.
         concept (assoc concept :provider-id provider-id)
         provider (provider-service/get-provider-by-id context provider-id true)
         _ (validate-system-level-provider-for-tags concept provider)

@@ -1037,9 +1037,15 @@ Collections can be found by searching for associated tags. The following tag par
 * tag_originator_id
   * options: pattern
 
+`exclude` parameter can be used with tag_namespace to exclude any collections that are associated with the specified tag namespaces from the search result.
+
 Find collections matching tag namespace and value.
 
     curl "%CMR-ENDPOINT%/collections?tag_namespace=org.ceos.wgiss.cwic&tag_value=quality"
+
+Find collections with exclude tag namespace.
+
+    curl "%CMR-ENDPOINT%/collections?exclude\[tag_namespace\]=gov.nasa.earthdata.search.cwic"
 
 #### Find collections by Spatial
 
