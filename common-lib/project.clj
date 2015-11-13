@@ -48,7 +48,8 @@
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
-                        [org.clojars.gjahad/debug-repl "0.3.3"]]
+                        [org.clojars.gjahad/debug-repl "0.3.3"]
+                        [clj-http "2.0.0"]]
          :source-paths ["src" "dev" "test"]}})
 
 
