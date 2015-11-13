@@ -7,6 +7,8 @@
             [clojure.string :as str]
             [cmr.common.util :as u]))
 
+(def PORT 3123)
+
 (def long-body
   "A body long enough that it should be compressed"
   (str/join (repeat (inc s/MIN_GZIP_SIZE) "0")))
@@ -34,7 +36,7 @@
     ;; We remove all middleware so we can get the raw input stream body back
     [clj-http.client/wrap-url
      clj-http.client/wrap-method]
-    (h/get (str "http://localhost:3123" path)
+    (h/get (str "http://localhost:" PORT path)
            {:headers {"Accept-encoding" accept-encoding}})))
 
 (defn assert-compressed-response
@@ -49,7 +51,7 @@
   (is (= expected-body (-> response :body slurp))))
 
 (deftest test-gzip-compression
-  (let [server (l/start (s/create-web-server 3123 routes-fn true false) nil)]
+  (let [server (l/start (s/create-web-server PORT routes-fn true false) nil)]
     (try
       (testing "A large body is compressed"
         (assert-compressed-response (get-uri "/long" "gzip") long-body))
