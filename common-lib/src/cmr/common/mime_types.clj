@@ -35,12 +35,6 @@
 (doseq [[format-kw {:keys [mime-type]}] mime-types]
   (eval `(def ~(symbol (name format-kw)) ~mime-type)))
 
-(defn xml?
-  "Returns true if format is a known XML format."
-  [format]
-  (contains? #{xml echo10 iso-smap iso19115 dif dif10 atom serf}
-             format))
-
 (def iso
   "Defines a shorter alias for iso19115."
   iso19115)
