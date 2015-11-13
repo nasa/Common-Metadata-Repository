@@ -7,15 +7,14 @@
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
+            [cmr.ingest.services.umm :as umm]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
-            [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
@@ -25,8 +24,9 @@
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defn- add-extra-fields-for-collection
-  "Adds the extra fields for a collection concept."
+(defn add-extra-fields-for-collection
+  "Returns collection concept with fields necessary for ingest into metadata db
+  under :extra-fields."
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
@@ -42,10 +42,9 @@
   "Validates a collection concept and parses it. Returns the UMM record."
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
-  (v/validate-concept-xml collection-concept)
+  (v/validate-concept-metadata collection-concept)
 
   (let [collection (umm/parse-concept collection-concept)]
-    ;; UMM Validation
     (when (ingest-validation-enabled?)
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
@@ -111,7 +110,7 @@
      context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
-   (v/validate-concept-xml concept)
+   (v/validate-concept-metadata concept)
 
    (let [granule (umm/parse-concept concept)
          [parent-collection-concept

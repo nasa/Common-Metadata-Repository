@@ -3,6 +3,7 @@
   :url "***REMOVED***projects/CMR/repos/cmr/browse/indexer-app"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]
