@@ -12,6 +12,8 @@
     (umm/parse-concept (assoc concept-map :format mt/echo10 :metadata echo10-metadata))))
 
 (defn parse-concept
+  "Returns UMM record from an ingest concept map. Handles additional formats implemented by umm-spec
+  that cmr.umm.core/parse-concept does not support."
   [concept-map]
   (if (= mt/umm-json (:format concept-map))
     (parse-umm-json-concept concept-map)
