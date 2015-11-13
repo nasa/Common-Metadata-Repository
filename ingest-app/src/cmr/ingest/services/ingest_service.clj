@@ -27,13 +27,9 @@
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defmulti add-extra-fields-for-collection
+(defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
   under :extra-fields."
-  (fn [context concept collection]
-    (type collection)))
-
-(defn add-extra-fields-for-collection
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
