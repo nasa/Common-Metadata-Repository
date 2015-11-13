@@ -8,7 +8,8 @@
             [clj-time.local :as l]
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
-            [cmr.metadata-db.services.concept-constraints :as cc]))
+            [cmr.metadata-db.services.concept-constraints :as cc]
+            [cmr.metadata-db.int-test.concepts.concept-spec :as c-spec]))
 
 
 ;;; fixtures
@@ -22,13 +23,69 @@
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-granule-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-    (let [parent-collection (util/create-and-save-collection provider-id 1)
-          granule (util/granule-concept provider-id parent-collection 1)
-          {:keys [status revision-id concept-id] :as resp} (util/save-concept granule)]
-      (is (= 201 status) (pr-str resp))
-      (is (= revision-id 1))
-      (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id)))))
+  (doseq [[idx provider-id] (map-indexed vector ["REG_PROV" "SMAL_PROV1"])]
+    (testing "basic save"
+      (let [parent-collection (util/create-and-save-collection provider-id 1)
+            concept (util/granule-concept provider-id parent-collection 1)]
+        (c-spec/save-concept-test concept 201 1 nil)))
+
+    (testing "save with missing required field"
+      (let [concept (util/granule-concept provider-id nil 2)]
+        (c-spec/save-concept-test
+          concept 422 nil ["Concept field [parent-collection-id] cannot be nil."
+                           "Concept field [parent-entry-title] cannot be nil."])))
+
+    (testing "save with concept-id"
+      (let [parent-collection (util/create-and-save-collection provider-id 2)
+            gran-concept-id (str "G10-" provider-id)
+            granule (util/granule-concept
+                      provider-id parent-collection 3 {:concept-id gran-concept-id})]
+        (c-spec/save-concept-test granule 201 1 nil)
+
+        (testing "with incorrect native id"
+          (let [granule-native (assoc granule :native-id "foo")]
+            (c-spec/save-concept-test granule-native 409 nil [(msg/concept-exists-with-different-id
+                                                                gran-concept-id (:native-id granule)
+                                                                gran-concept-id "foo"
+                                                                :granule provider-id)])))
+
+        (testing "with incorrect concept id"
+          (let [other-gran-concept-id (str "G11-" provider-id)]
+            (c-spec/save-concept-test (assoc granule :concept-id other-gran-concept-id)
+                                      409 nil [(msg/concept-exists-with-different-id
+                                                 gran-concept-id (:native-id granule)
+                                                 other-gran-concept-id (:native-id granule)
+                                                 :granule provider-id)])))
+
+        (testing "with incorrect concept id matching another concept"
+          (let [granule2 (util/granule-concept provider-id parent-collection 3
+                                               {:concept-id (str "G10-" provider-id)
+                                                :native-id "native2"})]
+            (c-spec/save-concept-test
+              granule2
+              409
+              nil
+              [(str "A concept with concept-id [G10-" provider-id "] and native-id [native-id 3] "
+                    "already exists for concept-type [:granule] provider-id [" provider-id
+                    "]. The given concept-id [G10-" provider-id "] and native-id [native2] would "
+                    "conflict with that one.")])))
+
+        (testing "with incorrect concept id matching another concept"
+          (let [other-gran-concept-id (str "G11-" provider-id)
+                granule2 (util/granule-concept provider-id parent-collection 2
+                                               {:concept-id other-gran-concept-id
+                                                :native-id "native2"})
+                _ (is (= 201 (:status (util/save-concept granule2))))
+                response (util/save-concept (assoc granule :concept-id other-gran-concept-id))]
+            (is (= {:status 409,
+                    :errors [(msg/concept-exists-with-different-id
+                               gran-concept-id (:native-id granule)
+                               other-gran-concept-id (:native-id granule)
+                               :granule provider-id) ]}
+                   (select-keys response [:status :errors])))))))
+
+
+    ))
 
 (deftest save-granule-with-same-native-id-test
   (testing "Save granules with the same native-id for two small providers is OK"
@@ -40,55 +97,6 @@
       (util/verify-concept-was-saved gran1)
       (util/verify-concept-was-saved gran2)
       (is (not= gran1-concept-id gran2-concept-id)))))
-
-(deftest save-granule-with-concept-id
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-    (let [parent-collection (util/create-and-save-collection provider-id 1)
-          gran-concept-id (str "G10-" provider-id)
-          granule (util/granule-concept provider-id parent-collection 1 {:concept-id gran-concept-id})
-          {:keys [status revision-id concept-id]} (util/save-concept granule)]
-      (is (= 201 status))
-      (is (= revision-id 1))
-      (util/verify-concept-was-saved (assoc granule :revision-id revision-id :concept-id concept-id))
-
-      (testing "with incorrect native id"
-        (let [response (util/save-concept (assoc granule :native-id "foo"))]
-          (is (= {:status 409,
-                  :errors [(msg/concept-exists-with-different-id
-                             gran-concept-id (:native-id granule)
-                             gran-concept-id "foo"
-                             :granule provider-id) ]}
-                 (select-keys response [:status :errors])))))
-
-      (testing "with incorrect concept id"
-        (let [other-gran-concept-id (str "G11-" provider-id)
-              response (util/save-concept (assoc granule :concept-id other-gran-concept-id))]
-          (is (= {:status 409,
-                  :errors [(msg/concept-exists-with-different-id
-                             gran-concept-id (:native-id granule)
-                             other-gran-concept-id (:native-id granule)
-                             :granule provider-id) ]}
-                 (select-keys response [:status :errors])))))
-
-      (testing "with incorrect concept id matching another concept"
-        (let [other-gran-concept-id (str "G11-" provider-id)
-              granule2 (util/granule-concept provider-id parent-collection 2
-                                             {:concept-id other-gran-concept-id
-                                              :native-id "native2"})
-              _ (is (= 201 (:status (util/save-concept granule2))))
-              response (util/save-concept (assoc granule :concept-id other-gran-concept-id))]
-          (is (= {:status 409,
-                  :errors [(msg/concept-exists-with-different-id
-                             gran-concept-id (:native-id granule)
-                             other-gran-concept-id (:native-id granule)
-                             :granule provider-id) ]}
-                 (select-keys response [:status :errors]))))))))
-
-(deftest save-granule-with-nil-required-field
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
-    (let [granule (util/granule-concept provider-id nil 1)
-          {:keys [status revision-id concept-id]} (util/save-concept granule)]
-      (is (= 422 status)))))
 
 (deftest save-granule-post-commit-constraint-violations
   (testing "duplicate granule URs"
