@@ -2,7 +2,8 @@
   "Defines a web server component."
   (:require [cmr.common.lifecycle :as lifecycle]
             [ring.adapter.jetty :as jetty]
-            [cmr.common.log :refer (debug info warn error)])
+            [cmr.common.log :refer (debug info warn error)]
+            [cmr.common.mime-types :as mt])
   (:import [org.eclipse.jetty.server
             Server
             NCSARequestLog
@@ -52,6 +53,8 @@
   [existing-handler min_gzip_size]
   (doto (GzipHandler.)
     (.setHandler existing-handler)
+    ;; All the mime types that we want to support compression with must be specified here.
+    (.setMimeTypes (set mt/all-supported-mime-types))
     (.setMinGzipSize min_gzip_size)))
 
 (defrecord WebServer
