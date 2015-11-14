@@ -83,13 +83,16 @@
   [concept-type echo-compatible? results metadata-item]
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id format metadata]} metadata-item
+        granule-count (get granule-counts-map concept-id 0)
         attribs (concat [[:concept-id concept-id]
                          [:revision-id revision-id]
                          [:format format]]
                         (when has-granules-map
-                          [[:has-granules (get has-granules-map concept-id false)]])
+                          [[:has-granules (or
+                                           (< 0 granule-count)
+                                           (get has-granules-map concept-id false))]])
                         (when granule-counts-map
-                          [[:granule-count (get granule-counts-map concept-id 0)]]))
+                          [[:granule-count granule-count]]))
         attrib-strs (for [[k v] attribs]
                       (str " " (name k) "=\"" v "\""))]
     (concat ["<result"]

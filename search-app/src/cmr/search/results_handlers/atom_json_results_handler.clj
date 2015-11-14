@@ -50,6 +50,7 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags]} reference
         shape-result (atom-spatial/shapes->json shapes)
+        granule-count (get granule-counts-map id 0)
         result (merge {:id id
                        :score score
                        :title title
@@ -68,8 +69,9 @@
                        :dif_ids associated-difs
                        :online_access_flag online-access-flag
                        :browse_flag browse-flag
-                       :has_granules (when has-granules-map (get has-granules-map id false))
-                       :granule_count (when granule-counts-map (get granule-counts-map id 0))
+                       :has_granules (when has-granules-map (or (< 0 granule-count)
+                                                                (get has-granules-map id false)))
+                       :granule_count (when granule-counts-map granule-count)
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters
