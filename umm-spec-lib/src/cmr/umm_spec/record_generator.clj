@@ -15,7 +15,8 @@
 (def schema-name->namespace
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
-   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
+   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.service})
 
 (defn schema-type-constructor
   "Returns the map->RecordName function that can be used to construct a type defined in the JSON
@@ -173,7 +174,11 @@
 
   (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.collection
                                   :description "Defines UMM-C clojure records."
-                                  :schema-resource js/umm-c-schema-file}))
+                                  :schema-resource (:collection js/concept-type->schema-file)})
+ 
+  (generate-clojure-records-file {:the-ns 'cmr.umm-spec.models.service
+                                  :description "Defines UMM-S clojure records."
+                                  :schema-resource (:service js/concept-type->schema-file)}))
 
 (comment
 

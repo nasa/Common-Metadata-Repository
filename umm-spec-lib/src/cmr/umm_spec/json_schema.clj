@@ -8,6 +8,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
+(def concept-type->schema-file 
+  {:collection (io/resource "json-schemas/umm-c-json-schema.json") 
+   :service (io/resource "json-schemas/umm-s-json-schema.json")})
 
 (def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
@@ -16,13 +19,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 
-(def ^:private json-schema-for-validation
-  (js-validations/parse-json-schema-from-uri (str umm-c-schema-file)))
+(def concept-type->schemas 
+  (into {} (for [[concept-type umm-schema-file] concept-type->schema-file]
+             [concept-type (js-validations/parse-json-schema-from-uri (str umm-schema-file))])))
 
 (defn validate-umm-json
-  "Validates the UMM JSON and returns a list of errors if invalid."
-  [json-str]
-  (js-validations/validate-json json-schema-for-validation json-str))
+  "Validates the UMM JSON and returns a list of errors if invalid. Infers :collection schema type if called with 1-arity"
+  ([json-str]
+    (js-validations/validate-json (:collection concept-type->schemas) json-str))
+  ([json-str concept-type]
+    (js-validations/validate-json (get concept-type->schemas concept-type) json-str)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
@@ -153,7 +159,7 @@
 ;; Loaded schemas
 
 (def umm-c-schema (load-schema "umm-c-json-schema.json"))
-
+(def umm-s-schema (load-schema "umm-s-json-schema.json"))
 (defn root-def
   "Returns the root type definition of the given schema."
   [schema]

@@ -4,13 +4,14 @@
             [cmr.common.test.test-check-ext :as ext :refer [defspec]]
             [cmr.umm-spec.umm-json :as uj]
             [cmr.umm-spec.models.collection :as umm-c]
+            [cmr.umm-spec.models.service :as umm-s]
             [cmr.umm-spec.models.common :as umm-cmn]
             [clj-time.core :as t]
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
 (def minimal-example-record
-  "This is the minimum valid UMM."
+  "This is the minimum valid UMM-C."
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
                    {:ShortName "Platform"
@@ -32,11 +33,32 @@
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]}))
 
+(def minimal-example-umm-s-record
+  "This is the minimum valid UMM-S"
+  (umm-s/map->UMM-S
+    {:EntryTitle "Test Service"
+     :Abstract "An Abstract UMM-S Test Example"
+     :Responsibilities [(umm-cmn/map->ResponsibilityType
+                       {:Role "RESOURCEPROVIDER"
+                        :Party (umm-cmn/map->PartyType
+                                 {:OrganizationName (umm-cmn/map->OrganizationNameType
+                                                      {:ShortName "custodian"})})})]
+     :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
+     :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
+     :ServiceKeywords [(umm-s/map->ServiceKeywordType {:Category "cat" :Topic "top" :Term "ter" :ServiceSpecificName "SSN"})]}))
+
 ;; This only tests a minimum example record for now. We need to test with larger more complicated
 ;; records. We will do this as part of CMR-1929
 
-(deftest generate-and-parse-umm-json
-  (testing "minimal record"
+(deftest generate-and-parse-umm-s-json
+  (testing "minimal umm-s record"
+    (let [json (uj/umm->json minimal-example-umm-s-record)
+          _ (is (empty? (js/validate-umm-json json :service)))
+          parsed (uj/json->umm js/umm-s-schema json)]
+      (is (= minimal-example-umm-s-record parsed)))))
+
+(deftest generate-and-parse-umm-c-json
+  (testing "minimal umm-c record"
     (let [json (uj/umm->json minimal-example-record)
           _ (is (empty? (js/validate-umm-json json)))
           parsed (uj/json->umm js/umm-c-schema json)]
