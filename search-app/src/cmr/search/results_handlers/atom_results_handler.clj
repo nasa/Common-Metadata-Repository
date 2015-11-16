@@ -365,7 +365,8 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters]} reference]
+                orbit-parameters]} reference
+        granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -389,9 +390,10 @@
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
                (when has-granules-map
-                 (x/element :echo:hasGranules {} (get has-granules-map id false)))
+                 (x/element :echo:hasGranules {} (or (< 0 granule-count)
+                                                     (get has-granules-map id false))))
                (when granule-counts-map
-                 (x/element :echo:granuleCount {} (get granule-counts-map id 0)))
+                 (x/element :echo:granuleCount {} granule-count))
                (when score (x/element :relevance:score {} score)))))
 
 (defmethod atom-reference->xml-element :granule

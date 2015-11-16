@@ -37,7 +37,8 @@
    mt/dif      "DIF"
    mt/dif10    "DIF10"
    mt/edn      "EDN"
-   mt/serf     "SERF"})
+   mt/serf     "SERF"
+   mt/umm-json "UMM_JSON"})
 
 (def db-format->mime-type
   "A mapping of the format strings stored in the database to the equivalent mime type in concepts"
