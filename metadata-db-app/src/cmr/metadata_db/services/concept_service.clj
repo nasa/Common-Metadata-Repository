@@ -19,6 +19,8 @@
             [cmr.metadata-db.data.oracle.concepts.collection]
             [cmr.metadata-db.data.oracle.concepts.granule]
             [cmr.metadata-db.data.oracle.concepts.tag]
+            [cmr.metadata-db.data.oracle.concepts.service]
+            [cmr.metadata-db.data.oracle.concepts.group]
             [cmr.metadata-db.data.oracle.providers]
             [cmr.metadata-db.data.oracle.search]
 
