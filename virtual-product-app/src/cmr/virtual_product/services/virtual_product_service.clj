@@ -251,7 +251,8 @@
     (if (= entry-title src-entry-title)
       [granule-ur granule-ur]
       (let [{:keys [source-short-name short-name]}
-            (get svm/virtual-product-to-source-mapping [provider-id entry-title])]
+            (get svm/virtual-product-to-source-mapping
+                 [(svm/provider-alias->provider-id provider-id) entry-title])]
         [granule-ur
          (svm/compute-source-granule-ur
            provider-id source-short-name short-name granule-ur)]))))
@@ -276,7 +277,8 @@
   (let [provider-id (:provider-id (meta entry))
         entry-title (:entry-title entry)
         source-entry-title (get-in svm/virtual-product-to-source-mapping
-                                   [[provider-id entry-title] :source-entry-title])]
+                                   [[(svm/provider-alias->provider-id provider-id) entry-title]
+                                    :source-entry-title])]
     ;; If source entry title is null, that means it is not a virtual entry in which case we use
     ;; the entry title of the entry itself.
     [provider-id (or source-entry-title entry-title)]))
