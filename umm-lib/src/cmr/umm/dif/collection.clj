@@ -28,7 +28,8 @@
   (let [short-name (cx/string-at-path collection-content [:Entry_ID])
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
-        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
+        version-id (or (cx/string-at-path collection-content [:Data_Set_Citation :Version])
+                       dif-core/value-not-provided)
         processing-level-id (em/extended-metadata-value
                               collection-content em/product_level_id_external_meta_name)
         collection-data-type (em/extended-metadata-value

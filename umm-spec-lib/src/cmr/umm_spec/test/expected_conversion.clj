@@ -378,6 +378,8 @@
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
       (assoc :DataDates nil)
+      ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
+      (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil

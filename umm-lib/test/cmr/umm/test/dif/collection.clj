@@ -634,3 +634,6 @@
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
 
+(deftest parse-nil-version-test
+  (is (= "Not provided" (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))
+
