@@ -634,3 +634,8 @@
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
 
+(deftest parse-nil-version-test
+  ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide
+  ;; a default of "Not provided" when it is missing from the DIF-9 metadata.
+  (is (= "Not provided" (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))
+

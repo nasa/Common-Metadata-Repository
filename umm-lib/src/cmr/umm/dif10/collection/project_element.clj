@@ -2,6 +2,7 @@
   "Provide functions to parse and generate DIF10 Project elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.collection :as c]))
 
 (defn xml-elem->Project
@@ -27,4 +28,4 @@
                    (x/element :Long_Name {} long-name))))
     ;; Added since Project is a required field in DIF10. CMRIN-78
     (x/element :Project {}
-               (x/element :Short_Name {} "Not provided"))))
+               (x/element :Short_Name {} dif/value-not-provided))))

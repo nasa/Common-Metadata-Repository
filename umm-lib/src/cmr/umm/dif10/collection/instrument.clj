@@ -3,6 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.dif10.collection.sensor :as sensor]
             [cmr.umm.dif10.collection.characteristic :as ch]))
 
@@ -43,4 +44,4 @@
                  (sensor/generate-sensors sensors)))
     ;; Added since Instrument is a required field in DIF10. CMRIN-77
     (x/element :Instrument {}
-               (x/element :Short_Name {} "Not provided"))))
+               (x/element :Short_Name {} dif/value-not-provided))))
