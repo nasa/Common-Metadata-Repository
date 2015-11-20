@@ -51,6 +51,29 @@
       (finally
         (set-provider-aliases orig-aliases#)))))
 
+(defn set-disabled-collections
+  [colls]
+  ;; Set in the system int test vm AND in the dev system VM
+  (cmr.virtual-product.config/set-disabled-virtual-product-source-collections! colls)
+
+  (dev-sys-util/eval-in-dev-sys
+    `(cmr.virtual-product.config/set-disabled-virtual-product-source-collections! ~colls)))
+
+(defn get-disabled-collections
+  []
+  (dev-sys-util/eval-in-dev-sys
+    `(cmr.virtual-product.config/disabled-virtual-product-source-collections)))
+
+(defmacro with-disabled-source-collections
+  "Wraps body while using disabled source collections."
+  [disabled-collections body]
+  `(let [orig-colls# (get-disabled-collections)]
+    (set-disabled-collections ~disabled-collections)
+    (try
+      ~body
+      (finally
+        (set-disabled-collections orig-colls#)))))
+
 (defn source-collection->virtual-collections
   "Returns virtual collections from a source collection"
   [source-collection]

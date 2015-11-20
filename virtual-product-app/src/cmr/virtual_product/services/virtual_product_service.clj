@@ -53,7 +53,8 @@
   [{:keys [concept-type provider-id entry-title]}]
   (and (= :granule concept-type)
        (contains? source-provider-id-entry-titles
-                  [(svm/provider-alias->provider-id provider-id) entry-title])))
+                  [(svm/provider-alias->provider-id provider-id) entry-title])
+       (not (contains? (config/disabled-virtual-product-source-collections) entry-title))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Handle updates

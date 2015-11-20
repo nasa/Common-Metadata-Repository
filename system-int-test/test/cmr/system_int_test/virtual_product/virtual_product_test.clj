@@ -318,3 +318,64 @@
 
 (deftest ast-granule-umm-matchers-test
   (vp/assert-psa-granules-match index/wait-until-indexed))
+
+(def disabled-source-colls
+  #{"OMI/Aura Surface UVB Irradiance and Erythemal Dose Daily L3 Global 1.0x1.0 deg Grid V003"
+    "OMI/Aura TOMS-Like Ozone, Aerosol Index, Cloud Radiance Fraction Daily L3 Global 1.0x1.0 deg V003"
+    "Aqua AIRS Level 3 Daily Standard Physical Retrieval (AIRS+AMSU) V006"})
+
+(deftest virtual-products-disabled-source-collections-test
+  (vp/with-disabled-source-collections
+    disabled-source-colls
+    (let [source-collections (vp/ingest-source-collections)
+          enabled-source-collections (remove #(contains? disabled-source-colls (:entry-title %))
+                                             source-collections)
+          disabled-source-collections (filter #(contains? disabled-source-colls (:entry-title %))
+                                              source-collections)
+          ingest-colls-fn (fn [new-colls source-coll]
+                            (into new-colls (map #(assoc % :source-collection source-coll)
+                                                 (vp/ingest-virtual-collections [source-coll]))))
+          enabled-vp-colls (reduce ingest-colls-fn
+                                   []
+                                   enabled-source-collections)
+          disabled-vp-colls (reduce ingest-colls-fn
+                                    []
+                                    disabled-source-collections)
+          _ (index/wait-until-indexed)
+          source-granules (doall (for [source-coll source-collections
+                                       :let [{:keys [provider-id entry-title]} source-coll]
+                                       granule-ur (svm/sample-source-granule-urs
+                                                    [provider-id entry-title])]
+                                   (vp/ingest-source-granule provider-id
+                                                             (dg/granule source-coll {:granule-ur granule-ur}))))
+          expected-source-granules (remove #(contains? disabled-source-colls
+                                                       (get-in % [:collection-ref :entry-title]))
+                                           source-granules)
+          all-expected-granule-urs (concat (mapcat vp/source-granule->virtual-granule-urs expected-source-granules)
+                                           (map :granule-ur source-granules))]
+      (index/wait-until-indexed)
+
+      (testing "Find all granules"
+        (vp/assert-matching-granule-urs
+          all-expected-granule-urs
+          (search/find-refs :granule {:page-size 1000})))
+
+      (testing "Find all granules in enabled virtual collections"
+        (doseq [vp-coll enabled-vp-colls
+                :let [{:keys [provider-id source-collection]} vp-coll
+                      source-short-name (get-in source-collection [:product :short-name])
+                      vp-short-name (get-in vp-coll [:product :short-name])]]
+          (vp/assert-matching-granule-urs
+            (map #(svm/generate-granule-ur provider-id source-short-name vp-short-name %)
+                 (svm/sample-source-granule-urs
+                   [provider-id (:entry-title source-collection)]))
+            (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                        :page-size 1000}))))
+
+      (testing "Find all granules in disabled virtual collections"
+        (doseq [vp-coll disabled-vp-colls]
+          (vp/assert-matching-granule-urs
+            []
+            (search/find-refs :granule {:entry-title (:entry-title vp-coll)
+                                        :page-size 1000})))))))
+
