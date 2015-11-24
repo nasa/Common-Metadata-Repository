@@ -41,7 +41,8 @@
                      [:provider_id :entry_title :entry_id :short_name :version_id :delete_time
                       :user_id])
    :tag (into common-columns [:user_id])
-   :access-group (into common-columns [:provider_id :user_id])})
+   :access-group (into common-columns [:provider_id :user_id])
+   :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])})
 
 (defn columns-for-find-concept
   "Returns the table columns that should be included in a find-concept sql query"
