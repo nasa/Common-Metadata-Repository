@@ -1,7 +1,8 @@
 (ns cmr.indexer.data.concept-parser
   "Contains helper functions to parse a concept for indexing."
   (:require [clojure.edn :as edn]
-            [cmr.umm.core :as umm]))
+            [cmr.common.mime-types :as mt]
+            [cmr.umm-spec.legacy :as umm]))
 
 (defmulti parse-concept
   "Parse the metadata from a concept map into a UMM model or map containing data needed for

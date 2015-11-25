@@ -7,7 +7,7 @@
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
-            [cmr.ingest.services.umm :as umm]
+            [cmr.umm-spec.legacy :as umm]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]

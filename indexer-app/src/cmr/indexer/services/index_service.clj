@@ -173,10 +173,9 @@
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)]
         ;; Skip indexing UMM-JSON concepts for now
-        (when-not (= mt/umm-json (:format concept))
-          (let [parsed-concept (cp/parse-concept concept)]
-            (index-concept context concept parsed-concept options)
-            (log-ingest-to-index-time concept)))))))
+        (let [parsed-concept (cp/parse-concept concept)]
+          (index-concept context concept parsed-concept options)
+          (log-ingest-to-index-time concept))))))
 
 (defn delete-concept
   "Delete the concept with the given id"

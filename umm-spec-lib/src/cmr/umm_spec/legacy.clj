@@ -1,4 +1,6 @@
-(ns cmr.ingest.services.umm
+(ns cmr.umm-spec.legacy
+  "Functions for parsing concepts where old-style UMM is expected but new umm-spec formats (like
+  JSON) need to be supported."
   (:require [cmr.common.mime-types :as mt]
             [cmr.umm.core :as umm]
             [cmr.umm-spec.core :as umm-spec]))
@@ -12,8 +14,8 @@
     (umm/parse-concept (assoc concept-map :format mt/echo10 :metadata echo10-metadata))))
 
 (defn parse-concept
-  "Returns UMM record from an ingest concept map. Handles additional formats implemented by umm-spec
-  that cmr.umm.core/parse-concept does not support."
+  "Returns UMM record from a concept map, like cmr.umm.core/parse-concept, but supports additional
+  formats via umm-spec lib."
   [concept-map]
   (if (= mt/umm-json (:format concept-map))
     (parse-umm-json-concept concept-map)

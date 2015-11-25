@@ -10,7 +10,7 @@
             [cmr.ingest.services.project-validation :as pv]
             [cmr.ingest.services.temporal-validation :as tv]
             [cmr.ingest.services.spatial-validation :as sv]
-            [cmr.ingest.services.umm :as umm]))
+            [cmr.umm-spec.legacy :as umm]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.
