@@ -7,7 +7,8 @@
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as messages]
             [cmr.common.util :as u]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [cmr.metadata-db.int-test.concepts.concept-delete-spec :as cd-spec]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,6 +17,18 @@
 
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest force-delete-concepts-test
+  (doseq [concept-type [:collection :granule :service]]
+  (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
+
+(deftest delete-tag-general
+  (cd-spec/general-delete-test :tag ["CMR"]))
+
+(deftest delete-group-general
+  (cd-spec/general-delete-test :access-group ["REG_PROV" "SMAL_PROV" "CMR"]))
+
+;; collections must be tested separately to make sure granules are deleted as well
 (deftest delete-collection-using-delete-end-point-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
     (let [coll1 (util/create-and-save-collection provider-id 1 3)
@@ -88,260 +101,6 @@
       (util/verify-concept-was-saved coll2)
       (util/verify-concept-was-saved gran3))))
 
-(deftest delete-collection-with-valid-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1 3)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 4)]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id})))))
-
-(deftest delete-granule-using-delete-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll (util/create-and-save-collection provider-id 1)
-          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
-          gran2 (util/create-and-save-granule provider-id parent-coll 2)
-          {:keys [status revision-id] :as response} (util/delete-concept (:concept-id gran1))
-          stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
-      (is (= {:status 201
-              :revision-id 4
-              :deleted true
-              :metadata ""}
-             {:status status
-              :revision-id revision-id
-              :deleted (:deleted stored-gran1)
-              :metadata (:metadata stored-gran1)})
-          (pr-str response))
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved gran2))))
-
-(deftest delete-granule-using-save-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll (util/create-and-save-collection provider-id 1)
-          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
-          gran2 (util/create-and-save-granule provider-id parent-coll 2)
-          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id gran1)
-                                                           :deleted true})
-          stored-gran1 (:concept (util/get-concept-by-id-and-revision (:concept-id gran1) revision-id))]
-      (is (= {:status 201
-              :revision-id 4
-              :deleted true
-              :metadata ""}
-             {:status status
-              :revision-id revision-id
-              :deleted (:deleted stored-gran1)
-              :metadata (:metadata stored-gran1)}))
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved gran2))))
-
-(deftest delete-granule-with-valid-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [parent-coll (util/create-and-save-collection provider-id 1)
-          gran1 (util/create-and-save-granule provider-id parent-coll 1 3)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id gran1) 4)]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id})))))
-
-(deftest delete-tag-using-delete-end-point-test
-  (let [tag1 (util/create-and-save-tag 1 3)
-        tag2 (util/create-and-save-tag 2)
-        {:keys [status revision-id]} (util/delete-concept (:concept-id tag1))
-        stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
-    (is (= {:status 201
-            :revision-id 4
-            :deleted true
-            :metadata ""}
-           {:status status
-            :revision-id revision-id
-            :deleted (:deleted stored-tag1)
-            :metadata (:metadata stored-tag1)}))
-
-    ;; Other data left in database
-    (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR"))))
-
-(deftest delete-tag-using-save-end-point-test
-  (let [tag1 (util/create-and-save-tag 1 3)
-        tag2 (util/create-and-save-tag 2)
-        {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id tag1)
-                                                         :deleted true})
-        stored-tag1 (:concept (util/get-concept-by-id-and-revision (:concept-id tag1) revision-id))]
-    (is (= {:status 201
-            :revision-id 4
-            :deleted true
-            :metadata ""}
-           {:status status
-            :revision-id revision-id
-            :deleted (:deleted stored-tag1)
-            :metadata (:metadata stored-tag1)}))
-
-    ;; Other data left in database
-    (util/verify-concept-was-saved (assoc tag2 :provider-id "CMR"))))
-
-(deftest delete-tag-with-valid-revision-test
-  (let [tag1 (util/create-and-save-tag 1 3)
-        {:keys [status revision-id]} (util/delete-concept (:concept-id tag1) 4)]
-    (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))))
-
-(deftest delete-service-using-delete-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [serv1 (util/create-and-save-service provider-id 1 3)
-          serv2 (util/create-and-save-service provider-id 2)
-          {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id serv1))
-          deleted-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) revision-id))
-          saved-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
-
-      (is (= (dissoc (assoc saved-serv1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id nil)
-                     :revision-date)
-             (dissoc deleted-serv1 :revision-date)))
-
-      ;; Make sure that a deleted service gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-serv1) (:revision-date saved-serv1))
-          "The deleted service revision date should be after the previous revisions revision date.")
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved serv2))))
-
-(deftest delete-service-using-save-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [serv1 (util/create-and-save-service provider-id 1 3)
-          serv2 (util/create-and-save-service provider-id 2)
-          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id serv1)
-                                                           :deleted true
-                                                           :user-id "user101"})
-          deleted-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) revision-id))
-          saved-serv1 (:concept (util/get-concept-by-id-and-revision (:concept-id serv1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
-
-      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
-      ;; and deleted = true.
-      (is (= (dissoc (assoc saved-serv1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id "user101")
-                     :revision-date)
-             (dissoc deleted-serv1 :revision-date)))
-
-      ;; Make sure that a deleted service gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-serv1) (:revision-date saved-serv1))
-          "The deleted service revision date should be after the previous revisions revision date.")
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved serv2))))
-
-(deftest delete-service-with-valid-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [serv1 (util/create-and-save-service provider-id 1 3)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id serv1) 4)]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id})))))
-
-(deftest delete-group-using-delete-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [group1 (util/create-and-save-group provider-id 1 3)
-          group2 (util/create-and-save-group provider-id 2)
-          {:keys [status revision-id] :as tombstone} (util/delete-concept (:concept-id group1))
-          deleted-group1 (:concept (util/get-concept-by-id-and-revision (:concept-id group1) revision-id))
-          saved-group1 (:concept (util/get-concept-by-id-and-revision (:concept-id group1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
-
-      (is (= (dissoc (assoc saved-group1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id nil)
-                     :revision-date)
-             (dissoc deleted-group1 :revision-date)))
-
-      ;; Make sure that a deleted group gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-group1) (:revision-date saved-group1))
-          "The deleted group revision date should be after the previous revisions revision date.")
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved group2))))
-
-(deftest delete-group-using-save-end-point-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [group1 (util/create-and-save-group provider-id 1 3)
-          group2 (util/create-and-save-group provider-id 2)
-          {:keys [status revision-id]} (util/save-concept {:concept-id (:concept-id group1)
-                                                           :deleted true
-                                                           :user-id "user101"})
-          deleted-group1 (:concept (util/get-concept-by-id-and-revision (:concept-id group1) revision-id))
-          saved-group1 (:concept (util/get-concept-by-id-and-revision (:concept-id group1) (dec revision-id)))]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id}))
-
-      ;; Make sure that the saved tombstone has expected concept-id, revision-id, empty metadata,
-      ;; and deleted = true.
-      (is (= (dissoc (assoc saved-group1
-                            :deleted true
-                            :metadata ""
-                            :revision-id revision-id
-                            :user-id "user101")
-                     :revision-date)
-             (dissoc deleted-group1 :revision-date)))
-
-      ;; Make sure that a deleted group gets it's own unique revision date
-      (is (t/after? (:revision-date deleted-group1) (:revision-date saved-group1))
-          "The deleted group revision date should be after the previous revisions revision date.")
-
-      ;; Other data left in database
-      (util/verify-concept-was-saved group2))))
-
-(deftest delete-group-with-valid-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [group1 (util/create-and-save-group provider-id 1 3)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id group1) 4)]
-      (is (= {:status 201
-              :revision-id 4}
-             {:status status
-              :revision-id revision-id})))))
-
-(deftest delete-concept-with-skipped-revisions-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1)
-          {:keys [status revision-id]} (util/delete-concept (:concept-id coll1) 100)]
-      (is (= {:status 201
-              :revision-id 100}
-             {:status status
-              :revision-id revision-id})))))
-
-(deftest delete-deleted-concept-with-new-revision-test
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1)
-          {status1 :status revision-id1 :revision-id} (util/delete-concept (:concept-id coll1) 5)
-          {status2 :status revision-id2 :revision-id} (util/delete-concept (:concept-id coll1) 7)]
-      (is (= 201 status1 status2))
-      (is (= 5 revision-id1))
-      (is (= 7 revision-id2)))))
-
 (deftest delete-concept-failure-cases
   (let [coll-reg-prov (util/create-and-save-collection "REG_PROV" 1)
         coll-small-prov (util/create-and-save-collection "SMAL_PROV" 1)]
@@ -395,12 +154,3 @@
               "Missing concept for missing provider"
               {:concept-id "C100-NONEXIST" :deleted true} 404
               ["Provider with provider-id [NONEXIST] does not exist."]))))
-
-(deftest repeated-calls-to-delete-get-same-revision
-  (doseq [provider-id ["REG_PROV" "SMAL_PROV"]]
-    (let [coll1 (util/create-and-save-collection provider-id 1)]
-      (is (= (util/delete-concept (:concept-id coll1))
-             (util/delete-concept (:concept-id coll1))
-             (util/delete-concept (:concept-id coll1)))))))
-
-

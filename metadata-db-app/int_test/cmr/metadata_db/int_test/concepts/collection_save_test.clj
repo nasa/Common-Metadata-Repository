@@ -9,7 +9,7 @@
             [cmr.metadata-db.int-test.utility :as util]
             [cmr.metadata-db.services.messages :as msg]
             [cmr.metadata-db.services.concept-constraints :as cc]
-            [cmr.metadata-db.int-test.concepts.concept-spec :as c-spec]))
+            [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]))
 
 
 ;;; fixtures
@@ -20,81 +20,25 @@
                                                  {:provider-id "SMAL_PROV1" :small true}
                                                  {:provider-id "SMAL_PROV2" :small true}))
 
+(defmethod c-spec/gen-concept :collection
+  [_ provider-id uniq-num attributes]
+  (util/collection-concept provider-id uniq-num attributes))
+
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest save-collection-tests
-  (doseq [[idx provider-id] (map-indexed vector ["REG_PROV" "SMAL_PROV1"])]
-    (testing "basic save"
-      (let [concept (util/collection-concept provider-id 1)]
-        (c-spec/save-concept-test concept 201 1 nil)))
+  (c-spec/general-save-concept-test :collection ["REG_PROV" "SMAL_PROV1"]))
 
-    (testing "save with revision-date"
-      (let [concept (util/collection-concept provider-id 2 {:revision-date (t/date-time 2001 1 1 12 12 14)})]
-        (c-spec/save-concept-validate-field-saved-test concept :revision-date)))
+(deftest save-test-with-missing-required-parameters
+  (c-spec/save-test-with-missing-required-parameters
+    :collection ["REG_PROV" "SMAL_PROV1"] [:concept-type :provider-id :native-id :extra-fields]))
 
-    (testing "save with bad revision-date"
-      (let [concept (util/collection-concept provider-id 3 {:revision-date "foo"})]
-        (c-spec/save-concept-test concept 422 nil ["[foo] is not a valid datetime"])))
-
-    (testing "save collection without version-id"
-      (let [concept (util/collection-concept provider-id 4 {:extra-fields {:version-id nil}})]
-        (c-spec/save-concept-test concept 201 1 nil)))
-
-    (testing "save with proper revision-id"
-      (let [concept (util/collection-concept provider-id 5)]
-        (c-spec/save-concept-with-revision-id-test concept 201 2 nil)))
-
-    (testing "save with skipped revisions"
-      (let [concept (util/collection-concept provider-id 6)]
-        (c-spec/save-concept-with-revision-id-test concept 201 100 nil)))
-
-    (testing "save with low revision fails"
-      (let [concept (util/collection-concept provider-id 7)]
-        (c-spec/save-concept-with-revision-id-test
-          concept 409 1 [(format "Expected revision-id of [2] got [1] for [C%d-%s]"
-                                 (+ 1200000005 (* idx 9)) provider-id)])))
-
-    (testing "save concept with revision-id 0 fails"
-      (let [concept-with-bad-revision (util/collection-concept provider-id 18 {:revision-id 0})]
-        (c-spec/save-concept-test
-          concept-with-bad-revision 409 nil ["Expected revision-id of [1] got [0] for [null]"])))
-
-    (testing "save concept with missing required parameters fails"
-      (let [concept (util/collection-concept provider-id 8)]
-        (are [field errors] (c-spec/save-concept-test (dissoc concept field) 422 nil errors)
-             :concept-type ["Concept must include concept-type."
-                            "Concept field [concept-type] cannot be nil."]
-             :provider-id ["Concept must include provider-id."]
-             :native-id ["Concept must include native-id."]
-             :extra-fields ["Concept must include extra-fields"])))
-
-    (testing "save after delete"
-      (let [concept (util/collection-concept provider-id 9)
-            {:keys [concept-id]} (util/save-concept concept)]
-        (is (= 201 (:status (util/delete-concept concept-id))))
-        (c-spec/save-concept-test concept 201 3 nil)))
-
-    (testing "save after delete with invalid revision fails"
-      (let [concept (util/collection-concept provider-id 10)
-            {:keys [concept-id]} (util/save-concept concept)]
-        (is (= 201 (:status (util/delete-concept concept-id))))
-        (c-spec/save-concept-test
-          (assoc concept :revision-id 1)
-          409
-          nil
-          [(format "Expected revision-id of [3] got [1] for [C%d-%s]"
-                   (+ 1200000008 (* idx 9)) provider-id)])))
-
-    (testing "auto-increment of revision-id with skpped revisions"
-      (let [concept (util/collection-concept provider-id 1)
-            {:keys [concept-id]} (util/save-concept concept)
-            concept-with-concept-id (assoc concept :concept-id concept-id)
-            _ (util/save-concept (assoc concept-with-concept-id :revision-id 100))
-            {:keys [status revision-id]} (util/save-concept concept-with-concept-id)
-            {retrieved-concept :concept} (util/get-concept-by-id concept-id)]
-        (is (= 201 status))
-        (is (= 101 revision-id (:revision-id retrieved-concept)))))))
+(deftest save-collection-specific-tests
+  (testing "save concept without version-id"
+    (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
+      (let [concept (util/collection-concept provider-id 1 {:extra-fields {:version-id nil}})]
+        (c-spec/save-concept-test concept 201 1 nil)))))
 
 (deftest save-collection-with-same-native-id-test
   (testing "Save collections with the same native-id for two small providers is OK"

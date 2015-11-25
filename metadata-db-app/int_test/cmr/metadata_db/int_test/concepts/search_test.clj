@@ -374,6 +374,31 @@
             :errors ["Finding concept type [tag] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag {:provider-id "REG_PROV"})))))
 
+(deftest find-services
+  (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)]
+    (testing "find with parameters"
+      (testing "latest revsions"
+        (are2 [services params]
+              (= (set (map util/expected-concept services))
+                 (set (-> (util/find-latest-concepts :service params)
+                          :concepts
+                          concepts-for-comparison)))
+              ;; These are the only valid combinations for services
+              "provider-id, native-id"
+              [serv1] {:provider-id "REG_PROV" :native-id "native-id 1"}
+
+              "no metadata"
+              [(dissoc serv1 :metadata)] {:provider-id "REG_PROV"
+                                          :exclude-metadata true}))
+
+      (testing "all revisions"
+        (are2 [rev-count params]
+              (= rev-count
+                 (count (-> (util/find-concepts :service params)
+                            :concepts)))
+              "provider-id, native-id - three revisons"
+              3 {:provider-id "REG_PROV":native-id "native-id 1"})))))
+
 (deftest find-groups
   (let [group1 (util/create-and-save-group "REG_PROV" 1 3)]
     (testing "find with parameters"
