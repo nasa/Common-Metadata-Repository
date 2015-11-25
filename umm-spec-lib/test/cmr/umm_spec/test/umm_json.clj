@@ -10,7 +10,7 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
-(def minimal-example-record
+(def minimal-example-umm-c-record
   "This is the minimum valid UMM-C."
   (umm-c/map->UMM-C
     {:Platforms [(umm-cmn/map->PlatformType
@@ -37,6 +37,7 @@
   "This is the minimum valid UMM-S"
   (umm-s/map->UMM-S
     {:EntryTitle "Test Service"
+     :EntryId "Entry ID Goes Here"
      :Abstract "An Abstract UMM-S Test Example"
      :Responsibilities [(umm-cmn/map->ResponsibilityType
                        {:Role "RESOURCEPROVIDER"
@@ -59,10 +60,10 @@
 
 (deftest generate-and-parse-umm-c-json
   (testing "minimal umm-c record"
-    (let [json (uj/umm->json minimal-example-record)
+    (let [json (uj/umm->json minimal-example-umm-c-record)
           _ (is (empty? (js/validate-umm-json json)))
           parsed (uj/json->umm js/umm-c-schema json)]
-      (is (= minimal-example-record parsed)))))
+      (is (= minimal-example-umm-c-record parsed)))))
 
 (defspec all-umm-records 100
   (for-all [umm-record umm-gen/umm-c-generator]
@@ -86,7 +87,7 @@
   )
 
 (deftest validate-json-with-extra-fields
-  (let [json (uj/umm->json (assoc minimal-example-record :foo "extra"))]
+  (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]
     (is (= ["object instance has properties which are not allowed by the schema: [\"foo\"]"]
            (js/validate-umm-json json)))))
 
