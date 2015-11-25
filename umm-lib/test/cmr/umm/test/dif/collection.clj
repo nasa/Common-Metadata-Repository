@@ -98,8 +98,6 @@
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
-        ;; AccessValue is optional in dif and hasn't be specified.
-        (dissoc :access-value)
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         (assoc-in [:data-provider-timestamps :revision-date-time] nil)
@@ -401,6 +399,11 @@
         <Description>something bool</Description>
         <Value>false</Value>
       </Metadata>
+      <Metadata>
+        <Group>gov.nasa.earthdata.cmr</Group>
+        <Name>Restriction</Name>
+        <Value>1</Value>
+      </Metadata>
     </Extended_Metadata>
   </DIF>")
 
@@ -616,13 +619,16 @@
                     :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]
                     :contacts [(umm-c/map->Contact
                                  {:type :email
-                                  :value "geo@unepgrid.ch"})]})]}))
+                                  :value "geo@unepgrid.ch"})]})]
+     :access-value 1.0}))
 
 (deftest parse-collection-test
   (testing "parse collection"
     (is (= expected-collection (c/parse-collection all-fields-collection-xml))))
   (testing "parse temporal"
-    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml)))))
+    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml))))
+  (testing "parse collection access value"
+    (is (= 1.0 (c/parse-access-value all-fields-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"
