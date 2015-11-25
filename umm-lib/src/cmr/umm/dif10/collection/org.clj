@@ -5,6 +5,7 @@
             [clojure.set :as set]
             [cmr.common.xml :as cx]
             [camel-snake-kebab.core :as csk]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.collection :as c]))
 
 (def dif10-umm-org-type-mapping
@@ -43,4 +44,4 @@
                (x/element :Personnel {}
                           (x/element :Role {} "DATA CENTER CONTACT")
                           (x/element :Contact_Person {}
-                                     (x/element :Last_Name {} "Not provided"))))))
+                                     (x/element :Last_Name {} dif/value-not-provided))))))

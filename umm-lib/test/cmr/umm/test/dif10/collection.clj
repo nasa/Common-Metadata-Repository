@@ -114,7 +114,7 @@
   "Remove fields unsupported and not yet supported in DIF10"
   [coll]
   (-> coll
-      (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
+      (dissoc :spatial-keywords :associated-difs :metadata-language
               :temporal-keywords :two-d-coordinate-systems)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:data-provider-timestamps :revision-date-time] nil)
@@ -439,6 +439,11 @@
         <Description>something bool</Description>
         <Value>false</Value>
       </Metadata>
+      <Metadata>
+        <Group>gov.nasa.earthdata.cmr</Group>
+        <Name>Restriction</Name>
+        <Value>1</Value>
+      </Metadata>
     </Extended_Metadata>
    </DIF>")
 
@@ -603,13 +608,16 @@
                                   :version-id "1"})]
      :collection-progress :in-work
      :quality "Good quality"
-     :use-constraints "No Constraints"}))
+     :use-constraints "No Constraints"
+     :access-value 1.0}))
 
 (deftest parse-collection-test
   (testing "parse collection"
     (is (= expected-collection (c/parse-collection dif10-collection-xml))))
   (testing "parse collection temporal"
-    (is (= expected-temporal (c/parse-temporal dif10-collection-xml)))))
+    (is (= expected-temporal (c/parse-temporal dif10-collection-xml))))
+  (testing "parse collection access value"
+    (is (= 1.0 (c/parse-access-value dif10-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"

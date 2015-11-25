@@ -2,6 +2,7 @@
   "Provide functions to parse and generate DIF10 Related_URL elements."
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.collection :as c]))
 
 (defn build-RelatedURLs
@@ -44,4 +45,4 @@
                    (x/element :Mime_Type {} mime-type))))
     ;; Added since Related_URL is a required field in DIF10. CMRIN-79
     (x/element :Related_URL {}
-               (x/element :URL {} "Not provided"))))
+               (x/element :URL {} dif/value-not-provided))))

@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.virtual-product-token-ingest-test
+(ns cmr.system-int-test.virtual-product.virtual-product-token-ingest-test
   (:require [clojure.test :refer :all]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
@@ -8,9 +8,7 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.system :as s]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.common.time-keeper :as tk]
-            [clj-time.core :as t]))
+            [cmr.mock-echo.client.echo-util :as e]))
 
 (use-fixtures :each (ingest/reset-fixture {"LPDAAC_ECS_guid" "LPDAAC_ECS"} {:grant-all-ingest? false}))
 

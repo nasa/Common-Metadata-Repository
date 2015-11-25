@@ -47,3 +47,10 @@
   {:default {"LPDAAC_ECS"  #{}
              "GSFCS4PA" #{}}
    :type :edn})
+
+(defconfig disabled-virtual-product-source-collections
+  "A list of entry-titles of source collections whose virtual products processing is disabled.
+  We add this configuration to have the ability to turn on virtual products processing per collection.
+  Note: This configuration does not affect bootstrapping of virtual products, only the forward processing."
+  {:default #{}
+   :type :edn})

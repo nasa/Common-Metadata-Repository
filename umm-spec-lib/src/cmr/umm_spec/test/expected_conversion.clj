@@ -339,12 +339,6 @@
       [(cmn/map->TemporalExtentType
          {:RangeDateTimes all-ranges})])))
 
-(defn dif-access-constraints
-  "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
-  [access-constraints]
-  (when access-constraints
-    (assoc access-constraints :Value nil)))
-
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 publication reference"
   [pub-ref]
@@ -378,6 +372,8 @@
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
       (assoc :DataDates nil)
+      ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
+      (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -394,7 +390,6 @@
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
                       :CenterPoint nil)
       (update-in [:SpatialExtent] prune-empty-maps)
-      (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
@@ -453,7 +448,6 @@
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:DataDates] fixup-dif10-data-dates)
-      (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)

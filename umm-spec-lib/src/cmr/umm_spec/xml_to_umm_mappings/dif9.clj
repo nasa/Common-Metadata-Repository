@@ -4,6 +4,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
+            [cmr.umm-spec.util :as umm-util]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn- parse-mbrs
@@ -20,7 +21,7 @@
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :EntryId (value-of doc "/DIF/Entry_ID")
-   :Version (value-of doc "/DIF/Data_Set_Citation/Version")
+   :Version (or (value-of doc "/DIF/Data_Set_Citation/Version") umm-util/not-provided)
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
@@ -33,7 +34,8 @@
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")}
+   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
+                       :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Source_Name")]
                 {:ShortName (value-of platform "Short_Name")
