@@ -61,16 +61,23 @@
 (deftest generate-and-parse-umm-c-json
   (testing "minimal umm-c record"
     (let [json (uj/umm->json minimal-example-umm-c-record)
-          _ (is (empty? (js/validate-umm-json json)))
+          _ (is (empty? (js/validate-umm-json json :collection)))
           parsed (uj/json->umm js/umm-c-schema json)]
       (is (= minimal-example-umm-c-record parsed)))))
 
 (defspec all-umm-c-records 100
   (for-all [umm-c-record umm-gen/umm-c-generator]
     (let [json (uj/umm->json umm-c-record)
-          _ (is (empty? (js/validate-umm-json json)))
+          _ (is (empty? (js/validate-umm-json json :collection)))
           parsed (uj/json->umm js/umm-c-schema json)]
       (is (= umm-c-record parsed)))))
+
+(defspec all-umm-s-records 100
+  (for-all [umm-s-record umm-gen/umm-s-generator]
+    (let [json (uj/umm->json umm-s-record)
+          _ (is (empty? (js/validate-umm-json json :service)))
+          parsed (uj/json->umm js/umm-s-schema json)]
+      (is (= umm-s-record parsed)))))
 
 (comment
 
@@ -80,10 +87,16 @@
   ;; as normal.
 
   (let [json (uj/umm->json user/failing-value)
-        _ (is (empty? (js/validate-umm-json json)))
+        _ (is (empty? (js/validate-umm-json json :collection)))
         parsed (uj/json->umm js/umm-c-schema json)]
     (is (= user/failing-value parsed)))
-
+ 
+ ;; Use this block for testing UMM-S calls. 
+ 
+  (let [json (uj/umm->json user/failing-value)
+        _ (is (empty? (js/validate-umm-json json :service)))
+        parsed (uj/json->umm js/umm-s-schema json)]
+    (is (= user/failing-value parsed)))
   )
 
 (deftest validate-json-with-extra-fields
