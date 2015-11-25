@@ -4,25 +4,32 @@
             [clojure.string :as str]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.common.util :as cmn-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
+(def concept-type->schema-file 
+  "Maps a concept type to the schema required to parse it."
+  {:collection (io/resource "json-schemas/umm-c-json-schema.json") 
+   :service (io/resource "json-schemas/umm-s-json-schema.json")})
 
-(def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
-
-(def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
+(def umm-cmn-schema-file 
+  "The schema required to parse umm-common" 
+  (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 
-(def ^:private json-schema-for-validation
-  (js-validations/parse-json-schema-from-uri (str umm-c-schema-file)))
+(def concept-type->schemas
+  "Maps a concept type to the parsed & validated schema file."
+  (cmn-util/map-values #(js-validations/parse-json-schema-from-uri (str %))
+                   concept-type->schema-file))
 
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."
-  [json-str]
-  (js-validations/validate-json json-schema-for-validation json-str))
+  ([json-str concept-type]
+    (js-validations/validate-json (get concept-type->schemas concept-type) json-str)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
@@ -153,7 +160,7 @@
 ;; Loaded schemas
 
 (def umm-c-schema (load-schema "umm-c-json-schema.json"))
-
+(def umm-s-schema (load-schema "umm-s-json-schema.json"))
 (defn root-def
   "Returns the root type definition of the given schema."
   [schema]
