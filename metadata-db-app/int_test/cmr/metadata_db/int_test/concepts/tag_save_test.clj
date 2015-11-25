@@ -18,7 +18,7 @@
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}))
 
-(defmethod gen-concept :tag
+(defmethod c-spec/gen-concept :tag
   [_ _ uniq-num attributes]
   (util/tag-concept uniq-num attributes))
 
