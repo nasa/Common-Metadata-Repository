@@ -65,12 +65,12 @@
           parsed (uj/json->umm js/umm-c-schema json)]
       (is (= minimal-example-umm-c-record parsed)))))
 
-(defspec all-umm-records 100
-  (for-all [umm-record umm-gen/umm-c-generator]
-    (let [json (uj/umm->json umm-record)
+(defspec all-umm-c-records 100
+  (for-all [umm-c-record umm-gen/umm-c-generator]
+    (let [json (uj/umm->json umm-c-record)
           _ (is (empty? (js/validate-umm-json json)))
           parsed (uj/json->umm js/umm-c-schema json)]
-      (is (= umm-record parsed)))))
+      (is (= umm-c-record parsed)))))
 
 (comment
 
