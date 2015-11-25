@@ -13,27 +13,28 @@
           "maxLength": 80
         },
         "ShortName": {
-          "$ref": "#/definitions/PlatformShortNameType"
+          "$ref": "umm-cmn-json-schema.json#/definitions/PlatformShortNameType"
         },
         "LongName": {
-          "$ref": "#/definitions/PlatformLongNameType"
+          "$ref": "umm-cmn-json-schema.json#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
           "description": "The characteristics of platform specific attributes. The characteristic names must be unique on this platform; however the names do not have to be unique across platforms.",
           "type": "array",
           "items": {
-            "$ref": "#/definitions/CharacteristicType"
+            "$ref": "umm-cmn-json-schema.json#/definitions/CharacteristicType"
           },
           "minItems": 0
         },
         "Instruments": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InstrumentType"
+            "$ref": "umm-cmn-json-schema.json#/definitions/InstrumentType"
           },
           "minItems": 0
         }
-      }
+      },
+      "required": ["ShortName"]
     },
     "ServiceKeywordType": {
       "type": "object",
@@ -210,6 +211,7 @@
       }
     },
     "required": [
+      "EntryID",
       "EntryTitle",
       "Abstract",
       "Responsibilities",
