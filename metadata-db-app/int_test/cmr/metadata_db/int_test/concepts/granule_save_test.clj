@@ -29,7 +29,7 @@
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save
+(deftest save-granule-test
   (c-spec/general-save-concept-test :granule ["REG_PROV" "SMAL_PROV1"]))
 
 (deftest save-test-with-missing-required-parameters

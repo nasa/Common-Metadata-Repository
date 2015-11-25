@@ -26,7 +26,7 @@
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save-collection-tests
+(deftest save-service-test
   (c-spec/general-save-concept-test :service ["REG_PROV" "SMAL_PROV1"]))
 
 (deftest save-service-with-same-native-id-test

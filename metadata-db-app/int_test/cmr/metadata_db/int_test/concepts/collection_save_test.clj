@@ -27,7 +27,7 @@
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest save-collection-tests
+(deftest save-collection-test
   (c-spec/general-save-concept-test :collection ["REG_PROV" "SMAL_PROV1"]))
 
 (deftest save-test-with-missing-required-parameters

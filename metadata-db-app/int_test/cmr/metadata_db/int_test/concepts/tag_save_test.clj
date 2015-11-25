@@ -20,7 +20,7 @@
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(deftest save-collection-tests
+(deftest save-tag-test
   (c-spec/general-save-concept-test :tag ["CMR"]))
 
 
