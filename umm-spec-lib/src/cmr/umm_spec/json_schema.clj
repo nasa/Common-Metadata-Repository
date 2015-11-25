@@ -4,7 +4,8 @@
             [clojure.string :as str]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.common.util :as cmn-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
@@ -20,10 +21,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 
-(def concept-type->schemas 
+(def concept-type->schemas
   "Maps a concept type to the parsed & validated schema file."
-  (into {} (for [[concept-type umm-schema-file] concept-type->schema-file]
-             [concept-type (js-validations/parse-json-schema-from-uri (str umm-schema-file))])))
+  (cmn-util/map-values #(js-validations/parse-json-schema-from-uri (str %))
+                   concept-type->schema-file))
 
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."
