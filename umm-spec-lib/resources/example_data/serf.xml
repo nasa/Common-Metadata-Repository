@@ -13,11 +13,11 @@
    <Personnel>
       <Role>TECHNICAL CONTACT</Role>
       <Role>SERF AUTHOR</Role>
-      <First_Name>WENLI</First_Name>
-      <Last_Name>YANG</Last_Name>
-      <Email>Wenli.Yang@nasa.gov</Email>
-      <Phone>301-614-5312</Phone>
-      <Fax>301-614-5268</Fax>
+      <First_Name>FIRSTNAME</First_Name>
+      <Last_Name>LASTNAME</Last_Name>
+      <Email>FIRSTNAME.LASTNAME@nasa.gov</Email>
+      <Phone>301-555-5555</Phone>
+      <Fax>301-555-5555</Fax>
       <Contact_Address>
          <Address>NASA/GSFC Code 610.2</Address>
          <City>Greenbelt</City>
@@ -150,11 +150,11 @@
    <Service_Organization_URL>http://disc.gsfc.nasa.gov/</Service_Organization_URL>
       <Personnel>
          <Role>SERVICE PROVIDER CONTACT</Role>
-         <First_Name>CHRISTOPHER</First_Name>
-         <Last_Name>LYNNES</Last_Name>
-         <Email>Christopher.S.Lynnes@nasa.gov</Email>
-         <Phone>301-614-5185</Phone>
-         <Fax>301-614-5268</Fax>
+         <First_Name>FIRSTNAME</First_Name>
+         <Last_Name>LASTNAME</Last_Name>
+         <Email>FIRSTNAME.LASTNAME@nasa.gov</Email>
+         <Phone>301-555-5555</Phone>
+         <Fax>301-555-5555</Fax>
          <Contact_Address>
             <Address>NASA GSFC, Code 610.2</Address>
             <City>Greenbelt</City>
