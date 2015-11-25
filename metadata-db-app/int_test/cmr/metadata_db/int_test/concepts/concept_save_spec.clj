@@ -5,11 +5,11 @@
             [cmr.common.concepts :as cc]
             [cmr.metadata-db.int-test.utility :as util]))
 
-;; Need this instead of direct string cmoparisons because we don't know ahead of time what
+;; Need this instead of direct string comparisons because we don't know ahead of time what
 ;; concept-ids will be generated, so the error messages must be checked with regexes instead
 ;; of exact strings.
 (defn- error-messages-match?
-  "Comprare the returned error messages to the expected ones given as a vector of regexes."
+  "Compare the returned error messages to the expected ones given as a vector of regexes."
   [exp-errors errors]
   (let [failures (remove seq (map (fn [exp-error error]
                                     (re-matches exp-error error))
@@ -45,7 +45,7 @@
 
 (defn save-concept-with-revision-id-test
   "Save a concept once then save it again with the provided revision id, validating that the
-  repsonse matches the expected response, and possibly that the second save succeeded."
+  response matches the expected response, and possibly that the second save succeeded."
   [concept exp-status new-revision-id exp-errors]
   (testing "save concept with revision id"
     (let [{:keys [concept-id revision-id]} (util/save-concept concept)
@@ -185,7 +185,7 @@
           nil
           [#"Expected revision-id of \[3\] got \[1\] for \[\w+-\w+\]"])))
 
-    (testing "auto-increment of revision-id with skpped revisions"
+    (testing "auto-increment of revision-id with skipped revisions"
       (let [concept (gen-concept concept-type provider-id 1 {})
             {:keys [concept-id]} (util/save-concept concept)
             concept-with-concept-id (assoc concept :concept-id concept-id)

@@ -18,7 +18,7 @@
 ;;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest force-delete-concepts-test
+(deftest delete-concepts-test
   (doseq [concept-type [:collection :granule :service]]
   (cd-spec/general-delete-test concept-type ["REG_PROV" "SMAL_PROV"])))
 
