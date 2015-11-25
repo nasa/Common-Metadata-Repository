@@ -21,7 +21,8 @@
             [cmr.umm.dif10.collection.reference :as ref]
             [cmr.umm.dif10.collection.personnel :as personnel]
             [cmr.umm.dif10.collection.product-specific-attribute :as psa]
-            [cmr.umm.dif10.collection.metadata-association :as ma])
+            [cmr.umm.dif10.collection.metadata-association :as ma]
+            [cmr.umm.dif.collection.extended-metadata :as em])
   (:import cmr.umm.collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -73,7 +74,8 @@
      :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
      :product (xml-elem->Product xml-struct)
      :data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)
-     :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))}))
+     :temporal-keywords (seq (cx/strings-at-path xml-struct [:Data_Resolution :Temporal_Resolution]))
+     :access-value (em/xml-elem->access-value xml-struct)}))
 
 (defn parse-collection
   "Parses DIF 10 XML into a UMM Collection record."
@@ -84,6 +86,11 @@
   "Parses the XML and extracts the temporal data."
   [xml]
   (t/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (em/xml-elem->access-value (x/parse-str xml)))
 
 (def dif10-header-attributes
   "The set of attributes that go on the dif root element"
@@ -100,7 +107,7 @@
             :keys [entry-title summary purpose temporal organizations science-keywords
                    platforms product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
-                   publication-references temporal]} collection]
+                   publication-references temporal access-value]} collection]
        (x/emit-str
          (x/element :DIF dif10-header-attributes
                     (x/element :Entry_ID {}
@@ -137,7 +144,12 @@
                                (x/element :Data_Last_Revision {} "1970-01-01T00:00:00"))
                     (psa/generate-product-specific-attributes product-specific-attributes)
                     (when collection-data-type
-                      (x/element :Collection_Data_Type {} collection-data-type))))))))
+                      (x/element :Collection_Data_Type {} collection-data-type))
+                    (when access-value
+                      (x/element :Extended_Metadata {}
+                                 (em/generate-metadata-elements
+                                   [{:name em/restriction_flag_external_meta_name
+                                     :value access-value}])))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

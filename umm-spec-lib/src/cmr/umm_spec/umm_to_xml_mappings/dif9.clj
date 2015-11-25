@@ -141,6 +141,9 @@
        [:Value (-> c :ProcessingLevel :Id)]]
       [:Metadata
        [:Name "ProcessingLevelDescription"]
-       [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]]]))
-
+       [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]
+      (when-let [access-value (get-in c [:AccessConstraints :Value])]
+        [:Metadata
+         [:Name "Restriction"]
+         [:Value access-value]])]]))
 

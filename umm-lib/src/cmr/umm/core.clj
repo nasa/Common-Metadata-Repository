@@ -87,8 +87,8 @@
     (condp = (keyword concept-type)
       :collection (condp = format
                     mt/echo10 (echo10-c/parse-access-value metadata)
-                    mt/dif nil
-                    mt/dif10 nil
+                    mt/dif (dif-c/parse-access-value metadata)
+                    mt/dif10 (dif10-c/parse-access-value metadata)
                     mt/iso (iso-mends-c/parse-access-value metadata)
                     mt/iso-smap nil)
 
