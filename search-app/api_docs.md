@@ -1,6 +1,8 @@
+## API Documentation
+
 ***
 
-## Table of Contents
+### Table of Contents
 
   * [General Request Details](#general-request-details)
     * [Maximum URL Length](#maximum-url-length)
@@ -126,8 +128,6 @@
     * [Check application health](#check-application-health)
 
 ***
-
-## API Documentation
 
 ### <a name="general-request-details"></a> General Request Details
 
