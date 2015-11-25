@@ -5,7 +5,8 @@
             [clojure.string :as str]
             [cmr.umm-spec.util :as spec-util]
             [cmr.umm-spec.models.collection]
-            [cmr.umm-spec.models.common]))
+            [cmr.umm-spec.models.common]
+            [cmr.umm-spec.models.service]))
 
 ;; Improvements
 ;; - generate records with fields in the same order as they are defined in the file.

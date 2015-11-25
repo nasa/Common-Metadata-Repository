@@ -102,7 +102,7 @@
 (deftest validate-json-with-extra-fields
   (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]
     (is (= ["object instance has properties which are not allowed by the schema: [\"foo\"]"]
-           (js/validate-umm-json json)))))
+           (js/validate-umm-json json :collection)))))
 
 (deftest json-schema-coercion
   (is (= (js/coerce {:EntryTitle "an entry title"

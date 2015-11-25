@@ -26,9 +26,7 @@
              [concept-type (js-validations/parse-json-schema-from-uri (str umm-schema-file))])))
 
 (defn validate-umm-json
-  "Validates the UMM JSON and returns a list of errors if invalid. Infers :collection schema type if called with 1-arity"
-  ([json-str]
-    (js-validations/validate-json (:collection concept-type->schemas) json-str))
+  "Validates the UMM JSON and returns a list of errors if invalid. Requires json string and concept type as symbol"
   ([json-str concept-type]
     (js-validations/validate-json (get concept-type->schemas concept-type) json-str)))
 
