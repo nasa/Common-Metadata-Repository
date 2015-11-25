@@ -9,17 +9,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
 (def concept-type->schema-file 
+  "Maps a concept type to the schema required to parsing it."
   {:collection (io/resource "json-schemas/umm-c-json-schema.json") 
    :service (io/resource "json-schemas/umm-s-json-schema.json")})
 
-(def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
+(def umm-cmn-schema-file "The schema required to parse umm-common" (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
-(def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
+(def umm-c-schema-file "The schema file required parse umm-collection" (io/resource "json-schemas/umm-c-json-schema.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 
 (def concept-type->schemas 
+  "Maps a concept type to the parsed & validated schema file."
   (into {} (for [[concept-type umm-schema-file] concept-type->schema-file]
              [concept-type (js-validations/parse-json-schema-from-uri (str umm-schema-file))])))
 
