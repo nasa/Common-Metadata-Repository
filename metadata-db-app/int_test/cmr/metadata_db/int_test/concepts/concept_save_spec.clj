@@ -87,10 +87,6 @@
   (fn [concept-type provider-id uniq-num attributes]
     concept-type))
 
-(defmethod gen-concept :tag
-  [_ _ uniq-num attributes]
-  (util/tag-concept uniq-num attributes))
-
 (def missing-parameter-errors
   "Map of parameters to expected error messages if the parameters are missing"
   {:concept-type [#"Concept must include concept-type."
