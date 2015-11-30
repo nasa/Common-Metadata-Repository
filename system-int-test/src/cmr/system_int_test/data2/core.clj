@@ -32,18 +32,20 @@
 
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
-  [item format-key]
-  (let [format (mime-types/format->mime-type format-key)
-        concept-type (legacy/item->concept-type item)]
-    (merge {:concept-type concept-type
-            :provider-id (or (:provider-id item) "PROV1")
-            :native-id (or (:native-id item) (item->native-id item))
-            :metadata (when-not (:deleted item) (generate-metadata (dissoc item :provider-id) concept-type format-key))
-            :format format}
-           (when (:concept-id item)
-             {:concept-id (:concept-id item)})
-           (when (:revision-id item)
-             {:revision-id (:revision-id item)}))))
+  ([item]
+   (item->concept item :echo10))
+  ([item format-key]
+   (let [format (mime-types/format->mime-type format-key)
+         concept-type (legacy/item->concept-type item)]
+     (merge {:concept-type concept-type
+             :provider-id (or (:provider-id item) "PROV1")
+             :native-id (or (:native-id item) (item->native-id item))
+             :metadata (when-not (:deleted item) (generate-metadata (dissoc item :provider-id) concept-type format-key))
+             :format format}
+            (when (:concept-id item)
+              {:concept-id (:concept-id item)})
+            (when (:revision-id item)
+              {:revision-id (:revision-id item)})))))
 
 (defn ingest
   "Ingests the catalog item. Returns it with concept-id, revision-id, and provider-id set on it.
