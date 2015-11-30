@@ -20,3 +20,25 @@
   (if (= mt/umm-json (:format concept-map))
     (parse-umm-json-concept concept-map)
     (umm/parse-concept concept-map)))
+
+(defmulti item->concept-type (fn [item] (type item)))
+
+(defmethod item->concept-type cmr.umm_spec.models.collection.UMM-C
+  [_]
+  :collection)
+
+(defmethod item->concept-type :default
+  [item]
+  (umm/item->concept-type item))
+
+(defmulti generate-metadata
+  "Returns metadata string from UMM record (old or new)."
+  (fn [umm format-key] (type umm)))
+
+(defmethod generate-metadata cmr.umm_spec.models.collection.UMM-C
+  [umm format-key]
+  (umm-spec/generate-metadata :collection format-key umm))
+
+(defmethod generate-metadata :default
+  [umm format-key]
+  (umm/umm->xml umm format-key))

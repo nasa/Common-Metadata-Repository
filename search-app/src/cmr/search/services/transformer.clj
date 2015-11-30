@@ -3,6 +3,7 @@
   (:require [cmr.metadata-db.services.concept-service :as metadata-db]
             [cmr.umm.core :as ummc]
             [cmr.umm.start-end-date :as sed]
+            [cmr.umm-spec.core :as umm-spec]
             [cmr.common.cache :as cache]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.mime-types :as mt]
@@ -45,9 +46,13 @@
     (if-let [xsl (types->xsl [native-format target-format])]
       ; xsl is defined for the transformation, so use xslt
       (xslt/transform (:metadata concept) (get-template context xsl))
-      (-> concept
-          ummc/parse-concept
-          (ummc/umm->xml target-format)))))
+      (if (= :umm-json native-format)
+        (umm-spec/generate-metadata
+         :collection target-format
+         (umm-spec/parse-metadata :collection :umm-json (:metadata concept)))
+        (-> concept
+            ummc/parse-concept
+            (ummc/umm->xml target-format))))))
 
 (defn- concept->value-map
   "Convert a concept into a map containing metadata in a desired format as well as
