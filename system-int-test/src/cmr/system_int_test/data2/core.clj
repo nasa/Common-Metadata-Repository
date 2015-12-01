@@ -19,7 +19,7 @@
 (defn- item->native-id
   "Returns the native id of an ingest item."
   [item]
-  (some #(get item %) [:native-id :granule-ur :entry-title :EntryTitle]))
+  (some #(get item %) [:granule-ur :entry-title :native-id :EntryTitle]))
 
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."

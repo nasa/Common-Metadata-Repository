@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.concept-parser
   "Contains helper functions to parse a concept for indexing."
   (:require [clojure.edn :as edn]
-            [cmr.common.mime-types :as mt]
             [cmr.umm-spec.legacy :as umm-legacy]))
 
 (defmulti parse-concept
