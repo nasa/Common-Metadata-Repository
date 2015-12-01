@@ -171,8 +171,7 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)]
-        ;; Skip indexing UMM-JSON concepts for now
+      (let [concept (meta-db/get-concept context concept-id revision-id)]
         (let [parsed-concept (cp/parse-concept concept)]
           (index-concept context concept parsed-concept options)
           (log-ingest-to-index-time concept))))))

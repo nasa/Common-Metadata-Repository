@@ -7,7 +7,7 @@
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
-            [cmr.umm-spec.legacy :as umm]
+            [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.ingest.services.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
@@ -44,7 +44,7 @@
   (v/validate-concept-request collection-concept)
   (v/validate-concept-metadata collection-concept)
 
-  (let [collection (umm/parse-concept collection-concept)]
+  (let [collection (umm-legacy/parse-concept collection-concept)]
     (when (ingest-validation-enabled?)
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
@@ -85,7 +85,7 @@
       (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
 
-    [coll-concept (umm/parse-concept coll-concept)]))
+    [coll-concept (umm-legacy/parse-concept coll-concept)]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -112,7 +112,7 @@
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
 
-   (let [granule (umm/parse-concept concept)
+   (let [granule (umm-legacy/parse-concept concept)
          [parent-collection-concept
           parent-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
