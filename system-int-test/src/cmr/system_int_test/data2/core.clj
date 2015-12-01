@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [cmr.umm.core :as umm]
             [cmr.umm-spec.core :as umm-spec]
-            [cmr.umm-spec.legacy :as legacy]
+            [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
@@ -19,28 +19,18 @@
 (defn- item->native-id
   "Returns the native id of an ingest item."
   [item]
-  (some #(get item %) [:granule-ur :entry-title :native-id :EntryTitle]))
-
-(defn generate-metadata
-  "Returns a metadata string representing the ingest item (umm-lib or umm-spec-lib UMM record) in
-  the desired format."
-  [item concept-type format-key]
-  (if (= :umm-json format-key)
-    ;; assuming umm-json is already UMM-spec UMM
-    (umm-spec/generate-metadata concept-type format-key item)
-    (umm/umm->xml item format-key)))
+  (some #(get item %) [:native-id :granule-ur :entry-title :EntryTitle]))
 
 (defn item->concept
   "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
   ([item]
    (item->concept item :echo10))
   ([item format-key]
-   (let [format (mime-types/format->mime-type format-key)
-         concept-type (legacy/item->concept-type item)]
-     (merge {:concept-type concept-type
+   (let [format (mime-types/format->mime-type format-key)]
+     (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (when-not (:deleted item) (generate-metadata (dissoc item :provider-id) concept-type format-key))
+             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -93,7 +83,7 @@
                  :metadata metadata
                  :format (mime-types/format->mime-type format-key)}
         response (ingest/ingest-concept concept)]
-    (merge (legacy/parse-concept concept) response)))
+    (merge (umm-legacy/parse-concept concept) response)))
 
 (defn ingest-concept-with-metadata-file
   "Ingest the given concept with the metadata file. The metadata file has to be located on the
@@ -132,7 +122,7 @@
        :revision-id revision-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (legacy/generate-metadata item format-key)})))
+       :metadata (umm-legacy/generate-metadata item format-key)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
@@ -142,11 +132,11 @@
         {:echo_granule_id concept-id
          :echo_dataset_id collection-concept-id
          :format format-key
-         :metadata (legacy/generate-metadata item format-key)})
+         :metadata (umm-legacy/generate-metadata item format-key)})
       (util/remove-nil-keys
         {:echo_dataset_id concept-id
          :format format-key
-         :metadata (legacy/generate-metadata item format-key)}))))
+         :metadata (umm-legacy/generate-metadata item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?
