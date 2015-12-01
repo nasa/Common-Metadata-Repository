@@ -78,8 +78,8 @@
   [dif-xml-root]
   (for [reference (cx/elements-at-path dif-xml-root [:Reference])]
     (c/map->PublicationReference
-     (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
-                [umm-key (cx/string-at-path reference [dif-tag])])))))
+      (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
+                 [umm-key (cx/string-at-path reference [dif-tag])])))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
@@ -107,7 +107,8 @@
      :organizations (org/xml-elem->Organizations xml-struct)
      :personnel (personnel/xml-elem->personnel xml-struct)
      :publication-references (seq (parse-publication-references xml-struct))
-     :collection-progress (progress/parse xml-struct)}))
+     :collection-progress (progress/parse xml-struct)
+     :access-value (em/xml-elem->access-value xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -118,6 +119,11 @@
   "Parses the XML and extracts the temporal data."
   [xml]
   (t/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (em/xml-elem->access-value (x/parse-str xml)))
 
 (def dif-header-attributes
   "The set of attributes that go on the dif root element"
@@ -145,7 +151,7 @@
             :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
-                   publication-references]} collection
+                   publication-references access-value]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)]
        (x/emit-str
@@ -185,7 +191,7 @@
                     ;; spatial-coverage, processing-level-id, collection-data-type, and additional
                     ;; attributes
                     (when (or spatial-coverage processing-level-id collection-data-type
-                              product-specific-attributes)
+                              product-specific-attributes access-value)
                       (x/element :Extended_Metadata {}
                                  (psa/generate-product-specific-attributes
                                    product-specific-attributes)
@@ -197,7 +203,11 @@
                                  (when collection-data-type
                                    (em/generate-metadata-elements
                                      [{:name em/collection_data_type_external_meta_name
-                                       :value collection-data-type}]))))))))))
+                                       :value collection-data-type}]))
+                                 (when access-value
+                                   (em/generate-metadata-elements
+                                     [{:name em/restriction_flag_external_meta_name
+                                       :value access-value}]))))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

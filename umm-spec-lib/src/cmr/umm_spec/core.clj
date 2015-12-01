@@ -43,7 +43,7 @@
   "Validates the given metadata and returns a list of errors found."
   [concept-type metadata-standard metadata]
   (if (= metadata-standard :umm-json)
-    (js/validate-umm-json metadata)
+    (js/validate-umm-json metadata concept-type)
     (validate-xml concept-type metadata-standard metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

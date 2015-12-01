@@ -220,6 +220,11 @@
                            (dissoc attributes :extra-fields))]
      (concept provider-id :service uniq-num attributes))))
 
+(defn assert-no-errors
+  [save-result]
+  (is (nil? (:errors save-result)))
+  save-result)
+
 (defn- parse-concept
   "Parses a concept from a JSON response"
   [response]
@@ -357,14 +362,10 @@
        :concept-ids (json/decode (:body response) true)}
       (assoc (parse-errors response) :status status))))
 
-(defn save-concept
-  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
-  status, revision-id, and a list of error messages"
+(defn- save-concept-core
+  "Fundamental save operation"
   [concept]
-  (let [concept (update-in concept [:revision-date]
-                           ;; Convert date times to string but allow invalid strings to be passed through
-                           #(when % (str %)))
-        response (client/post concepts-url
+  (let [response (client/post concepts-url
                               {:body (json/generate-string concept)
                                :content-type :json
                                :accept :json
@@ -374,6 +375,19 @@
         body (json/decode (:body response) true)
         {:keys [revision-id concept-id errors]} body]
     {:status status :revision-id revision-id :concept-id concept-id :errors errors}))
+
+(defn save-concept
+  "Make a POST request to save a concept with JSON encoding of the concept.  Returns a map with
+  status, revision-id, and a list of error messages"
+  ([concept]
+   (save-concept concept 1))
+  ([concept num-revisions]
+   (let [concept (update-in concept [:revision-date]
+                            ;; Convert date times to string but allow invalid strings to be passed through
+                            #(when % (str %)))]
+     (dotimes [n (dec num-revisions)]
+       (assert-no-errors (save-concept-core concept)))
+     (save-concept-core concept))))
 
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the
@@ -428,6 +442,10 @@
     concept
     (assoc concept :provider-id "CMR")))
 
+(defmethod expected-concept :tag
+  [concept]
+  (assoc concept :provider-id "CMR"))
+
 (defmethod expected-concept :default
   [concept]
   concept)
@@ -438,11 +456,6 @@
   (let [{:keys [concept-id revision-id]} concept
         stored-concept (:concept (get-concept-by-id-and-revision concept-id revision-id))]
     (is (= (expected-concept concept) (dissoc stored-concept :revision-date)))))
-
-(defn assert-no-errors
-  [save-result]
-  (is (nil? (:errors save-result)))
-  save-result)
 
 (defn create-and-save-collection
   "Creates, saves, and returns a collection concept with its data from metadata-db. "

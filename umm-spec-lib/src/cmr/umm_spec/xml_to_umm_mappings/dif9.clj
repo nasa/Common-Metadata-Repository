@@ -34,7 +34,8 @@
    :CollectionProgress (value-of doc "/DIF/Data_Set_Progress")
    :SpatialKeywords (values-at doc "/DIF/Location/Location_Category")
    :Quality (value-of doc "/DIF/Quality")
-   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")}
+   :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
+                       :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
    :Platforms (for [platform (select doc "/DIF/Source_Name")]
                 {:ShortName (value-of platform "Short_Name")

@@ -144,10 +144,10 @@
   "Returns DIF 10 elements for UMM-C collection c's DataDates."
   [c]
   (list
-   [:Data_Creation (date/or-default (date/data-create-date c))]
-   [:Data_Last_Revision (date/or-default (date/data-update-date c))]
-   [:Data_Future_Review (date/data-review-date c)]
-   [:Data_Delete (date/data-delete-date c)]))
+    [:Data_Creation (date/or-default (date/data-create-date c))]
+    [:Data_Last_Revision (date/or-default (date/data-update-date c))]
+    [:Data_Future_Review (date/data-review-date c)]
+    [:Data_Delete (date/data-delete-date c)]))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -244,12 +244,12 @@
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
-        [:Related_URL
-          (when-let [ct (:ContentType related-url)]
-           [:URL_Content_Type
-            [:Type (:Type ct)]
-            [:Subtype (:Subtype ct)]])
-          [:Protocol (:Protocol related-url)]
+       [:Related_URL
+        (when-let [ct (:ContentType related-url)]
+          [:URL_Content_Type
+           [:Type (:Type ct)]
+           [:Subtype (:Subtype ct)]])
+        [:Protocol (:Protocol related-url)]
         (for [url (get related-url :URLs ["http://www.foo.com"])]
           [:URL url])
         [:Description (:Description related-url)]])
@@ -269,4 +269,9 @@
       (generate-data-dates c)]
      (generate-additional-attributes (:AdditionalAttributes c))
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
-     [:Collection_Data_Type (:CollectionDataType c)]]))
+     [:Collection_Data_Type (:CollectionDataType c)]
+     (when-let [access-value (get-in c [:AccessConstraints :Value])]
+       [:Extended_Metadata
+        [:Metadata
+         [:Name "Restriction"]
+         [:Value access-value]]])]))

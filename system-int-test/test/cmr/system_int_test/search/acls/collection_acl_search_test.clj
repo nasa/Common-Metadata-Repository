@@ -35,6 +35,49 @@
   (is (= {:errors ["Token [expired-token] has expired."], :status 401}
          (search/find-refs :collection {:token "expired-token"}))))
 
+(deftest collection-search-with-restriction-flag-acls-test
+  ;; grant restriction flag acl
+  (e/grant-guest (s/context)
+                 (e/coll-catalog-item-id
+                   "provguid1"
+                   (e/coll-id ["c1-echo" "c2-echo" "c1-dif" "c2-dif" "c1-dif10" "c2-dif10"
+                               "c1-iso" "c2-iso" "c1-smap" "coll3"]
+                              {:min-value 0.5 :max-value 1.5})))
+  (let [guest-token (e/login-guest (s/context))
+        c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
+                                                  :access-value 1})
+                          {:format :echo10})
+        c2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c2-echo"
+                                                  :access-value 0})
+                          {:format :echo10})
+        c1-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c1-dif"
+                                                     :access-value 1})
+                         {:format :dif})
+        c2-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c2-dif"
+                                                     :access-value 0})
+                         {:format :dif})
+        c1-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c1-dif10"
+                                                         :access-value 1})
+                           {:format :dif10})
+        c2-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "c2-dif10"
+                                                         :access-value 0})
+                           {:format :dif10})
+        c1-iso (d/ingest "PROV1" (dc/collection {:entry-title "c1-iso"
+                                                 :access-value 1})
+                         {:format :iso19115})
+        c2-iso (d/ingest "PROV1" (dc/collection {:entry-title "c2-iso"
+                                                 :access-value 0})
+                         {:format :iso19115})
+        ;; access-value is not supported in ISO-SMAP, so it won't be found
+        c1-smap (d/ingest "PROV1" (dc/collection {:entry-title "c1-smap"
+                                                  :access-value 1})
+                          {:format :iso-smap})
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))]
+    (index/wait-until-indexed)
+
+    (is (d/refs-match? [c1-echo c1-dif c1-dif10 c1-iso]
+                       (search/find-refs :collection {:token guest-token})))))
+
 (deftest collection-search-with-acls-test
   ;; Grant permissions before creating data
   ;; Grant guests permission to coll1
