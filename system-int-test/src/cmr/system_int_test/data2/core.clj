@@ -17,7 +17,7 @@
             [clojure.string :as str]))
 
 (defn- item->native-id
-  "Returns the native id of an ingest item."
+  "Returns the native id of a UMM record."
   [item]
   (some #(get item %) [:granule-ur :entry-title :native-id :EntryTitle]))
 
