@@ -101,20 +101,26 @@
   [coll gran attribs]
   (ingest-gran coll (merge gran attribs)))
 
+(comment
+  ;; for REPL testing purposes
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 expected-conversion/example-record)
+                               :concept-type :collection
+                               :format "application/echo10+xml"})
+  )
+
 ;; Test that the MMT round trip for ingesting works and ingested collections can be found
 ;; Test Outline
 ;; - Convert example UMM-JSON record to ISO-19115 using translate API
 ;; - Ingest ISO-19115
 ;; - Search for a collection using various fields and verify it is found
 (deftest mmt-ingest-round-trip
-    (testing "translate umm-json to iso-19115 then ingest and search"
+    (testing "ingest and search UMM JSON metadata"
       (let [example-record expected-conversion/example-record
             umm-json (umm-spec/generate-metadata :collection :umm-json example-record)
-            metadata (:body (ingest/translate-metadata :collection :umm-json umm-json :iso19115))
             coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                   :concept-type :collection
-                                                  :format-key :iso19115
-                                                  :metadata metadata})]
+                                                  :format-key :umm-json
+                                                  :metadata umm-json})]
         (index/wait-until-indexed)
         ;; parameter queries
          (are2 [items params]
@@ -126,7 +132,7 @@
            [] {:entry_title "foo"}
 
            "entry-id matches"
-           [coll] {:entry_id (:EntryId example-record)}
+           [coll] {:entry_id "short_V1_V5"}
            "entry-id not matches"
            [] {:entry_id "foo"}
 
@@ -179,12 +185,12 @@
            "platform not matches"
            [] {:platform "foo"}
 
-           ;; instrument - TODO failing test
-           ;;[coll] {:instrument (-> example-record :Platforms first :Instruments first :ShortName)}
+           "instrument"
+           [coll] {:instrument (-> example-record :Platforms first :Instruments first :ShortName)}
 
-           ;; sensor - TODO failing test
-           ; [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
-           ;                     first :ShortName)}
+           "sensor"
+           [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
+                               first :ShortName)}
 
            "project matches"
            [coll] {:project (-> example-record :Projects first :ShortName)}
@@ -198,10 +204,10 @@
            ;; two-d-coordinate-system-name - TODO add test for this when
            ;; two-d-coordinate-system-name is added to UMM-JSON
 
-           ;; science-keywords - TODO failing test
-           ; [coll] {:science-keywords {:0 {:category "cat"
-           ;                                         :topic "top"
-           ;                                         :term "ter"}}}
+           "science-keywords"
+           [coll] {:science-keywords {:0 {:category "EARTH SCIENCE"
+                                          :topic "top"
+                                          :term "ter"}}}
 
            "downloadable matches"
            [] {:downloadable false}
@@ -209,12 +215,12 @@
            [coll] {:downloadable true}
 
            "browsable matches"
-           [coll] {:browsable false}
+           [coll] {:browsable true}
            "browsable not matches"
-           [] {:browsable true}
+           [] {:browsable false}
 
-           ;; bounding box - TODO - uncomment when spatial is implemented for UMM-JSON
-           ; [coll] {:bounding_box "-180,-90,180,90"}
+           "bounding box"
+           [coll] {:bounding_box "-180,-90,180,90"}
 
            ))))
 
