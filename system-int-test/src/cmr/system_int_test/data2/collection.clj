@@ -162,7 +162,8 @@
                        :roles ["dummy"]})))
 
 (defn collection
-  "Creates a collection"
+  "Returns a UmmCollection from the given attribute map. Various attribute kyes are processed by
+  different functions above."
   ([]
    (collection {}))
   ([attribs]

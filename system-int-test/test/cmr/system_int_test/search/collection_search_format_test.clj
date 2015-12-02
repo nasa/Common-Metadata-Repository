@@ -14,6 +14,7 @@
             [cheshire.core :as json]
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
+            [cmr.umm-spec.core :as umm-spec]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -38,9 +39,17 @@
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
+
     (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                       :version-id "V1"
-                                      :entry-title "ET1"}))))
+                                      :entry-title "ET1"})))
+
+  (def c10-umm-json (d/ingest "PROV1"
+                              cmr.umm-spec.test.expected-conversion/example-record
+                              {:format :umm-json
+                               :accept-format :json}))
+  
+  )
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -67,7 +76,7 @@
                          {:format :dif})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
                                                  :entry-id "S5"
-                                                 :version-id "V5"})
+                                                 :version-id "V50"})
                          {:format :iso19115})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
                                                  :entry-id "S6"
@@ -86,7 +95,13 @@
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
                            {:format :dif10})
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
+
+        c10-umm-json (d/ingest "PROV1"
+                               cmr.umm-spec.test.expected-conversion/example-record
+                               {:format :umm-json
+                                :accept-format :json})
+        
+        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
     (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
@@ -98,8 +113,8 @@
            {:version ["V3" "V2"]} [c2-echo c3-dif]
            {:short-name "S5"} [c5-iso]
            {:short-name "S6"} [c6-iso]
-           {:version "V5"} [c5-iso]
-           {:version ["V5" "V6"]} [c5-iso c6-iso]
+           {:version "V50"} [c5-iso]
+           {:version ["V50" "V6"]} [c5-iso c6-iso]
            {:short-name "S7"} [c7-smap]
            {:version "V7"} [c7-smap]
            {:short-name "S8"} [c8-dif10]
