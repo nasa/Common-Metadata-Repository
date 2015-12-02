@@ -71,6 +71,11 @@
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
+     :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
+                                  :Coordinate1 {:MinimumValue 1
+                                                :MaximumValue 10}
+                                  :Coordinate2 {:MinimumValue 1
+                                                :MaximumValue 10}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"

@@ -162,7 +162,7 @@
            [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
            "processing level matches"
-           [coll] {:processing_level (get-in example-record [:ProcessingLevel :Id])}
+           [coll] {:processing_level "3"}
            "processing level not matches"
            [] {:processing_level "foo"}
 
@@ -181,7 +181,7 @@
            [] {:concept-id "C1200000001-PROV1"}
 
            "platform matches"
-           [coll] {:platform (-> example-record :Platforms first :ShortName)}
+           [coll] {:platform "Platform 1"}
            "platform not matches"
            [] {:platform "foo"}
 
@@ -193,21 +193,33 @@
                                first :ShortName)}
 
            "project matches"
-           [coll] {:project (-> example-record :Projects first :ShortName)}
+           [coll] {:project "project short_name"}
            "project not matches"
            [] {:project "foo"}
 
-           ;; archive-center - TODO add test for this when archive center is added to UMM-JSON
+           ;; archive-center, data-center - TODO add test for this when Organization mappings are
+           ;; added to UMM-JSON (CMR-1841)
 
            ;; spatial-keyword - TODO add test for this when spatial keyword is added to UMM-JSON
 
-           ;; two-d-coordinate-system-name - TODO add test for this when
-           ;; two-d-coordinate-system-name is added to UMM-JSON
+           "spatial keywords match"
+           [coll] {:keyword "temporal keyword 1"}
+
+
+           ;; TODO ancillary keywords?
+           ;; "ancillary keywords match"
+           ;; [coll] {:keyword "ancillary keyword 1"}
+
+           "two-d-coordinate-system-name matches"
+           [coll] {:two-d-coordinate-system-name "Tiling System Name"}
 
            "science-keywords"
            [coll] {:science-keywords {:0 {:category "EARTH SCIENCE"
                                           :topic "top"
                                           :term "ter"}}}
+
+           "additional attributes match"
+           [coll] {:keyword "PercentGroundHit"}
 
            "downloadable matches"
            [] {:downloadable false}
