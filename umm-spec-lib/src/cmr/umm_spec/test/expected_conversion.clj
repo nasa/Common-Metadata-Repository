@@ -95,6 +95,7 @@
                   :Type "CREATE"}]
      :Abstract "A very abstract collection"
      :DataLanguage "English"
+     :CollectionDataType "SCIENCE_QUALITY"
      :Projects [{:ShortName "project short_name"}]
      :Quality "Pretty good quality"
      :PublicationReferences [{:PublicationDate (t/date-time 2015)

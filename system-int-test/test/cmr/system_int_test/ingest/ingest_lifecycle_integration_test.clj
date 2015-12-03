@@ -108,11 +108,6 @@
                                :format "application/echo10+xml"})
   )
 
-;; Test that the MMT round trip for ingesting works and ingested collections can be found
-;; Test Outline
-;; - Convert example UMM-JSON record to ISO-19115 using translate API
-;; - Ingest ISO-19115
-;; - Search for a collection using various fields and verify it is found
 (deftest mmt-ingest-round-trip
     (testing "ingest and search UMM JSON metadata"
       (let [example-record expected-conversion/example-record
@@ -166,8 +161,8 @@
            "processing level not matches"
            [] {:processing_level "foo"}
 
-           ;; collection data type - TODO add test for this when collection data type is added
-           ;; to UMM-JSON
+           "collection data type matches"
+           [coll] {"collection_data_type[]" "SCIENCE_QUALITY"}
 
            "temporal matches"
            [coll] {:temporal (date-time-range->range-param
@@ -197,8 +192,8 @@
            "project not matches"
            [] {:project "foo"}
 
-           ;; archive-center, data-center - TODO add test for this when Organization mappings are
-           ;; added to UMM-JSON (CMR-1841)
+           ;; archive-center, data-center - TODO still need to figure out how to tell them apart in
+           ;; UMM-C (CMR-2265).
 
            "spatial keywords match"
            [coll] {"spatial_keyword[]" "SPK1"}
@@ -207,11 +202,6 @@
 
            "temporal keywords match"
            [coll] {:keyword "temporal keyword 1"}
-
-
-           ;; TODO ancillary keywords?
-           ;; "ancillary keywords match"
-           ;; [coll] {:keyword "ancillary keyword 1"}
 
            "two-d-coordinate-system-name matches"
            [coll] {:two-d-coordinate-system-name "Tiling System Name"}
