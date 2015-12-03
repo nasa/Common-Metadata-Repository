@@ -219,7 +219,7 @@
                                           :term "ter"}}}
 
            "additional attributes match"
-           [coll] {:keyword "PercentGroundHit"}
+           [coll] {"attribute[]" "PercentGroundHit"}
 
            "downloadable matches"
            [] {:downloadable false}
