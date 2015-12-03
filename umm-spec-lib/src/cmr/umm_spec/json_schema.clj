@@ -9,13 +9,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
-(def concept-type->schema-file 
+(def concept-type->schema-file
   "Maps a concept type to the schema required to parse it."
-  {:collection (io/resource "json-schemas/umm-c-json-schema.json") 
+  {:collection (io/resource "json-schemas/umm-c-json-schema.json")
    :service (io/resource "json-schemas/umm-s-json-schema.json")})
 
-(def umm-cmn-schema-file 
-  "The schema required to parse umm-common" 
+(def umm-cmn-schema-file
+  "The schema required to parse umm-common"
   (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -188,6 +188,14 @@
     (recur (apply lookup-ref pair))
     pair))
 
+(defn- parse-datetime
+  "Returns the datetime parsed from a date-string or datetime-string."
+  [datetime-string]
+  (when datetime-string
+    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
+      (dtp/parse-date datetime-string)
+      (dtp/parse-datetime datetime-string))))
+
 (defn coerce
   "Returns x coerced according to a JSON schema type type definition. With no other parameters, the
   schema and type defaults to the umm-c-schema and the root UMM-C type."
@@ -205,7 +213,7 @@
                    "date-time"
                    (if (instance? org.joda.time.DateTime x)
                      x
-                     (try (dtp/parse-datetime x)
+                     (try (parse-datetime x)
                        (catch Exception e
                          (throw (IllegalArgumentException.
                                   (format "Failed to parse date-time [%s] at key-path [%s]"
