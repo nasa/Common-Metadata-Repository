@@ -298,62 +298,62 @@
                                  {"options[entry-id]" options}))]
              (d/refs-match? items (search/find-refs :collection params)))
 
-           [c1-p1 c1-p2] "S1_V1" {}
-           [] "S44_V44" {}
+           [c1-p1 c1-p2] "S1_V:V1" {}
+           [] "S44_V:V44" {}
            ;; Multiple values
-           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V1" "S2_V2"] {}
-           [c1-p1 c1-p2] ["S1_V1" "S44_V44"] {}
-           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V1" "S2_V2"] {:and false}
-           [] ["S1_V1" "S2_V2"] {:and true}
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V:V1" "S2_V:V2"] {}
+           [c1-p1 c1-p2] ["S1_V:V1" "S44_V:V44"] {}
+           [c1-p1 c1-p2 c2-p1 c2-p2] ["S1_V:V1" "S2_V:V2"] {:and false}
+           [] ["S1_V:V1" "S2_V:V2"] {:and true}
 
            ;; Wildcards
-           all-colls "S*_V*" {:pattern true}
-           [] "S*_V*" {:pattern false}
-           [] "S*_V*" {}
+           all-colls "S*_V:V*" {:pattern true}
+           [] "S*_V:V*" {:pattern false}
+           [] "S*_V:V*" {}
            [c1-p1 c1-p2] "*1" {:pattern true}
-           [c1-p1 c1-p2] "S1_?1" {:pattern true}
+           [c1-p1 c1-p2] "S1_V:?1" {:pattern true}
            [] "*Q*" {:pattern true}
 
            ;; Ignore case
-           [c1-p1 c1-p2] "S1_v1" {:ignore-case true}
-           [] "S1_v1" {:ignore-case false}))
+           [c1-p1 c1-p2] "S1_V:v1" {:ignore-case true}
+           [] "S1_V:v1" {:ignore-case false}))
 
     (testing "Entry id search using JSON Query"
       (are [items json-search]
            (d/refs-match? items (search/find-refs-with-json-query :collection {} json-search))
 
-           [c1-p1 c1-p2] {:entry_id "S1_V1"}
-           [] {:entry_id "S44_V44"}
+           [c1-p1 c1-p2] {:entry_id "S1_V:V1"}
+           [] {:entry_id "S44_V:V44"}
            ;; Multiple values
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V1"}
-                                           {:entry_id "S2_V2"}]}
-           [c1-p1 c1-p2] {:or [{:entry_id "S1_V1"}
-                               {:entry_id "S44_V44"}]}
-           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V1"}
-                                           {:entry_id "S2_V2"}]}
-           [] {:and [{:entry_id "S1_V1"}
-                     {:entry_id "S2_V2"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V:V1"}
+                                           {:entry_id "S2_V:V2"}]}
+           [c1-p1 c1-p2] {:or [{:entry_id "S1_V:V1"}
+                               {:entry_id "S44_V:V44"}]}
+           [c1-p1 c1-p2 c2-p1 c2-p2] {:or [{:entry_id "S1_V:V1"}
+                                           {:entry_id "S2_V:V2"}]}
+           [] {:and [{:entry_id "S1_V:V1"}
+                     {:entry_id "S2_V:V2"}]}
 
            ;; Not with multiple entry-ids
-           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry_id "S2_V2"}
-                                                 {:entry_id "S1_V1"}]}}
+           [c3-p1 c3-p2 c4-p1 c4-p2] {:not {:or [{:entry_id "S2_V:V2"}
+                                                 {:entry_id "S1_V:V1"}]}}
 
            ;; Not with multiple entry-ids and provider
-           [c3-p1 c4-p1] {:not {:or [{:entry_id "S2_V2"}
-                                     {:entry_id "S1_V1"}
+           [c3-p1 c4-p1] {:not {:or [{:entry_id "S2_V:V2"}
+                                     {:entry_id "S1_V:V1"}
                                      {:provider "PROV2"}]}}
 
            ;; Wildcards
-           all-colls {:entry_id {:value "S*_V*" :pattern true}}
-           [] {:entry_id {:value "S*_V*" :pattern false}}
-           [] {:entry_id {:value "S*_V*"}}
+           all-colls {:entry_id {:value "S*_V:V*" :pattern true}}
+           [] {:entry_id {:value "S*_V:V*" :pattern false}}
+           [] {:entry_id {:value "S*_V:V*"}}
            [c1-p1 c1-p2] {:entry_id {:value "*1" :pattern true}}
-           [c1-p1 c1-p2] {:entry_id {:value "S1_?1" :pattern true}}
+           [c1-p1 c1-p2] {:entry_id {:value "S1_V:?1" :pattern true}}
            [] {:entry_id {:value "*Q*" :pattern true}}
 
            ;; Ignore case
-           [c1-p1 c1-p2] {:entry_id {:value "S1_v1" :ignore_case true}}
-           [] {:entry_id {:value "S1_v1" :ignore_case false}}))
+           [c1-p1 c1-p2] {:entry_id {:value "S1_V:v1" :ignore_case true}}
+           [] {:entry_id {:value "S1_V:v1" :ignore_case false}}))
 
     (testing "Entry title"
       (are [items v options]
@@ -610,17 +610,17 @@
 (deftest dif-entry-id-search-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                                 :version-id "V1"}))
-        coll2 (d/ingest "PROV1" (dc/collection-dif {:entry-id "S2"}) {:format :dif})
+        coll2 (d/ingest "PROV1" (dc/collection-dif {:short-name "S2"}) {:format :dif})
         coll3 (d/ingest "PROV2" (dc/collection {:associated-difs ["S3"]}))
         coll4 (d/ingest "PROV2" (dc/collection {:associated-difs ["SL4" "DIF-1"]}))
-        coll5 (d/ingest "PROV2" (dc/collection-dif {:entry-id "T2"}) {:format :dif})]
+        coll5 (d/ingest "PROV2" (dc/collection-dif {:short-name "T2"}) {:format :dif})]
     (index/wait-until-indexed)
     (testing "dif entry id search"
       (are [items id options]
            (d/refs-match? items (search/find-refs :collection {:dif-entry-id id
                                                                "options[dif-entry-id]" options}))
 
-           [coll1] "S1_V1" {}
+           [coll1] "S1_V:V1" {}
            [coll2] "S2" {}
            [coll3] "S3" {}
            [] "S1" {}
@@ -637,9 +637,11 @@
            [coll2 coll3] "S?" {:pattern true}
            [] "*Q*" {:pattern true}
 
-           ;; Ignore case
+           ; ;; Ignore case
            [coll2] "s2" {:ignore-case true}
            [] "s2" {:ignore-case false}))
+
+
 
     (testing "options on entry-id and dif-entry-id are not interfering with each other."
       (is (d/refs-match? []
@@ -684,7 +686,7 @@
            (let [condition (merge {:difEntryId id} options)]
              (d/refs-match? items (search/find-refs-with-aql :collection [condition])))
 
-           [coll1] "S1_V1" {}
+           [coll1] "S1_V:V1" {}
            [coll2] "S2" {}
            [coll3] "S3" {}
            [] "S1" {}

@@ -18,7 +18,8 @@
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.umm.collection.entry-id :as eid]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
@@ -30,8 +31,8 @@
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         entry-title :entry-title
-         entry-id :entry-id} collection]
+         entry-title :entry-title} collection
+         entry-id (eid/entry-id short-name version-id)]
     (assoc concept :extra-fields {:entry-title entry-title
                                   :entry-id entry-id
                                   :short-name short-name
@@ -49,8 +50,9 @@
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
 
-(defn-timed validate-collection
-  "Validate the collection. Throws a service error if any validation issues are found."
+(defn-timed validate-and-prepare-collection
+  "Validates the collection and adds extra fields needed for metadata db. Throws a service error
+  if any validation issues are found."
   [context concept validate-keywords?]
   (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
@@ -147,7 +149,7 @@
 (defn-timed save-collection
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept validate-keywords?]
-  (let [concept (validate-collection context concept validate-keywords?)]
+  (let [concept (validate-and-prepare-collection context concept validate-keywords?)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 

@@ -478,14 +478,14 @@
       },
       "minItems": 1
     },
-    "EntryId": {
-      "description": "The entry ID of the service described by the metadata.",
-      "$ref": "umm-cmn-json-schema.json#/definitions/EntryIdType"
+    "ShortName": {
+      "description": "The short name associated with the collection.",
+      "$ref": "umm-cmn-json-schema.json#/definitions/ShortNameType"
     },
     "Version": {
       "description": "The Version of the metadata record.",
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },
-  "required": ["EntryId", "EntryTitle", "Abstract", "DataDates", "Organizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
+  "required": ["ShortName", "Version", "EntryTitle", "Abstract", "DataDates", "Organizations", "RelatedUrls", "ProcessingLevel", "ScienceKeywords", "TemporalExtents", "SpatialExtent", "Platforms"]
 }

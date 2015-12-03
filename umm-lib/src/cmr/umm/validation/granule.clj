@@ -12,6 +12,7 @@
             [cmr.umm.validation.validation-helper :as h]
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.umm.validation.product-specific-attribute :as psa]))
 
 
@@ -125,7 +126,9 @@
   [field parent-field-path]
   (fn [_ collection-ref]
     (let [value (field collection-ref)
-          parent-value (get-in collection-ref (concat [:parent] parent-field-path))
+          parent-value (if (= :entry-id field)
+                         (eid/umm->entry-id (:parent collection-ref))
+                         (get-in collection-ref (concat [:parent] parent-field-path)))
           field-name (v/humanize-field field)]
       (when (and value (not= value parent-value))
         {[:collection-ref]

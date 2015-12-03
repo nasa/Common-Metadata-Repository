@@ -61,7 +61,7 @@
         single-date-coll (fn [n metadata-format]
                            (d/ingest
                              "PROV1"
-                             (dc/collection-dif {:entry-title (str "coll" (swap! coll-num inc))
+                             (dc/collection {:entry-title (str "coll" (swap! coll-num inc))
                                                  :single-date-time (tu/n->date-time-string n)})
                              {:format metadata-format}))
         range-date-coll (fn [begin end metadata-format]

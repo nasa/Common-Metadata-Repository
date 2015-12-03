@@ -169,7 +169,7 @@
            [:gmd:edition (char-string (:Version c))]
            [:gmd:identifier
             [:gmd:MD_Identifier
-             [:gmd:code (char-string (:EntryId c))]
+             [:gmd:code (char-string (:ShortName c))]
              [:gmd:version (char-string (:Version c))]]]
            (for [responsibility (org-per/responsibility-by-role (:Organizations c) "ORIGINATOR")]
              [:gmd:citedResponsibleParty

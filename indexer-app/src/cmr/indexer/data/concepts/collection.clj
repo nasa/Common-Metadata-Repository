@@ -53,9 +53,10 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
-                native-id revision-date deleted format]} concept
+                native-id revision-date deleted format extra-fields]} concept
+        entry-id (:entry-id extra-fields)
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
+         :keys [entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME

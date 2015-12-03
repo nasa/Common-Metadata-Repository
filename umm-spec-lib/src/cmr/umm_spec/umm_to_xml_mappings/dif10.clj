@@ -156,7 +156,7 @@
     [:DIF
      dif10-xml-namespaces
      [:Entry_ID
-      [:Short_Name (:EntryId c)]
+      [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
      [:Entry_Title (:EntryTitle c)]
      (for [sk (:ScienceKeywords c)]

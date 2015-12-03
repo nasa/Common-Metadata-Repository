@@ -52,10 +52,7 @@
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
   (c/map->UmmCollection
-    {:entry-id (format "%s_%s"
-                       (cx/string-at-path xml-struct [:Entry_ID :Short_Name])
-                       (cx/string-at-path xml-struct [:Entry_ID :Version]))
-     :entry-title (cx/string-at-path xml-struct [:Entry_Title])
+    {:entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :personnel (personnel/xml-elem->personnel xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
      :platforms (platform/xml-elem->Platforms xml-struct)

@@ -11,6 +11,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -126,7 +127,7 @@
            [] {:entry_title "foo"}
 
            "entry-id matches"
-           [coll] {:entry_id (:EntryId example-record)}
+           [coll] {:entry_id (eid/entry-id (:ShortName example-record) (:Version example-record))}
            "entry-id not matches"
            [] {:entry_id "foo"}
 
@@ -136,7 +137,7 @@
            [] {:native_id "foo"}
 
            "short-name matches"
-           [coll] {:short_name "short_V1"}
+           [coll] {:short_name "short"}
            "short-name not matches"
            [] {:short_name "foo"}
 

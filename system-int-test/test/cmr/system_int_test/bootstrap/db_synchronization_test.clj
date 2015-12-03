@@ -16,7 +16,8 @@
             [cmr.bootstrap.test.catalog-rest :as cat-rest]
             [cmr.common.concepts :as concepts]
             [cmr.oracle.connection :as oracle]
-            [cmr.common.mime-types :as mime-types]))
+            [cmr.common.mime-types :as mime-types]
+            [cmr.umm.collection.entry-id :as eid]))
 
 (def provider-id-to-cmr-only
   "A map of the providers that will be created to their CMR only flags"
@@ -88,7 +89,7 @@
    :revision-id 1
    :deleted false
    :extra-fields {:short-name (get-in coll-umm [:product :short-name])
-                  :entry-id (or (:entry-id coll-umm) (get-in coll-umm [:product :short-name]))
+                  :entry-id (eid/umm->entry-id coll-umm)
                   :entry-title (:entry-title coll-umm)
                   :version-id (get-in coll-umm [:product :version-id])
                   :delete-time nil}
@@ -123,7 +124,7 @@
      :revision-id 1
      :deleted false
      :extra-fields {:short-name (get-in coll [:product :short-name])
-                    :entry-id (or (:entry-id coll) (get-in coll [:product :short-name]))
+                    :entry-id (eid/umm->entry-id coll)
                     :entry-title entry-title
                     :version-id (get-in coll [:product :version-id])
                     :delete-time "2000-01-01T12:00:00Z"}

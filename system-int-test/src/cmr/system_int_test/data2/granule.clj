@@ -8,6 +8,7 @@
             [cmr.common.date-time-parser :as p]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as util]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.spatial.orbits.swath-geometry :as swath])
   (:import [cmr.umm.granule
             Orbit
@@ -119,9 +120,9 @@
    (granule collection {}))
   ([collection attribs]
    (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
-         {:keys [entry-title entry-id] {:keys [short-name version-id]} :product} collection
+         {:keys [entry-title] {:keys [short-name version-id]} :product} collection
          coll-ref (g/map->CollectionRef {:entry-title entry-title
-                                         :entry-id entry-id
+                                         :entry-id (eid/entry-id short-name version-id)
                                          :short-name short-name
                                          :version-id version-id})
          minimal-gran {:granule-ur (d/unique-str "ur")

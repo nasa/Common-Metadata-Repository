@@ -75,8 +75,8 @@
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title spatial-coverage personnel]} coll
+  (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
+         :keys [entry-title spatial-coverage personnel]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -93,7 +93,7 @@
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
         ;; DIF also does not have version-description.
-        (assoc :product (umm-c/map->Product {:short-name entry-id
+        (assoc :product (umm-c/map->Product {:short-name short-name
                                              :long-name (util/trunc entry-title 1024)
                                              :version-id version-id
                                              :processing-level-id processing-level-id
@@ -461,8 +461,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "geodata_1848"
-     :entry-title "Global Land Cover 2000 (GLC 2000)"
+    {:entry-title "Global Land Cover 2000 (GLC 2000)"
      :summary "Summary of collection."
      :purpose "A grand purpose"
      :quality "High Quality Metadata"

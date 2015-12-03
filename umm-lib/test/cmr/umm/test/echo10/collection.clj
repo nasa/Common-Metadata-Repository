@@ -56,13 +56,10 @@
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [short-name long-name version-id]} :product} coll
-        entry-id (str short-name "_" version-id)
         organizations (seq (filter #(not= :distribution-center (:type %)) (:organizations coll)))
         related-urls (umm-related-urls->expected-related-urls (:related-urls coll))
         personnel (not-empty (umm-personnedl->expected-personnel (:personnel coll)))]
     (-> coll
-        ;; ECHO10 does not have entry-id and we generate it as concatenation of short-name and version-id
-        (assoc :entry-id entry-id)
         ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
         ;; UMMC-72 is proposing to change this.
         (assoc :organizations organizations)
@@ -383,8 +380,7 @@
 
 (def expected-parsed-collection
   (umm-c/map->UmmCollection
-    {:entry-id "MINIMAL_1"
-     :entry-title "A minimal valid collection V 1"
+    {:entry-title "A minimal valid collection V 1"
      :summary "A minimal valid collection"
      :purpose "A purpose"
      :product (umm-c/map->Product

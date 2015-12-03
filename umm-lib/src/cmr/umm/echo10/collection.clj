@@ -112,8 +112,7 @@
   (let [product (xml-elem->Product xml-struct)
         data-provider-timestamps (xml-elem->DataProviderTimestamps xml-struct)]
     (c/map->UmmCollection
-      {:entry-id (str (:short-name product) "_" (:version-id product))
-       :entry-title (cx/string-at-path xml-struct [:DataSetId])
+      {:entry-title (cx/string-at-path xml-struct [:DataSetId])
        :summary (cx/string-at-path xml-struct [:Description])
        :purpose (cx/string-at-path xml-struct [:SuggestedUsage])
        :product product

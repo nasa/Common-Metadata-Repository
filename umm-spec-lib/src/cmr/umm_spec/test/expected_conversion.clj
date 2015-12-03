@@ -82,8 +82,8 @@
                       :DistributionMedia "Download"
                       :DistributionFormat "Bits"
                       :Fees "0.99"}]
-     :EntryId "short_V1"
      :EntryTitle "The entry title V5"
+     :ShortName "Short"
      :Version "V5"
      :DataDates [{:Date (t/date-time 2012)
                   :Type "CREATE"}]

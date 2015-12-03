@@ -7,6 +7,7 @@
             [cmr.umm.collection.temporal :as ct]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [clj-time.format :as f]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.umm.spatial :as umm-s])
   (:import [cmr.umm.collection
             Product
@@ -169,8 +170,7 @@
    (let [product (product attribs)
          data-provider-timestamps (data-provider-timestamps attribs)
          temporal {:temporal (temporal attribs)}
-         minimal-coll {:entry-id (str (:short-name product) "_" (:version-id product))
-                       :entry-title (str (:long-name product) " " (:version-id product))
+         minimal-coll {:entry-title (str (:long-name product) " " (:version-id product))
                        :summary (:long-name product)
                        :product product
                        :data-provider-timestamps data-provider-timestamps}
@@ -189,7 +189,7 @@
                                                                          :topic "Cool"
                                                                          :term "Mild"})]
                                     :organizations [(org :distribution-center "Larc")]}
-         attribs (merge required-extra-dif-fields attribs)]
+         attribs (merge required-extra-dif-fields {:version-id eid/DEFAULT_VERSION} attribs)]
      (assoc-in (collection attribs) [:data-provider-timestamps :revision-date-time] nil))))
 
 (defn collection-dif10

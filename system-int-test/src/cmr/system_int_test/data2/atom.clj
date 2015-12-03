@@ -16,6 +16,7 @@
             [cmr.umm.spatial :as umm-s]
             [cmr.umm.echo10.spatial :as echo-s]
             [cmr.umm.start-end-date :as sed]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.common.util :as util]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.facets :as facets]
@@ -238,7 +239,7 @@
   "Returns the atom map of the collection"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id summary entry-title format-key entry-id
+         :keys [concept-id summary entry-title format-key
                 related-urls associated-difs organizations]} collection
         update-time (get-in collection [:data-provider-timestamps :update-time])
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
@@ -252,8 +253,8 @@
                                                                       [:temporal :range-date-times]))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
-        ;; DIF collections have special cases on short-name and associated-difs
-        short-name (if (#{:dif} format-key) entry-id short-name)
+        version-id (or version-id eid/DEFAULT_VERSION)
+        entry-id (eid/entry-id short-name version-id)
         associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)]
     (util/remove-nil-keys
       {:id concept-id

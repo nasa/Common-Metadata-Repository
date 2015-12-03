@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
-            [cmr.common.util :refer [are2]]))
+            [cmr.common.util :refer [are2]]
+            [cmr.umm.collection.entry-id :as eid]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
@@ -17,7 +18,7 @@
   [collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         :keys [entry-id entry-title user-id format-key
+         :keys [entry-title user-id format-key
                 revision-id concept-id provider-id deleted]} collection]
     {:meta (util/remove-nil-keys
              {:concept-type "collection"
@@ -28,8 +29,8 @@
               :provider-id provider-id
               :format (mt/format->mime-type format-key)
               :deleted (boolean deleted)})
-     :umm {:entry-title entry-title
-           :entry-id entry-id
+     :umm {:entry-id (eid/entry-id short-name version-id)
+           :entry-title entry-title
            :short-name short-name
            :version-id version-id}}))
 
@@ -48,7 +49,6 @@
 
 (deftest search-collection-umm-json
   (let [coll1-1 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "s1_v1"
                                                   :version-id "v1"
                                                   :short-name "s1"})
                           {:user-id "user1"})
@@ -59,16 +59,13 @@
                                  {:deleted true :user-id "user2"}
                                  (ingest/delete-concept concept1 {:user-id "user2"}))
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"
-                                                  :entry-id "s1_v2"
                                                   :version-id "v2"
                                                   :short-name "s1"}))
 
         coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "s2_v1"
                                                   :version-id "v1"
                                                   :short-name "s2"}))
         coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"
-                                                  :entry-id "s2_v2"
                                                   :version-id "v2"
                                                   :short-name "s2"}))
         concept2 {:provider-id "PROV1"
@@ -77,7 +74,6 @@
         coll2-3-tombstone (merge coll2-2 {:deleted true} (ingest/delete-concept concept2))
 
         coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et3"
-                                                :entry-id "s1_v4"
                                                 :version-id "v4"
                                                 :short-name "s1"})
                         {:user-id "user3"})]

@@ -76,7 +76,7 @@
         coll15 (d/ingest "PROV2" (dc/collection {:entry-title "coll15" :processing-level-id "plid1"
                                                  :collection-data-type "SCIENCE_QUALITY" :platforms [p1]
                                                  :summary "summary" :temporal-keywords ["tk1" "tk2"]}))
-        coll16 (d/ingest "PROV2" (dc/collection-dif {:entry-id "entryid4"}) {:format :dif})
+        coll16 (d/ingest "PROV2" (dc/collection-dif {:short-name "entryid4"}) {:format :dif})
         coll17 (d/ingest "PROV2" (dc/collection {:associated-difs ["DIF-1" "DIF-2"]}))
         coll18 (d/ingest "PROV2" (dc/collection {:short-name "SNFoobar"}))
         coll19 (d/ingest "PROV2" (dc/collection {:long-name "LNFoobar"}))

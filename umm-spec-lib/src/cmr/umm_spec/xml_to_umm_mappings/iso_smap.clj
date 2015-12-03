@@ -26,7 +26,7 @@
 
 ;; Paths below are relative to the MD_DataIdentification element
 
-(def entry-id-xpath
+(def short-name-xpath
   (str "gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
        "[gmd:description/gco:CharacterString='The ECS Short Name']"
        "/gmd:code/gco:CharacterString"))
@@ -58,7 +58,7 @@
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
     (js/coerce
-      {:EntryId (value-of data-id-el entry-id-xpath)
+      {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
        :Version (without-default-value-of data-id-el version-xpath)
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")

@@ -387,7 +387,6 @@
   <xs:simpleType name="CommonEntryId">
   <xs:restriction base="xs:string">
     <xs:minLength value="1" />
-    <xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
   </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="CollectionRef">

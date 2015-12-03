@@ -113,7 +113,6 @@
         ;; A dif collection
         coll8 (d/ingest "PROV2" (dc/collection-dif
                                   {:entry-title "coll8"
-                                   :entry-id "S8"
                                    :short-name "S8"
                                    :version-id "V8"
                                    :long-name "coll8"})
