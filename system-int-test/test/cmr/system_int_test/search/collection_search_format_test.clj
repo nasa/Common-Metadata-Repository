@@ -389,8 +389,6 @@
                         (dc/collection-dif10 {:entry-title "Dataset9"})
                         {:format :dif10})]
 
-    (cmr.common.dev.capture-reveal/capture-all)
-
     (index/wait-until-indexed)
 
     (testing "kml"
