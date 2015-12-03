@@ -10,7 +10,7 @@
             [cmr.ingest.services.project-validation :as pv]
             [cmr.ingest.services.temporal-validation :as tv]
             [cmr.ingest.services.spatial-validation :as sv]
-            [cmr.ingest.services.umm :as umm]))
+            [cmr.umm-spec.legacy :as umm-legacy]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.
@@ -59,7 +59,7 @@
         prev-concept (first (h/find-visible-collections context {:provider-id provider-id
                                                                  :entry-title entry-title}))]
     (when prev-concept
-      (let [prev-umm-concept (umm/parse-concept prev-concept)
+      (let [prev-umm-concept (umm-legacy/parse-concept prev-concept)
             has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
                                          collection-update-searches)
             search-errors (->> has-granule-searches
