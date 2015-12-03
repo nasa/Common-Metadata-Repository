@@ -200,9 +200,12 @@
            ;; archive-center, data-center - TODO add test for this when Organization mappings are
            ;; added to UMM-JSON (CMR-1841)
 
-           ;; spatial-keyword - TODO add test for this when spatial keyword is added to UMM-JSON
-
            "spatial keywords match"
+           [coll] {"spatial_keyword[]" "SPK1"}
+           "non-matching spatial keyword"
+           [] {"spatial_keyword[]" "foobar"}
+
+           "temporal keywords match"
            [coll] {:keyword "temporal keyword 1"}
 
 

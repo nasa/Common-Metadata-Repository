@@ -60,6 +60,7 @@
                        {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                         :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                         :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
+     :SpatialKeywords ["SPK1" "SPK2"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
