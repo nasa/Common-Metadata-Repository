@@ -26,7 +26,8 @@
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :SpatialExtent (umm-cmn/map->SpatialExtentType {:GranuleSpatialRepresentation "NO_SPATIAL"})
 
-     :EntryId "short"
+     :ShortName "short"
+     :Version "V1"
      :EntryTitle "The entry title V5"
      :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                          :Type "CREATE"})]
@@ -90,9 +91,9 @@
         _ (is (empty? (js/validate-umm-json json :collection)))
         parsed (uj/json->umm js/umm-c-schema json)]
     (is (= user/failing-value parsed)))
- 
- ;; Use this block for testing UMM-S calls. 
- 
+
+ ;; Use this block for testing UMM-S calls.
+
   (let [json (uj/umm->json user/failing-value)
         _ (is (empty? (js/validate-umm-json json :service)))
         parsed (uj/json->umm js/umm-s-schema json)]

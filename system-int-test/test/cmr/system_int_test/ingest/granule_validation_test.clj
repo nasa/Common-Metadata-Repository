@@ -144,7 +144,7 @@
                 coll-concept)))
 
           (testing "entry-id"
-            (let [collection (dc/collection-dif {:entry-id "correct"})
+            (let [collection (dc/collection-dif {:short-name "correct"})
                   coll-concept (d/item->concept collection :dif)
                   granule (assoc (dg/granule collection)
                                  :collection-ref

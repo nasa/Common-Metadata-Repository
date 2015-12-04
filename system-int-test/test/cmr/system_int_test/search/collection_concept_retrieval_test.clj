@@ -75,7 +75,9 @@
                          (assoc :metadata-language nil)
                          ;; remove default added by parser
                          (assoc :use-constraints nil))
-        expected (assoc-in umm [:product :short-name] (:entry-id umm))]
+        {:keys [short-name version-id]} (:product umm)
+        ;; ECHO10 to ISO19115 xslt maps short-name this way, so we have to duplicate it here.
+        expected (assoc-in umm [:product :short-name] (str short-name "_" version-id))]
     (is (= expected metadata-umm))))
 
 (defmethod result-matches? :default
@@ -288,19 +290,15 @@
   (e/grant-all (s/context) (e/coll-catalog-item-id "provguid2"))
 
   (let [umm-coll1-1 (dc/collection {:entry-title "et1"
-                                    :entry-id "s1_v1"
                                     :version-id "v1"
                                     :short-name "s1"})
         umm-coll1-2 (-> umm-coll1-1
-                        (assoc-in [:product :version-id] "v2")
-                        (assoc :entry-id "s1_v2"))
+                        (assoc-in [:product :version-id] "v2"))
         umm-coll2-1 (dc/collection {:entry-title "et2"
-                                    :entry-id "s2_v2"
                                     :version-id "v2"
                                     :short-name "s2"})
         umm-coll2-3 (-> umm-coll2-1
-                        (assoc-in [:product :version-id] "v6")
-                        (assoc :entry-id "s2_v6"))
+                        (assoc-in [:product :version-id] "v6"))
 
         ;; NOTE - most of the following bindings could be ignored with _, but they are assigned
         ;; to vars to make it easier to see what is being ingested.

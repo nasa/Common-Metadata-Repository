@@ -86,7 +86,7 @@
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :EntryId    (value-of doc "/Collection/ShortName")
+   :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (without-default-value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")

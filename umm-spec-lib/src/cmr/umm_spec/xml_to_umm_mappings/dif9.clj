@@ -20,7 +20,7 @@
   "Returns collection map from DIF9 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :EntryId (value-of doc "/DIF/Entry_ID")
+   :ShortName (value-of doc "/DIF/Entry_ID")
    :Version (or (value-of doc "/DIF/Data_Set_Citation/Version") umm-util/not-provided)
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")

@@ -48,7 +48,7 @@
                               cmr.umm-spec.test.expected-conversion/example-record
                               {:format :umm-json
                                :accept-format :json}))
-  
+
   )
 
 ;; Tests that we can ingest and find items in different formats
@@ -62,24 +62,20 @@
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
                           {:format :echo10})
-        c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-id "S3"
-                                                     :short-name "S3"
+        c3-dif (d/ingest "PROV1" (dc/collection-dif {:short-name "S3"
                                                      :version-id "V3"
                                                      :entry-title "ET3"
                                                      :long-name "ET3"})
                          {:format :dif})
-        c4-dif (d/ingest "PROV2" (dc/collection-dif {:entry-id "S4"
-                                                     :short-name "S4"
+        c4-dif (d/ingest "PROV2" (dc/collection-dif {:short-name "S4"
                                                      :version-id "V4"
                                                      :entry-title "ET4"
                                                      :long-name "ET4"})
                          {:format :dif})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
-                                                 :entry-id "S5"
                                                  :version-id "V50"})
                          {:format :iso19115})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
-                                                 :entry-id "S6"
                                                  :version-id "V6"})
                          {:format :iso19115})
         c7-smap (d/ingest "PROV1" (dc/collection-smap {:short-name "S7"
@@ -100,7 +96,7 @@
                                cmr.umm-spec.test.expected-conversion/example-record
                                {:format :umm-json
                                 :accept-format :json})
-        
+
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
     (index/wait-until-indexed)
 

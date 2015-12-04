@@ -6,6 +6,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.common.xml :as v]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.dif.collection.project-element :as pj]
@@ -26,17 +27,16 @@
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
   (let [short-name (cx/string-at-path collection-content [:Entry_ID])
+        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
-        version-id (or (cx/string-at-path collection-content [:Data_Set_Citation :Version])
-                       dif-core/value-not-provided)
         processing-level-id (em/extended-metadata-value
                               collection-content em/product_level_id_external_meta_name)
         collection-data-type (em/extended-metadata-value
                                collection-content em/collection_data_type_external_meta_name)]
     (c/map->Product {:short-name short-name
+                     :version-id (or version-id eid/DEFAULT_VERSION)
                      :long-name long-name
-                     :version-id version-id
                      :processing-level-id processing-level-id
                      :collection-data-type collection-data-type})))
 
@@ -85,8 +85,7 @@
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
   (c/map->UmmCollection
-    {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
-     :entry-title (cx/string-at-path xml-struct [:Entry_Title])
+    {:entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
      :product (xml-elem->Product xml-struct)
@@ -146,9 +145,9 @@
   UmmCollection
   (umm->dif-xml
     ([collection]
-     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
+            :keys [entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references access-value]} collection
@@ -156,7 +155,7 @@
            temporal (when (seq (:range-date-times temporal)) temporal)]
        (x/emit-str
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} entry-id)
+                    (x/element :Entry_ID {} short-name)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}

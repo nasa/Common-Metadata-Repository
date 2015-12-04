@@ -85,8 +85,7 @@
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [long-name version-id processing-level-id]} :product
-         :keys [spatial-coverage entry-id]} coll
+  (let [{:keys [spatial-coverage]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
@@ -105,8 +104,6 @@
         (assoc-in [:product :version-description] nil)
         ;; ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
-        ;; ISO stores shortname and entry-id in the same location (for now)
-        (assoc-in [:product :short-name] entry-id)
         ;; There is no delete-time in ISO
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         ;; Revision date time is same as update-time
@@ -222,8 +219,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "MINIMAL"
-     :entry-title "A minimal valid collection V 1"
+    {:entry-title "A minimal valid collection V 1"
      :summary "A minimal valid collection"
      :purpose "A grand purpose"
      :metadata-language "eng"

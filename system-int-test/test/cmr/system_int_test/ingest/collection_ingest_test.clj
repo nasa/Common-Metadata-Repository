@@ -222,11 +222,10 @@
 ;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
   (let [coll1-1 (dc/collection-dif {:concept-id "C1-PROV1"
-                                    :entry-id "EID-1"
+                                    :short-name "EID-1"
                                     :entry-title "ET-1"
                                     :native-id "NID-1"})
-        coll1-2 (assoc coll1-1 :entry-id "EID-2")]
-
+        coll1-2 (assoc-in coll1-1 [:product :short-name] "EID-2")]
     (d/ingest "PROV1" coll1-1 {:format :dif})
 
     (testing "update the collection with a different entry-id is OK"
@@ -286,8 +285,7 @@
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
-                           (dc/collection {:entry-id "S1"
-                                           :short-name "S1"
+                           (dc/collection {:short-name "S1"
                                            :version-id "V1"
                                            :entry-title "ET1"
                                            :long-name "L4"
@@ -507,7 +505,7 @@
 
     (testing "UMM-JSON collections are searchable after ingest"
       (is (= 1 (count (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
-    
+
     (testing "Updating a UMM-JSON collection"
       (let [response (ingest/ingest-concept (assoc coll-map :revision-id "2"))]
         (is (= 200 (:status response)))

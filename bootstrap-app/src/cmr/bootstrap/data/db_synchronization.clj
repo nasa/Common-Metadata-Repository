@@ -21,7 +21,8 @@
             [cmr.metadata-db.services.provider-service :as provider-service]
             [cmr.indexer.services.index-service :as index-service]
             [cmr.virtual-product.source-to-virtual-mapping :as svm]
-            [cmr.bootstrap.embedded-system-helper :as helper]))
+            [cmr.bootstrap.embedded-system-helper :as helper]
+            [cmr.umm.collection.entry-id :as eid]))
 
 (defconfig db-sync-work-items-batch-size
   "The number of work items to fetch at a time from the work items table during processing"
@@ -154,13 +155,6 @@
             (for [concept-id (set/difference (set concept-ids) (set (map first tuples)))]
               [concept-id 0]))))
 
-(defn- get-entry-id
-  "Returns the collection entry-id based on the given fields of a collection"
-  [mdb-format short-name version-id]
-  (if (or (= mt/dif mdb-format) (empty? version-id))
-    short-name
-    (str short-name "_" version-id)))
-
 (defmulti get-concept-from-catalog-rest
   "Retrieves a concept from the Catalog REST. Provider id and concept type are redundant given that
   the concept id is provided. They're included because they're available and would avoid having to
@@ -193,7 +187,7 @@
            :extra-fields {:short-name short_name
                           :entry-title dataset_id
                           :version-id version_id
-                          :entry-id (get-entry-id mdb-format short_name version_id)
+                          :entry-id (eid/entry-id short_name version_id)
                           :delete-time (when delete_time
                                          (oracle/oracle-timestamp->str-time conn delete_time))}
            :provider-id provider-id

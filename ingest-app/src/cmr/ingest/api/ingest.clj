@@ -226,7 +226,7 @@
     (verify-provider-against-client-id request-context provider-id)
     (info (format "Validating Collection %s from client %s"
                   (concept->loggable-string concept) (:client-id request-context)))
-    (ingest/validate-collection request-context concept validate-keywords)
+    (ingest/validate-and-prepare-collection request-context concept validate-keywords)
     {:status 200}))
 
 (defn ingest-collection

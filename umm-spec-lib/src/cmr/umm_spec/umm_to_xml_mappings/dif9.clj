@@ -15,7 +15,7 @@
   (xml
     [:DIF
      dif9-xml-namespaces
-     [:Entry_ID (:EntryId c)]
+     [:Entry_ID (:ShortName c)]
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
