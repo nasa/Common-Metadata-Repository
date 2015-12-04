@@ -26,7 +26,7 @@
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
-  (let [short-name (eid/entry-id->short-name (cx/string-at-path collection-content [:Entry_ID]))
+  (let [short-name (cx/string-at-path collection-content [:Entry_ID])
         version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
@@ -145,18 +145,17 @@
   UmmCollection
   (umm->dif-xml
     ([collection]
-     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
             :keys [entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references access-value]} collection
-           entry-id (eid/umm->entry-id collection)
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
            temporal (when (seq (:range-date-times temporal)) temporal)]
        (x/emit-str
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} entry-id)
+                    (x/element :Entry_ID {} short-name)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}

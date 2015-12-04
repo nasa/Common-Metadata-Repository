@@ -304,7 +304,7 @@
       (assert-concepts-in-mdb orig-colls)
       (assert-concepts-indexed orig-colls)
 
-      ;; Update the concepts in catalog rest.
+      ; Update the concepts in catalog rest.
       (cat-rest/update-concepts system [coll1-2 coll2-2 coll3-2])
       ;; Collection 5 is inserted for the first time so it's not yet in Metadata DB
       (cat-rest/insert-concept system coll5-1)

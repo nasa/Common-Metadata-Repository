@@ -504,9 +504,8 @@
     (is (= 1 (:revision-id response)))
 
     (testing "UMM-JSON collections are searchable after ingest"
-
       (is (= 1 (count (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
-    
+
     (testing "Updating a UMM-JSON collection"
       (let [response (ingest/ingest-concept (assoc coll-map :revision-id "2"))]
         (is (= 200 (:status response)))
