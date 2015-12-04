@@ -19,7 +19,7 @@
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
-(def tested-formats
+(def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
@@ -32,15 +32,15 @@
     (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
-(deftest roundtrip-example-record
-  (doseq [metadata-format tested-formats]
+(deftest roundtrip-example-collection-record
+  (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
              (xml-round-trip expected-conversion/example-record metadata-format))))))
 
-(defspec roundtrip-generated-records 100
+(defspec roundtrip-generated-collection-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
-            metadata-format (gen/elements tested-formats)]
+            metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
            (xml-round-trip umm-record metadata-format)))))
 
