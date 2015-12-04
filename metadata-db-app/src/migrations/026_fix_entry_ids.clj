@@ -24,7 +24,4 @@
   "Migrates the database down from version 26."
   []
   (println "migrations.026-fix-entry-ids down...")
-  (doseq [t (h/get-collection-tablenames)]
-    (h/sql (format "alter table %s modify (VERSION_ID null)" t))
-    (h/sql (format "update %s set entry_id = short_name where version_id = 'Not provided'" t))
-    (h/sql (format "update %s set entry_id = short_name || '_' || version_id where version_id != 'Not provided'" t))))
+  (throw (Exception. "This migration does not support 'down'")))
