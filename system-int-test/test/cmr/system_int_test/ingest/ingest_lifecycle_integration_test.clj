@@ -103,7 +103,8 @@
 
 (comment
   ;; for REPL testing purposes
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 expected-conversion/example-record)
+  (def example-record expected-conversion/example-record)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-record)
                                :concept-type :collection
                                :format "application/echo10+xml"})
   )
@@ -122,7 +123,7 @@
            (d/refs-match? items (search/find-refs :collection params))
 
            "entry-title matches"
-           [coll] {:entry_title (:EntryTitle example-record)}
+           [coll] {:entry_title "The entry title V5"}
            "entry-title not matches"
            [] {:entry_title "foo"}
 
@@ -142,7 +143,7 @@
            [] {:short_name "foo"}
 
            "version matches"
-           [coll] {:version (:Version example-record)}
+           [coll] {:version "V5"}
            "version not matches"
            [] {:version "foo"}
 
@@ -165,8 +166,7 @@
            [coll] {"collection_data_type[]" "SCIENCE_QUALITY"}
 
            "temporal matches"
-           [coll] {:temporal (date-time-range->range-param
-                               (-> example-record :TemporalExtents first :RangeDateTimes first))}
+           [coll] {:temporal "2000-01-01T00:00:00Z,2015-12-04T13:55:29Z"}
            "temporal not matches"
            [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
@@ -181,11 +181,10 @@
            [] {:platform "foo"}
 
            "instrument"
-           [coll] {:instrument (-> example-record :Platforms first :Instruments first :ShortName)}
+           [coll] {:instrument "An Instrument"}
 
            "sensor"
-           [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
-                               first :ShortName)}
+           [coll] {:sensor "ABC"}
 
            "project matches"
            [coll] {:project "project short_name"}
