@@ -5,8 +5,8 @@
 
 (defn xml-elem->MetadataAssociation
   [ca-elem]
-  (c/map->CollectionAssociation {:short-name (cx/string-at-path ca-elem [:Entry_Id :Short_Name])
-                                 :version-id (cx/string-at-path ca-elem [:Entry_Id :Version])}))
+  (c/map->CollectionAssociation {:short-name (cx/string-at-path ca-elem [:Entry_ID :Short_Name])
+                                 :version-id (cx/string-at-path ca-elem [:Entry_ID :Version])}))
 
 (defn xml-elem->MetadataAssociations
   [xml-struct]
@@ -20,7 +20,7 @@
   (for [ca cas]
     (let [{:keys [short-name version-id]} ca]
       (x/element :Metadata_Association {}
-                 (x/element :Entry_Id {}
+                 (x/element :Entry_ID {}
                             (x/element :Short_Name {} short-name)
                             (x/element :Version {} version-id))
                  ;; Type is a required field in DIF 10, but CMR UMM does not support it yet.
