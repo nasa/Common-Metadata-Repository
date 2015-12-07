@@ -1017,7 +1017,7 @@
   "Get virtual granules from metadata-db by first searching for them using src granule
   ur in the search app"
   [src-granule-ur]
-  (let [params {"attribute[][name]" "source-granule-ur"
+  (let [params {"attribute[][name]" "source_granule_ur"
                 "attribute[][type]" "string"
                 "attribute[][value]" src-granule-ur
                 :page-size 50}
