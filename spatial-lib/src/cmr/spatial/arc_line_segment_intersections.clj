@@ -47,7 +47,7 @@
 
                        :else
                        [(s/line-segment point1 point2)])]
-    (filter identity (map (partial s/intersection ls) arc-segments))))
+    (filter identity (map #(s/intersection ls %) arc-segments))))
 
 
 (defn line-segment-arc-intersections-with-densification
@@ -56,17 +56,17 @@
 
   (let [; Subselect the line segment so that we'll only find intersections within the mbrs of the arc.
         ;; Subselection can result in multiple line segments and points.
-        {:keys [line-segments points]} (apply merge-with concat (map (partial s/subselect ls) mbrs))
+        {:keys [line-segments points]} (apply merge-with concat (map #(s/subselect ls %) mbrs))
         ;; We densify the line segments to see if they intersect the arcs
         densified-point-sets (mapv s/densify-line-segment line-segments)
         ;; Convert the lines of multiple points into separate arcs.
-        densified-arcs (map (partial apply a/arc) (mapcat (partial partition 2 1) densified-point-sets))]
+        densified-arcs (map #(apply a/arc %) (mapcat #(partition 2 1 %) densified-point-sets))]
 
     (concat
       ;; Return intersections of the densified arcs with the arc
-      (mapcat (partial a/intersections arc) densified-arcs)
+      (mapcat #(a/intersections arc %) densified-arcs)
       ;; and any points that are on the original arc
-      (filter (partial a/point-on-arc? arc) points))))
+      (filter #(a/point-on-arc? arc %) points))))
 
 
 (defn line-segment-arc-intersections
@@ -106,7 +106,7 @@
           ls arc
           ;; Compute the intersections of the intersecting mbrs. Smaller mbrs around the intersection
           ;; point will result in better bounding for newton's method.
-          (mapcat (partial m/intersections ls-mbr) intersecting-mbrs))))))
+          (mapcat #(m/intersections ls-mbr %) intersecting-mbrs))))))
 
 (defprotocol ArcSegmentIntersects
   "Defines functions for intersecting with an arc or segments"

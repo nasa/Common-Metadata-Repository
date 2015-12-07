@@ -66,7 +66,7 @@
 
 (deftest test-decode-line-string
   (testing "decoding GML line strings"
-    (is (= (line/ords->line-string :cartesian -110.45 45.256, -109.48 46.46, -109.86 43.84, -109.2 45.8)
+    (is (= (line/ords->line-string :cartesian [-110.45 45.256, -109.48 46.46, -109.86 43.84, -109.2 45.8])
            (gml/decode (cx/element-at-path (x/parse-str gml-xml) [:LineString]))))))
 
 (deftest test-decode-polygon

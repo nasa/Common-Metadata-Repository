@@ -13,6 +13,7 @@
             [cmr.spatial.validation :as v]
             [cmr.spatial.points-validation-helpers :as pv]
             [cmr.spatial.messages :as msg]
+            [cmr.common.util :as u]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.arc.Arc
            cmr.spatial.line_segment.LineSegment))
@@ -55,8 +56,8 @@
    ;; arcs or line-segments
    segments
 
-   mbr
-   ])
+   mbr])
+
 (record-pretty-printer/enable-record-pretty-printing LineString)
 
 (defn line-string
@@ -74,8 +75,8 @@
 
 (defn ords->line-string
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a line."
-  [coordinate-system & ords]
-  (line-string coordinate-system (apply p/ords->points ords)))
+  [coordinate-system ords]
+  (line-string coordinate-system (p/ords->points ords)))
 
 (defn line-string->ords [line]
   (p/points->ords (:points line)))
@@ -95,12 +96,38 @@
   (or (.segments line)
       (s/points->line-segments (.points line))))
 
+(defn union-arc-segment-mbs
+  "Finds the minimum bounding rectangle of all the arcs and unions them together. This was written
+  to be a performance optimized way to do it."
+  [arcs]
+  (reduce (fn [mbr ^Arc arc]
+            (let [mbr (if mbr
+                        (m/union mbr (.mbr1 arc))
+                        (.mbr1 arc))]
+              (if-let [mbr2 (.mbr2 arc)]
+                (m/union mbr mbr)
+                mbr)))
+          nil
+          arcs))
+
+(defn union-line-segment-mbrs
+  "Finds the minimum bounding rectangle of all the line segments and unions them together."
+  [line-segments]
+  (reduce (fn [mbr ^LineSegment ls]
+            (if mbr
+              (m/union mbr (.mbr ls))
+              (.mbr ls)))
+          nil
+          line-segments))
+
 (defn line-string->mbr
   "Determines the mbr from the points in the line."
   [^LineString line]
   (or (.mbr line)
       (let [segments (line-string->segments line)]
-        (->> segments (mapcat segment->mbrs) (reduce m/union)))))
+        (if (= :geodetic (.coordinate_system line))
+          (union-arc-segment-mbs segments)
+          (union-line-segment-mbrs segments)))))
 
 (extend-protocol d/DerivedCalculator
   cmr.spatial.line_string.LineString
@@ -116,7 +143,7 @@
   "Returns true if the line covers the point"
   [line point]
   (let [{:keys [points segments]} line]
-    (or (some (partial approx= point) points)
+    (or (some #(approx= point %) points)
         (some #(point-on-segment? % point) segments))))
 
 (defn intersects-br?
@@ -127,18 +154,17 @@
       (covers-point? line (p/point (:west br) (:north br)))
 
       (or
-        ;; Does the br cover any points of the line?
-        (some (partial m/covers-point? (:coordinate-system line) br) (:points line))
-        ;; Does the line contain any points of the br?
-        (some (partial covers-point? line) (m/corner-points br))
-
-        ;; Do any of the sides intersect?
-        (let [segments (:segments line)
-              mbr-segments (s/mbr->line-segments br)]
-          (seq (mapcat (partial apply asi/intersections)
-                       (for [ls1 segments
-                             ls2 mbr-segments]
-                         [ls1 ls2]))))))))
+       ;; Does the br cover any points of the line?
+       (some #(m/covers-point? (:coordinate-system line) br %) (:points line))
+       ;; Does the line contain any points of the br?
+       (some #(covers-point? line %) (m/corner-points br))
+       ;; Do any of the sides intersect?
+       (let [segments (:segments line)
+             mbr-segments (s/mbr->line-segments br)]
+         (seq (mapcat #(apply asi/intersections %)
+                      (for [ls1 segments
+                            ls2 mbr-segments]
+                        [ls1 ls2]))))))))
 
 (defn intersects-line-string?
   "Returns true if the line string instersects the other line string"

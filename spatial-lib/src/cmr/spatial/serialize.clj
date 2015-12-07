@@ -189,11 +189,11 @@
 
 (defmethod stored-ords->shape :geodetic-line-string
   [type ords]
-  (apply l/ords->line-string :geodetic (map stored->ordinate ords)))
+  (l/ords->line-string :geodetic (map stored->ordinate ords)))
 
 (defmethod stored-ords->shape :cartesian-line-string
   [type ords]
-  (apply l/ords->line-string :cartesian (map stored->ordinate ords)))
+  (l/ords->line-string :cartesian (map stored->ordinate ords)))
 
 (def shape-type->integer
   "Converts a shape type into an integer for storage"
@@ -220,7 +220,7 @@
     {;; Create the ords-info sequence which is a sequence of types followed by the number of ordinates in the shape
      :ords-info (mapcat (fn [{:keys [type ords]}]
                             [(shape-type->integer type) (count ords)])
-                          infos)
+                        infos)
         ;; Create a combined sequence of all the shape ordinates
      :ords (mapcat :ords infos)}))
 
@@ -252,23 +252,31 @@
 (comment
 
   (do
-    (def search-area (m/mbr 2.8125 26.015625 27.5625 18.5625))
+    ;;  lower left longitude, lower left latitude, upper right longitude, upper right latitude.
+    ;; w s e n
+    10.013111114501953 30.266082763671875 36.218971252441406 36.933528900146484
+
+    ;; w n e s
+    (def search-area (m/mbr 10.013111114501953 36.933528900146484  36.218971252441406 30.266082763671875))
+
+    (cmr.spatial.validation/validate search-area)
 
     (require '[cmr.spatial.relations :as r])
     (def intersects-fn (r/shape->intersects-fn search-area))
 
-    (def ords [105.430611,-81.285156 46.711628,-65.434303 34.878036,-45.048115 28.735548,-24.12281 23.99316,-3.005745 19.420183,18.155376 14.006246,39.221821 5.132201,59.967354 1.0E-4,66.7660068 1.0E-4,65.0446639 3.979038,59.776619 13.241453,39.078468 18.792515,18.024538 23.394991,-3.134466 28.082237,-24.256086 34.040928,-45.200386 45.345764,-65.661354 104.596161,-81.881721 180.0,-70.784953 180.0,-70.300547 105.430611,-81.285156])
+    (def ords [0.0 -55.1941715206348800 -2.4978480000000000 -49.4242940000000000 -9.0638480000000000 -28.7228830000000000 -13.88382400000000000 -7.79849400000000000 -18.3748780000000000 13.19385100000000000 -23.4621070000000000 34.1237340000000000 -31.046366000000000 54.8031620000000000 -51.6761930000000000 74.43060300000000000 -155.88189700000000000 78.8231350000000000 -179.9999000000000000000 65.38029173779580000])
+
 
     (def stored-ords
-      (first (shape->stored-ords (poly/polygon :geodetic [(apply rr/ords->ring :geodetic ords)]))))
+      (first (shape->stored-ords (l/ords->line-string :geodetic ords))))
 
-    (require '[criterium.core :refer [with-progress-reporting bench]]))
+    (require '[criterium.core :refer [with-progress-reporting bench quick-bench]]))
 
   (with-progress-reporting
     (bench
       (let [{:keys [type ords]} stored-ords
             shape (stored-ords->shape type ords)]
-        (intersects-fn shape))))
+        (intersects-fn shape)))))
 
-  )
+
 

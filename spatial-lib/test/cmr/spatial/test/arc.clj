@@ -166,21 +166,21 @@
     (doseq [{arc-ords :arc
              on-ords :on
              off-ords :off} examples]
-      (let [arc-points (apply p/ords->points arc-ords)
+      (let [arc-points (p/ords->points arc-ords)
             arc (apply a/arc arc-points)
-            on-points (concat (apply p/ords->points on-ords)
+            on-points (concat (p/ords->points on-ords)
                               arc-points)
-            off-points (concat (apply p/ords->points off-ords)
+            off-points (concat (p/ords->points off-ords)
                                (map p/antipodal arc-points))
             on-arc? (partial a/point-on-arc? arc)]
         (doseq [p on-points]
           (is (a/point-on-arc? arc p)
               (pr-str `(a/point-on-arc? (a/ords->arc ~@(a/arc->ords arc))
-                                             (p/point ~(:lon p) ~(:lat p))))))
+                                        (p/point ~(:lon p) ~(:lat p))))))
         (doseq [p off-points]
           (is (not (a/point-on-arc? arc p))
               (pr-str `(a/point-on-arc? (a/ords->arc ~@(a/arc->ords arc))
-                                             (p/point ~(:lon p) ~(:lat p))))))))))
+                                        (p/point ~(:lon p) ~(:lat p))))))))))
 
 (defn print-points-at-lat-failure
   [type arc lat]
@@ -243,67 +243,67 @@
                          [-0.1 -180 180]]}
 
                    ;; at northermost point of gc
-                   {:arc [-40.29,84.82, -140.38,85.08]
-                    :on [[86.75493561135306 -91.57687352243259 -40]
-                         [86 -180 0]
-                         [86 -90 0]
-                         [86 -180 180]]
-                    :off [[86 0 -180]
-                          [86 0 180]
-                          [86 90 180]
-                          [-86 -180 180]]}
+                  {:arc [-40.29,84.82, -140.38,85.08]
+                   :on [[86.75493561135306 -91.57687352243259 -40]
+                        [86 -180 0]
+                        [86 -90 0]
+                        [86 -180 180]]
+                   :off [[86 0 -180]
+                         [86 0 180]
+                         [86 90 180]
+                         [-86 -180 180]]}
 
                    ;; at southermost point of gc
-                   {:arc [-40.29,-84.82, -140.38,-85.08]
-                    :on [[-86.75493561135306 -91.57687352243259 -40]
-                         [-86 -180 0]
-                         [-86 -90 0]
-                         [-86 -180 180]]
-                    :off [[-86 0 -180]
-                          [-86 0 180]
-                          [-86 90 180]
-                          [86 -180 180]]}
+                  {:arc [-40.29,-84.82, -140.38,-85.08]
+                   :on [[-86.75493561135306 -91.57687352243259 -40]
+                        [-86 -180 0]
+                        [-86 -90 0]
+                        [-86 -180 180]]
+                   :off [[-86 0 -180]
+                         [-86 0 180]
+                         [-86 90 180]
+                         [86 -180 180]]}
 
                    ;; vertical
-                   {:arc [10 0 10 20]
-                    :on [[0 9 11]
-                         [5 9 11]
-                         [10 9 11]
-                         [20 10 11]
+                  {:arc [10 0 10 20]
+                   :on [[0 9 11]
+                        [5 9 11]
+                        [10 9 11]
+                        [20 10 11]
                          ;; across antimeridian
-                         [5 11 10]]
-                    :off [[5 11 12]
-                          [5 8 9]
+                        [5 11 10]]
+                   :off [[5 11 12]
+                         [5 8 9]
                          ;; across antimeridian
-                          [5 11 9]]}
+                         [5 11 9]]}
 
                    ;; point on north pole
-                   {:arc [0 90 165 85]
-                    :on [[90 0 1]
-                         [87 164 166]
-                         [85 -180 180]]
-                    :off [[87 166 167]
-                          [87 163 164]
-                          [84 -180 180]]}
+                  {:arc [0 90 165 85]
+                   :on [[90 0 1]
+                        [87 164 166]
+                        [85 -180 180]]
+                   :off [[87 166 167]
+                         [87 163 164]
+                         [84 -180 180]]}
 
                    ;; point on south pole
-                   {:arc [0 -90 165 -85]
-                    :on [[-90 0 1]
-                         [-87 164 166]
-                         [-85 -180 180]]
-                    :off [[-87 166 167]
-                          [-87 163 164]
-                          [-84 -180 180]]}
+                  {:arc [0 -90 165 -85]
+                   :on [[-90 0 1]
+                        [-87 164 166]
+                        [-85 -180 180]]
+                   :off [[-87 166 167]
+                         [-87 163 164]
+                         [-84 -180 180]]}
 
                    ;; across north pole
-                   {:arc [0 85 180 85]
-                    :on [[87 -180 180]
-                         [85 -180 180]
-                         [87 -1 1]
-                         [87 175 -175]]
-                    :off [[84 -180 180]
-                          [87 1 2]
-                          [87 -2 -1]]}]]
+                  {:arc [0 85 180 85]
+                   :on [[87 -180 180]
+                        [85 -180 180]
+                        [87 -1 1]
+                        [87 175 -175]]
+                   :off [[84 -180 180]
+                         [87 1 2]
+                         [87 -2 -1]]}]]
     (doseq [{arc-ords :arc
              on-ord-tuples :on
              off-ord-tuples :off} examples]
@@ -321,16 +321,16 @@
             (a/crosses-north-pole? (apply a/ords->arc ords)))
           (over-south [& ords]
             (a/crosses-south-pole? (apply a/ords->arc ords)))]
-  (testing "crosses north pole"
-    (is (over-north -90,85, 90,85))
-    (is (over-north -180,85, 0,85))
-    (is (not (over-north -180,-85, 0,-85)))
-    (is (not (over-north 1,2 3,4))))
-  (testing "crosses south pole"
-    (is (over-south -90,-85, 90,-85))
-    (is (over-south -180,-85, 0,-85))
-    (is (not (over-south -180,85, 0,85)))
-    (is (not (over-south 1,2 3,4))))))
+   (testing "crosses north pole"
+     (is (over-north -90,85, 90,85))
+     (is (over-north -180,85, 0,85))
+     (is (not (over-north -180,-85, 0,-85)))
+     (is (not (over-north 1,2 3,4))))
+   (testing "crosses south pole"
+     (is (over-south -90,-85, 90,-85))
+     (is (over-south -180,-85, 0,-85))
+     (is (not (over-south -180,85, 0,85)))
+     (is (not (over-south 1,2 3,4))))))
 
 (defspec arc-bounding-rectangles-spec 1000
   (for-all [arc sgen/arcs]

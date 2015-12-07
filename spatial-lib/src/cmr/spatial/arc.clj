@@ -22,8 +22,8 @@
 
     northernmost-point
 
-    southernmost-point
-   ])
+    southernmost-point])
+
 
 
 ;; The arc contains derived information that is cached to prevent recalculating the same
@@ -48,8 +48,8 @@
 
    ;; 1 or 2 bounding rectangles defining the MBR of the arc.
    mbr1
-   mbr2
-   ])
+   mbr2])
+
 
 (record-pretty-printer/enable-record-pretty-printing
   GreatCircle
@@ -116,55 +116,56 @@
 (defn- bounding-rectangles
   "Calculates the bounding rectangles for an arc"
   [^Point west-point ^Point east-point ^GreatCircle great-circle initial-course ending-course]
-    (cond
+  (cond
       ;; Crosses North pole?
-      (and (= 0.0 initial-course) (= 180.0 ending-course))
+    (and (= 0.0 initial-course) (= 180.0 ending-course))
       ;; Results in two mbrs that have no width going from lon up to north pole
-      (let [br1 (mbr/mbr (.lon west-point) 90.0 (.lon west-point) (.lat west-point))
-            br2 (mbr/mbr (.lon east-point) 90.0 (.lon east-point) (.lat east-point))]
-        [br1 br2])
+    (let [br1 (mbr/mbr (.lon west-point) 90.0 (.lon west-point) (.lat west-point))
+          br2 (mbr/mbr (.lon east-point) 90.0 (.lon east-point) (.lat east-point))]
+      [br1 br2])
 
       ;; Crosses South pole?
-      (and (= 180.0 initial-course) (= 0.0 ending-course))
+    (and (= 180.0 initial-course) (= 0.0 ending-course))
       ;; Results in two mbrs that have no width going from lon down to south pole
-      (let [br1 (mbr/mbr (.lon west-point) (.lat west-point) (.lon west-point) -90.0)
-            br2 (mbr/mbr (.lon east-point) (.lat east-point) (.lon east-point) -90.0)]
-        [br1 br2])
+    (let [br1 (mbr/mbr (.lon west-point) (.lat west-point) (.lon west-point) -90.0)
+          br2 (mbr/mbr (.lon east-point) (.lat east-point) (.lon east-point) -90.0)]
+      [br1 br2])
 
-      :else
-      (let [w (.lon west-point)
-            e (.lon east-point)
+    :else
+    (let [w (.lon west-point)
+          e (.lon east-point)
 
             ;; If one point is at a pole the west and east longitudes should match
-            w (if (or (p/is-north-pole? west-point) (p/is-south-pole? west-point))
-                e
-                w)
-            e (if (or (p/is-north-pole? east-point) (p/is-south-pole? east-point))
-                w
-                e)
+          w (if (or (p/is-north-pole? west-point) (p/is-south-pole? west-point))
+              e
+              w)
+          e (if (or (p/is-north-pole? east-point) (p/is-south-pole? east-point))
+              w
+              e)
             ;; Choose north and south extents
-            [s n] (if (> (.lat west-point) (.lat east-point))
-                    [(.lat east-point) (.lat west-point)]
-                    [(.lat west-point) (.lat east-point)])
+          wp-lat (.lat west-point)
+          ep-lat (.lat east-point)
+          s (if (> wp-lat ep-lat) ep-lat wp-lat)
+          n (if (> wp-lat ep-lat) wp-lat ep-lat)
 
-            ;; If they're both on the antimeridian set west and east to the same value.
-            [w e] (if (and (= (abs w) 180.0) (= (abs e) 180.0))
-                    [180.0 180.0]
-                    [w e])
+          ;; If they're both on the antimeridian set west and east to the same value.
+          both-antimeridian (and (= (abs w) 180.0) (= (abs e) 180.0))
+          w (if both-antimeridian 180.0 w)
+          e (if both-antimeridian 180.0 e)
 
-            br (mbr/mbr w n e s)
-            ^Point northernmost (.northernmost_point great-circle)
-            ^Point southernmost (.southernmost_point great-circle)]
+          br (mbr/mbr w n e s)
+          ^Point northernmost (.northernmost_point great-circle)
+          ^Point southernmost (.southernmost_point great-circle)]
 
-        (cond
+      (cond
           ;; Use the great circle northernmost and southernmost points to expand the bounding rectangle if necessary
-          (mbr/covers-lon? :geodetic br (.lon northernmost))
-          [(assoc br :north (.lat northernmost))]
+        (mbr/covers-lon? :geodetic br (.lon northernmost))
+        [(assoc br :north (.lat northernmost))]
 
-          (mbr/covers-lon? :geodetic br (.lon southernmost))
-          [(assoc br :south (.lat southernmost))]
+        (mbr/covers-lon? :geodetic br (.lon southernmost))
+        [(assoc br :south (.lat southernmost))]
 
-          :else [br]))))
+        :else [br]))))
 
 (defn arc
   [point1 point2]
@@ -181,12 +182,17 @@
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n (fn [[p1 p2]] (arc p1 p2)) 2 1 points))
+  (let [points (vec points)]
+    (persistent!
+     (reduce (fn [arcs ^long index]
+               (conj! arcs (arc (nth points index) (nth points (inc index)))))
+             (transient [])
+             (range 0 (dec (count points)))))))
 
 (defn ords->arc
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an arc."
   [& ords]
-  (apply arc (apply p/ords->points ords)))
+  (apply arc (p/ords->points ords)))
 
 (defn arc->ords
   "Returns a list of the arc ordinates lon1, lat1, lon2, lat2"

@@ -114,10 +114,10 @@
         (is (= north-pole (:contains-north-pole ring)))
         (is (= south-pole (:contains-south-pole ring)))
 
-        (doseq [point (apply p/ords->points internal-points)]
+        (doseq [point (p/ords->points internal-points)]
           (is (gr/covers-point? ring point) (str "Ring should cover point " point)))
 
-        (doseq [point (apply p/ords->points external-points)]
+        (doseq [point (p/ords->points external-points)]
           (is (not (gr/covers-point? ring point)) (str "Ring should not cover point " point)))
 
         (is (rr/intersects-ring? ring ring) "Ring should intersect itself")))))

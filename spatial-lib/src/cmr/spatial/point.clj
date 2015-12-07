@@ -54,8 +54,8 @@
    ;; This field is holding options when debugging points so they can be displayed in a visualization
    ;; with labels etc. It will typically be set to null during normal operations. It is excluded
    ;; from hashCode and equals.
-   ^clojure.lang.Associative options
-   ]
+   ^clojure.lang.Associative options]
+
   Object
   (hashCode
     [this]
@@ -188,18 +188,18 @@
           (pj/assert (double-approx= (radians lon) ^double lon-rad))
           (pj/assert (double-approx= (radians lat) ^double lat-rad))
 
-          (Point. (double lon)
-                  (double lat)
-                  (double lon-rad)
-                  (double lat-rad)
+          (Point. lon
+                  lat
+                  lon-rad
+                  lat-rad
                   geodetic-equality
                   nil)))
 
 (def north-pole
-  (point 0 90))
+  (point 0.0 90.0))
 
 (def south-pole
-  (point 0 -90))
+  (point 0.0 -90.0))
 
 (defn with-cartesian-equality
   "Returns an equivalent point with cartesian equality"
@@ -262,10 +262,15 @@
 (defn ords->points
   "Takes pairs of numbers and returns a sequence of points.
 
-  user=> (ords->points 1 2 3 4)
+  user=> (ords->points [1 2 3 4])
   ((cmr-spatial.point/point 1.0 2.0) (cmr-spatial.point/point 3.0 4.0))"
-  [& ords]
-  (util/map-n (partial apply point) 2 ords))
+  [ords]
+  (let [ords (vec ords)]
+    (persistent!
+     (reduce (fn [points ^long index]
+               (conj! points (point (nth ords index) (nth ords (inc index)))))
+             (transient [])
+             (range 0 (count ords) 2)))))
 
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."
@@ -324,6 +329,54 @@
     (* 2.0 (asin (sqrt (+ part1 part2))))))
 
 (defn course
+  ^double [^Point p1 ^Point p2]
+  (let [due-north 0.0
+        due-south 180.0
+        lon-deg1 (.lon p1)
+        lat-deg1 (.lat p1)
+        lon-deg2 (.lon p2)
+        lat-deg2 (.lat p2)]
+    (cond
+      (is-north-pole? p2) due-north
+      (is-north-pole? p1) due-south
+      (is-south-pole? p2) due-south
+      (is-south-pole? p1) due-north
+
+      ;; vertical line
+      (= lon-deg1 lon-deg2) (if (> lat-deg1 lat-deg2) due-south due-north)
+
+      ;; This line will cross one of the poles. They are both on a vertical great circle.
+      (= 180.0 (abs (- lon-deg1 lon-deg2)))
+      ;;Check the average latitude to see if it's above the equator or below it
+      (if (> (mid lat-deg1 lat-deg2) 0.0)
+        due-north
+        due-south)
+
+      :else
+      ;; From http://www.movable-type.co.uk/scripts/latlong.html Bearing calculation
+      (let [lon1 (.lon_rad p1)
+            lat1 (.lat_rad p1)
+            lon2 (.lon_rad p2)
+            lat2 (.lat_rad p2)
+            y (* (sin (- lon2 lon1)) (cos lat2))
+            x (- (* (cos lat1) (sin lat2))
+                 (* (sin lat1) (cos lat2) (cos (- lon2 lon1))))
+            normalized (degrees (atan2 y x))]
+        (mod (+ (* -1.0 normalized) 360.0) 360.0)))))
+
+
+(comment
+  (def test-points
+    (map #(apply point %) (partition 2 [0 1, 1 1, 1 0, 1 -1, 0 -1, -1 -1, -1 0, -1 1])))
+
+  (=
+    (map (partial course-original (point 0 0)) test-points)
+    (map (partial course (point 0 0)) test-points)))
+
+
+
+
+(defn course-original
   "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
   pole and increases clockwise. 180 points to the south pole. 360 points the same direction as 0.
   Algorithm from: http://williams.best.vwh.net/avform.htm#Crs"

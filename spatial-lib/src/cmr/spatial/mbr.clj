@@ -22,8 +22,8 @@
    ^double south
 
       ;; These are cached for performance improvement
-   corner-points
-  ])
+   corner-points])
+
 (record-pretty-printer/enable-record-pretty-printing Mbr)
 
 (defn mbr
@@ -172,7 +172,7 @@
   [coord-sys mbr other-br]
   (or (and (= (crosses-antimeridian? mbr)
               (crosses-antimeridian? other-br))
-           (every? (partial covers-point? coord-sys mbr) (corner-points other-br)))
+           (every? #(covers-point? coord-sys mbr %) (corner-points other-br)))
 
       ;; one crosses and one doesn't
       (and (crosses-antimeridian? mbr)
