@@ -8,7 +8,8 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.set :as set]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -219,14 +220,45 @@
                                          {:include-highlights true}
                                          {:keyword "MODIS/Terra"})))))
 
+;; TODO Switch atom to map-indexed
 
-; (deftest reserved-characters-test
-;   (let [reserved-strings ["+" "-" "=" "&&" "||" ">" "<" "!" "(" ")" "{" "}" "[" "]" "^" "\"" "~" "*"
-;                           "?" ":" "\\" "/"]]
-;     (make-coll 1 {:summary (format "Special chars are: %s." (str/join " " reserved-strings))})
-;     (index/wait-until-indexed)
-;     (is (= "abc" (get-search-results-summaries (search/find-concepts-in-json-with-json-query
-;                                                  :collection
-;                                                  {:include-highlights true}
-;                                                  {:keyword (str/join " " reserved-strings)}))))))
+(deftest reserved-characters-test
+  ;; This test documents the current elasticsearch highlighting behavior with respect to reserved
+  ;; characters. The behavior is inconsistent for the : ? and * characters
+  (let [reserved-strings #{"+" "-" "=" "&&" "||" ">" "<" "!" "(" ")" "{" "}" "[" "]" "^" "\"" "~" "*"
+                           "?" ":" "\\" "/"}
+        reserved-strings-with-different-behavior #{":" "?" "*"}
+        counter (atom 0)]
+    (doseq [reserved-string reserved-strings]
+      (swap! counter inc)
+      (make-coll @counter {:summary (format "MODIS%sTERRA dataset." reserved-string)}))
+    (index/wait-until-indexed)
+
+    (testing "Most reserved characters are not highlighted when they are searched against."
+      (doseq [reserved-string (set/difference reserved-strings
+                                              reserved-strings-with-different-behavior)]
+        (is (= [[(format "<em>MODIS</em>%s<em>TERRA</em> dataset." reserved-string)]]
+               (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                               :collection
+                                               {:include-highlights true}
+                                               {:keyword (format "MODIS%sTERRA"
+                                                                 reserved-string)}))))))
+
+    (testing "Colons are highlighted along with the search string."
+      (is (= [["<em>MODIS:TERRA</em> dataset."]]
+             (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                             :collection
+                                             {:include-highlights true}
+                                             {:keyword "MODIS:TERRA"})))))
+
+    (testing "Wildcard searches do not highlight any strings with reserved characters except for
+             colon."
+      (doseq [reserved-string #{"*" "?"}]
+        (is (= (set [nil nil nil ["<em>MODIS:TERRA</em> dataset."] nil nil nil nil nil nil])
+               (set (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                                    :collection
+                                                    {:include-highlights true}
+                                                    {:keyword (format "MODIS%sTERRA"
+                                                                      reserved-string)})))))))))
+
 
