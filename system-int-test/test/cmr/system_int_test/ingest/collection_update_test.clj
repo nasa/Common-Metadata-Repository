@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.ingest.collection-update-test
   "CMR collection update integration tests"
   (:require [clojure.test :refer :all]
-            [cmr.common.util :as util]
+            [cmr.common.util :refer [are2]]
             [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.collection :as dc]
@@ -25,23 +25,25 @@
 
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1 a2 a3 a4 a5 a6 a7 a8 a9]}))
         gran1 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "string" ["alpha"])]}))
+                                                  [(dg/psa "string" ["alpha"])]}))
         gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "boolean" ["true"])]}))
+                                                  [(dg/psa "boolean" ["true"])]}))
         gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "int" ["2"])]}))
+                                                  [(dg/psa "int" ["2"])]}))
         gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "float" ["2.0"])]}))
+                                                  [(dg/psa "float" ["2.0"])]}))
         gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "datetime" ["2012-01-01T01:02:03Z"])]}))
+                                                  [(dg/psa "datetime" ["2012-01-01T01:02:03Z"])]}))
         gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "date" ["2012-01-02Z"])]}))
+                                                  [(dg/psa "date" ["2012-01-02Z"])]}))
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "time" ["01:02:03Z"])]}))
+                                                  [(dg/psa "time" ["01:02:03Z"])]}))
         gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes
-                                                 [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
+                                                  [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
         ;; The following collection and granule are added to verify that the validation is using
         ;; the collection concept id for searching granules. If we don't use the collection concept
         ;; id during granule search the test that changes additional attribute with name "int" to
@@ -50,14 +52,16 @@
                                   {:entry-title "parent-collection-1"
                                    :product-specific-attributes [a3]}))
         gran9 (d/ingest "PROV1" (dg/granule coll1 {:product-specific-attributes
-                                                  [(dg/psa "int" ["20"])]}))]
+                                                   [(dg/psa "int" ["20"])]}))]
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (util/are2
+      (are2
         [additional-attributes]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
+                                            :short-name "S1"
+                                            :version-id "V1"
                                             :product-specific-attributes additional-attributes}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
@@ -91,10 +95,12 @@
          a5 a6 a7 a8 a9]))
 
     (testing "Update collection failure cases"
-      (util/are2
+      (are2
         [additional-attributes expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
+                                            :short-name "S1"
+                                            :version-id "V1"
                                             :product-specific-attributes additional-attributes})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
@@ -124,6 +130,8 @@
       (index/wait-until-indexed)
       (let [response (d/ingest "PROV1" (dc/collection
                                          {:entry-title "parent-collection"
+                                          :short-name "S1"
+                                          :version-id "V1"
                                           :product-specific-attributes [a9]}))
             {:keys [status errors]} response]
         (is (= [200 nil] [status errors]))))))
@@ -132,6 +140,8 @@
   (let [a1 (dc/psa {:name "int" :data-type :int :min-value 1 :max-value 10})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "int" ["2"])]}))
@@ -140,11 +150,13 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (util/are2
+      (are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes [(dc/psa {:name "int"
                                                                            :data-type :int
                                                                            :min-value (first range)
@@ -160,13 +172,15 @@
         "minimal range" [2 5]
         ))
     (testing "failure cases"
-      (util/are2
+      (are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [int] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes [(dc/psa {:name "int"
                                                                            :data-type :int
                                                                            :min-value (first range)
@@ -186,6 +200,8 @@
   (let [a1 (dc/psa {:name "float" :data-type :float :min-value -10.0 :max-value 10.0})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "float" ["-2.0"])]}))
@@ -194,11 +210,13 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (util/are2
+      (are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes [(dc/psa {:name "float"
                                                                            :data-type :float
                                                                            :min-value (first range)
@@ -213,13 +231,15 @@
         "no range"[]
         "minimal range" [-2.0 5.0]))
     (testing "failure cases"
-      (util/are2
+      (are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [float] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes [(dc/psa {:name "float"
                                                                            :data-type :float
                                                                            :min-value (first range)
@@ -244,6 +264,8 @@
                     :max-value (parse-fn "2012-11-01T01:02:03Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "datetime" ["2012-04-01T01:02:03Z"])]}))
@@ -252,11 +274,13 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (util/are2
+      (are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "datetime" :data-type :datetime
                                               :min-value (parse-fn (first range))
@@ -271,13 +295,15 @@
         "no range" []
         "minimal range" ["2012-04-01T01:02:03Z" "2012-08-01T01:02:03Z"]))
     (testing "failure cases"
-      (util/are2
+      (are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [datetime] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "datetime" :data-type :datetime
                                               :min-value (parse-fn (first range))
@@ -300,6 +326,8 @@
                     :max-value (parse-fn "2012-11-02Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "date" ["2012-04-02Z"])]}))
@@ -308,11 +336,13 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (util/are2
+      (are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "date" :data-type :date
                                               :min-value (parse-fn (first range))
@@ -327,13 +357,15 @@
         "no range" []
         "minimal range" ["2012-04-02Z" "2012-08-02Z"]))
     (testing "failure cases"
-      (util/are2
+      (are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [date] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "date" :data-type :date
                                               :min-value (parse-fn (first range))
@@ -355,6 +387,8 @@
                     :max-value (parse-fn "11:02:03Z")})
         coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :product-specific-attributes [a1]}))
         gran1 (d/ingest "PROV1"(dg/granule coll {:product-specific-attributes
                                                  [(dg/psa "time" ["04:02:03Z"])]}))
@@ -363,11 +397,13 @@
     (index/wait-until-indexed)
 
     (testing "successful cases"
-      (util/are2
+      (are2
         [range]
         (let [response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "time" :data-type :time
                                               :min-value (parse-fn (first range))
@@ -382,13 +418,15 @@
         "no range" []
         "minimal range" ["04:02:03Z" "06:02:03Z"]))
     (testing "failure cases"
-      (util/are2
+      (are2
         [range num-grans]
         (let [expected-error (->> (format " Found %d granules." num-grans)
                                   (str "Collection additional attribute [time] cannot be changed since there are existing granules outside of the new value range."))
               response (d/ingest "PROV1"
                                  (dc/collection
                                    {:entry-title "parent-collection"
+                                    :short-name "S1"
+                                    :version-id "V1"
                                     :product-specific-attributes
                                     [(dc/psa {:name "time" :data-type :time
                                               :min-value (parse-fn (first range))
@@ -407,6 +445,8 @@
 (deftest collection-update-project-test
   (let [coll (d/ingest "PROV1" (dc/collection
                                  {:entry-title "parent-collection"
+                                  :short-name "S1"
+                                  :version-id "V1"
                                   :projects (dc/projects "p1" "p2" "p3" "p4")}))
         coll2 (d/ingest "PROV1" (dc/collection
                                   {:entry-title "parent-collection2"
@@ -419,10 +459,12 @@
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (util/are2
+      (are2
         [projects]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
+                                            :short-name "S1"
+                                            :version-id "V1"
                                             :projects (apply dc/projects projects)}))
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
@@ -434,10 +476,12 @@
         ["p1" "p2" "p3"]))
 
     (testing "Update collection failure cases"
-      (util/are2
+      (are2
         [projects expected-errors]
         (let [response (d/ingest "PROV1" (dc/collection
                                            {:entry-title "parent-collection"
+                                            :short-name "S1"
+                                            :version-id "V1"
                                             :projects (apply dc/projects projects)})
                                  {:allow-failure? true})
               {:keys [status errors]} response]
@@ -513,30 +557,49 @@
            coll-orbit-with-grans {:gsr :geodetic} "ORBIT" "GEODETIC"
            coll-no-spatial-with-grans {:gsr :geodetic} "NO_SPATIAL" "GEODETIC"))))
 
+(deftest collection-update-unique-identifiers-test
+  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
+                                                :short-name "S1"
+                                                :version-id "V1"
+                                                :native-id "coll1"}))
+        collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
+                                                        :short-name "S2"
+                                                        :version-id "V2"
+                                                        :native-id "coll2"}))
+        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))]
+    (index/wait-until-indexed)
 
-;; TODO uncomment with CMR-2061 and add more tests for other fields.
-; (deftest collection-update-ids-test
-;   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
-;                                                 :native-id "coll1"}))
-;         collNoGranule (d/ingest "PROV1" (dc/collection {:entry-title "Dataset-No-Granule"
-;                                                         :native-id "coll2"}))
-;         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"}))
-;         gran2 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule2"}))]
-;     (index/wait-until-indexed)
+    (testing "Update unique identifiers of collection without granules is OK"
+      (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Dataset-No-Granule"
+                                                       :short-name "S22"
+                                                       :version-id "V22"
+                                                       :native-id "coll2"}))
+            {:keys [status errors]} response]
+        (= [200 nil] [status errors])))
 
-;     (testing "Update collection successful cases"
-;       (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Entry Title"
-;                                                        :native-id "coll2"}))
-;             {:keys [status errors]} response]
-;         (= [200 nil] [status errors])))
+    (testing "Update unique identifiers of collection failure cases"
+      (are2 [identifier-map error]
+            (let [response (d/ingest "PROV1" (dc/collection (merge {:entry-title "Dataset1"
+                                                                    :short-name "S1"
+                                                                    :version-id "V1"
+                                                                    :native-id "coll1"}
+                                                                   identifier-map))
+                                     {:allow-failure? true})
+                  {:keys [status errors]} response]
+              (= [422 [error]] [status errors]))
 
-;     (testing "Update collection failure cases"
-;       (let [response (d/ingest "PROV1" (dc/collection {:entry-title "New Entry Title"
-;                                                        :native-id "coll1"})
-;                                {:allow-failure? true})
-;             {:keys [status errors]} response]
-;         (is (= [400 ["TODO change this to a reasonable error message"]]
-;                [status errors]))))))
+            "Update entry-title of collection with granules"
+            {:entry-title "New Dataset1"}
+            "Collection with entry-title [Dataset1] is referenced by existing granules, cannot be renamed. Found 2 granules."
+
+            "Update short-name of collection with granules"
+            {:short-name "S11"}
+            "Collection with short-name [S1] & version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."
+
+            "Update version-id of collection with granules"
+            {:version-id "V11"}
+            "Collection with short-name [S1] & version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."))))
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
@@ -569,76 +632,82 @@
                                                    :ending-date-time "2000-08-01T12:00:00Z"}))
         gran7 (d/ingest "PROV1" (dg/granule coll4 {:granule-ur "Granule7"
                                                    :beginning-date-time "2001-01-01T12:00:00Z"
-                                                   :ending-date-time "2010-05-11T12:00:00Z"}))]
+                                                   :ending-date-time "2010-05-11T12:00:00Z"}))
+        update-collection (fn [coll new-temporal-params]
+                            (let [new-coll (-> coll
+                                               (assoc :revision-id nil)
+                                               (assoc :temporal
+                                                      (when new-temporal-params
+                                                        (dc/temporal new-temporal-params))))]
+                              (d/ingest "PROV1" new-coll {:allow-failure? true})))]
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
-      (util/are2
-        [entry-title beginning-date-time ending-date-time]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title entry-title
-                                            :beginning-date-time beginning-date-time
-                                            :ending-date-time ending-date-time}))
+      (are2
+        [coll beginning-date-time ending-date-time]
+        (let [response (update-collection
+                         coll
+                         {:beginning-date-time beginning-date-time
+                          :ending-date-time ending-date-time})
               {:keys [status errors]} response]
           (= [200 nil] [status errors]))
 
         "Update dataset with the same temporal coverage"
-        "Dataset1" "2010-01-01T12:00:00Z" "2010-05-01T12:00:00Z"
+        coll1 "2010-01-01T12:00:00Z" "2010-05-01T12:00:00Z"
 
         "Update dataset with no temporal coverage"
-        "Dataset1" nil nil
+        coll1 nil nil
 
         "Update dataset with bigger temporal coverage"
-        "Dataset1" "2009-12-01T12:00:00Z" "2010-05-02T12:00:00Z"
+        coll1 "2009-12-01T12:00:00Z" "2010-05-02T12:00:00Z"
 
         "Update dataset with bigger temporal coverage, no end date time"
-        "Dataset1" "2009-12-01T12:00:00Z" nil
+        coll1 "2009-12-01T12:00:00Z" nil
 
         "Update dataset with smaller temporal coverage, but still contains all existing granules"
-        "Dataset1" "2010-01-01T12:00:00Z" "2010-04-01T12:00:00Z"
+        coll1 "2010-01-01T12:00:00Z" "2010-04-01T12:00:00Z"
 
         "Update dataset (no end_date_time) to one with end_date_time that covers all existing granules"
-        "Dataset2" "2000-06-01T12:00:00Z" "2011-03-01T12:00:00Z"
+        coll2 "2000-06-01T12:00:00Z" "2011-03-01T12:00:00Z"
 
         "Update dataset (with no granules) to one with bigger temporal coverage"
-        "Dataset-No-Granule" "1999-01-01T00:00:00Z" "1999-09-01T12:00:00Z"
+        collNoGranule "1999-01-01T00:00:00Z" "1999-09-01T12:00:00Z"
 
         "Update dataset (with no granules) to one with smaller temporal coverage"
-        "Dataset-No-Granule" "1999-02-01T00:00:00Z" "1999-03-01T12:00:00Z"
+        collNoGranule "1999-02-01T00:00:00Z" "1999-03-01T12:00:00Z"
 
         "Update dataset (with no granules) to one with no temporal coverage"
-        "Dataset-No-Granule" nil nil
+        collNoGranule nil nil
 
         "Update dataset with same temporal coverage and granule having same temporal coverage as collection"
-        "Dataset4" "2001-01-01T12:00:00Z" "2010-05-11T12:00:00Z"))
+        coll4 "2001-01-01T12:00:00Z" "2010-05-11T12:00:00Z"))
 
     (testing "Update collection failure cases"
-      (util/are2
-        [entry-title beginning-date-time ending-date-time expected-errors]
-        (let [response (d/ingest "PROV1" (dc/collection
-                                           {:entry-title entry-title
-                                            :beginning-date-time beginning-date-time
-                                            :ending-date-time ending-date-time})
-                                 {:allow-failure? true})
+      (are2
+        [coll beginning-date-time ending-date-time expected-errors]
+        (let [response (update-collection
+                         coll
+                         {:beginning-date-time beginning-date-time
+                          :ending-date-time ending-date-time})
               {:keys [status errors]} response]
           (= [422 expected-errors] [status errors]))
 
         "Update dataset with smaller temporal coverage and does not contain all existing granules, begin date time too late"
-        "Dataset1" "2010-01-02T12:00:00Z" "2010-04-01T12:00:00Z"
+        coll1 "2010-01-02T12:00:00Z" "2010-04-01T12:00:00Z"
         ["Found granules earlier than collection start date [2010-01-02T12:00:00.000Z]. Found 1 granules."]
 
         "Update dataset with smaller temporal coverage and does not contain all existing granules, end date time too early"
-        "Dataset1" "2010-01-01T12:00:00Z" "2010-03-19T12:00:00Z"
+        coll1 "2010-01-01T12:00:00Z" "2010-03-19T12:00:00Z"
         ["Found granules later than collection end date [2010-03-19T12:00:00.000Z]. Found 1 granules."]
 
         "Update dataset (no end_date_time) to one with begin_date_time that does not cover all existing granules"
-        "Dataset2" "2000-06-02T12:00:00Z" nil
+        coll2 "2000-06-02T12:00:00Z" nil
         ["Found granules earlier than collection start date [2000-06-02T12:00:00.000Z]. Found 1 granules."]
 
         "Update dataset (no end_date_time) to one with end_date but having granules with no end_date"
-        "Dataset3" "2000-06-02T12:00:00Z" "2011-06-02T12:00:00Z"
+        coll3 "2000-06-02T12:00:00Z" "2011-06-02T12:00:00Z"
         ["Found granules later than collection end date [2011-06-02T12:00:00.000Z]. Found 1 granules."]
 
         "Update dataset (no end_date_time) to one with end_date_time that does not cover all existing granules"
-        "Dataset2" "2000-05-01T12:00:00Z" "2000-07-01T12:00:00Z"
+        coll2 "2000-05-01T12:00:00Z" "2000-07-01T12:00:00Z"
         ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))

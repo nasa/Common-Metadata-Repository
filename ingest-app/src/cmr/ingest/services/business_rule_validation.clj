@@ -10,6 +10,7 @@
             [cmr.ingest.services.project-validation :as pv]
             [cmr.ingest.services.temporal-validation :as tv]
             [cmr.ingest.services.spatial-validation :as sv]
+            [cmr.ingest.services.collection-unique-ids-validation :as cui]
             [cmr.umm-spec.legacy :as umm-legacy]))
 
 (defn- delete-time-validation
@@ -37,7 +38,8 @@
   concept and return search maps used to validate that a collection was not updated in a way that
   invalidates granules. Each search map contains a :params key of the parameters to use to execute
   the search and an :error-msg to return if the search finds any hits."
-  [aa/additional-attribute-searches
+  [cui/unique-ids-searches
+   aa/additional-attribute-searches
    pv/deleted-project-searches
    tv/out-of-range-temporal-searches
    sv/spatial-param-change-searches])
@@ -54,10 +56,10 @@
 (defn- collection-update-validation
   "Validate collection update does not invalidate any existing granules."
   [context concept]
-  (let [{:keys [provider-id extra-fields umm-concept]} concept
+  (let [{:keys [provider-id extra-fields umm-concept native-id]} concept
         {:keys [entry-title]} extra-fields
         prev-concept (first (h/find-visible-collections context {:provider-id provider-id
-                                                                 :entry-title entry-title}))]
+                                                                 :native-id native-id}))]
     (when prev-concept
       (let [prev-umm-concept (umm-legacy/parse-concept prev-concept)
             has-granule-searches (mapcat #(% (:concept-id prev-concept) umm-concept prev-umm-concept)
