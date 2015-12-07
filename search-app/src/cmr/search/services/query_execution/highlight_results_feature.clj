@@ -5,7 +5,6 @@
             [cmr.search.models.results :as r]
             [cmr.search.data.query-to-elastic :as qte]
             [clojure.string :as str]
-
             [cmr.common.util :as util]))
 
 (defn get-keyword-conditions
