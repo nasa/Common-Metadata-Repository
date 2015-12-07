@@ -7,7 +7,8 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [clojure.string :as str]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -34,7 +35,7 @@
                               "out what keyword to search for in order to make two different "
                               "snippets have a match, but that seems (findme) doable. "
                               "The quick brown fox jumped --findme-- over the lazy dog. "
-                              "Now is the time for all good men >>FINDME<< to come to the aid of"
+                              "Now is the time for all good men >>FINDME<< to come to the aid of "
                               "the party.")})
   (make-coll 3 {:summary "Match on 'collection'"})
   (make-coll 4 {:summary "Match on 'ocean'."})
@@ -58,7 +59,7 @@
     "Long summary with multiple snippets and case insensitive"
     [["This summary has a lot of characters in it. **<em>Findme</em>** So many that elasticsearch will break this"
       " seems (<em>findme</em>) doable. The quick brown fox jumped --<em>findme</em>-- over the lazy dog. Now is the time for"
-      " all good men >><em>FINDME</em><< to come to the aid ofthe party."]]
+      " all good men >><em>FINDME</em><< to come to the aid of the party."]]
     {:keyword "FiNdmE"}
     {}
 
@@ -208,3 +209,24 @@
               (search/find-concepts-in-format resp-format :collection {:include-highlights true})))
          mt/umm-json
          mt/opendata)))
+
+(deftest special-characters-test
+  (make-coll 1 {:summary "MODIS/Terra dataset."})
+  (index/wait-until-indexed)
+  (is (= [["<em>MODIS</em>/<em>Terra</em> dataset."]]
+         (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                         :collection
+                                         {:include-highlights true}
+                                         {:keyword "MODIS/Terra"})))))
+
+
+; (deftest reserved-characters-test
+;   (let [reserved-strings ["+" "-" "=" "&&" "||" ">" "<" "!" "(" ")" "{" "}" "[" "]" "^" "\"" "~" "*"
+;                           "?" ":" "\\" "/"]]
+;     (make-coll 1 {:summary (format "Special chars are: %s." (str/join " " reserved-strings))})
+;     (index/wait-until-indexed)
+;     (is (= "abc" (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+;                                                  :collection
+;                                                  {:include-highlights true}
+;                                                  {:keyword (str/join " " reserved-strings)}))))))
+
