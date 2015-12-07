@@ -26,6 +26,15 @@
            (let [xml (dif10/umm->dif10-xml collection)]
              (empty? (c/validate-xml xml)))))
 
+(comment
+
+
+  ((let [xml (dif10/umm->dif10-xml user/failing-value)]
+     (c/validate-xml xml)))
+
+
+  )
+
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
@@ -336,26 +345,26 @@
       <URL>http://www.foo.com</URL>
     </Related_URL>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-237</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-238</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-239</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
