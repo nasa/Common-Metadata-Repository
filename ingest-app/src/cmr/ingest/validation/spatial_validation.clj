@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.spatial-validation
+(ns cmr.ingest.validation.spatial-validation
   "Provides functions to validate the spatial attributes of a collection during its update."
   (:require [cmr.common.util :as util]
             [camel-snake-kebab.core :as csk]))

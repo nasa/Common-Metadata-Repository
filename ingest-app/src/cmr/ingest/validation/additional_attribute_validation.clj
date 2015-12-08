@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.additional-attribute-validation
+(ns cmr.ingest.validation.additional-attribute-validation
   "Provides functions to validate the additional attributes during collection update"
   (:require [cmr.common.util :as util]
             [cmr.umm.collection.product-specific-attribute :as psa]))

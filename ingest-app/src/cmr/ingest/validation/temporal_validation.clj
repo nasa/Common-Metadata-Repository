@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.temporal-validation
+(ns cmr.ingest.validation.temporal-validation
   "Provides functions to validate the temporal attributes of a collection during its update"
   (:require [cmr.common.util :as util]
             [clj-time.core :as t]

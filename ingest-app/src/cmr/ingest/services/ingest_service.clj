@@ -8,7 +8,7 @@
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
             [cmr.umm-spec.legacy :as umm-legacy]
-            [cmr.ingest.services.validation :as v]
+            [cmr.ingest.validation.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]

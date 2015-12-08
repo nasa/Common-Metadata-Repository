@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.validation
+(ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as errors]
@@ -7,7 +7,7 @@
             [cmr.umm.core :as umm]
             [cmr.umm.validation.core :as umm-validation]
             [cmr.umm-spec.core :as umm-spec]
-            [cmr.ingest.services.business-rule-validation :as bv]
+            [cmr.ingest.validation.business-rule-validation :as bv]
             [cmr.common.validations.core :as v]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.ingest.services.messages :as msg]))

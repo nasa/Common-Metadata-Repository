@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.business-rule-validation
+(ns cmr.ingest.validation.business-rule-validation
   "Provides functions to validate the ingest business rules"
   (:require [clj-time.core :as t]
             [cmr.common.time-keeper :as tk]
@@ -6,11 +6,11 @@
             [cmr.transmit.metadata-db :as mdb]
             [cmr.transmit.search :as search]
             [cmr.ingest.services.helper :as h]
-            [cmr.ingest.services.additional-attribute-validation :as aa]
-            [cmr.ingest.services.project-validation :as pv]
-            [cmr.ingest.services.temporal-validation :as tv]
-            [cmr.ingest.services.spatial-validation :as sv]
-            [cmr.ingest.services.collection-unique-ids-validation :as cui]
+            [cmr.ingest.validation.additional-attribute-validation :as aa]
+            [cmr.ingest.validation.project-validation :as pv]
+            [cmr.ingest.validation.temporal-validation :as tv]
+            [cmr.ingest.validation.spatial-validation :as sv]
+            [cmr.ingest.validation.collection-unique-ids-validation :as cui]
             [cmr.umm-spec.legacy :as umm-legacy]))
 
 (defn- delete-time-validation

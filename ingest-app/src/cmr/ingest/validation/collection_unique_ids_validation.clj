@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.collection-unique-ids-validation
+(ns cmr.ingest.validation.collection-unique-ids-validation
   "Provides functions to validate the collection unique identifiers during collection update")
 
 (defn unique-ids-searches
