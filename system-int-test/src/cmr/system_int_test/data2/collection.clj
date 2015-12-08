@@ -163,7 +163,7 @@
                        :roles ["dummy"]})))
 
 (defn collection
-  "Returns a UmmCollection from the given attribute map. Various attribute kyes are processed by
+  "Returns a UmmCollection from the given attribute map. Various attribute keys are processed by
   different functions above."
   ([]
    (collection {}))

@@ -454,6 +454,14 @@
       (is (= status 404))
       (is (re-find #"Collection .* does not exist" (first errors))))))
 
+(deftest nil-version-test
+  (testing "Concepts with nil versions are rejected"
+    (let [concept (dc/collection-concept {:version-id nil} :iso19115)
+          response (ingest/ingest-concept concept)]
+      (is (= {:status 422
+              :errors ["Version cannot be nil."]}
+             response)))))
+
 (comment
   (ingest/delete-provider "PROV1")
   ;; Attempt to create race conditions by ingesting the same concept-id simultaneously. We expect
