@@ -16,7 +16,7 @@
   "Validates that the version is not nil"
   [_ concept]
   (when (nil? (get-in concept [:extra-fields :version-id]))
-    ["Version cannot be nil."]))
+    ["Version is required."]))
 
 (defn- delete-time-validation
   "Validates the concept delete-time.
