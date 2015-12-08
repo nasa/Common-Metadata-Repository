@@ -30,7 +30,7 @@
      :EndDate (date-at proj "End_Date")}))
 
 (defn- parse-data-dates
-  "Returns seq of UMM-C DataDates parsed from SERF document."
+  "Returns seq of UMM-CMN DataDates parsed from SERF document."
   [doc]
   (let [[md-dates-el] (select doc "/SERF")
         tag-types [["SERF_Creation_Date"      "CREATE"]
@@ -62,6 +62,10 @@
                    :Characteristics not-provided
                    :Instruments instruments }])))))
 
+(defn- parse_responsibilities
+  [doc]
+  (let [personnel (select doc "/SERF/Personnel")]))
+
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
   [doc]
@@ -70,7 +74,7 @@
    :Abstract (value-of doc "/SERF/Summary/Abstract")
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   ;; :Responsibilities (value-of doc "/SERF/Service_Provider")
+   :Responsibilities (parse-responsibilities doc)
    :RelatedUrls (for [related-url (select doc "/SERF/Related_URL")] ;; TODO: Figure out if /SERF/Multimedia_Sample relates to RelatedUrls
                   {:URLs (values-at related-url "URL")
                    :Protocol (value-of related-url "Protocol")
