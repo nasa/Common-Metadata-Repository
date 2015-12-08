@@ -59,7 +59,7 @@
 
 
 (defn parse-serf-xml
-  "Returns collection map from DIF10 collection XML document."
+  "Returns collection map from a SERF XML document."
   [doc]
   {:EntryTitle (value-of doc "/SERF/Entry_Title")
    :EntryId (value-of doc "/SERF/Entry_ID")
