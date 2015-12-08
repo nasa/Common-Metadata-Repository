@@ -169,7 +169,8 @@
 (def schema-ns-map
   "A map of schema names to the namespace they should be placed in"
   {"umm-cmn-json-schema.json" 'cmr.umm-spec.models.common
-   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection})
+   "umm-c-json-schema.json" 'cmr.umm-spec.models.collection
+   "umm-s-json-schema.json" 'cmr.umm-spec.models.service})
 
 (defn- record-ctor
   "Returns the map->RecordName function that can be used to construct a type defined in the JSON

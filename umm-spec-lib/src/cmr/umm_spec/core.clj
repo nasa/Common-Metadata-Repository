@@ -11,7 +11,6 @@
             [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as iso-smap-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.dif9 :as dif9-to-umm]
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as dif10-to-umm]
-            [cmr.umm-spec.xml-to-umm-mappings.serf :as serf-to-umm]
 
             ;; UMM -> XML
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as umm-to-echo10]
@@ -19,11 +18,9 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso-smap :as umm-to-iso-smap]
             [cmr.umm-spec.umm-to-xml-mappings.dif9 :as umm-to-dif9]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as umm-to-dif10]
-            [cmr.umm-spec.umm-to-xml-mappings.serf :as umm-to-serf]
 
             ;; UMM and JSON
             [cmr.umm-spec.umm-json :as umm-json]
-
             ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,9 +78,6 @@
   [_ _ metadata]
   (iso-smap-to-umm/iso-smap-xml-to-umm-c (xpath/context metadata)))
 
-(defmethod parse-metadata [:service :serf]
-  [_ _ metadata]
-  (serf-to-umm/serf-xml-to-umm-s (xpath/context metadata)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generate Metadata
@@ -115,7 +109,3 @@
 (defmethod generate-metadata [:collection :iso-smap]
   [_ _ umm]
   (umm-to-iso-smap/umm-c-to-iso-smap-xml umm))
-
-(defmethod generate-metadata [:service :serf]
-  [_ _ umm]
-  (umm-to-serf/umm-s-to-serf-xml umm))

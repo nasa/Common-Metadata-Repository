@@ -206,7 +206,7 @@
 (def umm-c-generator
   (gen/fmap san/sanitized-umm-record
             (schema->generator js/umm-c-schema)))
- 
+
 (def umm-s-generator
   (gen/fmap san/sanitized-umm-record
             (schema->generator js/umm-s-schema)))

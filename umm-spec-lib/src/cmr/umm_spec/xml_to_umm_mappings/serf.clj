@@ -38,17 +38,25 @@
      :EndDate (date-at proj "End_Date")}))
 
 (defn- parse-data-dates
-  "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
+  "Returns seq of UMM-C DataDates parsed from SERF document."
   [doc]
-  (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
-        tag-types [["Data_Creation"      "CREATE"]
-                   ["Data_Last_Revision" "UPDATE"]
-                   ["Data_Future_Review" "REVIEW"]
-                   ["Data_Delete"        "DELETE"]]]
+  (let [[md-dates-el] (select doc "/SERF")
+        tag-types [["SERF_Creation_Date"      "CREATE"]
+                   ["Last_SERF_Revision_Date" "UPDATE"]
+                   ["Future_SERF_Review_Date" "REVIEW"]]]
     (filter :Date
             (for [[tag date-type] tag-types]
               {:Type date-type
                :Date (date/not-default (value-of md-dates-el tag))}))))
+
+(defn- parse-platform
+  "Returns a platform parsed from a SERF Source_Name element"
+  [platform]
+  {:ShortName (value-of platform "Short_Name")
+   :LongName (value-of platform "Long_Name")
+   :Type (without-default-value-of platform "Type")
+   :Characteristics (parse-characteristics platform)})
+
 
 (defn parse-serf-xml
   "Returns collection map from DIF10 collection XML document."
@@ -58,7 +66,7 @@
    :Abstract (value-of doc "/SERF/Summary/Abstract")
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   :Responsibilities (value-of doc "/SERF/Service_Provider")
+   ;; :Responsibilities (value-of doc "/SERF/Service_Provider")
    :RelatedUrls (for [related-url (select doc "/SERF/Related_URL")] ;; TODO: Figure out if /SERF/Multimedia_Sample relates to RelatedUrls
                   {:URLs (values-at related-url "URL")
                    :Protocol (value-of related-url "Protocol")
@@ -66,7 +74,25 @@
                    :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
-   :ServiceCitation (value-of doc "/SERF/Service_Citation")
+   :ServiceCitation (for [service-citation (select doc "/SERF/Service_Citation")]
+                            (into {} (map (fn [x]
+                                            (if (keyword? x)
+                                              [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
+                                              x))
+                                              [[:Version (value-of service-citation "Edition")]
+                                               [:RelatedUrl (value-of service-citation "URL")]
+                                               :Title
+                                               [:Creator (value-of service-citation "Originators")] 
+                                               :Editor
+                                               :SeriesName
+                                               :ReleaseDate
+                                               :ReleasePlace
+                                               :IssueIdentification
+                                               [:Publisher (value-of service-citation "Provider")]
+                                               :IssueIdentification
+                                               :DataPresentationForm
+                                               :OtherCitationDetails
+                                               [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]])))
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
    :AccessConstraints (value-of doc "/SERF/Use_Constraints")
@@ -99,43 +125,54 @@
                                                         (remove nil? [(value-of pub-ref "Online_Resource")]))}]
                                                :Other_Reference_Details])))
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
-   :Platforms (for [platform (select doc "/SERF/Source_Name")]
-                {:ShortName (value-of platform "Short_Name")
-                 :LongName (value-of platform "Long_Name")
-                 :Type (without-default-value-of platform "Type")
-                 :Characteristics (parse-characteristics platform)
-                 :Instruments (parse-instruments doc)})
+   
+   :Platforms (let [platforms (select doc "/SERF/Source_Name")
+                    not-provided "Not provided" 
+                    instruments (parse-instruments doc)]
+               (if (= 1 (count platforms)) 
+                 [(assoc (parse-platform (first platforms)) :Instruments instruments)]
+                 (concat (map parse-platform platforms)
+                         (when (seq instruments)
+                           [{:ShortName not-provided
+                           :LongName not-provided
+                           :Type not-provided
+                           :Characteristics not-provided
+                           :Instruments instruments }]))))
+   
+
    :Distributions (for [dist (select doc "/SERF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :DistributionSize (value-of dist "Distribution_Size")
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   :AdditionalAttributes
-   (for [aa (select doc "/SERF/ExtendedMetadata/Metadata")]
-     {:Name (value-of aa "Name")
-      :DataType (value-of aa "DataType")
-      :Description (without-default-value-of aa "Description")
-      :MeasurementResolution (value-of aa "MeasurementResolution")
-      :ParameterRangeBegin (without-default-value-of aa "ParameterRangeBegin")
-      :ParameterRangeEnd (value-of aa "ParameterRangeEnd")
-      :ParameterUnitsOfMeasure (value-of aa "ParameterUnitsOfMeasure")
-      :ParameterValueAccuracy (value-of aa "ParameterValueAccuracy")
-      :ValueAccuracyExplanation (value-of aa "ValueAccuracyExplanation")
-      :Value (value-of aa "Value")})
-  
+   
+   
+   :AdditionalAttributes (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
+                           {:Group (value-of aa "Group")
+                            :Name (value-of aa "Name")
+                            :DataType (value-of aa "Type")
+                            :Description (without-default-value-of aa "Description")
+                            :UpdateDate (date/not-default (value-of aa "Update_Date"))
+                            :Value (value-of aa "Value")})
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
    :Projects (parse-projects doc)
-   :ScienceKeywords (for [sk (select doc "/SERF/Science_Keywords")]
-                      {:Category (value-of sk "Category")
-                       :Topic (value-of sk "Topic")
-                       :Term (value-of sk "Term")
-                       :VariableLevel1 (value-of sk "Variable_Level_1")
-                       :VariableLevel2 (value-of sk "Variable_Level_2")
-                       :VariableLevel3 (value-of sk "Variable_Level_3")
-                       :DetailedVariable (value-of sk "Detailed_Variable")})})
- 
-
+   :MetadataDates (parse-data-dates doc)
+   :ServiceKeywords (for [sk (select doc "/SERF/Service_Parameters")]
+                      {:Category (value-of sk "Service_Category")
+                       :Topic (value-of sk "Service_Topic")
+                       :Term (value-of sk "Service_Term")
+                       :VariableLevel1 (value-of sk "Service_Variable_Level_1")
+                       :VariableLevel2 (value-of sk "Service_Variable_Level_2")
+                       :VariableLevel3 (value-of sk "Service_Variable_Level_3")
+                       :DetailedVariable (value-of sk "Service_Detailed_Variable")})
+   :ScienceKeywords (for [sk (select doc "/SERF/Science_Parameters")]
+                      {:Category (value-of sk "Science_Category")
+                       :Topic (value-of sk "Science_Topic")
+                       :Term (value-of sk "Science_Term")
+                       :ServiceSpecificName (value-of sk "Service_Specific_Name")})})
+    
+   
 (defn serf-xml-to-umm-s
   "Returns UMM-S service record from a SERF XML document."
   [metadata]
-  (js/coerce (parse-serf-xml metadata)))
+  (js/coerce js/umm-s-schema (parse-serf-xml metadata)))
