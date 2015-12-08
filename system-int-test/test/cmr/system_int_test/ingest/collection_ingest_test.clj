@@ -245,7 +245,7 @@
 
     (testing "update the collection that has granules with a different entry-id is invalid"
       (let [{:keys [status errors]} (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
-        (is (= [422 ["Collection with short-name [EID-3] & version-id [Not provided] is referenced by existing granules, cannot be renamed. Found 2 granules."]]
+        (is (= [422 ["Collection with short-name [EID-3] and version-id [Not provided] is referenced by existing granules, cannot be renamed. Found 2 granules."]]
                [status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"

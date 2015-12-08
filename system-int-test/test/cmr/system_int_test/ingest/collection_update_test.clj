@@ -595,11 +595,11 @@
 
             "Update short-name of collection with granules"
             {:short-name "S11"}
-            "Collection with short-name [S1] & version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."
+            "Collection with short-name [S1] and version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."
 
             "Update version-id of collection with granules"
             {:version-id "V11"}
-            "Collection with short-name [S1] & version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."))))
+            "Collection with short-name [S1] and version-id [V1] is referenced by existing granules, cannot be renamed. Found 2 granules."))))
 
 (deftest collection-update-temporal-test
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"

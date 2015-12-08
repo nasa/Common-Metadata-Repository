@@ -38,7 +38,8 @@
   concept and return search maps used to validate that a collection was not updated in a way that
   invalidates granules. Each search map contains a :params key of the parameters to use to execute
   the search and an :error-msg to return if the search finds any hits."
-  [cui/unique-ids-searches
+  [cui/entry-title-searches
+   cui/short-name-version-id-searches
    aa/additional-attribute-searches
    pv/deleted-project-searches
    tv/out-of-range-temporal-searches
