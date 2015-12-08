@@ -459,7 +459,7 @@
     (let [concept (dc/collection-concept {:version-id nil} :iso19115)
           response (ingest/ingest-concept concept)]
       (is (= {:status 422
-              :errors ["Version cannot be nil."]}
+              :errors ["Version is required."]}
              response)))))
 
 (comment
