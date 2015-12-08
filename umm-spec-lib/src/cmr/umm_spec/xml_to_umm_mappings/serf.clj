@@ -18,15 +18,7 @@
     (for [inst (select doc "/SERF/Sensor_Name")]
       {:ShortName (value-of inst "Short_Name")
        :LongName (value-of inst "Long_Name")
-       :Technique (value-of inst "Technique")
-       :NumberOfSensors (value-of inst "NumberOfSensors")
-       :Characteristics (parse-characteristics inst)
-       :OperationalModes (values-at inst "OperationalMode")
-       :Sensors (for [sensor (select inst "Sensor")]
-                  {:ShortName (value-of sensor "Short_Name")
-                   :LongName (value-of sensor "Long_Name")
-                   :Technique (value-of sensor "Technique")
-                   :Characteristics (parse-characteristics sensor)})}))
+       }))
 
 (defn- parse-projects
   [doc]
@@ -53,10 +45,22 @@
   "Returns a platform parsed from a SERF Source_Name element"
   [platform]
   {:ShortName (value-of platform "Short_Name")
-   :LongName (value-of platform "Long_Name")
-   :Type (without-default-value-of platform "Type")
-   :Characteristics (parse-characteristics platform)})
+   :LongName (value-of platform "Long_Name")})
 
+(defn- parse-platforms
+  [doc]
+  (let [platforms (select doc "/SERF/Source_Name")
+                    not-provided "Not provided" 
+                    instruments (parse-instruments doc)]
+       (if (= 1 (count platforms)) 
+         [(assoc (parse-platform (first platforms)) :Instruments instruments)]
+         (concat (map parse-platform platforms)
+                 (when (seq instruments)
+                   [{:ShortName not-provided
+                   :LongName not-provided
+                   :Type not-provided
+                   :Characteristics not-provided
+                   :Instruments instruments }])))))
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
@@ -126,18 +130,7 @@
                                                :Other_Reference_Details])))
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    
-   :Platforms (let [platforms (select doc "/SERF/Source_Name")
-                    not-provided "Not provided" 
-                    instruments (parse-instruments doc)]
-               (if (= 1 (count platforms)) 
-                 [(assoc (parse-platform (first platforms)) :Instruments instruments)]
-                 (concat (map parse-platform platforms)
-                         (when (seq instruments)
-                           [{:ShortName not-provided
-                           :LongName not-provided
-                           :Type not-provided
-                           :Characteristics not-provided
-                           :Instruments instruments }]))))
+   :Platforms (parse-platforms doc)
    
 
    :Distributions (for [dist (select doc "/SERF/Distribution")]

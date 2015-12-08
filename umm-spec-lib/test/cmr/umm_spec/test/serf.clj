@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.test.serf
-  "Tests roundtrip XML generation from a Clojure record and parsing it. Ensures that the same data
+  "Tests SERF UMM-S generation from a Clojure record and parsing a SERF XML file. Ensures that the same data
   is returned."
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
