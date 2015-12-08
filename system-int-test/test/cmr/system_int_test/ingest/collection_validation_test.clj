@@ -455,7 +455,7 @@
       (is (re-find #"Collection .* does not exist" (first errors))))))
 
 (deftest nil-version-test
-  (testing "Concepts with nil versions are rejected"
+  (testing "Collections with nil versions are rejected"
     (let [concept (dc/collection-concept {:version-id nil} :iso19115)
           response (ingest/ingest-concept concept)]
       (is (= {:status 422
