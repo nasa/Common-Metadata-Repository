@@ -22,7 +22,6 @@
   "Validates the concept delete-time.
   Returns error if the delete time exists and is before one minute from the current time."
   [_ concept]
-  (cmr.common.dev.capture-reveal/capture-all)
   (let [delete-time (get-in concept [:extra-fields :delete-time])]
     (when (some-> delete-time
                   p/parse-datetime
