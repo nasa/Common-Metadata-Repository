@@ -12,6 +12,12 @@
             [cmr.ingest.services.spatial-validation :as sv]
             [cmr.umm-spec.legacy :as umm-legacy]))
 
+(defn- version-is-not-nil-validation
+  "Validates that the version is not nil"
+  [_ concept]
+  (when (nil? (get-in concept [:extra-fields :version-id]))
+    ["Version is required."]))
+
 (defn- delete-time-validation
   "Validates the concept delete-time.
   Returns error if the delete time exists and is before one minute from the current time."
@@ -72,5 +78,6 @@
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
   {:collection [delete-time-validation
                 concept-id-validation
+                version-is-not-nil-validation
                 collection-update-validation]
    :granule []})
