@@ -12,7 +12,6 @@
   a UUID so it's easy to search for. If request id is not set the thread name or id will be used."
   nil)
 
-;; TODO test logging by running an application
 ;; Checkout the config before and after
 (defn- setup-logging
   "Configures logging using Timbre."
@@ -28,7 +27,6 @@
       (.. (io/file file) getParentFile mkdirs)
       (t/merge-config! {:appenders {:spit (a/spit-appender {:fname file})}})))
 
-
   ;; Set the format for logging.
   (t/merge-config! {:output-fn
                     (fn [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as data}]
@@ -41,7 +39,7 @@
                               (or ?ns-str "?ns")
                               (force msg_)
                               (if-let [err (force ?err_)]
-                                (str "\n" (t/stacktrace err))
+                                (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
                                 "")))
                     :appenders {:println {:enabled? stdout-enabled?}}}))
 
@@ -82,8 +80,8 @@
    ;; The path to the file to log to
    file
    ;;
-   stdout-enabled?
-   ]
+   stdout-enabled?]
+
 
   lifecycle/Lifecycle
 
