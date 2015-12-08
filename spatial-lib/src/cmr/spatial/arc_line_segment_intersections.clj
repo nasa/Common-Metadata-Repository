@@ -3,6 +3,7 @@
   (:require [cmr.spatial.point :as p]
             [cmr.spatial.arc :as a]
             [cmr.spatial.mbr :as m]
+            [cmr.common.util :as u]
             [cmr.spatial.line-segment :as s]
             [cmr.common.services.errors :as errors]
             [cmr.spatial.math :refer :all]
@@ -49,7 +50,6 @@
                        [(s/line-segment point1 point2)])]
     (filter identity (map #(s/intersection ls %) arc-segments))))
 
-
 (defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"
   [ls arc mbrs]
@@ -71,31 +71,38 @@
 
 (defn line-segment-arc-intersections
   "Returns a list of the points where the line segment intersects the arc."
-  [ls arc]
+  [^LineSegment ls ^Arc arc]
 
-  (let [ls-mbr (:mbr ls)
-        intersecting-mbrs (seq (filter #(m/intersects-br? :geodetic ls-mbr %)
-                                       (a/mbrs arc)))
+  (let [ls-mbr (.mbr ls)
+        arc-mbr1 (.mbr1 arc)
+        arc-mbr2 (.mbr2 arc)
+        mbr1-intersects (m/intersects-br? :geodetic ls-mbr arc-mbr1)
+        mbr2-intersects (and arc-mbr2 (m/intersects-br? :geodetic ls-mbr arc-mbr2))
         arc-points (a/arc->points arc)
-        ls-points [(:point1 ls) (:point2 ls)]]
-    (when intersecting-mbrs
+        ^Point ls-point1 (.point1 ls)
+        ^Point ls-point2 (.point2 ls)]
+    (when (or mbr1-intersects mbr2-intersects)
       (cond
         ;; Do both the Arc and Line Segment start or end on the same pole?
-        (and (some p/is-north-pole? arc-points) (some p/is-north-pole? ls-points))
+        (and (u/any? p/is-north-pole? arc-points)
+             (or (p/is-north-pole? ls-point1) (p/is-north-pole? ls-point2)))
         [p/north-pole]
 
-        (and (some p/is-south-pole? arc-points) (some p/is-south-pole? ls-points))
+        (and (u/any? p/is-south-pole? arc-points)
+             (or (p/is-south-pole? ls-point1) (p/is-south-pole? ls-point2)))
         [p/south-pole]
 
         (s/vertical? ls)
         ;; Treat as line segment as a vertical arc.
-        (a/intersections arc (a/arc (:point1 ls) (:point2 ls)))
-
+        (a/intersections arc (a/arc ls-point1 ls-point2))
 
         (s/horizontal? ls)
         ;; Use arc and latitude segment intersection implementation
-        (let [lat (-> ls :point1 :lat)
-              [west east] (sort (mapv :lon [(:point1 ls) (:point2 ls)]))]
+        (let [lat (.lat ls-point1)
+              lon1 (.lon ls-point1)
+              lon2 (.lon ls-point2)
+              west (if (< lon1 lon2) lon1 lon2)
+              east (if (> lon1 lon2) lon1 lon2)]
           (a/lat-segment-intersections arc lat west east))
 
         (a/vertical? arc)
@@ -103,10 +110,13 @@
 
         :else
         (line-segment-arc-intersections-with-densification
-          ls arc
-          ;; Compute the intersections of the intersecting mbrs. Smaller mbrs around the intersection
-          ;; point will result in better bounding for newton's method.
-          (mapcat #(m/intersections ls-mbr %) intersecting-mbrs))))))
+         ls arc
+
+         ;; Compute the intersections of the intersecting mbrs. Smaller mbrs around the intersection
+         ;; point will result in better bounding for newton's method.
+         (concat
+          (when mbr1-intersects (m/intersections ls-mbr arc-mbr1))
+          (when mbr2-intersects (m/intersections ls-mbr arc-mbr2))))))))
 
 (defprotocol ArcSegmentIntersects
   "Defines functions for intersecting with an arc or segments"

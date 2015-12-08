@@ -434,14 +434,16 @@
   (approx=
     ([expected n]
      (approx= expected n DELTA))
-    ([p1 p2 delta]
-     (let [{lon1 :lon lat1 :lat} p1
-           {lon2 :lon lat2 :lat} p2
-           np? #(approx= % 90.0 delta)
-           sp? #(approx= % -90.0 delta)
-           am? #(approx= (abs ^double %) 180.0 delta)]
-       (and (approx= lat1 lat2 delta)
-            (or (approx= lon1 lon2 delta)
+    ([^Point p1 ^Point p2 ^double delta]
+     (let [lon1 (.lon p1)
+           lat1 (.lat p1)
+           lon2 (.lon p2)
+           lat2 (.lat p2)
+           np? #(double-approx= ^double % 90.0 delta)
+           sp? #(double-approx= ^double % -90.0 delta)
+           am? #(double-approx= ^double (abs ^double %) 180.0 delta)]
+       (and (double-approx= lat1 lat2 delta)
+            (or (double-approx= lon1 lon2 delta)
                 (and (am? lon1) (am? lon2))
                 (and (np? lat1) (np? lat2))
                 (and (sp? lat1) (sp? lat2))))))))

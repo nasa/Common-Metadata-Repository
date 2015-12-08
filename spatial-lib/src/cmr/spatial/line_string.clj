@@ -16,7 +16,8 @@
             [cmr.common.util :as u]
             [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.arc.Arc
-           cmr.spatial.line_segment.LineSegment))
+           cmr.spatial.line_segment.LineSegment
+           cmr.spatial.mbr.Mbr))
 (primitive-math/use-primitive-operators)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,6 +53,10 @@
 
    points
 
+   ;; A set of the unique points in the line string.
+   ;; This should be used as opposed to creating a set from the points many times over which is expensive.
+   point-set
+
    ;; Derived fields
    ;; arcs or line-segments
    segments
@@ -64,14 +69,15 @@
   ([points]
    (line-string nil points))
   ([coordinate-system points]
-   (->LineString coordinate-system (mapv #(p/with-equality coordinate-system %) points) nil nil)))
+   (->LineString coordinate-system (mapv #(p/with-equality coordinate-system %) points) nil nil nil)))
 
 (defn set-coordinate-system
   "Sets the coordinate system of the line string"
   [line coordinate-system]
-  (-> line
-      (assoc :coordinate-system coordinate-system)
-      (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %))))
+  (let [new-line (-> line
+                     (assoc :coordinate-system coordinate-system)
+                     (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %)))]
+    (assoc new-line :point-set (set (:points new-line)))))
 
 (defn ords->line-string
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a line."
@@ -83,8 +89,8 @@
 
 (defmulti line-string->segments
   "Creates the segments representing the connections between each point"
-  (fn [line]
-    (:coordinate-system line)))
+  (fn [^LineString line]
+    (.coordinate_system line)))
 
 (defmethod line-string->segments :geodetic
   [^LineString line]
@@ -136,44 +142,50 @@
     (if (.segments line)
       line
       (as-> line line
+            (assoc line :point-set (set (.points line)))
             (assoc line :segments (line-string->segments line))
             (assoc line :mbr (line-string->mbr line))))))
 
 (defn covers-point?
   "Returns true if the line covers the point"
-  [line point]
-  (let [{:keys [points segments]} line]
-    (or (some #(approx= point %) points)
-        (some #(point-on-segment? % point) segments))))
+  [^LineString line point]
+  (let [point-set (.point_set line)
+        segments (.segments line)]
+    (or (contains? point-set point)
+        (u/any? #(point-on-segment? % point) segments))))
 
 (defn intersects-br?
   "Returns true if the line intersects the br"
-  [line br]
-  (when (m/intersects-br? (:coordinate-system line) (:mbr line) br)
+  [^LineString line ^Mbr br]
+  (when (m/intersects-br? (.coordinate_system line) (.mbr line) br)
     (if (m/single-point? br)
-      (covers-point? line (p/point (:west br) (:north br)))
+      (covers-point? line (p/point (.west br) (.north br)))
 
-      (or
-       ;; Does the br cover any points of the line?
-       (some #(m/covers-point? (:coordinate-system line) br %) (:points line))
-       ;; Does the line contain any points of the br?
-       (some #(covers-point? line %) (m/corner-points br))
-       ;; Do any of the sides intersect?
-       (let [segments (:segments line)
-             mbr-segments (s/mbr->line-segments br)]
-         (seq (mapcat #(apply asi/intersections %)
-                      (for [ls1 segments
-                            ls2 mbr-segments]
-                        [ls1 ls2]))))))))
+      (let [coord-sys (.coordinate_system line)]
+        (or
+         ;; Does the br cover any points of the line?
+         (u/any? #(m/covers-point? coord-sys br %) (.points line))
+         ;; Does the line contain any points of the br?
+         (u/any? #(covers-point? line %) (m/corner-points br))
+         ;; Do any of the sides intersect?
+         (let [segments (.segments line)
+               mbr-segments (s/mbr->line-segments br)]
+           (loop [segments segments]
+             (let [segment (first segments)
+                   intersects? (loop [mbr-segments mbr-segments]
+                                 (if-let [mbr-segment (first mbr-segments)]
+                                   (or (seq (asi/intersections segment mbr-segment))
+                                       (recur (rest mbr-segments)))))]
+               (or intersects? (recur (rest segments)))))))))))
 
 (defn intersects-line-string?
   "Returns true if the line string instersects the other line string"
   [line1 line2]
-  (some (fn [[s1 s2]]
-          (seq (asi/intersections s1 s2)))
-        (for [segment1 (:segments line1)
-              segment2 (:segments line2)]
-          [segment1 segment2])))
+  (u/any? (fn [[s1 s2]]
+            (seq (asi/intersections s1 s2)))
+          (for [segment1 (:segments line1)
+                segment2 (:segments line2)]
+            [segment1 segment2])))
 
 (extend-protocol v/SpatialValidation
   cmr.spatial.line_string.LineString

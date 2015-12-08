@@ -11,13 +11,13 @@
 
 (defn start
   "Starts the current development system."
-  []
-  )
+  [])
+
 
 (defn stop
   "Shuts down and destroys the current development system."
-  []
-  )
+  [])
+
 
 (defn reset []
   ; Stops the running code

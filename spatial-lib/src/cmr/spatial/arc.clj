@@ -264,58 +264,71 @@
 (defn points-at-lat
   "Returns the points where the arc crosses at a given latitude. Returns nil if the arc
   does not cross that lat. Based on http://williams.best.vwh.net/avform.htm#Par"
-  [arc ^double lat]
-  (when (some #(mbr/covers-lat? % lat) (mbrs arc))
-    (let [{:keys [^Point west-point ^Point east-point]} arc
-          lat3 (radians lat) ; lat3 is just the latitude argument in radians
-          lon1 (.lon-rad west-point)
-          lon2 (.lon-rad east-point)
-          lat1 (.lat-rad west-point)
-          lat2 (.lat-rad east-point)
-          lon12 (- lon1 lon2)
-          sin-lon12 (sin lon12)
-          cos-lon12 (cos lon12)
-          sin-lat1 (sin lat1)
-          cos-lat1 (cos lat1)
-          sin-lat2 (sin lat2)
-          cos-lat2 (cos lat2)
-          sin-lat3 (sin lat3)
-          cos-lat3 (cos lat3)
+  [^Arc arc ^double lat]
+  (let [mbr1 (.mbr1 arc)
+        mbr2 (.mbr2 arc)]
+    (when (or (mbr/covers-lat? mbr1 lat)
+              (and mbr2 (mbr/covers-lat? mbr2 lat)))
+      (let [^Point west-point (.west_point arc)
+            ^Point east-point (.east_point arc)
+            lat3 (radians lat) ; lat3 is just the latitude argument in radians
+            lon1 (.lon-rad west-point)
+            lon2 (.lon-rad east-point)
+            lat1 (.lat-rad west-point)
+            lat2 (.lat-rad east-point)
+            lon12 (- lon1 lon2)
+            sin-lon12 (sin lon12)
+            cos-lon12 (cos lon12)
+            sin-lat1 (sin lat1)
+            cos-lat1 (cos lat1)
+            sin-lat2 (sin lat2)
+            cos-lat2 (cos lat2)
+            sin-lat3 (sin lat3)
+            cos-lat3 (cos lat3)
 
-          ;;  A = sin(lat1) * cos(lat2) * cos(lat3) * sin(l12)
-          A (* sin-lat1 cos-lat2 cos-lat3 sin-lon12)
-          ;;  B = sin(lat1)*cos(lat2)*cos(lat3)*cos(l12) - cos(lat1)*sin(lat2)*cos(lat3)
-          B (- (* sin-lat1 cos-lat2 cos-lat3 cos-lon12)
-               (* cos-lat1 sin-lat2 cos-lat3))
-          ;;  C = cos(lat1)*cos(lat2)*sin(lat3)*sin(l12)
-          C (* cos-lat1 cos-lat2 sin-lat3 sin-lon12)
-          h (sqrt (+ (sq A) (sq B)))]
+            ;;  A = sin(lat1) * cos(lat2) * cos(lat3) * sin(l12)
+            A (* sin-lat1 cos-lat2 cos-lat3 sin-lon12)
+            ;;  B = sin(lat1)*cos(lat2)*cos(lat3)*cos(l12) - cos(lat1)*sin(lat2)*cos(lat3)
+            B (- (* sin-lat1 cos-lat2 cos-lat3 cos-lon12)
+                 (* cos-lat1 sin-lat2 cos-lat3))
+            ;;  C = cos(lat1)*cos(lat2)*sin(lat3)*sin(l12)
+            C (* cos-lat1 cos-lat2 sin-lat3 sin-lon12)
+            h (sqrt (+ (sq A) (sq B)))]
 
-      (when (<= (abs C) h)
-        (let [lon-rad (atan2 B A)
-              ;;   dlon = acos(C/sqrt(A^2+B^2))
-              dlon (acos (/ C h))
-              ;;   lon3_1=mod(lon1+dlon+lon+pi, 2*pi)-pi
-              lon3-1 (- ^double (mod (+ lon1 dlon lon-rad PI)
-                                     TAU)
-                        PI)
-              ;;   lon3_2=mod(lon1-dlon+lon+pi, 2*pi)-pi
-              lon3-2 (- ^double (mod (+ (- lon1 dlon) lon-rad PI)
-                                     TAU)
-                        PI)
-              points [(p/point (degrees lon3-1) lat lon3-1 lat3)
-                      (p/point (degrees lon3-2) lat lon3-2 lat3)]]
-          (->> points
-               (filterv (fn [p]
-                          (some #(mbr/geodetic-covers-point? % p)
-                                (mbrs arc))))
-               set))))))
+        (when (<= (abs C) h)
+          (let [lon-rad (atan2 B A)
+                ;;   dlon = acos(C/sqrt(A^2+B^2))
+                dlon (acos (/ C h))
+                ;;   lon3_1=mod(lon1+dlon+lon+pi, 2*pi)-pi
+                lon3-1 (- ^double (mod (+ lon1 dlon lon-rad PI)
+                                       TAU)
+                          PI)
+                ;;   lon3_2=mod(lon1-dlon+lon+pi, 2*pi)-pi
+                lon3-2 (- ^double (mod (+ (- lon1 dlon) lon-rad PI)
+                                       TAU)
+                          PI)
+                p1 (p/point (degrees lon3-1) lat lon3-1 lat3)
+                p2 (p/point (degrees lon3-2) lat lon3-2 lat3)
+                p1 (when (or (mbr/geodetic-covers-point? mbr1 p1)
+                             (and mbr2 (mbr/geodetic-covers-point? mbr2 p1)))
+                     p1)
+                p2 (when (or (mbr/geodetic-covers-point? mbr1 p2)
+                             (and mbr2 (mbr/geodetic-covers-point? mbr2 p2)))
+                     p2)]
+            (cond
+              (and p1 p2) (if (= p1 p2) [p1] [p1 p2])
+              p1 [p1]
+              p2 [p2])))))))
 
 (defn point-on-arc?
   "Returns true if the point is on the arc"
-  [arc point]
-  (let [{:keys [west-point east-point]} arc]
-    (and (some #(mbr/geodetic-covers-point? % point) (mbrs arc))
+  [^Arc arc point]
+  (let [west-point (.west_point arc)
+        east-point (.east_point arc)
+        mbr1 (.mbr1 arc)
+        mbr2 (.mbr2 arc)]
+    (and (or (mbr/geodetic-covers-point? mbr1 point)
+             (and mbr2 (mbr/geodetic-covers-point? mbr2 point)))
          (or (= west-point point)
              (= east-point point)
              ;; If the arc is vertical and the point is in the mbr of the arc then it's on the arc
