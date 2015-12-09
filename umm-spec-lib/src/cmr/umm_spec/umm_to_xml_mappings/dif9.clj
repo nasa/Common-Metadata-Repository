@@ -9,8 +9,9 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
-(defn- generate-element
-  "Generate an xml element with just Short_Name and Long_Name"
+(defn- generate-short-name-long-name-elements
+  "Returns xml elements with the given elem-key as name and sub-elements with Short_Name and
+  Long_Name as defined in values."
   [elem-key values]
   (for [value values]
     [elem-key
@@ -20,11 +21,11 @@
 (defn generate-instruments
   [platforms]
   (let [instruments (mapcat :Instruments platforms)]
-    (generate-element :Sensor_Name instruments)))
+    (generate-short-name-long-name-elements :Sensor_Name instruments)))
 
 (defn generate-platforms
   [platforms]
-  (generate-element :Source_Name platforms))
+  (generate-short-name-long-name-elements :Source_Name platforms))
 
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
