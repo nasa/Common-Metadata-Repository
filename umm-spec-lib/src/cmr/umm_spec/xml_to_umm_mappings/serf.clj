@@ -5,20 +5,35 @@
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
             [cmr.umm-spec.xml.parse :refer :all]
-            [cmr.umm-spec.util :as u :refer [without-default-value-of]]
+            [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [cmr.umm-spec.date-util :as date]))
 
-(defn- parse-characteristics
-  [el]
-  (for [characteristic (select el "Characteristics")]
-    (fields-from characteristic :Name :Description :DataType :Unit :Value)))
+(defn- parse-short-name-long-name
+  [doc path]
+  (seq (for [elem (select doc path)]
+      {:ShortName (value-of elem "Short_Name")
+       :LongName (value-of elem "Long_Name")})))
 
 (defn- parse-instruments
   [doc]
-    (for [inst (select doc "/SERF/Sensor_Name")]
-      {:ShortName (value-of inst "Short_Name")
-       :LongName (value-of inst "Long_Name")
-       }))
+    (parse-short-name-long-name doc "/SERF/Sensor_Name"))
+
+(defn- parse-just-platforms
+  "Parses a doc for a SERF representation of platforms only."
+  [doc]
+  (parse-short-name-long-name doc "/SERF/Source_Name"))
+
+(defn- parse-platforms
+  [doc]
+  (let [platforms (parse-just-platforms doc)
+        instruments (parse-instruments doc)]
+    (if (= 1 (count platforms)) 
+      (map #(assoc % :Instruments instruments) platforms)
+      (if instruments
+        (conj platforms {:ShortName not-provided
+                         :LongName not-provided
+                         :Instruments instruments})
+        platforms))))
 
 (defn- parse-projects
   [doc]
@@ -41,28 +56,7 @@
               {:Type date-type
                :Date (date/not-default (value-of md-dates-el tag))}))))
 
-(defn- parse-platform
-  "Returns a platform parsed from a SERF Source_Name element"
-  [platform]
-  {:ShortName (value-of platform "Short_Name")
-   :LongName (value-of platform "Long_Name")})
-
-(defn- parse-platforms
-  [doc]
-  (let [platforms (select doc "/SERF/Source_Name")
-                    not-provided "Not provided" 
-                    instruments (parse-instruments doc)]
-       (if (= 1 (count platforms)) 
-         [(assoc (parse-platform (first platforms)) :Instruments instruments)]
-         (concat (map parse-platform platforms)
-                 (when (seq instruments)
-                   [{:ShortName not-provided
-                   :LongName not-provided
-                   :Type not-provided
-                   :Characteristics not-provided
-                   :Instruments instruments }])))))
-
-(defn- parse_responsibilities
+(defn- parse-responsibilities
   [doc]
   (let [personnel (select doc "/SERF/Personnel")]))
 
