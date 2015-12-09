@@ -9,6 +9,23 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
+(defn- generate-element
+  "Generate an xml element with just Short_Name and Long_Name"
+  [elem-key values]
+  (for [value values]
+    [elem-key
+     [:Short_Name (:ShortName value)]
+     [:Long_Name (:LongName value)]]))
+
+(defn generate-instruments
+  [platforms]
+  (let [instruments (mapcat :Instruments platforms)]
+    (generate-element :Sensor_Name instruments)))
+
+(defn generate-platforms
+  [platforms]
+  (generate-element :Source_Name platforms))
+
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
@@ -32,10 +49,8 @@
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]
        [:Keyword ak])
-     (for [platform (:Platforms c)]
-       [:Source_Name
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]])
+     (generate-instruments (:Platforms c))
+     (generate-platforms (:Platforms c))
      (for [temporal (:TemporalExtents c)
            rdt (:RangeDateTimes temporal)]
        [:Temporal_Coverage
