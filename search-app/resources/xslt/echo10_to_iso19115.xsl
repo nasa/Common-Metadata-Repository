@@ -232,7 +232,7 @@
       </xd:p>
        <xd:p>
         <xd:b>Version 1.32 (Dec. 9, 2015)</xd:b>
-        <xd:p>Changed entry id generation to be consistent with CMR</xd:p>
+        <xd:p>Changed short name generation to be consistent with CMR</xd:p>
       </xd:p>
     </xd:desc>
   </xd:doc>
