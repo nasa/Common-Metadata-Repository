@@ -1,7 +1,9 @@
 (ns user
   (:require [clojure.pprint :refer (pprint pp)]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
-            [cmr.common.lifecycle :as lifecycle])
+            [cmr.common.lifecycle :as lifecycle]
+            [cmr.spatial.kml :as kml]
+            [clojure.java.shell :as shell])
   (:use [clojure.test :only [run-all-tests]]
         [clojure.repl]
         ;; Needed to make debug-repl available
@@ -18,6 +20,13 @@
   "Shuts down and destroys the current development system."
   [])
 
+(defn display-shapes
+  "Saves the shapes as KML and opens the file in Google Earth."
+  ([shapes]
+   (display-shapes shapes "ge_scratch.kml"))
+  ([shapes filename]
+   (spit filename (kml/shapes->kml shapes))
+   (shell/sh "open" filename)))
 
 (defn reset []
   ; Stops the running code

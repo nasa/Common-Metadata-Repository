@@ -27,9 +27,9 @@
 
   (d/ingest "PROV1" (dc/collection {:product-specific-attributes
                                     [(dc/psa {:name "bool" :data-type :boolean :value true})
-                                     (dc/psa {:name "bool" :data-type :boolean :value true})]}))
+                                     (dc/psa {:name "bool" :data-type :boolean :value true})]})))
 
-  )
+
 
 (defn assert-validation-errors
   "Asserts that when the granule and optional collection concept are validated the expected errors
@@ -351,14 +351,14 @@
     (testing "geodetic line"
       (assert-invalid-spatial
         :geodetic
-        [(l/ords->line-string :geodetic 0,0,1,1,2,2,1,1)]
+        [(l/ords->line-string :geodetic [0,0,1,1,2,2,1,1])]
         ["Spatial validation error: The shape contained duplicate points. Points 2 [lon=1 lat=1] and 4 [lon=1 lat=1] were considered equivalent or very close."]))
 
     (testing "cartesian line"
       ;; Cartesian line validation isn't supported yet. See CMR-1172
       (assert-valid-spatial
         :cartesian
-        [(l/ords->line-string :cartesian 180 0, -180 0)]))
+        [(l/ords->line-string :cartesian [180 0, -180 0])]))
 
     (testing "bounding box"
       (assert-invalid-spatial

@@ -72,12 +72,13 @@
    (->LineString coordinate-system (mapv #(p/with-equality coordinate-system %) points) nil nil nil)))
 
 (defn set-coordinate-system
-  "Sets the coordinate system of the line string"
+  "Sets the coordinate system of the line string. You must recalculate derived data after setting this."
   [line coordinate-system]
-  (let [new-line (-> line
-                     (assoc :coordinate-system coordinate-system)
-                     (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %)))]
-    (assoc new-line :point-set (set (:points new-line)))))
+  (-> line
+      (assoc :coordinate-system coordinate-system)
+      (update-in [:points] #(mapv (partial p/with-equality coordinate-system) %))
+      ;; Set calculated data to nil.
+      (assoc :point-set nil :segments nil :mbr nil)))
 
 (defn ords->line-string
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a line."
@@ -102,7 +103,7 @@
   (or (.segments line)
       (s/points->line-segments (.points line))))
 
-(defn union-arc-segment-mbs
+(defn union-arc-segment-mbrs
   "Finds the minimum bounding rectangle of all the arcs and unions them together. This was written
   to be a performance optimized way to do it."
   [arcs]
@@ -111,7 +112,7 @@
                         (m/union mbr (.mbr1 arc))
                         (.mbr1 arc))]
               (if-let [mbr2 (.mbr2 arc)]
-                (m/union mbr mbr)
+                (m/union mbr mbr2)
                 mbr)))
           nil
           arcs))
@@ -132,7 +133,7 @@
   (or (.mbr line)
       (let [segments (line-string->segments line)]
         (if (= :geodetic (.coordinate_system line))
-          (union-arc-segment-mbs segments)
+          (union-arc-segment-mbrs segments)
           (union-line-segment-mbrs segments)))))
 
 (extend-protocol d/DerivedCalculator
@@ -154,6 +155,19 @@
     (or (contains? point-set point)
         (u/any? #(point-on-segment? % point) segments))))
 
+(comment
+  (def br1
+    (d/calculate-derived (m/mbr 45 90 55 70)))
+
+  (def line1
+    (d/calculate-derived (ords->line-string :geodetic [0 85, 180 85])))
+
+
+
+
+  (user/display-shapes [line1] "line.kml")
+  (user/display-shapes [(line-string->mbr line1)] "mbr.kml"))
+
 (defn intersects-br?
   "Returns true if the line intersects the br"
   [^LineString line ^Mbr br]
@@ -171,12 +185,12 @@
          (let [segments (.segments line)
                mbr-segments (s/mbr->line-segments br)]
            (loop [segments segments]
-             (let [segment (first segments)
-                   intersects? (loop [mbr-segments mbr-segments]
-                                 (if-let [mbr-segment (first mbr-segments)]
-                                   (or (seq (asi/intersections segment mbr-segment))
-                                       (recur (rest mbr-segments)))))]
-               (or intersects? (recur (rest segments)))))))))))
+             (when-let [segment (first segments)]
+               (let [intersects? (loop [mbr-segments mbr-segments]
+                                   (if-let [mbr-segment (first mbr-segments)]
+                                     (or (seq (asi/intersections segment mbr-segment))
+                                         (recur (rest mbr-segments)))))]
+                 (or intersects? (recur (rest segments))))))))))))
 
 (defn intersects-line-string?
   "Returns true if the line string instersects the other line string"

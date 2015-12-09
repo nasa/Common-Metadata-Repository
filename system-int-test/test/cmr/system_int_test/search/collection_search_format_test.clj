@@ -47,9 +47,9 @@
   (def c10-umm-json (d/ingest "PROV1"
                               cmr.umm-spec.test.expected-conversion/example-record
                               {:format :umm-json
-                               :accept-format :json}))
-  
-  )
+                               :accept-format :json})))
+
+
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -100,7 +100,7 @@
                                cmr.umm-spec.test.expected-conversion/example-record
                                {:format :umm-json
                                 :accept-format :json})
-        
+
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
     (index/wait-until-indexed)
 
@@ -324,8 +324,8 @@
                                                                   polygon-with-holes
                                                                   (p/point 1 2)
                                                                   (p/point -179.9 89.4)
-                                                                  (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                                  (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
+                                                                  (l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
+                                                                  (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
                                                                   (m/mbr -180 90 180 -90)
                                                                   (m/mbr -10 20 30 -40)]})}))
         coll2 (d/ingest "PROV1"
@@ -375,8 +375,8 @@
                                                 :spatial-coverage
                                                 (dc/spatial {:sr :cartesian
                                                              :gsr :cartesian
-                                                             :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                                          (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
+                                                             :geometries [(l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
+                                                                          (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])]})}))
         coll8 (d/ingest "USGS_EROS" (dc/collection {:entry-title "Dataset8"
                                                     :short-name "ShortName#8"
                                                     :version-id "Version8"

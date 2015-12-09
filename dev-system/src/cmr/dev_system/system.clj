@@ -352,8 +352,8 @@
   (-> this
       (start-components :pre-components)
       start-apps
-      (start-components :post-components)
-      ))
+      (start-components :post-components)))
+
 
 
 (defn stop

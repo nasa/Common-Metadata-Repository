@@ -204,14 +204,14 @@
 
            [g3] [-45,45] nil
            [g1] [0,-20] nil
-           [g2] [-180,0] nil
-           ))
+           [g2] [-180,0] nil))
+
 
     (testing "line searches"
       (are [items coords params]
            (let [found (search/find-refs
                          :granule
-                         {:line (codec/url-encode (apply l/ords->line-string :geodetic coords))
+                         {:line (codec/url-encode (l/ords->line-string :geodetic coords))
                           :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -220,12 +220,12 @@
              matches?)
 
            ;; Line crossing prime meridian and equator
-           [g1 g8] [-45,-45 45,45] nil
+           [g1 g8] [-45,-45 45,45] nil))
            ;; Line crossing the antimeridian - This case gets different results from catalog-rest
            ;; (returns g2 & g7) and will fail if uncommented. Need to determine if it
            ;; is supposed to return both granules or not.
            ; [g2] [179,-45 -170, 30] nil
-           ))
+
 
     (testing "polygon searches"
       (u/are2 [items coords params]
@@ -295,7 +295,7 @@
               "Search near north pole - FIXME"
               [] [1 89.5 1.5 89] {:concept-id (:concept-id coll1)}
               "Search for granules with exactly one orbit does not match areas seen on the second pass"
-              [] [175.55 38.273 -164.883 17.912] {:concept-id (:concept-id coll2)}
+              [] [175.55 38.273 -164.883 17.912] {:concept-id (:concept-id coll2)}))))
               ;; The following test is deliberately commented out because it is marked as @broken
               ;; in ECHO. It is included here for completeness.
               ;;
@@ -310,7 +310,7 @@
               ;;
               ; "Broken test"
               ; [] [0 1 6 0] nil
-              ))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -347,10 +347,10 @@
                                                                  :inclination-angle 94
                                                                  :number-of-orbits 0.25
                                                                  :start-circular-latitude
-                                                                 50
+                                                                 50}})}))]
                                                                  ; -50
                                                                  ; 0
-                                                                 }})}))]
+
 
     [coll (make-gran coll "gran1"
                      70.80471 ; ascending crossing
@@ -378,9 +378,9 @@
                                                                  :number-of-orbits 0.25
                                                                  :start-circular-latitude
                                                                  ;50
-                                                                 -50
+                                                                 -50}})}))]
                                                                  ; 0
-                                                                 }})}))]
+
 
     [coll (make-gran coll "gran1" 31.48193 50 :desc -50 :desc)]))
 
@@ -395,8 +395,8 @@
                                                                  :inclination-angle 94
                                                                  :number-of-orbits 0.25
                                                                  :start-circular-latitude
-                                                                 -50
-                                                                 }})}))]
+                                                                 -50}})}))]
+
     [coll (make-gran coll "gran1" 7.28116 -50 :asc 50 :asc)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -465,8 +465,8 @@
   ;; 2. Evaluate this block to find all the mbrs.
   ;; It will print out "Elapsed time: XXXX msecs" when it's done
   (def matching-mbrs
-    (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3
-                                                                 ))))))
+    (future (time (doall (filter mbr-finds-granule? (create-mbrs -180.0 180.0 -90.0 90.0 3))))))
+
 
   ;; Or evaluate this block to use polygons instead of mbrs
   (def matching-polys
@@ -495,6 +495,6 @@
   ;; visualize the kml representation
   (do (spit "granule_kml.kml"
             (:out (clojure.java.shell/sh "curl" "--silent" "http://localhost:3003/granules.kml")))
-    (clojure.java.shell/sh "open" "granule_kml.kml"))
+    (clojure.java.shell/sh "open" "granule_kml.kml")))
 
-  )
+
