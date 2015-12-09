@@ -2,6 +2,7 @@
   "Contains functions for returning the spatial areas as KML"
   (:require [clojure.string :as str]
             [clojure.data.xml :as x]
+            [clojure.java.shell :as shell]
             [cmr.spatial.relations :as relations]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
@@ -138,3 +139,12 @@
                          kml-geodetic-style-xml-elem
                          kml-cartesian-style-xml-elem
                          (map shape->kml-placemark shapes)))))
+
+
+(defn display-shapes
+  "Development time helper that saves the shapes as KML and opens the file in Google Earth."
+  ([shapes]
+   (display-shapes shapes "ge_scratch.kml"))
+  ([shapes filename]
+   (spit filename (shapes->kml shapes))
+   (shell/sh "open" filename)))

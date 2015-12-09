@@ -18,8 +18,7 @@
             [cmr.spatial.codec :as codec]
             [cmr.umm.spatial :as umm-s]
             [cmr.common.util :as u]
-            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-            [cmr.system-int-test.search.ge-helper :as ge-helper]))
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -477,8 +476,6 @@
                                (create-polygons -46.0 46.0 -89.0 89.0 3))))))
 
   (mbr-finds-granule? (m/mbr 40 30 45 24))
-
-  (ge-helper/display-shapes "test_mbr.kml" [(m/mbr 40 30 45 24)])
 
 
   ;; How many were found? This will block on the future
