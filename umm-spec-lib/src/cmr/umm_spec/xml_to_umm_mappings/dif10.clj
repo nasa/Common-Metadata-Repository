@@ -157,8 +157,8 @@
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
-                           {:EntryId (value-of ma "Entry_Id/Short_Name")
-                            :Version (without-default-value-of ma "Entry_Id/Version")
+                           {:EntryId (value-of ma "Entry_ID/Short_Name")
+                            :Version (without-default-value-of ma "Entry_ID/Version")
                             :Description (without-default-value-of ma "Description")
                             :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]

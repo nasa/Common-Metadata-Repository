@@ -7,12 +7,13 @@
 (defn entry-id
   "Returns the entry-id for the given short-name and version-id."
   [short-name version-id]
-  (if (not= DEFAULT_VERSION version-id)
-     (str short-name "_V:" version-id)
-     short-name))
+  (if (or (nil? version-id)
+          (= DEFAULT_VERSION version-id))
+    short-name
+    (str short-name "_V:" version-id)))
 
 (defn umm->entry-id
   "Returns an entry-id for the given umm record."
   [umm]
   (let [{:keys [short-name version-id]} (:product umm)]
-  	(entry-id short-name version-id)))
+    (entry-id short-name version-id)))

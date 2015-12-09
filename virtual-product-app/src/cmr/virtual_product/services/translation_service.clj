@@ -33,9 +33,9 @@
   [(:provider-id (meta entry)) (:granule-ur entry)])
 
 ;; We can find source granule from virtual granule-ur by a query on the virtual granules, all of which
-;; have the additional attribute source-granule-ur which holds the source granule ur. But we avoid
+;; have the additional attribute source_granule_ur which holds the source granule ur. But we avoid
 ;; the query by computing the inverse of generate-granule-ur function in config (which is used to generate
-;; virtual granule ur from source-granule-ur)
+;; virtual granule ur from source granule ur)
 (defn- compute-source-granule-urs
   "Compute source granule-urs from virtual granule-urs"
   [provider-id src-entry-title gran-entries]

@@ -24,7 +24,7 @@ History:
     2014-1?-?? : 10.0a-10.0c - development copies.
     2014-12-18 : 10.0 - Milestone.
     2015-03-28 : 10.1 - Milestone.
-    2015-10-?? : 10.2 - Milestone.
+    2015-10-26 : 10.2 - Milestone.
 
 -->
 
@@ -99,7 +99,7 @@ History:
                                                                                                                                             <!-- Moved Data_Provider_Timestamps to Metadata_Dates -->
                 <xs:element name="Product_Level_Id"             type="ProcessingLevelIdType"        minOccurs="0"/>                         <!-- Added from UMM (ECHO) to be renamed Processing_Level_Id in 10.3 -->
                 <xs:element name="Collection_Data_Type"         type="CollectionDataTypeEnum"       minOccurs="0"   maxOccurs="unbounded"/> <!-- Added from UMM (ECHO) -->
-                <xs:element name="Product_Flag"                 type="ProductFlagEnum"                    minOccurs="0"/>                         <!-- Added from UMM (EMS), made not required in 10.2, to be removed in in 10.3 -->
+                <xs:element name="Product_Flag"                 type="ProductFlagEnum"              minOccurs="0"/>                         <!-- Added from UMM (EMS), made not required in 10.2, to be removed in in 10.3 -->
                 <xs:element name="Extended_Metadata"            type="ExtendedMetadataType"         minOccurs="0"   maxOccurs="unbounded"/> <!-- None-->
             </xs:sequence>
         </xs:complexType>
@@ -882,12 +882,6 @@ History:
                 |         -        |              -               | Geometry                       | Added from ECHO HorizontalSpatialDomain                               |
                 |         -        | OrbitParameters              | Orbit_Parameters               | Added from ECHO Spatial                                               |
                 |         -        | VerticalSpatialDomain        | Vertical_Spatial_Info          | Added from ECHO, inside Vertical_Spatial_Info, use type               |
-                | Minimum_Altitude |              -               | Minimum_Altitude               | Note: should be a number from now on, enforce later                   |
-                | Maximum_Altitude |              -               | Maximum_Altitude               | Note: should be a number from now on, enforce later                   |
-                |         -        |              -               | Altitude_Unit                  | Added because ECHO uses units in the dropped VerticalSystemDefinition |
-                | Minimum_Depth    |              -               | Minimum_Depth                  | Note: should be a number from now on, enforce later                   |
-                | Maximum_Depth    |              -               | Maximum_Depth                  | Note: should be a number from now on, enforce later                   |
-                |         -        |              -               | Depth_Unit                     | Added because ECHO uses units in the dropped VerticalSystemDefinition |
                 |         -        | SpatialInfo                  | Spatial_Info                   | Added from ECHO fields, composite field                               |
                 
                 * Spatial_Coverage_Type : This attribute denotes whether the collection's spatial coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.
@@ -906,12 +900,6 @@ History:
             <xs:element name="Geometry"                         type="Geometry"                         minOccurs="0"/>
             <xs:element name="Orbit_Parameters"                 type="OrbitParameters"                  minOccurs="0"/>
             <xs:element name="Vertical_Spatial_Info"            type="VerticalSpatialInfo"              minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="Minimum_Altitude"                 type="xs:string"                        minOccurs="0"/><!-- DIF 9 -->
-            <xs:element name="Maximum_Altitude"                 type="xs:string"                        minOccurs="0"/><!-- DIF 9 -->
-            <xs:element name="Altitude_Unit"                    type="xs:string"                        minOccurs="0"/><!-- DIF 10 -->
-            <xs:element name="Minimum_Depth"                    type="xs:string"                        minOccurs="0"/><!-- DIF 9 -->
-            <xs:element name="Maximum_Depth"                    type="xs:string"                        minOccurs="0"/><!-- DIF 9 -->
-            <xs:element name="Depth_Unit"                       type="xs:string"                        minOccurs="0"/><!-- DIF 10 -->
             <xs:element name="Spatial_Info"                     type="SpatialInfo"                      minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
@@ -962,7 +950,7 @@ History:
         <xs:sequence>
             <xs:element name="Coordinate_System"    type="CoordinateSystemEnum"/>
             <xs:choice maxOccurs="unbounded">
-                <xs:element name="Bounding_Rectangle"   type="BoundingRectangle"/>
+                <xs:element name="Bounding_Rectangle"   type="BoundingRectangleType"/>
                 <xs:element name="Point"                type="Point"/>
                 <xs:element name="Line"                 type="Line"/>
                 <xs:element name="Polygon"              type="GPolygon"/>
@@ -981,8 +969,10 @@ History:
             <xs:element name="CenterPoint"  type="Point" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
-
-    <xs:complexType name="BoundingRectangle">
+    
+    <!-- #mark _ Bounding_Rectangle -->
+    
+    <xs:complexType name="BoundingRectangleType">
         <xs:annotation>
             <xs:appinfo><details></details></xs:appinfo>
             <xs:appinfo><action>added</action><src>UMM</src></xs:appinfo>
@@ -998,6 +988,12 @@ History:
                 | Westernmost_Longitude | WestBoundingCoordinate  | WestBoundingCoordinate  | Westernmost_Longitude | Renamed                      |
                 | Easternmost_Longitude | EastBoundingCoordinate  | EastBoundingCoordinate  | Easternmost_Longitude | Renamed                      |
                 
+                | Minimum_Altitude      |              -          | Minimum_Altitude        | Minimum_Altitude      | Note: should be a number from now on, enforce later                   |
+                | Maximum_Altitude      |              -          | Maximum_Altitude        | Maximum_Altitude      | Note: should be a number from now on, enforce later                   |
+                |           -           |              -          | Altitude_Unit           | Altitude_Unit         | Added because ECHO uses units in the dropped VerticalSystemDefinition |
+                | Minimum_Depth         |              -          | Minimum_Depth           | Minimum_Depth         | Note: should be a number from now on, enforce later                   |
+                | Maximum_Depth         |              -          | Maximum_Depth           | Maximum_Depth         | Note: should be a number from now on, enforce later                   |
+                |         -             |              -          | Depth_Unit              | Depth_Unit            | Added because ECHO uses units in the dropped VerticalSystemDefinition |
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1006,6 +1002,13 @@ History:
             <xs:element name="Northernmost_Latitude"    type="xs:string"/>
             <xs:element name="Westernmost_Longitude"    type="xs:string"/>
             <xs:element name="Easternmost_Longitude"    type="xs:string"/>
+            
+            <xs:element name="Minimum_Altitude"         type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
+            <xs:element name="Maximum_Altitude"         type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
+            <xs:element name="Altitude_Unit"            type="xs:string"    minOccurs="0"/><!-- DIF 10 -->
+            <xs:element name="Minimum_Depth"            type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
+            <xs:element name="Maximum_Depth"            type="xs:string"    minOccurs="0"/><!-- DIF 9 -->
+            <xs:element name="Depth_Unit"               type="xs:string"    minOccurs="0"/><!-- DIF 10 -->
         </xs:sequence>
     </xs:complexType>
 
@@ -1734,14 +1737,14 @@ History:
                 * Require at least one, the datacenter (organization) url should be used if no other url can be found
                 * Echo uses both OnlineAccessURLs and OnlineResources for this
                 
-                | DIF 9            | ECHO 10                                                    |UMM             | DIF 10           | Notes
-                | ---------------- | ---------------------------------------------------------- |----------------| ---------------- | --------------------------------|
-                | URL_Content_Type | OnlineResource/Type                                        | URLContentType | URL_Content_Type | No change                       |
-                |                  |                                                            |                | Protocol         | Need to cite the change request |
-                | URL              | OnlineResource/URL, OnlineAccessURL/URL                    | URL            | URL              |                                 |
-                |         -        |                              -                             | Title          | Title            | Need to cite the change request |
-                | Description      | OnlineAccessURL/URLDescription, OnlineResource/Description | Description    | Description      | Can now be formatted            |
-                |         -        | OnlineResource/MimeType, OnlineAccessURL/Mimetype          | MimeType       | Mime_Type        | No change                       |
+                | DIF 9            | ECHO 10                                                    |UMM             | DIF 10           | ISO      | Notes
+                | ---------------- | ---------------------------------------------------------- |----------------| ---------------- | -------- | --------------------------------|
+                | URL_Content_Type | OnlineResource/Type                                        | URLContentType | URL_Content_Type |     ?    | No change                       |
+                |         -        |                              -                             | Protocol       |         -        | Protocol | Added for ISO support           |
+                | URL              | OnlineResource/URL, OnlineAccessURL/URL                    | URL            | URL              |     ?    |                                 |
+                |         -        |                              -                             | Title          | Title            |     ?    | Need to cite the change request |
+                | Description      | OnlineAccessURL/URLDescription, OnlineResource/Description | Description    | Description      |     ?    | Can now be formatted            |
+                |         -        | OnlineResource/MimeType, OnlineAccessURL/Mimetype          | MimeType       | Mime_Type        |     ?    | No change                       |
             </xs:documentation>
         </xs:annotation>
 
@@ -1827,7 +1830,7 @@ History:
         </xs:annotation>
 
         <xs:sequence>
-            <xs:element name="Entry_Id"     type="EntryIDType"/>
+            <xs:element name="Entry_ID"     type="EntryIDType"/>
             <xs:element name="Type"         type="MetadataAssociationTypeEnum"/><!-- changed to an enum -->
             <xs:element name="Description"  type="xs:string" minOccurs="0"/>
         </xs:sequence>
