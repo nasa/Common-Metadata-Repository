@@ -602,7 +602,7 @@
                       <!-- Collection Record -->
                       <gmd:code>
                         <xsl:call-template name="writeCharacterString">
-                          <!-- This was changed for CMR-2270 to make the XSL generate entry id in a way consistent with the CMR. -->
+                          <!-- This was changed for CMR-2270 to make the XSL generate short name in a way consistent with the CMR. -->
                           <xsl:with-param name="stringToWrite" select="/*/ShortName"/>
                         </xsl:call-template>
                       </gmd:code>
