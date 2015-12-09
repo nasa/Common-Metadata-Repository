@@ -48,7 +48,7 @@
 
                        :else
                        [(s/line-segment point1 point2)])]
-    (filter identity (map #(s/intersection ls %) arc-segments))))
+    (keep #(s/intersection ls %) arc-segments)))
 
 (defn line-segment-arc-intersections-with-densification
   "Performs the intersection between a line segment and the arc using densification of the line segment"

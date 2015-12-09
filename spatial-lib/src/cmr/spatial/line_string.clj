@@ -155,19 +155,6 @@
     (or (contains? point-set point)
         (u/any? #(point-on-segment? % point) segments))))
 
-(comment
-  (def br1
-    (d/calculate-derived (m/mbr 45 90 55 70)))
-
-  (def line1
-    (d/calculate-derived (ords->line-string :geodetic [0 85, 180 85])))
-
-
-
-
-  (user/display-shapes [line1] "line.kml")
-  (user/display-shapes [(line-string->mbr line1)] "mbr.kml"))
-
 (defn intersects-br?
   "Returns true if the line intersects the br"
   [^LineString line ^Mbr br]

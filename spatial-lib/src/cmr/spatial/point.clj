@@ -329,6 +329,9 @@
     (* 2.0 (asin (sqrt (+ part1 part2))))))
 
 (defn course
+  "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
+  pole and increases clockwise. 180 points to the south pole. 360 points the same direction as 0.
+  Algorithm from http://www.movable-type.co.uk/scripts/latlong.html Bearing calculation"
   ^double [^Point p1 ^Point p2]
   (let [due-north 0.0
         due-south 180.0
@@ -353,7 +356,6 @@
         due-south)
 
       :else
-      ;; From http://www.movable-type.co.uk/scripts/latlong.html Bearing calculation
       (let [lon1 (.lon_rad p1)
             lat1 (.lat_rad p1)
             lon2 (.lon_rad p2)
@@ -363,71 +365,6 @@
                  (* (sin lat1) (cos lat2) (cos (- lon2 lon1))))
             normalized (degrees (atan2 y x))]
         (mod (+ (* -1.0 normalized) 360.0) 360.0)))))
-
-
-(comment
-  (def test-points
-    (map #(apply point %) (partition 2 [0 1, 1 1, 1 0, 1 -1, 0 -1, -1 -1, -1 0, -1 1])))
-
-  (=
-    (map (partial course-original (point 0 0)) test-points)
-    (map (partial course (point 0 0)) test-points)))
-
-
-
-
-(defn course-original
-  "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
-  pole and increases clockwise. 180 points to the south pole. 360 points the same direction as 0.
-  Algorithm from: http://williams.best.vwh.net/avform.htm#Crs"
-  ^double [^Point p1 ^Point p2]
-  (pj/assert (not= p1 p2))
-  (let [due-north 0.0
-        due-south 180.0
-        lon-deg1 (.lon p1)
-        lat-deg1 (.lat p1)
-        lon-deg2 (.lon p2)
-        lat-deg2 (.lat p2)]
-    (cond
-      (is-north-pole? p2) due-north
-      (is-north-pole? p1) due-south
-      (is-south-pole? p2) due-south
-      (is-south-pole? p1) due-north
-
-      ;; vertical line
-      (= lon-deg1 lon-deg2) (if (> lat-deg1 lat-deg2) due-south due-north)
-
-      ;; This line will cross one of the poles. They are both on a vertical great circle.
-      (= 180.0 (abs (- lon-deg1 lon-deg2)))
-      ;;Check the average latitude to see if it's above the equator or below it
-      (if (> (mid lat-deg1 lat-deg2) 0.0)
-        due-north
-        due-south)
-
-      :else
-      (let [d (angular-distance p1 p2)
-            lon1 (.lon_rad p1)
-            lat1 (.lat_rad p1)
-            lon2 (.lon_rad p2)
-            lat2 (.lat_rad p2)
-            part1 (- (sin lat2) (* (sin lat1) (cos d)))
-            part2 (* (sin d) (cos lat1))
-            part3 (/ part1 part2)
-
-            ;; Avoid numerical errors with vertical lines
-            part3 (if (> (abs part3) 1.0)
-                    (if (> (- (abs part3) 1.0) 0.0001)
-                      (throw (Exception.
-                               (str "Completely unexpected result for part3 while generating course."
-                                    "Expected some value ~ between -1 and 1. Result:" part3
-                                    "Points [" p1 p2 "]")))
-                      (if (> part3 0.0) 1 -1))
-                    part3)
-            angle (degrees (acos part3))]
-        (cond
-          (>= (sin (- lon2 lon1)) 0.0) (- 360.0 angle)
-          (= angle 360.0) 0.0
-          :else angle)))))
 
 (extend-protocol ApproximateEquivalency
   Point

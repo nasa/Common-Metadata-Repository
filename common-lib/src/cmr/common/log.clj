@@ -39,6 +39,7 @@
                               (or ?ns-str "?ns")
                               (force msg_)
                               (if-let [err (force ?err_)]
+                                ;; Setting :stacktrace-fonts here to an empty map prevents color codes in exception stacktraces.
                                 (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
                                 "")))
                     :appenders {:println {:enabled? stdout-enabled?}}}))
