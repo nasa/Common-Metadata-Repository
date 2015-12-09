@@ -22,8 +22,8 @@
    ^double south
 
       ;; These are cached for performance improvement
-   corner-points
-  ])
+   corner-points])
+
 (record-pretty-printer/enable-record-pretty-printing Mbr)
 
 (defn mbr
@@ -53,8 +53,8 @@
 
 (defn corner-points
   "Returns the corner points of the mbr as upper left, upper right, lower right, lower left."
-  [br]
-  (:corner-points br))
+  [^Mbr br]
+  (.corner_points br))
 
 (defn crosses-antimeridian? [^Mbr mbr]
   (> (.west mbr) (.east mbr)))
@@ -123,10 +123,6 @@
          south (- south tolerance)]
      (and (>= v south) (<= v north)))))
 
-(defmulti covers-point?
-  "Returns true if the mbr contains the given point"
-  (fn [coord-sys mbr p & delta]
-    coord-sys))
 
 (defn cartesian-covers-point?
   ([mbr ^Point p]
@@ -135,10 +131,6 @@
    (let [delta (or delta COVERS_TOLERANCE)]
      (and (covers-lat? mbr (.lat p) delta)
           (covers-lon? :cartesian mbr (.lon p) delta)))))
-
-(defmethod covers-point? :cartesian
-  [_ mbr p & delta]
-  (cartesian-covers-point? mbr p (first delta)))
 
 (defn geodetic-covers-point?
   ([mbr ^Point p]
@@ -153,9 +145,12 @@
        (and (covers-lat? mbr (.lat p) delta)
             (covers-lon? :geodetic mbr (.lon p) delta))))))
 
-(defmethod covers-point? :geodetic
-  [_ mbr p & delta]
-  (geodetic-covers-point? mbr p (first delta)))
+(defn covers-point?
+  "Returns true if the mbr contains the given point"
+  [coord-sys mbr p & delta]
+  (if (= coord-sys :geodetic)
+    (geodetic-covers-point? mbr p delta)
+    (cartesian-covers-point? mbr p delta)))
 
 (defn split-across-antimeridian
   "Splits MBRs across the antimeridian. Returns a sequence of the mbrs if it crosses the antimeridian
@@ -172,7 +167,7 @@
   [coord-sys mbr other-br]
   (or (and (= (crosses-antimeridian? mbr)
               (crosses-antimeridian? other-br))
-           (every? (partial covers-point? coord-sys mbr) (corner-points other-br)))
+           (every? #(covers-point? coord-sys mbr %) (corner-points other-br)))
 
       ;; one crosses and one doesn't
       (and (crosses-antimeridian? mbr)

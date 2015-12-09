@@ -30,10 +30,10 @@
 (comment
 
   (dev-sys-util/reset)
-  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
+  (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"}))
 
 
-  )
+
 
 (defn polygon
   "Creates a single ring polygon with the given ordinates. Points must be in counter clockwise order.
@@ -92,8 +92,8 @@
                                                           :spatial-coverage (apply dg/spatial shapes)}))))
 
         ;; Lines
-        normal-line (make-gran "normal-line" (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))
-        normal-line-cart (make-cart-gran "normal-line-cart" (l/ords->line-string :cartesian 16.439 -13.463,  31.904 -13.607, 31.958 -10.401))
+        normal-line (make-gran "normal-line" (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
+        normal-line-cart (make-cart-gran "normal-line-cart" (l/ords->line-string :cartesian [16.439 -13.463,  31.904 -13.607, 31.958 -10.401]))
 
         ;; Bounding rectangles
         whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
@@ -146,7 +146,7 @@
       (are [ords items]
            (let [found (search/find-refs
                          :granule
-                         {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+                         {:line (codec/url-encode (l/ords->line-string :geodetic ords))
                           :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -272,7 +272,7 @@
 
     (testing "polygon searches"
       (are [ords items]
-           (let [found (search/find-refs :granule {:polygon (apply search-poly ords) })
+           (let [found (search/find-refs :granule {:polygon (apply search-poly ords)})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :granule-ur) sort pr-str))

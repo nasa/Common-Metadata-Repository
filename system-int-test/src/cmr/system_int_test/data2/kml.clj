@@ -158,7 +158,6 @@
 
   (some-> (cx/element-at-path p [:MultiGeometry]))
 
-  (-> p :content )
+  (-> p :content))
 
 
-  )

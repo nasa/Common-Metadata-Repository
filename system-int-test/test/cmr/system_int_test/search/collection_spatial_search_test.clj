@@ -49,11 +49,11 @@
 (deftest spatial-search-test
   (let [;; Lines
         normal-line (make-coll :geodetic "normal-line"
-                               (l/ords->line-string :geodetic 22.681 -8.839, 18.309 -11.426, 22.705 -6.557))
+                               (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
         along-am-line (make-coll :geodetic "along-am-line"
-                                 (l/ords->line-string :geodetic -180 0 -180 85))
+                                 (l/ords->line-string :geodetic [-180 0 -180 85]))
         normal-line-cart (make-coll :cartesian "normal-line-cart"
-                                    (l/ords->line-string :cartesian 16.439 -13.463,  31.904 -13.607, 31.958 -10.401))
+                                    (l/ords->line-string :cartesian [16.439 -13.463,  31.904 -13.607, 31.958 -10.401]))
 
         ;; Bounding rectangles
         whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
@@ -106,7 +106,7 @@
       (are [ords items]
            (let [found (search/find-refs
                          :collection
-                         {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+                         {:line (codec/url-encode (l/ords->line-string :geodetic ords))
                           :page-size 50})
                  matches? (d/refs-match? items found)]
              (when-not matches?
@@ -292,7 +292,7 @@
 
     (testing "polygon searches"
       (are [ords items]
-           (let [found (search/find-refs :collection {:polygon (apply search-poly ords) })
+           (let [found (search/find-refs :collection {:polygon (apply search-poly ords)})
                  matches? (d/refs-match? items found)]
              (when-not matches?
                (println "Expected:" (->> items (map :entry-title) sort pr-str))
@@ -504,7 +504,7 @@
   (testing "line search"
     (u/are2 [ords tiles]
             (assert-tiles-found
-              {:line (codec/url-encode (apply l/ords->line-string :geodetic ords))} tiles)
+              {:line (codec/url-encode (l/ords->line-string :geodetic ords))} tiles)
 
             "A simple line"
             [-62.0  -27.0  -76.5  5.0] [[10 8][10 9][11 9][11 10][11 11][12 11]]
@@ -524,15 +524,15 @@
   [shape-type ords]
   (case shape-type
     :point (codec/url-encode (apply p/point ords))
-    :line (codec/url-encode (apply l/ords->line-string :geodetic ords))
+    :line (codec/url-encode (l/ords->line-string :geodetic ords))
     :polygon (apply search-poly ords)
     :bounding-box (codec/url-encode (apply m/mbr ords))))
 
 (defn- add-param
   "Adds a spatial parameter with the given spatial type and ords into params map"
   [params [spatial-type ords]]
-    (assoc params spatial-type (conj (spatial-type params)
-                                     (ords->url-encoded-str spatial-type ords))))
+  (assoc params spatial-type (conj (spatial-type params)
+                                   (ords->url-encoded-str spatial-type ords))))
 
 (deftest tile-search-multi-shape-test
   (testing "search involving multiple shapes"
