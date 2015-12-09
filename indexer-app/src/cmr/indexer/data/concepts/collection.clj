@@ -21,6 +21,7 @@
             [cmr.acl.core :as acl]
             [cmr.common.concepts :as concepts]
             [cmr.umm.collection :as umm-c]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.common-app.services.kms-fetcher :as kf])
   (:import cmr.spatial.mbr.Mbr))
 
@@ -53,14 +54,15 @@
   "Get all the fields for a normal collection index operation."
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id
-                native-id revision-date deleted format]} concept
+                native-id revision-date deleted format extra-fields]} concept
         {{:keys [short-name long-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title summary temporal related-urls spatial-keywords associated-difs
+         :keys [entry-title summary temporal related-urls spatial-keywords associated-difs
                 temporal-keywords access-value personnel distribution]} collection
         collection-data-type (if (= "NEAR_REAL_TIME" collection-data-type)
                                ;; add in all the aliases for NEAR_REAL_TIME
                                (concat [collection-data-type] k/nrt-aliases)
                                collection-data-type)
+        entry-id (eid/entry-id short-name version-id)
         personnel (person-with-email personnel)
         platforms (:platforms collection)
         platform-short-names (->> (map :short-name platforms)

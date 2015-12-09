@@ -190,14 +190,17 @@
   [src-umm]
   (let [src-granule-ur (:granule-ur src-umm)
         provider-id (:provider-id src-umm)
-        entry-title (get-in src-umm [:collection-ref :entry-title])]
+        entry-title (get-in src-umm [:collection-ref :entry-title])
+        attr-search-str (format "string,%s,%s"
+                                svm/source-granule-ur-additional-attr-name
+                                src-granule-ur)]
     (flatten
       (for [virt-coll (:virtual-collections (get svm/source-to-virtual-product-mapping
                                                  [provider-id entry-title]))
             :let [virt-entry-title (:entry-title virt-coll)
                   granule-refs (:refs (search/find-refs
                                         :granule
-                                        {"attribute[]" (str "string,source-granule-ur," src-granule-ur)
+                                        {"attribute[]" attr-search-str
                                          :entry-title virt-entry-title
                                          :page-size 1}))]]
         (for [gran-ref granule-refs

@@ -87,10 +87,7 @@
         dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
         keywords (kw/xml-elem->keywords xml-struct)]
     (c/map->UmmCollection
-      {:entry-id (if (empty? version-id)
-                   short-name
-                   (str short-name "_" version-id))
-       :entry-title (cx/string-at-path
+      {:entry-title (cx/string-at-path
                       dataset-id-elem
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
                        :MD_Identifier :code :CharacterString])

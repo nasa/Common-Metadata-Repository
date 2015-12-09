@@ -267,7 +267,6 @@
                                              :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org])))))))
             (gen/tuple
               (gen/hash-map
-                :entry-id entry-ids
                 :entry-title entry-titles
                 :summary summary
                 :purpose purpose

@@ -222,17 +222,31 @@
 ;; a concatenation of short name and version ID.
 (deftest collection-w-entry-id-validation-test
   (let [coll1-1 (dc/collection-dif {:concept-id "C1-PROV1"
-                                    :entry-id "EID-1"
+                                    :short-name "EID-1"
                                     :entry-title "ET-1"
                                     :native-id "NID-1"})
-        coll1-2 (assoc coll1-1 :entry-id "EID-2")]
-
-    (d/ingest "PROV1" coll1-1 {:format :dif})
+        coll1-2 (assoc-in coll1-1 [:product :short-name] "EID-2")
+        coll1-3 (dc/collection-dif {:concept-id "C3-PROV1"
+                                    :short-name "EID-3"
+                                    :entry-title "ET-3"
+                                    :native-id "NID-3"})
+        coll1-4 (assoc-in coll1-3 [:product :short-name] "EID-4")
+        ;; ingest the collections/granules for test
+        _ (d/ingest "PROV1" coll1-1 {:format :dif})
+        coll3 (d/ingest "PROV1" coll1-3 {:format :dif})
+        gran1 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule1"}))
+        gran2 (d/ingest "PROV1" (dg/granule coll3 {:granule-ur "Granule2"}))]
+    (index/wait-until-indexed)
 
     (testing "update the collection with a different entry-id is OK"
       (let [{:keys [status concept-id revision-id errors]}
             (d/ingest "PROV1" coll1-2 {:format :dif})]
         (is (= ["C1-PROV1" 2 200 nil] [concept-id revision-id status errors]))))
+
+    (testing "update the collection that has granules with a different entry-id is invalid"
+      (let [{:keys [status errors]} (d/ingest "PROV1" coll1-4 {:format :dif :allow-failure? true})]
+        (is (= [422 ["Collection with short-name [EID-3] and version-id [Not provided] is referenced by existing granules, cannot be renamed. Found 2 granules."]]
+               [status errors]))))
 
     (testing "ingest collection with entry-id used by a different collection latest revision within the same provider is invalid"
       (let [{:keys [status errors]} (d/ingest "PROV1"
@@ -257,10 +271,9 @@
     (testing "entry-id and entry-title constraint violations return multiple errors"
       (let [{:keys [status errors]} (d/ingest "PROV1"
                                               (assoc coll1-2
-                                                     :concept-id "C3-PROV1"
-                                                     :native-id "NID-3")
+                                                     :concept-id "C5-PROV1"
+                                                     :native-id "NID-5")
                                               {:format :dif :allow-failure? true})]
-
         (is (= [409 ["The Entry Title [ET-1] must be unique. The following concepts with the same entry title were found: [C1-PROV1]."
                      "The Entry Id [EID-2] must be unique. The following concepts with the same entry id were found: [C1-PROV1]."]]
                [status errors]))))
@@ -286,8 +299,7 @@
   (testing "update collection in different formats ..."
     (doseq [[expected-rev coll-format] (map-indexed #(vector (inc %1) %2) [:echo10 :dif :dif10 :iso19115 :iso-smap])]
       (let [coll (d/ingest "PROV1"
-                           (dc/collection {:entry-id "S1"
-                                           :short-name "S1"
+                           (dc/collection {:short-name "S1"
                                            :version-id "V1"
                                            :entry-title "ET1"
                                            :long-name "L4"
@@ -393,7 +405,7 @@
     (is (= 200 (:status coll-del1)))
     (is (= 404 (:status coll-del2)))
     (is (= [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                   native-id concept-id)]
+                    native-id concept-id)]
            (:errors coll-del2)))
     (is (= 5 (:revision-id coll-del1)))
     (index/wait-until-indexed)
@@ -507,7 +519,7 @@
 
     (testing "UMM-JSON collections are searchable after ingest"
       (is (= 1 (count (:refs (search/find-refs :collection {"entry-title" "The entry title V5"}))))))
-    
+
     (testing "Updating a UMM-JSON collection"
       (let [response (ingest/ingest-concept (assoc coll-map :revision-id "2"))]
         (is (= 200 (:status response)))

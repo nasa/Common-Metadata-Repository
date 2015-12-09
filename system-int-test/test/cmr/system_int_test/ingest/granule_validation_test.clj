@@ -15,6 +15,7 @@
             [cmr.ingest.services.messages :as msg]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
             [cmr.common.time-keeper :as tk]
+            [cmr.common.util :refer [are2]]
             [clj-time.format :as tf]
             [clj-time.core :as t]))
 
@@ -144,7 +145,7 @@
                 coll-concept)))
 
           (testing "entry-id"
-            (let [collection (dc/collection-dif {:entry-id "correct"})
+            (let [collection (dc/collection-dif {:short-name "correct"})
                   coll-concept (d/item->concept collection :dif)
                   granule (assoc (dg/granule collection)
                                  :collection-ref
@@ -367,15 +368,25 @@
         ["Spatial validation error: The bounding rectangle north value [45] was less than the south value [46]"]))))
 
 (deftest inappropriate-spatial-coverage-test
-  (testing "granule with spatial when parent collection has NO_SPATIAL"
-    (assert-invalid {:spatial-coverage (dc/spatial {:gsr "NO_SPATIAL"})}
-                    {:spatial-coverage (dg/spatial
-                                        (umm-s/set-coordinate-system
-                                         :geodetic
-                                         (poly/polygon [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
-                                                        (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])))}
-                    ["SpatialCoverage" "Geometries"]
-                    ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"])))
+  (testing "granule with spatial but parent collection does not"
+    (are2 [coll-gsr]
+          (assert-invalid
+            {:spatial-coverage (when coll-gsr (dc/spatial {:gsr coll-gsr}))}
+            {:spatial-coverage
+             (dg/spatial
+               (umm-s/set-coordinate-system
+                 :geodetic
+                 (poly/polygon
+                   [(umm-s/ords->ring 1 1, -1 1, -1 -1, 1 -1, 1 1)
+                    (umm-s/ords->ring 0,0, 0.00004,0, 0.00006,0.00005, 0.00002,0.00005, 0,0)])))}
+            ["SpatialCoverage" "Geometries"]
+            ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"])
+
+          "parent collection has no spatial info"
+          nil
+
+          "parent collection GranuleSpatialRepresentation is NO_SPATIAL"
+          "NO_SPATIAL")))
 
 (deftest missing-spatial-coverage-test
   (let [collection-attrs {:spatial-coverage {:granule-spatial-representation :geodetic}}

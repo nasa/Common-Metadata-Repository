@@ -114,7 +114,7 @@
   [c]
   (xml
     [:Collection
-     [:ShortName (:EntryId c)]
+     [:ShortName (:ShortName c)]
      [:VersionId (with-default (:Version c))]
      [:InsertTime (dates/or-default (dates/data-create-date c))]
      [:LastUpdate (dates/or-default (dates/data-update-date c))]

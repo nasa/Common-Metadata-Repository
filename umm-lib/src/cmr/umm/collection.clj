@@ -285,9 +285,6 @@
 
 (defrecord UmmCollection
   [
-   ;; A combination of shortname and version id with an underscore.
-   entry-id
-
    ;; The dataset-id in ECHO10
    entry-title
 

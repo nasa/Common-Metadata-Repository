@@ -57,7 +57,7 @@
   "Returns collection map from DIF10 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
-   :EntryId (value-of doc "/DIF/Entry_ID/Short_Name")
+   :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (without-default-value-of doc "/DIF/Entry_ID/Version")
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Collection_Data_Type")
@@ -147,8 +147,8 @@
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
-                           {:EntryId (value-of ma "Entry_Id/Short_Name")
-                            :Version (without-default-value-of ma "Entry_Id/Version")
+                           {:EntryId (value-of ma "Entry_ID/Short_Name")
+                            :Version (without-default-value-of ma "Entry_ID/Version")
                             :Description (without-default-value-of ma "Description")
                             :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]

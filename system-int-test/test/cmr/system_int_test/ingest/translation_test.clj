@@ -141,7 +141,7 @@
                    <Metadata_Version>VERSION 9.8.4</Metadata_Version>
                    <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
                    </DIF>"
-                   {:keys [status body]} (ingest/translate-metadata
+                   {:keys [status]} (ingest/translate-metadata
                                            :collection :dif dif9-xml :umm-json
                                            {:query-params {"skip_umm_validation" "true"}})]
       (is (= 200 status)))))

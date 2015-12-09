@@ -29,11 +29,15 @@
                     id-elem
                     [:citation :CI_Citation :identifier :MD_Identifier :description :CharacterString])
         long-name (util/trunc long-name 1024)
+        short-name (cx/string-at-path
+                     id-elem
+                     [:citation :CI_Citation :identifier :MD_Identifier :code :CharacterString])
         version-id (cx/string-at-path id-elem [:citation :CI_Citation :edition :CharacterString])
         processing-level-id (cx/string-at-path
                               id-elem
                               [:processingLevel :MD_Identifier :code :CharacterString])]
     (c/map->Product {:long-name long-name
+                     :short-name short-name
                      :version-id version-id
                      :processing-level-id processing-level-id})))
 
@@ -69,15 +73,11 @@
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
   (let [id-elem (core/id-elem xml-struct)
-        entry-id (cx/string-at-path
-                     id-elem
-                     [:citation :CI_Citation :identifier :MD_Identifier :code :CharacterString])
-        product (assoc (xml-elem->Product id-elem) :short-name entry-id)
+        product (xml-elem->Product id-elem)
         {:keys [version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
-      {:entry-id entry-id
-       :entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
+      {:entry-title (cx/string-at-path xml-struct [:fileIdentifier :CharacterString])
        :summary (cx/string-at-path id-elem [:abstract :CharacterString])
        :purpose (cx/string-at-path id-elem [:purpose :CharacterString])
        :product product
@@ -245,7 +245,7 @@
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
                    platforms product-specific-attributes collection-associations projects
                    two-d-coordinate-systems related-urls spatial-coverage summary purpose associated-difs
-                   personnel metadata-language use-constraints entry-id]} collection
+                   personnel metadata-language use-constraints]} collection
            archive-center (org/get-organization-name :archive-center organizations)
            platforms (platform/platforms-with-id platforms)]
        (x/emit-str
@@ -280,7 +280,7 @@
                             (h/iso-string-element :gmd:edition version-id)
                             (x/element :gmd:identifier {}
                                        (x/element :gmd:MD_Identifier {}
-                                                  (h/iso-string-element :gmd:code entry-id)
+                                                  (h/iso-string-element :gmd:code short-name)
                                                   (h/iso-string-element :gmd:description long-name)))
                             (dif/generate-associated-difs associated-difs)))
                         (h/iso-string-element :gmd:abstract summary)

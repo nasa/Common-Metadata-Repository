@@ -60,6 +60,7 @@
                        {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                         :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                         :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
+     :SpatialKeywords ["SPK1" "SPK2"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -71,6 +72,11 @@
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
+     :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
+                                  :Coordinate1 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}
+                                  :Coordinate2 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -82,13 +88,14 @@
                       :DistributionMedia "Download"
                       :DistributionFormat "Bits"
                       :Fees "0.99"}]
-     :EntryId "short_V1"
      :EntryTitle "The entry title V5"
+     :ShortName "Short"
      :Version "V5"
      :DataDates [{:Date (t/date-time 2012)
                   :Type "CREATE"}]
      :Abstract "A very abstract collection"
      :DataLanguage "English"
+     :CollectionDataType "SCIENCE_QUALITY"
      :Projects [{:ShortName "project short_name"}]
      :Quality "Pretty good quality"
      :PublicationReferences [{:PublicationDate (t/date-time 2015)

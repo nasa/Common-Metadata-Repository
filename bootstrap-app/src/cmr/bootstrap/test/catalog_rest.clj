@@ -194,7 +194,7 @@
      :format mt/echo10
      :extra-fields {:short-name "short"
                     :version-id "V1"
-                    :entry-id "short_V1"
+                    :entry-id "short_V:V1"
                     :entry-title "Entry 1"
                     :delete-time "2014-05-05T00:00:00Z"}})
 

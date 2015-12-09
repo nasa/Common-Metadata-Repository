@@ -17,7 +17,7 @@
       :measured-parameters))
 
 (defn- assert-src-gran-ur-psa-equals
-  "Assert that product specific attribute with the name source-granule-ur in virt-gran has the value
+  "Assert that product specific attribute with the name source_granule_ur in virt-gran has the value
   given by expected-src-gran-ur"
   [virt-gran expected-src-gran-ur]
   (is (= expected-src-gran-ur (->> virt-gran
@@ -28,7 +28,7 @@
                                    first))))
 
 (defn- remove-src-granule-ur-psa
-  "Remove product specific attribute with the name source-granule-ur from the given psas."
+  "Remove product specific attribute with the name source_granule_ur from the given psas."
   [psas]
   (seq (remove #(= (:name %) svm/source-granule-ur-additional-attr-name) psas)))
 

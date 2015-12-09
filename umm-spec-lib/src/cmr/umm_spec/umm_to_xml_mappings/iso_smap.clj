@@ -83,7 +83,7 @@
              (date-element some-date))
            [:gmd:identifier
             [:gmd:MD_Identifier
-             [:gmd:code (char-string (:EntryId c))]
+             [:gmd:code (char-string (:ShortName c))]
              [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]
 
            [:gmd:identifier

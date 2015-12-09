@@ -10,8 +10,8 @@
   (doseq [t (h/get-collection-tablenames)]
     (println (str "Table: " t))
 
-    ;; Set version id to a default value. Only DIF9 should have had null
-    (h/sql (format "update %s set version_id = 'Not provided' where version_id is null and format = 'DIF'" t))
+    ;; Set version id to a default value.
+    (h/sql (format "update %s set version_id = 'Not provided' where version_id is null" t))
 
     ;; Version id does not allow null values anymore
     (h/sql (format "alter table %s modify (VERSION_ID not null)" t))

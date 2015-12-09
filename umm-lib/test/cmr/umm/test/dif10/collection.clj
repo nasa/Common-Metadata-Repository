@@ -26,6 +26,15 @@
            (let [xml (dif10/umm->dif10-xml collection)]
              (empty? (c/validate-xml xml)))))
 
+(comment
+
+
+  ((let [xml (dif10/umm->dif10-xml user/failing-value)]
+     (c/validate-xml xml)))
+
+
+  )
+
 (defn- related-urls->expected-parsed
   [related-urls]
   (if (empty? related-urls)
@@ -139,14 +148,12 @@
   "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record and
   fields which are required by DIF 10 are added."
   [coll]
-  (let [entry-id (:entry-id coll)
-        {:keys [short-name version-id]} (:product coll)
+  (let [{:keys [short-name version-id]} (:product coll)
         long-name (:entry-title coll)]
     (-> coll
         remove-unsupported-fields
         add-required-placeholder-fields
         (update-in [:product] (product->expected-parsed short-name version-id long-name))
-        (assoc :entry-id (format "%s_%s" short-name version-id))
         umm-c/map->UmmCollection)))
 
 (defspec generate-and-parse-collection-test 100
@@ -338,26 +345,26 @@
       <URL>http://www.foo.com</URL>
     </Related_URL>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-237</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-238</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-239</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
@@ -458,8 +465,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "minimal_dif_dataset_001"
-     :entry-title "A minimal dif dataset"
+    {:entry-title "A minimal dif dataset"
      :summary "summary of the dataset"
      :purpose "A grand purpose"
      :product (umm-c/map->Product
