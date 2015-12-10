@@ -17,14 +17,17 @@
      :EastBoundingCoordinate (value-of el "Easternmost_Longitude")}))
 
 (defn- parse-instruments
+  "Returns the parsed instruments for the given xml doc."
   [doc]
   (su/parse-short-name-long-name doc "/DIF/Sensor_Name"))
 
 (defn- parse-just-platforms
+  "Returns the parsed platforms only (without instruments) for the given xml doc."
   [doc]
   (su/parse-short-name-long-name doc "/DIF/Source_Name"))
 
 (defn- parse-platforms
+  "Returns the parsed platforms with instruments added for the given xml doc."
   [doc]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
