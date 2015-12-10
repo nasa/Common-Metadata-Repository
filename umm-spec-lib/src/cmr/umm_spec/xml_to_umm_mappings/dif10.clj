@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10
   "Defines mappings from DIF10 XML into UMM records"
-  (:require [cmr.common.date-time-parser :as dtp]
-            [cmr.umm-spec.json-schema :as js]
+  (:require [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
