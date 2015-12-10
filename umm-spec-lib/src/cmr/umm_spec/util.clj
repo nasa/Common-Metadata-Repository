@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cheshire.core :as json]
             [cheshire.factory :as factory]
+            [cmr.common.date-time-parser :as dtp]
             [cmr.common.util :as util]
             [cmr.umm-spec.xml.parse :as p]
             [cmr.umm-spec.simple-xpath :refer [select]]))
@@ -70,6 +71,22 @@
   "Returns a 5 character random id to use as an ISO id"
   []
   (str "d" (java.util.UUID/randomUUID)))
+
+(defn parse-datetime
+  "Returns the datetime parsed from a date-string or datetime-string."
+  [datetime-string]
+  (when datetime-string
+    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
+      (dtp/parse-date datetime-string)
+      (dtp/parse-datetime datetime-string))))
+
+(defn try-parse-datetime
+  "Returns a datetime parsed from the give date-time or date string if possible, or nil."
+  [x]
+  (try
+    (parse-datetime x)
+    (catch Exception _
+      nil)))
 
 (defn parse-short-name-long-name
   "Returns the list of ShortName and LongName from parsing the given doc on the given path."

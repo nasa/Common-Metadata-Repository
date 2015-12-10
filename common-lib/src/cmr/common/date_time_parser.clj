@@ -72,3 +72,14 @@
       (msg/data-error :invalid-data msg/invalid-msg :date value (.getMessage e)))
     (catch IllegalArgumentException e
       (msg/data-error :invalid-data msg/invalid-msg :date value (.getMessage e)))))
+
+(defn try-parse-datetime
+  "Returns datetime or date parsed from string s if possible, otherwise returns nil."
+  [s]
+  (try
+    (parse-datetime s)
+    (catch Exception _
+      (try
+        (parse-date s)
+        (catch Exception _
+          nil)))))
