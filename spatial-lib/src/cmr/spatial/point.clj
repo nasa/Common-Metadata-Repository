@@ -54,8 +54,8 @@
    ;; This field is holding options when debugging points so they can be displayed in a visualization
    ;; with labels etc. It will typically be set to null during normal operations. It is excluded
    ;; from hashCode and equals.
-   ^clojure.lang.Associative options
-   ]
+   ^clojure.lang.Associative options]
+
   Object
   (hashCode
     [this]
@@ -188,18 +188,18 @@
           (pj/assert (double-approx= (radians lon) ^double lon-rad))
           (pj/assert (double-approx= (radians lat) ^double lat-rad))
 
-          (Point. (double lon)
-                  (double lat)
-                  (double lon-rad)
-                  (double lat-rad)
+          (Point. lon
+                  lat
+                  lon-rad
+                  lat-rad
                   geodetic-equality
                   nil)))
 
 (def north-pole
-  (point 0 90))
+  (point 0.0 90.0))
 
 (def south-pole
-  (point 0 -90))
+  (point 0.0 -90.0))
 
 (defn with-cartesian-equality
   "Returns an equivalent point with cartesian equality"
@@ -262,10 +262,15 @@
 (defn ords->points
   "Takes pairs of numbers and returns a sequence of points.
 
-  user=> (ords->points 1 2 3 4)
+  user=> (ords->points [1 2 3 4])
   ((cmr-spatial.point/point 1.0 2.0) (cmr-spatial.point/point 3.0 4.0))"
-  [& ords]
-  (util/map-n (partial apply point) 2 ords))
+  [ords]
+  (let [ords (vec ords)]
+    (persistent!
+     (reduce (fn [points ^long index]
+               (conj! points (point (nth ords index) (nth ords (inc index)))))
+             (transient [])
+             (range 0 (count ords) 2)))))
 
 (defn points->ords
   "Takes points and converts them to a list of numbers lon1, lat1, lon2, lat2, ..."
@@ -326,9 +331,8 @@
 (defn course
   "Returns the initial bearing between two points. The bearing starts at 0 pointing towards the north
   pole and increases clockwise. 180 points to the south pole. 360 points the same direction as 0.
-  Algorithm from: http://williams.best.vwh.net/avform.htm#Crs"
+  Algorithm from http://www.movable-type.co.uk/scripts/latlong.html Bearing calculation"
   ^double [^Point p1 ^Point p2]
-  (pj/assert (not= p1 p2))
   (let [due-north 0.0
         due-south 180.0
         lon-deg1 (.lon p1)
@@ -352,43 +356,31 @@
         due-south)
 
       :else
-      (let [d (angular-distance p1 p2)
-            lon1 (.lon_rad p1)
+      (let [lon1 (.lon_rad p1)
             lat1 (.lat_rad p1)
             lon2 (.lon_rad p2)
             lat2 (.lat_rad p2)
-            part1 (- (sin lat2) (* (sin lat1) (cos d)))
-            part2 (* (sin d) (cos lat1))
-            part3 (/ part1 part2)
-
-            ;; Avoid numerical errors with vertical lines
-            part3 (if (> (abs part3) 1.0)
-                    (if (> (- (abs part3) 1.0) 0.0001)
-                      (throw (Exception.
-                               (str "Completely unexpected result for part3 while generating course."
-                                    "Expected some value ~ between -1 and 1. Result:" part3
-                                    "Points [" p1 p2 "]")))
-                      (if (> part3 0.0) 1 -1))
-                    part3)
-            angle (degrees (acos part3))]
-        (cond
-          (>= (sin (- lon2 lon1)) 0.0) (- 360.0 angle)
-          (= angle 360.0) 0.0
-          :else angle)))))
+            y (* (sin (- lon2 lon1)) (cos lat2))
+            x (- (* (cos lat1) (sin lat2))
+                 (* (sin lat1) (cos lat2) (cos (- lon2 lon1))))
+            normalized (degrees (atan2 y x))]
+        (mod (+ (* -1.0 normalized) 360.0) 360.0)))))
 
 (extend-protocol ApproximateEquivalency
   Point
   (approx=
     ([expected n]
      (approx= expected n DELTA))
-    ([p1 p2 delta]
-     (let [{lon1 :lon lat1 :lat} p1
-           {lon2 :lon lat2 :lat} p2
-           np? #(approx= % 90.0 delta)
-           sp? #(approx= % -90.0 delta)
-           am? #(approx= (abs ^double %) 180.0 delta)]
-       (and (approx= lat1 lat2 delta)
-            (or (approx= lon1 lon2 delta)
+    ([^Point p1 ^Point p2 ^double delta]
+     (let [lon1 (.lon p1)
+           lat1 (.lat p1)
+           lon2 (.lon p2)
+           lat2 (.lat p2)
+           np? #(double-approx= ^double % 90.0 delta)
+           sp? #(double-approx= ^double % -90.0 delta)
+           am? #(double-approx= ^double (abs ^double %) 180.0 delta)]
+       (and (double-approx= lat1 lat2 delta)
+            (or (double-approx= lon1 lon2 delta)
                 (and (am? lon1) (am? lon2))
                 (and (np? lat1) (np? lat2))
                 (and (sp? lat1) (sp? lat2))))))))

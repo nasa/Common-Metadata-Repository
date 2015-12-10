@@ -74,11 +74,8 @@
                          ;; remove default added by parser
                          (assoc :metadata-language nil)
                          ;; remove default added by parser
-                         (assoc :use-constraints nil))
-        {:keys [short-name version-id]} (:product umm)
-        ;; ECHO10 to ISO19115 xslt maps short-name this way, so we have to duplicate it here.
-        expected (assoc-in umm [:product :short-name] (str short-name "_" version-id))]
-    (is (= expected metadata-umm))))
+                         (assoc :use-constraints nil))]
+    (is (= umm metadata-umm))))
 
 (defmethod result-matches? :default
   [format-key umm response]

@@ -1,11 +1,12 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
-  (:require [cheshire.core :as json]
+  (:require [clojure.string :as str]
+            [cheshire.core :as json]
             [cheshire.factory :as factory]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.util :as util]
             [cmr.umm-spec.xml.parse :as p]
-            [clojure.string :as str]))
+            [cmr.umm-spec.simple-xpath :refer [select]]))
 
 (def not-provided
   "place holder string value for not provided string field"
@@ -86,3 +87,10 @@
     (parse-datetime x)
     (catch Exception _
       nil)))
+
+(defn parse-short-name-long-name
+  "Returns the list of ShortName and LongName from parsing the given doc on the given path."
+  [doc path]
+  (seq (for [elem (select doc path)]
+         {:ShortName (p/value-of elem "Short_Name")
+          :LongName (p/value-of elem "Long_Name")})))

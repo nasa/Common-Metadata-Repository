@@ -4,7 +4,7 @@
             [cmr.umm-spec.xml.parse :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.common.util :as util]
-            [cmr.umm-spec.util :as umm-util]
+            [cmr.umm-spec.util :as su]
             [cmr.umm-spec.json-schema :as js]))
 
 (defn- parse-mbrs
@@ -16,12 +16,37 @@
      :WestBoundingCoordinate (value-of el "Westernmost_Longitude")
      :EastBoundingCoordinate (value-of el "Easternmost_Longitude")}))
 
+(defn- parse-instruments
+  "Returns the parsed instruments for the given xml doc."
+  [doc]
+  (su/parse-short-name-long-name doc "/DIF/Sensor_Name"))
+
+(defn- parse-just-platforms
+  "Returns the parsed platforms only (without instruments) for the given xml doc."
+  [doc]
+  (su/parse-short-name-long-name doc "/DIF/Source_Name"))
+
+(defn- parse-platforms
+  "Returns the parsed platforms with instruments added for the given xml doc."
+  [doc]
+  (let [platforms (parse-just-platforms doc)
+        instruments (parse-instruments doc)]
+    ;; When there is only one platform in the collection, associate the instruments on that platform.
+    ;; Otherwise, create a dummy platform to hold all instruments and add that to the platforms.
+    (if (= 1 (count platforms))
+      (map #(assoc % :Instruments instruments) platforms)
+      (if instruments
+        (conj platforms {:ShortName su/not-provided
+                         :LongName su/not-provided
+                         :Instruments instruments})
+        platforms))))
+
 (defn- parse-dif9-xml
   "Returns collection map from DIF9 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :ShortName (value-of doc "/DIF/Entry_ID")
-   :Version (or (value-of doc "/DIF/Data_Set_Citation/Version") umm-util/not-provided)
+   :Version (or (value-of doc "/DIF/Data_Set_Citation/Version") su/not-provided)
    :Abstract (value-of doc "/DIF/Summary/Abstract")
    :CollectionDataType (value-of doc "/DIF/Extended_Metadata/Metadata[Name='CollectionDataType']/Value")
    :Purpose (value-of doc "/DIF/Summary/Purpose")
@@ -37,9 +62,7 @@
    :AccessConstraints {:Description (value-of doc "/DIF/Access_Constraints")
                        :Value (value-of doc "/DIF/Extended_Metadata/Metadata[Name='Restriction']/Value")}
    :UseConstraints (value-of doc "/DIF/Use_Constraints")
-   :Platforms (for [platform (select doc "/DIF/Source_Name")]
-                {:ShortName (value-of platform "Short_Name")
-                 :LongName (value-of platform "Long_Name")})
+   :Platforms (parse-platforms doc)
    :TemporalExtents (when-let [temporals (select doc "/DIF/Temporal_Coverage")]
                       [{:RangeDateTimes (for [temporal temporals]
                                           {:BeginningDateTime (value-of temporal "Start_Date")
@@ -69,45 +92,45 @@
                             :ParameterValueAccuracy (value-of aa "Value[@type='ParameterValueAccuracy']")
                             :ValueAccuracyExplanation (value-of aa "Value[@type='ValueAccuracyExplanation']")
                             :UpdateDate (value-of aa "Value[@type='UpdateDate']")})
-  :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
-                          (into {} (map (fn [x]
-                                          (if (keyword? x)
-                                            [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                            x))
-                                        [:Author
-                                         :Publication_Date
-                                         :Title
-                                         :Series
-                                         :Edition
-                                         :Volume
-                                         :Issue
-                                         :Report_Number
-                                         :Publication_Place
-                                         :Publisher
-                                         :Pages
-                                         [:ISBN (value-of pub-ref "ISBN")]
-                                         [:DOI {:DOI (value-of pub-ref "DOI")}]
-                                         [:RelatedUrl
-                                          {:URLs (seq
-                                                   (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                         :Other_Reference_Details])))
-  :AncillaryKeywords (values-at doc  "/DIF/Keyword")
-  :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]
-                         {:Category (value-of sk "Category")
-                          :Topic (value-of sk "Topic")
-                          :Term (value-of sk "Term")
-                          :VariableLevel1 (value-of sk "Variable_Level_1")
-                          :VariableLevel2 (value-of sk "Variable_Level_2")
-                          :VariableLevel3 (value-of sk "Variable_Level_3")
-                          :DetailedVariable (value-of sk "Detailed_Variable")})
-  :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
+   :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
+                            (into {} (map (fn [x]
+                                            (if (keyword? x)
+                                              [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                                              x))
+                                          [:Author
+                                           :Publication_Date
+                                           :Title
+                                           :Series
+                                           :Edition
+                                           :Volume
+                                           :Issue
+                                           :Report_Number
+                                           :Publication_Place
+                                           :Publisher
+                                           :Pages
+                                           [:ISBN (value-of pub-ref "ISBN")]
+                                           [:DOI {:DOI (value-of pub-ref "DOI")}]
+                                           [:RelatedUrl
+                                            {:URLs (seq
+                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                           :Other_Reference_Details])))
+   :AncillaryKeywords (values-at doc  "/DIF/Keyword")
+   :ScienceKeywords (for [sk (select doc "/DIF/Parameters")]
+                      {:Category (value-of sk "Category")
+                       :Topic (value-of sk "Topic")
+                       :Term (value-of sk "Term")
+                       :VariableLevel1 (value-of sk "Variable_Level_1")
+                       :VariableLevel2 (value-of sk "Variable_Level_2")
+                       :VariableLevel3 (value-of sk "Variable_Level_3")
+                       :DetailedVariable (value-of sk "Detailed_Variable")})
+   :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")
                       :let [description (value-of related-url "Description")]]
                   {:URLs (values-at related-url "URL")
                    :Description description
                    :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}})
-  :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
-                          {:EntryId parent-dif})})
+   :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
+                           {:EntryId parent-dif})})
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."

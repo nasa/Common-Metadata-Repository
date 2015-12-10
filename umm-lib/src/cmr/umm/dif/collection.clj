@@ -152,7 +152,8 @@
                    temporal-keywords personnel collection-associations quality use-constraints
                    publication-references access-value]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
-           temporal (when (seq (:range-date-times temporal)) temporal)]
+           temporal (when (seq (:range-date-times temporal)) temporal)
+           instruments (mapcat :instruments platforms)]
        (x/emit-str
          (x/element :DIF dif-header-attributes
                     (x/element :Entry_ID {} short-name)
@@ -162,6 +163,7 @@
                                  (x/element :Version {} version-id)))
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
+                    (platform/generate-instruments instruments)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
                     (progress/generate collection)
