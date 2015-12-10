@@ -17,7 +17,7 @@
     (h/sql (format "alter table %s modify (VERSION_ID not null)" t))
 
     (h/sql (format "update %s set entry_id = short_name where version_id = 'Not provided'" t))
-    (h/sql (format "update %s set entry_id = short_name || '_V:' || version_id where version_id != 'Not provided'" t))))
+    (h/sql (format "update %s set entry_id = short_name || '_' || version_id where version_id != 'Not provided'" t))))
 
 
 (defn down

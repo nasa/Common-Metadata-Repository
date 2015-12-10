@@ -12,4 +12,4 @@
            (is (= exp-eid (eid/umm->entry-id umm-c))))
 
          {:short-name "S1" :version-id eid/DEFAULT_VERSION} "S1"
-         {:short-name "S1" :version-id "Complete"} "S1_V:Complete")))
+         {:short-name "S1" :version-id "Complete"} "S1_Complete")))

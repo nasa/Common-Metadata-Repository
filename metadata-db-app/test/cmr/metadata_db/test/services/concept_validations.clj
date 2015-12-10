@@ -12,7 +12,7 @@
    :user-id "user1"
    :extra-fields {:short-name "short"
                   :version-id "v1"
-                  :entry-id "short_V:v1"
+                  :entry-id "short_v1"
                   :entry-title "entry"}})
 
 (def valid-granule
