@@ -368,6 +368,32 @@
   (seq (for [related-url related-urls]
          (assoc related-url :Protocol nil :Title nil :Caption nil :FileSize nil :MimeType nil))))
 
+(defn- expected-dif-instruments
+  "Returns the expected DIF instruments for the given instruments"
+  [instruments]
+  (seq (map #(assoc % :Characteristics nil :Technique nil :NumberOfSensors nil :Sensors nil
+                    :OperationalModes nil) instruments)))
+
+(defn- expected-dif-platform
+  "Returns the expected DIF platform for the given platform"
+  [platform]
+  (-> platform
+      (assoc :Type nil :Characteristics nil)
+      (update-in [:Instruments] expected-dif-instruments)))
+
+(defn- expected-dif-platforms
+  "Returns the expected DIF parsed platforms for the given platforms."
+  [platforms]
+  (let [platforms (seq (map expected-dif-platform platforms))]
+    (if (= 1 (count platforms))
+      platforms
+      (if-let [instruments (seq (mapcat :Instruments platforms))]
+        (conj (map #(assoc % :Instruments nil) platforms)
+              (cmn/map->PlatformType {:ShortName su/not-provided
+                                      :LongName su/not-provided
+                                      :Instruments instruments}))
+        platforms))))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
@@ -400,7 +426,7 @@
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
+      (update-in [:Platforms] expected-dif-platforms)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
