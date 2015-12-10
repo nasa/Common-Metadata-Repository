@@ -11,12 +11,12 @@
 (defn- parse-short-name-long-name
   [doc path]
   (seq (for [elem (select doc path)]
-      {:ShortName (value-of elem "Short_Name")
-       :LongName (value-of elem "Long_Name")})))
+         {:ShortName (value-of elem "Short_Name")
+          :LongName (value-of elem "Long_Name")})))
 
 (defn- parse-instruments
   [doc]
-    (parse-short-name-long-name doc "/SERF/Sensor_Name"))
+  (parse-short-name-long-name doc "/SERF/Sensor_Name"))
 
 (defn- parse-just-platforms
   "Parses a doc for a SERF representation of platforms only."
@@ -56,9 +56,41 @@
               {:Type date-type
                :Date (date/not-default (value-of md-dates-el tag))}))))
 
-(defn- parse-responsibilities
+(def serf-roles->umm-roles {:ServiceProviderContact "RESOURCEPROVIDER" 
+                            :TechnicalContact "POINTOFCONTACT" 
+                            :SerfAuthor "AUTHOR"} )
+
+(defn- parse-party 
+  "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
+  [person organization]
+  {:OrganizationName {:ShortName (value-of organization "Short_Name")
+                      :LongName (value-of organization "Long_Name")}
+   :Person {:FirstName (value-of person "First_Name")
+            :MiddleName (value-of person "Middle_Name")
+            :LastName (value-of person "Last_Name")
+            }
+   :Contacts [{:Type "email" :Value (value-of person "Email")} 
+              {:Type "phone" :Value (value-of person "Phone")}
+              {:Type "fax"   :Value (value-of person "Fax")}
+              ]
+   :Addresses [{:StreetAddresses [(value-of person "Contact_Address/Address")]
+                :City (value-of person "Contact_Address/City")
+                :StateProvince (value-of person "Contact_Address/Province_or_State")
+                :PostalCode (value-of person "Contact_Address/Postal_Code")
+                :Country (value-of person "Contact_Address/Country")}]})
+
+(defn- parse-personnel
+  "Parse the personnel object of the SERF XML"
   [doc]
-  (let [personnel (select doc "/SERF/Personnel")]))
+  (let [root-personnel (select doc "/SERF/Personnel")
+        service-provider-personnel (select doc "/SERF/Service_Provider/Personnel")
+        organization (select doc "/SERF/Service_Provider/Service_Organization")
+        personnel (concat root-personnel service-provider-personnel)]
+    (for [person personnel
+          role (values-at person "Role")]
+      ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below. 
+      {:Role ((csk/->PascalCaseKeyword (keyword role)) serf-roles->umm-roles)
+       :Party (parse-party person organization)})))
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
@@ -68,8 +100,9 @@
    :Abstract (value-of doc "/SERF/Summary/Abstract")
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
-   :Responsibilities (parse-responsibilities doc)
-   :RelatedUrls (for [related-url (select doc "/SERF/Related_URL")] ;; TODO: Figure out if /SERF/Multimedia_Sample relates to RelatedUrls
+   :Responsibilities (parse-personnel doc)
+  ;;TODO: Bundle /SERF/Multimedia_Sample into RelatedUrls
+   :RelatedUrls (for [related-url (select doc "/SERF/Related_URL")]
                   {:URLs (values-at related-url "URL")
                    :Protocol (value-of related-url "Protocol")
                    :Description (value-of related-url "Description")
@@ -77,24 +110,24 @@
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
    :ServiceCitation (for [service-citation (select doc "/SERF/Service_Citation")]
-                            (into {} (map (fn [x]
-                                            (if (keyword? x)
-                                              [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
-                                              x))
-                                              [[:Version (value-of service-citation "Edition")]
-                                               [:RelatedUrl (value-of service-citation "URL")]
-                                               :Title
-                                               [:Creator (value-of service-citation "Originators")] 
-                                               :Editor
-                                               :SeriesName
-                                               :ReleaseDate
-                                               :ReleasePlace
-                                               :IssueIdentification
-                                               [:Publisher (value-of service-citation "Provider")]
-                                               :IssueIdentification
-                                               :DataPresentationForm
-                                               :OtherCitationDetails
-                                               [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]])))
+                      (into {} (map (fn [x]
+                                      (if (keyword? x)
+                                        [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
+                                        x))
+                                    [[:Version (value-of service-citation "Edition")]
+                                     [:RelatedUrl (value-of service-citation "URL")]
+                                     :Title
+                                     [:Creator (value-of service-citation "Originators")] 
+                                     :Editor
+                                     :SeriesName
+                                     :ReleaseDate
+                                     :ReleasePlace
+                                     :IssueIdentification
+                                     [:Publisher (value-of service-citation "Provider")]
+                                     :IssueIdentification
+                                     :DataPresentationForm
+                                     :OtherCitationDetails
+                                     [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]])))
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
    :AccessConstraints (value-of doc "/SERF/Use_Constraints")
@@ -108,29 +141,29 @@
                                             (if (keyword? x)
                                               [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
                                               x))
-                                              [:Author
-                                               :Publication_Date
-                                               :Title
-                                               :Series
-                                               :Edition
-                                               :Volume
-                                               :Issue
-                                               :Report_Number
-                                               :Publication_Place
-                                               :Publisher
-                                               :Pages
-                                               [:ISBN (value-of pub-ref "ISBN")]
-                                               (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
-                                                 [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
-                                               [:RelatedUrl
-                                                {:URLs (seq
-                                                        (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                               :Other_Reference_Details])))
+                                          [:Author
+                                           :Publication_Date
+                                           :Title
+                                           :Series
+                                           :Edition
+                                           :Volume
+                                           :Issue
+                                           :Report_Number
+                                           :Publication_Place
+                                           :Publisher
+                                           :Pages
+                                           [:ISBN (value-of pub-ref "ISBN")]
+                                           (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
+                                             [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
+                                           [:RelatedUrl
+                                            {:URLs (seq
+                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                                           :Other_Reference_Details])))
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    
    :Platforms (parse-platforms doc)
    
-
+   
    :Distributions (for [dist (select doc "/SERF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :DistributionSize (value-of dist "Distribution_Size")
@@ -161,8 +194,8 @@
                        :Topic (value-of sk "Science_Topic")
                        :Term (value-of sk "Science_Term")
                        :ServiceSpecificName (value-of sk "Service_Specific_Name")})})
-    
-   
+
+
 (defn serf-xml-to-umm-s
   "Returns UMM-S service record from a SERF XML document."
   [metadata]
