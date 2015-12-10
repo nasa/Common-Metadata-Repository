@@ -92,6 +92,82 @@
       {:Role ((csk/->PascalCaseKeyword (keyword role)) serf-roles->umm-roles)
        :Party (parse-party person organization)})))
 
+(defn- parse-service-citations 
+  "Parse SERF Service Citations into UMM-S"
+  [doc]
+  (for [service-citation (select doc "/SERF/Service_Citation")]
+    (into {} (map (fn [x]
+                    (if (keyword? x)
+                      [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
+                      x))
+                  [[:Version (value-of service-citation "Edition")]
+                   [:RelatedUrl (value-of service-citation "URL")]
+                   :Title
+                   [:Creator (value-of service-citation "Originators")] 
+                   :Editor
+                   :SeriesName
+                   :ReleaseDate
+                   :ReleasePlace
+                   :IssueIdentification
+                   [:Publisher (value-of service-citation "Provider")]
+                   :IssueIdentification
+                   :DataPresentationForm
+                   :OtherCitationDetails
+                   [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]]))))
+
+(defn- parse-publication-references
+  "Parse SERF Publication References into UMM-S"
+  [doc]
+  (for [pub-ref (select doc "/SERF/Reference")]
+    (into {} (map (fn [x]
+                    (if (keyword? x)
+                      [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
+                      x))
+                  [:Author
+                   :Publication_Date
+                   :Title
+                   :Series
+                   :Edition
+                   :Volume
+                   :Issue
+                   :Report_Number
+                   :Publication_Place
+                   :Publisher
+                   :Pages
+                   [:ISBN (value-of pub-ref "ISBN")]
+                   (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
+                     [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
+                   [:RelatedUrl
+                    {:URLs (seq
+                             (remove nil? [(value-of pub-ref "Online_Resource")]))}]
+                   :Other_Reference_Details]))))
+
+(defn- parse-actual-related-urls
+  "Parse a SERF RelatedURL element into a map" 
+  [doc]
+  (for [related-url (select doc "/SERF/Related_URL")]
+    {:URLs (values-at related-url "URL")
+     :Protocol (value-of related-url "Protocol")
+     :Description (value-of related-url "Description")
+     :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
+                   :Subtype (value-of related-url "URL_Content_Type/Subtype")}
+     :MimeType (value-of related-url "Mime_Type")}))
+
+(defn- parse-multimedia-samples
+  "Parse a SERF Multimedia Sample element into a RelatedURL map" 
+  [doc]
+  (for [multimedia-sample (select doc "/SERF/Multimedia_Sample")]
+    {:URLs (values-at multimedia-sample "URL")
+     :Protocol (value-of multimedia-sample "Format")
+     :Description (value-of multimedia-sample "Description")}))
+
+(defn- parse-related-urls
+  "Parse SERF Related URLs and Multimedia Samples into a UMM RelatedUrls object"
+  [doc]
+  (let [actual-urls (parse-actual-related-urls doc)
+        multimedia-urls (parse-multimedia-samples doc)]
+    (conj actual-urls multimedia-urls)))
+
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
   [doc]
@@ -101,33 +177,9 @@
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :Responsibilities (parse-personnel doc)
-  ;;TODO: Bundle /SERF/Multimedia_Sample into RelatedUrls
-   :RelatedUrls (for [related-url (select doc "/SERF/Related_URL")]
-                  {:URLs (values-at related-url "URL")
-                   :Protocol (value-of related-url "Protocol")
-                   :Description (value-of related-url "Description")
-                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}
-                   :MimeType (value-of related-url "Mime_Type")})
-   :ServiceCitation (for [service-citation (select doc "/SERF/Service_Citation")]
-                      (into {} (map (fn [x]
-                                      (if (keyword? x)
-                                        [(csk/->PascalCaseKeyword x) (value-of service-citation (str x))]
-                                        x))
-                                    [[:Version (value-of service-citation "Edition")]
-                                     [:RelatedUrl (value-of service-citation "URL")]
-                                     :Title
-                                     [:Creator (value-of service-citation "Originators")] 
-                                     :Editor
-                                     :SeriesName
-                                     :ReleaseDate
-                                     :ReleasePlace
-                                     :IssueIdentification
-                                     [:Publisher (value-of service-citation "Provider")]
-                                     :IssueIdentification
-                                     :DataPresentationForm
-                                     :OtherCitationDetails
-                                     [:DOI {:DOI (value-of service-citation "Persistent_Identifier/Identifier")}]])))
+   ;;TODO: Bundle /SERF/Multimedia_Sample into RelatedUrls
+   :RelatedUrls (parse-related-urls doc)
+   :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
    :AccessConstraints (value-of doc "/SERF/Use_Constraints")
@@ -136,41 +188,14 @@
                             :Version (without-default-value-of ma "Entry_Id/Version")
                             :Description (without-default-value-of ma "Description")
                             :Type (string/upper-case (without-default-value-of ma "Type"))})
-   :PublicationReferences (for [pub-ref (select doc "/SERF/Reference")]
-                            (into {} (map (fn [x]
-                                            (if (keyword? x)
-                                              [(csk/->PascalCaseKeyword x) (value-of pub-ref (str x))]
-                                              x))
-                                          [:Author
-                                           :Publication_Date
-                                           :Title
-                                           :Series
-                                           :Edition
-                                           :Volume
-                                           :Issue
-                                           :Report_Number
-                                           :Publication_Place
-                                           :Publisher
-                                           :Pages
-                                           [:ISBN (value-of pub-ref "ISBN")]
-                                           (when (= (value-of pub-ref "Persistent_Identifier/Type") "DOI")
-                                             [:DOI {:DOI (value-of pub-ref "Persistent_Identifier/Identifier")}])
-                                           [:RelatedUrl
-                                            {:URLs (seq
-                                                     (remove nil? [(value-of pub-ref "Online_Resource")]))}]
-                                           :Other_Reference_Details])))
+   :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
-   
    :Platforms (parse-platforms doc)
-   
-   
    :Distributions (for [dist (select doc "/SERF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
                      :DistributionSize (value-of dist "Distribution_Size")
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
-   
-   
    :AdditionalAttributes (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
                            {:Group (value-of aa "Group")
                             :Name (value-of aa "Name")
