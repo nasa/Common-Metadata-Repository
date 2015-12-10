@@ -24,6 +24,7 @@
   (parse-short-name-long-name doc "/SERF/Source_Name"))
 
 (defn- parse-platforms
+  "Parses a SERF Platform element into a UMM-S Platform"
   [doc]
   (let [platforms (parse-just-platforms doc)
         instruments (parse-instruments doc)]
@@ -56,9 +57,11 @@
               {:Type date-type
                :Date (date/not-default (value-of md-dates-el tag))}))))
 
-(def serf-roles->umm-roles {:ServiceProviderContact "RESOURCEPROVIDER" 
-                            :TechnicalContact "POINTOFCONTACT" 
-                            :SerfAuthor "AUTHOR"} )
+(def serf-roles->umm-roles 
+  "Maps SERF roles to UMM roles"
+  {:ServiceProviderContact "RESOURCEPROVIDER" 
+   :TechnicalContact "POINTOFCONTACT" 
+   :SerfAuthor "AUTHOR"})
 
 (defn- parse-party 
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
@@ -166,7 +169,56 @@
   [doc]
   (let [actual-urls (parse-actual-related-urls doc)
         multimedia-urls (parse-multimedia-samples doc)]
-    (conj actual-urls multimedia-urls)))
+    (concat actual-urls multimedia-urls)))
+
+(defn- parse-metadata-associations
+  "Parse a SERF document and return a UMM-S Metadata Associations element"
+  [doc]
+  (for [ma (select doc "/SERF/Parent_SERF")]
+    {:EntryId (value-of ma "Entry_Id/Short_Name")
+     :Version (without-default-value-of ma "Entry_Id/Version")
+     :Description (without-default-value-of ma "Description")
+     :Type (string/upper-case (without-default-value-of ma "Type"))}))
+
+(defn- parse-distributions
+  "Parse a SERF document for Distribution elements and returns an UMM-S Distribution element"
+  [doc]
+  (for [dist (select doc "/SERF/Distribution")]
+    {:DistributionMedia (value-of dist "Distribution_Media")
+     :DistributionSize (value-of dist "Distribution_Size")
+     :DistributionFormat (value-of dist "Distribution_Format")
+     :Fees (value-of dist "Fees")}))
+(defn- parse-additional-attributes 
+  "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
+  [doc]
+  (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
+    {:Group (value-of aa "Group")
+     :Name (value-of aa "Name")
+     :DataType (value-of aa "Type")
+     :Description (without-default-value-of aa "Description")
+     :UpdateDate (date/not-default (value-of aa "Update_Date"))
+     :Value (value-of aa "Value")}))
+
+(defn- parse-service-keywords
+  "Parses a SERF document for Service Keyword elements and returns a UMM-S Service Keyword element"
+  [doc]
+  (for [sk (select doc "/SERF/Service_Parameters")]
+    {:Category (value-of sk "Service_Category")
+     :Topic (value-of sk "Service_Topic")
+     :Term (value-of sk "Service_Term")
+     :VariableLevel1 (value-of sk "Service_Variable_Level_1")
+     :VariableLevel2 (value-of sk "Service_Variable_Level_2")
+     :VariableLevel3 (value-of sk "Service_Variable_Level_3")
+     :DetailedVariable (value-of sk "Service_Detailed_Variable")}))
+
+(defn- parse-science-keywords 
+  "Parses a SERF document for Science Keyword elements and returns a UMM-S Science Keyword element"
+  [doc]
+  (for [sk (select doc "/SERF/Science_Parameters")]
+    {:Category (value-of sk "Science_Category")
+     :Topic (value-of sk "Science_Topic")
+     :Term (value-of sk "Science_Term")
+     :ServiceSpecificName (value-of sk "Service_Specific_Name")}))
 
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
@@ -177,48 +229,22 @@
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")
    :Responsibilities (parse-personnel doc)
-   ;;TODO: Bundle /SERF/Multimedia_Sample into RelatedUrls
    :RelatedUrls (parse-related-urls doc)
    :ServiceCitation (parse-service-citations doc)
    :Quality (value-of doc "/SERF/Quality")
    :UseConstraints (value-of doc "/SERF/Use_Constraints")
    :AccessConstraints (value-of doc "/SERF/Use_Constraints")
-   :MetadataAssociations (for [ma (select doc "/SERF/Parent_SERF")]
-                           {:EntryId (value-of ma "Entry_Id/Short_Name")
-                            :Version (without-default-value-of ma "Entry_Id/Version")
-                            :Description (without-default-value-of ma "Description")
-                            :Type (string/upper-case (without-default-value-of ma "Type"))})
+   :MetadataAssociations (parse-metadata-associations doc)
    :PublicationReferences (parse-publication-references doc)
    :ISOTopicCategories (values-at doc "/SERF/ISO_Topic_Category")
    :Platforms (parse-platforms doc)
-   :Distributions (for [dist (select doc "/SERF/Distribution")]
-                    {:DistributionMedia (value-of dist "Distribution_Media")
-                     :DistributionSize (value-of dist "Distribution_Size")
-                     :DistributionFormat (value-of dist "Distribution_Format")
-                     :Fees (value-of dist "Fees")})
-   :AdditionalAttributes (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
-                           {:Group (value-of aa "Group")
-                            :Name (value-of aa "Name")
-                            :DataType (value-of aa "Type")
-                            :Description (without-default-value-of aa "Description")
-                            :UpdateDate (date/not-default (value-of aa "Update_Date"))
-                            :Value (value-of aa "Value")})
+   :Distributions (parse-distributions doc)
+   :AdditionalAttributes (parse-additional-attributes doc)
    :AncillaryKeywords (values-at doc "/SERF/Keyword")
    :Projects (parse-projects doc)
    :MetadataDates (parse-data-dates doc)
-   :ServiceKeywords (for [sk (select doc "/SERF/Service_Parameters")]
-                      {:Category (value-of sk "Service_Category")
-                       :Topic (value-of sk "Service_Topic")
-                       :Term (value-of sk "Service_Term")
-                       :VariableLevel1 (value-of sk "Service_Variable_Level_1")
-                       :VariableLevel2 (value-of sk "Service_Variable_Level_2")
-                       :VariableLevel3 (value-of sk "Service_Variable_Level_3")
-                       :DetailedVariable (value-of sk "Service_Detailed_Variable")})
-   :ScienceKeywords (for [sk (select doc "/SERF/Science_Parameters")]
-                      {:Category (value-of sk "Science_Category")
-                       :Topic (value-of sk "Science_Topic")
-                       :Term (value-of sk "Science_Term")
-                       :ServiceSpecificName (value-of sk "Service_Specific_Name")})})
+   :ServiceKeywords (parse-service-keywords doc)
+   :ScienceKeywords (parse-science-keywords doc)})
 
 
 (defn serf-xml-to-umm-s
