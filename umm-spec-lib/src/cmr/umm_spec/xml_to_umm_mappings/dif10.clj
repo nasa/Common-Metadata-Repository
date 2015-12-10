@@ -58,7 +58,7 @@
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
                                        ;; represent dates.
-                                       dtp/try-parse-datetime)]
+                                       u/try-parse-datetime)]
                   :when date-value]
               {:Type date-type
                :Date date-value}))))
