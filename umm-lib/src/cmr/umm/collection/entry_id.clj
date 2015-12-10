@@ -10,7 +10,7 @@
   (if (or (nil? version-id)
           (= DEFAULT_VERSION version-id))
     short-name
-    (str short-name "_V:" version-id)))
+    (str short-name "_" version-id)))
 
 (defn umm->entry-id
   "Returns an entry-id for the given umm record."
