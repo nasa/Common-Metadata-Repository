@@ -41,10 +41,10 @@
      :EntryId "Entry ID Goes Here"
      :Abstract "An Abstract UMM-S Test Example"
      :Responsibilities [(umm-cmn/map->ResponsibilityType
-                       {:Role "RESOURCEPROVIDER"
-                        :Party (umm-cmn/map->PartyType
-                                 {:OrganizationName (umm-cmn/map->OrganizationNameType
-                                                      {:ShortName "custodian"})})})]
+                         {:Role "RESOURCEPROVIDER"
+                          :Party (umm-cmn/map->PartyType
+                                   {:OrganizationName (umm-cmn/map->OrganizationNameType
+                                                        {:ShortName "custodian"})})})]
      :RelatedUrls [(umm-cmn/map->RelatedUrlType {:URLs ["http://google.com"]})]
      :ScienceKeywords [(umm-cmn/map->ScienceKeywordType {:Category "cat" :Topic "top" :Term "ter"})]
      :ServiceKeywords [(umm-s/map->ServiceKeywordType {:Category "cat" :Topic "top" :Term "ter" :ServiceSpecificName "SSN"})]}))
@@ -97,8 +97,8 @@
   (let [json (uj/umm->json user/failing-value)
         _ (is (empty? (js/validate-umm-json json :service)))
         parsed (uj/json->umm js/umm-s-schema json)]
-    (is (= user/failing-value parsed)))
-  )
+    (is (= user/failing-value parsed))))
+
 
 (deftest validate-json-with-extra-fields
   (let [json (uj/umm->json (assoc minimal-example-umm-c-record :foo "extra"))]

@@ -53,9 +53,9 @@
   (context "/translate" []
     (POST "/collection" {:keys [body headers request-context params]}
           (translate request-context :collection headers body
-                     (= "true" (:skip_umm_validation params))))
+                     (= "true" (:skip_umm_validation params))))))
     ;; Granule translation is not supported yet. This will be done when granules are added to the UMM spec.
-    ))
+
 
 (def random-metadata-routes
   "This defines routes for development purposes that can generate random metadata and return it."

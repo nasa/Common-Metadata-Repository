@@ -97,6 +97,6 @@
 
   ;; for generated test failures
   (is (= (expected-conversion/convert user/failing-value metadata-format)
-         (xml-round-trip user/failing-value metadata-format)))
+         (xml-round-trip user/failing-value metadata-format))))
 
-  )
+
