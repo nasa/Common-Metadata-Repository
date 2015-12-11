@@ -41,10 +41,7 @@
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-   ;; TODO: The schema location below is for DIF 10.1. Obtain a sample DIF 10.2 from GCMD
-   ;; and update the schemaLocation based on it.
-   ; :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"
-   })
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
 (defn- temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
@@ -256,7 +253,7 @@
      (for [ma (:MetadataAssociations c)
            :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
        [:Metadata_Association
-        [:Entry_Id
+        [:Entry_ID
          [:Short_Name (:EntryId ma)]
          [:Version (u/with-default (:Version ma))]]
         [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]

@@ -41,10 +41,33 @@
                :geometries geometries
                :orbit-parameters nil)))))
 
+(defn- instruments->expected
+  "Returns the expected instruments for the given instruments"
+  [instruments]
+  (seq (map #(assoc % :technique nil, :sensors nil, :characteristics nil, :operation-modes nil)
+            instruments)))
+
+(defn- platform->expected
+  "Returns the expected platform for the given platform"
+  [platform]
+  (-> platform
+      (assoc :type "Not Specified" :characteristics nil)
+      (update-in [:instruments] instruments->expected)))
+
 (defn- platforms->expected-parsed
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
-  (seq (map #(assoc % :type "Not Specified" :instruments nil :characteristics nil) platforms)))
+  (let [platforms (seq (map platform->expected platforms))]
+    (if (= 1 (count platforms))
+      platforms
+      (if-let [instruments (seq (mapcat :instruments platforms))]
+        (conj (map #(assoc % :instruments nil) platforms)
+              (umm-c/map->Platform
+                {:short-name dif/value-not-provided
+                 :long-name dif/value-not-provided
+                 :type "Not Specified"
+                 :instruments instruments}))
+        platforms))))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -85,10 +108,10 @@
                    nil)
         organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
         personnel (not-empty (->> personnel
-                            ;; only support email right now
-                            (map filter-contacts)
-                            ;; DIF has no Middle_Name tag
-                            (map #(assoc % :middle-name nil))))]
+                                  ;; only support email right now
+                                  (map filter-contacts)
+                                  ;; DIF has no Middle_Name tag
+                                  (map #(assoc % :middle-name nil))))]
     (-> coll
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
@@ -128,20 +151,20 @@
         (update-in [:product-specific-attributes]
                    (fn [psas]
                      (seq (map (fn [psa]
-                            (assoc psa
-                                    :parameter-range-begin nil
-                                    :parameter-range-end nil
-                                    :parsed-parameter-range-begin nil
-                                    :parsed-parameter-range-end nil))
-                          psas))))
+                                 (assoc psa
+                                        :parameter-range-begin nil
+                                        :parameter-range-end nil
+                                        :parsed-parameter-range-begin nil
+                                        :parsed-parameter-range-end nil))
+                               psas))))
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]
       (and
-       (seq xml)
-       (empty? (c/validate-xml xml))))))
+        (seq xml)
+        (empty? (c/validate-xml xml))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
@@ -157,7 +180,7 @@
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
-      (and (= parsed-echo10 expected-parsed)
+      (and (= expected-parsed parsed-echo10 )
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
@@ -493,6 +516,13 @@
                                  :other-reference-details "blah"})]
      ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
      :platforms [(umm-c/map->Platform
+                   {:short-name "Not provided"
+                    :long-name "Not provided"
+                    :type "Not Specified"
+                    :instruments [(umm-c/map->Instrument
+                                    {:short-name "VEGETATION-1"
+                                     :long-name "VEGETATION INSTRUMENT 1 (SPOT 4)"})]})
+                 (umm-c/map->Platform
                    {:short-name "SPOT-1"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
                     :type "Not Specified"})

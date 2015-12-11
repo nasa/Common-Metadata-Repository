@@ -22,8 +22,8 @@
 
     northernmost-point
 
-    southernmost-point
-   ])
+    southernmost-point])
+
 
 
 ;; The arc contains derived information that is cached to prevent recalculating the same
@@ -48,8 +48,8 @@
 
    ;; 1 or 2 bounding rectangles defining the MBR of the arc.
    mbr1
-   mbr2
-   ])
+   mbr2])
+
 
 (record-pretty-printer/enable-record-pretty-printing
   GreatCircle
@@ -116,55 +116,56 @@
 (defn- bounding-rectangles
   "Calculates the bounding rectangles for an arc"
   [^Point west-point ^Point east-point ^GreatCircle great-circle initial-course ending-course]
-    (cond
+  (cond
       ;; Crosses North pole?
-      (and (= 0.0 initial-course) (= 180.0 ending-course))
+    (and (= 0.0 initial-course) (= 180.0 ending-course))
       ;; Results in two mbrs that have no width going from lon up to north pole
-      (let [br1 (mbr/mbr (.lon west-point) 90.0 (.lon west-point) (.lat west-point))
-            br2 (mbr/mbr (.lon east-point) 90.0 (.lon east-point) (.lat east-point))]
-        [br1 br2])
+    (let [br1 (mbr/mbr (.lon west-point) 90.0 (.lon west-point) (.lat west-point))
+          br2 (mbr/mbr (.lon east-point) 90.0 (.lon east-point) (.lat east-point))]
+      [br1 br2])
 
       ;; Crosses South pole?
-      (and (= 180.0 initial-course) (= 0.0 ending-course))
+    (and (= 180.0 initial-course) (= 0.0 ending-course))
       ;; Results in two mbrs that have no width going from lon down to south pole
-      (let [br1 (mbr/mbr (.lon west-point) (.lat west-point) (.lon west-point) -90.0)
-            br2 (mbr/mbr (.lon east-point) (.lat east-point) (.lon east-point) -90.0)]
-        [br1 br2])
+    (let [br1 (mbr/mbr (.lon west-point) (.lat west-point) (.lon west-point) -90.0)
+          br2 (mbr/mbr (.lon east-point) (.lat east-point) (.lon east-point) -90.0)]
+      [br1 br2])
 
-      :else
-      (let [w (.lon west-point)
-            e (.lon east-point)
+    :else
+    (let [w (.lon west-point)
+          e (.lon east-point)
 
             ;; If one point is at a pole the west and east longitudes should match
-            w (if (or (p/is-north-pole? west-point) (p/is-south-pole? west-point))
-                e
-                w)
-            e (if (or (p/is-north-pole? east-point) (p/is-south-pole? east-point))
-                w
-                e)
+          w (if (or (p/is-north-pole? west-point) (p/is-south-pole? west-point))
+              e
+              w)
+          e (if (or (p/is-north-pole? east-point) (p/is-south-pole? east-point))
+              w
+              e)
             ;; Choose north and south extents
-            [s n] (if (> (.lat west-point) (.lat east-point))
-                    [(.lat east-point) (.lat west-point)]
-                    [(.lat west-point) (.lat east-point)])
+          wp-lat (.lat west-point)
+          ep-lat (.lat east-point)
+          s (if (> wp-lat ep-lat) ep-lat wp-lat)
+          n (if (> wp-lat ep-lat) wp-lat ep-lat)
 
-            ;; If they're both on the antimeridian set west and east to the same value.
-            [w e] (if (and (= (abs w) 180.0) (= (abs e) 180.0))
-                    [180.0 180.0]
-                    [w e])
+          ;; If they're both on the antimeridian set west and east to the same value.
+          both-antimeridian (and (= (abs w) 180.0) (= (abs e) 180.0))
+          w (if both-antimeridian 180.0 w)
+          e (if both-antimeridian 180.0 e)
 
-            br (mbr/mbr w n e s)
-            ^Point northernmost (.northernmost_point great-circle)
-            ^Point southernmost (.southernmost_point great-circle)]
+          br (mbr/mbr w n e s)
+          ^Point northernmost (.northernmost_point great-circle)
+          ^Point southernmost (.southernmost_point great-circle)]
 
-        (cond
+      (cond
           ;; Use the great circle northernmost and southernmost points to expand the bounding rectangle if necessary
-          (mbr/covers-lon? :geodetic br (.lon northernmost))
-          [(assoc br :north (.lat northernmost))]
+        (mbr/covers-lon? :geodetic br (.lon northernmost))
+        [(assoc br :north (.lat northernmost))]
 
-          (mbr/covers-lon? :geodetic br (.lon southernmost))
-          [(assoc br :south (.lat southernmost))]
+        (mbr/covers-lon? :geodetic br (.lon southernmost))
+        [(assoc br :south (.lat southernmost))]
 
-          :else [br]))))
+        :else [br]))))
 
 (defn arc
   [point1 point2]
@@ -181,12 +182,17 @@
 (defn points->arcs
   "Takes a list of points and returns arcs connecting all the points"
   [points]
-  (util/map-n (fn [[p1 p2]] (arc p1 p2)) 2 1 points))
+  (let [points (vec points)]
+    (persistent!
+     (reduce (fn [arcs ^long index]
+               (conj! arcs (arc (nth points index) (nth points (inc index)))))
+             (transient [])
+             (range 0 (dec (count points)))))))
 
 (defn ords->arc
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an arc."
   [& ords]
-  (apply arc (apply p/ords->points ords)))
+  (apply arc (p/ords->points ords)))
 
 (defn arc->ords
   "Returns a list of the arc ordinates lon1, lat1, lon2, lat2"
@@ -258,58 +264,71 @@
 (defn points-at-lat
   "Returns the points where the arc crosses at a given latitude. Returns nil if the arc
   does not cross that lat. Based on http://williams.best.vwh.net/avform.htm#Par"
-  [arc ^double lat]
-  (when (some #(mbr/covers-lat? % lat) (mbrs arc))
-    (let [{:keys [^Point west-point ^Point east-point]} arc
-          lat3 (radians lat) ; lat3 is just the latitude argument in radians
-          lon1 (.lon-rad west-point)
-          lon2 (.lon-rad east-point)
-          lat1 (.lat-rad west-point)
-          lat2 (.lat-rad east-point)
-          lon12 (- lon1 lon2)
-          sin-lon12 (sin lon12)
-          cos-lon12 (cos lon12)
-          sin-lat1 (sin lat1)
-          cos-lat1 (cos lat1)
-          sin-lat2 (sin lat2)
-          cos-lat2 (cos lat2)
-          sin-lat3 (sin lat3)
-          cos-lat3 (cos lat3)
+  [^Arc arc ^double lat]
+  (let [mbr1 (.mbr1 arc)
+        mbr2 (.mbr2 arc)]
+    (when (or (mbr/covers-lat? mbr1 lat)
+              (and mbr2 (mbr/covers-lat? mbr2 lat)))
+      (let [^Point west-point (.west_point arc)
+            ^Point east-point (.east_point arc)
+            lat3 (radians lat) ; lat3 is just the latitude argument in radians
+            lon1 (.lon-rad west-point)
+            lon2 (.lon-rad east-point)
+            lat1 (.lat-rad west-point)
+            lat2 (.lat-rad east-point)
+            lon12 (- lon1 lon2)
+            sin-lon12 (sin lon12)
+            cos-lon12 (cos lon12)
+            sin-lat1 (sin lat1)
+            cos-lat1 (cos lat1)
+            sin-lat2 (sin lat2)
+            cos-lat2 (cos lat2)
+            sin-lat3 (sin lat3)
+            cos-lat3 (cos lat3)
 
-          ;;  A = sin(lat1) * cos(lat2) * cos(lat3) * sin(l12)
-          A (* sin-lat1 cos-lat2 cos-lat3 sin-lon12)
-          ;;  B = sin(lat1)*cos(lat2)*cos(lat3)*cos(l12) - cos(lat1)*sin(lat2)*cos(lat3)
-          B (- (* sin-lat1 cos-lat2 cos-lat3 cos-lon12)
-               (* cos-lat1 sin-lat2 cos-lat3))
-          ;;  C = cos(lat1)*cos(lat2)*sin(lat3)*sin(l12)
-          C (* cos-lat1 cos-lat2 sin-lat3 sin-lon12)
-          h (sqrt (+ (sq A) (sq B)))]
+            ;;  A = sin(lat1) * cos(lat2) * cos(lat3) * sin(l12)
+            A (* sin-lat1 cos-lat2 cos-lat3 sin-lon12)
+            ;;  B = sin(lat1)*cos(lat2)*cos(lat3)*cos(l12) - cos(lat1)*sin(lat2)*cos(lat3)
+            B (- (* sin-lat1 cos-lat2 cos-lat3 cos-lon12)
+                 (* cos-lat1 sin-lat2 cos-lat3))
+            ;;  C = cos(lat1)*cos(lat2)*sin(lat3)*sin(l12)
+            C (* cos-lat1 cos-lat2 sin-lat3 sin-lon12)
+            h (sqrt (+ (sq A) (sq B)))]
 
-      (when (<= (abs C) h)
-        (let [lon-rad (atan2 B A)
-              ;;   dlon = acos(C/sqrt(A^2+B^2))
-              dlon (acos (/ C h))
-              ;;   lon3_1=mod(lon1+dlon+lon+pi, 2*pi)-pi
-              lon3-1 (- ^double (mod (+ lon1 dlon lon-rad PI)
-                                     TAU)
-                        PI)
-              ;;   lon3_2=mod(lon1-dlon+lon+pi, 2*pi)-pi
-              lon3-2 (- ^double (mod (+ (- lon1 dlon) lon-rad PI)
-                                     TAU)
-                        PI)
-              points [(p/point (degrees lon3-1) lat lon3-1 lat3)
-                      (p/point (degrees lon3-2) lat lon3-2 lat3)]]
-          (->> points
-               (filterv (fn [p]
-                          (some #(mbr/geodetic-covers-point? % p)
-                                (mbrs arc))))
-               set))))))
+        (when (<= (abs C) h)
+          (let [lon-rad (atan2 B A)
+                ;;   dlon = acos(C/sqrt(A^2+B^2))
+                dlon (acos (/ C h))
+                ;;   lon3_1=mod(lon1+dlon+lon+pi, 2*pi)-pi
+                lon3-1 (- ^double (mod (+ lon1 dlon lon-rad PI)
+                                       TAU)
+                          PI)
+                ;;   lon3_2=mod(lon1-dlon+lon+pi, 2*pi)-pi
+                lon3-2 (- ^double (mod (+ (- lon1 dlon) lon-rad PI)
+                                       TAU)
+                          PI)
+                p1 (p/point (degrees lon3-1) lat lon3-1 lat3)
+                p2 (p/point (degrees lon3-2) lat lon3-2 lat3)
+                p1 (when (or (mbr/geodetic-covers-point? mbr1 p1)
+                             (and mbr2 (mbr/geodetic-covers-point? mbr2 p1)))
+                     p1)
+                p2 (when (or (mbr/geodetic-covers-point? mbr1 p2)
+                             (and mbr2 (mbr/geodetic-covers-point? mbr2 p2)))
+                     p2)]
+            (cond
+              (and p1 p2) (if (= p1 p2) [p1] [p1 p2])
+              p1 [p1]
+              p2 [p2])))))))
 
 (defn point-on-arc?
   "Returns true if the point is on the arc"
-  [arc point]
-  (let [{:keys [west-point east-point]} arc]
-    (and (some #(mbr/geodetic-covers-point? % point) (mbrs arc))
+  [^Arc arc point]
+  (let [west-point (.west_point arc)
+        east-point (.east_point arc)
+        mbr1 (.mbr1 arc)
+        mbr2 (.mbr2 arc)]
+    (and (or (mbr/geodetic-covers-point? mbr1 point)
+             (and mbr2 (mbr/geodetic-covers-point? mbr2 point)))
          (or (= west-point point)
              (= east-point point)
              ;; If the arc is vertical and the point is in the mbr of the arc then it's on the arc

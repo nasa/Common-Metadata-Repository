@@ -40,7 +40,7 @@
                    :Technique (value-of sensor "Technique")
                    :Characteristics (parse-characteristics sensor)})})))
 
-(defn- parse-data-dates
+(defn parse-data-dates
   "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
   [doc]
   (let [[md-dates-el] (select doc "/DIF/Metadata_Dates")
@@ -49,9 +49,18 @@
                    ["Data_Future_Review" "REVIEW"]
                    ["Data_Delete"        "DELETE"]]]
     (filter :Date
-            (for [[tag date-type] tag-types]
+            (for [[tag date-type] tag-types
+                  :let [date-value (-> md-dates-el
+                                       (value-of tag)
+                                       date/not-default
+                                       ;; Since the DIF 10 date elements are actually just a string
+                                       ;; type, they may contain anything, and so we need to try to
+                                       ;; parse them here and return nil if they do not actually
+                                       ;; represent dates.
+                                       u/try-parse-datetime)]
+                  :when date-value]
               {:Type date-type
-               :Date (date/not-default (value-of md-dates-el tag))}))))
+               :Date date-value}))))
 
 (defn parse-dif10-xml
   "Returns collection map from DIF10 collection XML document."
@@ -147,8 +156,8 @@
                                  :Subtype (value-of related-url "URL_Content_Type/Subtype")}
                    :MimeType (value-of related-url "Mime_Type")})
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
-                           {:EntryId (value-of ma "Entry_Id/Short_Name")
-                            :Version (without-default-value-of ma "Entry_Id/Version")
+                           {:EntryId (value-of ma "Entry_ID/Short_Name")
+                            :Version (without-default-value-of ma "Entry_ID/Version")
                             :Description (without-default-value-of ma "Description")
                             :Type (string/upper-case (without-default-value-of ma "Type"))})
    :ScienceKeywords (for [sk (select doc "/DIF/Science_Keywords")]

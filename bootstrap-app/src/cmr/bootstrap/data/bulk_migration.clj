@@ -90,7 +90,7 @@
                            "version_id, entry_title, delete_time, revision_date, entry_id) SELECT %s_seq.NEXTVAL,"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
                            "version_id, dataset_id, delete_time, ingest_updated_at,
-                           (short_name || '_V:' || version_id)"
+                           (short_name || '_' || version_id)"
                            "FROM %s where %s")
                       collection-table
                       collection-table

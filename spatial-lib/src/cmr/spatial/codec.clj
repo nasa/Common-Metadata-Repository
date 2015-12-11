@@ -41,7 +41,7 @@
   cmr.spatial.line_string.LineString
   (url-encode
     [{:keys [points]}]
-     (encode-points points))
+    (encode-points points))
 
   cmr.spatial.polygon.Polygon
   (url-encode
@@ -111,7 +111,7 @@
   [type s]
   (if-let [match (re-matches line-regex s)]
     (let [ordinates (map #(Double. ^String %) (str/split s #","))]
-      (apply l/ords->line-string :geodetic ordinates))
+      (l/ords->line-string :geodetic ordinates))
     {:errors [(smsg/shape-decode-msg :line s)]}))
 
 

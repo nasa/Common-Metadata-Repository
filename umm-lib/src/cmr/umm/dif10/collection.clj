@@ -93,7 +93,8 @@
   "The set of attributes that go on the dif root element"
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
-   :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
+   :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection

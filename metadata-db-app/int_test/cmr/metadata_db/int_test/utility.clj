@@ -155,7 +155,7 @@
          extra-fields (merge {:short-name short-name
                               :version-id version-id
                               :entry-id (if version-id
-                                          (str short-name "_V:" version-id)
+                                          (str short-name "_" version-id)
                                           short-name)
                               :entry-title (str "dataset" uniq-num)
                               :delete-time nil}

@@ -1,4 +1,4 @@
-(ns cmr.ingest.services.project-validation
+(ns cmr.ingest.validation.project-validation
   "Provides functions to validate the projects during collection update"
   (:require [clojure.set :as s]))
 

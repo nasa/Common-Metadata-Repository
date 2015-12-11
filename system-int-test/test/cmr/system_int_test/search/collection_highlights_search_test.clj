@@ -7,7 +7,9 @@
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]))
+            [cmr.common.mime-types :as mt]
+            [clojure.string :as str]
+            [clojure.set :as set]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -34,7 +36,7 @@
                               "out what keyword to search for in order to make two different "
                               "snippets have a match, but that seems (findme) doable. "
                               "The quick brown fox jumped --findme-- over the lazy dog. "
-                              "Now is the time for all good men >>FINDME<< to come to the aid of"
+                              "Now is the time for all good men >>FINDME<< to come to the aid of "
                               "the party.")})
   (make-coll 3 {:summary "Match on 'collection'"})
   (make-coll 4 {:summary "Match on 'ocean'."})
@@ -58,7 +60,7 @@
     "Long summary with multiple snippets and case insensitive"
     [["This summary has a lot of characters in it. **<em>Findme</em>** So many that elasticsearch will break this"
       " seems (<em>findme</em>) doable. The quick brown fox jumped --<em>findme</em>-- over the lazy dog. Now is the time for"
-      " all good men >><em>FINDME</em><< to come to the aid ofthe party."]]
+      " all good men >><em>FINDME</em><< to come to the aid of the party."]]
     {:keyword "FiNdmE"}
     {}
 
@@ -208,3 +210,53 @@
               (search/find-concepts-in-format resp-format :collection {:include-highlights true})))
          mt/umm-json
          mt/opendata)))
+
+(deftest special-characters-test
+  (make-coll 1 {:summary "MODIS/Terra dataset."})
+  (index/wait-until-indexed)
+  (is (= [["<em>MODIS</em>/<em>Terra</em> dataset."]]
+         (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                         :collection
+                                         {:include-highlights true}
+                                         {:keyword "MODIS/Terra"})))))
+
+(deftest reserved-characters-test
+  ;; This test documents the current elasticsearch highlighting behavior with respect to reserved
+  ;; characters. The behavior is inconsistent for the : ? and * characters.
+  (let [reserved-strings #{"+" "-" "=" "&&" "||" ">" "<" "!" "(" ")" "{" "}" "[" "]" "^" "\"" "~" "*"
+                           "?" ":" "\\" "/"}
+        reserved-strings-with-different-behavior #{":" "?" "*"}]
+    ;; Ingest one collection with a different reserved character for each collection. For example,
+    ;; MODIS+TERRA, MODIS-TERRA, MODIS&&TERRA, etc.
+    (dorun (map-indexed #(make-coll (inc %1) {:summary (format "MODIS%sTERRA dataset." %2)})
+                        reserved-strings))
+    (index/wait-until-indexed)
+
+    (testing "Most reserved characters are not highlighted when they are searched against."
+      (doseq [reserved-string (set/difference reserved-strings
+                                              reserved-strings-with-different-behavior)]
+        (is (= [[(format "<em>MODIS</em>%s<em>TERRA</em> dataset." reserved-string)]]
+               (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                               :collection
+                                               {:include-highlights true}
+                                               {:keyword (format "MODIS%sTERRA"
+                                                                 reserved-string)}))))))
+
+    (testing "Colons are highlighted along with the search string."
+      (is (= [["<em>MODIS:TERRA</em> dataset."]]
+             (get-search-results-summaries (search/find-concepts-in-json-with-json-query
+                                             :collection
+                                             {:include-highlights true}
+                                             {:keyword "MODIS:TERRA"})))))
+
+    (testing "Wildcard searches do not highlight any strings with reserved characters except for
+             colon."
+             (doseq [reserved-string #{"*" "?"}]
+               (is (= (set [nil nil nil ["<em>MODIS:TERRA</em> dataset."] nil nil nil nil nil nil])
+                      (set (get-search-results-summaries
+                             (search/find-concepts-in-json-with-json-query
+                                                           :collection
+                                                           {:include-highlights true}
+                                                           {:keyword (format "MODIS%sTERRA"
+                                                                             reserved-string)})))))))))
+

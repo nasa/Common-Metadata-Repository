@@ -21,8 +21,8 @@
 (defrecord GenericRing
   [
    coordinate-system
-   points
-   ])
+   points])
+
 (record-pretty-printer/enable-record-pretty-printing GenericRing)
 
 (defn ring
@@ -33,7 +33,7 @@
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
   [& ords]
-  (ring (apply p/ords->points ords)))
+  (ring (p/ords->points ords)))
 
 (def valid-coord-systems #{:geodetic :cartesian})
 

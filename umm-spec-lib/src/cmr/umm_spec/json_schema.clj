@@ -2,7 +2,6 @@
   "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
             [cmr.umm-spec.util :as spec-util]
             [cmr.common.util :as cmn-util]))
@@ -189,14 +188,6 @@
     (recur (apply lookup-ref pair))
     pair))
 
-(defn- parse-datetime
-  "Returns the datetime parsed from a date-string or datetime-string."
-  [datetime-string]
-  (when datetime-string
-    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
-      (dtp/parse-date datetime-string)
-      (dtp/parse-datetime datetime-string))))
-
 (defn coerce
   "Returns x coerced according to a JSON schema type type definition. With no other parameters, the
   schema and type defaults to the umm-c-schema and the root UMM-C type."
@@ -214,7 +205,7 @@
                    "date-time"
                    (if (instance? org.joda.time.DateTime x)
                      x
-                     (try (parse-datetime x)
+                     (try (spec-util/parse-datetime x)
                        (catch Exception e
                          (throw (IllegalArgumentException.
                                   (format "Failed to parse date-time [%s] at key-path [%s]"
