@@ -297,7 +297,7 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/PurposeType"
     },
     "DataLanguage": {
-      "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
+      "description": "Describes the language used in the preparation, storage, and description of the collection. It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
     "DataDates": {
