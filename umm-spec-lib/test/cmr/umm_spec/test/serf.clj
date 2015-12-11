@@ -17,10 +17,6 @@
             [cmr.umm-spec.models.service :as umm-s]
             [cmr.umm-spec.test.umm-generators :as umm-gen]))
 
-(def tested-formats
-  "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:serf])
-
 (def example-record
   "An example record with fields supported by most formats."
   (js/coerce js/umm-s-schema
@@ -109,12 +105,10 @@
                         {:Category "EARTH SCIENCE"
                          :Topic "ATMOSPHERE"
                          :Term "AIR QUALITY"}
-                        {
-                         :Category "EARTH SCIENCE"
+                        {:Category "EARTH SCIENCE"
                          :Topic "ATMOSPHERE"
                          :Term "ATMOSPHERIC CHEMISTRY"}
-                        {
-                         :Category "EARTH SCIENCE"
+                        {:Category "EARTH SCIENCE"
                          :Topic "ATMOSPHERE"
                          :Term "ATMOSPHERIC TEMPERATURE"}
                         {:Category "EARTH SCIENCE"

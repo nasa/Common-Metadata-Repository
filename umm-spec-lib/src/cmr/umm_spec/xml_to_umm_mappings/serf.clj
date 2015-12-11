@@ -59,9 +59,16 @@
 
 (def serf-roles->umm-roles 
   "Maps SERF roles to UMM roles"
-  {:ServiceProviderContact "RESOURCEPROVIDER" 
-   :TechnicalContact "POINTOFCONTACT" 
-   :SerfAuthor "AUTHOR"})
+  {"SERVICE PROVIDER CONTACT" "RESOURCEPROVIDER" 
+   "TECHNICAL CONTACT" "POINTOFCONTACT" 
+   "SERF AUTHOR" "AUTHOR"})
+
+(defn- parse-contacts 
+  "Constructs a UMM Contacts element from a SERF Personnel element"
+  [person]
+ (for [type ["email" "phone" "fax"] 
+       value (values-at person (string/capitalize type))] 
+   {:Type type :Value value}))
 
 (defn- parse-party 
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
@@ -70,12 +77,8 @@
                       :LongName (value-of organization "Long_Name")}
    :Person {:FirstName (value-of person "First_Name")
             :MiddleName (value-of person "Middle_Name")
-            :LastName (value-of person "Last_Name")
-            }
-   :Contacts [{:Type "email" :Value (value-of person "Email")} 
-              {:Type "phone" :Value (value-of person "Phone")}
-              {:Type "fax"   :Value (value-of person "Fax")}
-              ]
+            :LastName (value-of person "Last_Name")}
+   :Contacts (parse-contacts person)
    :Addresses [{:StreetAddresses [(value-of person "Contact_Address/Address")]
                 :City (value-of person "Contact_Address/City")
                 :StateProvince (value-of person "Contact_Address/Province_or_State")
@@ -92,7 +95,7 @@
     (for [person personnel
           role (values-at person "Role")]
       ;;TODO: CMR-2298 Fix Responsibilities to have multiple roles. Then adjust accordingly below. 
-      {:Role ((csk/->PascalCaseKeyword (keyword role)) serf-roles->umm-roles)
+      {:Role (get serf-roles->umm-roles role)
        :Party (parse-party person organization)})))
 
 (defn- parse-service-citations 
@@ -188,6 +191,7 @@
      :DistributionSize (value-of dist "Distribution_Size")
      :DistributionFormat (value-of dist "Distribution_Format")
      :Fees (value-of dist "Fees")}))
+
 (defn- parse-additional-attributes 
   "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
   [doc]
