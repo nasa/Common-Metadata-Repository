@@ -393,7 +393,10 @@
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
         (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                 coll8 coll9] results)))
+                                                 coll8 coll9] results))
+      (testing "kml by concept-id"
+        (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
+          (dk/assert-collection-kml-results-match [coll1] results))))
 
     (testing "csv is not supported"
       (is (= {:errors ["The mime type [text/csv] is not supported for collections."],

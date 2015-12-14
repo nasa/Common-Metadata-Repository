@@ -13,14 +13,9 @@
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
-(def non-transformer-supported-formats
-  "Formats that the transformer does not support because they're implemented in search. Assumed
-  that the transformer will support any format not listed here."
-  #{:csv :json :xml :atom :atom-links :opendata :umm-json :query-specified})
-
 (def transformer-supported-format?
   "Returns true if the format is supported by the transformer."
-  (complement non-transformer-supported-formats))
+  #{:echo10 :dif :dif10 :iso19115 :iso-smap})
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
