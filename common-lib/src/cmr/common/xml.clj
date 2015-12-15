@@ -120,17 +120,6 @@
   [xml-struct path]
   (first (datetimes-at-path xml-struct path)))
 
-(defn dates-at-path
-  "Extracts all the dates from the given path in the XML structure."
-  [xml-struct path]
-  (map p/parse-date (strings-at-path xml-struct path)))
-
-(defn date-at-path
-  "Extracts a date from the given path in the XML structure."
-  [xml-struct path]
-  (first (dates-at-path xml-struct path)))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; XML Schema Validation
 

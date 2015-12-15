@@ -83,7 +83,7 @@
    :int #(Integer/parseInt %)
    :datetime date-time-parser/parse-datetime
    :time date-time-parser/parse-time
-   :date date-time-parser/parse-date})
+   :date date-time-parser/parse-datetime})
 
 (defmulti parse-condition-values
   "Parses the component type into their expected values"
