@@ -14,7 +14,7 @@
            cmr.search.models.query.StringCondition))
 
 (def transformer-supported-format?
-  "Returns true if the format is supported by the transformer."
+  "The set of formats supported by the transformer."
   #{:echo10 :dif :dif10 :iso19115 :iso-smap})
 
 (def specific-elastic-items-format?
