@@ -13,10 +13,6 @@
   (:import cmr.search.models.query.StringsCondition
            cmr.search.models.query.StringCondition))
 
-(def transformer-supported-format?
-  "The set of formats supported by the transformer."
-  #{:echo10 :dif :dif10 :iso19115 :iso-smap})
-
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
   #{:json :atom :csv :opendata})
@@ -42,7 +38,7 @@
   "Returns true if the query should be executed directly against the transformer and bypass elastic."
   [{:keys [result-format result-features all-revisions?] :as query}]
   (and (specific-items-query? query)
-       (transformer-supported-format? result-format)
+       (t/transformer-supported-format? result-format)
        (not all-revisions?)
        ;; Facets requires elastic search
        (not-any? #(= % :facets) result-features)))
