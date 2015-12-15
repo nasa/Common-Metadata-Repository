@@ -581,7 +581,7 @@
                                       :description "something date"
                                       :data-type :date
                                       :value "2015-09-14"
-                                      :parsed-value (p/parse-date "2015-09-14")})
+                                      :parsed-value (p/parse-datetime "2015-09-14")})
                                    (umm-c/map->ProductSpecificAttribute
                                      {:group "custom.group"
                                       :name "Datetime attribute"

@@ -120,10 +120,12 @@
   [xml-struct path]
   (first (datetimes-at-path xml-struct path)))
 
+;; TODO this is the same as datetimes-at-path now... remove it?
+
 (defn dates-at-path
   "Extracts all the dates from the given path in the XML structure."
   [xml-struct path]
-  (map p/parse-date (strings-at-path xml-struct path)))
+  (map p/parse-datetime (strings-at-path xml-struct path)))
 
 (defn date-at-path
   "Extracts a date from the given path in the XML structure."

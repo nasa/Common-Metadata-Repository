@@ -33,9 +33,7 @@
   "convert the string to joda datetime if it is in either DateTime or Date format."
   [datetime-string]
   (when datetime-string
-    (if (re-matches #"^\d\d\d\d-\d?\d-\d?\d$" datetime-string)
-      (parser/parse-date datetime-string)
-      (parser/parse-datetime datetime-string))))
+    (parser/parse-datetime datetime-string)))
 
 (defn xml-elem->Temporal
   "Returns a UMM Temporal from a parsed Collection Content XML structure"

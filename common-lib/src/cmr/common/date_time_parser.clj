@@ -64,8 +64,6 @@
   "Parses times of one of the formats as specified in time-regex->formatter"
   (make-parser :time time-regex->formatter))
 
-(def parse-date parse-datetime)
-
 (defn try-parse-datetime
   "Returns datetime or date parsed from string s if possible, otherwise returns nil."
   [s]

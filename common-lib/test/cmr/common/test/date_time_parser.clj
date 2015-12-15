@@ -44,25 +44,6 @@
          "foo"
          "1986-10-14T24:00:00")))
 
-(deftest parse-date
-  (testing "valid date"
-    (is (= (t/date-time 1986 10 14)
-       (p/parse-date "1986-10-14"))))
-  (testing "invalid dates"
-    (are [string]
-         (try
-           (p/parse-date string)
-           false
-           (catch ExceptionInfo e
-             (let [{:keys [type errors]} (ex-data e)]
-               (and (= type :invalid-data)
-                    (= 1 (count errors))
-                    (re-matches #".*is not a valid date.*" (first errors))))))
-         "foo"
-         "1986-10-44"
-         "--")))
-
-
 (deftest parse-time
   (testing "valid times"
     (are [string date] (= date (p/parse-time string))
