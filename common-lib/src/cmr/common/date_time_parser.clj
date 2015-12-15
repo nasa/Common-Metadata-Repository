@@ -8,7 +8,8 @@
 
 (def datetime-regex->formatter
   "A map of regular expressions matching a date time to the formatter to use"
-  {#"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time)
+  {#"^\d\d\d\d-\d\d-\d\d$" (f/formatters :date)
+   #"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time)
    #"^[^T]+T[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time-no-ms)
    #"^[^T]+T[^.]+\.\d+$" (f/formatters :date-hour-minute-second-ms)
    #"^[^T]+T[^.]+$" (f/formatters :date-hour-minute-second)})
@@ -63,15 +64,7 @@
   "Parses times of one of the formats as specified in time-regex->formatter"
   (make-parser :time time-regex->formatter))
 
-(defn parse-date
-  "Parses dates in the format yyyy-mm-dd"
-  [value]
-  (try
-    (f/parse (f/formatters :date) value)
-    (catch IllegalFieldValueException e
-      (msg/data-error :invalid-data msg/invalid-msg :date value (.getMessage e)))
-    (catch IllegalArgumentException e
-      (msg/data-error :invalid-data msg/invalid-msg :date value (.getMessage e)))))
+(def parse-date parse-datetime)
 
 (defn try-parse-datetime
   "Returns datetime or date parsed from string s if possible, otherwise returns nil."
@@ -79,7 +72,4 @@
   (try
     (parse-datetime s)
     (catch Exception _
-      (try
-        (parse-date s)
-        (catch Exception _
-          nil)))))
+      nil)))

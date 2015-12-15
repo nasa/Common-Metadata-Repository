@@ -28,6 +28,9 @@
          "2011-08-05T00:19:38.1021" (t/date-time 2011 8 5 0 19 38 102)
          "2011-08-05T00:19:38.10212" (t/date-time 2011 8 5 0 19 38 102)
          "2011-08-05T00:19:38.102123" (t/date-time 2011 8 5 0 19 38 102)))
+
+         ;; with no time part
+         "1986-10-14" (t/date-time 1986 10 14)
   (testing "invalid datetimes"
     (are [string]
          (try
@@ -39,7 +42,6 @@
                     (= 1 (count errors))
                     (re-matches #".*is not a valid datetime.*" (first errors))))))
          "foo"
-         "1986-10-14"
          "1986-10-14T24:00:00")))
 
 (deftest parse-date
@@ -91,4 +93,6 @@
          "1986-10-14"
          "24:00:00")))
 
-
+(deftest try-parse-datetime
+  (is (= (t/date-time 2015 12 15) (p/try-parse-datetime "2015-12-15")))
+  (is (= nil (p/try-parse-datetime "teapot"))))

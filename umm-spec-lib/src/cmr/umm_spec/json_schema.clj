@@ -2,6 +2,7 @@
   "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
             [cmr.umm-spec.util :as spec-util]
             [cmr.common.util :as cmn-util]))
@@ -204,7 +205,7 @@
                    "date-time"
                    (if (instance? org.joda.time.DateTime x)
                      x
-                     (try (spec-util/parse-datetime x)
+                     (try (dtp/parse-datetime x)
                        (catch Exception e
                          (throw (IllegalArgumentException.
                                   (format "Failed to parse date-time [%s] at key-path [%s]"
