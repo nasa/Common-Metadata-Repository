@@ -131,3 +131,12 @@
                                                 (umm-cmn/map->RangeDateTimeType
                                                  {:BeginningDateTime (t/date-time 2002)
                                                   :EndingDateTime (t/date-time 2003)})]})]}))))
+
+(deftest json-schema-parsing-errors
+  (is (= "Could not parse value: foo"
+         (-> {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "foo"}}}
+             js/parse-umm-c
+             :SpatialExtent
+             :OrbitParameters
+             :_errors
+             :NumberOfOrbits))))
