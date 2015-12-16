@@ -17,7 +17,8 @@
    <Last_Name>LASTNAME</Last_Name>
    <Email>FIRSTNAME.LASTNAME@nasa.gov</Email>
    <Phone>301-555-5555</Phone>
-   <Fax>301-555-5555</Fax>
+   <Phone>301-777-5555</Phone>
+   <Fax>301-555-5678</Fax>
    <Contact_Address>
       <Address>NASA/GSFC Code 610.2</Address>
       <City>Greenbelt</City>
@@ -177,6 +178,14 @@
    This Web Coverage Service (WCS) is one of the multiple GES DISC data service instances used to provide gridded Level 3 Atmospheric Infrared Sounder (AIRS) data products. Accessing to this URL will result in a brief description of coverages (i.e., data layers or variables), or a getCapabilities response. A client can request more detailed information about the served coverages by sending a describeCoverage request to the server. Finally, a client can request actual data using a getCoverage request. 
 </Description>
 </Related_URL>
+<Parent_SERF>
+   <Entry_Id>
+      <Short_Name>Test Parent Serf</Short_Name>
+      <Version>5</Version>
+   </Entry_Id>
+   <Description>Some entry test data</Description>
+   <Type>Some kind of SERF</Type>
+</Parent_SERF>
 <IDN_Node uuid="9ae20472-ba4c-4b01-8d97-857b73fa3c95">
    <Short_Name>USA/NASA</Short_Name>
 </IDN_Node>

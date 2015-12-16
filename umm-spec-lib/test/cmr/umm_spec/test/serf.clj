@@ -25,19 +25,23 @@
                       {:Date "2009-12-04T00:00:00.000Z"
                        :Type "UPDATE"}]
       :ServiceLanguage "English"
+      :AccessConstraints { :Description "Access Constraint"}
       :Responsibilities [{:Party {:Person {:FirstName "FIRSTNAME"
                                            :LastName "LASTNAME"}
                                   :Contacts [{:Type "email"
                                               :Value "FIRSTNAME.LASTNAME@nasa.gov"}
-                                             {:Type "phone",
+                                             {:Type "phone"
                                               :Value "301-555-5555"}
+                                             {:Type "phone"
+                                              :Value "301-777-5555"}
                                              {:Type "fax"
-                                              :Value "301-555-5555"}]
+                                              :Value "301-555-5678"}]
                                   :Addresses [{:StreetAddresses ["NASA/GSFC Code 610.2"]
                                                :City "Greenbelt"
                                                :StateProvince "Maryland"
                                                :PostalCode "20771"
-                                               :Country "USA"}]}
+                                               :Country "USA"}]
+                                  :RelatedUrls nil}
                           :Role "POINTOFCONTACT"}
                          {:Party {:Person {:FirstName "FIRSTNAME"
                                            :LastName "LASTNAME"}
@@ -45,15 +49,20 @@
                                               :Value "FIRSTNAME.LASTNAME@nasa.gov"}
                                              {:Type "phone",
                                               :Value "301-555-5555"}
+                                             {:Type "phone"
+                                              :Value "301-777-5555"}
                                              {:Type "fax",
-                                              :Value "301-555-5555"}]
+                                              :Value "301-555-5678"}]
                                   :Addresses [{:StreetAddresses ["NASA/GSFC Code 610.2"]
                                                :City "Greenbelt"
                                                :StateProvince "Maryland"
                                                :PostalCode "20771"
-                                               :Country "USA"}]}
+                                               :Country "USA"}]
+                                  :RelatedUrls nil}
                           :Role "AUTHOR"}
-                         {:Party {:Person {:FirstName "FIRSTNAME"
+                         {:Party {:OrganizationName {:ShortName "NASA/GSFC/SED/ESD/GCDC/GESDISC"
+                                                     :LongName "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA" }
+                                  :Person {:FirstName "FIRSTNAME"
                                            :LastName "LASTNAME"}
                                   :Contacts [{:Type "email"
                                               :Value "FIRSTNAME.LASTNAME@nasa.gov"}
@@ -65,7 +74,9 @@
                                                :City "Greenbelt"
                                                :StateProvince "MD"
                                                :PostalCode "20771"
-                                               :Country "U.S.A."}]}
+                                               :Country "U.S.A."}]
+                                  :RelatedUrls [{:URLs ["http://disc.gsfc.nasa.gov/"]
+                                                  :Description "SERVICE_ORGANIZATION_URL"}]}
                           :Role "RESOURCEPROVIDER"}]
       :ISOTopicCategories ["CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" 
                            "ENVIRONMENT" 
@@ -92,12 +103,23 @@
                        {:Category "EARTH SCIENCE SERVICES"
                         :Topic "WEB SERVICES"
                         :Term "INFORMATION MANAGEMENT SERVICES"}]
-      :AdditionalAttributes [{:Group "gov.nasa.gsfc.gcmd",
-                             :Value "2015-11-20 16:04:57",
+      :MetadataAssociations [{
+                              :Type "SOME KIND OF SERF"
+                              :Description "Some entry test data"
+                              :EntryId "Test Parent Serf"
+                              :Version "5"}]
+      :AdditionalAttributes [{:Group "gov.nasa.gsfc.gcmd"
+                             :Value "2015-11-20 16:04:57"
                              :Name "metadata.extraction_date"}
-                            {:Group "gov.nasa.gsfc.gcmd",
-                             :Value "8.1",
-                             :Name "metadata.keyword_version"}]
+                            {:Group "gov.nasa.gsfc.gcmd"
+                             :Value "8.1"
+                             :Name "metadata.keyword_version"}
+                            {:Name "Metadata_Name"
+                             :Description "Root SERF Metadata_Name Object"
+                             :Value "CEOS IDN SERF"}
+                            {:Name "Metadata_Version"
+                             :Description "Root SERF Metadata_Version Object"
+                             :Value "VERSION 9.7.1"}]
       :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"                               
       :ScienceKeywords [{:Category "EARTH SCIENCE"
                          :Topic "ATMOSPHERE"
@@ -154,4 +176,4 @@
 (deftest test-serf-parsing
   (let [serf-xml (slurp (io/resource "example_data/serf.xml"))
         serf-umm (serf-xml-to-umm/serf-xml-to-umm-s serf-xml)]
-        (is (= example-record serf-umm))))
+    (is (= example-record serf-umm))))
