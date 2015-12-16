@@ -106,16 +106,17 @@
            (js/validate-umm-json json :collection)))))
 
 (deftest json-schema-coercion
-  (is (= (js/coerce {:EntryTitle "an entry title"
-                     :Abstract "A very abstract collection"
-                     :DataLanguage "English"
-                     :TemporalExtents [{:TemporalRangeType "temp range"
-                                        :PrecisionOfSeconds "3"
-                                        :EndsAtPresentFlag "false"
-                                        :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                          :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                         {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                          :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})
+  (is (= (js/parse-umm-c
+          {:EntryTitle "an entry title"
+           :Abstract "A very abstract collection"
+           :DataLanguage "English"
+           :TemporalExtents [{:TemporalRangeType "temp range"
+                              :PrecisionOfSeconds "3"
+                              :EndsAtPresentFlag "false"
+                              :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})
          (umm-c/map->UMM-C
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"

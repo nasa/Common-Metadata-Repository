@@ -57,7 +57,7 @@
   [doc]
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
-    (js/coerce
+    (js/parse-umm-c
       {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
        :Version (without-default-value-of data-id-el version-xpath)

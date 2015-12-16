@@ -209,6 +209,6 @@
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
   [metadata]
-  (js/coerce (parse-iso19115-xml metadata)))
+  (js/parse-umm-c (parse-iso19115-xml metadata)))
 
 
