@@ -74,7 +74,8 @@
                           {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                                              {:BeginningDateTime (value-of period "gml:beginPosition")
                                               :EndingDateTime    (value-of period "gml:endPosition")})
-                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
+                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
+                           :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystem (tiling/parse-tiling-system data-id-el)})))

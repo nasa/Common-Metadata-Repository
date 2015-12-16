@@ -715,8 +715,6 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> umm-coll
-      ;; TODO - Implement this as part of CMR-2058
-      (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
       (convert-internal :iso19115)
       (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
       (update-in [:DataDates] fixup-smap-data-dates)
