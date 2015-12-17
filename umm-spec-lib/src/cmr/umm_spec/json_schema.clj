@@ -189,6 +189,14 @@
     (recur (apply lookup-ref pair))
     pair))
 
+(defn- parse-error-msg
+  [type-def val]
+  (str "Could not parse "
+       (or (:format type-def)
+           (:type type-def))
+       " value: "
+       val))
+
 (defn coerce
   "Returns x coerced according to a JSON schema type type definition."
   ([schema x]
@@ -218,26 +226,39 @@
                    (= "true" x)
                    (boolean x))
 
-       "array"   (util/seqv
-                  (keep #(coerce schema (:items type-definition) %) x))
-
        ;; The most important job of this function:
        "object"  (let [ctor (record-ctor schema type-name)
                        ;; Reduce an empty map with each pair of (non-nil) key/vals in x, trying to
                        ;; parse each value or else add error messages in the map under :_errors.
                        m (reduce
                           (fn [m [k v]]
-                            (try
-                              (let [prop-type-definition (get-in type-definition [:properties k])
-                                    parsed (coerce schema prop-type-definition v)]
-                                (if (some? parsed)
-                                  (assoc m k parsed)
-                                  m))
-                              (catch Exception e
-                                (log/warn e "Could not parse value:" v)
-                                (assoc-in m [:_errors k] (str "Could not parse value: " v)))))
+                            (let [prop-type-definition (get-in type-definition [:properties k])
+                                  item-type-def (:items prop-type-definition)]
+                              (if (= "array" (:type prop-type-definition))
+                                (let [results (for [x v]
+                                                (try
+                                                  {:value (coerce schema item-type-def x)}
+                                                  (catch Exception e
+                                                    (let [msg (parse-error-msg item-type-def x)]
+                                                      (log/warn e msg)
+                                                      {:error msg}))))
+                                      results (filter #(or (:value %)
+                                                           (:error % ))
+                                                      results)]
+                                  (cond-> m
+                                    (some :value results) (assoc k (util/seqv (map :value results)))
+                                    (some :error results) (assoc-in [:_errors k] (map :error results))))
+                                ;; non-array types
+                                (try
+                                  (let [parsed (coerce schema prop-type-definition v)]
+                                    (if (some? parsed)
+                                      (assoc m k parsed)
+                                      m))
+                                  (catch Exception e
+                                    (let [msg (parse-error-msg prop-type-definition v)]
+                                      (log/warn e msg)
+                                      (assoc-in m [:_errors k] msg)))))))
                           nil
-                          ;; Leave nil values as-is.
                           (filter val x))]
                    ;; Return nil instead of empty maps/records here.
                    (when m
@@ -254,7 +275,7 @@
   (coerce umm-c-schema
           {:EntryTitle "This is a test"
            :TemporalExtents [{:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]}]
-           :MetadataDates [{}]
-           :Distributions [{:Fees "123.4"}]})
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z" nil "banana"]}]
+           :Distributions [{:Fees "123.4"
+                            :DistributionSize "123 junk"}]})
   )
