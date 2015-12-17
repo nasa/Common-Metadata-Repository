@@ -133,10 +133,8 @@
                                                   :EndingDateTime (t/date-time 2003)})]})]}))))
 
 (deftest json-schema-parsing-errors
-  (is (= "Could not parse value: foo"
-         (-> {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "foo"}}}
-             js/parse-umm-c
-             :SpatialExtent
-             :OrbitParameters
-             :_errors
-             :NumberOfOrbits))))
+  (let [umm-c (js/parse-umm-c {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "foo"
+                                                                 :SwathWidth "123"}}})
+        orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
+    (is (= 123.0 (:SwathWidth orbit-params)))
+    (is (= {:NumberOfOrbits "Could not parse value: foo"} (:_errors orbit-params)))))
