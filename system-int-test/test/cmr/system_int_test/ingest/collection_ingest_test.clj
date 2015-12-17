@@ -525,7 +525,23 @@
         (is (= 200 (:status response)))
         (index/wait-until-indexed)
         (is (mdb/concept-exists-in-mdb? (:concept-id response) 2))
-        (is (= 2 (:revision-id response)))))))
+        (is (= 2 (:revision-id response))))))
+
+  (testing "ingesting UMM JSON with parsing errors"
+    (let [json (umm-spec/generate-metadata :collection :umm-json
+                                           (assoc exc/example-record
+                                                  :DataDates
+                                                  [{:Date "invalid date"
+                                                    :Type "CREATE"}]))
+          concept-map {:provider-id "PROV1"
+                       :native-id "umm_json_coll_2"
+                       :revision-id "1"
+                       :concept-type :collection
+                       :format "application/umm+json"
+                       :metadata json}
+          response (ingest/ingest-concept concept-map {:accept-format :json})]
+      (is (= ["/DataDates/0/Date string \"invalid date\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]"] (:errors response)))
+      (is (= 400 (:status response))))))
 
 ;; Verify ingest of collection with string larger than 80 characters for project(campaign) long name is successful (CMR-1361)
 (deftest project-long-name-can-be-upto-1024-characters

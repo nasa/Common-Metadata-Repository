@@ -20,7 +20,7 @@
 
 (def example-record
   "An example record with fields supported by most formats."
-  (js/coerce
+  (js/parse-umm-c
     {:Platforms [{:ShortName "Platform 1"
                   :LongName "Example Platform Long Name 1"
                   :Type "Aircraft"

@@ -106,16 +106,17 @@
            (js/validate-umm-json json :collection)))))
 
 (deftest json-schema-coercion
-  (is (= (js/coerce {:EntryTitle "an entry title"
-                     :Abstract "A very abstract collection"
-                     :DataLanguage "English"
-                     :TemporalExtents [{:TemporalRangeType "temp range"
-                                        :PrecisionOfSeconds "3"
-                                        :EndsAtPresentFlag "false"
-                                        :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
-                                                          :EndingDateTime "2001-01-01T00:00:00.000Z"}
-                                                         {:BeginningDateTime "2002-01-01T00:00:00.000Z"
-                                                          :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})
+  (is (= (js/parse-umm-c
+          {:EntryTitle "an entry title"
+           :Abstract "A very abstract collection"
+           :DataLanguage "English"
+           :TemporalExtents [{:TemporalRangeType "temp range"
+                              :PrecisionOfSeconds "3"
+                              :EndsAtPresentFlag "false"
+                              :RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                                                :EndingDateTime "2001-01-01T00:00:00.000Z"}
+                                               {:BeginningDateTime "2002-01-01T00:00:00.000Z"
+                                                :EndingDateTime "2003-01-01T00:00:00.000Z"}]}]})
          (umm-c/map->UMM-C
           {:EntryTitle "an entry title"
            :Abstract "A very abstract collection"
@@ -130,3 +131,31 @@
                                                 (umm-cmn/map->RangeDateTimeType
                                                  {:BeginningDateTime (t/date-time 2002)
                                                   :EndingDateTime (t/date-time 2003)})]})]}))))
+
+(deftest json-schema-parsing-errors
+
+  (testing "UMM-C with parsing errors"
+    (let [umm-c (js/parse-umm-c {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "foo"
+                                                                   :SwathWidth "123"}}
+                                 :TemporalExtents [{:SingleDateTimes ["nonsense"
+                                                                      "2000-01-01T00:00:00.000Z"]}]})
+          orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
+      (is (= 123.0 (:SwathWidth orbit-params)))
+      (is (= {:NumberOfOrbits "Could not parse number value: foo"} (:_errors orbit-params)))
+      (is (= [nil (t/date-time 2000 1 1)]
+             (-> umm-c :TemporalExtents first :SingleDateTimes)))
+      (is (= {:SingleDateTimes ["Could not parse date-time value: nonsense" nil]}
+             (-> umm-c :TemporalExtents first :_errors)))))
+
+  (testing "UMM-C with no parsing errors"
+    (let [umm-c (js/parse-umm-c {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "30"
+                                                                   :SwathWidth "123"}}
+                                 :TemporalExtents [{:SingleDateTimes ["2000-01-01T00:00:00.000Z"
+                                                                      "2005-01-01T00:00:00.000Z"]}]})
+          orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
+      (is (= 123.0 (:SwathWidth orbit-params)))
+      (is (= nil (:_errors orbit-params)))
+      (is (= [(t/date-time 2000) (t/date-time 2005)]
+             (-> umm-c :TemporalExtents first :SingleDateTimes)))
+      (is (= nil
+             (-> umm-c :TemporalExtents first :_errors))))))
