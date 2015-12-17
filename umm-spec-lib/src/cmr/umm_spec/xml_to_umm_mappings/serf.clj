@@ -9,12 +9,14 @@
             [cmr.umm-spec.date-util :as date]))
 
 (defn- parse-short-name-long-name
+  "Parses a common mapping for UMM-CMN data structures"
   [doc path]
   (seq (for [elem (select doc path)]
          {:ShortName (value-of elem "Short_Name")
           :LongName (value-of elem "Long_Name")})))
 
 (defn- parse-instruments
+  "Parses an Sensor_Name element of a SERF document and creates a UMM-S Instruments element"
   [doc]
   (parse-short-name-long-name doc "/SERF/Sensor_Name"))
 
@@ -37,6 +39,7 @@
         platforms))))
 
 (defn- parse-projects
+  "Parses the Project elements of a SERF record and creates a UMM-S representation"
   [doc]
   (for [proj (select doc "/SERF/Project")]
     {:ShortName (value-of proj "Short_Name")
@@ -66,30 +69,23 @@
 (defn- parse-contacts 
   "Constructs a UMM Contacts element from a SERF Personnel element"
   [person]
- (for [type ["email" "phone" "fax"] 
-       value (values-at person (string/capitalize type))] 
-   {:Type type :Value value}))
-
-(comment 
-  (let [serf (slurp (clojure.java.io/resource "example_data/serf.xml"))
-        service-provider (first (select serf "/SERF/Service_Provider"))]
-    (values-at service-provider "Service_Organization_URL")
-  )
-)
+  (for [type ["email" "phone" "fax"] 
+        value (values-at person (string/capitalize type))] 
+    {:Type type :Value value}))
 
 (defn- parse-service-organization-urls
   "Parse a Service Organization URL element into a RelatedURL map" 
   [service-provider role]
   (when (= role "SERVICE PROVIDER CONTACT")
     [{:URLs (values-at service-provider "Service_Organization_URL")
-     :Description "SERVICE_ORGANIZATION_URL"}]))
+      :Description "SERVICE_ORGANIZATION_URL"}]))
 
 (defn- parse-party 
   "Constructs a UMM Party element from a SERF Personnel element and a SERF Service_Provider element"
   [person organization service-provider role]
   {:OrganizationName 
    (when (= role "SERVICE PROVIDER CONTACT") {:ShortName (value-of organization "Short_Name")
-                                 :LongName (value-of organization "Long_Name")})
+                                              :LongName (value-of organization "Long_Name")})
    :Person {:FirstName (value-of person "First_Name")
             :MiddleName (value-of person "Middle_Name")
             :LastName (value-of person "Last_Name")}
@@ -99,8 +95,7 @@
                 :StateProvince (value-of person "Contact_Address/Province_or_State")
                 :PostalCode (value-of person "Contact_Address/Postal_Code")
                 :Country (value-of person "Contact_Address/Country")}]
-   :RelatedUrls (parse-service-organization-urls service-provider role) 
-   })
+   :RelatedUrls (parse-service-organization-urls service-provider role)})
 
 (defn- parse-personnel
   "Parse the personnel object of the SERF XML"
@@ -214,18 +209,21 @@
   "Parse a SERF document for Extended Metadata Elements and returns a UMM-S Additional Attrib elem"
   [doc]
   (concat (for [aa (select doc "/SERF/Extended_Metadata/Metadata")]
-    {:Group (value-of aa "Group")
-     :Name (value-of aa "Name")
-     :DataType (value-of aa "Type")
-     :Description (without-default-value-of aa "Description")
-     :UpdateDate (date/not-default (value-of aa "Update_Date"))
-     :Value (value-of aa "Value")})
-    [{:Name "Metadata_Name"
-     :Description "Root SERF Metadata_Name Object"
-     :Value (value-of doc "/SERF/Metadata_Name")}
-     {:Name "Metadata_Version"
-      :Description "Root SERF Metadata_Version Object"
-      :Value (value-of doc "/SERF/Metadata_Version")}]))
+            {:Group (value-of aa "Group")
+             :Name (value-of aa "Name")
+             :DataType (value-of aa "Type")
+             :Description (without-default-value-of aa "Description")
+             :UpdateDate (date/not-default (value-of aa "Update_Date"))
+             :Value (value-of aa "Value")})
+          [{:Name "Metadata_Name"
+            :Description "Root SERF Metadata_Name Object"
+            :Value (value-of doc "/SERF/Metadata_Name")}
+           {:Name "Metadata_Version"
+            :Description "Root SERF Metadata_Version Object"
+            :Value (value-of doc "/SERF/Metadata_Version")}
+           {:Name "IDN_Node_Short_Name"
+            :Description "Root SERF IDN_Node Object"
+            :Value (value-of doc "/SERF/IDN_Node")}]))
 
 (defn- parse-service-keywords
   "Parses a SERF document for Service Keyword elements and returns a UMM-S Service Keyword element"
