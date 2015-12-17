@@ -137,4 +137,4 @@
                                                                  :SwathWidth "123"}}})
         orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
     (is (= 123.0 (:SwathWidth orbit-params)))
-    (is (= {:NumberOfOrbits "Could not parse value: foo"} (:_errors orbit-params)))))
+    (is (= {:NumberOfOrbits "Could not parse number value: foo"} (:_errors orbit-params)))))
