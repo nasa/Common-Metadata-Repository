@@ -174,15 +174,11 @@
         [:Topic u/not-provided]
         [:Term u/not-provided]])
 
-     (if-let [cats (:ISOTopicCategories c)]
-       (for [topic-category cats]
-         [:ISO_Topic_Category topic-category])
-       [:ISO_Topic_Category u/not-provided])
+     (for [topic-category (:ISOTopicCategories c)]
+       [:ISO_Topic_Category topic-category])
 
-     (if-let [aks (:AncillaryKeywords c)]
-       (for [ak aks]
-         [:Ancillary_Keyword ak])
-       [:Ancillary_Keyword u/not-provided])
+     (for [ak (:AncillaryKeywords c)]
+       [:Ancillary_Keyword ak])
 
      (if-let [platforms (:Platforms c)]
        (for [platform platforms]
@@ -265,8 +261,10 @@
               [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
               :Other_Reference_Details])])
      [:Summary
+      ;; DIF 10 requires a Summary element but none of the contents are required, so either one will
+      ;; work fine.
       [:Abstract (u/with-default (:Abstract c))]
-      [:Purpose (u/with-default (:Purpose c))]]
+      [:Purpose (:Purpose c)]]
 
      (if-let [urls (:RelatedUrls c)]
        (for [related-url urls]

@@ -489,6 +489,8 @@
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif10-related-urls)
+      ;; DIF 10 required element
+      (update-in [:Abstract] #(or % su/not-provided))
       ;; The following fields are not supported yet
       (assoc :Organizations nil
              :Personnel nil)))
