@@ -242,12 +242,12 @@
                                                     (let [msg (parse-error-msg item-type-def x)]
                                                       (log/warn e msg)
                                                       {:error msg}))))
-                                      results (filter #(or (:value %)
+                                      results (filter #(or (some? (:value %))
                                                            (:error % ))
                                                       results)]
                                   (cond-> m
-                                    (some :value results) (assoc k (util/seqv (map :value results)))
-                                    (some :error results) (assoc-in [:_errors k] (map :error results))))
+                                    (seq results) (assoc k (mapv :value results))
+                                    (some :error results) (assoc-in [:_errors k] (mapv :error results))))
                                 ;; non-array types
                                 (try
                                   (let [parsed (coerce schema prop-type-definition v)]
@@ -275,7 +275,7 @@
   (coerce umm-c-schema
           {:EntryTitle "This is a test"
            :TemporalExtents [{:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z" nil "banana"]}]
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z" "banana"]}]
            :Distributions [{:Fees "123.4"
                             :DistributionSize "123 junk"}]})
   )
