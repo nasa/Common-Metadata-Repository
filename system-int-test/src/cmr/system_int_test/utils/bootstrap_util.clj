@@ -73,29 +73,6 @@
     (is (= 202
            (:status (bulk-index-provider provider-id))))))
 
-(defn synchronize-databases
-  "Tells the bootstrap application to synchronize Catalog REST and CMR."
-  ([]
-   (synchronize-databases {}))
-  ([params]
-   (let [{:keys [provider-id entry-title start-time end-time]} params
-         start-time (when start-time (f/unparse (f/formatters :date-time) start-time))
-         end-time (when end-time (f/unparse (f/formatters :date-time) end-time))
-         query-params (util/remove-nil-keys
-                        {:synchronous true
-                         :start_date start-time
-                         :end_date end-time
-                         :provider_id provider-id
-                         :entry_title entry-title})
-         response (client/request {:method :post
-                                   :url (url/db-synchronize-url)
-                                   :query-params query-params
-                                   :accept :json
-                                   :throw-exceptions false
-                                   :connection-manager (s/conn-mgr)})
-         body (json/decode (:body response) true)]
-     (assoc body :status (:status response)))))
-
 (defn bootstrap-virtual-products
   "Call the bootstrap app to bulk index a collection."
   [provider-id entry-title]
