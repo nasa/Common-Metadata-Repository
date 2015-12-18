@@ -145,7 +145,7 @@
         ((ring-json/wrap-json-response f) request)))))
 
 (defn add-request-id-response-handler
-  "Adds a request id header to every response to facilillitate clienside debugging."
+  "Adds a request id header to every response to facillitate clientside debugging."
   [f]
   (fn [{context :request-context :as request}]
     (cmr.common.dev.capture-reveal/capture-all)
