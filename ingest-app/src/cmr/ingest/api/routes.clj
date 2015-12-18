@@ -79,7 +79,6 @@
       api-errors/invalid-url-encoding-handler
       mp/wrap-multipart-params
       (api-errors/exception-handler default-error-format-fn)
-      common-routes/add-request-id-response-handler
       common-routes/pretty-print-response-handler
       params/wrap-params))
 
