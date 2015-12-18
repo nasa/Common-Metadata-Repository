@@ -148,7 +148,6 @@
   "Adds a request id header to every response to facillitate clientside debugging."
   [f]
   (fn [{context :request-context :as request}]
-    (cmr.common.dev.capture-reveal/capture-all)
     (if-let [request-id (cxt/context->request-id context)]
       (-> (f request)
           (assoc-in [:headers cxt/REQUEST_ID_HEADER] request-id))
