@@ -70,7 +70,7 @@
    :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
    :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                     {:DistributionMedia (value-of distribution "Distribution_Media")
-                     :DistributionSize (value-of distribution "Distribution_Size")
+                     :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
                      :DistributionFormat (value-of distribution "Distribution_Format")
                      :Fees (value-of distribution "Fees")})
    :ProcessingLevel {:Id

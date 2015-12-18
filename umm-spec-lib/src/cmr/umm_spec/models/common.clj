@@ -144,8 +144,8 @@
    ;; The distribution media of the data or service.
    DistributionMedia
 
-   ;; The size of the distribution package of the data or service.
-   DistributionSize
+   ;; A list of file sizes indicating a single exact or approximate, or range of distribution sizes.
+   Sizes
 
    ;; The distribution format of the data.
    DistributionFormat
@@ -489,13 +489,13 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
+;; Represents a data file size.
 (defrecord FileSizeType
   [
-   ;; The size of the download or site.
+   ;; The size of the data.
    Size
 
-   ;; Unit of the size type. If no size is specified MegaBytes is assumed. This should be changed to
-   ;; an enumeration type
+   ;; Unit of information, together with Size determines total size in bytes of the data.
    Unit
   ])
 (record-pretty-printer/enable-record-pretty-printing FileSizeType)

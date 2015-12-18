@@ -77,3 +77,22 @@
   (seq (for [elem (select doc path)]
          {:ShortName (p/value-of elem "Short_Name")
           :LongName (p/value-of elem "Long_Name")})))
+
+(def ^:private data-size-re
+  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((k|kb|ko|kilo|mb|mega|mbyte|mo|g|gb|go|giga|tb|tera|p|pb|peta)?(byte)?s?)\b")
+
+(defn parse-data-sizes
+  [s]
+  (seq
+   (for [[_ num-str unit-str :as results] (re-seq data-size-re
+                                                  (-> s str .toLowerCase))
+         :when (and num-str unit-str)]
+     {:Size (Double. (.replace num-str "," ""))
+      :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+
+(defn data-size-str
+  [sizes]
+  (when (seq sizes)
+    (str/join ", "
+              (for [size sizes]
+                (str (:Size size) " " (or (:Unit size) "MB"))))))

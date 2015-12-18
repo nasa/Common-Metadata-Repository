@@ -211,7 +211,7 @@
      (for [dist (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia dist)]
-        [:Distribution_Size (:DistributionSize dist)]
+        [:Distribution_Size (u/data-size-str (:Sizes dist))]
         [:Distribution_Format (:DistributionFormat dist)]
         [:Fees (:Fees dist)]])
      (for [pub-ref (:PublicationReferences c)]

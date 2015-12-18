@@ -109,7 +109,7 @@
    :TilingIdentificationSystem (spatial/parse-tiling doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
-                     :DistributionSize (value-of dist "Distribution_Size")
+                     :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
    :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
