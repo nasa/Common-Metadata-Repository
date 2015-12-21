@@ -263,6 +263,10 @@
       "additionalProperties": false,
       "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
       "properties": {
+        "Title": {
+          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
+          "$ref": "#/definitions/TitleType"
+        },
         "Description": {
           "description": "Provides information about the resource defined by the URL",
           "type": "string",
@@ -283,21 +287,11 @@
           },
           "minItems": 1
         },
-        "Title": {
-          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
-          "$ref": "#/definitions/TitleType"
-        },
         "MimeType": {
           "description": "The mime type of the online resource.",
           "type": "string",
           "minLength": 1,
           "maxLength": 50
-        },
-        "Caption": {
-          "description": "The caption of the online resource.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
         },
         "FileSize": {
           "description": "The size of a download or site.",

@@ -123,8 +123,7 @@
                     :ContentType {:Type "GET DATA" :Subtype "sub type"}
                     :URLs ["www.foo.com", "www.shoo.com"]
                     :Title "related url title"
-                    :MimeType "mime type"
-                    :Caption "caption"}
+                    :MimeType "mime type"}
                    {:Description "Related url 3 description "
                     :ContentType {:Type "Some type" :Subtype "sub type"}
                     :URLs ["www.foo.com"]}
@@ -289,7 +288,7 @@
              :let [type (get-in related-url [:ContentType :Type])]
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Title nil :Caption nil :URLs [url])
+             (assoc :Title nil :URLs [url])
              (update-in [:FileSize] (fn [file-size]
                                       (when (and file-size
                                                  (= type "GET RELATED VISUALIZATION"))
@@ -357,13 +356,12 @@
                                             :ContentType nil
                                             :Title nil
                                             :MimeType nil
-                                            :Caption nil
                                             :FileSize nil))))))
 
 (defn- expected-dif-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
 
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"
@@ -467,7 +465,7 @@
 (defn- expected-dif10-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
@@ -564,7 +562,7 @@
   (seq (for [related-url related-urls
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
+             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
              (assoc-in [:ContentType :Subtype] nil)
              (update-in [:ContentType]
                         (fn [content-type]
@@ -626,7 +624,7 @@
                                            (-> related-url
                                                (assoc :Title nil
                                                       :FileSize nil :ContentType nil
-                                                      :MimeType nil :Caption nil)
+                                                      :MimeType nil)
                                                (update-in [:URLs] (fn [urls] [(first urls)]))
                                                vector))))))
 

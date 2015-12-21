@@ -619,6 +619,10 @@
 ;; online software packages, web mapping services, and calibration/validation data.
 (defrecord RelatedUrlType
   [
+   ;; The Title is a one-line description of the resource, could be used a caption when a browse
+   ;; image is displayed. The title is especially useful for images such as graphs and photos.
+   Title
+
    ;; Provides information about the resource defined by the URL
    Description
 
@@ -627,15 +631,8 @@
    ;; The URL to the resource associated with the data set.
    URLs
 
-   ;; The Title is a one-line description of the resource, could be used a caption when a browse
-   ;; image is displayed. The title is especially useful for images such as graphs and photos.
-   Title
-
    ;; The mime type of the online resource.
    MimeType
-
-   ;; The caption of the online resource.
-   Caption
 
    ;; The size of a download or site.
    FileSize
