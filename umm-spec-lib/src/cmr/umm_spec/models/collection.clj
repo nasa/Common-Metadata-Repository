@@ -5,46 +5,46 @@
 
 (defrecord UMM-C
   [
-   ;; This element permits the user to properly cite the provider and specifies how the data should
-   ;; be cited in professional scientific literature. This element provides a citation for the item
-   ;; itself, and is not designed for listing bibliographic references of scientific research
-   ;; articles arising from search results. A list of references related to the research results
-   ;; should be in the Publication Reference element. A DOI that specifically identifies the service
-   ;; is listed here.
+   ;; Information required to properly cite the collection in professional scientific literature.
+   ;; This element provides information for constructing a citation for the item itself, and is not
+   ;; designed for listing bibliographic references of scientific research articles arising from
+   ;; search results. A list of references related to the research results should be in the
+   ;; Publication Reference element. A DOI that specifically identifies the landing page for the
+   ;; collection is listed here.
    CollectionCitations
 
-   ;; This includes any metadata related dates.
+   ;; Dates related to activities involving the metadata record itself. For example, Future Review
+   ;; date is the date that the metadata record is scheduled to be reviewed.
    MetadataDates
 
-   ;; This class specifies the name of a place on Earth, a location within the Earth, a vertical
-   ;; location, or a location outside of Earth.
+   ;; Controlled hierarchical keywords used to specify the spatial location of the collection. The
+   ;; controlled vocabulary for spatial keywords is maintained in the Keyword Management System
+   ;; (KMS). The Spatial Keyword hierarchy includes one or more of the following layers:
+   ;; Location_Category (e.g., Continent), Location_Type (e.g. Africa), Location_Subregion1 (e.g.,
+   ;; Central Africa), Location_Subregion2 (e.g., Cameroon), and Location_Subregion3
    SpatialKeywords
 
-   ;; This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic
-   ;; Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code
-   ;; List. It is a high-level thematic classification to assist in the grouping and search of
-   ;; available services.
+   ;; Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata
+   ;; – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List that pertain to
+   ;; this collection, based on the Science Keywords associated with the collection. An ISO Topic
+   ;; Category is a high-level thematic classification to assist in the grouping of and search for
+   ;; available collections.
    ISOTopicCategories
 
    ;; The short name associated with the collection.
    ShortName
 
-   ;; Defines a named two-dimensional tiling system for the collection.
+   ;; Name of the two-dimensional tiling system for the collection. Previously called
+   ;; TwoDCoordinateSystem.
    TilingIdentificationSystem
 
-   ;; Abstract provides a brief description of the data or service the metadata represents.
+   ;; A brief description of the collection or service the metadata represents.
    Abstract
 
    ;; The language used in the metadata record.
    MetadataLanguage
 
-   ;; This includes any personnel responsible for this data and metadata through the party element.
-   ;; The role (distributing, archiving, providing, and/or maintaining the data) is placed in the
-   ;; role sub element. To support components or xlinks in the future the role was split from the
-   ;; party sub elements, that way the data in the party element can be resued and stored
-   ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
-   ;; document responsibility for a specific reason. It can reuse the same person or organization
-   ;; with different roles throughout the metadata.
+   ;; Information about the personnel responsible for this collection and its metadata.
    Personnel
 
    ;; Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used
@@ -54,10 +54,10 @@
    ;; translated.
    DirectoryNames
 
-   ;; This element contains suggested usage or purpose for the data or service.
+   ;; Suggested usage or purpose for the collection data or service.
    Purpose
 
-   ;; This element describes key bibliographic citations pertaining to the data.
+   ;; Describes key bibliographic citations pertaining to the collection.
    PublicationReferences
 
    ;; This element describes any data/service related URLs that include project home pages,
@@ -65,52 +65,47 @@
    ;; packages, web mapping services, links to images, or other data.
    RelatedUrls
 
-   ;; This includes any data related dates. create,delete, and update.
+   ;; Dates related to activities involving the collection data. For example, Creation date is the
+   ;; date that the collection data first entered the data archive system.
    DataDates
 
-   ;; This includes any organizations responsible for this data and metadata through the party
-   ;; element. The role (distributing, archiving, providing, and/or maintaining the data) is placed
-   ;; in the role sub element. To support components or xlinks in the future the role was split from
-   ;; the party sub elements, that way the data in the party element can be resued and stored
-   ;; independently. This allows UMM to reuse the Responsiblilty element within other elements to
-   ;; document responsibility for a specific reason. It can reuse the same person or organization
-   ;; with different roles throughout the metadata.
+   ;; Information about the organization(s) responsible for this collection and its metadata.
    Organizations
 
-   ;; This element with the description field allows the author to provide information about any
-   ;; constraints for accessing the service. This includes any special restrictions, legal
-   ;; prerequisites, limitations and/or warnings on obtaining the service. Some words that may be
-   ;; used in this element's value include: Public, In-house, Limited, None. The value field is used
-   ;; for special ACL rules (Access Control Lists
+   ;; Allows the author to constrain access to the collection. This includes any special
+   ;; restrictions, legal prerequisites, limitations and/or warnings on obtaining collection data.
+   ;; Some words that may be used in this element's value include: Public, In-house, Limited, None.
+   ;; The value field is used for special ACL rules (Access Control Lists
    ;; (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide
    ;; metadata when it isn't ready for public consumption.
    AccessConstraints
 
    SpatialExtent
 
-   ;; Lineage is historical data and includes how data was processed.
+   ;; Historical data including how data was processed.
    MetadataLineages
 
-   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
-   ;; unique characteristics of the service which extend beyond those defined).
+   ;; The data’s distinctive attributes of the collection (i.e. attributes used to describe the
+   ;; unique characteristics of the collection which extend beyond those defined).
    AdditionalAttributes
 
-   ;; This element enables specification of Earth science keywords.
+   ;; Controlled Science Keywords describing the collection. The controlled vocabulary for Science
+   ;; Keywords is maintained in the Keyword Management System (KMS).
    ScienceKeywords
 
-   ;; This element permits the author to provide the following information about an item described
-   ;; in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in
-   ;; producing the item. Examples of appropriate element information include: A) succinct
-   ;; description; B) indicators of item quality or quality flags - both validated or invalidated;
-   ;; C) recognized or potential problems with quality; D) established quality control mechanisms;
-   ;; and E) established quantitative quality measurements.
+   ;; Free text description of the quality of the collection data. Description may include: 1)
+   ;; succinct description of the quality of data in the collection; 2) Any quality assurance
+   ;; procedures followed in producing the data in the collection; 3) indicators of collection
+   ;; quality or quality flags - both validated or invalidated; 4) recognized or potential problems
+   ;; with quality; 5) established quality control mechanisms; and 6) established quantitative
+   ;; quality measurements.
    Quality
 
-   ;; The title of the service described by the metadata.
+   ;; The title of the collection or service described by the metadata.
    EntryTitle
 
-   ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
-   ;; unique characteristics of the service which extend beyond those defined).
+   ;; Describes media options, size, data format, and fees involved in distributing the data from
+   ;; this collection.
    Distributions
 
    ;; Describes the production status of the data set. There are three choices: PLANNED refers to
@@ -122,51 +117,50 @@
    ;; collection will be made. For Example: Nimbus-7 SMMR data collection has been completed.
    CollectionProgress
 
-   ;; This class stores the reference frame or system in which altitudes (elevations) are given. The
-   ;; information contains the datum name, distance units and encoding method, which provide the
-   ;; definition for the system. This field also stores the characteristics of the reference frame
-   ;; or system from which depths are measured. The additional information in the field is geometry
-   ;; reference data etc.
+   ;; The reference frame or system in which altitudes (elevations) are given. The information
+   ;; contains the datum name, distance units and encoding method, which provide the definition for
+   ;; the system. This field also stores the characteristics of the reference frame or system from
+   ;; which depths are measured. The additional information in the field is geometry reference data
+   ;; etc.
    SpatialInformation
 
-   ;; This element identifies non-science-quality products such as Near-Real-Time collections. If a
-   ;; collection does not contain this field, it will be assumed to be of science-quality.
+   ;; Identifies the collection as a Science Quality collection or a non-science-quality collection
+   ;; such as a Near-Real-Time collection.
    CollectionDataType
 
-   ;; The Use Constraints element is designed to protect privacy and/or intellectual property by
-   ;; allowing the author to specify how the item may or may not be used after access is granted.
-   ;; This includes any special restrictions, legal prerequisites, terms and conditions, and/or
-   ;; limitations on using the item. Providers may request acknowledgement of the item from users
-   ;; and claim no responsibility for quality and completeness. Note: Use Constraints describe how
-   ;; the item may be used once access has been granted; and is distinct from Access Constraints,
-   ;; which refers to any constraints in accessing the item.
+   ;; Designed to protect privacy and/or intellectual property by allowing the author to specify how
+   ;; the collection may or may not be used after access is granted. This includes any special
+   ;; restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item.
+   ;; Providers may request acknowledgement of the item from users and claim no responsibility for
+   ;; quality and completeness. Note: Use Constraints describe how the item may be used once access
+   ;; has been granted; and is distinct from Access Constraints, which refers to any constraints in
+   ;; accessing the item.
    UseConstraints
 
-   ;; This attribute specifies a word or phrase that describes the temporal resolution of the
-   ;; dataset.
+   ;; One or more words or phrases that describe the temporal resolution of the dataset.
    TemporalKeywords
 
-   ;; This element allows authors to provide words or phrases to further describe the data.
+   ;; Allows authors to provide words or phrases outside of the controlled Science Keyword
+   ;; vocabulary, to further describe the collection.
    AncillaryKeywords
 
-   ;; This element contains the level identifier as described here:
-   ;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
+   ;; The identifier for the processing level of the collection (e.g., Level0, Level1A).
    ProcessingLevel
 
-   ;; This element describes the relevant platforms used to acquire the data related to the service.
-   ;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform,
-   ;; Station, Network, Human, etc.
+   ;; Information about the relevant platform(s) used to acquire the data in the collection.
+   ;; Platform types are controlled in the Keyword Management System (KMS), and include Spacecraft,
+   ;; Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.
    Platforms
 
-   ;; The project element describes the name of the scientific program, field campaign, or project
-   ;; from which the data were collected. This element is intended for the non-space assets such as
-   ;; aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This
-   ;; element may also cover a long term project that continuously creates new data sets — like
-   ;; MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign
-   ;; sub-element to support multiple campaigns under the same project.
+   ;; The name of the scientific program, field campaign, or project from which the data were
+   ;; collected. This element is intended for the non-space assets such as aircraft, ground systems,
+   ;; balloons, sondes, ships, etc. associated with campaigns. This element may also cover a long
+   ;; term project that continuously creates new data sets — like MEaSUREs from ISCCP and NVAP or
+   ;; CMARES from MISR. Project also includes the Campaign sub-element to support multiple campaigns
+   ;; under the same project.
    Projects
 
-   ;; The Version of the metadata record.
+   ;; The Version of the collection.
    Version
 
    ;; For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by
@@ -174,9 +168,9 @@
    ;; earlier than yyyy-mm-dd = 0001-01-01.
    PaleoTemporalCoverage
 
-   ;; This class contains attributes, which describe the temporal range of a specific collection.
-   ;; This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic
-   ;; Date Time
+   ;; This class contains attributes which describe the temporal range of a specific collection.
+   ;; Temporal Extent includes a specification of the Temporal Range Type of the collection, which
+   ;; is one of Range Date Time, Single Date Time, or Periodic Date Time
    TemporalExtents
 
    ;; This element is used to identify other services, collections, visualizations, granules, and
@@ -188,9 +182,9 @@
    ;; element described elsewhere in this document where it contains and ID, and Version.
    MetadataAssociations
 
-   ;; Describes the language used in the preparation, storage, and description of the service It is
-   ;; the language of the information object, not the language used to describe or interact with the
-   ;; metadata record. It does not refer to the language of the metadata.
+   ;; Describes the language used in the preparation, storage, and description of the collection. It
+   ;; is the language of the collection data themselves. It does not refer to the language used in
+   ;; the metadata record (although this may be the same language).
    DataLanguage
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-C)
@@ -200,24 +194,30 @@
 ;; yyyy-mm-dd = 0001-01-01.
 (defrecord PaleoTemporalCoverageType
   [
-   ;; The chronostratigraphic units are selected from a UMM builder. The vocabulary is controlled.
+   ;; Hierarchy of terms indicating units of geologic time, i.e., eon (e.g, Phanerozoic), era (e.g.,
+   ;; Cenozoic), period (e.g., Paleogene), epoch (e.g., Oligocene), and stage or age (e.g,
+   ;; Chattian).
    ChronostratigraphicUnits
 
-   ;; The number of years furthest back in time including units Ga, Ma, ka or ybp.
+   ;; A string indicating the number of years furthest back in time, including units, e.g., 100 Ga.
+   ;; Units may be Ga (billions of years before present), Ma (millions of years before present), ka
+   ;; (thousands of years before present) or ybp (years before present).
    StartDate
 
-   ;; The number of years closest to the present time including units Ga, Ma, ka or ybp.
+   ;; A string indicating the number of years closest to the present time, including units, e.g., 10
+   ;; ka. Units may be Ga (billions of years before present), Ma (millions of years before present),
+   ;; ka (thousands of years before present) or ybp (years before present).
    EndDate
   ])
 (record-pretty-printer/enable-record-pretty-printing PaleoTemporalCoverageType)
 
 (defrecord LocalCoordinateSystemType
   [
-   ;; A description of the information provided to register the local system to the Earth (e.g.
-   ;; control points, satellite ephemeral data, and inertial navigation data).
+   ;; The information provided to register the local system to the Earth (e.g. control points,
+   ;; satellite ephemeral data, and inertial navigation data).
    GeoReferenceInformation
 
-   ;; This class contains a description of the coordinate system and geo-reference information.
+   ;; A description of the Local Coordinate System and geo-reference information.
    Description
   ])
 (record-pretty-printer/enable-record-pretty-printing LocalCoordinateSystemType)
@@ -238,32 +238,34 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
-;; This element contains the level identifier as described here:
-;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
+;; This element contains the Processing Level Id and the Processing Level Description
 (defrecord ProcessingLevelType
   [
-   ;; Description of Processing Level.
+   ;; Description of the meaning of the Processing Level Id, e.g., the Description for the Level4
+   ;; Processing Level Id might be 'Model output or results from analyses of lower level data'
    ProcessingLevelDescription
 
-   ;; The processing level class contains the level identifier and level description of the
-   ;; collection.
+   ;; An identifier indicating the level at which the data in the collection are processed, ranging
+   ;; from Level0 (raw instrument data at full resolution) to Level4 (model output or analysis
+   ;; results). The value of Processing Level Id is chosen from a controlled vocabulary.
    Id
   ])
 (record-pretty-printer/enable-record-pretty-printing ProcessingLevelType)
 
 (defrecord GeographicCoordinateSystemType
   [
-   ;; Units of measure used for the geodetic latitude and longitude resolution values. For lat, a 2
-   ;; digit decimal number from 0-90; for lon, a 3 digit decimal number from 0-180. + or absence of
-   ;; - for values north of equator or values west of prime meridian; - for all others.
+   ;; Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal
+   ;; degrees).
    GeographicCoordinateUnits
 
-   ;; The minimum difference between two adjacent latitude values expressed in Geographic Coordinate
-   ;; Units of measure.
+   ;; The minimum difference between two adjacent latitude values in the Geographic Coordinate
+   ;; System, expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal
+   ;; number, e.g., 0.01
    LatitudeResolution
 
-   ;; The minimum difference between two adjacent longitude values expressed in Geographic
-   ;; Coordinate Units of measure.
+   ;; The minimum difference between two adjacent longitude values in the Geographic Coordinate
+   ;; System, expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal
+   ;; number, e.g., 0.01
    LongitudeResolution
   ])
 (record-pretty-printer/enable-record-pretty-printing GeographicCoordinateSystemType)
@@ -278,14 +280,14 @@
    ;; measurements are compared.
    DatumName
 
-   ;; The recorded units
+   ;; The units in which measurements are recorded.
    DistanceUnits
 
    ;; The means used to encode measurements.
    EncodingMethod
 
-   ;; This element describes the minimum distance possible between two adjacent values, expressed in
-   ;; distance units of measure for collection.
+   ;; The minimum distance possible between two adjacent values, expressed in distance units of
+   ;; measure for the collection.
    Resolutions
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalSystemDefinitionType)
@@ -301,7 +303,7 @@
    ;; Radius of the equatorial axis of the ellipsoid.
    SemiMajorAxis
 
-   ;; The ratios of the Earth's major axis to the difference between the major and the minor.
+   ;; The ratio of the Earth's major axis to the difference between the major and the minor.
    DenominatorOfFlatteningRatio
   ])
 (record-pretty-printer/enable-record-pretty-printing GeodeticModelType)
@@ -317,8 +319,8 @@
 
    HorizontalCoordinateSystem
 
-   ;; This attribute denotes whether the locality/coverage requires horizontal, vertical, or both in
-   ;; the spatial domain and coordinate system definitions.
+   ;; Denotes whether the spatial coverage of the collection is horizontal, vertical, horizontal and
+   ;; vertical, orbit, or vertical and orbit.
    SpatialCoverageType
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialInformationType)
