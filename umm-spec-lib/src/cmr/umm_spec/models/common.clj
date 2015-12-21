@@ -626,7 +626,8 @@
    ;; Provides information about the resource defined by the URL
    Description
 
-   ContentType
+   ;; An array of keywords describing the relation of the online resource to this resource.
+   Relation
 
    ;; The URL to the resource associated with the data set.
    URLs
@@ -760,14 +761,3 @@
    Country
   ])
 (record-pretty-printer/enable-record-pretty-printing AddressType)
-
-;; Describes the type of the URL.
-(defrecord ContentTypeType
-  [
-   ;; The type of URL. These are keywords that a user selects
-   Type
-
-   ;; Describes the sub type of the URL. These are keywords that a user selects
-   Subtype
-  ])
-(record-pretty-printer/enable-record-pretty-printing ContentTypeType)

@@ -66,7 +66,7 @@
                      (when name (resource-name->types name)))]]
     {:URLs [(value-of url "gmd:linkage/gmd:URL")]
      :Description (char-string-value url "gmd:description")
-     :ContentType {:Type type}}))
+     :Relation (when type [type])}))
 
 (defn- parse-browse-graphics
   "Parse browse graphic urls"
@@ -74,7 +74,8 @@
   (for [url (select doc browse-graphic-xpath)]
     {:URLs [(value-of url "gmd:fileName/gmx:FileName/@src")]
      :Description (char-string-value url "gmd:fileDescription")
-     :ContentType {:Type (resource-name->types (char-string-value url "gmd:fileType"))}}))
+     :Relation (when-let [rel (resource-name->types (char-string-value url "gmd:fileType"))]
+                 [rel])}))
 
 (defn parse-related-urls
   "Parse related-urls present in the document"

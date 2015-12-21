@@ -273,8 +273,16 @@
           "minLength": 1,
           "maxLength": 4000
         },
-        "ContentType": {
-          "$ref": "#/definitions/ContentTypeType"
+        "Relation": {
+          "description": "An array of keywords describing the relation of the online resource to this resource.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
         },
         "URLs": {
           "description": "The URL to the resource associated with the data set.",
@@ -299,26 +307,6 @@
         }
       },
       "required": ["URLs"]
-    },
-    "ContentTypeType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes the type of the URL.",
-      "properties": {
-        "Type": {
-          "description": "The type of URL. These are keywords that a user selects",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        },
-        "Subtype": {
-          "description": "Describes the sub type of the URL. These are keywords that a user selects",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["Type"]
     },
     "FileSizeType": {
       "type": "object",

@@ -242,10 +242,10 @@
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
        [:Related_URL
-        (when-let [ct (:ContentType related-url)]
+        (when-let [[type subtype] (:Relation related-url)]
           [:URL_Content_Type
-           [:Type (:Type ct)]
-           [:Subtype (:Subtype ct)]])
+           [:Type type]
+           [:Subtype subtype]])
         ;; TODO this seems completely wrong...
         (for [url (get related-url :URLs ["http://www.foo.com"])]
           [:URL url])
