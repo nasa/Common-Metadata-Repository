@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10
   "Defines mappings from DIF10 XML into UMM records"
-  (:require [cmr.umm-spec.json-schema :as js]
+  (:require [cmr.common.date-time-parser :as dtp]
+            [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.simple-xpath :refer [select]]
             [camel-snake-kebab.core :as csk]
             [clojure.string :as string]
@@ -57,7 +58,7 @@
                                        ;; type, they may contain anything, and so we need to try to
                                        ;; parse them here and return nil if they do not actually
                                        ;; represent dates.
-                                       u/try-parse-datetime)]
+                                       dtp/try-parse-datetime)]
                   :when date-value]
               {:Type date-type
                :Date date-value}))))
@@ -172,4 +173,4 @@
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."
   [metadata]
-  (js/coerce (parse-dif10-xml metadata)))
+  (js/parse-umm-c (parse-dif10-xml metadata)))

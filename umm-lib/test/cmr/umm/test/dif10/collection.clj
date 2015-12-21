@@ -2,6 +2,7 @@
   "Tests parsing and generating DIF 10 Collection XML."
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
+            [clj-time.core :as t]
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
@@ -287,7 +288,7 @@
     <Temporal_Coverage>
       <Range_DateTime>
         <Beginning_Date_Time>1998-02-24T22:20:41-05:00</Beginning_Date_Time>
-        <Ending_Date_Time>1999-03-24T22:20:41-05:00</Ending_Date_Time>
+        <Ending_Date_Time>1999-03-24</Ending_Date_Time>
       </Range_DateTime>
     </Temporal_Coverage>
     <Dataset_Progress>IN WORK</Dataset_Progress>
@@ -459,7 +460,7 @@
     {:range-date-times
      [(umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-         :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+         :ending-date-time (t/date-time 1999 3 24)})]
      :single-date-times []
      :periodic-date-times []}))
 
@@ -580,7 +581,7 @@
                                       :description "something date"
                                       :data-type :date
                                       :value "2015-09-14"
-                                      :parsed-value (p/parse-date "2015-09-14")})
+                                      :parsed-value (p/parse-datetime "2015-09-14")})
                                    (umm-c/map->ProductSpecificAttribute
                                      {:group "custom.group"
                                       :name "Datetime attribute"
@@ -636,4 +637,3 @@
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Platform}' is expected.")]
            (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))
-

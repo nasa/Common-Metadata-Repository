@@ -474,8 +474,8 @@
   (umm-c/map->Temporal
     {:range-date-times
      [(umm-c/map->RangeDateTime
-        {:beginning-date-time (p/parse-date "1996-02-24")
-         :ending-date-time (p/parse-date "1997-03-24")})
+        {:beginning-date-time (p/parse-datetime "1996-02-24")
+         :ending-date-time (p/parse-datetime "1997-03-24")})
       (umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
          :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
@@ -496,8 +496,8 @@
                  :processing-level-id "2"
                  :collection-data-type "NEAR_REAL_TIME"})
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                 {:insert-time (p/parse-date "2013-02-21")
-                                  :update-time (p/parse-date "2013-10-22")})
+                                 {:insert-time (p/parse-datetime "2013-02-21")
+                                  :update-time (p/parse-datetime "2013-10-22")})
      :publication-references [(umm-c/map->PublicationReference
                                 {:author "author"
                                  :publication-date "2015"
@@ -585,7 +585,7 @@
          :description "something date"
          :data-type :date
          :value "2015-09-14"
-         :parsed-value (p/parse-date "2015-09-14")})
+         :parsed-value (p/parse-datetime "2015-09-14")})
       (umm-c/map->ProductSpecificAttribute
         {:group "custom.group"
          :name "Datetime attribute"

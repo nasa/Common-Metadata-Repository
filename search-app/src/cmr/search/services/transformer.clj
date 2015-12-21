@@ -16,6 +16,10 @@
             [cmr.common.util :as u]
             [cmr.umm.iso-smap.granule :as smap-g]))
 
+(def transformer-supported-format?
+  "The set of formats supported by the transformer."
+  #{:echo10 :dif :dif10 :iso19115 :iso-smap})
+
 (def types->xsl
   "Defines the [metadata-format target-format] to xsl mapping"
   {[:echo10 :iso19115] (io/resource "xslt/echo10_to_iso19115.xsl")})

@@ -135,4 +135,4 @@
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document."
   [metadata]
-  (js/coerce (parse-dif9-xml metadata)))
+  (js/parse-umm-c (parse-dif9-xml metadata)))

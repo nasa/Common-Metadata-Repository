@@ -188,7 +188,7 @@
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                  {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                   :update-time (p/parse-datetime "2013-04-05T17:15:00Z")
-                                  :revision-date-time (p/parse-date "2013-01-02")})
+                                  :revision-date-time (p/parse-datetime "2013-01-02")})
      :temporal expected-temporal
      :science-keywords [(umm-c/map->ScienceKeyword
                           {:category "EARTH SCIENCE"

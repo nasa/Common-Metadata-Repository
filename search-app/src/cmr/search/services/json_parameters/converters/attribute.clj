@@ -12,7 +12,7 @@
   "A map of attribute types to functions that can parse a value"
   {:datetime parser/parse-datetime
    :time parser/parse-time
-   :date parser/parse-date
+   :date parser/parse-datetime
    :float float
    :int int
    :string str})

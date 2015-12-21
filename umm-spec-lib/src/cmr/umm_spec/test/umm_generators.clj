@@ -47,19 +47,25 @@
                              [k (schema-type->generator schema nil subtype)]))
         ;; Figure out which properties are required and which are optional
         required-properties (set (map keyword (:required schema-type)))
-        optional-properties (vec (set/difference (set (keys properties)) required-properties))]
-    (ext-gen/non-empty-obj-gen
-     (chgen/for [;; Determine which properties to generate in this instance of the object
-                 num-optional-fields (gen/choose 0 (count optional-properties))
-                 :let [selected-properties (concat required-properties
-                                                   (subvec optional-properties
-                                                           0 num-optional-fields))
-                       ;; Create a map of property names to generators
-                       selected-prop-gens (select-keys prop-gens selected-properties)]
-                 ;; Generate a hash map containing the properties
-                 prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
-       ;; Construct a record from the hash map
-       (constructor-fn prop-map)))))
+        optional-properties (vec (set/difference (set (keys properties)) required-properties))
+        ;; Every object must have at least one field
+        min-optional-fields (if (empty? required-properties) 1 0)]
+    (chgen/for [;; Determine which properties to generate in this instance of the object
+                num-optional-fields (gen/choose min-optional-fields (count optional-properties))
+                :let [selected-properties (concat required-properties
+                                                  (subvec optional-properties
+                                                          0 num-optional-fields))
+                      ;; Create a map of property names to generators
+                      selected-prop-gens (select-keys prop-gens selected-properties)]
+                ;; Generate a hash map containing the properties
+                prop-map (apply gen/hash-map (flatten (seq selected-prop-gens)))]
+      (do
+        (when-not (seq prop-map)
+          (throw (Exception. (str "Generated object with no fields for schema-type: "
+                                  (pr-str schema-type)))))
+
+        ;; Construct a record from the hash map
+        (constructor-fn prop-map)))))
 
 (defn- assert-field-not-present-with-one-of
   [schema-type k]
@@ -175,16 +181,24 @@
       ;; Limit all strings to a maximum length so that it will make it easier to debug
       (ext-gen/string-ascii minLength (min maxLength (:maxLength string-defaults))))))
 
+(defn scale-to-range
+  "Takes the value x which is from the range minv to maxv and scales it to the range minv2 maxv2.
+  From: http://stackoverflow.com/questions/5294955/how-to-scale-down-a-range-of-numbers-with-a-known-min-and-max-value"
+  [minv maxv x minv2 maxv2]
+  (+ (/ (* (- maxv2 minv2) (- x minv))
+        (- maxv minv))
+     minv2))
+
 (defmethod schema-type->generator "number"
   [_ _ schema-type]
   (rejected-unexpected-fields #{:minimum :maximum} schema-type)
   (let [{:keys [minimum maximum]} schema-type
-        double-gen (gen/fmap double gen/ratio)]
+        seed-double-gen (ext-gen/choose-double 0 10)]
     (if (or minimum maximum)
       (let [[minv maxv] (sort [(double (or minimum -10.0))
                                (double (or maximum 10.0))])]
-        (gen/such-that #(<= minv % maxv) double-gen))
-      double-gen)))
+        (gen/fmap #(scale-to-range 0.0 10.0 % minv maxv) seed-double-gen))
+      (gen/fmap double gen/ratio))))
 
 (defmethod schema-type->generator "integer"
   [_ _ {:keys [minimum maximum]}]
@@ -213,6 +227,6 @@
 
 (comment
 
-  (last (gen/sample umm-c-generator 10))
+  (last (gen/sample umm-c-generator 10)))
 
-  )
+
