@@ -43,10 +43,7 @@
   [doc]
   (for [proj (select doc "/SERF/Project")]
     {:ShortName (value-of proj "Short_Name")
-     :LongName (value-of proj "Long_Name")
-     :Campaigns (values-at proj "Campaign")
-     :StartDate (date-at proj "Start_Date")
-     :EndDate (date-at proj "End_Date")}))
+     :LongName (value-of proj "Long_Name")}))
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
@@ -190,11 +187,7 @@
 (defn- parse-metadata-associations
   "Parse a SERF document and return a UMM-S Metadata Associations element"
   [doc]
-  (for [ma (select doc "/SERF/Parent_SERF")]
-    {:EntryId (value-of ma "Entry_Id/Short_Name")
-     :Version (without-default-value-of ma "Entry_Id/Version")
-     :Description (without-default-value-of ma "Description")
-     :Type (string/upper-case (without-default-value-of ma "Type"))}))
+  [{:EntryId (value-of doc "/SERF/Parent_SERF")}])
 
 (defn- parse-distributions
   "Parse a SERF document for Distribution elements and returns an UMM-S Distribution element"
@@ -232,10 +225,7 @@
     {:Category (value-of sk "Service_Category")
      :Topic (value-of sk "Service_Topic")
      :Term (value-of sk "Service_Term")
-     :VariableLevel1 (value-of sk "Service_Variable_Level_1")
-     :VariableLevel2 (value-of sk "Service_Variable_Level_2")
-     :VariableLevel3 (value-of sk "Service_Variable_Level_3")
-     :DetailedVariable (value-of sk "Service_Detailed_Variable")}))
+     :ServiceSpecificName (value-of sk "Service_Specific_Name")}))
 
 (defn- parse-science-keywords 
   "Parses a SERF document for Science Keyword elements and returns a UMM-S Science Keyword element"
@@ -249,8 +239,8 @@
 (defn parse-serf-xml
   "Returns collection map from a SERF XML document."
   [doc]
-  {:EntryTitle (value-of doc "/SERF/Entry_Title")
-   :EntryId (value-of doc "/SERF/Entry_ID")
+  {:EntryId (value-of doc "/SERF/Entry_ID")
+   :EntryTitle (value-of doc "/SERF/Entry_Title")  
    :Abstract (value-of doc "/SERF/Summary/Abstract")
    :Purpose (value-of doc "/SERF/Summary/Purpose")
    :ServiceLanguage (value-of doc "/SERF/Service_Language")

@@ -23,7 +23,11 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
-(defn xml-round-trip
+(def tested-service-formats
+  "Seq of formats to use in round-trip conversion and XML validation tests."
+  [:serf])
+
+(defn collection-xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [record format]
@@ -32,17 +36,31 @@
     (is (empty? (core/validate-xml :collection format metadata-xml)))
     (core/parse-metadata :collection format metadata-xml)))
 
+(defn service-xml-round-trip
+  "Returns record after being converted to XML and back to UMM through
+  the given to-xml and to-umm mappings."
+  [record format]
+  (let [metadata-xml (core/generate-metadata :service format record)]
+    ;; validate against xml schema
+    (is (empty? (core/validate-xml :service format metadata-xml)))
+    (core/parse-metadata :service format metadata-xml)))
+
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
-      (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
-             (xml-round-trip expected-conversion/example-record metadata-format))))))
+      (is (= (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
+             (collection-xml-round-trip expected-conversion/example-collection-record metadata-format))))))
+
+(deftest roundtrip-example-service-record
+  (is (= (expected-conversion/convert expected-conversion/example-service-record :serf)
+         (service-xml-round-trip expected-conversion/example-service-record :serf))))
+
 
 (defspec roundtrip-generated-collection-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
             metadata-format (gen/elements tested-collection-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
-           (xml-round-trip umm-record metadata-format)))))
+           (collection-xml-round-trip umm-record metadata-format)))))
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -62,12 +80,17 @@
              (parse-iso19115-projects-keywords metadata-xml))))))
 
 (comment
-
+  
+  (deftest test-serf-parsing
+    (let [serf-xml (slurp (io/resource "example_data/serf.xml"))
+          serf-umm (serf-xml-to-umm/serf-xml-to-umm-s serf-xml)]
+      (is (= example-service-record serf-umm))))
+  
   (println (core/generate-metadata :collection :iso-smap user/failing-value))
-
+  
   (is (= (expected-conversion/convert user/failing-value :iso-smap)
-         (xml-round-trip user/failing-value :iso-smap)))
-
+         (collection-xml-round-trip user/failing-value :iso-smap)))
+  
   ;; random XML gen
   (def metadata-format :dif)
   (def metadata-format :iso19115)
@@ -75,28 +98,28 @@
   (def metadata-format :dif)
   (def metadata-format :dif10)
   (def metadata-format :iso-smap)
-
+  
   (def sample-record (first (gen/sample (gen/such-that :DataDates umm-gen/umm-c-generator) 1)))
-
+  
   (def sample-record user/failing-value)
-
-  (def sample-record expected-conversion/example-record)
-
+  
+  (def sample-record expected-conversion/example-collection-record)
+  
   ;; generated xml
   (println (core/generate-metadata :collection metadata-format sample-record))
-
+  
   ;; our simple example record
-  (core/generate-metadata :collection metadata-format expected-conversion/example-record)
-
+  (core/generate-metadata :collection metadata-format expected-conversion/example-collection-record)
+  
   ;; round-trip
-  (xml-round-trip sample-record metadata-format)
-
+  (collection-xml-round-trip sample-record metadata-format)
+  
   ;; generated test case
   (is (= (expected-conversion/convert sample-record metadata-format)
-         (xml-round-trip sample-record metadata-format)))
-
+         (collection-xml-round-trip sample-record metadata-format)))
+  
   ;; for generated test failures
   (is (= (expected-conversion/convert user/failing-value metadata-format)
-         (xml-round-trip user/failing-value metadata-format)))
-
+         (collection-xml-round-trip user/failing-value metadata-format)))
+  
   )

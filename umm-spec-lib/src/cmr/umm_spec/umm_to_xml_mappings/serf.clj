@@ -20,17 +20,18 @@
   "Creates a SERF Service Parameter representation of a UMM-S Service Keyword element"
   [s]
   (for [sk (:ServiceKeywords s)]
-    [:Parameters
+    [:Service_Parameters 
      [:Service_Category (:Category sk)]
      [:Service_Topic (:Topic sk)]
      [:Service_Term (:Term sk)]
      [:Service_Specific_Name (:ServiceSpecificName sk)]]))
 
+
 (defn- create-science-parameters
   "Creates a SERF Science Parameter representation of a UMM-S Science Keyword element"
   [s]
   (for [sk (:ScienceKeywords s)]
-    [:Parameters
+    [:Science_Parameters
      [:Science_Category (:Category sk)]
      [:Science_Topic (:Topic sk)]
      [:Science_Term (:Term sk)]
@@ -47,7 +48,7 @@
 (defn- contact-to-serf
   "Converts a UMM-S Contact to the appropriate SERF Personnel elements as a vector"
   [contacts]
-  (for [type ["phone" "email" "fax"]
+  (for [type ["email" "phone" "fax"]
         value (extract-contacts-by-type contacts type)]
     [(keyword (clojure.string/capitalize type) ) value]))
 
@@ -103,11 +104,29 @@
         party (:Party responsibility)]
     [:Service_Provider 
      [:Service_Organization 
-      (let [organization (:OrganizationName party)]
-        [:Short_Name (:ShortName organization)]
-        [:Long_Name (:LongName organization)])
-      [:Service_Organization_Url (extract-service-organization-url (:RelatedUrls party))] 
-      [:Personnel (create-service-provider-personnel responsibilities)]]]))
+      [:Short_Name (:ShortName (:OrganizationName party))]
+      [:Long_Name (:LongName (:OrganizationName party))]]
+     [:Service_Organization_URL (extract-service-organization-url (:RelatedUrls party))] 
+     (create-service-provider-personnel responsibilities)]))
+
+(defn- create-distributions
+  "Creates a SERF Distributions element from a UMM-S Distributions Element"
+  [s]
+  (for [distribution (:Distributions s)]
+    [:Distribution [:Distribution_Media (:DistributionMedia distribution)]
+     [:Distribution_Size (:DistributionSize distribution)]
+     [:Distribution_Format (:DistributionFormat distribution)]
+     [:Fees (:Fees distribution)]]))
+(defn- create-related-urls
+  "Creates a SERF Related URL element from a UMM-S Document"
+  [s]
+  (for [related-url (:RelatedUrls s)] 
+    [:Related_URL [:URL_Content_Type 
+                   [:Type (:Type (:ContentType related-url))]
+                   [:Subtype (:Subtype (:ContentType related-url))]]
+     (for[url (:URLs related-url)]
+       [:URL url])
+     [:Description (:Description related-url)]]))
 
 (def inserted-metadata
   "Inserted Metadata by CMR to account for missing fields"
@@ -121,33 +140,40 @@
      serf-xml-namespaces
      [:Entry_ID (:EntryId s)]
      [:Entry_Title (:EntryTitle s)]
-     [:Service_Citation (:ServiceCitation s)]
+     (for [service-citation (:ServiceCitation s)]
+       [:Service_Citation 
+        [:Originators (:Creator service-citation)]
+        [:Title (:Title service-citation)]
+        [:Provider (:Publisher service-citation)]
+        [:Edition (:Version service-citation)]
+        [:URL (:RelatedURL service-citation)]])
      ;;TODO: CMR-2298 needs to be resolved before we can properly implement this
-     [:Personnel (create-root-personnel (:Responsibilities s))] 
-     [:Service_Parameter (create-service-parameters s)]
-     [:Science_Parameters (create-science-parameters s)]
+     (create-root-personnel (:Responsibilities s))
+     (create-service-parameters s)
+     (create-science-parameters s)
      (for [topic-category (:ISOTopicCategories s)]
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords s)]
        [:Keyword ak])
-     (for [platform (:Platforms s) 
-           :when (not= (:ShortName platform) "Not provided")]
-       [:Source_Name
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]])
      (for [platform (:Platforms s)
            instrument (:Instruments platform)]
        [:Sensor_Name
         [:Short_Name (:ShortName instrument)]
         [:Long_Name (:LongName instrument)]])
+     (for [platform (:Platforms s) 
+           :when (not= (:ShortName platform) "Not provided")]
+       [:Source_Name
+        [:Short_Name (:ShortName platform)]
+        [:Long_Name (:LongName platform)]])
      (for [service-project (:Projects s)]
-       [:Project service-project])
+       [:Project 
+        [:Short_Name (:ShortName service-project)]
+        [:Long_Name (:LongName service-project)]])
      [:Quality (:Quality s)]
      [:AccessConstraints (:AccessContstraints s)]
      [:UseConstraints (:UseConstraints s)]
      [:Service_Language (:ServiceLanguage s)]
-     (for [distribution (:Distributions s)]
-       [:Distribution distribution])
+     (create-distributions s)
      ;;Multimedia Samples should go here in order but we don't have a way to distinguish them from 
      ;;Related URLs. 
      (for [reference (:PublicationReferences s)]
@@ -156,14 +182,9 @@
      [:Summary 
       [:Abstract (:Abstract s)] 
       [:Purpose (:Purpose s)]]
-     (for [related-url (:RelatedUrls s)] 
-       [:Related_URL related-url])
+     (create-related-urls s)
      (for [ma (:MetadataAssociations s)]
-       [:Parent_SERF 
-        [:Entry_Id [:Short_Name (:EntryId ma)]
-         [:Version (:Version ma)]]
-        [:Description (:Description ma)]
-        [:Type (:Type ma)]])
+       [:Parent_SERF (:EntryId ma)])
      [:IDN_Node 
       [:Short_Name  
        (:Value (first (filter #(= "IDN_Node_Short_Name" (:Name %)) (:AdditionalAttributes s))))]]

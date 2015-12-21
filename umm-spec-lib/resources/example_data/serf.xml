@@ -179,12 +179,7 @@
 </Description>
 </Related_URL>
 <Parent_SERF>
-   <Entry_Id>
-      <Short_Name>Test Parent Serf</Short_Name>
-      <Version>5</Version>
-   </Entry_Id>
-   <Description>Some entry test data</Description>
-   <Type>Some kind of SERF</Type>
+   Test Parent SERF V 5
 </Parent_SERF>
 <IDN_Node uuid="9ae20472-ba4c-4b01-8d97-857b73fa3c95">
    <Short_Name>USA/NASA</Short_Name>
@@ -193,15 +188,16 @@
 <Metadata_Version>VERSION 9.7.1</Metadata_Version>
 <SERF_Creation_Date>2009-12-03</SERF_Creation_Date>
 <Last_SERF_Revision_Date>2009-12-04</Last_SERF_Revision_Date>
-<Extended_Metadata>/n      <Metadata>
- <Group>gov.nasa.gsfc.gcmd</Group>
- <Name>metadata.extraction_date</Name>
- <Value>2015-11-20 16:04:57</Value>
-</Metadata>
-<Metadata>
- <Group>gov.nasa.gsfc.gcmd</Group>
- <Name>metadata.keyword_version</Name>
- <Value>8.1</Value>
-</Metadata>
+<Extended_Metadata>      
+ <Metadata>
+    <Group>gov.nasa.gsfc.gcmd</Group>
+    <Name>metadata.extraction_date</Name>
+    <Value>2015-11-20 16:04:57</Value>
+ </Metadata>
+ <Metadata>
+    <Group>gov.nasa.gsfc.gcmd</Group>
+    <Name>metadata.keyword_version</Name>
+    <Value>8.1</Value>
+ </Metadata>
 </Extended_Metadata>
 </SERF>
