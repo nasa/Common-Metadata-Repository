@@ -32,8 +32,8 @@
   (do
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
-    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"}))
-  )
+    (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
+
 
 
 (deftest search-granules-in-xml-metadata
@@ -371,8 +371,8 @@
                                                     polygon-with-holes
                                                     (p/point 1 2)
                                                     (p/point -179.9 89.4)
-                                                    (l/ords->line-string :geodetic 0 0, 0 1, 0 -90, 180 0)
-                                                    (l/ords->line-string :geodetic 1 2, 3 4, 5 6, 7 8)
+                                                    (l/ords->line-string :geodetic [0 0, 0 1, 0 -90, 180 0])
+                                                    (l/ords->line-string :geodetic [1 2, 3 4, 5 6, 7 8])
                                                     (m/mbr -180 90 180 -90)
                                                     (m/mbr -10 20 30 -40))})
         gran2 (make-gran coll2 {:granule-ur "Granule2"

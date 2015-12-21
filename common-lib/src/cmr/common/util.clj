@@ -78,7 +78,7 @@
 
 (defmacro future-with-logging
   "Creates a future that will log when a task starts and completes or if exceptions occur."
-  [taskname & body ]
+  [taskname & body]
   `(future
     (info "Starting " ~taskname)
     (try
@@ -214,6 +214,17 @@
             (into v (f i)))
           []
           sequence))
+
+(defn any?
+  "Returns true if predicate f returns a truthy value against any of the items. This is very similar
+  to some but it's faster through it's use of reduce."
+  [f items]
+  (reduce (fn [_ i]
+            (if (f i)
+              (reduced true) ;; short circuit
+              false))
+          false
+          items))
 
 (defn map-n
   "Calls f with every step count elements from items. Equivalent to (map f (partition n step items))
@@ -533,3 +544,9 @@
           (dissoc m k)))
       m)
     (dissoc m k)))
+
+(defn seqv
+  "Returns (vec coll) when (seq coll) is not nil."
+  [coll]
+  (when (seq coll)
+    (vec coll)))

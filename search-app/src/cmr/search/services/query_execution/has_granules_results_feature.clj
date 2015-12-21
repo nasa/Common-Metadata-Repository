@@ -10,7 +10,8 @@
 
 (def REFRESH_HAS_GRANULES_MAP_JOB_INTERVAL
   "The frequency in seconds of the refresh-has-granules-map-job"
-  (* 6 3600))
+  ;; default to 1 hour
+  3600)
 
 (def has-granule-cache-key
   :has-granules-map)

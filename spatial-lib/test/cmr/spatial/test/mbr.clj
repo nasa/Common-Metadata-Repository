@@ -118,7 +118,7 @@
 (defspec geodetic-covers-point-spec 100
   (for-all [mbr sgen/mbrs]
     (let [{w :west n :north e :east s :south} mbr
-          corner-points (p/ords->points w,n e,n e,s w,s)
+          corner-points (p/ords->points [w,n e,n e,s w,s])
           midlon (if (m/crosses-antimeridian? mbr)
                    (let [dist (+ (- 180 w) (- e -180))
                          half (/ dist 2.0)
@@ -176,9 +176,9 @@
              on-ords :on
              off-ords :off} examples]
       (let [mbr (apply m/mbr mbr-parts)
-            on-points (concat (apply p/ords->points on-ords)
+            on-points (concat (p/ords->points on-ords)
                               (m/corner-points mbr))
-            off-points (apply p/ords->points off-ords)]
+            off-points (p/ords->points off-ords)]
 
         (doseq [p on-points]
           (is (m/geodetic-covers-point? mbr p) (str (pr-str mbr) (pr-str p))))
@@ -207,8 +207,8 @@
            -10 25 -10 25 ; nw corner
            -10 -25 -10 -25  ; sw corner
            10 25 10 25 ; ne corner
-           10 -25 10 -25  ; se corner
-           )
+           10 -25 10 -25)  ; se corner
+
       (are [w n e s]
            (not (m/covers-mbr? :geodetic m1 (m/mbr w n e s)))
 
@@ -330,9 +330,9 @@
       (or (and (not intersects?) (empty? intersections))
 
           (and (seq intersections)
-          (every? #(and (m/covers-mbr? :geodetic mbr1 %)
-                        (m/covers-mbr? :geodetic mbr2 %))
-                  intersections))))))
+           (every? #(and (m/covers-mbr? :geodetic mbr1 %)
+                         (m/covers-mbr? :geodetic mbr2 %))
+                   intersections))))))
 
 (defspec union-test 100
   (for-all [mbr1 sgen/mbrs

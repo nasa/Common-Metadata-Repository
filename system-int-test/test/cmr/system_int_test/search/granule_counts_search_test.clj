@@ -191,6 +191,63 @@
              :atom (search/find-concepts-atom :collection {:include-has-granules true})
              :atom (search/find-concepts-json :collection {:include-has-granules true}))))))
 
+(deftest collection-has-granules-caching-test
+  (let [;; Create collections
+        ;; whole world, no temporal, and science keywords
+        coll1 (make-coll 1 m/whole-world nil)
+        ;; just like coll1
+        coll2 (make-coll 2 m/whole-world nil)]
 
+    ;; Ingest some granules for coll1 first, and leave coll2 for later
+    ;; Coll1 granules
+    (make-gran coll1 (p/point 0 0) nil)
+    (make-gran coll1 (p/point 0 90) nil)
 
+    (index/wait-until-indexed)
 
+    (testing "granule counts"
+      (testing "granule counts for all collections"
+        (let [refs (search/find-refs :collection {:include-granule-counts true})]
+          (is (gran-counts/granule-counts-match? :xml {coll1 2 coll2 0} refs)))))
+
+    (testing "has_granules"
+      (are [result-format results]
+          (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 false})
+                actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+            (= expected-has-granules actual-has-granules))
+        :xml (search/find-refs :collection {:include-has-granules true})
+        :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
+        :atom (search/find-concepts-atom :collection {:include-has-granules true})
+        :atom (search/find-concepts-json :collection {:include-has-granules true})))
+
+    (testing "after ingesting more granules"
+      (make-gran coll2 (p/point 0 0) nil)
+      (make-gran coll2 (p/point 0 90) nil)
+
+      (index/wait-until-indexed)
+
+      (testing "granule counts"
+        (testing "granule counts for all collections"
+          (let [refs (search/find-refs :collection {:include-granule-counts true})]
+            (is (gran-counts/granule-counts-match? :xml {coll1 2 coll2 2} refs)))))
+
+      (testing "has_granules"
+        (testing "without include-granule-counts"
+          (are [result-format results]
+              (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
+                    actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+                (not= expected-has-granules actual-has-granules))
+            :xml (search/find-refs :collection {:include-has-granules true})
+            :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true})
+            :atom (search/find-concepts-atom :collection {:include-has-granules true})
+            :atom (search/find-concepts-json :collection {:include-has-granules true})))
+
+        (testing "with include-granule-counts"
+          (are [result-format results]
+              (let [expected-has-granules (util/map-keys :concept-id {coll1 true coll2 true})
+                    actual-has-granules (gran-counts/results->actual-has-granules result-format results)]
+                (= expected-has-granules actual-has-granules))
+            :xml (search/find-refs :collection {:include-has-granules true :include-granule-counts true})
+            :echo10 (search/find-metadata :collection :echo10 {:include-has-granules true :include-granule-counts true})
+            :atom (search/find-concepts-atom :collection {:include-has-granules true :include-granule-counts true})
+            :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true})))))))

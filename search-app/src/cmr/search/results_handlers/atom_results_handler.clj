@@ -13,6 +13,7 @@
             [cheshire.core :as json]
             [cmr.common.util :as util]
             [cmr.common.date-time-parser :as dtp]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.search.models.results :as r]
             [cmr.spatial.serialize :as srl]
             [cmr.search.services.url-helper :as url]
@@ -124,8 +125,8 @@
         ;; DIF collection has a special case on associated-difs where it is set to its entry-id
         ;; For DIF collection, its entry-id is the same as its short-name
         associated-difs (case metadata-format
-                          "dif" [short-name]
-                          "dif10" [(format "%s_%s" short-name version-id)]
+                          "dif" [(eid/entry-id short-name version-id)]
+                          "dif10" [(eid/entry-id short-name version-id)]
                           associated-difs)]
     (merge {:id concept-id
             :score (r/normalize-score score)
@@ -365,7 +366,8 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters]} reference]
+                orbit-parameters]} reference
+        granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
                (x/element :title {:type "text"} title)
@@ -389,9 +391,10 @@
                (x/element :echo:onlineAccessFlag {} online-access-flag)
                (x/element :echo:browseFlag {} browse-flag)
                (when has-granules-map
-                 (x/element :echo:hasGranules {} (get has-granules-map id false)))
+                 (x/element :echo:hasGranules {} (or (< 0 granule-count)
+                                                     (get has-granules-map id false))))
                (when granule-counts-map
-                 (x/element :echo:granuleCount {} (get granule-counts-map id 0)))
+                 (x/element :echo:granuleCount {} granule-count))
                (when score (x/element :relevance:score {} score)))))
 
 (defmethod atom-reference->xml-element :granule

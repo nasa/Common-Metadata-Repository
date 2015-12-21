@@ -73,7 +73,6 @@
   [coll]
   (let [{{:keys [short-name long-name version-id]} :product
          :keys [entry-title spatial-coverage associated-difs]} coll
-        entry-id (str short-name "_" version-id)
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
@@ -90,8 +89,6 @@
         contact-name (or org-name "undefined")
         associated-difs (when (first associated-difs) [(first associated-difs)])]
     (-> coll
-        ;; SMAP ISO does not have entry-id and we generate it as concatenation of short-name and version-id
-        (assoc :entry-id entry-id)
         ;; SMAP ISO does not have collection-data-type
         (assoc-in [:product :collection-data-type] nil)
         ;; SMAP ISO does not have processing-level-id
@@ -179,8 +176,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "SPL1AA_002"
-     :entry-title "SMAP Collection Dataset ID"
+    {:entry-title "SMAP Collection Dataset ID"
      :summary "Parsed high resolution and low resolution radar instrument telemetry with spacecraft position, attitude and antenna azimuth information as well as voltage and temperature sensor measurements converted from telemetry data numbers to engineering units."
      :purpose "This product provides representative L-band radar cross section measures over all land surfaces except Antarctica and coastal oceans within 1000 km of land. The SMAP project will use these data to determine freeze-thaw state, ascertain the location of temporary water bodies and calculate vegetation index. The SMAP project will also use these data to improve the resolution of soil moisture retrieved from radiometer measures."
      :metadata-language "eng"
@@ -192,7 +188,7 @@
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
                                  {:insert-time (p/parse-datetime "2013-04-04T15:15:00Z")
                                   :update-time (p/parse-datetime "2013-04-05T17:15:00Z")
-                                  :revision-date-time (p/parse-date "2013-01-02")})
+                                  :revision-date-time (p/parse-datetime "2013-01-02")})
      :temporal expected-temporal
      :science-keywords [(umm-c/map->ScienceKeyword
                           {:category "EARTH SCIENCE"

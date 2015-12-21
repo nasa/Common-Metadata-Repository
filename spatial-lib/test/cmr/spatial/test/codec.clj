@@ -17,7 +17,8 @@
             [cmr.spatial.geodetic-ring :as gr]
             [cmr.spatial.test.generators :as sgen]
             [cmr.spatial.messages :as smesg]
-            [cmr.spatial.codec :as c]))
+            [cmr.spatial.codec :as c]
+            [cmr.spatial.derived :as d]))
 
 
 (deftest url-decode-test
@@ -93,12 +94,15 @@
 (defspec line-encode-decode-test 100
   (for-all [shape (gen/fmap #(l/set-coordinate-system % :geodetic)
                             sgen/lines)]
-    (= shape (c/url-decode :line (c/url-encode shape)))))
+    (let [line (d/calculate-derived shape)]
+      (= line (d/calculate-derived (c/url-decode :line (c/url-encode line)))))))
+
+
+
 
 (comment
-(def l #cmr.spatial.line_string.LineString{:coordinate-system :geodetic, :points [#=(cmr.spatial.point/point -1.0 -1.0) #=(cmr.spatial.point/point -1.0 1.0)], :segments nil, :mbr nil})
+ (def l #cmr.spatial.line_string.LineString{:coordinate-system :geodetic, :points [#=(cmr.spatial.point/point -1.0 -1.0) #=(cmr.spatial.point/point -1.0 1.0)], :segments nil, :mbr nil})
 
-(c/url-decode :line (c/url-encode l))
+ (c/url-decode :line (c/url-encode l)))
 
 
-)

@@ -7,31 +7,32 @@
             [cmr.ingest.data.ingest-events :as ingest-events]
             [cmr.ingest.data.provider-acl-hash :as pah]
             [cmr.ingest.services.messages :as msg]
-            [cmr.ingest.services.validation :as v]
+            [cmr.umm-spec.legacy :as umm-legacy]
+            [cmr.ingest.validation.validation :as v]
             [cmr.ingest.services.helper :as h]
             [cmr.ingest.config :as config]
             [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.services.errors :as serv-errors]
             [cmr.common.services.messages :as cmsg]
             [cmr.common.util :as util :refer [defn-timed]]
             [cmr.common.config :as cfg]
-            [cmr.umm.core :as umm]
             [clojure.string :as string]
             [cmr.message-queue.services.queue :as queue]
             [cmr.common.cache :as cache]
-            [cmr.common.services.errors :as errors]))
+            [cmr.common.services.errors :as errors]
+            [cmr.umm.collection.entry-id :as eid]))
 
 (def ingest-validation-enabled?
   "A configuration feature switch that turns on CMR ingest validation."
   (cfg/config-value-fn :ingest-validation-enabled "true" #(= % "true")))
 
-(defn- add-extra-fields-for-collection
-  "Adds the extra fields for a collection concept."
+(defn add-extra-fields-for-collection
+  "Returns collection concept with fields necessary for ingest into metadata db
+  under :extra-fields."
   [context concept collection]
   (let [{{:keys [short-name version-id]} :product
          {:keys [delete-time]} :data-provider-timestamps
-         entry-title :entry-title
-         entry-id :entry-id} collection]
+         entry-title :entry-title} collection
+         entry-id (eid/entry-id short-name version-id)]
     (assoc concept :extra-fields {:entry-title entry-title
                                   :entry-id entry-id
                                   :short-name short-name
@@ -42,16 +43,16 @@
   "Validates a collection concept and parses it. Returns the UMM record."
   [context collection-concept validate-keywords?]
   (v/validate-concept-request collection-concept)
-  (v/validate-concept-xml collection-concept)
+  (v/validate-concept-metadata collection-concept)
 
-  (let [collection (umm/parse-concept collection-concept)]
-    ;; UMM Validation
+  (let [collection (umm-legacy/parse-concept collection-concept)]
     (when (ingest-validation-enabled?)
       (v/validate-collection-umm context collection validate-keywords?))
     collection))
 
-(defn-timed validate-collection
-  "Validate the collection. Throws a service error if any validation issues are found."
+(defn-timed validate-and-prepare-collection
+  "Validates the collection and adds extra fields needed for metadata db. Throws a service error
+  if any validation issues are found."
   [context concept validate-keywords?]
   (let [collection (validate-and-parse-collection-concept context concept validate-keywords?)
         ;; Add extra fields for the collection
@@ -86,7 +87,7 @@
       (cmsg/data-error :invalid-data
                        msg/parent-collection-does-not-exist provider-id granule-ur collection-ref))
 
-    [coll-concept (umm/parse-concept coll-concept)]))
+    [coll-concept (umm-legacy/parse-concept coll-concept)]))
 
 (defn- add-extra-fields-for-granule
   "Adds the extra fields for a granule concept."
@@ -111,9 +112,9 @@
      context concept get-granule-parent-collection-and-concept))
   ([context concept fetch-parent-collection-concept-fn]
    (v/validate-concept-request concept)
-   (v/validate-concept-xml concept)
+   (v/validate-concept-metadata concept)
 
-   (let [granule (umm/parse-concept concept)
+   (let [granule (umm-legacy/parse-concept concept)
          [parent-collection-concept
           parent-collection] (fetch-parent-collection-concept-fn
                                context concept granule)]
@@ -148,7 +149,7 @@
 (defn-timed save-collection
   "Store a concept in mdb and indexer and return concept-id and revision-id."
   [context concept validate-keywords?]
-  (let [concept (validate-collection context concept validate-keywords?)]
+  (let [concept (validate-and-prepare-collection context concept validate-keywords?)]
     (let [{:keys [concept-id revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 

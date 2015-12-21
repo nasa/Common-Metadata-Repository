@@ -4,6 +4,8 @@
   (:require [clojure.test :refer [is]]
             [clojure.java.io :as io]
             [cmr.umm.core :as umm]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm-spec.legacy :as umm-legacy]
             [cmr.common.mime-types :as mime-types]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.url-helper :as url]
@@ -15,21 +17,20 @@
             [clojure.string :as str]))
 
 (defn- item->native-id
-  "Returns the native id of an item"
+  "Returns the native id of a UMM record."
   [item]
-  (let [{:keys [granule-ur entry-title native-id]} item]
-    (or granule-ur entry-title native-id)))
+  (some #(get item %) [:granule-ur :entry-title :EntryTitle :native-id]))
 
 (defn item->concept
-  "Converts an UMM item or a tombstone to a concept map. Default provider-id to PROV1 if not present."
+  "Returns a concept map from a UMM item or tombstone. Default provider-id to PROV1 if not present."
   ([item]
    (item->concept item :echo10))
   ([item format-key]
    (let [format (mime-types/format->mime-type format-key)]
-     (merge {:concept-type (umm/item->concept-type item)
+     (merge {:concept-type (umm-legacy/item->concept-type item)
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
-             :metadata (when-not (:deleted item) (umm/umm->xml item format-key))
+             :metadata (when-not (:deleted item) (umm-legacy/generate-metadata (dissoc item :provider-id) format-key))
              :format format}
             (when (:concept-id item)
               {:concept-id (:concept-id item)})
@@ -51,16 +52,10 @@
   ([provider-id item]
    (ingest provider-id item nil))
   ([provider-id item options]
-   (let [{:keys [token client-id user-id]
-          format-key :format} (merge {:format :echo10
-                                      :token nil
-                                      :client-id nil
-                                      :user-id nil}
-                                     options)
+   (let [format-key (get options :format :echo10)
          response (ingest/ingest-concept
-                    (item->concept (assoc item :provider-id provider-id) format-key)
-                    {:token token :client-id client-id :user-id user-id
-                     :validate-keywords (:validate-keywords options)})
+                   (item->concept (assoc item :provider-id provider-id) format-key)
+                   (select-keys options [:token :client-id :user-id :validate-keywords :accept-format]))
          status (:status response)]
 
      ;; This allows this to be used from many places where we don't expect a failure but if there is
@@ -73,7 +68,7 @@
        (assoc item
               :status status
               :provider-id provider-id
-              :user-id user-id
+              :user-id (:user-id options)
               :concept-id (:concept-id response)
               :revision-id (:revision-id response)
               :format-key format-key)
@@ -88,7 +83,7 @@
                  :metadata metadata
                  :format (mime-types/format->mime-type format-key)}
         response (ingest/ingest-concept concept)]
-    (merge (umm/parse-concept concept) response)))
+    (merge (umm-legacy/parse-concept concept) response)))
 
 (defn ingest-concept-with-metadata-file
   "Ingest the given concept with the metadata file. The metadata file has to be located on the
@@ -127,7 +122,7 @@
        :revision-id revision-id
        :format format-key
        :collection-concept-id collection-concept-id
-       :metadata (umm/umm->xml item format-key)})))
+       :metadata (umm-legacy/generate-metadata item format-key)})))
 
 (defmethod item->metadata-result true
   [_ format-key item]
@@ -137,11 +132,11 @@
         {:echo_granule_id concept-id
          :echo_dataset_id collection-concept-id
          :format format-key
-         :metadata (umm/umm->xml item format-key)})
+         :metadata (umm-legacy/generate-metadata item format-key)})
       (util/remove-nil-keys
         {:echo_dataset_id concept-id
          :format format-key
-         :metadata (umm/umm->xml item format-key)}))))
+         :metadata (umm-legacy/generate-metadata item format-key)}))))
 
 (defn- items-match?
   "Returns true if the search result items match the expected items. The argument echo-compatible?
@@ -162,7 +157,7 @@
     (and (= (set expected-ids) (set found-ids))
          (every?
            (partial re-find
-                    #"<gco:CharacterString>Translated from ECHO using ECHOToISO.xsl Version: 1.31")
+                    #"<gco:CharacterString>Translated from ECHO using ECHOToISO.xsl Version: 1.32")
            (map :metadata search-items)))))
 
 (defn- remove-metadata-ids

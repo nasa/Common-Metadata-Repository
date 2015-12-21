@@ -407,7 +407,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SensorType)
 
-;; The longitude and latitude value of a spatially referenced pointer in degree.
+;; The longitude and latitude value of a spatially referenced point in degrees.
 (defrecord PointType
   [
    Longitude

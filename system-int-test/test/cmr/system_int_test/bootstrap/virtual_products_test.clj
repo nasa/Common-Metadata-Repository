@@ -99,7 +99,13 @@
 
 (deftest virtual-product-bootstrap
   (s/only-with-real-database
-    (let [source-collections (vp/ingest-source-collections)
+    (let [;; ingest and then delete a collection that has the same entry-title as one of the virtual
+          ;; collections to test the edge case documented in CMR-2169
+          coll1 (d/ingest "LPDAAC_ECS"
+                          (dc/collection {:entry-title "ASTER On-Demand L2 Surface Emissivity"
+                                          :native-id "NID-1"}))
+          _ (ingest/delete-concept (d/item->concept coll1 :echo10))
+          source-collections (vp/ingest-source-collections)
           ;; Ingest the virtual collections. For each virtual collection associate it with the source
           ;; collection to use later.
           vp-colls (reduce (fn [new-colls source-coll]
@@ -160,6 +166,56 @@
             vp-colls (vp/ingest-virtual-collections [ast-coll])
             granule-ur "SC:AST_L1A.003:2006227720"
             ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
+                                                   (dg/granule ast-coll {:granule-ur granule-ur
+                                                                         :project-refs ["proj1"]}))
+            virtual-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)
+            all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) virtual-granule-urs)]
+        (index/wait-until-indexed)
+
+        (testing "Only source granules exist (virtual products system is disabled)"
+          (vp/assert-matching-granule-urs
+            [(:granule-ur ast-l1a-gran)]
+            (search/find-refs :granule {:page-size 100})))
+
+        ;; Bootstrap collection
+        (bootstrap-collection)
+
+        (testing "Virtual granules are generated after bootstrap source granule"
+          (vp/assert-matching-granule-urs
+            all-expected-granule-urs
+            (search/find-refs :granule {:page-size 100})))
+
+        ;; delete the source granule
+        (ingest/delete-concept (d/item->concept ast-l1a-gran) {:revision-id 12})
+
+        ;; Bootstrap collection again
+        (bootstrap-collection)
+
+        (testing "Virtual granules are deleted as a result of bootstrap deleted source granule"
+          (vp/assert-matching-granule-urs
+            []
+            (search/find-refs :granule {:page-size 100})))))))
+
+;; Verify that disabled source collections configuration is ignored during bootstrapping
+(deftest virtual-product-bootstrap-disabled-source-collections
+  (s/only-with-real-database
+    (vp/with-disabled-source-collections
+      #{"ASTER L1A Reconstructed Unprocessed Instrument Data V003"}
+      (let [entry-title "ASTER L1A Reconstructed Unprocessed Instrument Data V003"
+            bootstrap-collection (fn []
+                                   (index/wait-until-indexed)
+                                   (bootstrap/bootstrap-virtual-products "LPDAAC_ECS" entry-title)
+                                   (index/wait-until-indexed))
+            [ast-coll] (vp/ingest-source-collections
+                         [(assoc
+                            (dc/collection
+                              {:entry-title entry-title
+                               :short-name "AST_L1A"
+                               :projects (dc/projects "proj1" "proj2" "proj3")})
+                            :provider-id "LPDAAC_ECS")])
+            vp-colls (vp/ingest-virtual-collections [ast-coll])
+            granule-ur "SC:AST_L1A.003:2006227720"
+            ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                    (dg/granule ast-coll {:granule-ur granule-ur
                                                                          :project-refs ["proj1"]}))
             virtual-granule-urs (vp/source-granule->virtual-granule-urs ast-l1a-gran)

@@ -31,7 +31,8 @@
     (is (= 422 status))
     (is (re-find error-regex body))))
 
-(def minimal-valid-echo-xml "<Collection>
+(def minimal-valid-echo-xml
+  "<Collection>
   <ShortName>ShortName_Larc</ShortName>
   <VersionId>Version01</VersionId>
   <InsertTime>1999-12-31T19:00:00-05:00</InsertTime>
@@ -42,7 +43,7 @@
   <Description>A minimal valid collection</Description>
   <Orderable>true</Orderable>
   <Visible>true</Visible>
-</Collection>")
+  </Collection>")
 
 (deftest translate-metadata
   (doseq [input-format valid-formats
@@ -106,6 +107,44 @@
           (is (= (mt/format->mime-type output-format) content-type))
           (is (re-find #"<Short_Name>ShortName_Larc</Short_Name>" body)))))))
 
+(deftest translate-metadata-handles-date-string
+  (testing "CMR-2257: date-string in DIF9 causes InternalServerError"
+    (let [dif9-xml "<DIF xmlns=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:dif=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.8.4.xsd\">
+                   <Entry_ID>minimal_dif_dataset</Entry_ID>
+                   <Entry_Title>A minimal dif dataset</Entry_Title>
+                   <Data_Set_Citation>
+                   <Dataset_Title>dataset_title</Dataset_Title>
+                   </Data_Set_Citation>
+                   <Parameters>
+                   <Category>category</Category>
+                   <Topic>topic</Topic>
+                   <Term>term</Term>
+                   </Parameters>
+                   <Temporal_Coverage>
+                   <Start_Date>1975-01-01</Start_Date>
+                   </Temporal_Coverage>
+                   <Data_Center>
+                   <Data_Center_Name>
+                   <Short_Name>datacenter_short_name</Short_Name>
+                   <Long_Name>data center long name</Long_Name>
+                   </Data_Center_Name>
+                   <Personnel>
+                   <Role>DummyRole</Role>
+                   <Last_Name>UNEP</Last_Name>
+                   </Personnel>
+                   </Data_Center>
+                   <Summary>
+                   <Abstract>summary of the dataset</Abstract>
+                   <Purpose>A grand purpose</Purpose>
+                   </Summary>
+                   <Metadata_Name>CEOS IDN DIF</Metadata_Name>
+                   <Metadata_Version>VERSION 9.8.4</Metadata_Version>
+                   <Last_DIF_Revision_Date>2013-10-22</Last_DIF_Revision_Date>
+                   </DIF>"
+                   {:keys [status]} (ingest/translate-metadata
+                                           :collection :dif dif9-xml :umm-json
+                                           {:query-params {"skip_umm_validation" "true"}})]
+      (is (= 200 status)))))
 
 (comment
 

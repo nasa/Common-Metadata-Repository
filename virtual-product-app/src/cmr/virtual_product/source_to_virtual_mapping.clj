@@ -6,6 +6,10 @@
             [cmr.virtual-product.config :as vp-config])
   (:import java.util.regex.Pattern))
 
+(def source-granule-ur-additional-attr-name
+  "The name of the additional attribute used to store the granule-ur of the source granule"
+  "source_granule_ur")
+
 (defn provider-alias->provider-id
   "Get the provider-id for the given provider alias. If the alias is provider-id itself, returns
   provider-id, otherwise returns the matching provider-id or nil if no such alias is defined."
@@ -202,10 +206,6 @@
   [provider-id source-short-name virtual-short-name virtual-granule-ur]
   (str/replace-first virtual-granule-ur virtual-short-name source-short-name))
 
-(def source-granule-ur-additional-attr-name
-  "The name of the additional attribute used to store the granule-ur of the source granule"
-  "source-granule-ur")
-
 (defn- update-core-fields
   "Update the core set of fields in the source granule umm to create the virtual granule umm. These
   updates are common across all the granules in all the virtual collections. The remaining fields
@@ -232,7 +232,7 @@
   attributes of a virtual granule are inherited from source granule by default. This dispatch
   function is used for custom update of the virtual granule umm based on source granule umm."
   (fn [virtual-umm provider-id source-short-name virtual-short-name]
-    [provider-id source-short-name]))
+    [(provider-alias->provider-id provider-id) source-short-name]))
 
 ;; Default is to not do any update
 (defmethod update-virtual-granule-umm :default

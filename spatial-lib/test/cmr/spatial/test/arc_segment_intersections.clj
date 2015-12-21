@@ -58,7 +58,7 @@
 
 (deftest example-arc-line-segment-intersections
   (are [ls-ords arc-ords intersection-ords]
-       (let [intersection-points (apply p/ords->points intersection-ords)
+       (let [intersection-points (p/ords->points intersection-ords)
              intersections (asi/intersections (apply s/ords->line-segment ls-ords)
                                               (apply a/ords->arc arc-ords))]
          (approx= intersection-points intersections))

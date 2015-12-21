@@ -7,6 +7,7 @@
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.core :as d]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.search.services.messages.common-messages :as msg]))
 
 
@@ -53,14 +54,21 @@
          (search/find-refs-with-aql :collection [] {}
                                     {:query-params {:page-size 20 :sort-key sort-key}}))))))
 
+(defn- get-field-value
+  "Get the value for a given field in the umm-record"
+  [coll field]
+  (if (= :entry-id field)
+    (eid/umm->entry-id coll)
+    (field coll)))
+
 (defn- compare-field
   "Compares collections by the given field for sorting. descending? indicates if
   the sort is descending or ascending. When the given field matches for two
   revisions the sort order is by concept-id ascending and revision-id descending. Field values
   must implement Comparable. Strings are converted to lower case for the comparison."
   [field descending? c1 c2]
-  (let [value1 (field c1)
-        value2 (field c2)]
+  (let [value1 (get-field-value c1 field)
+        value2 (get-field-value c2 field)]
     (if (= value1 value2)
       (if (= (:concept-id c1) (:concept-id c2))
         ;; Revision ids are in reverse order by default

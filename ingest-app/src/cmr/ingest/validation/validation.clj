@@ -1,22 +1,28 @@
-(ns cmr.ingest.services.validation
+(ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require [clojure.string :as s]
             [cmr.common.services.errors :as errors]
-            [cmr.umm.mime-types :as umm-mime-types]
             [cmr.common.mime-types :as mt]
             [cmr.common.log :as log :refer (warn)]
             [cmr.umm.core :as umm]
             [cmr.umm.validation.core :as umm-validation]
-            [cmr.ingest.services.business-rule-validation :as bv]
+            [cmr.umm-spec.core :as umm-spec]
+            [cmr.ingest.validation.business-rule-validation :as bv]
             [cmr.common.validations.core :as v]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.ingest.services.messages :as msg]))
+
+(def ^:private
+  valid-concept-mime-types
+  {:collection #{mt/echo10 mt/iso-smap mt/iso mt/dif mt/dif10 mt/umm-json}
+   :granule    #{mt/echo10 mt/iso-smap}})
+
 
 (defn- validate-format
   "Validates the format of the concept. Throws a 415 error if invalid."
   [concept]
   (let [content-type (:format concept)
-        valid-types (umm-mime-types/concept-type->valid-mime-types (:concept-type concept))]
+        valid-types (get valid-concept-mime-types (:concept-type concept))]
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
@@ -74,10 +80,14 @@
                  kms-fetcher/get-full-hierarchy-for-project
                  msg/project-not-matches-kms-keywords)}))
 
-(defn validate-concept-xml
-  "Validates the concept xml to ingest a concept. "
+(defn validate-concept-metadata
   [concept]
-  (if-errors-throw :bad-request (umm/validate-concept-xml concept)))
+  (if-errors-throw :bad-request
+                   (if (= mt/umm-json (:format concept))
+                     (umm-spec/validate-metadata (:concept-type concept)
+                                                 (mt/mime-type->format (:format concept))
+                                                 (:metadata concept))
+                     (umm/validate-concept-xml concept))))
 
 (defn validate-collection-umm
   [context collection validate-keywords?]

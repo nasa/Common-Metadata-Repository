@@ -11,6 +11,7 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.util :refer [are2]]
             [cmr.umm-spec.core :as umm-spec]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.test.expected-conversion :as expected-conversion]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
@@ -101,32 +102,34 @@
   [coll gran attribs]
   (ingest-gran coll (merge gran attribs)))
 
-;; Test that the MMT round trip for ingesting works and ingested collections can be found
-;; Test Outline
-;; - Convert example UMM-JSON record to ISO-19115 using translate API
-;; - Ingest ISO-19115
-;; - Search for a collection using various fields and verify it is found
+(comment
+  ;; for REPL testing purposes
+  (def example-record expected-conversion/example-record)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-record)
+                               :concept-type :collection
+                               :format "application/echo10+xml"})
+  )
+
 (deftest mmt-ingest-round-trip
-    (testing "translate umm-json to iso-19115 then ingest and search"
+    (testing "ingest and search UMM JSON metadata"
       (let [example-record expected-conversion/example-record
             umm-json (umm-spec/generate-metadata :collection :umm-json example-record)
-            metadata (:body (ingest/translate-metadata :collection :umm-json umm-json :iso19115))
             coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                   :concept-type :collection
-                                                  :format-key :iso19115
-                                                  :metadata metadata})]
+                                                  :format-key :umm-json
+                                                  :metadata umm-json})]
         (index/wait-until-indexed)
         ;; parameter queries
          (are2 [items params]
            (d/refs-match? items (search/find-refs :collection params))
 
            "entry-title matches"
-           [coll] {:entry_title (:EntryTitle example-record)}
+           [coll] {:entry_title "The entry title V5"}
            "entry-title not matches"
            [] {:entry_title "foo"}
 
            "entry-id matches"
-           [coll] {:entry_id (:EntryId example-record)}
+           [coll] {:entry_id (eid/entry-id (:ShortName example-record) (:Version example-record))}
            "entry-id not matches"
            [] {:entry_id "foo"}
 
@@ -136,12 +139,12 @@
            [] {:native_id "foo"}
 
            "short-name matches"
-           [coll] {:short_name "short_V1"}
+           [coll] {:short_name "short"}
            "short-name not matches"
            [] {:short_name "foo"}
 
            "version matches"
-           [coll] {:version (:Version example-record)}
+           [coll] {:version "V5"}
            "version not matches"
            [] {:version "foo"}
 
@@ -156,16 +159,15 @@
            [] {:revision_date "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
            "processing level matches"
-           [coll] {:processing_level (get-in example-record [:ProcessingLevel :Id])}
+           [coll] {:processing_level "3"}
            "processing level not matches"
            [] {:processing_level "foo"}
 
-           ;; collection data type - TODO add test for this when collection data type is added
-           ;; to UMM-JSON
+           "collection data type matches"
+           [coll] {"collection_data_type[]" "SCIENCE_QUALITY"}
 
            "temporal matches"
-           [coll] {:temporal (date-time-range->range-param
-                               (-> example-record :TemporalExtents first :RangeDateTimes first))}
+           [coll] {:temporal "2000-01-01T00:00:00Z,2015-12-04T13:55:29Z"}
            "temporal not matches"
            [] {:temporal "3000-01-01T10:00:00Z,3001-01-01T10:00:00Z"}
 
@@ -175,33 +177,42 @@
            [] {:concept-id "C1200000001-PROV1"}
 
            "platform matches"
-           [coll] {:platform (-> example-record :Platforms first :ShortName)}
+           [coll] {:platform "Platform 1"}
            "platform not matches"
            [] {:platform "foo"}
 
-           ;; instrument - TODO failing test
-           ;;[coll] {:instrument (-> example-record :Platforms first :Instruments first :ShortName)}
+           "instrument"
+           [coll] {:instrument "An Instrument"}
 
-           ;; sensor - TODO failing test
-           ; [coll] {:sensor (-> example-record :Platforms first :Instruments first :Sensors
-           ;                     first :ShortName)}
+           "sensor"
+           [coll] {:sensor "ABC"}
 
            "project matches"
-           [coll] {:project (-> example-record :Projects first :ShortName)}
+           [coll] {:project "project short_name"}
            "project not matches"
            [] {:project "foo"}
 
-           ;; archive-center - TODO add test for this when archive center is added to UMM-JSON
+           ;; archive-center, data-center - TODO still need to figure out how to tell them apart in
+           ;; UMM-C (CMR-2265).
 
-           ;; spatial-keyword - TODO add test for this when spatial keyword is added to UMM-JSON
+           "spatial keywords match"
+           [coll] {"spatial_keyword[]" "SPK1"}
+           "non-matching spatial keyword"
+           [] {"spatial_keyword[]" "foobar"}
 
-           ;; two-d-coordinate-system-name - TODO add test for this when
-           ;; two-d-coordinate-system-name is added to UMM-JSON
+           "temporal keywords match"
+           [coll] {:keyword "temporal keyword 1"}
 
-           ;; science-keywords - TODO failing test
-           ; [coll] {:science-keywords {:0 {:category "cat"
-           ;                                         :topic "top"
-           ;                                         :term "ter"}}}
+           "two-d-coordinate-system-name matches"
+           [coll] {:two-d-coordinate-system-name "Tiling System Name"}
+
+           "science-keywords"
+           [coll] {:science-keywords {:0 {:category "EARTH SCIENCE"
+                                          :topic "top"
+                                          :term "ter"}}}
+
+           "additional attributes match"
+           [coll] {"attribute[]" "PercentGroundHit"}
 
            "downloadable matches"
            [] {:downloadable false}
@@ -209,12 +220,12 @@
            [coll] {:downloadable true}
 
            "browsable matches"
-           [coll] {:browsable false}
+           [coll] {:browsable true}
            "browsable not matches"
-           [] {:browsable true}
+           [] {:browsable false}
 
-           ;; bounding box - TODO - uncomment when spatial is implemented for UMM-JSON
-           ; [coll] {:bounding_box "-180,-90,180,90"}
+           "bounding box"
+           [coll] {:bounding_box "-180,-90,180,90"}
 
            ))))
 

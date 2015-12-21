@@ -12,6 +12,7 @@
             [cmr.umm.validation.validation-helper :as h]
             [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.umm.validation.product-specific-attribute :as psa]))
 
 
@@ -64,17 +65,18 @@
     (assoc spatial-coverage
            :geometries
            ;; If the granule spatial representation is :no-spatial, then just ignore the geometries.
-           (when (not= :no-spatial spatial-representation)
+           (when (and spatial-representation
+                      (not= :no-spatial spatial-representation))
              (map #(umm-s/set-coordinate-system spatial-representation %)
                   geometries)))))
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
   [(v/pre-validation
-    ;; The spatial representation has to be set on the geometries before the conversion because
-    ;; polygons etc do not know whether they are geodetic or not.
-    set-geometries-spatial-representation
-    {:geometries (v/every sv/spatial-validation)})])
+     ;; The spatial representation has to be set on the geometries before the conversion because
+     ;; polygons etc do not know whether they are geodetic or not.
+     set-geometries-spatial-representation
+     {:geometries (v/every sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -125,7 +127,9 @@
   [field parent-field-path]
   (fn [_ collection-ref]
     (let [value (field collection-ref)
-          parent-value (get-in collection-ref (concat [:parent] parent-field-path))
+          parent-value (if (= :entry-id field)
+                         (eid/umm->entry-id (:parent collection-ref))
+                         (get-in collection-ref (concat [:parent] parent-field-path)))
           field-name (v/humanize-field field)]
       (when (and value (not= value parent-value))
         {[:collection-ref]

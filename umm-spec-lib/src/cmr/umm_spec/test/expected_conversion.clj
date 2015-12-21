@@ -20,7 +20,7 @@
 
 (def example-record
   "An example record with fields supported by most formats."
-  (js/coerce
+  (js/parse-umm-c
     {:Platforms [{:ShortName "Platform 1"
                   :LongName "Example Platform Long Name 1"
                   :Type "Aircraft"
@@ -60,6 +60,7 @@
                        {:Category "EARTH SCIENCE SERVICES" :Topic "topic" :Term "term"
                         :VariableLevel1 "var 1" :VariableLevel2 "var 2"
                         :VariableLevel3 "var 3" :DetailedVariable "detailed"}]
+     :SpatialKeywords ["SPK1" "SPK2"]
      :SpatialExtent {:GranuleSpatialRepresentation "GEODETIC"
                      :HorizontalSpatialDomain {:ZoneIdentifier "Danger Zone"
                                                :Geometry {:CoordinateSystem "GEODETIC"
@@ -71,6 +72,11 @@
                                        :InclinationAngle 94.0
                                        :NumberOfOrbits 2.0
                                        :StartCircularLatitude 50.0}}
+     :TilingIdentificationSystem {:TilingIdentificationSystemName "Tiling System Name"
+                                  :Coordinate1 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}
+                                  :Coordinate2 {:MinimumValue 1.0
+                                                :MaximumValue 10.0}}
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
@@ -82,13 +88,14 @@
                       :DistributionMedia "Download"
                       :DistributionFormat "Bits"
                       :Fees "0.99"}]
-     :EntryId "short_V1"
      :EntryTitle "The entry title V5"
+     :ShortName "Short"
      :Version "V5"
      :DataDates [{:Date (t/date-time 2012)
                   :Type "CREATE"}]
      :Abstract "A very abstract collection"
      :DataLanguage "English"
+     :CollectionDataType "SCIENCE_QUALITY"
      :Projects [{:ShortName "project short_name"}]
      :Quality "Pretty good quality"
      :PublicationReferences [{:PublicationDate (t/date-time 2015)
@@ -339,12 +346,6 @@
       [(cmn/map->TemporalExtentType
          {:RangeDateTimes all-ranges})])))
 
-(defn dif-access-constraints
-  "Returns the expected value of a parsed DIF 9 and DIF 10 record's :AccessConstraints"
-  [access-constraints]
-  (when access-constraints
-    (assoc access-constraints :Value nil)))
-
 (defn dif-publication-reference
   "Returns the expected value of a parsed DIF 9 publication reference"
   [pub-ref]
@@ -367,6 +368,32 @@
   (seq (for [related-url related-urls]
          (assoc related-url :Protocol nil :Title nil :Caption nil :FileSize nil :MimeType nil))))
 
+(defn- expected-dif-instruments
+  "Returns the expected DIF instruments for the given instruments"
+  [instruments]
+  (seq (map #(assoc % :Characteristics nil :Technique nil :NumberOfSensors nil :Sensors nil
+                    :OperationalModes nil) instruments)))
+
+(defn- expected-dif-platform
+  "Returns the expected DIF platform for the given platform"
+  [platform]
+  (-> platform
+      (assoc :Type nil :Characteristics nil)
+      (update-in [:Instruments] expected-dif-instruments)))
+
+(defn- expected-dif-platforms
+  "Returns the expected DIF parsed platforms for the given platforms."
+  [platforms]
+  (let [platforms (seq (map expected-dif-platform platforms))]
+    (if (= 1 (count platforms))
+      platforms
+      (if-let [instruments (seq (mapcat :Instruments platforms))]
+        (conj (map #(assoc % :Instruments nil) platforms)
+              (cmn/map->PlatformType {:ShortName su/not-provided
+                                      :LongName su/not-provided
+                                      :Instruments instruments}))
+        platforms))))
+
 (defmethod convert-internal :dif
   [umm-coll _]
   (-> umm-coll
@@ -378,6 +405,8 @@
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       ;; DIF 9 does not support DataDates
       (assoc :DataDates nil)
+      ;; DIF 9 sets the UMM Version to 'Not provided' if it is not present in the DIF 9 XML
+      (assoc :Version (or (:Version umm-coll) su/not-provided))
       (update-in [:TemporalExtents] dif9-temporal)
       (update-in [:SpatialExtent] assoc
                  :SpatialCoverageType nil
@@ -394,11 +423,10 @@
       (update-in-each [:SpatialExtent :HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc
                       :CenterPoint nil)
       (update-in [:SpatialExtent] prune-empty-maps)
-      (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       ;; DIF 9 does not support Platform Type or Characteristics. The mapping for Instruments is
       ;; unable to be implemented as specified.
-      (update-in-each [:Platforms] assoc :Type nil :Characteristics nil :Instruments nil)
+      (update-in [:Platforms] expected-dif-platforms)
       (update-in [:ProcessingLevel] su/convert-empty-record-to-nil)
       (update-in-each [:AdditionalAttributes] assoc :Group "AdditionalAttribute")
       (update-in-each [:Projects] assoc :Campaigns nil :StartDate nil :EndDate nil)
@@ -453,7 +481,6 @@
       (assoc :Organizations nil) ;; TODO Implement this as part of CMR-1841
       (update-in [:SpatialExtent] prune-empty-maps)
       (update-in [:DataDates] fixup-dif10-data-dates)
-      (update-in [:AccessConstraints] dif-access-constraints)
       (update-in [:Distributions] su/remove-empty-records)
       (update-in-each [:Platforms] dif10-platform)
       (update-in-each [:AdditionalAttributes] assoc :Group nil :UpdateDate nil)
@@ -688,8 +715,6 @@
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> umm-coll
-      ;; TODO - Implement this as part of CMR-2058
-      (update-in-each [:TemporalExtents] assoc :EndsAtPresentFlag nil)
       (convert-internal :iso19115)
       (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
       (update-in [:DataDates] fixup-smap-data-dates)

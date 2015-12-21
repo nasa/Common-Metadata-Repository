@@ -43,6 +43,7 @@
                 :point :point
                 :keyword :keyword
                 :line :line
+                :exclude :exclude
 
                 ;; Tag parameters
                 :tag-namespace :tag-query

@@ -3,6 +3,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
             [cmr.umm.generator-util :as gu]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.umm.dif.collection.product-specific-attribute :as d9-psa]))
 
@@ -45,6 +46,6 @@
                  (x/element :DataType {} (psa/gen-data-type data-type))
                  (x/element :Description {} description)
                  ;; ParameterRangeBegin is a required field in DIF 10
-                 (x/element :ParameterRangeBegin {} (or parameter-range-begin "Not provided"))
+                 (x/element :ParameterRangeBegin {} (or parameter-range-begin dif/value-not-provided))
                  (gu/optional-elem :ParameterRangeEnd parameter-range-end)
                  (gu/optional-elem :Value value)))))

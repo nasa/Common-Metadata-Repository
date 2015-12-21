@@ -37,4 +37,4 @@
 (defn date-at
   [element xpath]
   (when-let [value (text (value-of element xpath))]
-    (dtp/parse-date value)))
+    (dtp/parse-datetime value)))

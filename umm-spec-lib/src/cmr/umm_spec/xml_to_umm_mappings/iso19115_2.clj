@@ -129,7 +129,7 @@
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
         extent-info (get-extent-info-map doc)]
-    {:EntryId (char-string-value id-el "gmd:code")
+    {:ShortName (char-string-value id-el "gmd:code")
      :EntryTitle (char-string-value citation-el "gmd:title")
      :Version (char-string-value citation-el "gmd:edition")
      :Abstract (char-string-value md-data-id-el "gmd:abstract")
@@ -209,6 +209,6 @@
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document."
   [metadata]
-  (js/coerce (parse-iso19115-xml metadata)))
+  (js/parse-umm-c (parse-iso19115-xml metadata)))
 
 

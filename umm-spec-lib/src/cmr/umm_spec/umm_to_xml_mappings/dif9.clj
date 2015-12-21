@@ -9,13 +9,31 @@
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
    :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.9.3.xsd"})
 
+(defn- generate-short-name-long-name-elements
+  "Returns xml elements with the given elem-key as name and sub-elements with Short_Name and
+  Long_Name as defined in values."
+  [elem-key values]
+  (for [value values]
+    [elem-key
+     [:Short_Name (:ShortName value)]
+     [:Long_Name (:LongName value)]]))
+
+(defn generate-instruments
+  [platforms]
+  (let [instruments (mapcat :Instruments platforms)]
+    (generate-short-name-long-name-elements :Sensor_Name instruments)))
+
+(defn generate-platforms
+  [platforms]
+  (generate-short-name-long-name-elements :Source_Name platforms))
+
 (defn umm-c-to-dif9-xml
   "Returns DIF9 XML structure from UMM collection record c."
   [c]
   (xml
     [:DIF
      dif9-xml-namespaces
-     [:Entry_ID (:EntryId c)]
+     [:Entry_ID (:ShortName c)]
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
@@ -32,10 +50,8 @@
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]
        [:Keyword ak])
-     (for [platform (:Platforms c)]
-       [:Source_Name
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]])
+     (generate-instruments (:Platforms c))
+     (generate-platforms (:Platforms c))
      (for [temporal (:TemporalExtents c)
            rdt (:RangeDateTimes temporal)]
        [:Temporal_Coverage
@@ -141,6 +157,9 @@
        [:Value (-> c :ProcessingLevel :Id)]]
       [:Metadata
        [:Name "ProcessingLevelDescription"]
-       [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]]]))
-
+       [:Value (-> c :ProcessingLevel :ProcessingLevelDescription)]]
+      (when-let [access-value (get-in c [:AccessConstraints :Value])]
+        [:Metadata
+         [:Name "Restriction"]
+         [:Value access-value]])]]))
 

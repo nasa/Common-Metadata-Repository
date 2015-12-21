@@ -86,7 +86,7 @@
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [doc]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :EntryId    (value-of doc "/Collection/ShortName")
+   :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (without-default-value-of doc "/Collection/VersionId")
    :DataDates  (parse-data-dates doc)
    :Abstract   (value-of doc "/Collection/Description")
@@ -132,7 +132,8 @@
                           :VariableLevel2 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/Value")
                           :VariableLevel3 (value-of sk "VariableLevel1Keyword/VariableLevel2Keyword/VariableLevel3Keyword")
                           :DetailedVariable (value-of sk "DetailedVariableKeyword")})})
+
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document."
   [metadata]
-  (js/coerce (parse-echo10-xml metadata)))
+  (js/parse-umm-c (parse-echo10-xml metadata)))

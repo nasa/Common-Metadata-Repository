@@ -53,6 +53,7 @@
                             (for [a aliases]
                               [a mime-type])))
                    mime-types)))
+
 ;; extra helpers
 
 (def all-supported-mime-types

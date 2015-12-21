@@ -27,12 +27,13 @@
           coll2 (util/create-and-save-collection provider-id 2 3)
           coll3 (util/create-and-save-collection provider-id 3 3)
           gran1 (util/create-and-save-granule provider-id coll1 1 2)
-          gran2 (util/create-and-save-granule provider-id coll2 2 2)]
+          gran2 (util/create-and-save-granule provider-id coll2 2 2)
+          group1 (util/create-and-save-group provider-id 4 3)]
       (are [item-revision-tuples]
            (let [tuples (map #(update-in % [0] :concept-id) item-revision-tuples)
                  {:keys [status concepts]} (util/get-concepts tuples)
                  expected-concepts (map (fn [[item revision]]
-                                          (assoc (util/expected-granule-concept item)
+                                          (assoc (util/expected-concept item)
                                                  :revision-id revision))
                                         item-revision-tuples)]
              (and (= 200 status)
@@ -44,7 +45,11 @@
            ;; multiple versions of same collection
            [[coll1 2] [coll1 1]]
            ; granules and collections
-           [[gran1 2] [gran1 1] [gran2 2] [coll3 3] [coll1 2]]))))
+           [[gran1 2] [gran1 1] [gran2 2] [coll3 3] [coll1 2]]
+           ;; group revisions
+           [[group1 2] [group1 1]]
+           ;; group and collectionss
+           [[group1 1] [coll1 2]]))))
 
 (deftest get-concepts-with-one-invalid-revision-id-test
   (doseq [provider-id ["REG_PROV" "SMAL_PROV1"]]
@@ -73,12 +78,13 @@
         coll2 (util/create-and-save-collection "REG_PROV" 2 1)
         coll3 (util/create-and-save-collection "SMAL_PROV1" 3 3)
         gran1 (util/create-and-save-granule "REG_PROV" coll1 1 2)
-        gran2 (util/create-and-save-granule "REG_PROV" coll2 2 1)]
+        gran2 (util/create-and-save-granule "REG_PROV" coll2 2 1)
+        group1 (util/create-and-save-group "REG_PROV" 4 1)]
     (are [item-revision-tuples]
          (let [ids (map #(:concept-id (first %)) item-revision-tuples)
                {:keys [status concepts]} (util/get-latest-concepts ids)
                expected-concepts (map (fn [[item revision]]
-                                        (assoc (util/expected-granule-concept item)
+                                        (assoc (util/expected-concept item)
                                                :revision-id revision))
                                       item-revision-tuples)]
            (and (is (= 200 status))
@@ -90,7 +96,11 @@
          ;; granules
          [[gran1 2] [gran2 1]]
          ; granules and collections
-         [[gran1 2] [gran2 1] [coll3 3] [coll2 1]])))
+         [[gran1 2] [gran2 1] [coll3 3] [coll2 1]]
+         ;; groups
+         [[group1 1]]
+         ;; granules and groups
+         [[gran1 2] [group1 1]])))
 
 (deftest get-latest-concepts-with-missing-concept-test
   (let [coll1 (util/create-and-save-collection "REG_PROV" 1)
@@ -292,7 +302,7 @@
     (testing "find with parameters"
       (testing "latest revsions"
         (are2 [granules params]
-              (= (set (map util/expected-granule-concept granules))
+              (= (set (map util/expected-concept granules))
                  (set (-> (util/find-latest-concepts :granule params)
                           :concepts
                           concepts-for-comparison)))
@@ -311,7 +321,7 @@
       (testing "all revisions"
         (are2 [rev-count params]
               (= rev-count
-                 (count (-> (util/find-concepts :granules params)
+                 (count (-> (util/find-concepts :granule params)
                             :concepts)))
               "provider-id, granule-ur - two revisions"
               2 {:provider-id "REG_PROV" :granule-ur "G2-UR"}
@@ -343,7 +353,7 @@
     (testing "find latest revsions"
       (are2 [tags params]
             (= (set tags)
-               (set (->> (util/find-latest-concepts :tags params)
+               (set (->> (util/find-latest-concepts :tag params)
                          :concepts
                          (map #(dissoc % :provider-id :revision-date)))))
             "with metadata"
@@ -353,7 +363,7 @@
             [(dissoc tag1 :metadata) (dissoc tag2 :metadata)] {:exclude-metadata true}))
 
     (testing "find all revisions"
-      (let [num-of-tags (-> (util/find-concepts :tags {})
+      (let [num-of-tags (-> (util/find-concepts :tag {})
                             :concepts
                             count)]
         (is (= 5 num-of-tags))))))
@@ -363,4 +373,56 @@
     (is (= {:status 400
             :errors ["Finding concept type [tag] with parameters [provider-id] is not supported."]}
            (util/find-concepts :tag {:provider-id "REG_PROV"})))))
+
+(deftest find-services
+  (let [serv1 (util/create-and-save-service "REG_PROV" 1 3)
+        serv2 (util/create-and-save-service "SMAL_PROV1" 2 2)]
+    (testing "find latest revsions"
+      (are2 [servs params]
+            (= (set servs)
+               (set (->> (util/find-latest-concepts :service params)
+                         :concepts
+                         (map #(dissoc % :revision-date)))))
+            "with metadata"
+            [serv1 serv2] {}
+
+            "exclude metadata"
+            [(dissoc serv1 :metadata) (dissoc serv2 :metadata)] {:exclude-metadata true}))
+
+    (testing "find all revisions"
+      (let [num-of-servs (-> (util/find-concepts :service {})
+                            :concepts
+                            count)]
+        (is (= 5 num-of-servs))))))
+
+(deftest find-services-with-invalid-parameters
+  (testing "extra parameters"
+    (is (= {:status 400
+            :errors ["Finding concept type [service] with parameters [short-name] is not supported."]}
+           (util/find-concepts :service {:short-name "SN1"})))))
+
+(deftest find-groups
+  (let [group1 (util/create-and-save-group "REG_PROV" 1 3)]
+    (testing "find with parameters"
+      (testing "latest revsions"
+        (are2 [groups params]
+              (= (set (map util/expected-concept groups))
+                 (set (-> (util/find-latest-concepts :access-group params)
+                          :concepts
+                          concepts-for-comparison)))
+              ;; These are the only valid combinations for groups
+              "provider-id, native-id"
+              [group1] {:provider-id "REG_PROV" :native-id "native-id 1"}
+
+              "no metadata"
+              [(dissoc group1 :metadata)] {:provider-id "REG_PROV"
+                                          :exclude-metadata true}))
+
+      (testing "all revisions"
+        (are2 [rev-count params]
+              (= rev-count
+                 (count (-> (util/find-concepts :access-group params)
+                            :concepts)))
+              "provider-id, native-id - three revisons"
+              3 {:provider-id "REG_PROV":native-id "native-id 1"})))))
 

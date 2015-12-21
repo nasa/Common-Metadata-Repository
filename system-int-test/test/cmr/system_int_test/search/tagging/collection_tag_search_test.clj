@@ -99,14 +99,6 @@
                            (search/find-refs :collection query))
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-            ;; Parameter Combinations
-            "Combination of namespace and value"
-            [tag1-colls] {:tag-namespace "namespace1" :tag-value "value1"}
-
-            "Combination with multiple values"
-            [tag1-colls tag3-colls] {:tag-namespace ["namespace1" "namespace2" "foo"] :tag-value "value1"}
-
-            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Namespace Param
 
             "By Namespace - Ignore Case Default"
@@ -158,7 +150,41 @@
             [tag1-colls tag3-colls tag5-colls] {:tag-originator-id "USER1"}
 
             "By Originator Id - Pattern"
-            [tag2-colls tag4-colls] {:tag-originator-id "*2" "options[tag-originator-id][pattern]" true}))
+            [tag2-colls tag4-colls] {:tag-originator-id "*2" "options[tag-originator-id][pattern]" true}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Exclude Namespace Param
+
+            "Exclude Namespace - Ignore Case Default"
+            [tag3-colls tag4-colls tag5-colls] {:exclude {:tag-namespace "namespace1"}}
+
+            "Exclude Namespace - multiple"
+            [tag5-colls] {:exclude {:tag-namespace ["namespace1" "namespace2"]}}
+
+            "Exclude Namespace Case Sensitive - no match"
+            [tag1-colls tag2-colls tag3-colls tag4-colls tag5-colls]
+            {:exclude {:tag-namespace "namespace1"} "options[tag-namespace][ignore-case]" false}
+
+            "Exclude Namespace Case Sensitive - matches"
+            [tag3-colls tag4-colls tag5-colls]
+            {:exclude {:tag-namespace "Namespace1"} "options[tag-namespace][ignore-case]" false}
+
+            "Exclude Namespace Pattern"
+            [tag1-colls tag2-colls tag3-colls tag4-colls]
+            {:exclude {:tag-namespace "*other"} "options[tag-namespace][pattern]" true}
+
+            ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+            ;; Parameter Combinations
+            "Combination of namespace and value"
+            [tag1-colls] {:tag-namespace "namespace1" :tag-value "value1"}
+
+            "Combination with multiple values"
+            [tag1-colls tag3-colls] {:tag-namespace ["namespace1" "namespace2" "foo"] :tag-value "value1"}
+
+            "Combination with exclude tag-namespace"
+            [tag1-colls] {:tag-namespace ["namespace1" "namespace2" "foo"]
+                          :tag-value "value1"
+                          :exclude {:tag-namespace "namespace2"}}))
 
     (testing "Search collections by tags with JSON query"
       (are2 [expected-tags-colls query]
@@ -246,7 +272,6 @@
             [tag4-colls tag5-colls] {:and [{:not {:tag {:namespace "Namespace1"}}}
                                            {:or [{:not {:tag {:namespace "Namespace2"}}}
                                                  {:tag {:value "Value2"}}]}]}
-
 
             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
             ;; Combinations

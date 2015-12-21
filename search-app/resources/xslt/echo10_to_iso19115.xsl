@@ -230,10 +230,14 @@
         <xd:p>Added distribution.url additionalAttribute to test data</xd:p>
         <xd:p>Added transform for distribution.url</xd:p>
       </xd:p>
+       <xd:p>
+        <xd:b>Version 1.32 (Dec. 9, 2015)</xd:b>
+        <xd:p>Changed short name generation to be consistent with CMR</xd:p>
+      </xd:p>
     </xd:desc>
   </xd:doc>
   <xsl:variable name="translationName" select="'ECHOToISO.xsl'"/>
-  <xsl:variable name="translationVersion" select="'1.31 (Nov. 3, 2014)'"/>
+  <xsl:variable name="translationVersion" select="'1.32 (Dec. 9, 2015)'"/>
   <xsl:output method="xml" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:param name="recordType"/>
@@ -598,8 +602,8 @@
                       <!-- Collection Record -->
                       <gmd:code>
                         <xsl:call-template name="writeCharacterString">
-                          <!-- This was changed for CMR-2039 to make the XSL generate entry id in the same location as our UMM Spec library. -->
-                          <xsl:with-param name="stringToWrite" select="concat(/*/ShortName,'_', /*/VersionId)"/>
+                          <!-- This was changed for CMR-2270 to make the XSL generate short name in a way consistent with the CMR. -->
+                          <xsl:with-param name="stringToWrite" select="/*/ShortName"/>
                         </xsl:call-template>
                       </gmd:code>
                       <gmd:description>

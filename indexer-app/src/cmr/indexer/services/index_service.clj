@@ -7,6 +7,7 @@
             [cmr.common.concepts :as cs]
             [cmr.common.date-time-parser :as date]
             [cmr.common.cache :as cache]
+            [cmr.common.mime-types :as mt]
             [cmr.common.util :as util]
             [cmr.transmit.metadata-db :as meta-db]
             [cmr.transmit.index-set :as tis]
@@ -170,10 +171,10 @@
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [{:keys [revision-date] :as concept} (meta-db/get-concept context concept-id revision-id)
-            parsed-concept (cp/parse-concept concept)]
-        (index-concept context concept parsed-concept options)
-        (log-ingest-to-index-time concept)))))
+      (let [concept (meta-db/get-concept context concept-id revision-id)]
+        (let [parsed-concept (cp/parse-concept concept)]
+          (index-concept context concept parsed-concept options)
+          (log-ingest-to-index-time concept))))))
 
 (defn delete-concept
   "Delete the concept with the given id"

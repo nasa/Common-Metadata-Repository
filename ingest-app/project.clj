@@ -19,7 +19,7 @@
                  [org.clojure/tools.nrepl "0.2.11"]
 
                  ;; Database related
-                 [org.quartz-scheduler/quartz-oracle "2.1.7"]
+                 [org.quartz-scheduler/quartz "2.2.2"]
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-test-out "0.3.1"]

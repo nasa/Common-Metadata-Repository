@@ -14,7 +14,7 @@
                  [org.clojure/tools.nrepl "0.2.11"]
                  [drift "1.5.3"]
                  [inflections "0.9.14"]
-                 [org.quartz-scheduler/quartz-oracle "2.1.7"]]
+                 [org.quartz-scheduler/quartz "2.2.2"]]
 
   :plugins [[lein-test-out "0.3.1"]
             [drift "1.5.3"]

@@ -7,14 +7,15 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:collection :granule :tag :service})
+  #{:collection :granule :tag :service :access-group})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
   {"C" :collection
    "G" :granule
    "T" :tag
-   "S" :service})
+   "S" :service
+   "AG" :access-group})
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
@@ -23,8 +24,8 @@
 (defn concept-id-validation
   "Validates the concept id and returns errors if it's invalid. Returns nil if valid."
   [concept-id]
-  (let [valid-prefixes (str/join (keys concept-prefix->concept-type))
-        regex (re-pattern (str "[" valid-prefixes "]\\d+-[A-Za-z0-9_]+"))]
+  (let [valid-prefixes (str/join "|" (keys concept-prefix->concept-type))
+        regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
     (when-not (re-matches regex concept-id)
       [(format "Concept-id [%s] is not valid." concept-id)])))
 
@@ -50,12 +51,18 @@
   "Split a concept id into concept-type-prefix, sequence number, and provider id."
   [concept-id]
   (validate-concept-id concept-id)
-  (let [prefix (subs concept-id 0 1)
-        ^String seq-num (re-find #"\d+" concept-id)
-        provider-id (get (re-find #"\d+-(.*)" concept-id) 1)]
+  (let [matcher (re-matcher #"([A-Z]+)(\d+)-(.+)" concept-id)
+        [_ prefix seq-num provider-id] (re-find matcher)]
     {:concept-type (concept-prefix->concept-type prefix)
      :sequence-number (Long. seq-num)
      :provider-id provider-id}))
+
+(defn- concept-id->concept-prefix
+  "Returns the concept prefix (C,G, AG, etc.) for a given concept-id."
+  [concept-id]
+  (-> concept-id
+      (str/split #"\d" 2)
+      first))
 
 (defn build-concept-id
   "Converts a map of concept-type sequence-number and provider-id to a concept-id"
@@ -66,4 +73,6 @@
 (defn concept-id->type
   "Returns concept type for the given concept-id"
   [concept-id]
-  (concept-prefix->concept-type (subs concept-id 0 1)))
+  (-> concept-id
+      concept-id->concept-prefix
+      concept-prefix->concept-type))

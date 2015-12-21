@@ -6,6 +6,7 @@
             [cmr.common.xml :as cx]
             [cmr.umm.dif.core :as dif-core]
             [cmr.umm.collection :as c]
+            [cmr.umm.collection.entry-id :as eid]
             [cmr.common.xml :as v]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.dif.collection.project-element :as pj]
@@ -26,16 +27,16 @@
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
   (let [short-name (cx/string-at-path collection-content [:Entry_ID])
+        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         long-name (cx/string-at-path collection-content [:Entry_Title])
         long-name (util/trunc long-name 1024)
-        version-id (cx/string-at-path collection-content [:Data_Set_Citation :Version])
         processing-level-id (em/extended-metadata-value
                               collection-content em/product_level_id_external_meta_name)
         collection-data-type (em/extended-metadata-value
                                collection-content em/collection_data_type_external_meta_name)]
     (c/map->Product {:short-name short-name
+                     :version-id (or version-id eid/DEFAULT_VERSION)
                      :long-name long-name
-                     :version-id version-id
                      :processing-level-id processing-level-id
                      :collection-data-type collection-data-type})))
 
@@ -77,15 +78,14 @@
   [dif-xml-root]
   (for [reference (cx/elements-at-path dif-xml-root [:Reference])]
     (c/map->PublicationReference
-     (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
-                [umm-key (cx/string-at-path reference [dif-tag])])))))
+      (into {} (for [[umm-key dif-tag] umm-dif-publication-reference-mappings]
+                 [umm-key (cx/string-at-path reference [dif-tag])])))))
 
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
   (c/map->UmmCollection
-    {:entry-id (cx/string-at-path xml-struct [:Entry_ID])
-     :entry-title (cx/string-at-path xml-struct [:Entry_Title])
+    {:entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :summary (cx/string-at-path xml-struct [:Summary :Abstract])
      :purpose (cx/string-at-path xml-struct [:Summary :Purpose])
      :product (xml-elem->Product xml-struct)
@@ -106,7 +106,8 @@
      :organizations (org/xml-elem->Organizations xml-struct)
      :personnel (personnel/xml-elem->personnel xml-struct)
      :publication-references (seq (parse-publication-references xml-struct))
-     :collection-progress (progress/parse xml-struct)}))
+     :collection-progress (progress/parse xml-struct)
+     :access-value (em/xml-elem->access-value xml-struct)}))
 
 (defn parse-collection
   "Parses DIF XML into a UMM Collection record."
@@ -117,6 +118,11 @@
   "Parses the XML and extracts the temporal data."
   [xml]
   (t/xml-elem->Temporal (x/parse-str xml)))
+
+(defn parse-access-value
+  "Parses the XML and extracts the access value"
+  [xml]
+  (em/xml-elem->access-value (x/parse-str xml)))
 
 (def dif-header-attributes
   "The set of attributes that go on the dif root element"
@@ -139,23 +145,25 @@
   UmmCollection
   (umm->dif-xml
     ([collection]
-     (let [{{:keys [version-id processing-level-id collection-data-type]} :product
+     (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
             {:keys [insert-time update-time]} :data-provider-timestamps
-            :keys [entry-id entry-title summary purpose temporal organizations science-keywords platforms
+            :keys [entry-title summary purpose temporal organizations science-keywords platforms
                    product-specific-attributes projects related-urls spatial-coverage
                    temporal-keywords personnel collection-associations quality use-constraints
-                   publication-references]} collection
+                   publication-references access-value]} collection
            ;; DIF only has range-date-times, so we ignore the temporal field if it is not of range-date-times
-           temporal (when (seq (:range-date-times temporal)) temporal)]
+           temporal (when (seq (:range-date-times temporal)) temporal)
+           instruments (mapcat :instruments platforms)]
        (x/emit-str
          (x/element :DIF dif-header-attributes
-                    (x/element :Entry_ID {} entry-id)
+                    (x/element :Entry_ID {} short-name)
                     (x/element :Entry_Title {} entry-title)
                     (when version-id
                       (x/element :Data_Set_Citation {}
                                  (x/element :Version {} version-id)))
                     (personnel/generate-personnel personnel)
                     (sk/generate-science-keywords science-keywords)
+                    (platform/generate-instruments instruments)
                     (platform/generate-platforms platforms)
                     (t/generate-temporal temporal)
                     (progress/generate collection)
@@ -184,7 +192,7 @@
                     ;; spatial-coverage, processing-level-id, collection-data-type, and additional
                     ;; attributes
                     (when (or spatial-coverage processing-level-id collection-data-type
-                              product-specific-attributes)
+                              product-specific-attributes access-value)
                       (x/element :Extended_Metadata {}
                                  (psa/generate-product-specific-attributes
                                    product-specific-attributes)
@@ -196,7 +204,11 @@
                                  (when collection-data-type
                                    (em/generate-metadata-elements
                                      [{:name em/collection_data_type_external_meta_name
-                                       :value collection-data-type}]))))))))))
+                                       :value collection-data-type}]))
+                                 (when access-value
+                                   (em/generate-metadata-elements
+                                     [{:name em/restriction_flag_external_meta_name
+                                       :value access-value}]))))))))))
 
 (defn validate-xml
   "Validates the XML against the DIF schema."

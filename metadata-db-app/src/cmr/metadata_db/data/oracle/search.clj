@@ -29,31 +29,26 @@
          vals
          first))))
 
-(defmulti columns-for-find-concept
-  "Returns the table columns that should be included in a find-concept sql query"
-  (fn [concept-type params]
-    concept-type))
+(def common-columns
+  "A set of common columns for all concept types."
+  #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format})
 
-(defmethod columns-for-find-concept :granule
+(def concept-type->columns
+  "A map of concept type to the columns for that type in the database."
+  {:granule (into common-columns
+                  [:provider_id :parent_collection_id :delete_time :granule_ur])
+   :collection (into common-columns
+                     [:provider_id :entry_title :entry_id :short_name :version_id :delete_time
+                      :user_id])
+   :tag (into common-columns [:user_id])
+   :access-group (into common-columns [:provider_id :user_id])
+   :service (into common-columns [:provider_id :entry_title :entry_id :delete_time :user_id])})
+
+(defn columns-for-find-concept
+  "Returns the table columns that should be included in a find-concept sql query"
   [concept-type params]
   (let [exclude-metadata? (= "true" (:exclude-metadata params))
-        all-fields #{:provider_id :native_id :concept_id :revision_date :metadata :deleted
-                     :revision_id :format :parent_collection_id :delete_time :granule_ur}]
-    (disj all-fields (when exclude-metadata? :metadata))))
-
-(defmethod columns-for-find-concept :collection
-  [concpet-type params]
-  (let [exclude-metadata? (= "true" (:exclude-metadata params))
-        all-fields #{:native_id :provider_id :concept_id :revision_date :revision_id :metadata
-                     :deleted :format :entry_title :entry_id :short_name :version_id :delete_time
-                     :user-id}]
-    (disj all-fields (when exclude-metadata? :metadata))))
-
-(defmethod columns-for-find-concept :tag
-  [concpet-type params]
-  (let [exclude-metadata? (= "true" (:exclude-metadata params))
-        all-fields #{:native_id :concept_id :revision_date :revision_id :metadata
-                     :deleted :format :user-id}]
+        all-fields (concept-type->columns concept-type)]
     (disj all-fields (when exclude-metadata? :metadata))))
 
 (defn- params->sql-params

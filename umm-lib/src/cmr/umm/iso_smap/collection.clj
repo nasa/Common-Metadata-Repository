@@ -44,7 +44,7 @@
   (let [date-elem (cx/element-at-path revision-elem [:citation :CI_Citation :date :CI_Date])
         date-type-code (cx/string-at-path date-elem [:dateType :CI_DateTypeCode])]
     (when date-type-code
-      (cx/date-at-path date-elem [:date :Date]))))
+      (cx/datetime-at-path date-elem [:date :Date]))))
 
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
@@ -87,10 +87,7 @@
         dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
         keywords (kw/xml-elem->keywords xml-struct)]
     (c/map->UmmCollection
-      {:entry-id (if (empty? version-id)
-                   short-name
-                   (str short-name "_" version-id))
-       :entry-title (cx/string-at-path
+      {:entry-title (cx/string-at-path
                       dataset-id-elem
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
                        :MD_Identifier :code :CharacterString])

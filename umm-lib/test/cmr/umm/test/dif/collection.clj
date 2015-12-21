@@ -41,10 +41,33 @@
                :geometries geometries
                :orbit-parameters nil)))))
 
+(defn- instruments->expected
+  "Returns the expected instruments for the given instruments"
+  [instruments]
+  (seq (map #(assoc % :technique nil, :sensors nil, :characteristics nil, :operation-modes nil)
+            instruments)))
+
+(defn- platform->expected
+  "Returns the expected platform for the given platform"
+  [platform]
+  (-> platform
+      (assoc :type "Not Specified" :characteristics nil)
+      (update-in [:instruments] instruments->expected)))
+
 (defn- platforms->expected-parsed
   "Returns the expected parsed platforms for the given platforms."
   [platforms]
-  (seq (map #(assoc % :type "Not Specified" :instruments nil :characteristics nil) platforms)))
+  (let [platforms (seq (map platform->expected platforms))]
+    (if (= 1 (count platforms))
+      platforms
+      (if-let [instruments (seq (mapcat :instruments platforms))]
+        (conj (map #(assoc % :instruments nil) platforms)
+              (umm-c/map->Platform
+                {:short-name dif/value-not-provided
+                 :long-name dif/value-not-provided
+                 :type "Not Specified"
+                 :instruments instruments}))
+        platforms))))
 
 (defn- related-urls->expected-parsed
   "Returns the expected parsed related-urls for the given related-urls."
@@ -75,8 +98,8 @@
   "Modifies the UMM record for testing DIF. DIF contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [version-id processing-level-id collection-data-type]} :product
-         :keys [entry-id entry-title spatial-coverage personnel]} coll
+  (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
+         :keys [entry-title spatial-coverage personnel]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -85,21 +108,19 @@
                    nil)
         organizations (filter #(= :distribution-center (:type %)) (:organizations coll))
         personnel (not-empty (->> personnel
-                            ;; only support email right now
-                            (map filter-contacts)
-                            ;; DIF has no Middle_Name tag
-                            (map #(assoc % :middle-name nil))))]
+                                  ;; only support email right now
+                                  (map filter-contacts)
+                                  ;; DIF has no Middle_Name tag
+                                  (map #(assoc % :middle-name nil))))]
     (-> coll
         ;; DIF does not have short-name or long-name, so we assign them to be entry-id and entry-title respectively
         ;; long-name will only take the first 1024 characters of entry-title if entry-title is too long
         ;; DIF also does not have version-description.
-        (assoc :product (umm-c/map->Product {:short-name entry-id
+        (assoc :product (umm-c/map->Product {:short-name short-name
                                              :long-name (util/trunc entry-title 1024)
                                              :version-id version-id
                                              :processing-level-id processing-level-id
                                              :collection-data-type collection-data-type}))
-        ;; AccessValue is optional in dif and hasn't be specified.
-        (dissoc :access-value)
         ;; There is no delete-time in DIF
         (assoc-in [:data-provider-timestamps :delete-time] nil)
         (assoc-in [:data-provider-timestamps :revision-date-time] nil)
@@ -130,20 +151,20 @@
         (update-in [:product-specific-attributes]
                    (fn [psas]
                      (seq (map (fn [psa]
-                            (assoc psa
-                                    :parameter-range-begin nil
-                                    :parameter-range-end nil
-                                    :parsed-parameter-range-begin nil
-                                    :parsed-parameter-range-end nil))
-                          psas))))
+                                 (assoc psa
+                                        :parameter-range-begin nil
+                                        :parameter-range-end nil
+                                        :parsed-parameter-range-begin nil
+                                        :parsed-parameter-range-end nil))
+                               psas))))
         umm-c/map->UmmCollection)))
 
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]
       (and
-       (seq xml)
-       (empty? (c/validate-xml xml))))))
+        (seq xml)
+        (empty? (c/validate-xml xml))))))
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
@@ -159,7 +180,7 @@
           echo10-xml (echo10/umm->echo10-xml parsed-dif)
           parsed-echo10 (echo10-c/parse-collection echo10-xml)
           expected-parsed (test-echo10/umm->expected-parsed-echo10 (umm->expected-parsed-dif collection))]
-      (and (= parsed-echo10 expected-parsed)
+      (and (= expected-parsed parsed-echo10 )
            (= 0 (count (echo10-c/validate-xml echo10-xml)))))))
 
 ;; This is a made-up include all fields collection xml sample for the parse collection test
@@ -401,6 +422,11 @@
         <Description>something bool</Description>
         <Value>false</Value>
       </Metadata>
+      <Metadata>
+        <Group>gov.nasa.earthdata.cmr</Group>
+        <Name>Restriction</Name>
+        <Value>1</Value>
+      </Metadata>
     </Extended_Metadata>
   </DIF>")
 
@@ -448,8 +474,8 @@
   (umm-c/map->Temporal
     {:range-date-times
      [(umm-c/map->RangeDateTime
-        {:beginning-date-time (p/parse-date "1996-02-24")
-         :ending-date-time (p/parse-date "1997-03-24")})
+        {:beginning-date-time (p/parse-datetime "1996-02-24")
+         :ending-date-time (p/parse-datetime "1997-03-24")})
       (umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
          :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
@@ -458,8 +484,7 @@
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "geodata_1848"
-     :entry-title "Global Land Cover 2000 (GLC 2000)"
+    {:entry-title "Global Land Cover 2000 (GLC 2000)"
      :summary "Summary of collection."
      :purpose "A grand purpose"
      :quality "High Quality Metadata"
@@ -471,8 +496,8 @@
                  :processing-level-id "2"
                  :collection-data-type "NEAR_REAL_TIME"})
      :data-provider-timestamps (umm-c/map->DataProviderTimestamps
-                                 {:insert-time (p/parse-date "2013-02-21")
-                                  :update-time (p/parse-date "2013-10-22")})
+                                 {:insert-time (p/parse-datetime "2013-02-21")
+                                  :update-time (p/parse-datetime "2013-10-22")})
      :publication-references [(umm-c/map->PublicationReference
                                 {:author "author"
                                  :publication-date "2015"
@@ -491,6 +516,13 @@
                                  :other-reference-details "blah"})]
      ;:spatial-keywords ["Word-2" "Word-1" "Word-0"]
      :platforms [(umm-c/map->Platform
+                   {:short-name "Not provided"
+                    :long-name "Not provided"
+                    :type "Not Specified"
+                    :instruments [(umm-c/map->Instrument
+                                    {:short-name "VEGETATION-1"
+                                     :long-name "VEGETATION INSTRUMENT 1 (SPOT 4)"})]})
+                 (umm-c/map->Platform
                    {:short-name "SPOT-1"
                     :long-name "Systeme Probatoire Pour l'Observation de la Terre-1"
                     :type "Not Specified"})
@@ -553,7 +585,7 @@
          :description "something date"
          :data-type :date
          :value "2015-09-14"
-         :parsed-value (p/parse-date "2015-09-14")})
+         :parsed-value (p/parse-datetime "2015-09-14")})
       (umm-c/map->ProductSpecificAttribute
         {:group "custom.group"
          :name "Datetime attribute"
@@ -616,13 +648,16 @@
                     :roles ["DIF AUTHOR" "TECHNICAL CONTACT"]
                     :contacts [(umm-c/map->Contact
                                  {:type :email
-                                  :value "geo@unepgrid.ch"})]})]}))
+                                  :value "geo@unepgrid.ch"})]})]
+     :access-value 1.0}))
 
 (deftest parse-collection-test
   (testing "parse collection"
     (is (= expected-collection (c/parse-collection all-fields-collection-xml))))
   (testing "parse temporal"
-    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml)))))
+    (is (= expected-temporal (c/parse-temporal all-fields-collection-xml))))
+  (testing "parse collection access value"
+    (is (= 1.0 (c/parse-access-value all-fields-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"
@@ -633,4 +668,9 @@
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_ID, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]
            (c/validate-xml (s/replace valid-collection-xml "Personnel" "XXXX"))))))
+
+(deftest parse-nil-version-test
+  ;; UMM-C is now making the version field a required field. It is optional in DIF-9 so we provide
+  ;; a default of "Not provided" when it is missing from the DIF-9 metadata.
+  (is (= "Not provided" (get-in (c/parse-collection valid-collection-xml) [:product :version-id]))))
 

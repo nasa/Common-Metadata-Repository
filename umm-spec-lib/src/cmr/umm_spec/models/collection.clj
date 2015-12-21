@@ -26,6 +26,9 @@
    ;; available services.
    ISOTopicCategories
 
+   ;; The short name associated with the collection.
+   ShortName
+
    ;; Defines a named two-dimensional tiling system for the collection.
    TilingIdentificationSystem
 
@@ -91,9 +94,6 @@
    ;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the
    ;; unique characteristics of the service which extend beyond those defined).
    AdditionalAttributes
-
-   ;; The entry ID of the service described by the metadata.
-   EntryId
 
    ;; This element enables specification of Earth science keywords.
    ScienceKeywords

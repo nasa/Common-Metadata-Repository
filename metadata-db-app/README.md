@@ -59,6 +59,22 @@
       }
     }
 
+#### Group
+
+  {
+      "concept-type": "access-group",
+      "native-id": "group name",
+      "concept-id": "AG1-PROV1",
+      "provider-id": "PROV1",
+      "user-id": "user101",
+      "metadata": "group representation here",
+      "format": "application/edn",
+      "revision-id": 1, //(optional field)
+      "revision-date": "2012-01-01T00:00:00", //(optional field)
+    }
+
+The provider-id can be "CMR" (for system level groups) or another provider id.
+
 #### Tag
 
   {
@@ -234,7 +250,7 @@ This returns all revisions of the concept that matches the search parameters by 
 Metadata can be excluded from the results by setting the parameter 'exclude-metadata' to 'true'.
 
 Supported combinations of concept type and parameters:
-  * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id
+  * collections with any combination of concept-id, provider-id, entry-id, entry-title, short-name, version-id and native-id
   * granules with provider-id, granule-ur
   * granules with provider-id, native-id
   * tags with no parameters other than exclude-metadata and latest

@@ -3,6 +3,7 @@
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
             [cmr.umm.collection :as c]
+            [cmr.umm.dif.core :as dif]
             [cmr.umm.dif10.collection.instrument :as inst]
             [cmr.umm.dif10.collection.characteristic :as char]))
 
@@ -42,13 +43,13 @@
   (if (seq platforms)
     (for [{:keys [short-name long-name type instruments characteristics]} platforms]
       (x/element :Platform {}
-                 (x/element :Type {} (or (platform-types type) "Not provided"))
+                 (x/element :Type {} (or (platform-types type) dif/value-not-provided))
                  (x/element :Short_Name {} short-name)
                  (x/element :Long_Name {} long-name)
                  (char/generate-characteristics characteristics)
                  (inst/generate-instruments instruments)))
     ;; Added since Platforms is a required field in DIF10. CMRIN-77 & CMRIN-79
     (x/element :Platform {}
-               (x/element :Type {} "Not provided")
-               (x/element :Short_Name {} "Not provided")
+               (x/element :Type {} dif/value-not-provided)
+               (x/element :Short_Name {} dif/value-not-provided)
                (inst/generate-instruments []))))

@@ -174,6 +174,22 @@
                (util/rename-keys-with params param-aliases merge-fn)))))))
 
 
+(deftest any-test
+  (are [expected f items]
+       (is (= expected (util/any? f items)))
+
+      false (constantly true) nil
+      false (constantly true) []
+      false even? [1]
+      false even? [1 3 5 7]
+
+      true even? [2]
+      true even? [1 2]
+      true even? [2 1 3 7]
+
+      ;; It should return true before it checks everything. The symbol at the end will trigger an exception
+      true #(> (/ 20 %) 2) [20.0 1.0 :not-a-number]))
+
 (defspec map-n-spec 1000
   (for-all [n gen/s-pos-int
             step gen/s-pos-int

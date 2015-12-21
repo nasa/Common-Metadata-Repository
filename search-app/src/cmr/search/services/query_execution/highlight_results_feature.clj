@@ -3,6 +3,7 @@
   provided keyword search."
   (:require [cmr.search.services.query-execution :as query-execution]
             [cmr.search.models.results :as r]
+            [cmr.search.data.query-to-elastic :as qte]
             [clojure.string :as str]
             [cmr.common.util :as util]))
 
@@ -39,7 +40,10 @@
     (let [{:keys [begin-tag end-tag snippet-length num-snippets]}
           (get-in query [:result-options :highlights])
           conditions-as-string (str/join " " (map :query-str keyword-conditions))
-          query-map {:fields {:summary {:highlight_query {:query_string {:query conditions-as-string}}}}}]
+          query-map {:fields
+                     {:summary {:highlight_query
+                                {:query_string
+                                 {:query (qte/escape-query-string conditions-as-string)}}}}}]
       (-> query-map
           (add-tag :pre_tags begin-tag)
           (add-tag :post_tags end-tag)

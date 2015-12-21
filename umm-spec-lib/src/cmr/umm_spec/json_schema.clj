@@ -2,27 +2,35 @@
   "This contains code for loading UMM JSON schemas."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [cmr.common.log :as log]
             [cmr.common.date-time-parser :as dtp]
             [cmr.common.validations.json-schema :as js-validations]
-            [cmr.umm-spec.util :as spec-util]))
+            [cmr.umm-spec.util :as spec-util]
+            [cmr.common.util :as util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defined schema files
+(def concept-type->schema-file
+  "Maps a concept type to the schema required to parse it."
+  {:collection (io/resource "json-schemas/umm-c-json-schema.json")
+   :service (io/resource "json-schemas/umm-s-json-schema.json")})
 
-(def umm-cmn-schema-file (io/resource "json-schemas/umm-cmn-json-schema.json"))
-
-(def umm-c-schema-file (io/resource "json-schemas/umm-c-json-schema.json"))
+(def umm-cmn-schema-file
+  "The schema required to parse umm-common"
+  (io/resource "json-schemas/umm-cmn-json-schema.json"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validation
 
-(def ^:private json-schema-for-validation
-  (js-validations/parse-json-schema-from-uri (str umm-c-schema-file)))
+(def concept-type->schemas
+  "Maps a concept type to the parsed & validated schema file."
+  (util/map-values #(js-validations/parse-json-schema-from-uri (str %))
+                   concept-type->schema-file))
 
 (defn validate-umm-json
   "Validates the UMM JSON and returns a list of errors if invalid."
-  [json-str]
-  (js-validations/validate-json json-schema-for-validation json-str))
+  ([json-str concept-type]
+    (js-validations/validate-json (get concept-type->schemas concept-type) json-str)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Code for loading schema files.
@@ -153,7 +161,7 @@
 ;; Loaded schemas
 
 (def umm-c-schema (load-schema "umm-c-json-schema.json"))
-
+(def umm-s-schema (load-schema "umm-s-json-schema.json"))
 (defn root-def
   "Returns the root type definition of the given schema."
   [schema]
@@ -181,72 +189,93 @@
     (recur (apply lookup-ref pair))
     pair))
 
-(defn coerce
-  "Returns x coerced according to a JSON schema type type definition. With no other parameters, the
-  schema and type defaults to the umm-c-schema and the root UMM-C type."
-  ([x]
-   (coerce umm-c-schema x))
-  ([schema x]
-   (coerce schema (root-def schema) [] x))
-  ([schema definition key-path x]
-   (let [type-name (or (-> definition :$ref :type-name)
-                       (:root schema))
-         [schema definition] (resolve-$refs [schema definition])]
-     (condp = (:type definition)
+(defn- parse-error-msg
+  [type-def val]
+  (str "Could not parse "
+       (or (:format type-def)
+           (:type type-def))
+       " value: "
+       val))
 
-       "string"  (condp = (:format definition)
-                   "date-time"
-                   (if (instance? org.joda.time.DateTime x)
-                     x
-                     (try (dtp/parse-datetime x)
-                       (catch Exception e
-                         (throw (IllegalArgumentException.
-                                  (format "Failed to parse date-time [%s] at key-path [%s]"
-                                          x (pr-str (vec key-path)))
-                                  e)))))
+(defn coerce
+  "Returns x coerced according to a JSON schema type type definition."
+  ([schema x]
+   (coerce schema (root-def schema) x))
+  ([schema type-definition x]
+   (let [type-name (or (-> type-definition :$ref :type-name)
+                       (:root schema))
+         [schema type-definition] (resolve-$refs [schema type-definition])]
+     (case (:type type-definition)
+
+       "string"  (case (:format type-definition)
+                   "date-time" (if (instance? org.joda.time.DateTime x)
+                                 x
+                                 (dtp/parse-datetime x))
+                   ;; else...
                    (str x))
 
-       "number"  (cond (number? x) x
-                       (string? x) (when-not (str/blank? x)
-                                     (Double. x))
-                       :else (throw (Exception. (str "Unexpected type for number: " (pr-str x)))))
+       "number"  (if (number? x)
+                   x
+                   (Double. x))
 
-       "integer" (cond (integer? x) x
-                       (string? x) (when-not (str/blank? x)
-                                     (Long. x))
-                       :else (throw (Exception. (str "Unexpected type for integer: " (pr-str x)))))
+       "integer" (if (integer? x)
+                   x
+                   (Long. x))
 
        "boolean" (if (string? x)
                    (= "true" x)
                    (boolean x))
 
-       ;; Return nil instead of empty vectors.
-       "array"   (when-let [coerced (seq (keep #(coerce schema (:items definition) key-path %) x))]
-                   (vec coerced))
-
+       ;; The most important job of this function:
        "object"  (let [ctor (record-ctor schema type-name)
-                       kvs (for [[k v] (filter val x)]
-                             (let [prop-definition (get-in definition [:properties k])
-                                   v (coerce schema prop-definition (conj key-path k) v)]
-                               (when (some? v)
-                                 [k v])))
-                       m (into {} kvs)]
+                       ;; Reduce an empty map with each pair of (non-nil) key/vals in x, trying to
+                       ;; parse each value or else add error messages in the map under :_errors.
+                       m (reduce
+                          (fn [m [k v]]
+                            (let [prop-type-definition (get-in type-definition [:properties k])
+                                  item-type-def (:items prop-type-definition)]
+                              (if (= "array" (:type prop-type-definition))
+                                (let [results (for [x v]
+                                                (try
+                                                  {:value (coerce schema item-type-def x)}
+                                                  (catch Exception e
+                                                    (let [msg (parse-error-msg item-type-def x)]
+                                                      (log/warn e msg)
+                                                      {:error msg}))))
+                                      results (filter #(or (some? (:value %))
+                                                           (:error % ))
+                                                      results)]
+                                  (cond-> m
+                                    (seq results) (assoc k (mapv :value results))
+                                    (some :error results) (assoc-in [:_errors k] (mapv :error results))))
+                                ;; non-array types
+                                (try
+                                  (let [parsed (coerce schema prop-type-definition v)]
+                                    (if (some? parsed)
+                                      (assoc m k parsed)
+                                      m))
+                                  (catch Exception e
+                                    (let [msg (parse-error-msg prop-type-definition v)]
+                                      (log/warn e msg)
+                                      (assoc-in m [:_errors k] msg)))))))
+                          nil
+                          (filter val x))]
                    ;; Return nil instead of empty maps/records here.
-                   (when (seq m)
+                   (when m
                      (ctor m)))
 
-       ;; Otherwise...
-       (throw (IllegalArgumentException. (str "Don't know how to coerce value "
-                                              (pr-str x)
-                                              " at key path "
-                                              (pr-str (vec key-path))
-                                              " using JSON schema type ["
-                                              (pr-str definition) "]")))))))
+       ;; Otherwise, return the value itself:
+       x))))
+
+(defn parse-umm-c
+  [x]
+  (coerce umm-c-schema x))
 
 (comment
-  (coerce {:EntryTitle "This is a test"
-           :TemporalExtents (list
-                              {:EndsAtPresentFlag "true"
-                               :SingleDateTimes ["2000-01-01T00:00:00.000Z"]})
-           :Distributions [{:Fees "123.4"}]})
+  (coerce umm-c-schema
+          {:EntryTitle "This is a test"
+           :TemporalExtents [{:EndsAtPresentFlag "true"
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z" "banana"]}]
+           :Distributions [{:Fees "123.4"
+                            :DistributionSize "123 junk"}]})
   )

@@ -25,7 +25,7 @@
                        [lon lat])
               self-intersections (distinct (sort-by sorter (map (partial p/round-point 4)
                                                                 self-intersections)))
-              expected-intersects (sort-by sorter (apply p/ords->points expected-intersects))]
+              expected-intersects (sort-by sorter (p/ords->points expected-intersects))]
           (is (approx= expected-intersects self-intersections 0.001)
               (format "%s should have approximate self intersections" (name ring-name))))
         (is (empty? self-intersections)

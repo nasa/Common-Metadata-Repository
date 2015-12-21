@@ -36,8 +36,8 @@
    ^Double b
 
    ;; The minimum bounding rectangle of the segment
-   ^Mbr mbr
-   ])
+   ^Mbr mbr])
+
 (record-pretty-printer/enable-record-pretty-printing LineSegment)
 
 (defn line-segment
@@ -59,7 +59,7 @@
 (defn ords->line-segment
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates an line-segment."
   [& ords]
-  (apply line-segment (apply p/ords->points ords)))
+  (apply line-segment (p/ords->points ords)))
 
 (defn line-segment->ords
   "Returns a list of the line-segment ordinates lon1, lat1, lon2, lat2"

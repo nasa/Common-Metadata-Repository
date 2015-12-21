@@ -41,10 +41,7 @@
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:dif "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"
-   ;; TODO: The schema location below is for DIF 10.1. Obtain a sample DIF 10.2 from GCMD
-   ;; and update the schemaLocation based on it.
-   ; :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.1.xsd"
-   })
+   :xsi:schemaLocation "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v10.2.xsd"})
 
 (defn- temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
@@ -144,10 +141,10 @@
   "Returns DIF 10 elements for UMM-C collection c's DataDates."
   [c]
   (list
-   [:Data_Creation (date/or-default (date/data-create-date c))]
-   [:Data_Last_Revision (date/or-default (date/data-update-date c))]
-   [:Data_Future_Review (date/data-review-date c)]
-   [:Data_Delete (date/data-delete-date c)]))
+    [:Data_Creation (date/or-default (date/data-create-date c))]
+    [:Data_Last_Revision (date/or-default (date/data-update-date c))]
+    [:Data_Future_Review (date/data-review-date c)]
+    [:Data_Delete (date/data-delete-date c)]))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -156,7 +153,7 @@
     [:DIF
      dif10-xml-namespaces
      [:Entry_ID
-      [:Short_Name (:EntryId c)]
+      [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
      [:Entry_Title (:EntryTitle c)]
      (for [sk (:ScienceKeywords c)]
@@ -244,19 +241,19 @@
       [:Abstract (:Abstract c)]
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
-        [:Related_URL
-          (when-let [ct (:ContentType related-url)]
-           [:URL_Content_Type
-            [:Type (:Type ct)]
-            [:Subtype (:Subtype ct)]])
-          [:Protocol (:Protocol related-url)]
+       [:Related_URL
+        (when-let [ct (:ContentType related-url)]
+          [:URL_Content_Type
+           [:Type (:Type ct)]
+           [:Subtype (:Subtype ct)]])
+        [:Protocol (:Protocol related-url)]
         (for [url (get related-url :URLs ["http://www.foo.com"])]
           [:URL url])
         [:Description (:Description related-url)]])
      (for [ma (:MetadataAssociations c)
            :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
        [:Metadata_Association
-        [:Entry_Id
+        [:Entry_ID
          [:Short_Name (:EntryId ma)]
          [:Version (u/with-default (:Version ma))]]
         [:Type (or (u/capitalize-words (:Type ma)) "Science Associated")]
@@ -269,4 +266,9 @@
       (generate-data-dates c)]
      (generate-additional-attributes (:AdditionalAttributes c))
      [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
-     [:Collection_Data_Type (:CollectionDataType c)]]))
+     [:Collection_Data_Type (:CollectionDataType c)]
+     (when-let [access-value (get-in c [:AccessConstraints :Value])]
+       [:Extended_Metadata
+        [:Metadata
+         [:Name "Restriction"]
+         [:Value access-value]]])]))

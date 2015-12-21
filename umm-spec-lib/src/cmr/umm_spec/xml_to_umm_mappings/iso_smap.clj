@@ -26,7 +26,7 @@
 
 ;; Paths below are relative to the MD_DataIdentification element
 
-(def entry-id-xpath
+(def short-name-xpath
   (str "gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier"
        "[gmd:description/gco:CharacterString='The ECS Short Name']"
        "/gmd:code/gco:CharacterString"))
@@ -57,8 +57,8 @@
   [doc]
   (let [data-id-el (first (select doc md-identification-base-xpath))
         short-name-el (first (select doc short-name-identification-xpath))]
-    (js/coerce
-      {:EntryId (value-of data-id-el entry-id-xpath)
+    (js/parse-umm-c
+      {:ShortName (value-of data-id-el short-name-xpath)
        :EntryTitle (value-of doc entry-title-xpath)
        :Version (without-default-value-of data-id-el version-xpath)
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
@@ -74,7 +74,8 @@
                           {:RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
                                              {:BeginningDateTime (value-of period "gml:beginPosition")
                                               :EndingDateTime    (value-of period "gml:endPosition")})
-                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")})
+                           :SingleDateTimes (values-at temporal "gml:TimeInstant/gml:timePosition")
+                           :EndsAtPresentFlag (some? (seq (select temporal "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")))})
        :ScienceKeywords (parse-science-keywords data-id-el)
        :SpatialExtent (spatial/parse-spatial data-id-el)
        :TilingIdentificationSystem (tiling/parse-tiling-system data-id-el)})))

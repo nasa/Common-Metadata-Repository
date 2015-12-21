@@ -1,6 +1,7 @@
 (ns cmr.es-spatial-plugin.spatial-script-helper
   (:require [cmr.spatial.serialize :as srl]
-            [clojure.string :as s])
+            [clojure.string :as s]
+            [cmr.common.util :as u])
   (:import org.elasticsearch.index.fielddata.ScriptDocValues$Doubles
            org.elasticsearch.search.lookup.DocLookup
            org.elasticsearch.search.lookup.FieldsLookup
@@ -18,16 +19,11 @@
   [^ESLogger logger ^FieldsLookup lookup intersects-fn]
   ; Must explicitly return true or false or elastic search will complain
 
-  ;; Performance enhancement: We could make the ring lazy.
-  ;; Let's say that the first arc in the ring would result in an intersection with the original ring
-  ;; We would only have to create one arc in that case. We wouldn't have to calculate the great
-  ;; circle for any of the other arcs
-
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
           shapes (srl/ords-info->shapes ords-info ords)]
       (try
-        (if (some intersects-fn shapes)
+        (if (u/any? intersects-fn shapes)
           true
           false)
         (catch Throwable t
@@ -37,3 +33,5 @@
           (.info logger (pr-str ords) nil)
           (throw t))))
     false))
+
+

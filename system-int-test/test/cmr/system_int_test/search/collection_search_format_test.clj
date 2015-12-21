@@ -14,6 +14,7 @@
             [cheshire.core :as json]
             [clj-http.client :as client]
             [cmr.umm.core :as umm]
+            [cmr.umm-spec.core :as umm-spec]
             [cmr.spatial.polygon :as poly]
             [cmr.spatial.point :as p]
             [cmr.spatial.mbr :as m]
@@ -38,9 +39,16 @@
     (dev-sys-util/reset)
     (ingest/create-provider {:provider-guid "provguid1" :provider-id "PROV1"})
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})
+
     (d/ingest "PROV1" (dc/collection {:short-name "S1"
                                       :version-id "V1"
-                                      :entry-title "ET1"}))))
+                                      :entry-title "ET1"})))
+
+  (def c10-umm-json (d/ingest "PROV1"
+                              cmr.umm-spec.test.expected-conversion/example-record
+                              {:format :umm-json
+                               :accept-format :json})))
+
 
 ;; Tests that we can ingest and find items in different formats
 (deftest multi-format-search-test
@@ -53,24 +61,20 @@
                                                   :version-id "V2"
                                                   :entry-title "ET2"})
                           {:format :echo10})
-        c3-dif (d/ingest "PROV1" (dc/collection-dif {:entry-id "S3"
-                                                     :short-name "S3"
+        c3-dif (d/ingest "PROV1" (dc/collection-dif {:short-name "S3"
                                                      :version-id "V3"
                                                      :entry-title "ET3"
                                                      :long-name "ET3"})
                          {:format :dif})
-        c4-dif (d/ingest "PROV2" (dc/collection-dif {:entry-id "S4"
-                                                     :short-name "S4"
+        c4-dif (d/ingest "PROV2" (dc/collection-dif {:short-name "S4"
                                                      :version-id "V4"
                                                      :entry-title "ET4"
                                                      :long-name "ET4"})
                          {:format :dif})
         c5-iso (d/ingest "PROV1" (dc/collection {:short-name "S5"
-                                                 :entry-id "S5"
-                                                 :version-id "V5"})
+                                                 :version-id "V50"})
                          {:format :iso19115})
         c6-iso (d/ingest "PROV2" (dc/collection {:short-name "S6"
-                                                 :entry-id "S6"
                                                  :version-id "V6"})
                          {:format :iso19115})
         c7-smap (d/ingest "PROV1" (dc/collection-smap {:short-name "S7"
@@ -86,7 +90,13 @@
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
                            {:format :dif10})
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
+
+        c10-umm-json (d/ingest "PROV1"
+                               cmr.umm-spec.test.expected-conversion/example-record
+                               {:format :umm-json
+                                :accept-format :json})
+
+        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
     (index/wait-until-indexed)
 
     (testing "Finding refs ingested in different formats"
@@ -98,8 +108,8 @@
            {:version ["V3" "V2"]} [c2-echo c3-dif]
            {:short-name "S5"} [c5-iso]
            {:short-name "S6"} [c6-iso]
-           {:version "V5"} [c5-iso]
-           {:version ["V5" "V6"]} [c5-iso c6-iso]
+           {:version "V50"} [c5-iso]
+           {:version ["V50" "V6"]} [c5-iso c6-iso]
            {:short-name "S7"} [c7-smap]
            {:version "V7"} [c7-smap]
            {:short-name "S8"} [c8-dif10]
@@ -309,8 +319,8 @@
                                                                   polygon-with-holes
                                                                   (p/point 1 2)
                                                                   (p/point -179.9 89.4)
-                                                                  (l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                                  (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)
+                                                                  (l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
+                                                                  (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])
                                                                   (m/mbr -180 90 180 -90)
                                                                   (m/mbr -10 20 30 -40)]})}))
         coll2 (d/ingest "PROV1"
@@ -360,8 +370,8 @@
                                                 :spatial-coverage
                                                 (dc/spatial {:sr :cartesian
                                                              :gsr :cartesian
-                                                             :geometries [(l/ords->line-string nil 0 0, 0 1, 0 -90, 180 0)
-                                                                          (l/ords->line-string nil 1 2, 3 4, 5 6, 7 8)]})}))
+                                                             :geometries [(l/ords->line-string nil [0 0, 0 1, 0 -90, 180 0])
+                                                                          (l/ords->line-string nil [1 2, 3 4, 5 6, 7 8])]})}))
         coll8 (d/ingest "USGS_EROS" (dc/collection {:entry-title "Dataset8"
                                                     :short-name "ShortName#8"
                                                     :version-id "Version8"
@@ -383,7 +393,10 @@
     (testing "kml"
       (let [results (search/find-concepts-kml :collection {})]
         (dk/assert-collection-kml-results-match [coll1 coll2 coll3 coll4 coll5 coll6 coll7
-                                                 coll8 coll9] results)))
+                                                 coll8 coll9] results))
+      (testing "kml by concept-id"
+        (let [results (search/find-concepts-kml :collection {:concept-id (:concept-id coll1)})]
+          (dk/assert-collection-kml-results-match [coll1] results))))
 
     (testing "csv is not supported"
       (is (= {:errors ["The mime type [text/csv] is not supported for collections."],

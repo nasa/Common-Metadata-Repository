@@ -2,6 +2,7 @@
   "Tests parsing and generating DIF 10 Collection XML."
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
+            [clj-time.core :as t]
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
             [clojure.string :as s]
@@ -25,6 +26,15 @@
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
              (empty? (c/validate-xml xml)))))
+
+(comment
+
+
+  ((let [xml (dif10/umm->dif10-xml user/failing-value)]
+     (c/validate-xml xml)))
+
+
+  )
 
 (defn- related-urls->expected-parsed
   [related-urls]
@@ -114,7 +124,7 @@
   "Remove fields unsupported and not yet supported in DIF10"
   [coll]
   (-> coll
-      (dissoc :spatial-keywords :associated-difs :access-value :metadata-language
+      (dissoc :spatial-keywords :associated-difs :metadata-language
               :temporal-keywords :two-d-coordinate-systems)
       (assoc-in  [:product :processing-level-id] nil)
       (assoc-in [:data-provider-timestamps :revision-date-time] nil)
@@ -139,14 +149,12 @@
   "Modifies the UMM record for testing DIF. Unsupported fields are removed for comparison of the parsed record and
   fields which are required by DIF 10 are added."
   [coll]
-  (let [entry-id (:entry-id coll)
-        {:keys [short-name version-id]} (:product coll)
+  (let [{:keys [short-name version-id]} (:product coll)
         long-name (:entry-title coll)]
     (-> coll
         remove-unsupported-fields
         add-required-placeholder-fields
         (update-in [:product] (product->expected-parsed short-name version-id long-name))
-        (assoc :entry-id (format "%s_%s" short-name version-id))
         umm-c/map->UmmCollection)))
 
 (defspec generate-and-parse-collection-test 100
@@ -280,7 +288,7 @@
     <Temporal_Coverage>
       <Range_DateTime>
         <Beginning_Date_Time>1998-02-24T22:20:41-05:00</Beginning_Date_Time>
-        <Ending_Date_Time>1999-03-24T22:20:41-05:00</Ending_Date_Time>
+        <Ending_Date_Time>1999-03-24</Ending_Date_Time>
       </Range_DateTime>
     </Temporal_Coverage>
     <Dataset_Progress>IN WORK</Dataset_Progress>
@@ -338,26 +346,26 @@
       <URL>http://www.foo.com</URL>
     </Related_URL>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-237</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-238</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>
+      <Entry_ID>
         <Short_Name>COLLOTHER-239</Short_Name>
         <Version>1</Version>
-      </Entry_Id>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
@@ -439,6 +447,11 @@
         <Description>something bool</Description>
         <Value>false</Value>
       </Metadata>
+      <Metadata>
+        <Group>gov.nasa.earthdata.cmr</Group>
+        <Name>Restriction</Name>
+        <Value>1</Value>
+      </Metadata>
     </Extended_Metadata>
    </DIF>")
 
@@ -447,14 +460,13 @@
     {:range-date-times
      [(umm-c/map->RangeDateTime
         {:beginning-date-time (p/parse-datetime "1998-02-24T22:20:41-05:00")
-         :ending-date-time (p/parse-datetime "1999-03-24T22:20:41-05:00")})]
+         :ending-date-time (t/date-time 1999 3 24)})]
      :single-date-times []
      :periodic-date-times []}))
 
 (def expected-collection
   (umm-c/map->UmmCollection
-    {:entry-id "minimal_dif_dataset_001"
-     :entry-title "A minimal dif dataset"
+    {:entry-title "A minimal dif dataset"
      :summary "summary of the dataset"
      :purpose "A grand purpose"
      :product (umm-c/map->Product
@@ -569,7 +581,7 @@
                                       :description "something date"
                                       :data-type :date
                                       :value "2015-09-14"
-                                      :parsed-value (p/parse-date "2015-09-14")})
+                                      :parsed-value (p/parse-datetime "2015-09-14")})
                                    (umm-c/map->ProductSpecificAttribute
                                      {:group "custom.group"
                                       :name "Datetime attribute"
@@ -603,13 +615,16 @@
                                   :version-id "1"})]
      :collection-progress :in-work
      :quality "Good quality"
-     :use-constraints "No Constraints"}))
+     :use-constraints "No Constraints"
+     :access-value 1.0}))
 
 (deftest parse-collection-test
   (testing "parse collection"
     (is (= expected-collection (c/parse-collection dif10-collection-xml))))
   (testing "parse collection temporal"
-    (is (= expected-temporal (c/parse-temporal dif10-collection-xml)))))
+    (is (= expected-temporal (c/parse-temporal dif10-collection-xml))))
+  (testing "parse collection access value"
+    (is (= 1.0 (c/parse-access-value dif10-collection-xml)))))
 
 (deftest validate-xml
   (testing "valid xml"
@@ -622,4 +637,3 @@
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Platform}' is expected.")]
            (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))
-

@@ -83,7 +83,7 @@
              (date-element some-date))
            [:gmd:identifier
             [:gmd:MD_Identifier
-             [:gmd:code (char-string (:EntryId c))]
+             [:gmd:code (char-string (:ShortName c))]
              [:gmd:description [:gco:CharacterString "The ECS Short Name"]]]]
 
            [:gmd:identifier
@@ -115,7 +115,12 @@
                [:gmd:extent
                 [:gml:TimePeriod {:gml:id (su/generate-id)}
                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                 [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))]]]]])
+                 (let [ends-at-present (:EndsAtPresentFlag temporal)]
+                   [:gml:endPosition (if ends-at-present
+                                       {:indeterminatePosition "now"}
+                                       {})
+                    (when-not ends-at-present
+                      (or (:EndingDateTime rdt) ""))])]]]])
            (for [temporal (:TemporalExtents c)
                  date (:SingleDateTimes temporal)]
              [:gmd:temporalElement
