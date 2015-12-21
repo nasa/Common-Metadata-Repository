@@ -128,6 +128,43 @@
        [:URL url])
      [:Description (:Description related-url)]]))
 
+(defn- create-service-citations
+  "Creates a SERF Service Citation element from a UMM-S Service Citation" 
+  [s]
+  (for [service-citation (:ServiceCitation s)]
+    [:Service_Citation 
+     [:Originators (:Creator service-citation)]
+     [:Title (:Title service-citation)]
+     [:Provider (:Publisher service-citation)]
+     [:Edition (:Version service-citation)]
+     [:URL (:RelatedURL service-citation)]]))
+
+(defn- create-sensors
+  "Creates SERF Sensor Elements from a UMM-S Instruments mapping"
+  [s]
+  (for [platform (:Platforms s)
+        instrument (:Instruments platform)]
+    [:Sensor_Name
+     [:Short_Name (:ShortName instrument)]
+     [:Long_Name (:LongName instrument)]]))
+
+(defn- create-source-names
+  "Creates SERF Source Name elements from a UMM-S Platforms mapping"
+  [s]
+  (for [platform (:Platforms s) 
+           :when (not= (:ShortName platform) "Not provided")]
+       [:Source_Name
+        [:Short_Name (:ShortName platform)]
+        [:Long_Name (:LongName platform)]]))
+
+(defn- create-projects 
+  "Creates SERF Project elements from a UMM-S Projects mapping"
+  [s]
+  (for [service-project (:Projects s)]
+    [:Project 
+     [:Short_Name (:ShortName service-project)]
+     [:Long_Name (:LongName service-project)]]))
+
 (def inserted-metadata
   "Inserted Metadata by CMR to account for missing fields"
   #{"Metadata_Name" "Metadata_Version" "IDN_Node_Short_Name"})
@@ -140,13 +177,7 @@
      serf-xml-namespaces
      [:Entry_ID (:EntryId s)]
      [:Entry_Title (:EntryTitle s)]
-     (for [service-citation (:ServiceCitation s)]
-       [:Service_Citation 
-        [:Originators (:Creator service-citation)]
-        [:Title (:Title service-citation)]
-        [:Provider (:Publisher service-citation)]
-        [:Edition (:Version service-citation)]
-        [:URL (:RelatedURL service-citation)]])
+     (create-service-citations s)
      ;;TODO: CMR-2298 needs to be resolved before we can properly implement this
      (create-root-personnel (:Responsibilities s))
      (create-service-parameters s)
@@ -155,20 +186,9 @@
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords s)]
        [:Keyword ak])
-     (for [platform (:Platforms s)
-           instrument (:Instruments platform)]
-       [:Sensor_Name
-        [:Short_Name (:ShortName instrument)]
-        [:Long_Name (:LongName instrument)]])
-     (for [platform (:Platforms s) 
-           :when (not= (:ShortName platform) "Not provided")]
-       [:Source_Name
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]])
-     (for [service-project (:Projects s)]
-       [:Project 
-        [:Short_Name (:ShortName service-project)]
-        [:Long_Name (:LongName service-project)]])
+     (create-sensors s)
+     (create-source-names s)
+     (create-projects s)
      [:Quality (:Quality s)]
      [:AccessConstraints (:AccessContstraints s)]
      [:UseConstraints (:UseConstraints s)]
