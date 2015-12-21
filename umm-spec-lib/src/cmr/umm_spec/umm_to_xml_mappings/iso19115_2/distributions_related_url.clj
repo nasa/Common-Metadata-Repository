@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.url :as url]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su]))
@@ -44,7 +45,7 @@
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
-  (let [{:keys [URLs Protocol Description] {:keys [Type]} :ContentType} online-resource-url
+  (let [{:keys [URLs Description] {:keys [Type]} :ContentType} online-resource-url
         name (type->name Type)
         code (if (= "GET DATA" Type) "download" "information")]
     (for [url URLs]
@@ -53,7 +54,7 @@
         [:gmd:linkage
          [:gmd:URL url]]
         [:gmd:protocol
-         (char-string Protocol)]
+         (char-string (url/protocol url))]
         [:gmd:name
          (char-string name)]
         (if Description

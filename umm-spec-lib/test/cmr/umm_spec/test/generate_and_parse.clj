@@ -35,7 +35,7 @@
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
     (testing (str metadata-format)
-      (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
+       (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
              (xml-round-trip expected-conversion/example-record metadata-format))))))
 
 (defspec roundtrip-generated-records 100

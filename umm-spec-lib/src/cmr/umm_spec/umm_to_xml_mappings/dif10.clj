@@ -246,7 +246,7 @@
           [:URL_Content_Type
            [:Type (:Type ct)]
            [:Subtype (:Subtype ct)]])
-        [:Protocol (:Protocol related-url)]
+        ;; TODO this seems completely wrong...
         (for [url (get related-url :URLs ["http://www.foo.com"])]
           [:URL url])
         [:Description (:Description related-url)]])

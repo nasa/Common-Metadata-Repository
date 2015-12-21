@@ -261,7 +261,7 @@
     "RelatedUrlType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Field specifies links to Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
       "properties": {
         "Description": {
           "description": "Provides information about the resource defined by the URL",
@@ -271,12 +271,6 @@
         },
         "ContentType": {
           "$ref": "#/definitions/ContentTypeType"
-        },
-        "Protocol": {
-          "description": "The protocol to the resource associated with the URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20
         },
         "URLs": {
           "description": "The URL to the resource associated with the data set.",

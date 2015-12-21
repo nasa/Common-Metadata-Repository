@@ -121,7 +121,6 @@
      :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
      :RelatedUrls [{:Description "Related url description"
                     :ContentType {:Type "GET DATA" :Subtype "sub type"}
-                    :Protocol "protocol"
                     :URLs ["www.foo.com", "www.shoo.com"]
                     :Title "related url title"
                     :MimeType "mime type"
@@ -130,7 +129,6 @@
                     :ContentType {:Type "Some type" :Subtype "sub type"}
                     :URLs ["www.foo.com"]}
                    {:Description "Related url 2 description"
-                    :Protocol "ftp"
                     :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
                     :URLs ["www.foo.com"]
                     :FileSize {:Size 10.0 :Unit "MB"}}]
@@ -291,7 +289,7 @@
              :let [type (get-in related-url [:ContentType :Type])]
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Protocol nil :Title nil :Caption nil :URLs [url])
+             (assoc :Title nil :Caption nil :URLs [url])
              (update-in [:FileSize] (fn [file-size]
                                       (when (and file-size
                                                  (= type "GET RELATED VISUALIZATION"))
@@ -357,7 +355,6 @@
                                             :URLs (seq (remove nil? [(first (:URLs related-url))]))
                                             :Description nil
                                             :ContentType nil
-                                            :Protocol nil
                                             :Title nil
                                             :MimeType nil
                                             :Caption nil
@@ -366,7 +363,7 @@
 (defn- expected-dif-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Protocol nil :Title nil :Caption nil :FileSize nil :MimeType nil))))
+         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
 
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"
@@ -562,13 +559,6 @@
            su/remove-empty-records
            vec))
 
-(defn- update-iso-19115-2-related-url-protocol
-  "Returns the related url with protocol field updated. Browse urls do not have Protocol field."
-  [related-url]
-  (if (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type]))
-    (assoc related-url :Protocol nil)
-    related-url))
-
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (seq (for [related-url related-urls
@@ -581,8 +571,7 @@
                           (when (#{"GET DATA"
                                    "GET RELATED VISUALIZATION"
                                    "VIEW RELATED INFORMATION"} (:Type content-type))
-                            content-type)))
-             update-iso-19115-2-related-url-protocol))))
+                            content-type)))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -635,7 +624,7 @@
       (update-in [:Party :RelatedUrls] (fn [x]
                                          (when-let [related-url (first x)]
                                            (-> related-url
-                                               (assoc :Protocol nil :Title nil
+                                               (assoc :Title nil
                                                       :FileSize nil :ContentType nil
                                                       :MimeType nil :Caption nil)
                                                (update-in [:URLs] (fn [urls] [(first urls)]))

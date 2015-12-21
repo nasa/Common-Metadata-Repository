@@ -239,7 +239,7 @@
 (record-pretty-printer/enable-record-pretty-printing ChronostratigraphicUnitType)
 
 ;; This element contains the level identifier as described here:
-;; https://earthdata.nasa.gov/data/standards-and-references/processing-levels
+;; http://science.nasa.gov/earth-science/earth-science-data/data-processing-levels-for-eosdis-data-products/
 (defrecord ProcessingLevelType
   [
    ;; Description of Processing Level.

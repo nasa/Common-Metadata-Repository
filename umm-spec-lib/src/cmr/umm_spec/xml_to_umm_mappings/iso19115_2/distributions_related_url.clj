@@ -65,7 +65,6 @@
                      "GET DATA"
                      (when name (resource-name->types name)))]]
     {:URLs [(value-of url "gmd:linkage/gmd:URL")]
-     :Protocol (char-string-value url "gmd:protocol")
      :Description (char-string-value url "gmd:description")
      :ContentType {:Type type}}))
 

@@ -614,18 +614,15 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
-;; Field specifies links to Internet sites that contain information related to the data, as well as
-;; related Internet sites such as project home pages, related data archives/servers, metadata
-;; extensions, online software packages, web mapping services, and calibration/validation data.
+;; Represents Internet sites that contain information related to the data, as well as related
+;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
+;; online software packages, web mapping services, and calibration/validation data.
 (defrecord RelatedUrlType
   [
    ;; Provides information about the resource defined by the URL
    Description
 
    ContentType
-
-   ;; The protocol to the resource associated with the URL.
-   Protocol
 
    ;; The URL to the resource associated with the data set.
    URLs
