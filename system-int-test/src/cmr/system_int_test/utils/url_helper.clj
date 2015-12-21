@@ -320,19 +320,10 @@
   []
   (format "http://localhost:%s/bulk_migration/providers" (transmit-config/bootstrap-port)))
 
-(defn db-synchronize-url
-  []
-  (format "http://localhost:%s/db_synchronize" (transmit-config/bootstrap-port)))
-
 (defn bootstrap-health-url
   "URL to check bootstrap health."
   []
   (format "http://localhost:%s/health" (transmit-config/bootstrap-port)))
-
-(defn bootstrap-jobs-url
-  "URL to bootstrap jobs api."
-  []
-  (format "http://localhost:%s/jobs/" (transmit-config/bootstrap-port)))
 
 (defn bootstrap-read-caches-url
   "URL to read the bootstrap caches."

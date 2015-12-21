@@ -38,53 +38,6 @@
     (bs/migrate-provider context provider-id synchronous)
     {:status 202 :body {:message (str "Processing provider " provider-id)}}))
 
-(def valid-sync-types
-  "This is the list of valid sync types that can be specified for a database synchronization."
-  #{"missing" "updates" "deletes"})
-
-(def default-sync-types
-  #{"updates" "deletes"})
-
-(defn- db-synchronize
-  "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
-  start date and end date"
-  [context params]
-  (let [{:keys [synchronous start_date end_date provider_id entry_title sync_types]} params
-        sync_types (cond
-                     (nil? sync_types) default-sync-types
-                     (not (sequential? sync_types)) #{sync_types}
-                     :else (set sync_types))]
-
-    ;; Verify entry title and provider id are given together
-    (when (and entry_title (not provider_id))
-      (srv-errors/throw-service-error :bad-request "If entry_title is provided provider_id must be provided as well."))
-
-    ;; Verify sync types are valid
-    (when (and sync_types (not (every? valid-sync-types sync_types)))
-      (srv-errors/throw-service-error
-        :bad-request (format "The sync_types %s are not supported. Valid values are: %s"
-                             (pr-str sync_types) (pr-str valid-sync-types))))
-
-    ;; Verify only one of missing or updates is used as sync types but not both
-    (when (and (sync_types "updates") (sync_types "missing"))
-      (srv-errors/throw-service-error
-        :bad-request "Only one of the sync_types [updates] and [missing] can be provided but not both"))
-
-    ;; Verify start date and end data are only used if updates sync is being done
-    (when (and (not (sync_types "updates")) (or start_date end_date))
-      (srv-errors/throw-service-error
-        :bad-request
-        "start_date and/or end_date were provided. These only apply if the [updates] sync type is used."))
-
-    (bs/db-synchronize context synchronous
-                       (util/remove-nil-keys
-                         {:start-date (date-time-parser/parse-datetime (or start_date "1970-01-01T00:00:00Z"))
-                          :end-date (date-time-parser/parse-datetime (or end_date "2100-01-01T00:00:00Z"))
-                          :provider-id provider_id
-                          :sync-types (map keyword sync_types)
-                          :entry-title entry_title}))
-    {:status 202 :body {:message "Synchronizing databases."}}))
-
 (defn- bulk-index-provider
   "Index all the collections and granules for a given provider."
   [context provider-id-map params]
@@ -141,10 +94,6 @@
         (POST "/collections" {:keys [request-context body params]}
           (migrate-collection request-context body params)))
 
-      (context "/db_synchronize" []
-        (POST "/" {:keys [request-context params]}
-          (db-synchronize request-context params)))
-
       (context "/bulk_index" []
         (POST "/providers" {:keys [request-context body params]}
           (bulk-index-provider request-context body params))
@@ -155,9 +104,6 @@
       (context "/virtual_products" []
         (POST "/" {:keys [request-context params]}
           (bootstrap-virtual-products request-context params)))
-
-      ;; Add routes for managing jobs.
-      (common-routes/job-api-routes)
 
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
