@@ -17,7 +17,8 @@
             [cmr.umm-spec.iso19115-2-util :as iu]
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
             [cmr.common.util :refer [are2]]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]))
+            [cmr.umm-spec.test.umm-generators :as umm-gen]
+            [cmr.umm-spec.json-schema :as js]))
 
 (def tested-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
@@ -66,8 +67,12 @@
   (core/validate-xml :collection format
                      (core/generate-metadata :collection format record)))
 
-(def minimal-umm-c (cmr.umm-spec.json-schema/parse-umm-c {:ShortName "foo"
-                                                          :Version "bar"}))
+(def minimal-umm-c
+  "UMM-C with the bare minimum number of fields. It does not include all required fields because
+  there is existing data in the system which does not contain all of the required UMM-C fields. We
+  are testing that even without all the required UMM-C fields, we still produce valid XML in each
+  of the formats."
+  (js/parse-umm-c {:ShortName "foo" :Version "bar"}))
 
 (deftest minimal-dif10
   (is (empty? (generate-and-validate-xml :dif10 minimal-umm-c))))
