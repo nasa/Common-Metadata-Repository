@@ -241,7 +241,6 @@
                                                   {:value (coerce schema item-type-def x)}
                                                   (catch Exception e
                                                     (let [msg (parse-error-msg item-type-def x)]
-                                                      (log/warn e msg)
                                                       {:error msg}))))
                                       results (filter #(or (some? (:value %))
                                                            (:error % ))
@@ -257,7 +256,6 @@
                                       m))
                                   (catch Exception e
                                     (let [msg (parse-error-msg prop-type-definition v)]
-                                      (log/warn e msg)
                                       (assoc-in m [:_errors k] msg)))))))
                           nil
                           (filter val x))]
