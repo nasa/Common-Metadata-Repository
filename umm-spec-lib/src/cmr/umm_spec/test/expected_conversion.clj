@@ -12,6 +12,8 @@
             [cmr.umm-spec.json-schema :as js]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
+            ;; Required for loading service models for testing
+            [cmr.umm-spec.models.service]
             [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as echo10-spatial-gen]
             [cmr.umm-spec.umm-to-xml-mappings.echo10.related-url :as echo10-ru-gen]
