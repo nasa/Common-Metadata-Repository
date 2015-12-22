@@ -64,7 +64,7 @@
 (defn spatial-element
   "Returns DIF10 Spatial_Coverage element from given UMM-C record."
   [c]
-  (let [sp (:SpatialExtent c)]
+  (if-let [sp (:SpatialExtent c)]
     [:Spatial_Coverage
      [:Spatial_Coverage_Type (umm-spatial-type->dif10-spatial-type (:SpatialCoverageType sp))]
      [:Granule_Spatial_Representation (:GranuleSpatialRepresentation sp)]
@@ -95,4 +95,9 @@
          [:TwoD_Coordinate_System
           [:TwoD_Coordinate_System_Name (:TilingIdentificationSystemName sys)]
           (tiling-system-coord-element sys :Coordinate1)
-          (tiling-system-coord-element sys :Coordinate2)]))]]))
+          (tiling-system-coord-element sys :Coordinate2)]))]]
+
+    ;; Default Spatial_Coverage
+    [:Spatial_Coverage
+     [:Spatial_Coverage_Type "Horizontal"]
+     [:Granule_Spatial_Representation "CARTESIAN"]]))
