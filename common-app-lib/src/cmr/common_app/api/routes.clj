@@ -8,6 +8,7 @@
             [cheshire.core :as json]
             [cmr.common.xml :as cx]
             [cmr.common.mime-types :as mt]
+            [cmr.common.api.context :as cxt]
             [compojure.core :refer :all]
             [ring.util.codec :as rc]))
 
@@ -142,3 +143,13 @@
       (if pretty?
         (pretty-print-body (f request))
         ((ring-json/wrap-json-response f) request)))))
+
+(defn add-request-id-response-handler
+  "Adds a request id header to every response to facilitate clientside debugging."
+  [f]
+  (fn [{context :request-context :as request}]
+    (if-let [request-id (cxt/context->request-id context)]
+      (-> (f request)
+          (assoc-in [:headers cxt/REQUEST_ID_HEADER] request-id))
+      ((ring-json/wrap-json-response f) request))))
+
