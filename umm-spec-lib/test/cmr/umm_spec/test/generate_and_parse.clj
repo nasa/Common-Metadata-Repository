@@ -24,11 +24,11 @@
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
 ;; TODO add formats here as they are implemented.
-(def destination-formats
+(def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
   [])
 
-(def format-examples
+(def collection-format-examples
   "Map of format type to example file"
   {:dif "dif.xml"
    :dif10 "dif10.xml"
@@ -36,7 +36,7 @@
    :iso19115 "iso19115.xml"
    :iso-smap "iso_smap.xml"})
 
-(defn xml-round-trip
+(defn collection-xml-round-trip
   "Returns record after being converted to XML and back to UMM through
   the given to-xml and to-umm mappings."
   [record format]
@@ -53,10 +53,10 @@
     (core/validate-xml concept-type metadata-format metadata-xml)))
 
 (deftest roundrobin-collection-example-record
-  (doseq [[origin-format filename] format-examples
+  (doseq [[origin-format filename] collection-format-examples
           :let [metadata (slurp (io/resource (str "example_data/" filename)))
                 umm-c-record (core/parse-metadata :collection origin-format metadata)]
-          dest-format destination-formats
+          dest-format collection-destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
       (is (empty? (generate-and-validate-xml umm-c-record dest-format :collection))))))
@@ -65,13 +65,13 @@
   (doseq [metadata-format tested-formats]
     (testing (str metadata-format)
       (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
-             (xml-round-trip expected-conversion/example-record metadata-format))))))
+             (collection-xml-round-trip expected-conversion/example-record metadata-format))))))
 
 (defspec roundtrip-generated-records 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
             metadata-format (gen/elements tested-formats)]
     (is (= (expected-conversion/convert umm-record metadata-format)
-           (xml-round-trip umm-record metadata-format)))))
+           (collection-xml-round-trip umm-record metadata-format)))))
 
 (defn- parse-iso19115-projects-keywords
   "Returns the parsed projects keywords for the given ISO19115-2 xml"
@@ -95,7 +95,7 @@
   (println (core/generate-metadata :collection :iso-smap user/failing-value))
 
   (is (= (expected-conversion/convert user/failing-value :iso-smap)
-         (xml-round-trip user/failing-value :iso-smap)))
+         (collection-xml-round-trip user/failing-value :iso-smap)))
 
   ;; random XML gen
   (def metadata-format :dif)
@@ -118,14 +118,14 @@
   (core/generate-metadata :collection metadata-format expected-conversion/example-record)
 
   ;; round-trip
-  (xml-round-trip sample-record metadata-format)
+  (collection-xml-round-trip sample-record metadata-format)
 
   ;; generated test case
   (is (= (expected-conversion/convert sample-record metadata-format)
-         (xml-round-trip sample-record metadata-format)))
+         (collection-xml-round-trip sample-record metadata-format)))
 
   ;; for generated test failures
   (is (= (expected-conversion/convert user/failing-value metadata-format)
-         (xml-round-trip user/failing-value metadata-format))))
+         (collection-xml-round-trip user/failing-value metadata-format))))
 
 
