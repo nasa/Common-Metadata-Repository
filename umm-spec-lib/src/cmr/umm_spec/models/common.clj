@@ -132,7 +132,7 @@
    ;; Describes the data held as either describing the metadata or data.
    Scope
 
-   ;; This encaptulates all of the changes for a specific date.
+   ;; This encapsulates all of the changes for a specific date.
    Dates
   ])
 (record-pretty-printer/enable-record-pretty-printing LineageType)

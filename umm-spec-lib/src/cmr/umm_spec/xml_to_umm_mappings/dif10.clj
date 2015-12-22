@@ -173,4 +173,4 @@
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document."
   [metadata]
-  (js/coerce (parse-dif10-xml metadata)))
+  (js/parse-umm-c (parse-dif10-xml metadata)))

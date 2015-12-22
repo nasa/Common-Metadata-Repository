@@ -17,7 +17,8 @@
             [cmr.umm-spec.iso19115-2-util :as iu]
             [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
             [cmr.common.util :refer [are2]]
-            [cmr.umm-spec.test.umm-generators :as umm-gen]))
+            [cmr.umm-spec.test.umm-generators :as umm-gen]
+            [cmr.umm-spec.json-schema :as js]))
 
 (def tested-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
@@ -90,6 +91,23 @@
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
 
+(defn- generate-and-validate-xml
+  "Generates collection XML for the given format based on the provided UMM record. Performs
+  schema validation against the generated XML and returns any validation errors."
+  [format record]
+  (core/validate-xml :collection format
+                     (core/generate-metadata :collection format record)))
+
+(def minimal-umm-c
+  "UMM-C with the bare minimum number of fields. It does not include all required fields because
+  there is existing data in the system which does not contain all of the required UMM-C fields. We
+  are testing that even without all the required UMM-C fields, we still produce valid XML in each
+  of the formats."
+  (js/parse-umm-c {:ShortName "foo" :Version "bar"}))
+
+(deftest minimal-dif10
+  (is (empty? (generate-and-validate-xml :dif10 minimal-umm-c))))
+
 (comment
 
   (println (core/generate-metadata :collection :iso-smap user/failing-value))
@@ -105,7 +123,9 @@
   (def metadata-format :dif10)
   (def metadata-format :iso-smap)
 
-  (def sample-record (first (gen/sample (gen/such-that :DataDates umm-gen/umm-c-generator) 1)))
+  (def sample-record (first (gen/sample (gen/such-that
+                                         #(not-any? :Instruments (:Platforms %))
+                                         umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
 
@@ -117,6 +137,8 @@
   ;; our simple example record
   (core/generate-metadata :collection metadata-format expected-conversion/example-record)
 
+  (core/validate-xml :collection metadata-format metadata-xml)
+
   ;; round-trip
   (collection-xml-round-trip sample-record metadata-format)
 
@@ -127,5 +149,3 @@
   ;; for generated test failures
   (is (= (expected-conversion/convert user/failing-value metadata-format)
          (collection-xml-round-trip user/failing-value metadata-format))))
-
-

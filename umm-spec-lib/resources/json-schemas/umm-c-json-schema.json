@@ -18,16 +18,16 @@
     "ProcessingLevelType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element contains the level identifier as described here: http://science.nasa.gov/earth-science/earth-science-data/data-processing-levels-for-eosdis-data-products/",
+      "description": "This element contains the Processing Level Id and the Processing Level Description",
       "properties": {
         "ProcessingLevelDescription": {
-          "description": "Description of Processing Level.",
+          "description": "Description of the meaning of the Processing Level Id, e.g., the Description for the Level4 Processing Level Id might be 'Model output or results from analyses of lower level data'",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
         },
         "Id": {
-          "description": "The processing level class contains the level identifier and level description of the collection.",
+          "description": "An identifier indicating the level at which the data in the collection are processed, ranging from Level0 (raw instrument data at full resolution) to Level4 (model output or analysis results).  The value of Processing Level Id is chosen from a controlled vocabulary.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -41,7 +41,7 @@
       "description": "For paleoclimate or geologic data, PaleoTemporalCoverage is the length of time represented by the data collected. PaleoTemporalCoverage should be used when the data spans time frames earlier than yyyy-mm-dd = 0001-01-01.",
       "properties": {
         "ChronostratigraphicUnits": {
-          "description": "The chronostratigraphic units are selected from a UMM builder. The vocabulary is controlled.",
+          "description": "Hierarchy of terms indicating units of geologic time, i.e., eon (e.g, Phanerozoic), era (e.g., Cenozoic), period (e.g., Paleogene), epoch (e.g., Oligocene), and stage or age (e.g, Chattian).",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ChronostratigraphicUnitType"
@@ -49,11 +49,11 @@
           "minItems": 0
         },
         "StartDate": {
-          "description": "The number of years furthest back in time including units Ga, Ma, ka or ybp.",
+          "description": "A string indicating the number of years furthest back in time, including units, e.g., 100 Ga.  Units may be Ga (billions of years before present), Ma (millions of years before present), ka (thousands of years before present) or ybp (years before present).",
           "type": "string"
         },
         "EndDate": {
-          "description": "The number of years closest to the present time including units Ga, Ma, ka or ybp.",
+          "description": "A string indicating the number of years closest to the present time, including units, e.g., 10 ka.  Units may be Ga (billions of years before present), Ma (millions of years before present), ka (thousands of years before present) or ybp (years before present).",
           "type": "string"
         }
       }
@@ -95,7 +95,7 @@
           "$ref": "#/definitions/HorizontalCoordinateSystemType"
         },
         "SpatialCoverageType": {
-          "description": "This attribute denotes whether the locality/coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.",
+          "description": "Denotes whether the spatial coverage of the collection is horizontal, vertical, horizontal and vertical, orbit, or vertical and orbit.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -127,7 +127,7 @@
           "maxLength": 80
         },
         "DistanceUnits": {
-          "description": "The recorded units",
+          "description": "The units in which measurements are recorded.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -139,7 +139,7 @@
           "maxLength": 2048
         },
         "Resolutions": {
-          "description": "This element describes the minimum distance possible between two adjacent values, expressed in distance units of measure for collection.",
+          "description": "The minimum distance possible between two adjacent values, expressed in distance units of measure for the collection.",
           "type": "array",
           "items": {
             "type": "number"
@@ -203,7 +203,7 @@
           "type": "number"
         },
         "DenominatorOfFlatteningRatio": {
-          "description": "The ratios of the Earth's major axis to the difference between the major and the minor.",
+          "description": "The ratio of the Earth's major axis to the difference between the major and the minor.",
           "type": "number"
         }
       }
@@ -213,17 +213,17 @@
       "additionalProperties": false,
       "properties": {
         "GeographicCoordinateUnits": {
-          "description": "Units of measure used for the geodetic latitude and longitude resolution values. For lat, a 2 digit decimal number from 0-90; for lon, a 3 digit decimal number from 0-180. + or absence of - for values north of equator or values west of prime meridian; - for all others.",
+          "description": "Units of measure used for the geodetic latitude and longitude resolution values (e.g., decimal degrees).",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "LatitudeResolution": {
-          "description": "The minimum difference between two adjacent latitude values expressed in Geographic Coordinate Units of measure.",
+          "description": "The minimum difference between two adjacent latitude values in the Geographic Coordinate System,  expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal number, e.g., 0.01",
           "type": "number"
         },
         "LongitudeResolution": {
-          "description": "The minimum difference between two adjacent longitude values expressed in Geographic Coordinate Units of measure.",
+          "description": "The minimum difference between two adjacent longitude values in the Geographic Coordinate System, expressed in Geographic Coordinate Units of measure, expressed as a two-digit decimal number, e.g., 0.01",
           "type": "number"
         }
       }
@@ -233,13 +233,13 @@
       "additionalProperties": false,
       "properties": {
         "GeoReferenceInformation": {
-          "description": "A description of the information provided to register the local system to the Earth (e.g. control points, satellite ephemeral data, and inertial navigation data).",
+          "description": "The information provided to register the local system to the Earth (e.g. control points, satellite ephemeral data, and inertial navigation data).",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
         },
         "Description": {
-          "description": "This class contains a description of the coordinate system and geo-reference information.",
+          "description": "A description of the Local Coordinate System and geo-reference information.",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
@@ -247,7 +247,7 @@
       }
     },
     "CollectionDataTypeEnum": {
-      "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
+      "description": "This element is used to identify the collection as a Science Quality Collection or as a non-science-quality collection such as a Near Real Time collection. If a collection does not contain this field, it will be assumed to be of science-quality.",
       "type": "string",
       "enum": ["SCIENCE_QUALITY", "NEAR_REAL_TIME", "OTHER"]
     }
@@ -261,7 +261,7 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
     "MetadataLineages": {
-      "description": "Lineage is historical data and includes how data was processed.",
+      "description": "Historical data including how data was processed.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/LineageType"
@@ -269,7 +269,7 @@
       "minItems": 0
     },
     "MetadataDates": {
-      "description": "This includes any metadata related dates.",
+      "description": "Dates related to activities involving the metadata record itself.  For example, Future Review date is the date that the metadata record is scheduled to be reviewed.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
@@ -285,23 +285,23 @@
       "minItems": 0
     },
     "EntryTitle": {
-      "description": "The title of the service described by the metadata.",
+      "description": "The title of the collection or service described by the metadata.",
       "$ref": "umm-cmn-json-schema.json#/definitions/EntryTitleType"
     },
     "Abstract": {
-      "description": "Abstract provides a brief description of the data or service the metadata represents.",
+      "description": "A brief description of the collection or service the metadata represents.",
       "$ref": "umm-cmn-json-schema.json#/definitions/AbstractType"
     },
     "Purpose": {
-      "description": "This element contains suggested usage or purpose for the data or service.",
+      "description": "Suggested usage or purpose for the collection data or service.",
       "$ref": "umm-cmn-json-schema.json#/definitions/PurposeType"
     },
     "DataLanguage": {
-      "description": "Describes the language used in the preparation, storage, and description of the service It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata.",
+      "description": "Describes the language used in the preparation, storage, and description of the collection. It is the language of the collection data themselves.   It does not refer to the language used in the metadata record (although this may be the same language).",
       "$ref": "umm-cmn-json-schema.json#/definitions/LanguageType"
     },
     "DataDates": {
-      "description": "This includes any data related dates. create,delete, and update.",
+      "description": "Dates related to activities involving the collection data.  For example, Creation date is the date that the collection data first entered the data archive system.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
@@ -309,7 +309,7 @@
       "minItems": 1
     },
     "Organizations": {
-      "description": "This includes any organizations responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
+      "description": "Information about the organization(s) responsible for this collection and its metadata.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
@@ -317,7 +317,7 @@
       "minItems": 1
     },
     "Personnel": {
-      "description": "This includes any personnel responsible for this data and metadata through the party element. The role (distributing, archiving, providing, and/or maintaining the data) is placed in the role sub element. To support components or xlinks in the future the role was split from the party sub elements, that way the data in the party element can be resued and stored independently. This allows UMM to reuse the Responsiblilty element within other elements to document responsibility for a specific reason. It can reuse the same person or organization with different roles throughout the metadata.",
+      "description": "Information about the personnel responsible for this collection and its metadata.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResponsibilityType"
@@ -325,15 +325,15 @@
       "minItems": 1
     },
     "CollectionDataType": {
-      "description": "This element identifies non-science-quality products such as Near-Real-Time collections. If a collection does not contain this field, it will be assumed to be of science-quality.",
+      "description": "Identifies the collection as a Science Quality collection or a non-science-quality collection such as a Near-Real-Time collection.",
       "$ref": "#/definitions/CollectionDataTypeEnum"
     },
     "ProcessingLevel": {
-      "description": "This element contains the level identifier as described here: https://earthdata.nasa.gov/data/standards-and-references/processing-levels",
+      "description": "The identifier for the processing level of the collection (e.g., Level0, Level1A).",
       "$ref": "#/definitions/ProcessingLevelType"
     },
     "CollectionCitations": {
-      "description": "This element permits the user to properly cite the provider and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the service is listed here.",
+      "description": "Information required to properly cite the collection in professional scientific literature. This element provides information for constructing a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the landing page for the collection is listed here.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResourceCitationType"
@@ -348,19 +348,19 @@
       "pattern": "[\\w]{1,79}"
     },
     "Quality": {
-      "description": "This element permits the author to provide the following information about an item described in the metadata: 1) Quality of the item; and 2) Any quality assurance procedures followed in producing the item. Examples of appropriate element information include: A) succinct description; B) indicators of item quality or quality flags - both validated or invalidated; C) recognized or potential problems with quality; D) established quality control mechanisms; and E) established quantitative quality measurements.",
+      "description": "Free text description of the quality of the collection data.  Description may include: 1) succinct description of the quality of data in the collection; 2) Any quality assurance procedures followed in producing the data in the collection; 3) indicators of collection quality or quality flags - both validated or invalidated; 4) recognized or potential problems with quality; 5) established quality control mechanisms; and 6) established quantitative quality measurements.",
       "$ref": "umm-cmn-json-schema.json#/definitions/QualityType"
     },
     "UseConstraints": {
-      "description": "The Use Constraints element is designed to protect privacy and/or intellectual property by allowing the author to specify how the item may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness. Note: Use Constraints describe how the item may be used once access has been granted; and is distinct from Access Constraints, which refers to any constraints in accessing the item.",
+      "description": "Designed to protect privacy and/or intellectual property by allowing the author to specify how the collection may or may not be used after access is granted. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the item. Providers may request acknowledgement of the item from users and claim no responsibility for quality and completeness. Note: Use Constraints describe how the item may be used once access has been granted; and is distinct from Access Constraints, which refers to any constraints in accessing the item.",
       "$ref": "umm-cmn-json-schema.json#/definitions/UseConstraintsType"
     },
     "AccessConstraints": {
-      "description": "This element with the description field allows the author to provide information about any constraints for accessing the service. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the service. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",
+      "description": "Allows the author to constrain access to the collection. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining collection data. Some words that may be used in this element's value include: Public, In-house, Limited, None. The value field is used for special ACL rules (Access Control Lists (http://en.wikipedia.org/wiki/Access_control_list)). For example it can be used to hide metadata when it isn't ready for public consumption.",
       "$ref": "umm-cmn-json-schema.json#/definitions/AccessConstraintsType"
     },
     "Distributions": {
-      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined).",
+      "description": "Describes media options, size, data format, and fees involved in distributing the data from this collection.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/DistributionType"
@@ -368,7 +368,7 @@
       "minItems": 0
     },
     "PublicationReferences": {
-      "description": "This element describes key bibliographic citations pertaining to the data.",
+      "description": "Describes key bibliographic citations pertaining to the collection.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/PublicationReferenceType"
@@ -376,7 +376,7 @@
       "minItems": 0
     },
     "ISOTopicCategories": {
-      "description": "This element is used to identify the keywords from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List. It is a high-level thematic classification to assist in the grouping and search of available services.",
+      "description": "Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List that pertain to this collection, based on the Science Keywords associated with the collection. An ISO Topic Category is a high-level thematic classification to assist in the grouping of and search for available collections.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ISOTopicCategoryEnum"
@@ -384,7 +384,7 @@
       "minItems": 0
     },
     "ScienceKeywords": {
-      "description": "This element enables specification of Earth science keywords.",
+      "description": "Controlled Science Keywords describing the collection.  The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ScienceKeywordType"
@@ -392,7 +392,7 @@
       "minItems": 1
     },
     "AncillaryKeywords": {
-      "description": "This element allows authors to provide words or phrases to further describe the data.",
+      "description": "Allows authors to provide words or phrases outside of the controlled Science Keyword vocabulary, to further describe the collection.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
@@ -400,7 +400,7 @@
       "minItems": 0
     },
     "AdditionalAttributes": {
-      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined).",
+      "description": "The data’s distinctive attributes of the collection (i.e. attributes used to describe the unique characteristics of the collection which extend beyond those defined).",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/AdditionalAttributeType"
@@ -416,7 +416,7 @@
       "minItems": 1
     },
     "TemporalExtents": {
-      "description": "This class contains attributes, which describe the temporal range of a specific collection. This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date Time",
+      "description": "This class contains attributes which describe the temporal range of a specific collection. Temporal Extent includes a specification of the Temporal Range Type of the collection, which is one of Range Date Time, Single Date Time, or Periodic Date Time",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/TemporalExtentType"
@@ -428,7 +428,7 @@
       "$ref": "#/definitions/PaleoTemporalCoverageType"
     },
     "TemporalKeywords": {
-      "description": "This attribute specifies a word or phrase that describes the temporal resolution of the dataset.",
+      "description": "One or more words or phrases that describe the temporal resolution of the dataset.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
@@ -439,15 +439,15 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/SpatialExtentType"
     },
     "TilingIdentificationSystem": {
-      "description": "Defines a named two-dimensional tiling system for the collection.",
+      "description": "Name of the two-dimensional tiling system for the collection.  Previously called TwoDCoordinateSystem.",
       "$ref": "umm-cmn-json-schema.json#/definitions/TilingIdentificationSystemType"
     },
     "SpatialInformation": {
-      "description": "This class stores the reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
+      "description": "The reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
       "$ref": "#/definitions/SpatialInformationType"
     },
     "SpatialKeywords": {
-      "description": "This class specifies the name of a place on Earth, a location within the Earth, a vertical location, or a location outside of Earth.",
+      "description": "Controlled hierarchical keywords used to specify the spatial location of the collection.   The controlled vocabulary for spatial keywords is maintained in the Keyword Management System (KMS).  The Spatial Keyword hierarchy includes one or more of the following layers: Location_Category (e.g., Continent), Location_Type (e.g. Africa), Location_Subregion1 (e.g., Central Africa), Location_Subregion2 (e.g., Cameroon), and Location_Subregion3",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
@@ -455,7 +455,7 @@
       "minItems": 1
     },
     "Platforms": {
-      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "description": "Information about the relevant platform(s) used to acquire the data in the collection. Platform types are controlled in the Keyword Management System (KMS), and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/PlatformType"
@@ -463,7 +463,7 @@
       "minItems": 1
     },
     "Projects": {
-      "description": "The project element describes the name of the scientific program, field campaign, or project from which the data were collected. This element is intended for the non-space assets such as aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This element may also cover a long term project that continuously creates new data sets — like MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign sub-element to support multiple campaigns under the same project.",
+      "description": "The name of the scientific program, field campaign, or project from which the data were collected. This element is intended for the non-space assets such as aircraft, ground systems, balloons, sondes, ships, etc. associated with campaigns. This element may also cover a long term project that continuously creates new data sets — like MEaSUREs from ISCCP and NVAP or CMARES from MISR. Project also includes the Campaign sub-element to support multiple campaigns under the same project.",
       "type": "array",
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ProjectType"
@@ -483,7 +483,7 @@
       "$ref": "umm-cmn-json-schema.json#/definitions/ShortNameType"
     },
     "Version": {
-      "description": "The Version of the metadata record.",
+      "description": "The Version of the collection.",
       "$ref": "umm-cmn-json-schema.json#/definitions/VersionType"
     }
   },

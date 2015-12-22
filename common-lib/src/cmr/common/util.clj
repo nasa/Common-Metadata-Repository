@@ -544,3 +544,9 @@
           (dissoc m k)))
       m)
     (dissoc m k)))
+
+(defn seqv
+  "Returns (vec coll) when (seq coll) is not nil."
+  [coll]
+  (when (seq coll)
+    (vec coll)))

@@ -6,7 +6,6 @@
             [cmr.bootstrap.config :as cfg]
             [cmr.bootstrap.data.bulk-index :as bulk]
             [cmr.bootstrap.data.bulk-migration :as bm]
-            [cmr.bootstrap.data.db-synchronization :as dbs]
             [cmr.bootstrap.data.virtual-products :as vp]))
 
 (defn migrate-provider
@@ -66,18 +65,6 @@
     (let [channel (get-in context [:system :collection-index-channel])]
       (info "Adding collection" collection-id "to collection index channel")
       (go (>! channel [provider-id collection-id])))))
-
-(defn db-synchronize
-  "Synchronizes Catalog REST and Metadata DB looking for differences that were ingested between
-  start date and end date"
-  [context synchronous params]
-  (when-not (cfg/db-synchronization-enabled)
-    (errors/throw-service-error :bad-request "db-synchronization is disabled."))
-  (if synchronous
-    (dbs/synchronize-databases (:system context) params)
-    (let [channel (get-in context [:system :db-synchronize-channel])]
-      (info "Adding message to the database synchronize channel.")
-      (go (>! channel params)))))
 
 (defn bootstrap-virtual-products
   "Initializes virtual products."
