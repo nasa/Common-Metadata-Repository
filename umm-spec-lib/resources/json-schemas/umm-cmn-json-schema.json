@@ -17,7 +17,7 @@
           "$ref": "#/definitions/LineageScopeEnum"
         },
         "Dates": {
-          "description": "This encaptulates all of the changes for a specific date.",
+          "description": "This encapsulates all of the changes for a specific date.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/LineageDateType"
