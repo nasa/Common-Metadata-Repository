@@ -49,7 +49,7 @@
 (defn- generate-and-validate-xml
   "Returns a vector of errors (empty if none) from attempting to convert the given UMM record
   to valid XML in the given format."
-  [record metadata-format concept-type]
+  [concept-type metadata-format record]
   (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
     (core/validate-xml concept-type metadata-format metadata-xml)))
 
@@ -60,7 +60,7 @@
           dest-format collection-destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
-      (is (empty? (generate-and-validate-xml umm-c-record dest-format :collection))))))
+      (is (empty? (generate-and-validate-xml :collection dest-format umm-c-record))))))
 
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
@@ -91,13 +91,6 @@
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
 
-(defn- generate-and-validate-xml
-  "Generates collection XML for the given format based on the provided UMM record. Performs
-  schema validation against the generated XML and returns any validation errors."
-  [format record]
-  (core/validate-xml :collection format
-                     (core/generate-metadata :collection format record)))
-
 (def minimal-umm-c
   "UMM-C with the bare minimum number of fields. It does not include all required fields because
   there is existing data in the system which does not contain all of the required UMM-C fields. We
@@ -106,7 +99,7 @@
   (js/parse-umm-c {:ShortName "foo" :Version "bar"}))
 
 (deftest minimal-dif10
-  (is (empty? (generate-and-validate-xml :dif10 minimal-umm-c))))
+  (is (empty? (generate-and-validate-xml :collection :dif10 minimal-umm-c))))
 
 (comment
 
