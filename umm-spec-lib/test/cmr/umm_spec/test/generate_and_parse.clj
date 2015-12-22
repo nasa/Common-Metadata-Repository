@@ -50,7 +50,7 @@
   to valid XML in the given format."
   [record metadata-format concept-type]
   (let [metadata-xml (core/generate-metadata concept-type metadata-format record)]
-    (vec (core/validate-xml concept-type metadata-format metadata-xml))))
+    (core/validate-xml concept-type metadata-format metadata-xml)))
 
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] format-examples
@@ -59,7 +59,7 @@
           dest-format destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
-      (is (= [] (generate-and-validate-xml umm-c-record dest-format :collection))))))
+      (is (empty? (generate-and-validate-xml umm-c-record dest-format :collection))))))
 
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
