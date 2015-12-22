@@ -23,18 +23,18 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
-; TODO Add these one by one as the format-to-format conversions get fixed
-; (def format-examples
-;   "Map of format type to example file"
-;   {:dif "dif.xml"
-;    :dif10 "dif10.xml"
-;    :echo10 "echo10.xml"
-;    :iso19115 "iso19115.xml"
-;    :iso-smap "iso_smap.xml"})
+;; TODO add formats here as they are implemented.
+(def destination-formats
+  "Converting to these formats is tested in the roundrobin test."
+  [])
 
 (def format-examples
   "Map of format type to example file"
-  {})
+  {:dif "dif.xml"
+   :dif10 "dif10.xml"
+   :echo10 "echo10.xml"
+   :iso19115 "iso19115.xml"
+   :iso-smap "iso_smap.xml"})
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -54,12 +54,12 @@
 
 (deftest roundrobin-collection-example-record
   (doseq [[origin-format filename] format-examples
-          dest-format tested-formats
+          :let [metadata (slurp (io/resource (str "example_data/" filename)))
+                umm-c-record (core/parse-metadata :collection origin-format metadata)]
+          dest-format destination-formats
           :when (not= origin-format dest-format)]
     (testing (str origin-format " to " dest-format)
-      (let [metadata (slurp (io/resource (str "example_data/" filename)))
-            umm-c-record (core/parse-metadata :collection origin-format metadata)]
-        (is (= [] (generate-and-validate-xml umm-c-record dest-format :collection)))))))
+      (is (= [] (generate-and-validate-xml umm-c-record dest-format :collection))))))
 
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
@@ -89,11 +89,6 @@
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
              (parse-iso19115-projects-keywords metadata-xml))))))
-
-(defspec umm-c-to-xml 100
-  (for-all [umm-record (gen/no-shrink umm-gen/umm-c-generator)
-            metadata-format (gen/elements tested-formats)]
-    (empty? (generate-and-validate-xml umm-record metadata-format :collection))))
 
 (comment
 
