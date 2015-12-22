@@ -63,6 +63,8 @@
              (parse-iso19115-projects-keywords metadata-xml))))))
 
 (defn- generate-and-validate-xml
+  "Generates collection XML for the given format based on the provided UMM record. Performs
+  schema validation against the generated XML and returns any validation errors."
   [format record]
   (core/validate-xml :collection format
                      (core/generate-metadata :collection format record)))
