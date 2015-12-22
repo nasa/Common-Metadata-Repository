@@ -504,7 +504,7 @@
        :iso-smap ["Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
-  (let [json (umm-spec/generate-metadata :collection :umm-json exc/example-record)
+  (let [json (umm-spec/generate-metadata :collection :umm-json exc/example-collection-record)
         coll-map {:provider-id "PROV1"
                   :native-id "umm_json_coll_V1"
                   :revision-id "1"
@@ -529,7 +529,7 @@
 
   (testing "ingesting UMM JSON with parsing errors"
     (let [json (umm-spec/generate-metadata :collection :umm-json
-                                           (assoc exc/example-record
+                                           (assoc exc/example-collection-record
                                                   :DataDates
                                                   [{:Date "invalid date"
                                                     :Type "CREATE"}]))

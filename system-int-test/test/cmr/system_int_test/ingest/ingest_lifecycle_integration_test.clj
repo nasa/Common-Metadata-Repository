@@ -104,16 +104,16 @@
 
 (comment
   ;; for REPL testing purposes
-  (def example-record expected-conversion/example-record)
-  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-record)
+  (def example-collection-record expected-conversion/example-collection-record)
+  (cmr.umm.core/parse-concept {:metadata (cmr.umm-spec.core/generate-metadata :collection :echo10 example-collection-record)
                                :concept-type :collection
                                :format "application/echo10+xml"})
   )
 
 (deftest mmt-ingest-round-trip
     (testing "ingest and search UMM JSON metadata"
-      (let [example-record expected-conversion/example-record
-            umm-json (umm-spec/generate-metadata :collection :umm-json example-record)
+      (let [example-collection-record expected-conversion/example-collection-record
+            umm-json (umm-spec/generate-metadata :collection :umm-json example-collection-record)
             coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                                   :concept-type :collection
                                                   :format-key :umm-json
@@ -129,7 +129,7 @@
            [] {:entry_title "foo"}
 
            "entry-id matches"
-           [coll] {:entry_id (eid/entry-id (:ShortName example-record) (:Version example-record))}
+           [coll] {:entry_id (eid/entry-id (:ShortName example-collection-record) (:Version example-collection-record))}
            "entry-id not matches"
            [] {:entry_id "foo"}
 

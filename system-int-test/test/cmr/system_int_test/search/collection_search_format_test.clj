@@ -45,7 +45,7 @@
                                       :entry-title "ET1"})))
 
   (def c10-umm-json (d/ingest "PROV1"
-                              cmr.umm-spec.test.expected-conversion/example-record
+                              cmr.umm-spec.test.expected-conversion/example-collection-record
                               {:format :umm-json
                                :accept-format :json})))
 
@@ -92,7 +92,7 @@
                            {:format :dif10})
 
         c10-umm-json (d/ingest "PROV1"
-                               cmr.umm-spec.test.expected-conversion/example-record
+                               cmr.umm-spec.test.expected-conversion/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
 
