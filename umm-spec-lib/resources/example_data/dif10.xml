@@ -88,20 +88,26 @@
       <URL>http://www.foo.com</URL>
     </Related_URL>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-237</Entry_Id>
-      <Version>1</Version>
+      <Entry_ID>
+        <Short_Name>COLLOTHER-237</Short_Name>
+        <Version>1</Version>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-238</Entry_Id>
-      <Version>1</Version>
+      <Entry_ID>
+        <Short_Name>COLLOTHER-238</Short_Name>
+        <Version>1</Version>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
     <Metadata_Association>
-      <Entry_Id>COLLOTHER-239</Entry_Id>
-      <Version>1</Version>
+      <Entry_ID>
+        <Short_Name>COLLOTHER-239</Short_Name>
+        <Version>1</Version>
+      </Entry_ID>
       <Type>Input</Type>
       <Description>Extra data</Description>
     </Metadata_Association>
