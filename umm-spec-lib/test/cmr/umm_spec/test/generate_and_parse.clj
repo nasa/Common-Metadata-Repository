@@ -36,7 +36,7 @@
 (deftest roundtrip-example-record
   (doseq [metadata-format tested-formats]
     (testing (str metadata-format)
-       (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
+      (is (= (expected-conversion/convert expected-conversion/example-record metadata-format)
              (xml-round-trip expected-conversion/example-record metadata-format))))))
 
 (defspec roundtrip-generated-records 100
@@ -95,8 +95,8 @@
   (def metadata-format :iso-smap)
 
   (def sample-record (first (gen/sample (gen/such-that
-                                         #(not-any? :Instruments (:Platforms %))
-                                         umm-gen/umm-c-generator) 1)))
+                                          #(not-any? :Instruments (:Platforms %))
+                                          umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
 

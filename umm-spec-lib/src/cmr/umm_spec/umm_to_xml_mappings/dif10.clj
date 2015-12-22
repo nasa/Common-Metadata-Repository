@@ -146,6 +146,24 @@
     [:Data_Future_Review (date/data-review-date c)]
     [:Data_Delete (date/data-delete-date c)]))
 
+(defn- generate-related-urls
+  "Returns DIF10 Related_URLs for the provided UMM-C collection record."
+  [c]
+  (if-let [urls (:RelatedUrls c)]
+    (for [related-url urls]
+      [:Related_URL
+       (when-let [[type subtype] (:Relation related-url)]
+         [:URL_Content_Type
+          [:Type type]
+          [:Subtype subtype]])
+       ;; Adding a dummy URL if none exists since it is required
+       (for [url (get related-url :URLs ["http://example.com"])]
+         [:URL url])
+       [:Description (:Description related-url)]])
+    ;; Default Related URL to add if none exist
+    [:Related_URL
+     [:URL "http://example.com"]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -265,22 +283,7 @@
       ;; work fine.
       [:Abstract (u/with-default (:Abstract c))]
       [:Purpose (:Purpose c)]]
-
-     (if-let [urls (:RelatedUrls c)]
-       (for [related-url urls]
-         [:Related_URL
-          (when-let [[type subtype] (:Relation related-url)]
-            [:URL_Content_Type
-             [:Type type]
-             [:Subtype subtype]])
-          ;; Adding a dummy URL if none exists since it is required
-          (for [url (get related-url :URLs ["http://example.com"])]
-            [:URL url])
-          [:Description (:Description related-url)]])
-       ;; Default Related URL to add if none exist
-       [:Related_URL
-        [:URL "http://example.com"]])
-
+     (generate-related-urls c)
      (for [ma (:MetadataAssociations c)
            :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
        [:Metadata_Association
@@ -302,5 +305,4 @@
        [:Extended_Metadata
         [:Metadata
          [:Name "Restriction"]
-         [:Value access-value]]])])
-  )
+         [:Value access-value]]])]))
