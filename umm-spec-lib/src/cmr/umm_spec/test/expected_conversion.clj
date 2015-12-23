@@ -280,7 +280,7 @@
                                      {:Name "Metadata_Version"
                                       :Description "Root SERF Metadata_Version Object"
                                       :Value "VERSION 9.7.1"}
-                                     {:Name "IDN_Node_Short_Name"
+                                     {:Name "IDN_Node"
                                       :Description "Root SERF IDN_Node Object"
                                       :Value "USA/NASA"}]
               :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"                               

@@ -214,7 +214,7 @@
            {:Name "Metadata_Version"
             :Description "Root SERF Metadata_Version Object"
             :Value (value-of doc "/SERF/Metadata_Version")}
-           {:Name "IDN_Node_Short_Name"
+           {:Name "IDN_Node"
             :Description "Root SERF IDN_Node Object"
             :Value (value-of doc "/SERF/IDN_Node")}]))
 

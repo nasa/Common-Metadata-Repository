@@ -167,7 +167,7 @@
 
 (def inserted-metadata
   "Inserted Metadata by CMR to account for missing fields"
-  #{"Metadata_Name" "Metadata_Version" "IDN_Node_Short_Name"})
+  #{"Metadata_Name" "Metadata_Version" "IDN_Node"})
 
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
@@ -207,7 +207,7 @@
        [:Parent_SERF (:EntryId ma)])
      [:IDN_Node 
       [:Short_Name  
-       (:Value (first (filter #(= "IDN_Node_Short_Name" (:Name %)) (:AdditionalAttributes s))))]]
+       (:Value (first (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))))]]
      [:Metadata_Name 
       (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s))))]
      [:Metadata_Version 
