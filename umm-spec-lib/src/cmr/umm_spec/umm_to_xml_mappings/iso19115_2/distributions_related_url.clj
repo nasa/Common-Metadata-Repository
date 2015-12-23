@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.url :as url]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su]))
@@ -17,7 +18,7 @@
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
-  (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type])))
+  (some #{"GET RELATED VISUALIZATION"} (:Relation related-url)))
 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
@@ -32,28 +33,28 @@
 (defn generate-browse-urls
   "Returns content generator instructions for a browse url"
   [c]
-  (for [{:keys [URLs Description] {:keys [Type]} :ContentType} (browse-urls (:RelatedUrls c))
+  (for [{:keys [URLs Description] [rel] :Relation} (browse-urls (:RelatedUrls c))
         url URLs]
     [:gmd:graphicOverview
      [:gmd:MD_BrowseGraphic
       [:gmd:fileName
        [:gmx:FileName {:src url}]]
       [:gmd:fileDescription (char-string Description)]
-      [:gmd:fileType (char-string (type->name Type))]]]))
+      [:gmd:fileType (char-string (type->name rel))]]]))
 
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
-  (let [{:keys [URLs Protocol Description] {:keys [Type]} :ContentType} online-resource-url
-        name (type->name Type)
-        code (if (= "GET DATA" Type) "download" "information")]
+  (let [{:keys [URLs Description] [rel] :Relation} online-resource-url
+        name (type->name rel)
+        code (if (= "GET DATA" rel) "download" "information")]
     (for [url URLs]
       [:gmd:onLine
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL url]]
         [:gmd:protocol
-         (char-string Protocol)]
+         (char-string (url/protocol url))]
         [:gmd:name
          (char-string name)]
         (if Description

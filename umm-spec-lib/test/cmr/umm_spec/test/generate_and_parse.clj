@@ -117,8 +117,8 @@
   (def metadata-format :iso-smap)
 
   (def sample-record (first (gen/sample (gen/such-that
-                                         #(not-any? :Instruments (:Platforms %))
-                                         umm-gen/umm-c-generator) 1)))
+                                          #(not-any? :Instruments (:Platforms %))
+                                          umm-gen/umm-c-generator) 1)))
 
   (def sample-record user/failing-value)
 
