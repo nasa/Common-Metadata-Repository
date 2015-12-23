@@ -81,7 +81,7 @@
 (def ^:private data-size-re
   "Regular expression used to parse file sizes from a string. Supports extracting a single value
   with units as well as a range with units."
-  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((k|kb|ko|kilo|mb|mega|mbyte|mo|g|gb|go|giga|tb|tera|p|pb|peta)?(byte)?s?)\b")
+  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((k|kb|ko|kilo|mb|mega|mbyte|mo|gbyte|gb|go|giga|tbyte|tb|tera|p|pb|peta)?(byte)?s?)\b")
 
 (defn parse-data-sizes
   "Parses the data size and units from the provided string. Returns a sequence of maps with the Size
@@ -90,7 +90,7 @@
   (seq
    (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                   (-> s str .toLowerCase))
-         :when (and num-str unit-str)]
+         :when (and num-str unit-str (not (str/blank? unit-str)))]
      {:Size (Double. (.replace num-str "," ""))
       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
 
