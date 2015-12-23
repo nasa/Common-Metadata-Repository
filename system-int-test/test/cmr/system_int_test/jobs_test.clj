@@ -52,14 +52,9 @@
 (deftest general-jobs-test
   (let [token (transmit-config/echo-system-token)]
     (assert-successful-jobs-control (url/mdb-jobs-url) token)
-    (assert-successful-jobs-control (url/ingest-jobs-url) token)
-    ;; Bootstrap application is only started when using the real database
-    (s/only-with-real-database
-      (assert-successful-jobs-control (url/bootstrap-jobs-url) token))))
+    (assert-successful-jobs-control (url/ingest-jobs-url) token)))
 
 (deftest jobs-permissions-test
   (let [token "NO_PERMISSIONS_TOKEN"]
     (assert-invalid-permissions (url/mdb-jobs-url) token)
-    (assert-invalid-permissions (url/ingest-jobs-url) token)
-    (s/only-with-real-database
-      (assert-invalid-permissions (url/bootstrap-jobs-url) token))))
+    (assert-invalid-permissions (url/ingest-jobs-url) token)))

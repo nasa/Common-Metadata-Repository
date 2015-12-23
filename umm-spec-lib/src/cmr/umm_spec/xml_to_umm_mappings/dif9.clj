@@ -127,8 +127,8 @@
                       :let [description (value-of related-url "Description")]]
                   {:URLs (values-at related-url "URL")
                    :Description description
-                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})
+                   :Relation [(value-of related-url "URL_Content_Type/Type")
+                              (value-of related-url "URL_Content_Type/Subtype")]})
    :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                            {:EntryId parent-dif})})
 

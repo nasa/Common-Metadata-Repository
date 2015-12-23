@@ -9,7 +9,7 @@
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
-  #{"Not provided"
+  #{u/not-provided
     "Aircraft"
     "Balloons/Rockets"
     "Earth Observation Satellites"
@@ -24,7 +24,7 @@
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
-  #{"Not provided"
+  #{u/not-provided
     "Level 0"
     "Level 1"
     "Level 1A"
@@ -146,6 +146,24 @@
     [:Data_Future_Review (date/data-review-date c)]
     [:Data_Delete (date/data-delete-date c)]))
 
+(defn- generate-related-urls
+  "Returns DIF10 Related_URLs for the provided UMM-C collection record."
+  [c]
+  (if-let [urls (:RelatedUrls c)]
+    (for [related-url urls]
+      [:Related_URL
+       (when-let [[type subtype] (:Relation related-url)]
+         [:URL_Content_Type
+          [:Type type]
+          [:Subtype subtype]])
+       ;; Adding a dummy URL if none exists since it is required
+       (for [url (get related-url :URLs ["http://example.com"])]
+         [:URL url])
+       [:Description (:Description related-url)]])
+    ;; Default Related URL to add if none exist
+    [:Related_URL
+     [:URL "http://example.com"]]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -155,38 +173,61 @@
      [:Entry_ID
       [:Short_Name (:ShortName c)]
       [:Version (u/with-default (:Version c))]]
-     [:Entry_Title (:EntryTitle c)]
-     (for [sk (:ScienceKeywords c)]
+     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
+
+     (if-let [sks (:ScienceKeywords c)]
+       ;; From UMM keywords
+       (for [sk sks]
+         [:Science_Keywords
+          [:Category (:Category sk)]
+          [:Topic (:Topic sk)]
+          [:Term (:Term sk)]
+          [:Variable_Level_1 (:VariableLevel1 sk)]
+          [:Variable_Level_2 (:VariableLevel2 sk)]
+          [:Variable_Level_3 (:VariableLevel3 sk)]
+          [:Detailed_Variable (:DetailedVariable sk)]])
+       ;; Default element
        [:Science_Keywords
-        [:Category (:Category sk)]
-        [:Topic (:Topic sk)]
-        [:Term (:Term sk)]
-        [:Variable_Level_1 (:VariableLevel1 sk)]
-        [:Variable_Level_2 (:VariableLevel2 sk)]
-        [:Variable_Level_3 (:VariableLevel3 sk)]
-        [:Detailed_Variable (:DetailedVariable sk)]])
+        [:Category u/not-provided]
+        [:Topic u/not-provided]
+        [:Term u/not-provided]])
+
      (for [topic-category (:ISOTopicCategories c)]
        [:ISO_Topic_Category topic-category])
+
      (for [ak (:AncillaryKeywords c)]
        [:Ancillary_Keyword ak])
 
-     (for [platform (:Platforms c)]
+     (if-let [platforms (:Platforms c)]
+       (for [platform platforms]
+         [:Platform
+          [:Type (get platform-types (:Type platform) u/not-provided)]
+          [:Short_Name (:ShortName platform)]
+          [:Long_Name (:LongName platform)]
+          (characteristics-for platform)
+          (generate-instruments (:Instruments platform))])
+       ;; Default Platform element
        [:Platform
-        [:Type (get platform-types (:Type platform) u/not-provided)]
-        [:Short_Name (:ShortName platform)]
-        [:Long_Name (:LongName platform)]
-        (characteristics-for platform)
-        (generate-instruments (:Instruments platform))])
+        [:Type u/not-provided]
+        [:Short_Name u/not-provided]
+        [:Long_Name u/not-provided]
+        [:Instrument [:Short_Name u/not-provided]]])
 
      ;; DIF10 has TemporalKeywords bundled together with TemporalExtents in the Temporal_Coverage
      ;; element. There is no clear definition on which TemporalExtent the TemporalKeywords should
      ;; be associated with. This is something DIF10 team will look into at improving, but in the
      ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
-     (when-let [extent (-> c :TemporalExtents first)]
+     (if-let [extent (-> c :TemporalExtents first)]
        (conj (temporal-coverage-without-temporal-keywords extent)
              [:Temporal_Info
               (for [tkw (:TemporalKeywords c)]
-                [:Ancillary_Temporal_Keyword tkw])]))
+                [:Ancillary_Temporal_Keyword tkw])])
+
+       ;; default Temporal_Coverage element
+       [:Temporal_Coverage
+        [:Range_DateTime
+         [:Beginning_Date_Time u/not-provided]
+         [:Ending_Date_Time u/not-provided]]])
 
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
 
@@ -238,18 +279,11 @@
               [:Online_Resource (get-in pub-ref [:RelatedUrl :URLs 0])]
               :Other_Reference_Details])])
      [:Summary
-      [:Abstract (:Abstract c)]
+      ;; DIF 10 requires a Summary element but none of the contents are required, so either one will
+      ;; work fine.
+      [:Abstract (u/with-default (:Abstract c))]
       [:Purpose (:Purpose c)]]
-     (for [related-url (:RelatedUrls c)]
-       [:Related_URL
-        (when-let [ct (:ContentType related-url)]
-          [:URL_Content_Type
-           [:Type (:Type ct)]
-           [:Subtype (:Subtype ct)]])
-        [:Protocol (:Protocol related-url)]
-        (for [url (get related-url :URLs ["http://www.foo.com"])]
-          [:URL url])
-        [:Description (:Description related-url)]])
+     (generate-related-urls c)
      (for [ma (:MetadataAssociations c)
            :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
        [:Metadata_Association

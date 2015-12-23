@@ -17,7 +17,7 @@
           "$ref": "#/definitions/LineageScopeEnum"
         },
         "Dates": {
-          "description": "This encaptulates all of the changes for a specific date.",
+          "description": "This encapsulates all of the changes for a specific date.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/LineageDateType"
@@ -261,22 +261,28 @@
     "RelatedUrlType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Field specifies links to Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
       "properties": {
+        "Title": {
+          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
+          "$ref": "#/definitions/TitleType"
+        },
         "Description": {
           "description": "Provides information about the resource defined by the URL",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
         },
-        "ContentType": {
-          "$ref": "#/definitions/ContentTypeType"
-        },
-        "Protocol": {
-          "description": "The protocol to the resource associated with the URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20
+        "Relation": {
+          "description": "An array of keywords describing the relation of the online resource to this resource.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
         },
         "URLs": {
           "description": "The URL to the resource associated with the data set.",
@@ -289,21 +295,11 @@
           },
           "minItems": 1
         },
-        "Title": {
-          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
-          "$ref": "#/definitions/TitleType"
-        },
         "MimeType": {
           "description": "The mime type of the online resource.",
           "type": "string",
           "minLength": 1,
           "maxLength": 50
-        },
-        "Caption": {
-          "description": "The caption of the online resource.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
         },
         "FileSize": {
           "description": "The size of a download or site.",
@@ -311,26 +307,6 @@
         }
       },
       "required": ["URLs"]
-    },
-    "ContentTypeType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes the type of the URL.",
-      "properties": {
-        "Type": {
-          "description": "The type of URL. These are keywords that a user selects",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        },
-        "Subtype": {
-          "description": "Describes the sub type of the URL. These are keywords that a user selects",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["Type"]
     },
     "FileSizeType": {
       "description": "Represents a data file size.",

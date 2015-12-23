@@ -17,49 +17,16 @@
             [cmr.ingest.services.providers-cache :as pc])
   (:import clojure.lang.ExceptionInfo))
 
-(def ECHO_CLIENT_ID "ECHO")
-(def VIRTUAL_PRODUCT_CLIENT_ID "Virtual-Product-Service")
 (def VALIDATE_KEYWORDS_HEADER "cmr-validate-keywords")
 
-
-(defn- verify-provider-cmr-only-against-client-id
-  "Verifies provider CMR-ONLY flag matches the client-id in the request.
-  Throws bad request error if the client-id is Echo when the provider is CMR-ONLY
-  or the client id is not Echo when the provider is not CMR-ONLY."
-  [provider-id cmr-only client-id]
-  (when (nil? cmr-only)
-    (srvc-errors/internal-error!
-      (format "CMR Only should not be nil, but is for Provider %s." provider-id)))
-  (when (or (and cmr-only (= ECHO_CLIENT_ID client-id))
-            (and (not cmr-only) (not= ECHO_CLIENT_ID client-id)))
-    (let [msg (if cmr-only
-                (format
-                  (str "Provider %s was configured as CMR Only which only allows ingest directly "
-                       "through the CMR. It appears from the client id that it was sent from ECHO.")
-                  provider-id)
-                (format
-                  (str "Provider %s was configured as false for CMR Only which only allows "
-                       "ingest indirectly through ECHO. It appears from the client id [%s] "
-                       "that ingest was not sent from ECHO.")
-                  provider-id client-id))]
-      (srvc-errors/throw-service-error :invalid-data msg))))
-
-(defn verify-provider-against-client-id
-  "Verifies the given provider's CMR-ONLY flag matches the client-id in the request."
+(defn verify-provider-exists
+  "Verifies the given provider exists."
   [context provider-id]
-  (if-let [provider (->> (pc/get-providers-from-cache context)
-                         (some #(when (= provider-id (:provider-id %)) %)))]
-    (let [client-id (:client-id context)]
-      ;; We don't check the cmr-only flag if the ingest request is coming from a virtual product
-      ;; service. The occurrence of this ingest event implies that source granule is successfully
-      ;; ingested which in turn implies that the verification succeeded with the provider and
-      ;; the client-id used for ingesting source granule and we don't need to verify again for
-      ;; virtual granule which belongs to the same provider as source granule.
-      (when (not (= VIRTUAL_PRODUCT_CLIENT_ID client-id))
-        (verify-provider-cmr-only-against-client-id
-          provider-id (:cmr-only provider) client-id)))
-    (srvc-errors/throw-service-error
-      :invalid-data (format "Provider with provider-id [%s] does not exist." provider-id))))
+  (let [provider (->> (pc/get-providers-from-cache context)
+                      (some #(when (= provider-id (:provider-id %)) %)))]
+    (when-not provider
+      (srvc-errors/throw-service-error
+        :invalid-data (format "Provider with provider-id [%s] does not exist." provider-id)))))
 
 (def valid-response-mime-types
   "Supported ingest response formats"
@@ -223,7 +190,7 @@
   (let [{:keys [body content-type params headers request-context]} request
         concept (body->concept :collection provider-id native-id body content-type headers)
         validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
-    (verify-provider-against-client-id request-context provider-id)
+    (verify-provider-exists request-context provider-id)
     (info (format "Validating Collection %s from client %s"
                   (concept->loggable-string concept) (:client-id request-context)))
     (ingest/validate-and-prepare-collection request-context concept validate-keywords)
@@ -232,7 +199,7 @@
 (defn ingest-collection
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request]
-    (verify-provider-against-client-id request-context provider-id)
+    (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [concept (body->concept :collection provider-id native-id body content-type headers)
           validate-keywords (= "true" (get headers VALIDATE_KEYWORDS_HEADER))]
@@ -251,7 +218,7 @@
                              :concept-type :collection}
                             (set-revision-id headers)
                             (set-user-id request-context headers))]
-    (verify-provider-against-client-id request-context provider-id)
+    (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (info (format "Deleting collection %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))
@@ -270,7 +237,7 @@
 
 (defmethod validate-granule :default
   [provider-id native-id {:keys [body content-type headers request-context]}]
-  (verify-provider-against-client-id request-context provider-id)
+  (verify-provider-exists request-context provider-id)
   (let [concept (body->concept :granule provider-id native-id body content-type headers)]
     (info (format "Validating granule %s from client %s"
                   (concept->loggable-string concept) (:client-id request-context)))
@@ -297,7 +264,7 @@
 
 (defmethod validate-granule :multipart-params
   [provider-id native-id {:keys [multipart-params request-context]}]
-  (verify-provider-against-client-id request-context provider-id)
+  (verify-provider-exists request-context provider-id)
   (validate-multipart-params #{"granule" "collection"} multipart-params)
 
   (let [coll-concept (multipart-param->concept
@@ -310,7 +277,7 @@
 (defn ingest-granule
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request]
-    (verify-provider-against-client-id request-context provider-id)
+    (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (let [concept (body->concept :granule provider-id native-id body content-type headers)]
       (info (format "Ingesting granule %s from client %s"
@@ -325,7 +292,7 @@
                            :native-id native-id
                            :concept-type :granule}
                           headers)]
-    (verify-provider-against-client-id request-context provider-id)
+    (verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (info (format "Deleting granule %s from client %s"
                   (pr-str concept-attribs) (:client-id request-context)))

@@ -120,18 +120,15 @@
      :TemporalKeywords ["temporal keyword 1" "temporal keyword 2"]
      :AncillaryKeywords ["ancillary keyword 1" "ancillary keyword 2"]
      :RelatedUrls [{:Description "Related url description"
-                    :ContentType {:Type "GET DATA" :Subtype "sub type"}
-                    :Protocol "protocol"
+                    :Relation ["GET DATA" "sub type"]
                     :URLs ["www.foo.com", "www.shoo.com"]
                     :Title "related url title"
-                    :MimeType "mime type"
-                    :Caption "caption"}
+                    :MimeType "mime type"}
                    {:Description "Related url 3 description "
-                    :ContentType {:Type "Some type" :Subtype "sub type"}
+                    :Relation ["Some type" "sub type"]
                     :URLs ["www.foo.com"]}
                    {:Description "Related url 2 description"
-                    :Protocol "ftp"
-                    :ContentType {:Type "GET RELATED VISUALIZATION" :Subtype "sub type"}
+                    :Relation ["GET RELATED VISUALIZATION"]
                     :URLs ["www.foo.com"]
                     :FileSize {:Size 10.0 :Unit "MB"}}]
      :MetadataAssociations [{:Type "SCIENCE ASSOCIATED"
@@ -170,7 +167,7 @@
                      {:Role "POINTOFCONTACT"
                       :Party {:Person {:LastName "person 1"}
                               :RelatedUrls [{:Description "Organization related url description"
-                                             :ContentType {:Type "Some type" :Subtype "sub type"}
+                                             :Relation ["Some type" "sub type"]
                                              :URLs ["www.foo.com"]}]}}
                      {:Role "DISTRIBUTOR"
                       :Party {:OrganizationName {:ShortName "org 2"}
@@ -288,23 +285,21 @@
 (defn- expected-echo10-related-urls
   [related-urls]
   (seq (for [related-url related-urls
-             :let [type (get-in related-url [:ContentType :Type])]
+             :let [[rel] (:Relation related-url)]
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Protocol nil :Title nil :Caption nil :URLs [url])
+             (assoc :Title nil :URLs [url])
              (update-in [:FileSize] (fn [file-size]
                                       (when (and file-size
-                                                 (= type "GET RELATED VISUALIZATION"))
+                                                 (= rel "GET RELATED VISUALIZATION"))
                                         (when-let [byte-size (echo10-ru-gen/convert-to-bytes
                                                                (:Size file-size) (:Unit file-size))]
                                           (assoc file-size :Size (float (int byte-size)) :Unit "Bytes")))))
-             (assoc-in [:ContentType :Subtype] nil)
-             (update-in [:ContentType]
-                        (fn [content-type]
-                          (when (#{"GET DATA"
-                                   "GET RELATED VISUALIZATION"
-                                   "VIEW RELATED INFORMATION"} type)
-                            content-type)))))))
+             (update-in [:Relation] (fn [[rel]]
+                                      (when (#{"GET DATA"
+                                               "GET RELATED VISUALIZATION"
+                                               "VIEW RELATED INFORMATION"} rel)
+                                        [rel])))))))
 
 (defmethod convert-internal :echo10
   [umm-coll _]
@@ -356,17 +351,15 @@
                    (when related-url (assoc related-url
                                             :URLs (seq (remove nil? [(first (:URLs related-url))]))
                                             :Description nil
-                                            :ContentType nil
-                                            :Protocol nil
+                                            :Relation nil
                                             :Title nil
                                             :MimeType nil
-                                            :Caption nil
                                             :FileSize nil))))))
 
 (defn- expected-dif-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Protocol nil :Title nil :Caption nil :FileSize nil :MimeType nil))))
+         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
 
 (defn- expected-dif-instruments
   "Returns the expected DIF instruments for the given instruments"
@@ -470,7 +463,7 @@
 (defn- expected-dif10-related-urls
   [related-urls]
   (seq (for [related-url related-urls]
-         (assoc related-url :Title nil :Caption nil :FileSize nil :MimeType nil))))
+         (assoc related-url :Title nil :FileSize nil :MimeType nil))))
 
 (defmethod convert-internal :dif10
   [umm-coll _]
@@ -489,6 +482,8 @@
       (update-in [:PublicationReferences] prune-empty-maps)
       (update-in-each [:PublicationReferences] dif-publication-reference)
       (update-in [:RelatedUrls] expected-dif10-related-urls)
+      ;; DIF 10 required element
+      (update-in [:Abstract] #(or % su/not-provided))
       ;; The following fields are not supported yet
       (assoc :Organizations nil
              :Personnel nil)))
@@ -562,27 +557,18 @@
            su/remove-empty-records
            vec))
 
-(defn- update-iso-19115-2-related-url-protocol
-  "Returns the related url with protocol field updated. Browse urls do not have Protocol field."
-  [related-url]
-  (if (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type]))
-    (assoc related-url :Protocol nil)
-    related-url))
-
 (defn- expected-iso-19115-2-related-urls
   [related-urls]
   (seq (for [related-url related-urls
              url (:URLs related-url)]
          (-> related-url
-             (assoc :Title nil :MimeType nil :Caption nil :FileSize nil :URLs [url])
-             (assoc-in [:ContentType :Subtype] nil)
-             (update-in [:ContentType]
-                        (fn [content-type]
+             (assoc :Title nil :MimeType nil :FileSize nil :URLs [url])
+             (update-in [:Relation]
+                        (fn [[rel]]
                           (when (#{"GET DATA"
                                    "GET RELATED VISUALIZATION"
-                                   "VIEW RELATED INFORMATION"} (:Type content-type))
-                            content-type)))
-             update-iso-19115-2-related-url-protocol))))
+                                   "VIEW RELATED INFORMATION"} rel)
+                            [rel])))))))
 
 (defn- fix-iso-vertical-spatial-domain-values
   [vsd]
@@ -635,17 +621,16 @@
       (update-in [:Party :RelatedUrls] (fn [x]
                                          (when-let [related-url (first x)]
                                            (-> related-url
-                                               (assoc :Protocol nil :Title nil
-                                                      :FileSize nil :ContentType nil
-                                                      :MimeType nil :Caption nil)
+                                               (assoc :Title nil
+                                                      :FileSize nil :Relation nil
+                                                      :MimeType nil)
                                                (update-in [:URLs] (fn [urls] [(first urls)]))
                                                vector))))))
 
 (defn- expected-responsibility
   [responsibility]
   (-> responsibility
-      (update-in [:Party :RelatedUrls] (fn [urls]
-                                         (seq (map #(assoc % :ContentType nil) urls))))
+      (update-in-each [:Party :RelatedUrls] assoc :Relation nil)
       update-with-expected-party))
 
 (defn- expected-responsibilities

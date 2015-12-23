@@ -235,16 +235,18 @@
                             (let [prop-type-definition (get-in type-definition [:properties k])
                                   item-type-def (:items prop-type-definition)]
                               (if (= "array" (:type prop-type-definition))
-                                (let [results (for [x v]
+                                (let [results (for [x v
+                                                    ;; skip nil inputs
+                                                    :when (some? x)]
                                                 (try
-                                                  {:value (coerce schema item-type-def x)}
+                                                  (let [coerced (coerce schema item-type-def x)]
+                                                    (when (some? coerced)
+                                                      {:value coerced}))
                                                   (catch Exception e
                                                     (let [msg (parse-error-msg item-type-def x)]
                                                       (log/warn e msg)
                                                       {:error msg}))))
-                                      results (filter #(or (some? (:value %))
-                                                           (:error % ))
-                                                      results)]
+                                      results (remove nil? results)]
                                   (cond-> m
                                     (seq results) (assoc k (mapv :value results))
                                     (some :error results) (assoc-in [:_errors k] (mapv :error results))))
