@@ -13,7 +13,7 @@
 (defn downloadable-url?
   "Returns true if the related-url is downloadable"
   [related-url]
-  (= "GET DATA" (get-in related-url [:ContentType :Type])))
+  (some #{"GET DATA"} (:Relation related-url)))
 
 (defn downloadable-urls
   "Returns the related-urls that are downloadable"
@@ -23,7 +23,7 @@
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
-  (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type])))
+  (some #{"GET RELATED VISUALIZATION"} (:Relation related-url)))
 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
@@ -61,13 +61,14 @@
     [:OnlineResources
      (for [related-url urls
            url (:URLs related-url)
-           :let [{:keys [Description MimeType ContentType]} related-url]]
+           :let [{:keys [Description MimeType]} related-url
+                 [rel] (:Relation related-url)]]
        [:OnlineResource
         [:URL url]
         [:Description Description]
         ;; There is not a well defined one to one mapping between related url type and resource type.
         ;; This default value of "UNKNOWN" is to get us by the xml schema validation.
-        [:Type (get related-url-types->resource-types (:Type ContentType) "UNKNOWN")]
+        [:Type (get related-url-types->resource-types rel "UNKNOWN")]
         [:MimeType MimeType]])]))
 
 (defn convert-to-bytes

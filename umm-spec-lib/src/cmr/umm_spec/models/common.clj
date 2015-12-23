@@ -144,8 +144,8 @@
    ;; The distribution media of the data or service.
    DistributionMedia
 
-   ;; The size of the distribution package of the data or service.
-   DistributionSize
+   ;; A list of file sizes indicating a single exact or approximate, or range of distribution sizes.
+   Sizes
 
    ;; The distribution format of the data.
    DistributionFormat
@@ -489,13 +489,13 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
 
+;; Represents a data file size.
 (defrecord FileSizeType
   [
-   ;; The size of the download or site.
+   ;; The size of the data.
    Size
 
-   ;; Unit of the size type. If no size is specified MegaBytes is assumed. This should be changed to
-   ;; an enumeration type
+   ;; Unit of information, together with Size determines total size in bytes of the data.
    Unit
   ])
 (record-pretty-printer/enable-record-pretty-printing FileSizeType)
@@ -614,31 +614,26 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
-;; Field specifies links to Internet sites that contain information related to the data, as well as
-;; related Internet sites such as project home pages, related data archives/servers, metadata
-;; extensions, online software packages, web mapping services, and calibration/validation data.
+;; Represents Internet sites that contain information related to the data, as well as related
+;; Internet sites such as project home pages, related data archives/servers, metadata extensions,
+;; online software packages, web mapping services, and calibration/validation data.
 (defrecord RelatedUrlType
   [
-   ;; Provides information about the resource defined by the URL
-   Description
-
-   ContentType
-
-   ;; The protocol to the resource associated with the URL.
-   Protocol
-
-   ;; The URL to the resource associated with the data set.
-   URLs
-
    ;; The Title is a one-line description of the resource, could be used a caption when a browse
    ;; image is displayed. The title is especially useful for images such as graphs and photos.
    Title
 
+   ;; Provides information about the resource defined by the URL
+   Description
+
+   ;; An array of keywords describing the relation of the online resource to this resource.
+   Relation
+
+   ;; The URL to the resource associated with the data set.
+   URLs
+
    ;; The mime type of the online resource.
    MimeType
-
-   ;; The caption of the online resource.
-   Caption
 
    ;; The size of a download or site.
    FileSize
@@ -766,14 +761,3 @@
    Country
   ])
 (record-pretty-printer/enable-record-pretty-printing AddressType)
-
-;; Describes the type of the URL.
-(defrecord ContentTypeType
-  [
-   ;; The type of URL. These are keywords that a user selects
-   Type
-
-   ;; Describes the sub type of the URL. These are keywords that a user selects
-   Subtype
-  ])
-(record-pretty-printer/enable-record-pretty-printing ContentTypeType)

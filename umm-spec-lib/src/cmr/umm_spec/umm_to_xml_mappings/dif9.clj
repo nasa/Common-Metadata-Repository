@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.umm-spec.util :as u]
+            [cmr.umm-spec.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]))
 
 (def dif9-xml-namespaces
@@ -93,7 +94,7 @@
      (for [distribution (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia distribution)]
-        [:Distribution_Size (:DistributionSize distribution)]
+        [:Distribution_Size (u/data-size-str (:Sizes distribution))]
         [:Distribution_Format (:DistributionFormat distribution)]
         [:Fees (:Fees distribution)]])
      (for [pub-ref (:PublicationReferences c)]
@@ -121,10 +122,10 @@
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
        [:Related_URL
-        (when-let [ct (:ContentType related-url)]
+        (when-let [[type subtype] (:Relation related-url)]
           [:URL_Content_Type
-           [:Type (:Type ct)]
-           [:Subtype (:Subtype ct)]])
+           [:Type type]
+           [:Subtype subtype]])
         (for [url (:URLs related-url)]
           [:URL url])
         [:Description (:Description related-url)]])

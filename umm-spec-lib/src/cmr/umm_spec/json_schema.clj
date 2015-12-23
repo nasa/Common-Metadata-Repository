@@ -236,15 +236,17 @@
                             (let [prop-type-definition (get-in type-definition [:properties k])
                                   item-type-def (:items prop-type-definition)]
                               (if (= "array" (:type prop-type-definition))
-                                (let [results (for [x v]
+                                (let [results (for [x v
+                                                    ;; skip nil inputs
+                                                    :when (some? x)]
                                                 (try
-                                                  {:value (coerce schema item-type-def x)}
+                                                  (let [coerced (coerce schema item-type-def x)]
+                                                    (when (some? coerced)
+                                                      {:value coerced}))
                                                   (catch Exception e
                                                     (let [msg (parse-error-msg item-type-def x)]
                                                       {:error msg}))))
-                                      results (filter #(or (some? (:value %))
-                                                           (:error % ))
-                                                      results)]
+                                      results (remove nil? results)]
                                   (cond-> m
                                     (seq results) (assoc k (mapv :value results))
                                     (some :error results) (assoc-in [:_errors k] (mapv :error results))))
@@ -274,7 +276,7 @@
   (coerce umm-c-schema
           {:EntryTitle "This is a test"
            :TemporalExtents [{:EndsAtPresentFlag "true"
-                              :SingleDateTimes ["2000-01-01T00:00:00.000Z" "banana"]}]
+                              :SingleDateTimes ["2000-01-01T00:00:00.000Z"]}]
            :Distributions [{:Fees "123.4"
-                            :DistributionSize "123 junk"}]})
+                            :Sizes [{:Size "123" :Unit "MB"}]}]})
   )
