@@ -27,7 +27,7 @@
 ;; TODO add formats here as they are implemented.
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [])
+  [:echo10])
 
 (def collection-format-examples
   "Map of format type to example file"
