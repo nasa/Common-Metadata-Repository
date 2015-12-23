@@ -69,44 +69,43 @@
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"
   [c]
-  (let [distributions (su/remove-empty-records (:Distributions c))
-        related-urls (online-resource-urls (:RelatedUrls c))]
+  (let [distributions (:Distributions c)
+        related-urls (online-resource-urls (:RelatedUrls c))
+        responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))
+        contact-element [:gmd:distributorContact (when-not responsibility
+                                                   {:gco:nilReason "missing"})
+                         (when responsibility
+                           (org-per/generate-responsible-party responsibility))]]
     (when (or distributions related-urls)
-      (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
-            sizes (truncate-map :DistributionSize)
-            fees (truncate-map :Fees)]
-        [:gmd:distributionInfo
-         [:gmd:MD_Distribution
+      [:gmd:distributionInfo
+       [:gmd:MD_Distribution
+        (for [[d idx] (map vector distributions (range (count distributions)))]
           [:gmd:distributor
            [:gmd:MD_Distributor
-            [:gmd:distributorContact {:gco:nilReason "missing"}
-             (when-let [responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))]
-               (org-per/generate-responsible-party responsibility))]
-            (for [fee (map su/nil-to-empty-string fees)]
-              [:gmd:distributionOrderProcess
-               [:gmd:MD_StandardOrderProcess
-                [:gmd:fees
-                 (char-string fee)]]])
-            (for [distribution distributions
-                  :let [{media :DistributionMedia format :DistributionFormat} distribution]]
-              [:gmd:distributorFormat
-               [:gmd:MD_Format
-                [:gmd:name
-                 (char-string (su/nil-to-empty-string format))]
-                [:gmd:version {:gco:nilReason "unknown"}]
-                [:gmd:specification
-                 (char-string (su/nil-to-empty-string media))]]])
-            (for [size sizes]
+            contact-element
+            [:gmd:distributionOrderProcess
+             [:gmd:MD_StandardOrderProcess
+              [:gmd:fees
+               (char-string (or (:Fees d) ""))]]]
+            [:gmd:distributorFormat
+             [:gmd:MD_Format
+              [:gmd:name
+               (char-string (or (:DistributionFormat d) ""))]
+              [:gmd:version {:gco:nilReason "unknown"}]
+              [:gmd:specification
+               (char-string (or (:DistributionMedia d) ""))]]]
+            (for [size (:Sizes d)]
               [:gmd:distributorTransferOptions
                [:gmd:MD_DigitalTransferOptions
-                ;; size could be a number or string, so the checking here is verbose
-                (if (or (nil? size)
-                        (and (string? size) (str/blank? size)))
-                  ;; we have to generate an empty element for Distribution Size with nil.
-                  ""
-                  [:gmd:transferSize
-                   [:gco:Real size]])]])
-            [:gmd:distributorTransferOptions
-             [:gmd:MD_DigitalTransferOptions
-              (for [related-url related-urls]
-                (generate-online-resource-url related-url))]]]]]]))))
+                [:gmd:unitsOfDistribution
+                 (char-string (:Unit size))]
+                [:gmd:transferSize
+                 [:gco:Real (:Size size)]]]])
+            (when (zero? idx))]])
+        [:gmd:distributor
+         [:gmd:MD_Distributor
+          contact-element
+          [:gmd:distributorTransferOptions
+           [:gmd:MD_DigitalTransferOptions
+            (for [related-url related-urls]
+              (generate-online-resource-url related-url))]]]]]])))

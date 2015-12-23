@@ -77,3 +77,28 @@
   (seq (for [elem (select doc path)]
          {:ShortName (p/value-of elem "Short_Name")
           :LongName (p/value-of elem "Long_Name")})))
+
+(def ^:private data-size-re
+  "Regular expression used to parse file sizes from a string. Supports extracting a single value
+  with units as well as a range with units."
+  #"(-?[0-9][0-9,]*\.?[0-9]*|-?\.[0-9]+) ?((k|kb|ko|kilo|mb|mega|mbyte|mo|g|gb|go|giga|tb|tera|p|pb|peta)?(byte)?s?)\b")
+
+(defn parse-data-sizes
+  "Parses the data size and units from the provided string. Returns a sequence of maps with the Size
+  and the Unit. Returns nil if the string cannot be parsed into file sizes with units."
+  [s]
+  (seq
+   (for [[_ num-str unit-str :as results] (re-seq data-size-re
+                                                  (-> s str .toLowerCase))
+         :when (and num-str unit-str)]
+     {:Size (Double. (.replace num-str "," ""))
+      :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
+
+(defn data-size-str
+  "Takes a collection of FileSizeType records which have a Size and a Unit and converts them to a
+  string representation."
+  [sizes]
+  (when (seq sizes)
+    (str/join ", "
+              (for [size sizes]
+                (str (:Size size) " " (or (:Unit size) "MB"))))))

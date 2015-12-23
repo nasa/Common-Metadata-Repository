@@ -309,21 +309,21 @@
       "required": ["URLs"]
     },
     "FileSizeType": {
+      "description": "Represents a data file size.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "Size": {
-          "description": "The size of the download or site.",
+          "description": "The size of the data.",
           "type": "number"
         },
         "Unit": {
-          "description": "Unit of the size type. If no size is specified MegaBytes is assumed. This should be changed to an enumeration type",
+          "description": "Unit of information, together with Size determines total size in bytes of the data.",
           "type": "string",
-          "minLength": 1,
-          "maxLength": 4
+          "enum": ["KB", "MB", "GB", "TB", "PB"]
         }
       },
-      "required": ["Size"]
+      "required": ["Size", "Unit"]
     },
     "ResourceCitationType": {
       "type": "object",
@@ -669,9 +669,12 @@
           "minLength": 1,
           "maxLength": 500
         },
-        "DistributionSize": {
-          "description": "The size of the distribution package of the data or service.",
-          "type": "number"
+        "Sizes": {
+          "description": "A list of file sizes indicating a single exact or approximate, or range of distribution sizes.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FileSizeType"
+          }
         },
         "DistributionFormat": {
           "description": "The distribution format of the data.",

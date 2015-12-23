@@ -109,23 +109,27 @@
          (collection-xml-round-trip user/failing-value :iso-smap)))
 
   ;; random XML gen
-  (def metadata-format :dif)
-  (def metadata-format :iso19115)
   (def metadata-format :echo10)
   (def metadata-format :dif)
   (def metadata-format :dif10)
+  (def metadata-format :iso19115)
   (def metadata-format :iso-smap)
 
   (def sample-record (first (gen/sample (gen/such-that
                                           #(not-any? :Instruments (:Platforms %))
                                           umm-gen/umm-c-generator) 1)))
 
+  ;; Evaluate this expression to use user/failing-value in the following expressions.
   (def sample-record user/failing-value)
 
+  ;; Evaluate this expression to use the standard UMM example record.
   (def sample-record expected-conversion/example-record)
 
-  ;; generated xml
+  ;; Evaluate to print generated metadata from the record selected above.
   (println (core/generate-metadata :collection metadata-format sample-record))
+
+  ;; Evaluate to return the UMM parsed from a XML round trip.
+  (xml-round-trip sample-record metadata-format)
 
   ;; our simple example record
   (core/generate-metadata :collection metadata-format expected-conversion/example-record)
@@ -135,7 +139,7 @@
   ;; round-trip
   (collection-xml-round-trip sample-record metadata-format)
 
-  ;; generated test case
+  ;; Evaluate to see diff between expected conversion and result of XML round trip.
   (is (= (expected-conversion/convert sample-record metadata-format)
          (collection-xml-round-trip sample-record metadata-format)))
 

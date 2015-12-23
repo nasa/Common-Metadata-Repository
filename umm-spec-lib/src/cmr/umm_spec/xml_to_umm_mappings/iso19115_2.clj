@@ -117,7 +117,7 @@
       (select doc (str citation-base-xpath "/gmd:citedResponsibleParty/gmd:CI_ResponsibleParty")))
     (org-per/parse-responsible-parties
       "DISTRIBUTOR"
-      (select doc (str dru/distributor-xpath "/gmd:distributorContact/gmd:CI_ResponsibleParty")))
+      (select doc (str dru/distributor-xpath "[1]/gmd:distributorContact/gmd:CI_ResponsibleParty")))
     (org-per/parse-responsible-parties
       "PROCESSOR"
       (select doc (str data-quality-info-xpath "/gmd:lineage/gmd:LI_Lineage/gmd:processStep/gmd:LI_ProcessStep/gmd:processor/gmd:CI_ResponsibleParty")))))

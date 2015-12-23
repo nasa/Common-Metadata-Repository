@@ -80,11 +80,11 @@
      :AccessConstraints {:Description "Restriction Comment: Access constraints"
                          :Value "0"}
      :UseConstraints "Restriction Flag: Use constraints"
-     :Distributions [{:DistributionSize 10.0
+     :Distributions [{:Sizes [{:Size 15.0 :Unit "KB"}]
                       :DistributionMedia "8 track"
                       :DistributionFormat "Animated GIF"
                       :Fees "Gratuit-Free"}
-                     {:DistributionSize 100000000000.0
+                     {:Sizes [{:Size 1.0 :Unit "MB"}]
                       :DistributionMedia "Download"
                       :DistributionFormat "Bits"
                       :Fees "0.99"}]
@@ -263,7 +263,7 @@
   [distributions]
   (some-> distributions
           first
-          (assoc :DistributionSize nil :DistributionMedia nil)
+          (assoc :Sizes nil :DistributionMedia nil)
           (update-in [:Fees] echo10-expected-fees)
           su/convert-empty-record-to-nil
           vector))
