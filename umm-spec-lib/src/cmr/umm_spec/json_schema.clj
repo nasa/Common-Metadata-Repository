@@ -244,7 +244,6 @@
                                                       {:value coerced}))
                                                   (catch Exception e
                                                     (let [msg (parse-error-msg item-type-def x)]
-                                                      (log/warn e msg)
                                                       {:error msg}))))
                                       results (remove nil? results)]
                                   (cond-> m
@@ -258,7 +257,6 @@
                                       m))
                                   (catch Exception e
                                     (let [msg (parse-error-msg prop-type-definition v)]
-                                      (log/warn e msg)
                                       (assoc-in m [:_errors k] msg)))))))
                           nil
                           (filter val x))]
