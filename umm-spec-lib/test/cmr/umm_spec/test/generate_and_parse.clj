@@ -24,7 +24,6 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
-;; TODO add formats here as they are implemented.
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
   [:echo10 :dif10 :dif :iso19115 :iso-smap])
