@@ -5,7 +5,8 @@
             [cmr.umm-spec.date-util :as date]
             [camel-snake-kebab.core :as csk]
             [clj-time.format :as f]
-            [cmr.umm-spec.util :as u :refer [with-default]]))
+            [cmr.umm-spec.util :as u :refer [with-default]]
+            [clojure.string :as str]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
@@ -164,6 +165,93 @@
     [:Related_URL
      [:URL "http://example.com"]]))
 
+(def iso-639-2->dif10-dataset-language
+  "Mapping from ISO 639-2 to the enumeration supported for dataset languages in DIF10."
+  {"eng" "English"
+   "afr" "Afrikaans"
+   "ara" "Arabic"
+   "bos" "Bosnian"
+   "bul" "Bulgarian"
+   "chi" "Chinese"
+   "zho" "Chinese"
+   "hrv" "Croatian"
+   "cze" "Czech"
+   "ces" "Czech"
+   "dan" "Danish"
+   "dum" "Dutch"
+   "dut" "Dutch"
+   "nld" "Dutch"
+   "est" "Estonian"
+   "fin" "Finnish"
+   "fre" "French"
+   "fra" "French"
+   "gem" "German"
+   "ger" "German"
+   "deu" "German"
+   "gmh" "German"
+   "goh" "German"
+   "gsw" "German"
+   "nds" "German"
+   "heb" "Hebrew"
+   "hun" "Hungarian"
+   "ind" "Indonesian"
+   "ita" "Italian"
+   "jpn" "Japanese"
+   "kor" "Korean"
+   "lav" "Latvian"
+   "lit" "Lithuanian"
+   "nno" "Norwegian"
+   "nob" "Norwegian"
+   "nor" "Norwegian"
+   "pol" "Polish"
+   "por" "Portuguese"
+   "rum" "Romanian"
+   "ron" "Romanian"
+   "rup" "Romanian"
+   "rus" "Russian"
+   "slo" "Slovak"
+   "slk" "Slovak"
+   "spa" "Spanish"
+   "ukr" "Ukrainian"
+   "vie" "Vietnamese"})
+
+(def dif10-dataset-languages
+  "Set of Dataset_Languages supported in DIF10"
+  (set (vals iso-639-2->dif10-dataset-language)))
+
+(defn- generate-metadata-language
+  "Return Dataset_Language attribute by translating from the UMM DataLanguage to one of the DIF10
+  enumerations. Defaults to generating a Dataset_Language of English if translation cannot be
+  determined."
+  [c]
+  (when-let [data-language (:DataLanguage c)]
+    [:Dataset_Language (if (dif10-dataset-languages data-language)
+                         data-language
+                         (get iso-639-2->dif10-dataset-language data-language "English"))]))
+
+(def collection-progress->dif10-dataset-progress
+  "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
+  {"PLANNED" "PLANNED"
+   "ONGOING" "IN WORK"
+   "ONLINE" "IN WORK"
+   "COMPLETED" "COMPLETE"
+   "FINAL" "COMPLETE"})
+
+(def dif10-dataset-progress-values
+  "Set of Dataset_Progress values supported in DIF10"
+  (set (distinct (vals collection-progress->dif10-dataset-progress))))
+
+(defn- generate-dataset-progress
+  "Return Dataset_Progress attribute by translating from the UMM CollectionProgress to one of the
+  DIF10 enumerations. Defaults to generating a Dataset_Progress of IN WORK if translation cannot be
+  determined."
+  [c]
+  (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                          (str/upper-case coll-progress))]
+    [:Dataset_Progress (if (dif10-dataset-progress-values c-progress)
+                         c-progress
+                         (get collection-progress->dif10-dataset-progress c-progress "IN WORK"))]))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -230,8 +318,7 @@
          [:Ending_Date_Time u/not-provided]]])
 
      (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
-
-     [:Dataset_Progress (:CollectionProgress c)]
+     (generate-dataset-progress c)
      (spatial/spatial-element c)
      (for [skw (:SpatialKeywords c)]
        [:Location
@@ -240,7 +327,7 @@
      [:Quality (:Quality c)]
      [:Access_Constraints (-> c :AccessConstraints :Description)]
      [:Use_Constraints (:UseConstraints c)]
-     [:Dataset_Language (:DataLanguage c)]
+     (generate-metadata-language c)
      [:Organization
       [:Organization_Type "ARCHIVER"]
       [:Organization_Name
