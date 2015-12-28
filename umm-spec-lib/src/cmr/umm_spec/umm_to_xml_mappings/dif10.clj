@@ -225,29 +225,30 @@
   determined."
   [c]
   (when-let [data-language (:DataLanguage c)]
-    [:Dataset_Language (if (contains? dif10-dataset-languages data-language)
+    [:Dataset_Language (if (dif10-dataset-languages data-language)
                          data-language
                          (get iso-639-2->dif10-dataset-language data-language "English"))]))
 
 (def collection-progress->dif10-dataset-progress
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
-  {"ONGOING" "IN WORK"
+  {"PLANNED" "PLANNED"
+   "ONGOING" "IN WORK"
    "ONLINE" "IN WORK"
    "COMPLETED" "COMPLETE"
    "FINAL" "COMPLETE"})
 
 (def dif10-dataset-progress-values
   "Set of Dataset_Progress values supported in DIF10"
-  #{"PLANNED" "IN WORK" "COMPLETE"})
+  (set (distinct (vals collection-progress->dif10-dataset-progress))))
 
 (defn- generate-dataset-progress
   "Return Dataset_Progress attribute by translating from the UMM CollectionProgress to one of the
   DIF10 enumerations. Defaults to generating a Dataset_Progress of IN WORK if translation cannot be
   determined."
   [c]
-  (when-let [c-progress (when (:CollectionProgress c)
-                          (str/upper-case (:CollectionProgress c)))]
-    [:Dataset_Progress (if (contains? dif10-dataset-progress-values (str/upper-case c-progress))
+  (when-let [c-progress (when-let [coll-progress (:CollectionProgress c)]
+                          (str/upper-case coll-progress))]
+    [:Dataset_Progress (if (dif10-dataset-progress-values c-progress)
                          c-progress
                          (get collection-progress->dif10-dataset-progress c-progress "IN WORK"))]))
 
