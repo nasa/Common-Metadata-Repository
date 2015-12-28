@@ -64,9 +64,10 @@
        :Abstract (value-of short-name-el "gmd:abstract/gco:CharacterString")
        :Purpose (value-of short-name-el "gmd:purpose/gco:CharacterString")
        :CollectionProgress (value-of data-id-el "gmd:status/gmd:MD_ProgressCode")
-       :DataDates (for [date-el (select doc data-dates-xpath)]
-                    {:Date (value-of date-el "gmd:date/gco:DateTime")
-                     :Type (get umm-date-type-codes (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))})
+       :DataDates (distinct (for [date-el (select doc data-dates-xpath)]
+                              {:Date (value-of date-el "gmd:date/gco:DateTime")
+                               :Type (get umm-date-type-codes
+                                          (value-of date-el "gmd:dateType/gmd:CI_DateTypeCode"))}))
        :DataLanguage (value-of short-name-el "gmd:language/gco:CharacterString")
        :Platforms (let [smap-keywords (values-at data-id-el keywords-xpath-str)]
                     (kws/parse-platforms smap-keywords))
