@@ -40,14 +40,14 @@
       [:Version (:Version c)]]
      (if-let [sks (:ScienceKeywords c)]
        (for [sk sks]
-       [:Parameters
-        [:Category (:Category sk)]
-        [:Topic (:Topic sk)]
-        [:Term (:Term sk)]
-        [:Variable_Level_1 (:VariableLevel1 sk)]
-        [:Variable_Level_2 (:VariableLevel2 sk)]
-        [:Variable_Level_3 (:VariableLevel3 sk)]
-        [:Detailed_Variable (:DetailedVariable sk)]])
+         [:Parameters
+          [:Category (:Category sk)]
+          [:Topic (:Topic sk)]
+          [:Term (:Term sk)]
+          [:Variable_Level_1 (:VariableLevel1 sk)]
+          [:Variable_Level_2 (:VariableLevel2 sk)]
+          [:Variable_Level_3 (:VariableLevel3 sk)]
+          [:Detailed_Variable (:DetailedVariable sk)]])
        ;; Default element
        [:Parameters
         [:Category u/not-provided]
