@@ -52,35 +52,70 @@
                       :end-coordinate-1 130
                       :start-coordinate-2 300
                       :end-coordinate-2 328})
-        coll1 (dc/collection {:entry-title "short_name_version"
-                              :short-name "short_name"
-                              :version-id "version"
-                              :product-specific-attributes [psa1]
-                              :platforms [p1]
-                              :organizations [(dc/org :distribution-center "Larc")]
-                              :science-keywords [(dc/science-keyword {:category "upcase"
-                                                                      :topic "Cool"
-                                                                      :term "Mild"})]
-                              :projects projects
-                              :spatial-coverage (dc/spatial {:gsr :geodetic})
-                              :two-d-coordinate-systems [two-d-cs]
-                              :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
-                              :beginning-date-time "1965-12-12T07:00:00.000-05:00"
-                              :ending-date-time "1967-12-12T07:00:00.000-05:00"})
+        coll-data {:entry-title "short_name1_version"
+                   :short-name "short_name1"
+                   :version-id "version"
+                   :product-specific-attributes [psa1]
+                   :platforms [p1]
+                   :organizations [(dc/org :distribution-center "Larc")]
+                   :science-keywords [(dc/science-keyword {:category "upcase"
+                                                           :topic "Cool"
+                                                           :term "Mild"})]
+                   :projects projects
+                   :spatial-coverage (dc/spatial {:gsr :geodetic})
+                   :two-d-coordinate-systems [two-d-cs]
+                   :related-urls [(dc/related-url {:type "type" :url "htt://www.foo.com"})]
+                   :beginning-date-time "1965-12-12T07:00:00.000-05:00"
+                   :ending-date-time "1967-12-12T07:00:00.000-05:00"}
+        gran-data {:platform-refs [pr1]
+                   :spatial-coverage gran-spatial-rep
+                   :two-d-coordinate-system g-two-d-cs
+                   :product-specific-attributes [gpsa]
+                   :beginning-date-time "1966-12-12T07:00:00.000-05:00"
+                   :ending-date-time "1967-10-12T07:00:00.000-05:00"}
+        coll1 (dc/collection coll-data)
         _ (d/ingest "PROV1" coll1 {:format :echo10})
-        gran1 (dg/granule coll1 {:platform-refs [pr1]
-                                 :spatial-coverage gran-spatial-rep
-                                 :two-d-coordinate-system g-two-d-cs
-                                 :product-specific-attributes [gpsa]
-                                 :beginning-date-time "1966-12-12T07:00:00.000-05:00"
-                                 :ending-date-time "1967-10-12T07:00:00.000-05:00"})
-        _ (d/ingest "PROV1" gran1)]
-    (let [resp (d/ingest "PROV1" coll1 {:format :dif :allow-failure? true})]
-      (is (= nil (:errors resp))))
-    (let [resp (d/ingest "PROV1" coll1 {:format :dif10 :allow-failure? true})]
-      (is (= nil (:errors resp))))
-    (let [resp (d/ingest "PROV1" coll1 {:format :iso19115 :allow-failure? true})]
-      (is (= nil (:errors resp))))
-    (let [resp (d/ingest "PROV1" coll1 {:format :iso-smap :allow-failure? true})]
-      (is (= nil (:errors resp))))))
+        coll2 (dc/collection (assoc coll-data :entry-title "short_name2_version"
+                                    :short-name "short_name2"
+                                    :entry-id "short_name2_version"))
+        _ (d/ingest "PROV1" coll2 {:format :dif})
+        coll3 (dc/collection (assoc coll-data :entry-title "short_name3_version"
+                                    :short-name "short_name3"
+                                    :entry-id "short_name3_version"))
+        _ (d/ingest "PROV1" coll3 {:format :dif10})
+        coll4 (dc/collection (assoc coll-data :entry-title "short_name4_version"
+                                    :short-name "short_name4"
+                                    :entry-id "short_name4_version"))
+        _ (d/ingest "PROV1" coll4 {:format :iso19115})
+        coll5 (dc/collection (assoc coll-data :entry-title "short_name5_version"
+                                    :short-name "short_name5"
+                                    :entry-id "short_name5_version"))
+        _ (d/ingest "PROV1" coll5 {:format :iso-smap})
+        gran1 (dg/granule coll1 gran-data)
+        gran2 (dg/granule coll2 gran-data)
+        gran3 (dg/granule coll3 gran-data)
+        gran4 (dg/granule coll4 gran-data)
+        gran5 (dg/granule coll5 gran-data)]
+    (are [exp-errors gran]
+         (= exp-errors
+            (flatten (map (fn [error] (:errors error))
+                          (:errors (d/ingest "PROV1" gran {:format :echo10 :allow-failure? true})))))
 
+         []
+         gran1
+
+         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+         gran2
+
+         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."]
+         gran3
+
+         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
+          "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
+          "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+         gran4
+
+         ["The following list of 2D Coordinate System names did not exist in the referenced parent collection: [BRAVO]."
+          "The following list of Product Specific Attributes did not exist in the referenced parent collection: [a-float]."
+          "[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is NO_SPATIAL"]
+         gran5)))
