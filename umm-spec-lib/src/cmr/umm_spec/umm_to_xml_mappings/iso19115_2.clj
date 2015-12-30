@@ -5,6 +5,7 @@
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as spatial]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.util :as su]
+            [cmr.umm-spec.date-util :as date-util]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.platform :as platform]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
@@ -33,16 +34,18 @@
 (defn- generate-data-dates
   "Returns ISO XML elements for the DataDates of given UMM collection."
   [c]
-  (for [date (:DataDates c)
-        :let [type-code (get iso/iso-date-type-codes (:Type date))
-              date-value (:Date date)]]
-    [:gmd:date
-     [:gmd:CI_Date
+  ;; Use a default value if none present in the UMM record
+  (let [dates (or (:DataDates c) [{:Type "CREATE" :Date date-util/default-date-value}])]
+    (for [date dates
+          :let [type-code (get iso/iso-date-type-codes (:Type date))
+                date-value (or (:Date date) date-util/default-date-value)]]
       [:gmd:date
-       [:gco:DateTime date-value]]
-      [:gmd:dateType
-       [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
-                              :codeListValue type-code} type-code]]]]))
+       [:gmd:CI_Date
+        [:gmd:date
+         [:gco:DateTime date-value]]
+        [:gmd:dateType
+         [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
+                                :codeListValue type-code} type-code]]]])))
 
 (def attribute-data-type-code-list
   "http://earthdata.nasa.gov/metadata/resources/Codelists.xml#EOS_AdditionalAttributeDataTypeCode")

@@ -3,9 +3,9 @@
    "Defines UMM Common clojure records."
  (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
-;; This element describes the relevant platforms used to acquire the data. Platform types are
-;; controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human,
-;; etc.
+;; Describes the relevant platforms used to acquire the data in the collection. Platform type
+;; vocabulary is controlled and includes Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
+;; Network, Human, etc.
 (defrecord PlatformType
   [
    ;; The most relevant platform type.
@@ -15,17 +15,18 @@
 
    LongName
 
-   ;; The characteristics of platform specific attributes. The characteristic names must be unique
-   ;; on this platform; however the names do not have to be unique across platforms.
+   ;; Platform-specific characteristics, e.g., Equator Crossing Time, Inclination Angle, Orbital
+   ;; Period. The characteristic names must be unique on this platform; however the names do not
+   ;; have to be unique across platforms.
    Characteristics
 
    Instruments
   ])
 (record-pretty-printer/enable-record-pretty-printing PlatformType)
 
-;; This entity contains attributes describing the scientific endeavor(s) to which the collection is
-;; associated. Scientific endeavors include campaigns, projects, interdisciplinary science
-;; investigations, missions, field experiments, etc.
+;; Information describing the scientific endeavor(s) with which the collection is associated.
+;; Scientific endeavors include campaigns, projects, interdisciplinary science investigations,
+;; missions, field experiments, etc.
 (defrecord ProjectType
   [
    ;; The unique identifier by which a project or campaign/experiment is known. The campain/project
@@ -47,19 +48,19 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ProjectType)
 
-;; This entity registers the device used to measure or record data, including direct human
-;; observation. In cases where instruments have a single sensor or the instrument and sensor are
-;; used synonymously (e.g. AVHRR) the both Instrument and Sensor should be recorded. The Sensor
-;; information is represented by some other entities.
+;; Information about the device used to measure or record data in this collection, including direct
+;; human observation. In cases where instruments have a single sensor or the instrument and sensor
+;; are used synonymously (e.g. AVHRR), both Instrument and Sensor should be recorded. The Sensor
+;; information is represented in a separate section.
 (defrecord InstrumentType
   [
    ShortName
 
    LongName
 
-   ;; The characteristics of this instrument expressed as custom attributes. The characteristic
-   ;; names must be unique on this instrument; however the names do not have to be unique across
-   ;; instruments.
+   ;; Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The
+   ;; characteristic names must be unique on this instrument; however the names do not have to be
+   ;; unique across instruments.
    Characteristics
 
    ;; The expanded name of the primary sensory instrument. (e.g. Advanced Spaceborne Thermal
@@ -67,21 +68,21 @@
    ;; Observation).
    Technique
 
-   ;; Number of sensors used on the instrument when acquire the granule data.
+   ;; Number of sensors used on the instrument when acquiring the granule data.
    NumberOfSensors
 
    Sensors
 
-   ;; The operation mode applied on the instrument when acquire the granule data.
+   ;; The operation mode applied on the instrument when acquiring the granule data.
    OperationalModes
   ])
 (record-pretty-printer/enable-record-pretty-printing InstrumentType)
 
-;; This entity holds collection horizontal spatial coverage data.
+;; Information about a collection with horizontal spatial coverage.
 (defrecord HorizontalSpatialDomainType
   [
-   ;; The appropriate numeric or alpha code used to identify the various zones in this grid
-   ;; coordinate system.
+   ;; The appropriate numeric or alpha code used to identify the various zones in the collection's
+   ;; grid coordinate system.
    ZoneIdentifier
 
    Geometry
@@ -95,9 +96,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
 
-;; This element describes the relevant platforms used to acquire the data related to the service.
-;; Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station,
-;; Network, Human, etc. This platform includes zero or more instruments
+;; Information about a two-dimensional tiling system related to this collection.
 (defrecord TilingIdentificationSystemType
   [
    TilingIdentificationSystemName
@@ -111,8 +110,9 @@
 ;; Specifies the geographic and vertical (altitude, depth) coverage of the data.
 (defrecord SpatialExtentType
   [
-   ;; This attribute denotes whether the collection's spatial coverage requires horizontal,
-   ;; vertical, or both in the spatial domain and coordinate system definitions.
+   ;; Denotes whether the collection's spatial coverage requires horizontal, vertical, horizontal
+   ;; and vertical, orbit, or vertical and orbit in the spatial domain and coordinate system
+   ;; definitions.
    SpatialCoverageType
 
    HorizontalSpatialDomain
@@ -137,20 +137,20 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LineageType)
 
-;; This element describes media options, size, data format, and fees involved in distributing or
-;; accessing the data.
+;; Describes media options, size, data format, and fees involved in distributing or accessing the
+;; data.
 (defrecord DistributionType
   [
-   ;; The distribution media of the data or service.
+   ;; The distribution media for the collection data.
    DistributionMedia
 
    ;; A list of file sizes indicating a single exact or approximate, or range of distribution sizes.
    Sizes
 
-   ;; The distribution format of the data.
+   ;; The distribution format of the collection data (e.g., HDF, netCDF).
    DistributionFormat
 
-   ;; The fee for ordering the data or service.
+   ;; The fee for ordering the collection data. The fee is entered as a number, in US Dollars.
    Fees
   ])
 (record-pretty-printer/enable-record-pretty-printing DistributionType)
@@ -161,66 +161,69 @@
 
    Person
 
-   ;; Time period when individuals can speak to the organization or person.
+   ;; Time period when individuals can speak to the responsible party.
    ServiceHours
 
-   ;; Supplemental instructions on how or when to contact the organization or person.
+   ;; Supplemental instructions on how or when to contact the responsible party.
    ContactInstructions
 
-   ;; Contacts including phone, fax, email, url, etc.
+   ;; Contact information for the responsible party, including phone, fax, email, url, etc.
    Contacts
 
-   ;; The address of the organization or person
+   ;; The address of the responsible party
    Addresses
 
-   ;; The URL of the organization or individual
+   ;; A URL associated with the responsible party, e.g., the home page for the DAAC which is
+   ;; responsible for the collection.
    RelatedUrls
   ])
 (record-pretty-printer/enable-record-pretty-printing PartyType)
 
-;; This element permits the user to properly cite the provider and specifies how the data should be
-;; cited in professional scientific literature. This element provides a citation for the item
-;; itself, and is not designed for listing bibliographic references of scientific research articles
-;; arising from search results. A list of references related to the research results should be in
-;; the Publication Reference element. A DOI that specifically identifies the service is listed here.
+;; Building block text fields used to construct the recommended language for citing the collection
+;; in professional scientific literature. The citation language constructed from these fields
+;; references the collection itself, and is not designed for listing bibliographic references of
+;; scientific research articles arising from search results. A list of references related to the
+;; research results should be in the Publication Reference element. A DOI that specifically
+;; identifies the collection is listed here.
 (defrecord ResourceCitationType
   [
    ;; The name of the data series, or aggregate data of which the data is a part.
    SeriesName
 
    ;; The name of the organization(s) or individual(s) with primary intellectual responsibility for
-   ;; the data's development.
+   ;; the collection's development.
    Creator
 
-   ;; The name of the city (and state or province and country if needed) where the data set was made
-   ;; available for release.
+   ;; The name of the city (and state or province and country if needed) where the collection was
+   ;; made available for release.
    ReleasePlace
 
-   ;; The title of the data; this may be the same as Entry Title.
+   ;; The title of the collection; this is the same as the collection Entry Title.
    Title
 
-   ;; The Digital Object Identifier (DOI) of a data set.
+   ;; The Digital Object Identifier (DOI) for the collection. This is the registered DOI that
+   ;; resolves to a landing page for the collection.
    DOI
 
-   ;; The name of the individual or organization that made the data available for release.
+   ;; The name of the individual or organization that made the collection available for release.
    Publisher
 
-   ;; The date when the data was made available for release.
+   ;; The date when the collection was made available for release.
    ReleaseDate
 
-   ;; The URL of the online resource containing the data set.
+   ;; The URL of the landing page for the collection.
    RelatedUrl
 
    ;; The volume or issue number of the publication (if applicable).
    IssueIdentification
 
-   ;; The individual(s) responsible for changing the data.
+   ;; The individual(s) responsible for changing the data in the collection.
    Editor
 
    ;; The mode in which the data are represented, e.g. atlas, image, profile, text, etc.
    DataPresentationForm
 
-   ;; The version of the citation.
+   ;; The version of the collection.
    Version
 
    ;; Additional free-text citation information.
@@ -245,7 +248,7 @@
    ;; The time when the temporal coverage period being described began.
    BeginningDateTime
 
-   ;; The time of the temporal coverage period being described ended.
+   ;; The time when the temporal coverage period being described ended.
    EndingDateTime
   ])
 (record-pretty-printer/enable-record-pretty-printing RangeDateTimeType)
@@ -272,7 +275,9 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LineType)
 
-;; This element enables specification of Earth science keywords.
+;; Enables specification of Earth science keywords related to the collection. The Earth Science
+;; keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management
+;; System (KMS).
 (defrecord ScienceKeywordType
   [
    Category
@@ -291,87 +296,95 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
 
-;; This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique
-;; characteristics of the service which extend beyond those defined in this mapping).
+;; Additional unique attributes of the collection, beyond those defined in the UMM model, which the
+;; data provider deems useful for end-user understanding of the data in the collection. Additional
+;; attributes are also called Product Specific Attributes (PSAs) or non-core attributes. Examples
+;; are HORIZONTALTILENUMBER, VERTICALTILENUMBER.
 (defrecord AdditionalAttributeType
   [
-   ;; Group identifies a namespace for the value.
+   ;; Identifies a namespace for the additional attribute name.
    Group
 
-   ;; The standard unit of measurement for a not-core attribute. AVHRR: unit of geophysical
-   ;; parameter-units of geophysical parameter.
+   ;; The standard unit of measurement for the additional attribute. For example, meters, hertz.
    ParameterUnitsOfMeasure
 
-   ;; An estimate of the accuracy of the assignment of attribute value. AVHRR: Measurement error or
-   ;; precision-measurement error or precision of a data product parameter. This can be specified in
-   ;; percent or the unit with which the parameter is measured.
+   ;; An estimate of the accuracy of the values of the additional attribute. For example, for AVHRR:
+   ;; Measurement error or precision-measurement error or precision of a data product parameter.
+   ;; This can be specified in percent or the unit with which the parameter is measured.
    ParameterValueAccuracy
 
-   ;; This attribute will be used to identify the smallest unit increment to which the parameter
-   ;; value is measured.
+   ;; The smallest unit increment to which the additional attribute value is measured.
    MeasurementResolution
 
-   ;; This attribute provides the minimum value of parameter over whole collection.
+   ;; The minimum value of the additional attribute over the whole collection.
    ParameterRangeBegin
 
-   ;; This defines the method used for determining the parameter value accuracy that is given for
-   ;; this non core attribute.
+   ;; Describes the method used for determining the parameter value accuracy that is given for this
+   ;; additional attribute.
    ValueAccuracyExplanation
 
-   ;; This attribute contains the value ofthe product specific attribute (additional attribute) for
-   ;; all granules across a given collection
+   ;; Value of the additional attribute if it is the same for all granules across the collection. If
+   ;; the value of the additional attribute may differ by granule, leave this collection-level value
+   ;; blank.
    Value
 
    Name
 
-   ;; This attribute provides a description for the additional_attribute_name.
+   ;; Free-text description of the additional attribute.
    Description
 
-   ;; The date this attribute was updated.
+   ;; The date this additional attribute information was updated.
    UpdateDate
 
-   ;; This attribute provides the maximum value of parameter over whole collection.
+   ;; The maximum value of the additional attribute over the whole collection.
    ParameterRangeEnd
 
-   ;; Data type of parameter value
+   ;; Data type of the values of the additional attribute.
    DataType
   ])
 (record-pretty-printer/enable-record-pretty-printing AdditionalAttributeType)
 
-;; Field allows the author to provide information about any constraints for accessing the data set.
-;; This includes any special restrictions, legal prerequisites, limitations and/or warnings on
-;; obtaining the data set. Some words that may be used in this field include: Public, In-house,
-;; Limited, Additional detailed instructions on how to access the data can be entered in this field.
+;; Information about any constraints for accessing the data set. This includes any special
+;; restrictions, legal prerequisites, limitations and/or warnings on obtaining the data set.
 (defrecord AccessConstraintsType
   [
-   ;; Description of the constraint
+   ;; Free-text description of the constraint. In DIF, this field is called Access_Constraint. In
+   ;; ECHO, this field is called RestrictionComment. Examples of text in this field are Public,
+   ;; In-house, Limited. Additional detailed instructions on how to access the collection data may
+   ;; be entered in this field.
    Description
 
-   ;; Value of the constraint
+   ;; Numeric value that is used with Access Control Language (ACLs) to restrict access to this
+   ;; collection. For example, a provider might specify a collection level ACL that hides all
+   ;; collections with a value element set to 15. In ECHO, this field is called RestrictionFlag.
+   ;; This field does not exist in DIF.
    Value
   ])
 (record-pretty-printer/enable-record-pretty-printing AccessConstraintsType)
 
 (defrecord VerticalSpatialDomainType
   [
-   ;; This attribute describes the type of the area of vertical space covered by the locality.
+   ;; Describes the type of the area of vertical space covered by the collection locality.
    Type
 
-   ;; This attribute describes the extent of the area of vertical space covered by the granule. Must
-   ;; be accompanied by an Altitude Encoding Method description. The datatype for this attribute is
-   ;; the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value
-   ;; of either DepthDistanceUnits or AltitudeDistanceUnits.
+   ;; Describes the extent of the area of vertical space covered by the collection. Must be
+   ;; accompanied by an Altitude Encoding Method description. The datatype for this attribute is the
+   ;; value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of
+   ;; either DepthDistanceUnits or AltitudeDistanceUnits.
    Value
   ])
 (record-pretty-printer/enable-record-pretty-printing VerticalSpatialDomainType)
 
-;; consists of a contact. A contact, can be phone, fax, email, url, etc.
+;; Method for contacting the responsible party. A contact can be available via phone, email,
+;; Facebook, or Twitter.
 (defrecord ContactType
   [
-   ;; This states the type of contact - phone, fax, email, url, etc.
+   ;; This is the method type for contacting the responsible party - phone, email, Facebook, or
+   ;; Twitter.
    Type
 
-   ;; This is the contact phone number, email address, url, etc.
+   ;; This is the contact phone number, email address, Facebook address, or Twitter handle
+   ;; associated with the contact method.
    Value
   ])
 (record-pretty-printer/enable-record-pretty-printing ContactType)
@@ -390,16 +403,17 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing GeometryType)
 
-;; This entity holds the referential information for collection source/sensor configuration
-;; including sensor parameters setting such as technique etc.
+;; Information about the collection source/sensor configuration, including sensor parameters
+;; settings such as technique etc.
 (defrecord SensorType
   [
    ShortName
 
    LongName
 
-   ;; The characteristics of this sensor expressed as custom attributes. The characteristic names
-   ;; must be unique on this sensor; however the names do not have to be unique across sensors.
+   ;; Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View. The
+   ;; characteristic names must be unique on this sensor; however the names do not have to be unique
+   ;; across sensors.
    Characteristics
 
    ;; Technique applied for this sensor in the configuration.
@@ -407,7 +421,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SensorType)
 
-;; The longitude and latitude value of a spatially referenced point in degrees.
+;; The longitude and latitude values of a spatially referenced point in degrees.
 (defrecord PointType
   [
    Longitude
@@ -416,19 +430,19 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PointType)
 
-;; This element describes key bibliographic citations pertaining to the data.
+;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType
   [
    ;; The date of the publication.
    PublicationDate
 
-   ;; Additional free-text reference information.
+   ;; Additional free-text reference information about the publication.
    OtherReferenceDetails
 
-   ;; The name of the series.
+   ;; The name of the series of the publication.
    Series
 
-   ;; The title of the publication.
+   ;; The title of the publication in the bibliographic citation.
    Title
 
    ;; The Digital Object Identifier (DOI) of the publication.
@@ -449,13 +463,13 @@
    ;; The publisher of the publication.
    Publisher
 
-   ;; The URL of the online resource containing the data set.
+   ;; The URL of the website related to the bibliographic citation.
    RelatedUrl
 
    ;; The ISBN of the publication.
    ISBN
 
-   ;; The author of the publication reference.
+   ;; The author of the publication.
    Author
 
    ;; The issue of the publication.
@@ -466,25 +480,23 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PublicationReferenceType)
 
-;; This element is used to identify other services, collections, visualizations, granules, and other
-;; metadata types and resources that are associated with or dependent on the data described by the
-;; metadata. This element is also used to identify a parent metadata record if it exists. This usage
-;; should be reserved for instances where a group of metadata records are subsets that can be better
-;; represented by one parent metadata record, which describes the entire set. In some instances, a
-;; child may point to more than one parent. The EntryId is the same as the element described
-;; elsewhere in this document where it contains and ID, and Version.
+;; Used to identify other services, collections, visualizations, granules, and other metadata types
+;; and resources that are associated with or dependent on the this collection, including
+;; parent-child relationships.
 (defrecord MetadataAssociationType
   [
-   ;; Type is used to indicate the basis (justification) for relating one resource to another
+   ;; The type of association between this collection metadata record and the target metadata
+   ;; record. Choose type from the drop-down list.
    Type
 
-   ;; The description of the association.
+   ;; Free-text description of the association between this collection record and the target
+   ;; metadata record.
    Description
 
-   ;; ID of the metadata record that is associated with this record.
+   ;; Shortname of the target metadata record that is associated with this collection record.
    EntryId
 
-   ;; The version of the metadata record that is associated with this record.
+   ;; The version of the target metadata record that is associated with this collection record.
    Version
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataAssociationType)
@@ -500,7 +512,7 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing FileSizeType)
 
-;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate.
+;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
 (defrecord TilingCoordinateType
   [
    MinimumValue
@@ -531,10 +543,11 @@
 ;; Specifies the date and its type.
 (defrecord DateType
   [
-   ;; This is the date a creation, update, or deletion occurred.
+   ;; This is the date that an event associated with the collection or its metadata occurred.
    Date
 
-   ;; This is the type of date: create, update, review, delete.
+   ;; This is the type of event associated with the date. For example, Creation, Last Revision. Type
+   ;; is chosen from a picklist.
    Type
   ])
 (record-pretty-printer/enable-record-pretty-printing DateType)
@@ -583,23 +596,21 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PersonType)
 
-;; This class contains attributes, which describe the temporal range of a specific collection. This
-;; extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date
-;; Time
+;; Information which describes the temporal range or extent of a specific collection.
 (defrecord TemporalExtentType
   [
    ;; This attribute tells the system and ultimately the end user how temporal coverage is specified
-   ;; for the collection.
+   ;; for the collection. Choices are Single Date Time, Range Date Time, and Periodic Date Time.
    TemporalRangeType
 
    ;; The precision (position in number of places to right of decimal point) of seconds used in
    ;; measurement.
    PrecisionOfSeconds
 
-   ;; This attribute will denote that a data collection which covers, temporally, a discontinuous
-   ;; range, currently ends at the present date. This way, the granules, which comprise the data
-   ;; collection, that are continuously being added to inventory need not update the data collection
-   ;; metadata for each one.
+   ;; Setting the Ends At Present Flag to 'True' indicates that a data collection which covers,
+   ;; temporally, a discontinuous range, currently ends at the present date. Setting the Ends at
+   ;; Present flag to 'True' eliminates the need to continuously update the Range Ending Time for
+   ;; collections where granules are continuously being added to the collection inventory.
    EndsAtPresentFlag
 
    ;; Stores the start and end date/time of a collection.
@@ -607,9 +618,9 @@
 
    SingleDateTimes
 
-   ;; This entity contains the name of the temporal period in addition to the date, time, duration
-   ;; unit, and value, and cycle duration unit and value. Used at the collection level to describe a
-   ;; collection having granules, which cover a regularly occurring period.
+   ;; Temporal information about a collection having granules collected at a regularly occurring
+   ;; period. Information includes the start and end dates of the period, duration unit and value,
+   ;; and cycle duration unit and value.
    PeriodicDateTimes
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
@@ -623,19 +634,20 @@
    ;; image is displayed. The title is especially useful for images such as graphs and photos.
    Title
 
-   ;; Provides information about the resource defined by the URL
+   ;; Description of the web page at this URL.
    Description
 
    ;; An array of keywords describing the relation of the online resource to this resource.
    Relation
 
-   ;; The URL to the resource associated with the data set.
+   ;; The URL for the relevant web page (e.g., the URL of the responsible organization's home page,
+   ;; the URL of the collection landing page, the URL of the download site for the collection).
    URLs
 
-   ;; The mime type of the online resource.
+   ;; The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).
    MimeType
 
-   ;; The size of a download or site.
+   ;; The estimated or average size of a file downloaded from this site.
    FileSize
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
@@ -648,12 +660,13 @@
    ;; This is the responsibility role.
    Role
 
-   ;; This is the responsibility party - either a person or an organization.
+   ;; This is the party responsible for the collection and its metadata - either a person or an
+   ;; organization.
    Party
   ])
 (record-pretty-printer/enable-record-pretty-printing ResponsibilityType)
 
-;; Encapsulates the data that describes the change that was made to either the metadata or data.
+;; Encapsulates the data that describe the change that was made to either the metadata or data.
 (defrecord LineageDateType
   [
    ;; The date something changed with the metadata or data.
@@ -693,20 +706,19 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 
-;; This entity contains the name of the temporal period in addition to the date, time, duration
-;; unit, and value, and cycle duration unit and value. Used at the collection level to describe a
-;; collection having granules, which cover a regularly occurring period.
+;; Information about Periodic Date Time collections, including the name of the temporal period in
+;; addition to the start and end dates, duration unit and value, and cycle duration unit and value.
 (defrecord PeriodicDateTimeType
   [
    ;; The name given to the recurring time period. e.g. 'spring - north hemi.'
    Name
 
-   ;; This attribute provides the date (day and time) of the first occurrence of this regularly
-   ;; occurring period which is relevant to the collection, granule, or event coverage.
+   ;; The date (day and time) of the first occurrence of this regularly occurring period which is
+   ;; relevant to the collection coverage.
    StartDate
 
-   ;; This attribute provides the date (day and time) of the end occurrence of this regularly
-   ;; occurring period which is relevant to the collection, granule, or event coverage.
+   ;; The date (day and time) of the end occurrence of this regularly occurring period which is
+   ;; relevant to the collection coverage.
    EndDate
 
    ;; The unit specification for the period duration.
@@ -726,8 +738,8 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing PeriodicDateTimeType)
 
-;; consists of the organization ShortName, LongName and Uuid, which is the name of the organization
-;; that distributes, archives, or processes the data.
+;; consists of the ShortName and LongName of the organization that distributes, archives, or
+;; processes the data.
 (defrecord OrganizationNameType
   [
    ;; Short name of the organization.
@@ -741,23 +753,23 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing OrganizationNameType)
 
-;; This entity contains the address details for each contact.
+;; This entity contains the physical address details for the responsible party.
 (defrecord AddressType
   [
-   ;; An address line for the address, used for mailing or physical addresses of organizations or
-   ;; individuals who serve as points of contact.
+   ;; An address line for the street address, used for mailing or physical addresses of
+   ;; organizations or individuals who serve as responsible parties for the collection.
    StreetAddresses
 
-   ;; The city of the person or organization.
+   ;; The city portion of the physical address.
    City
 
-   ;; The state or province of the address.
+   ;; The state or province portion of the physical address.
    StateProvince
 
-   ;; The zip or other postal code of the address.
+   ;; The zip or other postal code portion of the physical address.
    PostalCode
 
-   ;; The country of the address.
+   ;; The country of the physical address.
    Country
   ])
 (record-pretty-printer/enable-record-pretty-printing AddressType)

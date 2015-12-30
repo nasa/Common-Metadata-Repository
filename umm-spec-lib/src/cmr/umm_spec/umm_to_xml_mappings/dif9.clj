@@ -38,15 +38,21 @@
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
-     (for [sk (:ScienceKeywords c)]
+     (if-let [sks (:ScienceKeywords c)]
+       (for [sk sks]
+         [:Parameters
+          [:Category (:Category sk)]
+          [:Topic (:Topic sk)]
+          [:Term (:Term sk)]
+          [:Variable_Level_1 (:VariableLevel1 sk)]
+          [:Variable_Level_2 (:VariableLevel2 sk)]
+          [:Variable_Level_3 (:VariableLevel3 sk)]
+          [:Detailed_Variable (:DetailedVariable sk)]])
+       ;; Default element
        [:Parameters
-        [:Category (:Category sk)]
-        [:Topic (:Topic sk)]
-        [:Term (:Term sk)]
-        [:Variable_Level_1 (:VariableLevel1 sk)]
-        [:Variable_Level_2 (:VariableLevel2 sk)]
-        [:Variable_Level_3 (:VariableLevel3 sk)]
-        [:Detailed_Variable (:DetailedVariable sk)]])
+        [:Category u/not-provided]
+        [:Topic u/not-provided]
+        [:Term u/not-provided]])
      (for [topic-category (:ISOTopicCategories c)]
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]

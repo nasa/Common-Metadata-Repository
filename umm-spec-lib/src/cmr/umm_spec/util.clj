@@ -90,7 +90,7 @@
   (seq
    (for [[_ num-str unit-str :as results] (re-seq data-size-re
                                                   (-> s str .toLowerCase))
-         :when (and num-str unit-str (not (str/blank? unit-str)))]
+         :when (and num-str (not (str/blank? unit-str)))]
      {:Size (Double. (.replace num-str "," ""))
       :Unit (-> unit-str str .trim .toUpperCase first (str "B"))})))
 

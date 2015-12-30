@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
     "LanguageType": {
-      "description": "Describes the language used in the preparation, storage, and description of the data. It is the language of the information object, not the language used to describe or interact with the metadata record. It does not refer to the language of the metadata. The name of the language used for this field is defined in ISO 639.",
+      "description": "Describes the language used in the preparation, storage, and description of the collection. It is the language of the collection data themselves.   It does not refer to the language used in the metadata record (although this may be the same language). The name of the language used for this field is defined in ISO 639.",
       "type": "string",
       "minLength": 1,
       "maxLength": 25
@@ -30,7 +30,7 @@
     "LineageDateType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Encapsulates the data that describes the change that was made to either the metadata or data.",
+      "description": "Encapsulates the data that describe the change that was made to either the metadata or data.",
       "properties": {
         "Date": {
           "description": "The date something changed with the metadata or data.",
@@ -62,12 +62,12 @@
       "description": "Specifies the date and its type.",
       "properties": {
         "Date": {
-          "description": "This is the date a creation, update, or deletion occurred.",
+          "description": "This is the date that an event associated with the collection or its metadata occurred.",
           "format": "date-time",
           "type": "string"
         },
         "Type": {
-          "description": "This is the type of date: create, update, review, delete.",
+          "description": "This is the type of event associated with the date.  For example, Creation, Last Revision.  Type is chosen from a picklist.",
           "$ref": "#/definitions/LineageDateEnum"
         }
       },
@@ -89,7 +89,7 @@
           "$ref": "#/definitions/ResponsibilityRoleEnum"
         },
         "Party": {
-          "description": "This is the responsibility party - either a person or an organization.",
+          "description": "This is the party responsible for the collection and its metadata - either a person or an organization.",
           "$ref": "#/definitions/PartyType"
         }
       },
@@ -106,19 +106,19 @@
           "$ref": "#/definitions/PersonType"
         },
         "ServiceHours": {
-          "description": "Time period when individuals can speak to the organization or person.",
+          "description": "Time period when individuals can speak to the responsible party.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
         },
         "ContactInstructions": {
-          "description": "Supplemental instructions on how or when to contact the organization or person.",
+          "description": "Supplemental instructions on how or when to contact the responsible party.",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
         },
         "Contacts": {
-          "description": "Contacts including phone, fax, email, url, etc.",
+          "description": "Contact information for the responsible party, including phone, fax, email, url, etc.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ContactType"
@@ -126,7 +126,7 @@
           "minItems": 0
         },
         "Addresses": {
-          "description": "The address of the organization or person",
+          "description": "The address of the responsible party",
           "type": "array",
           "items": {
             "$ref": "#/definitions/AddressType"
@@ -134,7 +134,7 @@
           "minItems": 0
         },
         "RelatedUrls": {
-          "description": "The URL of the organization or individual",
+          "description": "A URL associated with the responsible party, e.g., the home page for the DAAC which is responsible for the collection.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/RelatedUrlType"
@@ -151,7 +151,7 @@
     "OrganizationNameType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "consists of the organization ShortName, LongName and Uuid, which is the name of the organization that distributes, archives, or processes the data.",
+      "description": "consists of the ShortName and LongName of the organization that distributes, archives, or processes the data.",
       "properties": {
         "ShortName": {
           "description": "Short name of the organization.",
@@ -201,16 +201,16 @@
     "ContactType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "consists of a contact. A contact, can be phone, fax, email, url, etc.",
+      "description": "Method for contacting the responsible party.   A contact can be available via phone, email, Facebook, or Twitter.",
       "properties": {
         "Type": {
-          "description": "This states the type of contact - phone, fax, email, url, etc.",
+          "description": "This is the method type for contacting the responsible party - phone, email, Facebook, or Twitter.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Value": {
-          "description": "This is the contact phone number, email address, url, etc.",
+          "description": "This is the contact phone number, email address, Facebook address, or Twitter handle associated with the contact method.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -220,10 +220,10 @@
     "AddressType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity contains the address details for each contact.",
+      "description": "This entity contains the physical address details for the responsible party.",
       "properties": {
         "StreetAddresses": {
-          "description": "An address line for the address, used for mailing or physical addresses of organizations or individuals who serve as points of contact.",
+          "description": "An address line for the street address, used for mailing or physical addresses of organizations or individuals who serve as responsible parties for the collection.",
           "type": "array",
           "items": {
             "type": "string",
@@ -233,25 +233,25 @@
           "minItems": 0
         },
         "City": {
-          "description": "The city of the person or organization.",
+          "description": "The city portion of the physical address.",
           "type": "string",
           "minLength": 1,
           "maxLength": 100
         },
         "StateProvince": {
-          "description": "The state or province of the address.",
+          "description": "The state or province portion of the physical address.",
           "type": "string",
           "minLength": 1,
           "maxLength": 100
         },
         "PostalCode": {
-          "description": "The zip or other postal code of the address.",
+          "description": "The zip or other postal code portion of the physical address.",
           "type": "string",
           "minLength": 1,
           "maxLength": 20
         },
         "Country": {
-          "description": "The country of the address.",
+          "description": "The country of the physical address.",
           "type": "string",
           "minLength": 1,
           "maxLength": 100
@@ -268,7 +268,7 @@
           "$ref": "#/definitions/TitleType"
         },
         "Description": {
-          "description": "Provides information about the resource defined by the URL",
+          "description": "Description of the web page at this URL.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
@@ -285,7 +285,7 @@
           }
         },
         "URLs": {
-          "description": "The URL to the resource associated with the data set.",
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
           "type": "array",
           "items": {
             "format": "uri",
@@ -296,13 +296,13 @@
           "minItems": 1
         },
         "MimeType": {
-          "description": "The mime type of the online resource.",
+          "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
           "type": "string",
           "minLength": 1,
           "maxLength": 50
         },
         "FileSize": {
-          "description": "The size of a download or site.",
+          "description": "The estimated or average size of a file downloaded from this site.",
           "$ref": "#/definitions/FileSizeType"
         }
       },
@@ -328,28 +328,28 @@
     "ResourceCitationType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element permits the user to properly cite the provider and specifies how the data should be cited in professional scientific literature. This element provides a citation for the item itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the service is listed here.",
+      "description": "Building block text fields used to construct the recommended language for citing the collection in professional scientific literature.  The citation language constructed from these fields references the collection itself, and is not designed for listing bibliographic references of scientific research articles arising from search results. A list of references related to the research results should be in the Publication Reference element. A DOI that specifically identifies the collection is listed here.",
       "properties": {
         "Version": {
-          "description": "The version of the citation.",
+          "description": "The version of the collection.",
           "$ref": "#/definitions/VersionType"
         },
         "RelatedUrl": {
-          "description": "The URL of the online resource containing the data set.",
+          "description": "The URL of the landing page for the collection.",
           "$ref": "#/definitions/RelatedUrlType"
         },
         "Title": {
-          "description": "The title of the data; this may be the same as Entry Title.",
+          "description": "The title of the collection; this is the same as the collection Entry Title.",
           "$ref": "#/definitions/TitleType"
         },
         "Creator": {
-          "description": "The name of the organization(s) or individual(s) with primary intellectual responsibility for the data's development.",
+          "description": "The name of the organization(s) or individual(s) with primary intellectual responsibility for the collection's development.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
         },
         "Editor": {
-          "description": "The individual(s) responsible for changing the data.",
+          "description": "The individual(s) responsible for changing the data in the collection.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -361,18 +361,18 @@
           "maxLength": 1024
         },
         "ReleaseDate": {
-          "description": "The date when the data was made available for release.",
+          "description": "The date when the collection was made available for release.",
           "format": "date-time",
           "type": "string"
         },
         "ReleasePlace": {
-          "description": "The name of the city (and state or province and country if needed) where the data set was made available for release.",
+          "description": "The name of the city (and state or province and country if needed) where the collection was made available for release.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
         },
         "Publisher": {
-          "description": "The name of the individual or organization that made the data available for release.",
+          "description": "The name of the individual or organization that made the collection available for release.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -396,7 +396,7 @@
           "maxLength": 4000
         },
         "DOI": {
-          "description": "The Digital Object Identifier (DOI) of a data set.",
+          "description": "The Digital Object Identifier (DOI) for the collection.  This is the registered DOI that resolves to a landing page for the collection.",
           "$ref": "#/definitions/DoiType"
         }
       }
@@ -422,16 +422,16 @@
     "AccessConstraintsType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Field allows the author to provide information about any constraints for accessing the data set. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the data set. Some words that may be used in this field include: Public, In-house, Limited, Additional detailed instructions on how to access the data can be entered in this field.",
+      "description": "Information about any constraints for accessing the data set. This includes any special restrictions, legal prerequisites, limitations and/or warnings on obtaining the data set.",
       "properties": {
         "Description": {
-          "description": "Description of the constraint",
+          "description": "Free-text description of the constraint.  In DIF, this field is called Access_Constraint.   In ECHO, this field is called RestrictionComment.  Examples of text in this field are Public, In-house, Limited.  Additional detailed instructions on how to access the collection data may be entered in this field.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
         },
         "Value": {
-          "description": "Value of the constraint",
+          "description": "Numeric value that is used with Access Control Language (ACLs) to restrict access to this collection.  For example, a provider might specify a collection level ACL that hides all collections with a value element set to 15.   In ECHO, this field is called RestrictionFlag.  This field does not exist in DIF.",
           "type": "number"
         }
       },
@@ -440,24 +440,24 @@
     "MetadataAssociationType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element is used to identify other services, collections, visualizations, granules, and other metadata types and resources that are associated with or dependent on the data described by the metadata. This element is also used to identify a parent metadata record if it exists. This usage should be reserved for instances where a group of metadata records are subsets that can be better represented by one parent metadata record, which describes the entire set. In some instances, a child may point to more than one parent. The EntryId is the same as the element described elsewhere in this document where it contains and ID, and Version.",
+      "description": "Used to identify other services, collections, visualizations, granules, and other metadata types and resources that are associated with or dependent on the this collection, including parent-child relationships.",
       "properties": {
         "Type": {
-          "description": "Type is used to indicate the basis (justification) for relating one resource to another",
+          "description": "The type of association between this collection metadata record and the target metadata record.   Choose type from the drop-down list.",
           "$ref": "#/definitions/MetadataAssociateTypeEnum"
         },
         "Description": {
-          "description": "The description of the association.",
+          "description": "Free-text description of the association between this collection record and the target metadata record.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
         },
         "EntryId": {
-          "description": "ID of the metadata record that is associated with this record.",
+          "description": "Shortname of the target metadata record that is associated with this collection record.",
           "$ref": "#/definitions/EntryIdType"
         },
         "Version": {
-          "description": "The version of the metadata record that is associated with this record.",
+          "description": "The version of the target metadata record that is associated with this collection record.",
           "$ref": "#/definitions/VersionType"
         }
       },
@@ -466,14 +466,14 @@
     "PublicationReferenceType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element describes key bibliographic citations pertaining to the data.",
+      "description": "Describes key bibliographic citations pertaining to the data.",
       "properties": {
         "RelatedUrl": {
-          "description": "The URL of the online resource containing the data set.",
+          "description": "The URL of the website related to the bibliographic citation.",
           "$ref": "#/definitions/RelatedUrlType"
         },
         "Title": {
-          "description": "The title of the publication.",
+          "description": "The title of the publication in the bibliographic citation.",
           "$ref": "#/definitions/TitleType"
         },
         "Publisher": {
@@ -487,7 +487,7 @@
           "$ref": "#/definitions/DoiType"
         },
         "Author": {
-          "description": "The author of the publication reference.",
+          "description": "The author of the publication.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -498,7 +498,7 @@
           "type": "string"
         },
         "Series": {
-          "description": "The name of the series.",
+          "description": "The name of the series of the publication.",
           "type": "string",
           "minLength": 1,
           "maxLength": 1024
@@ -546,7 +546,7 @@
           "maxLength": 13
         },
         "OtherReferenceDetails": {
-          "description": "Additional free-text reference information.",
+          "description": "Additional free-text reference information about the publication.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
@@ -556,7 +556,7 @@
    "ScienceKeywordType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element enables specification of Earth science keywords.",
+      "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS).",
       "properties": {
         "Category": {
           "$ref": "#/definitions/KeywordStringType"
@@ -585,7 +585,7 @@
     "AdditionalAttributeType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity stores the data’s distinctive attributes (i.e. attributes used to describe the unique characteristics of the service which extend beyond those defined in this mapping).",
+      "description": "Additional unique attributes of the collection, beyond those defined in the UMM model, which the data provider deems useful for end-user understanding of the data in the collection.  Additional attributes are also called Product Specific Attributes (PSAs) or non-core attributes.  Examples are HORIZONTALTILENUMBER, VERTICALTILENUMBER.",
       "properties": {
         "Name": {
           "type": "string",
@@ -593,65 +593,65 @@
           "maxLength": 80
         },
         "Description": {
-          "description": "This attribute provides a description for the additional_attribute_name.",
+          "description": "Free-text description of the additional attribute.",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
         },
         "Value": {
-          "description": "This attribute contains the value ofthe product specific attribute (additional attribute) for all granules across a given collection",
+          "description": "Value of the additional attribute if it is the same for all granules across the collection.  If the value of the additional attribute may differ by granule, leave this collection-level value blank.",
           "type": "string",
           "minLength": 1,
           "maxLength": 500
         },
         "DataType": {
-          "description": "Data type of parameter value",
+          "description": "Data type of the values of the additional attribute.",
           "$ref": "#/definitions/DataTypeEnum"
         },
         "MeasurementResolution": {
-          "description": "This attribute will be used to identify the smallest unit increment to which the parameter value is measured.",
+          "description": "The smallest unit increment to which the additional attribute value is measured.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "ParameterRangeBegin": {
-          "description": "This attribute provides the minimum value of parameter over whole collection.",
+          "description": "The minimum value of the additional attribute over the whole collection.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "ParameterRangeEnd": {
-          "description": "This attribute provides the maximum value of parameter over whole collection.",
+          "description": "The maximum value of the additional attribute over the whole collection.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "ParameterUnitsOfMeasure": {
-          "description": "The standard unit of measurement for a not-core attribute. AVHRR: unit of geophysical parameter-units of geophysical parameter.",
+          "description": "The standard unit of measurement for the additional attribute.  For example, meters, hertz.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "ParameterValueAccuracy": {
-          "description": "An estimate of the accuracy of the assignment of attribute value. AVHRR: Measurement error or precision-measurement error or precision of a data product parameter. This can be specified in percent or the unit with which the parameter is measured.",
+          "description": "An estimate of the accuracy of the values of the additional attribute. For example, for AVHRR: Measurement error or precision-measurement error or precision of a data product parameter. This can be specified in percent or the unit with which the parameter is measured.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "ValueAccuracyExplanation": {
-          "description": "This defines the method used for determining the parameter value accuracy that is given for this non core attribute.",
+          "description": "Describes the method used for determining the parameter value accuracy that is given for this additional attribute.",
           "type": "string",
           "minLength": 1,
           "maxLength": 2048
         },
         "Group": {
-          "description": "Group identifies a namespace for the value.",
+          "description": "Identifies a namespace for the additional attribute name.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "UpdateDate": {
-          "description": "The date this attribute was updated.",
+          "description": "The date this additional attribute information was updated.",
           "format": "date-time",
           "type": "string"
         }
@@ -661,10 +661,10 @@
     "DistributionType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element describes media options, size, data format, and fees involved in distributing or accessing the data.",
+      "description": "Describes media options, size, data format, and fees involved in distributing or accessing the data.",
       "properties": {
         "DistributionMedia": {
-          "description": "The distribution media of the data or service.",
+          "description": "The distribution media for the collection data.",
           "type": "string",
           "minLength": 1,
           "maxLength": 500
@@ -677,13 +677,13 @@
           }
         },
         "DistributionFormat": {
-          "description": "The distribution format of the data.",
+          "description": "The distribution format of the collection data (e.g., HDF, netCDF).",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Fees": {
-          "description": "The fee for ordering the data or service.",
+          "description": "The fee for ordering the collection data.  The fee is entered as a number, in US Dollars.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -693,7 +693,7 @@
     "PlatformType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element describes the relevant platforms used to acquire the data. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
+      "description": "Describes the relevant platforms used to acquire the data in the collection. Platform type vocabulary is controlled and includes Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
       "properties": {
         "Type": {
           "description": "The most relevant platform type.",
@@ -708,7 +708,7 @@
           "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
-          "description": "The characteristics of platform specific attributes. The characteristic names must be unique on this platform; however the names do not have to be unique across platforms.",
+          "description": "Platform-specific characteristics, e.g., Equator Crossing Time, Inclination Angle, Orbital Period. The characteristic names must be unique on this platform; however the names do not have to be unique across platforms.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CharacteristicType"
@@ -767,7 +767,7 @@
     "InstrumentType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity registers the device used to measure or record data, including direct human observation. In cases where instruments have a single sensor or the instrument and sensor are used synonymously (e.g. AVHRR) the both Instrument and Sensor should be recorded. The Sensor information is represented by some other entities.",
+      "description": "Information about the device used to measure or record data in this collection, including direct human observation. In cases where instruments have a single sensor or the instrument and sensor are used synonymously (e.g. AVHRR), both Instrument and Sensor should be recorded. The Sensor information is represented in a separate section.",
       "properties": {
         "ShortName": {
           "$ref": "#/definitions/PlatformShortNameType"
@@ -776,7 +776,7 @@
           "$ref": "#/definitions/PlatformLongNameType"
         },
         "Characteristics": {
-          "description": "The characteristics of this instrument expressed as custom attributes. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
+          "description": "Instrument-specific characteristics, e.g., Wavelength, SwathWidth, Field of View. The characteristic names must be unique on this instrument; however the names do not have to be unique across instruments.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CharacteristicType"
@@ -790,7 +790,7 @@
           "maxLength": 2048
         },
         "NumberOfSensors": {
-          "description": "Number of sensors used on the instrument when acquire the granule data.",
+          "description": "Number of sensors used on the instrument when acquiring the granule data.",
           "type": "integer"
         },
         "Sensors": {
@@ -801,7 +801,7 @@
           "minItems": 0
         },
         "OperationalModes": {
-          "description": "The operation mode applied on the instrument when acquire the granule data.",
+          "description": "The operation mode applied on the instrument when acquiring the granule data.",
           "type": "array",
           "items": {
             "type": "string",
@@ -816,7 +816,7 @@
     "SensorType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity holds the referential information for collection source/sensor configuration including sensor parameters setting such as technique etc.",
+      "description": "Information about the collection source/sensor configuration, including sensor parameters settings such as technique etc.",
       "properties": {
         "ShortName": {
           "$ref": "#/definitions/ShortNameType"
@@ -825,7 +825,7 @@
           "$ref": "#/definitions/LongNameType"
         },
         "Characteristics": {
-          "description": "The characteristics of this sensor expressed as custom attributes. The characteristic names must be unique on this sensor; however the names do not have to be unique across sensors.",
+          "description": "Sensor-specific characteristics, e.g,. Wavelength, SwathWidth, Field of View.   The characteristic names must be unique on this sensor; however the names do not have to be unique across sensors.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/CharacteristicType"
@@ -844,7 +844,7 @@
     "ProjectType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity contains attributes describing the scientific endeavor(s) to which the collection is associated. Scientific endeavors include campaigns, projects, interdisciplinary science investigations, missions, field experiments, etc.",
+      "description": "Information describing the scientific endeavor(s) with which the collection is associated. Scientific endeavors include campaigns, projects, interdisciplinary science investigations, missions, field experiments, etc.",
       "properties": {
         "ShortName": {
           "description": "The unique identifier by which a project or campaign/experiment is known. The campain/project is the scientific endeavor associated with the acquisition of the collection. Collections may be associated with multiple campaigns.",
@@ -884,10 +884,10 @@
     "TemporalExtentType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This class contains attributes, which describe the temporal range of a specific collection. This extent can be represented in a variety of ways: Range Date Time Single Date Time Periodic Date Time",
+      "description": "Information which describes the temporal range or extent of a specific collection.",
       "properties": {
         "TemporalRangeType": {
-          "description": "This attribute tells the system and ultimately the end user how temporal coverage is specified for the collection.",
+          "description": "This attribute tells the system and ultimately the end user how temporal coverage is specified for the collection.  Choices are Single Date Time, Range Date Time, and Periodic Date Time.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -897,7 +897,7 @@
           "type": "integer"
         },
         "EndsAtPresentFlag": {
-          "description": "This attribute will denote that a data collection which covers, temporally, a discontinuous range, currently ends at the present date. This way, the granules, which comprise the data collection, that are continuously being added to inventory need not update the data collection metadata for each one.",
+          "description": "Setting the Ends At Present Flag to 'True' indicates that a data collection which covers, temporally, a discontinuous range, currently ends at the present date.  Setting the Ends at Present flag to 'True' eliminates the need to continuously update the Range Ending Time for collections where granules are continuously being added to the collection inventory.",
           "type": "boolean"
         },
         "RangeDateTimes": {
@@ -917,7 +917,7 @@
           "minItems": 1
         },
         "PeriodicDateTimes": {
-          "description": "This entity contains the name of the temporal period in addition to the date, time, duration unit, and value, and cycle duration unit and value. Used at the collection level to describe a collection having granules, which cover a regularly occurring period.",
+          "description": "Temporal information about a collection having granules collected at a regularly occurring period.   Information includes the start and end dates of the period, duration unit and value, and cycle duration unit and value.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/PeriodicDateTimeType"
@@ -944,7 +944,7 @@
           "type": "string"
         },
         "EndingDateTime": {
-          "description": "The time of the temporal coverage period being described ended.",
+          "description": "The time when the temporal coverage period being described ended.",
           "format": "date-time",
           "type": "string"
         }
@@ -954,7 +954,7 @@
     "PeriodicDateTimeType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity contains the name of the temporal period in addition to the date, time, duration unit, and value, and cycle duration unit and value. Used at the collection level to describe a collection having granules, which cover a regularly occurring period.",
+      "description": "Information about Periodic Date Time collections, including the name of the temporal period in addition to the start and end dates, duration unit and value, and cycle duration unit and value.",
       "properties": {
         "Name": {
           "description": "The name given to the recurring time period. e.g. 'spring - north hemi.'",
@@ -963,12 +963,12 @@
           "maxLength": 30
         },
         "StartDate": {
-          "description": "This attribute provides the date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.",
+          "description": "The date (day and time) of the first occurrence of this regularly occurring period which is relevant to the collection coverage.",
           "format": "date-time",
           "type": "string"
         },
         "EndDate": {
-          "description": "This attribute provides the date (day and time) of the end occurrence of this regularly occurring period which is relevant to the collection, granule, or event coverage.",
+          "description": "The date (day and time) of the end occurrence of this regularly occurring period which is relevant to the collection coverage.",
           "format": "date-time",
           "type": "string"
         },
@@ -996,7 +996,7 @@
       "description": "Specifies the geographic and vertical (altitude, depth) coverage of the data.",
       "properties": {
         "SpatialCoverageType": {
-          "description": "This attribute denotes whether the collection's spatial coverage requires horizontal, vertical, or both in the spatial domain and coordinate system definitions.",
+          "description": "Denotes whether the collection's spatial coverage requires horizontal, vertical, horizontal and vertical, orbit, or vertical and orbit in the spatial domain and coordinate system definitions.",
           "$ref": "#/definitions/SpatialCoverageTypeEnum"
         },
         "HorizontalSpatialDomain": {
@@ -1020,10 +1020,10 @@
     "HorizontalSpatialDomainType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This entity holds collection horizontal spatial coverage data.",
+      "description": "Information about a collection with horizontal spatial coverage.",
       "properties": {
         "ZoneIdentifier": {
-          "description": "The appropriate numeric or alpha code used to identify the various zones in this grid coordinate system.",
+          "description": "The appropriate numeric or alpha code used to identify the various zones in the collection's grid coordinate system.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -1084,7 +1084,7 @@
     "PointType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The longitude and latitude value of a spatially referenced point in degrees.",
+      "description": "The longitude and latitude values of a spatially referenced point in degrees.",
       "properties": {
         "Longitude": {
           "$ref": "#/definitions/LongitudeType"
@@ -1185,13 +1185,13 @@
       "additionalProperties": false,
       "properties": {
         "Type": {
-          "description": "This attribute describes the type of the area of vertical space covered by the locality.",
+          "description": "Describes the type of the area of vertical space covered by the collection locality.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "Value": {
-          "description": "This attribute describes the extent of the area of vertical space covered by the granule. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.",
+          "description": "Describes the extent of the area of vertical space covered by the collection. Must be accompanied by an Altitude Encoding Method description. The datatype for this attribute is the value of the attribute VerticalSpatialDomainType. The unit for this attribute is the value of either DepthDistanceUnits or AltitudeDistanceUnits.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -1230,7 +1230,7 @@
     "TilingIdentificationSystemType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "This element describes the relevant platforms used to acquire the data related to the service. Platform types are controlled and include Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc. This platform includes zero or more instruments",
+      "description": "Information about a two-dimensional tiling system related to this collection.",
       "properties": {
         "TilingIdentificationSystemName": {
           "type": "string",
@@ -1248,7 +1248,7 @@
     "TilingCoordinateType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Defines the minimum and maximum value for one dimension of a two dimensional coordinate.",
+      "description": "Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.",
       "properties": {
         "MinimumValue": {
           "type": "number"
@@ -1303,13 +1303,13 @@
       "maxLength": 1030
     },
     "AbstractType": {
-      "description": "Field provides a brief description of the data set. This allows potential users to determine if the data set is useful for their needs.",
+      "description": "A brief description of the collection. This allows potential users to determine if the collection is useful for their needs.",
       "type": "string",
       "minLength": 1,
       "maxLength": 4000
     },
     "PurposeType": {
-      "description": "Describe the purpose and/or intended use of data.",
+      "description": "Describes the purpose and/or intended use of data in this collection.",
       "type": "string",
       "minLength": 1,
       "maxLength": 4000
@@ -1330,33 +1330,33 @@
       "maxLength": 80
     },
     "PlatformShortNameType": {
-      "description": "The unique name.",
+      "description": "The unique name of the platform.",
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
       "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
     },
     "LongNameType": {
-      "description": "The expanded or long name of the short name.",
+      "description": "The expanded or long name related to the short name.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1024
     },
     "PlatformLongNameType": {
-      "description": "The expanded or long name of the short name.",
+      "description": "The expanded or long name related to the short name of the platform.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1024,
       "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{0,1023}"
     },
     "QualityType": {
-      "description": "Field allows the author to provide information about the quality of the data or any quality assurance procedures followed in producing the data described in the metadata. Suggestions for information to include in the Quality field: Description should be succinct. Include indicators of data quality or quality flags. Include recognized or potential problems with quality. Established quality control mechanisms should be included. Established quantitative quality measurements should be included.",
+      "description": "Free-text information about the quality of the data in the collection or any quality assurance procedures followed in producing the data described in the metadata. Suggestions for information to include in the Quality field: Description should be succinct. Include indicators of data quality or quality flags. Include recognized or potential problems with quality. Established quality control mechanisms should be included. Established quantitative quality measurements should be included.",
       "type": "string",
       "minLength": 1,
       "maxLength": 12000
     },
     "UseConstraintsType": {
-      "description": "Field allows the author to describe how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
+      "description": "Free-text information about how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
       "type": "string",
       "minLength": 1,
       "maxLength": 12000
@@ -1395,13 +1395,13 @@
       "enum": ["CARTESIAN", "GEODETIC"]
     },
     "LatitudeType": {
-      "description": "The latitude value of a spatially referenced pointer in degree.",
+      "description": "The latitude value of a spatially referenced point, in degrees.  Latitude values range from -90 to 90.",
       "type": "number",
       "minimum": -90,
       "maximum": 90
     },
     "LongitudeType": {
-      "description": "The longitude value of a spatially referenced pointer in degree.",
+      "description": "The longitude value of a spatially referenced point, in degrees.  Longitude values range from -180 to 180.",
       "type": "number",
       "minimum": -180,
       "maximum": 180

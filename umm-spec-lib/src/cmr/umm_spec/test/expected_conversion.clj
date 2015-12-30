@@ -10,6 +10,7 @@
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.iso-keywords :as kws]
             [cmr.umm-spec.json-schema :as js]
+            [cmr.umm-spec.date-util :as du]
             [cmr.umm-spec.models.collection :as umm-c]
             [cmr.umm-spec.models.common :as cmn]
             ;; Required for loading service models for testing
@@ -855,19 +856,19 @@
         (update-in-each [:HorizontalSpatialDomain :Geometry :BoundingRectangles] assoc :CenterPoint nil)
         prune-empty-maps)))
 
-(defn- fixup-smap-data-dates
-  "Because when we generate our bogus SMAP data for round-trip tests, we duplicate the first date
-  value in DataDates."
+(defn- expected-smap-data-dates
+  "Returns the expected ISO SMAP DataDates."
   [data-dates]
-  (cons (first data-dates)
-        data-dates))
+  (if data-dates
+    data-dates
+    [(cmn/map->DateType {:Type "CREATE" :Date du/parsed-default-date})]))
 
 (defmethod convert-internal :iso-smap
   [umm-coll _]
   (-> umm-coll
       (convert-internal :iso19115)
       (update-in [:SpatialExtent] expected-smap-iso-spatial-extent)
-      (update-in [:DataDates] fixup-smap-data-dates)
+      (update-in [:DataDates] expected-smap-data-dates)
       ;; ISO SMAP does not support the PrecisionOfSeconds field.
       (update-in-each [:TemporalExtents] assoc :PrecisionOfSeconds nil)
       ;; TODO - Implement this as part of CMR-2057
