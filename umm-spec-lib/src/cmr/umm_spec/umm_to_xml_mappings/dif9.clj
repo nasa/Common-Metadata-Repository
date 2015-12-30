@@ -27,7 +27,7 @@
 
 (defn generate-instruments
   [platforms]
-  (let [instruments (mapcat :Instruments platforms)]
+  (let [instruments (distinct (mapcat :Instruments platforms))]
     (generate-short-name-long-name-elements :Sensor_Name instruments)))
 
 (defn generate-platforms

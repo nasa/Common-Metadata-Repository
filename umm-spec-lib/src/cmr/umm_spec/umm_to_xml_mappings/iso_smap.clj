@@ -101,7 +101,7 @@
            (for [platform (:Platforms c)]
              [:gmd:keyword
               (char-string (kws/smap-keyword-str platform))])
-           (for [instrument (mapcat :Instruments (:Platforms c))]
+           (for [instrument (distinct (mapcat :Instruments (:Platforms c)))]
              [:gmd:keyword
               (char-string (kws/smap-keyword-str instrument))])]]
          [:gmd:language (char-string (or (:DataLanguage c) "eng"))]

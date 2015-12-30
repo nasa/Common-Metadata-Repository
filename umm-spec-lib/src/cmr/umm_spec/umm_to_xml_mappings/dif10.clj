@@ -25,18 +25,7 @@
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
-  #{u/not-provided
-    "Level 0"
-    "Level 1"
-    "Level 1A"
-    "Level 1B"
-    "Level 1T"
-    "Level 2"
-    "Level 2G"
-    "Level 2P"
-    "Level 3"
-    "Level 4"
-    "Level NA"})
+  #{u/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
 
 (def dif10-xml-namespaces
   {:xmlns "http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
@@ -252,6 +241,12 @@
                          c-progress
                          (get collection-progress->dif10-dataset-progress c-progress "IN WORK"))]))
 
+(defn- dif10-product-level-id
+  "Returns the given product-level-id in DIF10 format."
+  [product-level-id]
+  (when product-level-id
+    (product-levels (str/replace product-level-id #"Level " ""))))
+
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
   [c]
@@ -385,7 +380,7 @@
       [:Metadata_Last_Revision "2000-03-24T22:20:41-05:00"]
       (generate-data-dates c)]
      (generate-additional-attributes (:AdditionalAttributes c))
-     [:Product_Level_Id (get product-levels (-> c :ProcessingLevel :Id))]
+     [:Product_Level_Id (dif10-product-level-id (-> c :ProcessingLevel :Id))]
      [:Collection_Data_Type (:CollectionDataType c)]
      (when-let [access-value (get-in c [:AccessConstraints :Value])]
        [:Extended_Metadata
