@@ -5,6 +5,8 @@
             [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]
             [cmr.umm-spec.util :refer [without-default-value-of not-provided]]
             [clojure.set :as set]
+            [cmr.common.util :as util]
+            [clojure.string :as str]
             [clojure.string :as str]))
 
 (def serf-xml-namespaces
@@ -45,14 +47,14 @@
 (defn- extract-contacts-by-type
   "Returns a map of contact types to a list of the values."
   [contacts type]
-  (get (cmr.common.util/map-values #(map :Value %) (group-by :Type contacts)) type))
+  (get (util/map-values #(map :Value %) (group-by :Type contacts)) type))
 
 (defn- contact-to-serf
   "Converts a UMM-S Contact to the appropriate SERF Personnel elements as a vector"
   [contacts]
   (for [type ["email" "phone" "fax"]
         value (extract-contacts-by-type contacts type)]
-    [(keyword (clojure.string/capitalize type) ) value]))
+    [(keyword (str/capitalize type) ) value]))
 
 (defn- address-to-serf 
   "Converts a UMM-S Addresses to the appropriate SERF Personnel elements as a vector.
@@ -119,6 +121,7 @@
      [:Distribution_Size (:DistributionSize distribution)]
      [:Distribution_Format (:DistributionFormat distribution)]
      [:Fees (:Fees distribution)]]))
+
 (defn- create-related-urls
   "Creates a SERF Related URL element from a UMM-S Document"
   [s]
@@ -126,7 +129,7 @@
     [:Related_URL [:URL_Content_Type 
                    [:Type (:Type (:ContentType related-url))]
                    [:Subtype (:Subtype (:ContentType related-url))]]
-     (for[url (:URLs related-url)]
+     (for [url (:URLs related-url)]
        [:URL url])
      [:Description (:Description related-url)]]))
 
@@ -171,16 +174,14 @@
   "Creates a SERF IDN_Node element from a UMM-S AdditionalAttributes mapping"
   [s]
   (for [idn-node (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))
-           :let [[:node-short-name :node-long-name] (str/split (:Value idn-node) #"\|")]]
-       [:IDN_Node [:Short_Name node-short-name]
-        [:Long_Name node-long-name]]))
+        :let [[:node-short-name :node-long-name] (str/split (:Value idn-node) #"\|")]]
+    [:IDN_Node [:Short_Name node-short-name]
+     [:Long_Name node-long-name]]))
 
 (def inserted-metadata
   "Inserted Metadata by CMR to account for missing fields"
   #{"Metadata_Name" "Metadata_Version" "IDN_Node"})
-(comment 
-  (println (umm-s-to-serf-xml cmr.umm-spec.test.expected-conversion/example-service-record))
-  )
+
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
