@@ -3,7 +3,8 @@
   (:require [cmr.umm-spec.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]
             [cmr.umm-spec.xml-to-umm-mappings.serf :as utx]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.string :as str]))
 
 (def serf-xml-namespaces
   "Contains a map of the SERF namespaces used when generating SERF XML"
@@ -165,10 +166,20 @@
      [:Short_Name (:ShortName service-project)]
      [:Long_Name (:LongName service-project)]]))
 
+(defn- create-idn-node 
+  "Creates a SERF IDN_Node element from a UMM-S AdditionalAttributes mapping"
+  [s]
+  (for [idn-node (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))
+           :let [[:node-short-name :node-long-name] (str/split (:Value idn-node) #"\|")]]
+       [:IDN_Node [:Short_Name node-short-name]
+        [:Long_Name node-long-name]]))
+
 (def inserted-metadata
   "Inserted Metadata by CMR to account for missing fields"
   #{"Metadata_Name" "Metadata_Version" "IDN_Node"})
-
+(comment 
+  (println (umm-s-to-serf-xml cmr.umm-spec.test.expected-conversion/example-service-record))
+  )
 (defn umm-s-to-serf-xml
   "Returns SERF XML structure from UMM collection record s."
   [s]
@@ -205,9 +216,7 @@
      (create-related-urls s)
      (for [ma (:MetadataAssociations s)]
        [:Parent_SERF (:EntryId ma)])
-     [:IDN_Node 
-      [:Short_Name  
-       (:Value (first (filter #(= "IDN_Node" (:Name %)) (:AdditionalAttributes s))))]]
+     (create-idn-node s)
      [:Metadata_Name 
       (:Value (first (filter #(= "Metadata_Name" (:Name %)) (:AdditionalAttributes s))))]
      [:Metadata_Version 

@@ -282,7 +282,10 @@
                                       :Value "VERSION 9.7.1"}
                                      {:Name "IDN_Node"
                                       :Description "Root SERF IDN_Node Object"
-                                      :Value "USA/NASA"}]
+                                      :Value "USA/NASA|IDN Test Node"}
+                                     {:Name "IDN_Node"
+                                      :Description "Root SERF IDN_Node Object"
+                                      :Value "USA/NASA|IDN Test Node 2"}]
               :EntryId "NASA_GES_DISC_AIRS_Atmosphere_Data_Web_Coverage_Service"                               
               :ScienceKeywords [{:Category "EARTH SCIENCE"
                                  :Topic "ATMOSPHERE"

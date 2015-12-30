@@ -59,6 +59,10 @@
     (is (empty? (core/validate-xml :service format metadata-xml)))
     (core/parse-metadata :service format metadata-xml)))
 
+(comment
+  (println (core/generate-metadata :service :serf expected-conversion/example-service-record))
+)
+
 (deftest roundtrip-example-collection-record
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
