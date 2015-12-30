@@ -1,7 +1,11 @@
 (ns cmr.umm-spec.date-util
-  "Useful UMM date values and functions.")
+  "Useful UMM date values and functions."
+  (:require [cmr.common.date-time-parser :as p]))
 
 (def default-date-value "1970-01-01T00:00:00")
+
+(def parsed-default-date
+  (p/parse-datetime default-date-value))
 
 (defn or-default
   "Returns x if not nil, or else the default date placeholder value."

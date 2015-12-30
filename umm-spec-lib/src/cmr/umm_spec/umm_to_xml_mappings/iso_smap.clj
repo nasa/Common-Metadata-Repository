@@ -5,6 +5,7 @@
             [cmr.umm-spec.iso19115-2-util :as iso]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
             [cmr.umm-spec.xml.gen :refer :all]
+            [cmr.umm-spec.date-util :as du]
             [cmr.umm-spec.util :as su :refer [with-default]]))
 
 (def iso-smap-xml-namespaces
@@ -19,20 +20,6 @@
    :xmlns:srv "http://www.isotc211.org/2005/srv"
    :xmlns:xlink "http://www.w3.org/1999/xlink"
    :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"})
-
-(defn- date-element
-  "Returns ISO XML gmd:date element for given UMM DateType record."
-  [umm-date]
-  (let [type-code (get iso/iso-date-type-codes (:Type umm-date))
-        date-value (:Date umm-date)]
-    [:gmd:date
-     [:gmd:CI_Date
-      [:gmd:date
-       [:gco:DateTime date-value]]
-      [:gmd:dateType
-       [:gmd:CI_DateTypeCode {:codeList (str (:ngdc iso/code-lists) "#CI_DateTypeCode")
-                              :codeListValue type-code}
-        type-code]]]]))
 
 (defn- generate-collection-progress
   "Returns ISO SMAP CollectionProgress element from UMM-C collection c."
@@ -60,6 +47,22 @@
       [:gmd:northBoundLatitude
        [:gco:Decimal (:NorthBoundingCoordinate br)]]]]))
 
+(defn- generate-data-dates
+  "Returns ISO SMAP XML elements for the DataDates of given UMM collection.
+  If no DataDates are present, use the default date value as the CREATE datetime."
+  [c]
+  (let [dates (or (:DataDates c) [{:Type "CREATE" :Date du/default-date-value}])]
+    (for [date dates
+          :let [type-code (get iso/iso-date-type-codes (:Type date))
+                date-value (or (:Date date) du/default-date-value)]]
+      [:gmd:date
+       [:gmd:CI_Date
+        [:gmd:date
+         [:gco:DateTime date-value]]
+        [:gmd:dateType
+         [:gmd:CI_DateTypeCode {:codeList (str (:iso iso/code-lists) "#CI_DateTypeCode")
+                                :codeListValue type-code} type-code]]]])))
+
 (defn umm-c-to-iso-smap-xml
   "Returns ISO SMAP XML from UMM-C record c."
   [c]
@@ -78,9 +81,7 @@
          [:gmd:citation
           [:gmd:CI_Citation
            [:gmd:title (char-string "SMAP Level 1A Parsed Radar Instrument Telemetry")]
-           ;; This is kind of bogus
-           (when-let [some-date (first (:DataDates c))]
-             (date-element some-date))
+           (generate-data-dates c)
            [:gmd:identifier
             [:gmd:MD_Identifier
              [:gmd:code (char-string (:ShortName c))]
@@ -133,8 +134,7 @@
          [:gmd:citation
           [:gmd:CI_Citation
            [:gmd:title (char-string "DataSetId")]
-           (when-let [some-date (first (:DataDates c))]
-             (date-element some-date))]]
+           (generate-data-dates c)]]
          [:gmd:abstract (char-string "DataSetId")]
          [:gmd:aggregationInfo
           [:gmd:MD_AggregateInformation
@@ -145,14 +145,4 @@
             [:gmd:DS_AssociationTypeCode {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
                                           :codeListValue "largerWorkCitation"}
              "largerWorkCitation"]]]]
-         [:gmd:language (char-string "eng")]]]
-       (for [date (drop 1 (:DataDates c))
-             :let [description (str (:Type date) " date")]]
-         [:gmd:identificationInfo
-          [:gmd:MD_DataIdentification
-           [:gmd:citation
-            [:gmd:CI_Citation
-             [:gmd:title (char-string description)]
-             (date-element date)]]
-           [:gmd:abstract (char-string description)]
-           [:gmd:language (char-string "eng")]]])]]]))
+         [:gmd:language (char-string "eng")]]]]]]))

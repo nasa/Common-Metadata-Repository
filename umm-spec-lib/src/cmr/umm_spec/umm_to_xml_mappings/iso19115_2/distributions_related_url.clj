@@ -3,6 +3,7 @@
   (:require [clojure.string :as str]
             [cmr.umm-spec.xml.gen :refer :all]
             [cmr.umm-spec.iso19115-2-util :as iso]
+            [cmr.umm-spec.url :as url]
             [cmr.common.util :as util]
             [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.organizations-personnel :as org-per]
             [cmr.umm-spec.util :as su]))
@@ -17,7 +18,7 @@
 (defn browse-url?
   "Returns true if the related-url is browse url"
   [related-url]
-  (= "GET RELATED VISUALIZATION" (get-in related-url [:ContentType :Type])))
+  (some #{"GET RELATED VISUALIZATION"} (:Relation related-url)))
 
 (defn browse-urls
   "Returns the related-urls that are browse urls"
@@ -32,28 +33,28 @@
 (defn generate-browse-urls
   "Returns content generator instructions for a browse url"
   [c]
-  (for [{:keys [URLs Description] {:keys [Type]} :ContentType} (browse-urls (:RelatedUrls c))
+  (for [{:keys [URLs Description] [rel] :Relation} (browse-urls (:RelatedUrls c))
         url URLs]
     [:gmd:graphicOverview
      [:gmd:MD_BrowseGraphic
       [:gmd:fileName
        [:gmx:FileName {:src url}]]
       [:gmd:fileDescription (char-string Description)]
-      [:gmd:fileType (char-string (type->name Type))]]]))
+      [:gmd:fileType (char-string (type->name rel))]]]))
 
 (defn generate-online-resource-url
   "Returns content generator instructions for an online resource url or access url"
   [online-resource-url]
-  (let [{:keys [URLs Protocol Description] {:keys [Type]} :ContentType} online-resource-url
-        name (type->name Type)
-        code (if (= "GET DATA" Type) "download" "information")]
+  (let [{:keys [URLs Description] [rel] :Relation} online-resource-url
+        name (type->name rel)
+        code (if (= "GET DATA" rel) "download" "information")]
     (for [url URLs]
       [:gmd:onLine
        [:gmd:CI_OnlineResource
         [:gmd:linkage
          [:gmd:URL url]]
         [:gmd:protocol
-         (char-string Protocol)]
+         (char-string (url/protocol url))]
         [:gmd:name
          (char-string name)]
         (if Description
@@ -68,44 +69,43 @@
 (defn generate-distributions
   "Returns content generator instructions for distributions in the given umm-c"
   [c]
-  (let [distributions (su/remove-empty-records (:Distributions c))
-        related-urls (online-resource-urls (:RelatedUrls c))]
+  (let [distributions (:Distributions c)
+        related-urls (online-resource-urls (:RelatedUrls c))
+        responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))
+        contact-element [:gmd:distributorContact (when-not responsibility
+                                                   {:gco:nilReason "missing"})
+                         (when responsibility
+                           (org-per/generate-responsible-party responsibility))]]
     (when (or distributions related-urls)
-      (let [truncate-map (fn [key] (util/truncate-nils (map key distributions)))
-            sizes (truncate-map :DistributionSize)
-            fees (truncate-map :Fees)]
-        [:gmd:distributionInfo
-         [:gmd:MD_Distribution
+      [:gmd:distributionInfo
+       [:gmd:MD_Distribution
+        (for [[d idx] (map vector distributions (range (count distributions)))]
           [:gmd:distributor
            [:gmd:MD_Distributor
-            [:gmd:distributorContact {:gco:nilReason "missing"}
-             (when-let [responsibility (first (org-per/responsibility-by-role (:Organizations c) "DISTRIBUTOR"))]
-               (org-per/generate-responsible-party responsibility))]
-            (for [fee (map su/nil-to-empty-string fees)]
-              [:gmd:distributionOrderProcess
-               [:gmd:MD_StandardOrderProcess
-                [:gmd:fees
-                 (char-string fee)]]])
-            (for [distribution distributions
-                  :let [{media :DistributionMedia format :DistributionFormat} distribution]]
-              [:gmd:distributorFormat
-               [:gmd:MD_Format
-                [:gmd:name
-                 (char-string (su/nil-to-empty-string format))]
-                [:gmd:version {:gco:nilReason "unknown"}]
-                [:gmd:specification
-                 (char-string (su/nil-to-empty-string media))]]])
-            (for [size sizes]
+            contact-element
+            [:gmd:distributionOrderProcess
+             [:gmd:MD_StandardOrderProcess
+              [:gmd:fees
+               (char-string (or (:Fees d) ""))]]]
+            [:gmd:distributorFormat
+             [:gmd:MD_Format
+              [:gmd:name
+               (char-string (or (:DistributionFormat d) ""))]
+              [:gmd:version {:gco:nilReason "unknown"}]
+              [:gmd:specification
+               (char-string (or (:DistributionMedia d) ""))]]]
+            (for [size (:Sizes d)]
               [:gmd:distributorTransferOptions
                [:gmd:MD_DigitalTransferOptions
-                ;; size could be a number or string, so the checking here is verbose
-                (if (or (nil? size)
-                        (and (string? size) (str/blank? size)))
-                  ;; we have to generate an empty element for Distribution Size with nil.
-                  ""
-                  [:gmd:transferSize
-                   [:gco:Real size]])]])
-            [:gmd:distributorTransferOptions
-             [:gmd:MD_DigitalTransferOptions
-              (for [related-url related-urls]
-                (generate-online-resource-url related-url))]]]]]]))))
+                [:gmd:unitsOfDistribution
+                 (char-string (:Unit size))]
+                [:gmd:transferSize
+                 [:gco:Real (:Size size)]]]])
+            (when (zero? idx))]])
+        [:gmd:distributor
+         [:gmd:MD_Distributor
+          contact-element
+          [:gmd:distributorTransferOptions
+           [:gmd:MD_DigitalTransferOptions
+            (for [related-url related-urls]
+              (generate-online-resource-url related-url))]]]]]])))

@@ -59,8 +59,7 @@
               description (value-of resource "Description")]]
     {:URLs [(value-of resource "URL")]
      :Description description
-     :ContentType {:Type type
-                   :Subtype sub-type}
+     :Relation (when type [type sub-type])
      :MimeType (value-of resource "MimeType")}))
 
 (defn- parse-online-access-urls
@@ -70,7 +69,7 @@
     {:URLs [(value-of resource "URL")]
      :Description (value-of resource "URLDescription")
      :MimeType (value-of resource "MimeType")
-     :ContentType {:Type "GET DATA"}}))
+     :Relation ["GET DATA"]}))
 
 (defn- parse-browse-urls
   "Parse browse urls"
@@ -81,7 +80,7 @@
      :FileSize (when file-size {:Size file-size :Unit "Bytes"})
      :Description (value-of resource "Description")
      :MimeType (value-of resource "MimeType")
-     :ContentType {:Type "GET RELATED VISUALIZATION"}}))
+     :Relation ["GET RELATED VISUALIZATION"]}))
 
 (defn parse-related-urls
   "Returns related-urls elements from a parsed XML structure"

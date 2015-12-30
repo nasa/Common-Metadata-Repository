@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9
   "Defines mappings from a UMM record into DIF9 XML"
-  (:require [cmr.umm-spec.xml.gen :refer :all]
+  (:require [cmr.umm-spec.util :as u]
+            [cmr.umm-spec.xml.gen :refer :all]
             [camel-snake-kebab.core :as csk]))
 
 (def dif9-xml-namespaces
@@ -37,15 +38,21 @@
      [:Entry_Title (:EntryTitle c)]
      [:Data_Set_Citation
       [:Version (:Version c)]]
-     (for [sk (:ScienceKeywords c)]
+     (if-let [sks (:ScienceKeywords c)]
+       (for [sk sks]
+         [:Parameters
+          [:Category (:Category sk)]
+          [:Topic (:Topic sk)]
+          [:Term (:Term sk)]
+          [:Variable_Level_1 (:VariableLevel1 sk)]
+          [:Variable_Level_2 (:VariableLevel2 sk)]
+          [:Variable_Level_3 (:VariableLevel3 sk)]
+          [:Detailed_Variable (:DetailedVariable sk)]])
+       ;; Default element
        [:Parameters
-        [:Category (:Category sk)]
-        [:Topic (:Topic sk)]
-        [:Term (:Term sk)]
-        [:Variable_Level_1 (:VariableLevel1 sk)]
-        [:Variable_Level_2 (:VariableLevel2 sk)]
-        [:Variable_Level_3 (:VariableLevel3 sk)]
-        [:Detailed_Variable (:DetailedVariable sk)]])
+        [:Category u/not-provided]
+        [:Topic u/not-provided]
+        [:Term u/not-provided]])
      (for [topic-category (:ISOTopicCategories c)]
        [:ISO_Topic_Category topic-category])
      (for [ak (:AncillaryKeywords c)]
@@ -93,7 +100,7 @@
      (for [distribution (:Distributions c)]
        [:Distribution
         [:Distribution_Media (:DistributionMedia distribution)]
-        [:Distribution_Size (:DistributionSize distribution)]
+        [:Distribution_Size (u/data-size-str (:Sizes distribution))]
         [:Distribution_Format (:DistributionFormat distribution)]
         [:Fees (:Fees distribution)]])
      (for [pub-ref (:PublicationReferences c)]
@@ -121,10 +128,10 @@
       [:Purpose (:Purpose c)]]
      (for [related-url (:RelatedUrls c)]
        [:Related_URL
-        (when-let [ct (:ContentType related-url)]
+        (when-let [[type subtype] (:Relation related-url)]
           [:URL_Content_Type
-           [:Type (:Type ct)]
-           [:Subtype (:Subtype ct)]])
+           [:Type type]
+           [:Subtype subtype]])
         (for [url (:URLs related-url)]
           [:URL url])
         [:Description (:Description related-url)]])

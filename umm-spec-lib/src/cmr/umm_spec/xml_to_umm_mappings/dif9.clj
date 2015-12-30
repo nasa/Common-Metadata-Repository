@@ -70,7 +70,7 @@
    :SpatialExtent {:HorizontalSpatialDomain {:Geometry {:BoundingRectangles (parse-mbrs doc)}}}
    :Distributions (for [distribution (select doc "/DIF/:Distribution")]
                     {:DistributionMedia (value-of distribution "Distribution_Media")
-                     :DistributionSize (value-of distribution "Distribution_Size")
+                     :Sizes (su/parse-data-sizes (value-of distribution "Distribution_Size"))
                      :DistributionFormat (value-of distribution "Distribution_Format")
                      :Fees (value-of distribution "Fees")})
    :ProcessingLevel {:Id
@@ -127,8 +127,8 @@
                       :let [description (value-of related-url "Description")]]
                   {:URLs (values-at related-url "URL")
                    :Description description
-                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}})
+                   :Relation [(value-of related-url "URL_Content_Type/Type")
+                              (value-of related-url "URL_Content_Type/Subtype")]})
    :MetadataAssociations (for [parent-dif (values-at doc "/DIF/Parent_DIF")]
                            {:EntryId parent-dif})})
 

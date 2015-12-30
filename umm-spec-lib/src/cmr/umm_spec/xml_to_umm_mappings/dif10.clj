@@ -109,7 +109,7 @@
    :TilingIdentificationSystem (spatial/parse-tiling doc)
    :Distributions (for [dist (select doc "/DIF/Distribution")]
                     {:DistributionMedia (value-of dist "Distribution_Media")
-                     :DistributionSize (value-of dist "Distribution_Size")
+                     :Sizes (u/parse-data-sizes (value-of dist "Distribution_Size"))
                      :DistributionFormat (value-of dist "Distribution_Format")
                      :Fees (value-of dist "Fees")})
    :ProcessingLevel {:Id (value-of doc "/DIF/Product_Level_Id")}
@@ -151,10 +151,9 @@
    :AncillaryKeywords (values-at doc  "/DIF/Ancillary_Keyword")
    :RelatedUrls (for [related-url (select doc "/DIF/Related_URL")]
                   {:URLs (values-at related-url "URL")
-                   :Protocol (value-of related-url "Protocol")
                    :Description (value-of related-url "Description")
-                   :ContentType {:Type (value-of related-url "URL_Content_Type/Type")
-                                 :Subtype (value-of related-url "URL_Content_Type/Subtype")}
+                   :Relation [(value-of related-url "URL_Content_Type/Type")
+                              (value-of related-url "URL_Content_Type/Subtype")]
                    :MimeType (value-of related-url "Mime_Type")})
    :MetadataAssociations (for [ma (select doc "/DIF/Metadata_Association")]
                            {:EntryId (value-of ma "Entry_ID/Short_Name")

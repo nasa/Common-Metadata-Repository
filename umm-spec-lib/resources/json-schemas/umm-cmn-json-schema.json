@@ -261,22 +261,28 @@
     "RelatedUrlType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Specifies links to Internet sites that contain information related to the collection, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, related data archives/servers, metadata extensions, online software packages, web mapping services, and calibration/validation data.",
       "properties": {
+        "Title": {
+          "description": "The Title is a one-line description of the resource, could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
+          "$ref": "#/definitions/TitleType"
+        },
         "Description": {
           "description": "Description of the web page at this URL.",
           "type": "string",
           "minLength": 1,
           "maxLength": 4000
         },
-        "ContentType": {
-          "$ref": "#/definitions/ContentTypeType"
-        },
-        "Protocol": {
-          "description": "The protocol for downloading data from this URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 20
+        "Relation": {
+          "description": "An array of keywords describing the relation of the online resource to this resource.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
         },
         "URLs": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
@@ -289,21 +295,11 @@
           },
           "minItems": 1
         },
-        "Title": {
-          "description": "One-line description of the website.  The title could be used a caption when a browse image is displayed. The title is especially useful for images such as graphs and photos.",
-          "$ref": "#/definitions/TitleType"
-        },
         "MimeType": {
           "description": "The mime type of files downloaded from this site (e.g., pdf, doc, zip, tiff, jpg, readme).",
           "type": "string",
           "minLength": 1,
           "maxLength": 50
-        },
-        "Caption": {
-          "description": "The caption of the website.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
         },
         "FileSize": {
           "description": "The estimated or average size of a file downloaded from this site.",
@@ -312,42 +308,22 @@
       },
       "required": ["URLs"]
     },
-    "ContentTypeType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Describes the type of the URL.  (e.g., VIEW PROJECT HOME PAGE)",
-      "properties": {
-        "Type": {
-          "description": "The type of URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        },
-        "Subtype": {
-          "description": "Describes the sub type of the URL.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        }
-      },
-      "required": ["Type"]
-    },
     "FileSizeType": {
+      "description": "Represents a data file size.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "Size": {
-          "description": "The estimated or average size of a file downloaded from this site.",
+          "description": "The size of the data.",
           "type": "number"
         },
         "Unit": {
-          "description": "Unit of file size. If no size unit is specified, MegaBytes is assumed.",
+          "description": "Unit of information, together with Size determines total size in bytes of the data.",
           "type": "string",
-          "minLength": 1,
-          "maxLength": 4
+          "enum": ["KB", "MB", "GB", "TB", "PB"]
         }
       },
-      "required": ["Size"]
+      "required": ["Size", "Unit"]
     },
     "ResourceCitationType": {
       "type": "object",
@@ -693,9 +669,12 @@
           "minLength": 1,
           "maxLength": 500
         },
-        "DistributionSize": {
-          "description": "The size of the distribution package for the collection data.",
-          "type": "number"
+        "Sizes": {
+          "description": "A list of file sizes indicating a single exact or approximate, or range of distribution sizes.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FileSizeType"
+          }
         },
         "DistributionFormat": {
           "description": "The distribution format of the collection data (e.g., HDF, netCDF).",
