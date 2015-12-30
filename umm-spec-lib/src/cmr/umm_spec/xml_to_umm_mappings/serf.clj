@@ -41,9 +41,7 @@
 (defn- parse-projects
   "Parses the Project elements of a SERF record and creates a UMM-S representation"
   [doc]
-  (for [proj (select doc "/SERF/Project")]
-    {:ShortName (value-of proj "Short_Name")
-     :LongName (value-of proj "Long_Name")}))
+  (parse-short-name-long-name doc "/SERF/Project"))
 
 (defn- parse-data-dates
   "Returns seq of UMM-CMN DataDates parsed from SERF document."
